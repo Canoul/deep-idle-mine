@@ -16,6 +16,19 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 31/10/2026 — Geoffrey — Chat : canal Commerce retiré
+- **Pour le joueur** : plus de canal Commerce ni de raccourci /c dans le chat global : il n'y a pas d'échanges dans le
+  jeu. Les anciens messages de ce canal s'affichent en Général.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — « Prêt tout le temps » revu
+- **Pour le joueur** : la case est maintenant visible partout, même seul ou en prison, et elle ne se décoche plus
+  toute seule : elle est gardée sur le compte. Elle sert à rester prêt : on clique « Je suis prêt » une fois en entrant
+  dans un groupe, puis on le reste session après session.
+- **Décisions** : cocher ne rend plus prêt. En revenant de prison, le joueur clique donc une fois : un chef ne peut pas
+  lui terminer sa prison sans son accord. « Prêt (annuler) » remarche, sans toucher à la case.
+- **État** : ✅ en ligne le 31/10
+
 ## 31/10/2026 — Geoffrey — Mode dev : copier un vrai joueur en tapant son pseudo
 - **Pour l'équipe** : dans le lobby du mode développeur, on tape un pseudo et le personnage du joueur (stuff, skills, sorts, niveau) arrive
   dans les presets, sans console ni fichier. Un preset par mineur, en instance aussi, même avec un compte invité ou invité dans un groupe. Le serveur dev lit la base en ligne avec un compte qui ne peut rien modifier.
@@ -63,6 +76,13 @@ Modèle d'entrée :
 - **Pour le joueur** : dans la compo de la prison, le cobalt et le thorium ne dépassent plus 0,4 % chacun des minerais de la carte. La place libérée va aux autres minerais : la carte en contient autant qu'avant. Vaut pour toutes les compos (actuelle, ancienne, enregistrée) et le lobby affiche la valeur plafonnée.
 - **Décisions** : plafond commun à tous, pas de règle visant des pseudos. Seuls Croustiflex, Infernatiwar et Monsta sont vraiment touchés (0,9 à 1,1 % avant). Mesure sur la compo de Croustiflex (stuff acier, 20 h simulées) : cobalt 2,07 → 0,78 par heure, thorium 2,52 → 1,03. Valeur provisoire, `PRISON.oreCap`.
 - **À suivre** : leur prison n'était pas anormale (40 à 50 % de leurs mines, comme les autres) : ils rapportent 8 à 9 cobalt ou thorium par heure en mine, contre 1 à 3 pour les autres. Le plafond les met nettement sous la cible de 50 % sur ces deux minerais.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Gobelins asservis : ils creusent quand il n'y a plus de minerai
+- **Pour le joueur** : un gobelin asservi vise toujours les minerais d'abord. S'il n'y en a pas à 6 cases, il creuse tout droit dans la roche
+  au lieu d'attendre, et reprend le premier minerai qu'il trouve. Il ne reste presque plus inactif (1 s sur 30, contre 12,5 s avant).
+- **Décisions** : Geoffrey : « il focus minerai, mais s'il n'y en a pas alors il mine ». La roche qu'il casse va au coffre commun, comme le reste.
+- **À suivre** : le rendement de la Couronne augmente (environ +80 % de blocs par gobelin, +35 % de minerais), à surveiller.
 - **État** : ✅ en ligne le 31/10
 
 ## 31/10/2026 — Geoffrey — Le mineur prend les coffres sur la paroi de son puits

@@ -5861,6 +5861,14 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - ⚠️ Connu, ancien : un message reçu juste avant d'envoyer le sien peut sauter à l'écran (`add` avance `last` au numéro du message envoyé).
 - ⚠️ Taille du chat (hauteur, largeur, repli) : gardée dans le navigateur, pas sur le compte.
 
+## 31/10/2026 — Gobelins asservis : roche sans minerai à portée (Geoffrey)
+- **Constat** (3 seeds, 3 mineurs, couronne sur le 1er, stats de base, 38 gobelins) : vie 29,9 s de jeu (≈ 15 s réelles à ×2), mais 12,5 s inactif ; 78 % de cette attente sans aucun minerai à `reach` (10 gobelins sur 38 nés sans minerai).
+- **Quoi** (src/sim/thrall.js) : `pickRock` (bloc cassable le plus proche, -1,5 tout droit dans `o.dir`), repli quand `pickTarget` ne trouve rien. `pickTarget` est relancé à chaque décision : un minerai entré dans `reach` passe devant.
+- **Corrigé au passage** : `stepToward` creusait à travers un bloc `taken` (minerai visé par un mineur) ; refusé maintenant.
+- **Mesure** : avant 7,8 blocs et 3,1 minerais par gobelin, 12,5 s inactif ; après 14,0 blocs et 4,2 minerais, 1,0 s inactif.
+- **Tests** ✅ goblin-thrall +4 (3 adaptés à l'ancien « il attend »), goblin-king, effects, session, anti-triche (119). Simulation `--miners 3 --count 5 --crown` : 0 bloquée.
+- ⚠️ Focus « seulement » : un minerai ignoré par le focus reste cassable comme de la roche (bonus sans gravité). `updateLight` est appelé à chaque bloc : plus souvent qu'avant, à surveiller. Stats de base seulement, pas vu en vrai partie.
+
 ## 31/10/2026 — Chat : canal gardé (Geoffrey)
 - **Quoi** : `sent` (src/ui/chat-tabs.js), appelé par src/ui/chat.js après un envoi réussi ; `prefs.channel`, et `prefs.to` pour un MP. `parseChatInput` reçoit le destinataire gardé ; le sélecteur montre « À pseudo » pendant un MP.
 - **Tests** ✅ chat +2.
@@ -5869,6 +5877,25 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 ## 31/10/2026 — Menu du Lobby avec l'équipe (Geoffrey)
 - **Quoi** : `#lobbyMenu` dans la colonne de gauche de `.lobbyCols`, `#lobbyStage` réduit à l'en-tête « ← Activités ». `menuCards` ; au menu, `def` vaut null (aucun mode choisi). Retirés : exception de groupe de `showMenu`, ouverture de la Mine en rejoignant un groupe.
 - **Tests** ✅ lobby +1.
+
+## 31/10/2026 — « Prêt tout le temps » revu (Geoffrey) — branche `geoffrey/pret-prison`
+- **Panne** : la case n'était gardée que dans un groupe (`alwaysOn` en mémoire, reconstruit depuis les groupes au `load`).
+  La prison se fait seul : case cachée, et réglage perdu au premier redémarrage (⚠️ de l'entrée du 23/10, corrigé ici).
+- **Quoi** : store `getAlwaysReady` / `setAlwaysReady` (ns `always_ready`, `server/game/store.js`) ; `alwaysOn` relu au
+  `load`, les `m.always` des groupes existants y sont recopiés. `state` renvoie `alwaysReady`. Route `always-ready`
+  possible sans groupe. Sémantique : `m.always` ne vaut plus prêt (`publicParty`, `notReady`, `sweep`, `newMember`) ;
+  `unready` garde `always && ready` ; `ready(false)` enlève prêt ; cocher en session met `ready` (il était prêt).
+  Lobby : `alwaysReadyState` lit `st.alwaysReady`, plus de confirmation prison sur la case (reste sur « Je suis prêt »).
+  `adminReady` : `--always on/off` met aussi prêt / pas prêt ; `ready` donné l'emporte.
+- **Tests** : `tests/party`, `lobby`, `admin-party`, `prison-ui`.
+- ✅ Vérifié par les tests ; ⚠️ pas essayé dans un navigateur.
+- ⚠️ Un membre coché pas prêt et absent est retiré après `memberTimeout`, comme tout membre pas prêt.
+
+## 31/10/2026 — Chat : canal Commerce retiré (Geoffrey) — branche `geoffrey/retire-commerce`
+- **Quoi** : retiré de `CHAT.channels`, `SHORTCUTS` et de la regex de `parseChatInput` (`src/shared/chat.js`), `.ch-commerce`, aide, wiki.
+  Données : rien à migrer, `chatChannel` et `sanitizeChatPrefs` ramènent un canal inconnu sur Général.
+- **Tests** : `tests/chat.test.js`. ✅ Vérifié par les tests.
+- ⚠️ `/c toto` n'est plus un raccourci : il part tel quel dans le canal choisi, comme toute commande inconnue.
 
 ## 31/10/2026 — Chat : largeur en tour (Geoffrey)
 - **Cause** : `centralLeft` lisait le bord de la zone (`#cvTwWrap`, 12 px) et non du canvas centré dedans (421 px à 1872 px de large) : limite sous `minWidth`, chat bloqué à 160 px.

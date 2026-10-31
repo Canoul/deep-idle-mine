@@ -4,7 +4,8 @@
    rien, personne ne le frappe. Pendant GOBLIN_KING.thrall.life secondes, il mine les minerais autour de lui
    (reach cases au plus, Manhattan), à la vitesse d'un mineur de base (STATS : minage, marche, montée), avec la même
    priorité que son maître (le porteur : son focus minerai, src/sim/focus.js targetVal). Pour rejoindre un minerai, il
-   creuse droit vers lui, comme un mineur. Tout bloc qu'il casse va directement dans le coffre commun (G.chest) et dans
+   creuse droit vers lui, comme un mineur. Sans minerai à portée (31/10/2026, Geoffrey), il mine la roche la plus proche
+   en gardant sa direction : sa portée avance avec lui, et il reprend le premier minerai qui y entre. Tout bloc qu'il casse va directement dans le coffre commun (G.chest) et dans
    la part « gobelins » du coffre (G.goblinChest, affichée à part) ; un minerai compte pour le déblocage de l'area.
    Pas de fortune, pas de shiny, pas d'XP (choix de Claude : « mineur de base »). Il s'agrippe à la roche comme le
    golem (il ne tombe que dans le vide). Au bout de son temps, il disparaît. Logique pure, sans hasard. */
@@ -37,7 +38,7 @@ export function thrallOwner(G, x, y){
 
 /* un gobelin qui vient de naître en (x, y) devient l'asservi de ce mineur */
 export function enslave(G, id, x, y, owner){
-  (G.thralls ??= []).push({ id, x, y, owner: owner.id, until: G.t + C.life, target: null, dig: null, cd: 0, skip: [] });
+  (G.thralls ??= []).push({ id, x, y, owner: owner.id, until: G.t + C.life, target: null, dig: null, cd: 0, skip: [], dir: { x: x < W / 2 ? 1 : -1, y: 0 } });
   G.stats.thralls = (G.stats.thralls || 0) + 1;
   log(G, `👑 Un gobelin s'incline devant ${owner.name} : il mine pour le groupe pendant ${C.life} s`);
 }
@@ -58,6 +59,20 @@ function pickTarget(G, o, owner){
       if(v === null) continue;                          // focus « seulement » : les autres minerais sont ignorés
       const s = v / (d + mineTime(t) + 1);
       if(s > bs){ bs = s; best = { x, y }; }
+    }
+  return best;
+}
+
+/* pas de minerai à portée : le bloc cassable le plus proche, avantage à sa direction (sinon il creuserait en rond autour de lui) */
+function pickRock(G, o){
+  let best = null, bs = Infinity;
+  for(let y = Math.max(1, o.y - C.reach); y <= Math.min(maxRow(G), o.y + C.reach); y++)
+    for(let x = Math.max(0, o.x - C.reach); x <= Math.min(W - 1, o.x + C.reach); x++){
+      const dx = x - o.x, dy = y - o.y, d = Math.abs(dx) + Math.abs(dy);
+      if(d > C.reach || isAir(G, x, y) || !breakable(G, x, y) || taken(G, o, x, y) || o.skip.includes(y * W + x)) continue;
+      const ahead = dx * o.dir.x + dy * o.dir.y > 0 && dx * o.dir.y === dy * o.dir.x;   // tout droit, pas en diagonale
+      const s = d - (ahead ? 1.5 : 0);
+      if(s < bs){ bs = s; best = { x, y }; }
     }
   return best;
 }
@@ -87,7 +102,7 @@ function stepToward(G, o, tg){
     const nx = o.x + sx, ny = o.y + sy;
     if(nx < 0 || nx >= W || ny < 1 || ny > maxRow(G)) continue;
     if(!isAir(G, nx, ny)){
-      if(!breakable(G, nx, ny)) continue;
+      if(!breakable(G, nx, ny) || taken(G, o, nx, ny)) continue;
       o.dig = { x: nx, y: ny, left: mineTime(G.tiles[ny][nx]) };   // il creuse son chemin
       return true;
     }
@@ -116,12 +131,14 @@ function updateThrall(G, o){
   if(o.cd > 1e-9){ o.cd -= DT; return; }                     // en plein pas
   const tg = o.target;
   if(!tg || !isOre(G.tiles[tg.y]?.[tg.x]) || minerTakes(G, tg.x, tg.y)) o.target = pickTarget(G, o, byId(G, o.owner));
-  if(!o.target) return;                                      // rien à miner autour : il attend
-  const d = Math.abs(o.target.x - o.x) + Math.abs(o.target.y - o.y);
-  if(d <= 1){ o.dig = { x: o.target.x, y: o.target.y, left: mineTime(G.tiles[o.target.y][o.target.x]) }; return; }
-  if(stepToward(G, o, o.target)) return;
-  /* bloqué (incassable des deux côtés) : il abandonne ce minerai */
-  o.skip.push(o.target.y * W + o.target.x); o.target = null;
+  const aim = o.target ?? pickRock(G, o);
+  if(!aim) return;                                           // rien à casser autour : il attend
+  o.dir = { x: Math.sign(aim.x - o.x), y: Math.sign(aim.y - o.y) };
+  const d = Math.abs(aim.x - o.x) + Math.abs(aim.y - o.y);
+  if(d <= 1){ o.dig = { x: aim.x, y: aim.y, left: mineTime(G.tiles[aim.y][aim.x]) }; return; }
+  if(stepToward(G, o, aim)) return;
+  /* bloqué (incassable des deux côtés) : il abandonne ce bloc */
+  o.skip.push(aim.y * W + aim.x); o.target = null;
 }
 
 /* à chaque tick : les asservis travaillent, ceux dont le temps est écoulé disparaissent */

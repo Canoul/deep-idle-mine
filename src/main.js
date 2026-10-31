@@ -425,7 +425,7 @@ async function pollLobby(){
     if(st.session && st.session !== rec?.id){          // lancée par le chef (ou relancée pendant le bilan : il est lu)
       endAck?.(); await refresh(); return nav.show('session');
     }
-    lobby.update({ party:st.party, invites:st.invites, lfg:st.lfg, shrines:st.shrines ?? [] });
+    lobby.update({ party:st.party, invites:st.invites, lfg:st.lfg, shrines:st.shrines ?? [], alwaysReady:st.alwaysReady });
     setLfgFound(st.lfg?.found);
   } catch(e){ console.warn(e); }
   lobbyTimer = setTimeout(pollLobby, rec ? PARTY.pollInSession : PARTY.poll);

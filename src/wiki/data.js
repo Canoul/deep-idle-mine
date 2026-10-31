@@ -260,7 +260,7 @@ const STAT_HELP = {
   torchRadius:"Distance éclairée par les torches qu'il pose (le long des galeries creusées). Chaque torche garde le rayon de celui qui l'a posée.",
   blockMinePct:"Némésis du Golbute : vitesse de minage en plus sur les blocs de terrain (terre, pierre, pierre dure, résidus), pas sur les minerais.",
   golemOxygen:"Âme du Golbute : un golem qui meurt à 8 cases ou moins de toi te rend cet oxygène (sans dépasser ton maximum).",
-  goblinThrall:"Couronne du Roi Gobelin : un gobelin qui apparaît à cette distance ou moins du porteur est asservi. Il ne se bat pas, mine les minerais autour de lui pendant 30 s (vitesse d'un mineur de base, même priorité que le porteur) et ce qu'il mine va directement au coffre commun, puis il disparaît.",
+  goblinThrall:"Couronne du Roi Gobelin : un gobelin qui apparaît à cette distance ou moins du porteur est asservi. Il ne se bat pas, mine les minerais autour de lui (la roche s'il n'y en a pas) pendant 30 s (vitesse d'un mineur de base, même priorité que le porteur) et ce qu'il mine va directement au coffre commun, puis il disparaît.",
   torchTime:  "Temps qu'il met à poser une torche.",
   bridges:    'Passerelles pour traverser les trous (illimitées).',
   tenacity:   "Chance d'ignorer un sort de mob : le vol du gobelin, la canalisation de l'occultiste, l'asphyxie du méphite (un tirage à chaque sort).",

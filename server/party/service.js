@@ -9,7 +9,8 @@
      Si le chef part, le membre suivant devient chef ; un groupe vide disparaît. Le chef peut aussi donner sa place.
    - « Prêt » (21/10/2026) : chaque membre (sauf le chef : lancer = prêt) se déclare prêt ; le chef ne lance que si tous
      les autres le sont. Au lancement, et quand quelqu'un rejoint, tout le monde repasse « pas prêt » : à la fin d'une
-     session, le chef ne peut pas relancer tant que les autres n'ont pas redit qu'ils sont prêts.
+     session, le chef ne peut pas relancer tant que les autres n'ont pas redit qu'ils sont prêts. Sauf ceux qui ont coché
+     « Prêt tout le temps » et sont prêts : ils le restent.
    - Un membre qui n'a plus donné signe de vie (onglet fermé) depuis PARTY_SERVER.memberTimeout est retiré, sauf s'il
      est dans une session (pendant la partie, son navigateur ne parle plus au groupe) : le délai repart de la fin.
      Le CHEF n'est jamais retiré ainsi (27/10/2026, Geoffrey) : s'il est absent, ce sont les autres qui quittent.
@@ -39,10 +40,15 @@ const fail = (code, status, message, extra) => { throw new PartyError(code, stat
 export function createPartyService({ game, getAccount, store = null, clock = Date.now, config = PARTY_SERVER, dev = false,
                                      newCode = () => Array.from({ length: PARTY.codeLength }, () => CODE_ALPHABET[crypto.randomInt(32)]).join('') }){
   const parties = new Map();                 // code → groupe
-  /* « Prêt tout le temps » (23/10/2026) : réglage du JOUEUR, pas du groupe. Seule la case le change ; il le garde en
-     changeant de groupe (nouveau groupe, invitation, LFG). Retrouvé au redémarrage depuis les groupes enregistrés. */
+  /* « Prêt tout le temps » (23/10/2026) : réglage du JOUEUR, pas du groupe, enregistré sur son compte (31/10, Geoffrey :
+     il survit à la prison et aux redémarrages même sans groupe). Seule la case le change. Il ne rend pas prêt (31/10) :
+     il garde prêt celui qui l'est ; en entrant dans un groupe, on clique une fois « Je suis prêt ». */
   const alwaysOn = new Set();
-  const newMember = (account, name) => ({ account, name, seenAt: clock(), ready: alwaysOn.has(account), always: alwaysOn.has(account) });
+  const newMember = (account, name) => ({ account, name, seenAt: clock(), ready: false, always: alwaysOn.has(account) });
+  async function setAlways(accountId, value){
+    if(value) alwaysOn.add(accountId); else alwaysOn.delete(accountId);
+    await store?.setAlwaysReady(accountId, value);
+  }
   const limit = {
     invite: createLimiter(config.invitesPerHour, clock),
     join:   createLimiter(config.joinFailures, clock),
@@ -59,7 +65,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
     const now = clock();
     return { code: p.code, leader: p.leader, max: GAME.maxPlayers, launching: !!p.launching, devPresets: p.devPresets ?? null,
              members: p.members.map(m => ({ account: m.account, displayId: formatAccountId(m.account), name: m.name,
-                                            leader: m.account === p.leader, me: m.account === meId, ready: !!m.ready || !!m.always,
+                                            leader: m.account === p.leader, me: m.account === meId, ready: !!m.ready,
                                             always: !!m.always,
                                             playing: playing.has(m.account), tree: trees.get(m.account) ?? null,
                                             specLevel: specLv.get(m.account) ?? null,
@@ -73,10 +79,10 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
 
   /* ---------- ménage ---------- */
 
-  /* « Prêt tout le temps » (m.always) : le membre reste prêt, rien ne le remet à « pas prêt » */
-  const unready = p => { for(const m of p.members) m.ready = !!m.always; };
+  /* « Prêt tout le temps » (m.always) : qui est prêt le reste */
+  const unready = p => { for(const m of p.members) m.ready = !!m.always && !!m.ready; };
   /* membres (hors chef) qui ne sont pas prêts */
-  const notReady = p => p.members.filter(m => m.account !== p.leader && !m.ready && !m.always);
+  const notReady = p => p.members.filter(m => m.account !== p.leader && !m.ready);
 
   function removeMember(p, accountId){
     p.members = p.members.filter(m => m.account !== accountId);
@@ -94,9 +100,9 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
         /* le chef n'est jamais retiré pour absence (27/10, Geoffrey ; ancien : retiré au bout de memberTimeout, le
            suivant devenait chef). Il est affiché « absent » ; les autres quittent s'ils ne veulent pas l'attendre. */
         if(m.account === p.leader) continue;
-        /* membre prêt (ou « prêt tout le temps ») : gardé même onglet fermé (26/10, Geoffrey). Il est affiché « absent »
-           mais le chef peut toujours le lancer avec le groupe. Pour l'enlever : le chef le retire. */
-        if(m.ready || m.always) continue;
+        /* membre prêt : gardé même onglet fermé (26/10, Geoffrey). Il est affiché « absent » mais le chef peut toujours
+           le lancer avec le groupe. Pour l'enlever : le chef le retire. */
+        if(m.ready) continue;
         if(now - Math.max(m.seenAt, m.graceUntil ?? 0) <= config.memberTimeout) continue;   // grâce : fin prévue de la session
         /* … ou fin RÉELLE de sa dernière session (en retard sur l'heure prévue, ou fin libre en dev) */
         if(now - (await game.lastEndedAt?.(m.account) ?? 0) <= config.memberTimeout) continue;
@@ -228,12 +234,13 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
   /* démarrage du serveur : on retrouve les groupes enregistrés (chacun repart avec un délai d'absence neuf) */
   async function load(){
     if(!store) return;
+    for(const id of await store.getAlwaysReady()) alwaysOn.add(id);
     for(const s of await store.getParties()){
       if(!s?.code || !Array.isArray(s.members) || !s.members.length) continue;
       const p = { code: s.code, leader: s.leader, createdAt: s.createdAt ?? clock(), launching: false,
                   members: s.members.map(m => ({ account: m.account, name: m.name, seenAt: clock(), graceUntil: m.graceUntil ?? undefined, ready: m.ready === true, always: m.always === true })),
                   invites: new Map((s.invites || []).map(i => [i.account, i])) };
-      for(const m of p.members) if(m.always) alwaysOn.add(m.account);
+      for(const m of p.members) if(m.always && !alwaysOn.has(m.account)) await setAlways(m.account, true);   // groupes d'avant le 31/10
       if(!p.members.some(m => m.account === p.leader)) p.leader = p.members[0].account;
       parties.set(p.code, p);
       written.set(p.code, JSON.stringify(saved(p)));
@@ -278,6 +285,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
         invites: invitesFor(me.id).map(q => ({ code: q.code, from: q.invites.get(me.id).from,
                                                members: q.members.map(m => m.name), full: q.members.length >= GAME.maxPlayers })),
         session: await game.activeSessionId(me.id),       // le chef a lancé : le navigateur passe à la session
+        alwaysReady: alwaysOn.has(me.id),
         lfg: lfgView(me),
         /* shrines du chef du groupe (ou les siens, seul) : 28/10/2026 */
         shrines: await game.shrinesOf?.(p?.leader ?? me.id) ?? [],
@@ -415,7 +423,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       noChange(p);
       await notInSession(me);
       const m = memberOf(p, me.id);
-      m.ready = value || !!m.always;                   // « prêt tout le temps » : seule la case le retire (23/10)
+      m.ready = value;
       return { party: publicParty(p, me.id) };
     },
 
@@ -430,19 +438,21 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       return { party: publicParty(p, me.id) };
     },
 
-    /* « Prêt tout le temps » : le membre reste prêt d'une session à l'autre (et quand quelqu'un arrive), le chef peut
-       enchaîner sans attendre son clic. Possible pendant une session (on le coche pour la suivante). value : true / false. */
+    /* « Prêt tout le temps » : qui est prêt le reste d'une session à l'autre (et quand quelqu'un arrive), le chef peut
+       enchaîner sans attendre son clic. Se coche partout : seul, chef, en prison, en session ; la case ne change pas
+       « prêt », sauf en la cochant pendant une session : il était prêt pour celle-ci, il le reste. value : true / false. */
     async alwaysReady(me, value){
       touch(me);
       if(typeof value !== 'boolean') fail('bad_request', 400, 'Valeur invalide.');
       const p = partyOf(me.id);
-      if(!p) fail('no_party', 404, "Tu n'es dans aucun groupe.");
-      noChange(p);
-      const m = memberOf(p, me.id);
-      m.always = value;
-      m.ready = value;
-      if(value) alwaysOn.add(me.id); else alwaysOn.delete(me.id);
-      return { party: publicParty(p, me.id) };
+      if(p) noChange(p);
+      await setAlways(me.id, value);
+      if(p){
+        const m = memberOf(p, me.id);
+        m.always = value;
+        if(value && await game.activeSessionId(me.id)) m.ready = true;
+      }
+      return { party: p ? publicParty(p, me.id) : null, alwaysReady: value };
     },
 
     /* le chef donne sa place de chef à un autre membre */
@@ -515,7 +525,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
 
   /* état d'un groupe pour le journal et le script : chef, membres, prêts */
   const adminView = p => ({ code: p.code, leader: memberOf(p, p.leader)?.name,
-                            members: p.members.map(m => ({ name: m.name, leader: m.account === p.leader, ready: !!m.ready || !!m.always, always: !!m.always })) });
+                            members: p.members.map(m => ({ name: m.name, leader: m.account === p.leader, ready: !!m.ready, always: !!m.always })) });
   const admin = {
     /* met player (compte) dans le lobby de host (compte), comme « Rejoindre » depuis l'onglet Social, sans amitié ni
        code. host sans groupe : on lui en crée un, dont il est le chef. Mêmes refus que pour un joueur (en session,
@@ -551,9 +561,9 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       const m = memberOf(p, player.id);
       if(always !== undefined){
         m.always = always;
-        if(always) alwaysOn.add(player.id); else alwaysOn.delete(player.id);
+        await setAlways(player.id, always);
       }
-      m.ready = (ready ?? (always !== undefined ? always : m.ready)) || m.always;   // comme ses cases : « tout le temps » l'emporte
+      m.ready = ready ?? always ?? m.ready;            // --always on/off met aussi prêt / pas prêt : c'est le but de l'outil
       return { party: adminView(p) };
     },
     /* lance le lobby de player (compte, n'importe quel membre) dans la mine classique, comme si le chef cliquait
