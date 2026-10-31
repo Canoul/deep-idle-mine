@@ -5973,3 +5973,9 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Quoi** : `canBeInvited` (`src/shared/party.js`), lu par `canInvite` de Social et `whoRows` du lobby. Le serveur (`party.invite`)
   acceptait déjà : il ne refuse que `activeSessionId`, qui ne compte pas la prison. `canJoin` inchangé. `statusText` : « En ligne - Prison ».
 - **Tests** : `tests/social.test.js`, `tests/tower-who.test.js`. ✅ Vérifié par les tests ; ⚠️ pas essayé dans un navigateur.
+
+## 31/10/2026 — Bouton Activer / Désactiver d'un shrine « qui lag » (Geoffrey)
+- **Cause** : `render` (src/ui/lobby.js) ne redessinait pas `shrinesBody` si `document.activeElement` y était, pour protéger la saisie des quantités. Un bouton cliqué garde le focus : la carte restait figée jusqu'au clic suivant ailleurs ; le serveur avait déjà appliqué le changement. Trouvé à la lecture, pas reproduit dans un navigateur.
+- **Quoi** : `typingIn` : seul un `INPUT` de la carte bloque le rendu. Vaut aussi pour « Donner ».
+- **Tests** ✅ stele +1.
+- ⚠️ Pas vu en jeu.

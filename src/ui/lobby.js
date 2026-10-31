@@ -109,6 +109,10 @@ export function instanceLevelState({ instance, locked, party, account, cur = nul
    des deux tours (tower:'any', 31/10) ; rien ailleurs (Jugement, prison, instances…). mine : carte de la mine classique ; tower : camp de la tour choisie */
 export const shownShrines = (list, { mine = false, tower = null } = {}) => (list ?? []).filter(sh => sh.tower ? sh.tower === tower || (sh.tower === 'any' && !!tower) : mine);
 
+/* le joueur tape dans un champ de box : on ne le redessine pas sous ses doigts. Un bouton cliqué garde le focus : il ne compte
+   pas, sinon « Activer / Désactiver » restait sur son ancien texte jusqu'au clic suivant ailleurs (31/10/2026) */
+export const typingIn = (box, el) => el?.tagName === 'INPUT' && box.contains(el);
+
 /* carte des shrines (28/10/2026) : ceux du chef du groupe (ou les siens, seul). Actif : sessions restantes ; stèle chargée :
    activée ou non, et le bouton du chef (30/10) ; sinon le prix, ce qui est déjà donné, et pour chaque objet un champ
    + « Donner » (have : combien j'en ai). leaderName : null si c'est moi. */
@@ -275,7 +279,7 @@ export function setupLobby(h){
     if(!$('shrinesCard').hidden){
       const leader = party && party.members.length > 1 && party.leader !== account?.id ? party.members.find(m => m.account === party.leader)?.name ?? 'le chef' : null;
       const html = shrinesHtml(shrineList, { have: item => h.keys?.(item) ?? 0, leaderName: leader, busy: st.busy });
-      if($('shrinesBody')._html !== html && !$('shrinesBody').contains(document.activeElement)){ $('shrinesBody').innerHTML = html; $('shrinesBody')._html = html; }
+      if($('shrinesBody')._html !== html && !typingIn($('shrinesBody'), document.activeElement)){ $('shrinesBody').innerHTML = html; $('shrinesBody')._html = html; }
     }
     $('instCard').hidden = !cards.inst;
     if(cards.inst) renderInstances();
