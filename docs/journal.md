@@ -22,6 +22,11 @@ Modèle d'entrée :
 - **À suivre** : Jules a besoin de son fichier `.dim-dev.env` pour s'en servir. `SET ROLE` ne marche pas dans Neon : voir `has_table_privilege`.
 - **État** : ✅ en ligne le 31/10
 
+## 31/10/2026 — Geoffrey — Menu du Lobby : l'équipe à droite
+- **Pour le joueur** : le choix des activités montre ton équipe à droite, seul ou en groupe : inviter, chercher un groupe, et « Je suis prêt » pour un membre. Le Lancer reste dans l'activité.
+- **Décisions** : cliquer sur l'onglet Lobby rouvre toujours le menu, même en groupe ; rejoindre un groupe n'ouvre plus la Mine.
+- **État** : 🧪 sur la branche `geoffrey/chat-canal-garde` (pas en ligne)
+
 ## 31/10/2026 — Geoffrey — Chat : le canal utilisé reste choisi
 - **Pour le joueur** : après un message en /gr, le suivant part en groupe sans rien préciser, et pareil pour /1, /2 et /c. Après un /w, le suivant repart au même joueur. On change de canal avec un autre raccourci ou le sélecteur, et le canal est gardé sur le compte.
 - **Décisions** : le canal ne change que si le message est bien parti (un /gr refusé sans groupe ne change rien).

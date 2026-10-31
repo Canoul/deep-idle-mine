@@ -221,6 +221,10 @@ export function activityMenu(modes, { towerOpen = false, prisonOn = false } = {}
   });
 }
 
+/* Cartes du menu des activités (31/10/2026, Geoffrey) : l'équipe à droite, en solo comme en groupe ; un membre y a son
+   « Je suis prêt », le chef et le joueur seul lancent depuis une activité */
+export const menuCards = ({ party, account }) => ({ team: true, launch: !!party && party.members.length > 1 && party.leader !== account?.id });
+
 /* Cartes visibles du lobby. view 'jugement' : les jauges et les sets à gauche, l'équipe à droite comme pour la Mine (25/10), mais
    rien ne se lance d'ici (pas de Lancer, de préférences ni de réglages dev). Mine instantanée : sa carte d'inscription
    à la place de l'équipe. dev : réglages dev permis (mode dev, celui qui lance, hors session). */
@@ -268,12 +272,13 @@ export function setupLobby(h){
     /* une tour choisie qui vient de fermer (ou déjà faite) : retour à la Mine */
     const modes = mineModes(st.mode, locked, st.judgment, !!st.info?.dev, party?.members.length ?? 1);
     if(!locked && !modes.some(m => m.id === st.mode && !m.done)) st.mode = MINE_MODES[0].id;
-    const def = MINE_MODES.find(m => m.id === st.mode), mi = def?.scheduled, tower = def?.tower;
-    const jv = st.view === 'jugement';   // Jugement : on regarde les jauges (et son équipe), rien ne se lance d'ici
     const menu = st.screen === 'menu';
-    $('lobbyMenu').hidden = !menu; $('lobbyStage').hidden = menu;
+    const def = menu ? null : MINE_MODES.find(m => m.id === st.mode), mi = def?.scheduled, tower = def?.tower;   // menu : aucune activité choisie
+    const jv = st.view === 'jugement';   // Jugement : on regarde les jauges (et son équipe), rien ne se lance d'ici
+    $('lobbyMenu').hidden = !menu; $('lobbyStage').hidden = menu; $('lobbySetsCard').hidden = menu;
+    $('lobby').classList.toggle('atMenu', menu);
     $('actTitle').textContent = jv ? 'Jugement' : def?.instance ? 'Instances' : def?.label ?? '';
-    const cards = menu ? {} : lobbyCards({ view:st.view, mode:st.mode, dev:!!info?.dev && !locked });
+    const cards = menu ? menuCards(st) : lobbyCards({ view:st.view, mode:st.mode, dev:!!info?.dev && !locked });
     $('judgmentCard').hidden = !cards.judgment;
     $('miCard').hidden = !cards.mi; $('teamCard').hidden = !cards.team; $('prefsCard').hidden = !cards.prefs;
     /* shrines : mine classique (28/10) ; lobby d'une tour : sa stèle seulement (30/10) ; prison : aucun (29/10) */
@@ -368,7 +373,7 @@ export function setupLobby(h){
     renderLfg();
 
     const dev = !!info?.dev, n = party?.members.length ?? 1;
-    $('lobbyInfo').innerHTML = offline ? ''
+    $('lobbyInfo').innerHTML = offline || (menu && !locked) ? ''
       : locked ? 'Le lobby est en lecture seule pendant la session : tu pourras relancer à la fin.'
       : jv ? 'Une tour ouverte se lance avec « Choisir la tour ».'
       : def?.giant ? ''
@@ -724,10 +729,8 @@ export function setupLobby(h){
 
   return {
     update(patch){
-      const { lfg, ...rest } = patch, alone = (st.party?.members.length ?? 1) < 2;
+      const { lfg, ...rest } = patch;
       Object.assign(st, rest);
-      /* groupe rejoint depuis le menu : ses places et « Je suis prêt » sont dans l'activité */
-      if(alone && st.screen === 'menu' && (st.party?.members.length ?? 1) > 1){ st.screen = 'stage'; st.view = null; if(!MINE_MODES.find(m => m.id === st.mode)?.instance) st.mode = MINE_MODES[0].id; }
       if('lfg' in patch) setLfg(lfg);
       if(st.info?.dev){ drawPresets(Array.isArray(st.info.copies) ? st.info.copies : []); drawPlaces(); }
       render();
@@ -736,8 +739,8 @@ export function setupLobby(h){
     join(code){ return act(() => h.party.join(code)); },
     /* afficher les jauges du Jugement (ancien onglet, lien #jugement) */
     showJudgment,
-    /* retour au menu en cliquant sur l'onglet Lobby ; dans un groupe, on reste sur son activité (« Je suis prêt », places) */
-    showMenu(){ if((st.party?.members.length ?? 1) > 1) return; st.screen = 'menu'; st.view = null; render(); scrollTo(0, 0); },
+    /* retour au menu en cliquant sur l'onglet Lobby */
+    showMenu(){ st.screen = 'menu'; st.view = null; render(); scrollTo(0, 0); },
     /* choisir un type de mine (ex. la tour ouverte, depuis le Jugement) s'il est proposé et pas déjà fait */
     pickMode(mode){ if(mineModes(st.mode, !!st.session, st.judgment, !!st.info?.dev).some(m => m.id === mode && !m.disabled)) pick(mode); },
     /* recherche de groupe depuis le Carreau (30/10, Jules) : l'état comme si la mine classique était choisie (lfgState),
