@@ -16,6 +16,11 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 31/10/2026 — Geoffrey — Chat : canal Commerce retiré
+- **Pour le joueur** : plus de canal Commerce ni de raccourci /c dans le chat global : il n'y a pas d'échanges dans le
+  jeu. Les anciens messages de ce canal s'affichent en Général.
+- **État** : 🧪 sur la branche `geoffrey/retire-commerce` (pas en ligne)
+
 ## 31/10/2026 — Geoffrey — « Prêt tout le temps » revu
 - **Pour le joueur** : la case est maintenant visible partout, même seul ou en prison, et elle ne se décoche plus
   toute seule : elle est gardée sur le compte. Elle sert à rester prêt : on clique « Je suis prêt » une fois en entrant

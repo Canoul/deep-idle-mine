@@ -5882,3 +5882,9 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** : `tests/party`, `lobby`, `admin-party`, `prison-ui`.
 - ✅ Vérifié par les tests ; ⚠️ pas essayé dans un navigateur.
 - ⚠️ Un membre coché pas prêt et absent est retiré après `memberTimeout`, comme tout membre pas prêt.
+
+## 31/10/2026 — Chat : canal Commerce retiré (Geoffrey) — branche `geoffrey/retire-commerce`
+- **Quoi** : retiré de `CHAT.channels`, `SHORTCUTS` et de la regex de `parseChatInput` (`src/shared/chat.js`), `.ch-commerce`, aide, wiki.
+  Données : rien à migrer, `chatChannel` et `sanitizeChatPrefs` ramènent un canal inconnu sur Général.
+- **Tests** : `tests/chat.test.js`. ✅ Vérifié par les tests.
+- ⚠️ `/c toto` n'est plus un raccourci : il part tel quel dans le canal choisi, comme toute commande inconnue.
