@@ -4,7 +4,7 @@
    Ne modifie rien lui-même : chaque action est demandée au serveur (onOp), qui tire le hasard et renvoie l'inventaire.
    Pièces de l'inventaire et pièces portées (28/10/2026), marquées « équipée » : une pièce portée sacrifiée vide sa case. */
 import { UPGRADE, STUFF, RINGS } from '../config.js';
-import { isIdentified, isRune, canIdentify, canUpgrade, isFragment, runeFactor, pieceName, lineValue, plusMult, roundStat } from '../meta/piece.js';
+import { isIdentified, isRune, canIdentify, canUpgrade, isFragment, runeFactor, pieceName, runeLineValue, plusMult, roundStat } from '../meta/piece.js';
 import { statLines, runeLines, ringLines } from '../meta/stuff.js';
 import { sacrificesFor, nextLevel, upgradeNeeds, ringDupes } from '../meta/upgrade.js';
 import { tipAttr } from './tooltip.js';
@@ -146,11 +146,11 @@ export function setupUpgrade({ onOp, worn = () => ({}) }){
     const sel = c => pick === c ? ' sel' : '';
     const label = k => STUFF.statLabels[k] ?? k, unit = k => STUFF.statUnits?.[k] ?? '';
     const preview = t && r && !why ? r.lines.map(l => l.stat === 'discoverMax' ? `${label(l.stat)} +1`
-      : `${label(l.stat)} +${String(roundStat(l.stat, lineValue(t.item, l, runeFactor(r)) * plusMult(t.plus | 0))).replace('.', ',')}${unit(l.stat)}`).join(' · ') : '';
+      : `${label(l.stat)} +${String(roundStat(l.stat, runeLineValue(t.item, l, runeFactor(r)) * plusMult(t.plus | 0))).replace('.', ',')}${unit(l.stat)}`).join(' · ') : '';
     const list = pick === 'target' ? pieces() : runes();
     $('upBody').innerHTML =
       helpLine(`Enchantement\nUne rune (trésors des tours de l'Ange et du Démon) ajoute ses lignes de stats à une pièce : `+
-        `chaque ligne vaut un % du tier de la pièce (T1 pierre et chitine : 100 x, T2 fer : 250 x, T3 acier : 500 x).\nUne seule rune par pièce.\n`+
+        `chaque ligne vaut un % du tier de la pièce (T1 pierre et chitine : 100 x, T2 fer : 250 x, T3 acier : 500 x).\nLes stats de combat en donnent moins : ÷ 2 (÷ 3 dégâts %, ÷ 4 perçage).\nUne seule rune par pièce.\n`+
         `Retirer une rune est gratuit, mais elle revient en Fragment de rune : mêmes lignes, % divisés par 2. `+
         `Un fragment se repose comme une rune, et une fois posé, il ne se retire plus.\n`+
         `Une pièce n'accepte qu'une rune de qualité égale ou inférieure à la sienne (une pièce R6 accepte une rune R1 à R6) : `+

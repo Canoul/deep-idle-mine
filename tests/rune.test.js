@@ -5,7 +5,7 @@ import { UPGRADE, RUNE, chestItem, ITEMS } from '../src/config.js';
 import { mulberry32 } from '../src/core/rng.js';
 import { createInventory, addItem, countOf, deserialize, serialize } from '../src/meta/inventory.js';
 import { canOpen, openTreasure } from '../src/meta/loot.js';
-import { rollChestQuality, rollRune, sanitizePiece, pieceBonus, lineValue, isRune, isFragment, roundStat } from '../src/meta/piece.js';
+import { rollChestQuality, rollRune, sanitizePiece, pieceBonus, lineValue, runeLineValue, isRune, isFragment, roundStat } from '../src/meta/piece.js';
 import { enchant, enchantError, unenchant, unenchantError } from '../src/meta/upgrade.js';
 import { statLines, createStuff, stuffOp } from '../src/meta/stuff.js';
 
@@ -78,7 +78,7 @@ test('enchanter : la rune est consommée, ses lignes s\'ajoutent à la pièce (v
   assert.equal(r.ok, true);
   assert.equal(inv.slots.filter(s => s?.item === RUNE.item).length, 0, 'rune consommée');
   assert.deepEqual(r.piece.rune, { q: 1, s: UPGRADE.scale, lines: [{ stat: 'crit', pct: 20 }] });
-  assert.equal(pieceBonus(r.piece).stats.crit, lineValue(PICK, { stat: 'crit', pct: 20 }));   // 26 x × 7 % = 1,8
+  assert.equal(pieceBonus(r.piece).stats.crit, runeLineValue(PICK, { stat: 'crit', pct: 20 }));
   assert.ok(statLines(r.piece).some(t => t.startsWith('Rune')), 'les lignes de la rune sont affichées à part');
   /* une deuxième rune : refusée */
   const [j] = addItem(inv, RUNE.item, 1); Object.assign(inv.slots[j], { q: 2, lines: [{ stat: 'pods', pct: 20 }], s: UPGRADE.scale });
@@ -182,7 +182,7 @@ test('retirer une rune (23/10) : gratuit, elle revient en Fragment de rune (mêm
   enchant(inv, { uid: piece.uid, rune: f.uid, opId: id() });
   assert.equal(piece.rune.frag, true);
   const half = pieceBonus(piece).stats;
-  assert.equal(half.crit, roundStat('crit', L.filter(l => l.stat === 'crit').reduce((s, l) => s + lineValue(PICK, { ...l, pct: l.pct / 2 }), 0)));
+  assert.equal(half.crit, roundStat('crit', L.filter(l => l.stat === 'crit').reduce((s, l) => s + runeLineValue(PICK, { ...l, pct: l.pct / 2 }), 0)));
   assert.ok(half.crit < full.crit, `${half.crit} < ${full.crit}`);
   assert.ok(statLines(piece).some(t => t.startsWith('Fragment')));
   /* un fragment posé ne se retire plus ; relu, il reste un fragment */
@@ -221,6 +221,22 @@ test('tier : chaque pièce qu\'on peut runer a un tier (T1 100 x, T2 250 x, T3 5
   assert.equal(tierOf('Pioche en pierre'), 1); assert.equal(tierOf('Plastron en fer'), 2);
   assert.equal(tierOf('Gants d\'ouvrier'), 2); assert.equal(tierOf('Boussole en or'), 1);
   assert.equal(tierOf('Plastron de l\'équilibre'), 3);
+});
+
+test('ajustements offensifs sur les runes (31/10/2026) : vitesse d\'attaque ÷ 2, dégâts % ÷ 3, perçage ÷ 4 ; identification et autres stats intactes', () => {
+  const line = { stat: 'attackSpeed', pct: 29.1 };
+  assert.equal(lineValue('Doc Martins', line), 37.8, 'identification : comme avant');
+  assert.equal(runeLineValue('Doc Martins', line), 18.9, 'rune : ÷ 2');
+  assert.equal(runeLineValue('Doc Martins', line, 0.5), 9.5, 'fragment : encore ÷ 2');
+  const off = { damage: 2, attackSpeed: 2, doubleAttack: 2, crit: 2, reach: 2, knockback: 2, damagePct: 3, piercing: 4 };
+  assert.deepEqual(UPGRADE.runeDiv, off);
+  for(const stat of ['pods', 'mineSpeed', 'mineSpeedPct', 'tenacity', 'knockRes', 'looting', 'fortune']){
+    const l = { stat, pct: 30 };
+    assert.equal(runeLineValue('Doc Martins', l), lineValue('Doc Martins', l), stat);
+  }
+  assert.equal(runeLineValue(PICK, { stat: 'discoverMax' }), lineValue(PICK, { stat: 'discoverMax' }), 'Découverte : pas un %');
+  const piece = sanitizePiece({ uid: 1, item: 'Doc Martins', q: 2, s: UPGRADE.scale, lines: [{ stat: 'attackSpeed', pct: 20 }], rune: { q: 2, s: UPGRADE.scale, lines: [line] } });
+  assert.equal(pieceBonus(piece).stats.attackSpeed, roundStat('attackSpeed', 26 + 18.9), 'même pièce : identification entière, rune divisée');
 });
 
 test('tier : une ligne vaut un % du tier, pas de la valeur de la pièce ; les pièces déjà runées suivent', async () => {
