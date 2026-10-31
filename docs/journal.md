@@ -26,8 +26,8 @@ Modèle d'entrée :
 ## 31/10/2026 — Geoffrey — Nouvelle pièce : Cape inclusive
 - **Pour le joueur** : une cape épique aux couleurs du drapeau LGBT, avec 4 lignes de stats tirées au hasard quand on la fabrique et montrées dans le pop-up. Son plan sort du Treasure T4 (0,5 %) et de la dernière étape de la recherche, avec les Jambières titanesques. Le wiki la cache tant que son plan n'est pas sorti.
 - **Décisions** : 1 500 x au total (2 fois le T4.5), 375 x par ligne ; doublons permis, Découverte possible (une au plus). Tirage définitif. Valeurs provisoires.
-- **Décision** : les stats de combat, perçage et recul compris, donnent 3 fois moins de points (vitesse d'attaque +31,9 % par ligne, dégâts +20,8 %).
-- **À suivre** : avec des doublons, une cape peut rester forte sur une seule stat (au pire +128 % de vitesse d'attaque). À surveiller dans les tours.
+- **Décision** : les stats de combat, perçage et recul compris, donnent 3 fois moins de points (dégâts +20,8 % par ligne) ; la vitesse d'attaque 5 fois moins (+19,1 %).
+- **À suivre** : avec des doublons, une cape peut rester forte sur une seule stat (au pire +76 % de vitesse d'attaque). À surveiller dans les tours.
 - **État** : pas encore en ligne
 
 ## 31/10/2026 — Geoffrey — Téléphone : le chat a son propre onglet

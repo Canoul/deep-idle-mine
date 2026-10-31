@@ -36,8 +36,8 @@ test('chaque stat du tirage a un prix : une ligne vaut 375 x, à un pas d\'arron
     assert.ok(Number.isFinite(v) && Math.abs(v * rolledPrice(k) - 375) <= (UPGRADE.steps[k] ?? 0.01) * rolledPrice(k), k);
   }
   assert.equal(rolledValue(CAPE, 'discoverMax'), UPGRADE.discover.value);
-  /* stats de combat : 3 fois moins de points qu'au prix de dessin, perçage et recul compris */
-  const combat = { attackSpeed:31.9, damagePct:20.8, doubleAttack:7.8, crit:4.8, damage:1.6, piercing:4.5, knockback:0.52, reach:0.06 };
+  /* stats de combat : 3 fois moins de points qu'au prix de dessin, perçage et recul compris ; vitesse d'attaque : 5 fois moins */
+  const combat = { attackSpeed:19.1, damagePct:20.8, doubleAttack:7.8, crit:4.8, damage:1.6, piercing:4.5, knockback:0.52, reach:0.06 };
   for(const [k, v] of Object.entries(combat)) assert.equal(rolledValue(CAPE, k), v, k);
   assert.equal(rolledValue(CAPE, 'pods'), 63);   // hors runeDiv : prix de dessin
 });

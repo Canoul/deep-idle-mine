@@ -1328,7 +1328,7 @@ export const UPGRADE = {
      donne ce nombre de fois moins de points. Pas pour les lignes d'identification, ni pour minage, ténacité et résistance
      au recul. Les pièces gardent leur %, celles déjà runées suivent. */
   runeDiv: { damage:2, attackSpeed:2, doubleAttack:2, crit:2, reach:2, knockback:2, damagePct:3, piercing:4 },
-  rolledCombatDiv: 3,   // lignes tirées au craft (Cape inclusive, 31/10/2026, Geoffrey) : stats de runeDiv, perçage et recul compris
+  rolledCombatDiv: { all:3, attackSpeed:5 },   // lignes tirées au craft (Cape inclusive, 31/10/2026, Geoffrey) : stats de runeDiv, perçage et recul compris
   /* stats sans prix mesuré (gs à 0) mais ajustées : le prix du tableau des lignes (prices) sert de base */
   priceBase: { knockRes:5 },
   /* GS des stats OFFENSIVES (28/10/2026, Geoffrey) : comptées au prix du tableau des lignes (prices, celui des runes), pas au
