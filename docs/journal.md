@@ -39,12 +39,19 @@ Modèle d'entrée :
   plaque s'affiche. Cliquer ailleurs sur la place mène toujours au Lobby.
 - **État** : ✅ en ligne le 31/10
 
+## 31/10/2026 — Geoffrey — Le bilan de fin de session était caché par la ville
+- **Pour le joueur** : le bilan de fin de session (ce que tu as loot) s'affiche de nouveau, en tour comme en mine. Depuis le 30/10, la promenade dans
+  le Carreau démarrait en même temps que le bilan et le cachait entièrement. Le butin était bien versé, seul l'affichage manquait.
+- **Décisions** : mis en ligne sans attendre, le jeu en ligne étant cassé (signalé 3 fois).
+- **État** : ✅ en ligne le 31/10
+
 ## 31/10/2026 — Geoffrey — Chat : lien vers son lobby
 - **Pour le joueur** : le bouton **Pub LFG** du lobby, ou **%lobby** dans un message (`/lfg %lobby on cherche un last`), met un lien
   `[Instance I 2/3]` dans le chat. Au survol : un aperçu du groupe (portraits, places libres). Au clic : on rejoint le groupe.
 - **Décisions** : « rejoint » = rejoint le lobby, pas la session en cours. Tout membre peut publier, un joueur seul aussi. Le lien marche dans tous les canaux,
   pas dans le chat de session. Le code du groupe n'apparaît jamais dans le chat.
 - **À suivre** : l'essayer à deux en vrai. Le joueur qui rejoint n'est pas amené sur l'activité annoncée (le lobby ne partage pas l'activité choisie).
+- **État** : ✅ en ligne le 31/10
 
 ## 31/10/2026 — Geoffrey — Pseudos : les mots interdits du chat ne passent plus
 - **Pour le joueur** : on ne peut plus créer un compte avec un pseudo interdit, un message d'erreur le dit. Un joueur qui en a déjà un doit le changer à sa prochaine connexion : une fenêtre impossible à fermer le lui demande, il garde son compte et son stuff.
