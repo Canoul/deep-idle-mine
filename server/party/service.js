@@ -427,6 +427,12 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       return { party: publicParty(p, me.id) };
     },
 
+    /* pseudo changé (31/10/2026) : le groupe affiche le nouveau */
+    async rename(accountId, name){
+      const p = partyOf(accountId), m = p && memberOf(p, accountId);
+      if(m){ m.name = name; await save(); }
+    },
+
     /* mode dev : preset de chaque mineur (31/10/2026), choisi par n'importe quel membre, appliqué quand le chef lance ;
        mêmes places que le lancement : le chef, les autres membres, puis les mineurs de test. Gardé en mémoire seulement. */
     async setDevPresets(me, presets){
