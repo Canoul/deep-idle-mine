@@ -19,7 +19,7 @@ Modèle d'entrée :
 ## 31/10/2026 — Geoffrey — Golbute : avalanche et coup au sol retravaillés
 - **Pour le joueur** : les rochers de l'avalanche vont maintenant jusqu'au sol et s'y brisent dans la poussière. Pour son coup, le Golbute lève ses vrais bras et les écrase au sol de chaque côté, au lieu de deux rectangles gris.
 - **À suivre** : à regarder en jeu, en pierre et en cristal.
-- **État** : 🧪 sur la branche `geoffrey/golbute-animations` (pas en ligne)
+- **État** : ✅ en ligne le 31/10
 
 ## 31/10/2026 — Geoffrey — Prison : les mines au focus minerai ne gonflent plus la compo
 - **Pour le joueur** : les mines jouées avec le focus minerai (retiré le 30/10) ne comptent plus pour leur butin dans la compo de la prison, à partir de 6 areas débloquées. Elles comptent pour une répartition de référence, celle des 10 dernières mines de Nbrick, LeTaz et Akake (mithril 1,28 %, cobalt 0,13 %, thorium 0,08 %). Les compos des joueurs concernés sont refaites une fois, et leur compo enregistrée est effacée.
