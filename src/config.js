@@ -37,7 +37,7 @@ export const STATS = { oxygenMax:300, speed:3, climbSpeed:2.25, mineSpeed:1, dam
 export const CFG = {
   ladderTime:2, refillRate:30, unlockRatio:0.6,
   climbFactor:0.75,       // bestioles seulement : vitesse sur échelle = ×climbFactor (le mineur a sa stat climbSpeed)
-  oreReach:12, bridgeTime:1,
+  oreReach:12, farVal:5, bridgeTime:1,   // farVal : valeur (Mithril 5) dès laquelle une cible découverte au-delà de oreReach est visée avant de creuser une galerie (31/10/2026)
   futureTravelWeight:1, ladderPlanWeight:2, planMaxCost:30, foeLeash:10, foeGiveUp:15, mobStep:0.9,
   attackInterval:0.8,     // s entre deux coups à 100 % de vitesse d'attaque
   torchThreshold:0.33, darkLum:0.1, fallSpeed:8,

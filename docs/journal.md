@@ -16,6 +16,11 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 31/10/2026 — Geoffrey — Le mineur va chercher les résidus et minerais rares avant de creuser une galerie
+- **Pour le joueur** : au lieu de creuser une galerie à l'aveugle, le mineur va chercher ce qu'il a déjà découvert de valeur (résidu, treasure, mithril et mieux), même loin, tant qu'il peut y aller et remonter à temps. Avant, tout ce qui était à plus de 12 cases était ignoré (signalé sur la seed 1832289715).
+- **Décisions** : seuil au mithril (valeur 5), provisoire, `CFG.farVal`. Le charbon, le fer, l'or et le graphite ne valent pas l'aller-retour. Seules les galeries changent : quand il peut encore descendre, il descend.
+- **À suivre** : sur 5 sessions, les quantités rapportées ne bougent presque pas : ça corrige un comportement bizarre, pas le rendement. Le serveur calcule environ 15 % de plus dans les sessions profondes.
+
 ## 31/10/2026 — Geoffrey — Fluidité : le jeu lit la partie avec un petit tampon
 - **Pour le joueur** : le mineur et les mobs bougent plus régulièrement, surtout quand le réseau a un coup de mou. Le jeu affiche la partie 0,4 s en arrière, comme le tampon d'une vidéo (il y avait déjà environ 0,35 s de retard). Après un retard, le mineur rattrape doucement au lieu de sauter. Mine, prison, tours, instances et mine instantanée.
 - **À suivre** : regarder en jeu si la sensation est meilleure, et surveiller la charge du serveur (envois plus nombreux, partie avancée toutes les 100 ms). Le Bloc géant n'est pas concerné.
