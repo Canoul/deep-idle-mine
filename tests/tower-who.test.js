@@ -4,6 +4,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createSocialService } from '../server/social/service.js';
 import { whoRows, seenText } from '../src/ui/lobby.js';
+import { canBeInvited } from '../src/shared/party.js';
 import { createMemoryStore } from '../server/accounts/store.js';
 
 const ME = { id:'AAAA1111' }, B = { id:'BBBB2222' }, C = { id:'CCCC3333' }, D = { id:'DDDD4444' }, E = { id:'EEEE5555' }, F = { id:'FFFF6666' };
@@ -86,4 +87,15 @@ test('stockage des comptes : recentlySeen donne le dernier passage de chaque com
   const store = createMemoryStore({ sessions:{ h1:{ accountId:'A', lastSeenAt: 100 }, h2:{ accountId:'A', lastSeenAt: 300 }, h3:{ accountId:'B', lastSeenAt: 50 } } });
   assert.deepEqual(await store.recentlySeen(80), { A: 300 });
   assert.deepEqual(await store.recentlySeen(0), { A: 300, B: 50 });
+});
+
+test('Who ? : même règle que Social, un joueur en vert s\'invite (31/10)', () => {
+  assert.equal(canBeInvited({ status:'online' }), true);
+  assert.equal(canBeInvited({ status:'lobby', size:1, max:3 }), true);
+  assert.equal(canBeInvited({ status:'session', mode:'prison', online:true }), true);
+  assert.equal(canBeInvited({ status:'session', mode:'prison', online:false }), false);
+  assert.equal(canBeInvited({ status:'session', mode:'mine' }), false);
+  assert.equal(canBeInvited({ status:'offline' }), false);
+  const rows = whoRows({ players:[{ id:'P', name:'Pia', status:'session', mode:'prison', online:true }] }, null);
+  assert.equal(rows[0].canInvite, true);
 });

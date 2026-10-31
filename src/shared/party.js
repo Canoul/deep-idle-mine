@@ -6,6 +6,10 @@ import { parseCode } from './account.js';
 
 export const JOIN_HASH = 'rejoindre';
 
+/* peut-on inviter ce joueur ? st : son statut (server/social/service.js). Oui s'il est en vert : en ligne, dans le lobby,
+   ou en prison le jeu ouvert (31/10/2026, Geoffrey) ; non hors ligne ou en session */
+export const canBeInvited = st => st.status === 'session' ? st.mode === 'prison' && !!st.online : st.status !== 'offline';
+
 /* « k7q-4p2 » → « K7Q4P2 » ; null si ce n'est pas un code de groupe */
 export const parsePartyCode = input => parseCode(input, PARTY.codeLength);
 
