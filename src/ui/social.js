@@ -29,6 +29,8 @@ export const STATUS = {
 };
 /* temps restant d'une session, arrondi à la minute du dessus : « reste 23 min », « reste < 1 min » ; null si inconnu */
 export const leftText = ms => !Number.isFinite(ms) ? null : ms < 60_000 ? 'reste < 1 min' : `reste ${Math.ceil(ms / 60_000)} min`;
+/* pastille d'un joueur ; en prison et jeu ouvert : vert (31/10/2026, Geoffrey), sa prison tourne mais il est là */
+export const statusDot = f => f.mode === 'prison' && f.online ? STATUS.online.cls : STATUS[f.status]?.cls ?? STATUS.online.cls;
 export function statusText(f){
   if(f.status === 'lobby') return `${STATUS.lobby.label} (${f.size}/${f.max})`;
   if(f.status === 'session'){
@@ -98,7 +100,7 @@ export function setupSocial(h){
 
   function friendRow(f){
     const why = f.together ? 'Déjà dans ton groupe' : f.status === 'session' ? 'En session' : f.status === 'offline' ? 'Hors ligne' : '';
-    return `<div class="frow"><span class="fdot ${STATUS[f.status].cls}"></span>`+
+    return `<div class="frow"><span class="fdot ${statusDot(f)}"></span>`+
       `<span class="fname"><b>${esc(f.name)}</b><small class="mut">${energyHTML(f.energy)}${esc(statusText(f))}${f.together ? ' · avec toi' : ''}</small></span>`+
       `<span class="fbtns"><button data-profile="${esc(f.id)}" title="Voir son équipement, ses stats et son niveau">${pxi('helmet')}Stuff</button>`+
       `<button data-invite="${esc(f.id)}"${f.canInvite ? '' : ` disabled title="${esc(why || 'Indisponible')}"`}>${pxi('group')}Inviter</button>`+
@@ -112,7 +114,7 @@ export function setupSocial(h){
     const tag = p.me ? ' · toi' : p.friend ? ' · ami' : '';
     const btn = p.me || p.friend ? '' : sent ? '<button disabled title="Demande déjà envoyée">Demande envoyée</button>'
       : `<button data-add="${esc(p.id)}" title="Envoyer une demande d'ami">${pxi('person')}Ajouter</button>`;
-    return `<div class="frow"><span class="fdot ${STATUS[p.status]?.cls ?? 'on'}"></span>`+
+    return `<div class="frow"><span class="fdot ${statusDot(p)}"></span>`+
       `<span class="fname"><b>${esc(p.name)}</b><small class="mut">${energyHTML(p.energy)}${esc(statusText(p))}${tag}</small></span>`+
       `<span class="fbtns">${btn}</span></div>`;
   }

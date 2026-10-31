@@ -15,7 +15,7 @@ import { nameKey } from '../src/shared/account.js';
 import { FAST_SCRYPT, fakeLive } from './helpers.js';
 import { realDurationMs } from '../src/shared/game.js';
 import { GAME, ENERGY } from '../src/config.js';
-import { statusText, onlineCountText, energyHTML } from '../src/ui/social.js';
+import { statusText, statusDot, onlineCountText, energyHTML } from '../src/ui/social.js';
 
 const A = { id:'AAAA1111', name:'Zoe', guest:false };
 const B = { id:'BBBB2222', name:null, guest:true };          // invité : pas de pseudo
@@ -401,4 +401,11 @@ test('énergie : affichage, en rouge sous le coût minimum, rien si inconnue', (
   assert.doesNotMatch(energyHTML({ value: ENERGY.cost.min, max: 100 }), /low/);
   assert.match(energyHTML({ value: ENERGY.cost.min - 1, max: 100 }), /low/);
   assert.equal(energyHTML(undefined), '');
+});
+
+test('pastille (31/10) : en prison, vert si le jeu est ouvert, orange sinon ; une session reste orange', () => {
+  assert.equal(statusDot({ status:'session', mode:'prison', online:true }), 'on');
+  assert.equal(statusDot({ status:'session', mode:'prison', online:false }), 'play');
+  assert.equal(statusDot({ status:'session', mode:'mine' }), 'play');
+  assert.equal(statusDot({ status:'online' }), 'on');
 });
