@@ -9,6 +9,10 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 31/10/2026 — Geoffrey — Lien du Discord dans le bandeau
+- **Pour le joueur** : un lien « Discord du jeu » à côté du Wiki, dans le bandeau du haut. Il ouvre un nouvel onglet. Sur téléphone, seule son icône reste, comme pour le Wiki.
+- **État** : 🧪 sur la branche `geoffrey/lien-discord` (pas en ligne)
+
 ## 31/10/2026 — Geoffrey — Pièces runées : la texture de la rune
 - **Pour le joueur** : la gemme violette est remplacée par la vraie texture, en petit : la rune, ou le fragment si la pièce porte un fragment.
 - **État** : ✅ en ligne le 31/10
@@ -76,10 +80,6 @@ Modèle d'entrée :
 - **À suivre** : ce qui reste à faire ou à vérifier.
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
-
-## 31/10/2026 — Geoffrey — Lien du Discord dans le bandeau
-- **Pour le joueur** : un lien « Discord du jeu » à côté du Wiki, dans le bandeau du haut. Il ouvre un nouvel onglet. Sur téléphone, seule son icône reste, comme pour le Wiki.
-- **État** : 🧪 sur la branche `geoffrey/lien-discord` (pas en ligne)
 
 ## 31/10/2026 — Geoffrey — Lobby : on sait qui on attend
 - **Pour l'équipe** : quand un membre du groupe est encore en session, le bouton du chef affiche son nom et le temps
