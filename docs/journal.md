@@ -20,7 +20,7 @@ Modèle d'entrée :
 - **Pour le joueur** : au lieu de creuser une galerie à l'aveugle, le mineur va chercher ce qu'il a déjà découvert de valeur (résidu, treasure, mithril et mieux), même loin, tant qu'il peut y aller et remonter à temps. Avant, tout ce qui était à plus de 12 cases était ignoré (signalé sur la seed 1832289715).
 - **Décisions** : seuil au mithril (valeur 5), provisoire, `CFG.farVal`. Le charbon, le fer, l'or et le graphite ne valent pas l'aller-retour. Seules les galeries changent : quand il peut encore descendre, il descend.
 - **À suivre** : sur 5 sessions, les quantités rapportées ne bougent presque pas : ça corrige un comportement bizarre, pas le rendement. Le serveur calcule environ 15 % de plus dans les sessions profondes.
-- **État** : 🧪 sur la branche `geoffrey/fix-galerie-rares` (pas en ligne)
+- **État** : ✅ en ligne le 31/10
 
 ## 31/10/2026 — Geoffrey — Chat : canal Commerce retiré
 - **Pour le joueur** : plus de canal Commerce ni de raccourci /c dans le chat global : il n'y a pas d'échanges dans le
