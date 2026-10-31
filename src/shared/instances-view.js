@@ -1,7 +1,7 @@
 /* Instances : ce que le serveur envoie aux navigateurs (logique pure, partagée). La salle est petite (20 × 21 cases) :
    chaque envoi contient tout (cases en base 36, échelles, spawners, gobelins, roi, mineurs, journal). Le navigateur
    affiche, en faisant glisser chaque mineur, gobelin et le roi de sa position affichée vers la nouvelle. */
-import { glide } from './view.js';
+import { glide, playCopy, playTrack } from './view.js';
 import { INSTANCE } from '../config.js';
 import { warcryOf } from '../sim/instance/session.js';
 import { warcryOf as golWarcry, golTackler } from '../sim/instance/golbute.js';
@@ -74,7 +74,7 @@ export function createInstanceViewer(G){
 }
 
 /* navigateur : une copie d'affichage (prev : la précédente, pour le mouvement fluide ; now : heure de la page) */
-export function applyInstanceView(v, prev = null, now = performance.now()){
+export function applyInstanceView(v, prev = null, now = performance.now(), speed = 0){
   const ladder = Array.from({ length: v.h + 1 }, () => new Uint8Array(v.w));
   for(const k of v.ladders || []){ const x = k % v.w, y = (k - x) / v.w; if(ladder[y]) ladder[y][x] = 1; }
   const G = {
@@ -86,11 +86,20 @@ export function applyInstanceView(v, prev = null, now = performance.now()){
     miners: v.miners, stats: v.stats, log: v.log,
   };
   if(G.boss) G.boss.id = 'boss';
+  if(speed > 0){                                      // lecture en différé (src/shared/view.js)
+    playCopy(G, prev, v.tick, speed, now);
+    playTrack(prev?.miners ?? [], G.miners, minerPos, v.tick);
+    playTrack(prev?.goblins ?? [], G.goblins, o => [o.x + (o.kx || 0), o.y], v.tick);
+    playTrack(prev?.golems ?? [], G.golems, o => [o.x, o.y], v.tick);
+    if(G.boss) playTrack(prev?.boss ? [prev.boss] : [], [G.boss], b => [b.x + (b.kx || 0), b.y], v.tick);
+  }
   if(prev?._at != null){
-    glide(prev, prev.miners, G.miners, minerPos, now);
-    glide(prev, prev.goblins, G.goblins, o => [o.x + (o.kx || 0), o.y], now);
-    glide(prev, prev.golems || [], G.golems, o => [o.x, o.y], now);
-    if(G.boss && prev.boss) glide(prev, [prev.boss], [G.boss], b => [b.x + (b.kx || 0), b.y], now);
+    if(!(speed > 0)){
+      glide(prev, prev.miners, G.miners, minerPos, now);
+      glide(prev, prev.goblins, G.goblins, o => [o.x + (o.kx || 0), o.y], now);
+      glide(prev, prev.golems || [], G.golems, o => [o.x, o.y], now);
+      if(G.boss && prev.boss) glide(prev, [prev.boss], [G.boss], b => [b.x + (b.kx || 0), b.y], now);
+    }
     const was = new Map(prev.miners.map(m => [m.id, m]));
     for(const m of G.miners){ const p = was.get(m.id); m._hopAt = m.hop == null ? null : p?.hop === m.hop ? p._hopAt : now; }
   } else for(const m of G.miners) m._hopAt = m.hop == null ? null : now;

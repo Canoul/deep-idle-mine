@@ -516,6 +516,13 @@ export const MULE = { capacityPct:2, depositTime:1, pickTime:1, pickBelow:10 };
    coup (s de partie) pour l'afficher (évite de rejouer de vieux coups à la reconnexion). Affichage seulement. */
 export const FX = { splashMs:1200, splashRise:10, splashGame:3 };
 
+/* Lecture en différé (31/10/2026, Geoffrey ; src/shared/view.js) : le navigateur affiche la partie bufferMs en arrière, en
+   se calant sur les ticks : un envoi en retard ne se voit pas. catchUp : part de vitesse en plus ou en moins pour revenir à
+   ce retard ; catchUpMs : écart (ms) qui donne ce maximum ; resetMs : au-delà de ce retard en plus, la lecture saute
+   (reconnexion) ; keep : positions gardées par mineur ou mob ; teleport : cases par tick au-delà desquelles un grand
+   déplacement n'est pas une marche (il apparaît directement). Valeurs provisoires. */
+export const FLUID = { bufferMs: 400, catchUp: 0.3, catchUpMs: 500, resetMs: 1500, keep: 16, teleport: 0.8 };
+
 export const CAMERA = { top:-3, margin:4, ease:0.15, wheelRows:3, keyRows:4,
   minRows:20, maxRows:48,
   maxZoom:4, wheelZoom:0.0025 };   // zoom (30/10, Geoffrey) : pincer à deux doigts ou Ctrl + molette, ×1 (toute la largeur) à ×maxZoom   // lignes visibles : la mine remplit la largeur, et montre autant de lignes que la hauteur en permet

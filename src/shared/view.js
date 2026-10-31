@@ -6,7 +6,7 @@
    Ensuite : seulement les cases qui ont changé depuis le tick que le navigateur a déjà (since). Le reste (mineurs,
    mobs, coffre, areas…) est petit et envoyé à chaque fois. La lumière n'est pas envoyée : le navigateur la recalcule
    (même calcul, src/sim/light.js). Le navigateur ne calcule aucun résultat : il affiche. */
-import { W } from '../config.js';
+import { W, DT, FLUID } from '../config.js';
 import { updateLight } from '../sim/light.js';
 import { muleCap } from '../sim/mule.js';
 import { lit, travelling } from '../sim/mineur.js';
@@ -114,8 +114,58 @@ const minerPos = m => {        // position exacte au moment de l'envoi (un pas e
 /* position affichée de o (mineur ou mob de la copie M) à l'instant now (ms, horloge de la page) */
 export function shownPos(M, o, now = performance.now()){
   if(!o._to) return [o.x, o.y];
+  if(o._track && M._play) return playedPos(M, o, now);
   const p = Math.max(0, Math.min(1, (now - M._at) / M._dur));
   return [o._from[0] + (o._to[0] - o._from[0]) * p, o._from[1] + (o._to[1] - o._from[1]) * p];
+}
+/* Lecture en différé (31/10/2026, Geoffrey) : la partie avance par paquets et les envois arrivent irrégulièrement. Chaque
+   mineur et chaque mob garde ses dernières positions avec leur tick (o._track). Une tête de lecture (M._play.head, en ticks)
+   avance à vitesse constante, FLUID.bufferMs derrière le dernier envoi, entre deux positions déjà reçues, comme le tampon
+   d'une vidéo : un envoi en retard ne se voit pas. Sans avance, elle s'arrête au dernier point reçu, sans jamais sauter,
+   puis rattrape doucement : elle accélère ou ralentit de 30 % au plus. M._play : { tickMs, head, at, newest, newestAt } */
+export function playClock(M, tick, speed, now){
+  const tickMs = DT * 1000 / speed, c = M._play;
+  if(!c){ M._play = { tickMs, head: tick - FLUID.bufferMs / tickMs, at: now, newest: tick, newestAt: now }; return; }
+  moveHead(c, now);
+  c.tickMs = tickMs; c.newest = Math.max(c.newest, tick); c.newestAt = now;
+}
+/* avance la tête jusqu'à l'heure now ; appelée pour chaque objet de chaque image : une fois par heure */
+function moveHead(c, now){
+  const dt = now - c.at;
+  if(dt <= 0) return;
+  c.at = now;
+  const behind = (c.newest - c.head) * c.tickMs + (now - c.newestAt);   // retard sur la partie, envoi en cours compris
+  if(behind > FLUID.bufferMs + FLUID.resetMs){ c.head = Math.max(c.head, c.newest - FLUID.bufferMs / c.tickMs); return; }   // reconnexion
+  const rate = Math.max(1 - FLUID.catchUp, Math.min(1 + FLUID.catchUp, 1 + (behind - FLUID.bufferMs) / FLUID.catchUpMs));
+  c.head = Math.min(c.newest, c.head + dt / c.tickMs * rate);
+}
+/* copie neuve à chaque envoi (tour, instance, mine instantanée) : reprend la tête de lecture de la précédente */
+export function playCopy(G, prev, tick, speed, now){
+  if(prev?._play) G._play = prev._play;
+  playClock(G, tick, speed, now);
+}
+export function playTrack(oldList, newList, target, tick){
+  const old = new Map(oldList.map(o => [o.id, o]));
+  for(const o of newList){
+    const to = target(o), track = old.get(o.id)?._track ?? [];
+    if(track.at(-1)?.tick === tick) track.pop();                  // même tick : la position la plus récente
+    track.push({ tick, x: to[0], y: to[1], ride: riding(o) });
+    if(track.length > FLUID.keep) track.shift();
+    o._track = track; o._to = to;
+  }
+}
+function playedPos(M, o, now){
+  moveHead(M._play, now);
+  const at = M._play.head, tr = o._track;
+  let i = tr.length - 1;
+  while(i > 0 && tr[i].tick > at) i--;
+  const a = tr[i], b = tr[i + 1];
+  if(!b || at <= a.tick) return [a.x, a.y];
+  /* téléportation : loin ET trop vite pour être une marche (après un trou d'envois, il a juste marché longtemps) */
+  const far = Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+  if(far > TELEPORT && far / (b.tick - a.tick) > FLUID.teleport && !a.ride && !b.ride) return [a.x, a.y];
+  const p = (at - a.tick) / (b.tick - a.tick);
+  return [a.x + (b.x - a.x) * p, a.y + (b.y - a.y) * p];
 }
 /* rythme des envois (29/10/2026 : partagé avec la Mine instantanée et le Bloc géant) : durée de glissade = moyenne lissée
    du temps réel entre deux envois (attente + requête), pour que le mineur arrive juste quand le suivant arrive */
@@ -147,7 +197,8 @@ export function emptyView(){
 }
 
 /* applique un envoi du serveur ; now : heure de la page (ms) à son arrivée. Renvoie M (modifié). */
-export function applyView(M, v, now = performance.now()){
+/* speed : vitesse de la partie ; donnée, la lecture est en différé (mine, prison), sinon glissade simple */
+export function applyView(M, v, now = performance.now(), speed = 0){
   let mapChanged = false;
   const dec = s => Uint8Array.from(s, dec36);
   if(!v.full){                                     // cases changées des lignes que le navigateur avait déjà
@@ -167,8 +218,15 @@ export function applyView(M, v, now = performance.now()){
   if(mapChanged) updateLight(M);
   if(v.log) M.log = v.log;
   /* glissades : depuis la position affichée maintenant (calculée avec l'envoi précédent), vers la nouvelle */
-  glide(M, M.miners, v.miners, minerPos, now);
-  glide(M, M.mobs, v.mobs, o => [o.x + (o.kx || 0), o.y + (o.ky || 0)], now);
+  const mobPos = o => [o.x + (o.kx || 0), o.y + (o.ky || 0)];
+  if(speed > 0){
+    playClock(M, v.tick, speed, now);
+    playTrack(M.miners, v.miners, minerPos, v.tick);
+    playTrack(M.mobs, v.mobs, mobPos, v.tick);
+  } else {
+    glide(M, M.miners, v.miners, minerPos, now);
+    glide(M, M.mobs, v.mobs, mobPos, now);
+  }
   pace(M, M, now);
   Object.assign(M, { ticks: v.tick, t: v.t, over: v.over, miners: v.miners, mobs: v.mobs, thralls: v.thralls ?? [], chest: v.chest, chestBy: v.chestBy, goblinChest: v.goblinChest ?? {}, shrines: v.shrines ?? [],
                      stats: v.stats, areas: v.areas, unlockedAreas: v.unlockedAreas, winch: v.winch ?? null, mule: v.mule ?? null, khole: v.khole ?? null, ready: true });
