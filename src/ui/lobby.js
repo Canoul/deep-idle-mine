@@ -238,7 +238,18 @@ export function slotButtons({ account, party, session }, slot){
   return { promote: leader && slot.kind !== 'invited', kick: leader && !session };
 }
 
-/* h : { onLaunch(opts, { party }), onPrefs(prefs), onShowSession(), onMode(mode), onJudgment(), onPrisonStart(), onPrisonStop(), onShowPrison(), prisonProfile(), party: { create, join(code), invite(id), decline(code), leave, kick(id), ready(bool), alwaysReady(bool), promote(id), lfg(auto), lfgCancel } }
+/* rejeu (mode dev) : ce que le serveur lit d'un enregistrement exporté (server/game/replay.js). Le corps d'une requête
+   est limité (SERVER.maxBodyBytes) : du résultat, on ne garde que les parts du coffre (comparées à la fin du rejeu). */
+export function compactRecord(raw){
+  if(!raw || typeof raw !== 'object' || Array.isArray(raw)) throw new Error('pas un enregistrement');
+  const keep = ['id', 'mode', 'seed', 'players', 'bots', 'prefs', 'looks', 'gear', 'skills', 'spells', 'overrides', 'devSpecs',
+                'opening', 'residues', 'leaves', 'focus', 'rings', 'level', 'modulation', 'shrines', 'stele', 'heroic', 'kholes'];
+  const out = Object.fromEntries(keep.filter(k => k in raw).map(k => [k, raw[k]]));
+  if(Array.isArray(raw.result?.shares)) out.result = { shares: raw.result.shares.map(s => ({ bag: s?.bag ?? {} })) };
+  return out;
+}
+
+/* h : { onLaunch(opts, { party }), onReplay(record), onPrefs(prefs), onShowSession(), onMode(mode), onJudgment(), onPrisonStart(), onPrisonStop(), onShowPrison(), prisonProfile(), party: { create, join(code), invite(id), decline(code), leave, kick(id), ready(bool), alwaysReady(bool), promote(id), lfg(auto), lfgCancel } }
    Les fonctions du groupe renvoient l'état du groupe ou lèvent une erreur (message lisible). */
 export function setupLobby(h){
   /* screen : 'menu' (les activités) ou 'stage' (l'activité ouverte : sets à gauche, sa carte à droite) */
@@ -699,6 +710,20 @@ export function setupLobby(h){
     try { setCompos(await h.prisonSaveCompo?.(st.prisonCompo)); st.prisonCompo = 'saved'; }
     catch(e){ console.error(e); } finally { st.busy = false; render(); }
   };
+  /* rejeu (mode dev) : un fichier de scripts/export-session.js, allégé (compactRecord) ; c'est le serveur qui le vérifie */
+  $('devReplayBtn').onclick = () => { if(!st.busy) $('devReplayFile').click(); };
+  $('devReplayFile').onchange = async () => {
+    const file = $('devReplayFile').files[0];
+    $('devReplayFile').value = '';                     // le même fichier peut être rechoisi
+    if(!file || st.busy) return;
+    let record;
+    try { record = compactRecord(JSON.parse(await file.text())); }
+    catch { return error('Ce fichier n\'est pas un enregistrement de session (JSON de scripts/export-session.js).'); }
+    st.busy = true; render();
+    try { await h.onReplay(record); }
+    finally { st.busy = false; render(); }
+  };
+
   $('launchBtn').onclick = async () => {
     if(st.busy) return;
     if(MINE_MODES.find(m => m.id === st.mode)?.prison){   // prison (29/10) : la voir, ou y entrer

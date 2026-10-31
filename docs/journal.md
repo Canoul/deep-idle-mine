@@ -16,6 +16,12 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 31/10/2026 — Geoffrey — Revoir à l'écran la partie d'un joueur
+- **Pour le joueur** : rien, c'est un outil d'équipe, en mode développeur seulement. On sort une session de la base en ligne, puis le bouton
+  **Rejouer un enregistrement** du lobby la rejoue à l'écran, à la vitesse voulue. Rien n'est versé à la fin.
+- **À suivre** : la partie est recalculée avec le code actuel : si la simulation a changé depuis, elle peut s'écarter de l'originale. Le bilan dit si le coffre est le même.
+- **État** : 🧪 sur la branche `geoffrey/rejeu-seed` (pas en ligne)
+
 ## 31/10/2026 — Geoffrey — Stuff : les sets en bandeau, noms des pièces lisibles
 - **Pour le joueur** : dans l'onglet Stuff, les sets passent en bandeau au-dessus de la carte. Le nom des pièces a bien plus de place et ne s'écrit plus sur une colonne de quelques lettres. L'onglet garde la même largeur que les autres.
 - **État** : ✅ en ligne le 31/10

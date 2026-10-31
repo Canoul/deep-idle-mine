@@ -146,7 +146,12 @@ export function showEnd(rec, me, onBack, onInventory, levelUp=null){
     ? `<p class="mut">Pas déposé au coffre avant la fin, donc perdu :</p>`+s.lostBags.map(b=>`<div class="row"><span>${esc(b.name)}</span><span class="mut small">${esc(bagText(b.items))}</span></div>`).join('')
     : s.lost?.length ? `<p class="mut">${esc(s.lost.join(', '))} portai${s.lost.length>1?'ent':'t'} encore des ressources : perdues.</p>` : '';
   $('endBox').innerHTML =
-    '<h3>Session terminée</h3>'+
+    /* rejeu (mode dev) : rien n'a été versé ; même coffre que la session d'origine ? (server/game/replay.js) */
+    (s.replay
+      ? '<h3>Rejeu terminé</h3>'+
+        `<div class="row"><span>Comparé à l'original</span><b>${s.replay.same === null ? '—' : s.replay.same ? 'même coffre ✅' : 'coffre différent ⚠️'}</b></div>`+
+        `<p class="mut small">Rejeu : rien n'a été versé (ni ressources, ni XP).${s.replay.same === false ? ' Coffre différent : le jeu a sans doute changé depuis cette session.' : ''}</p>`
+      : '<h3>Session terminée</h3>')+
     `<div class="row"><span>Seed</span><b>${s.seed}</b></div>`+
     `<div class="row"><span>Profondeur max</span><b>${s.maxDepth}</b></div>`+
     `<div class="row"><span>Areas débloquées</span><b>${s.areasUnlocked}</b></div>`+

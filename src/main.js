@@ -357,6 +357,15 @@ const lobby = setupLobby({
       lobby.error(e.message);
     }
   },
+  /* mode dev : rejouer à l'écran une session exportée du serveur en ligne (scripts/export-session.js) */
+  onReplay: async record => {
+    lobby.error('');
+    try { enterSession((await gameApi.replay(record)).session); nav.show('session'); }
+    catch(e){
+      if(e instanceof ApiError && e.code === 'session_running') return refresh();
+      lobby.error(e.message);
+    }
+  },
 });
 
 /* mine instantanée : carte d'inscription du lobby et rappels, aussi pendant une session normale (on peut s'inscrire en
@@ -575,7 +584,7 @@ function enterSession(session){
   ui.follow = null; ui.followSet = false; ui.focus = null; renderer.follow();
   ui.speed = info.dev ? session.clock?.speed ?? 1 : session.speed; ui.paused = !!session.clock?.paused;
   renderSpeeds(ui, info, s => setClock({ speed:s }));
-  $('seedLbl').textContent = info.dev ? `seed ${session.seed}` : '';
+  $('seedLbl').textContent = info.dev ? `${session.replay ? 'rejeu · ' : ''}seed ${session.seed}` : '';
   $('end').hidden = true; $('noSession').hidden = true; $('run').hidden = mi || tw || ins; $('miRun').hidden = !mi; $('twRun').hidden = !tw; $('inRun').hidden = !ins;
   if(mi || tw || ins) chat.stop(); else chat.start();
   lobby.update({ session:{ id:session.id } });   // lobby en lecture seule
@@ -794,7 +803,7 @@ async function pollResult(){
 /* résultat du serveur : bilan + inventaire relu depuis le serveur */
 function showResult(st){
   const ended = st.ended;
-  setInventory(st.inventory, ended.result.shares.find(p => p.account === acct.account?.id)?.bag);
+  setInventory(st.inventory, ended.replay ? undefined : ended.result.shares.find(p => p.account === acct.account?.id)?.bag);   // rejeu : rien de versé
   rec = null; G = null; waiting = false; chat.stop();
   setsUI.refresh(); sessionFlag();
   lobby.update({ session:null });            // on peut relancer depuis le lobby pendant qu'on lit le bilan

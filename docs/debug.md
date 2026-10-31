@@ -6033,3 +6033,9 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Quoi** : CSS seul, `.view[data-view="stuff"]` au-dessus de 700 px : `.setLay` sur une colonne, `.setsBody` en ligne. Skills, Sorts et Lobby gardent leurs sets à gauche.
 - **Tests** : rendu vérifié dans Chrome ; aucun test automatique, c'est du style.
 
+## 31/10/2026 — Rejeu à l'écran remis sur main (Geoffrey), ancienne branche `geoffrey/rejeu-visuel`
+- **Quoi** : fusion du chantier du 25/10 (863 commits de retard). `replayFields` et `compactRecord` reprennent aussi `rings` (liste du groupe), `level`, `modulation`, `shrines`, `stele`, `heroic`, `kholes`, ajoutés depuis et lus par la partie. `leaveSession` termine un rejeu quand on quitte. `SERVER.maxBodyBytes` : 2 Mo en mode dev seulement (16 Ko en ligne, inchangé).
+- **Tests** ✅ dev-replay +1, replay-session, game-replay, bilan, lobby. Chrome ✅ vrai serveur dev : enregistrement fabriqué de 2 joueurs, seed 176946784 : écran « rejeu · seed », un départ au tick 50 appliqué, bilan « Rejeu terminé », rien de versé.
+- ⚠️ Pas encore essayé avec un vrai fichier exporté de la base. `scripts/export-session.js` n'est pas sur le serveur tant que la branche n'est pas sur `main`.
+- ⚠️ Les vraies sessions n'enregistrent que seed, stuff, préférences, départs, focus et k holes : le rejeu recalcule tout avec le code du moment.
+
