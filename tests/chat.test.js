@@ -353,3 +353,30 @@ test('groupe, avec le vrai service des groupes : seul refusé ; à deux, lu par 
   assert.deepEqual((await social.chatGet(OTHER, 0)).messages.map(m => m.text), ['entre nous']);
   assert.deepEqual((await social.chatGet(OUT, 0)).messages, []);
 });
+
+test('canal gardé : sans raccourci, le message repart dans le canal gardé ; un MP garde son destinataire', async () => {
+  const { parseChatInput, sanitizeChatPrefs } = await import('../src/shared/chat.js');
+  assert.deepEqual(parseChatInput('toto', 'group'), { channel:'group', text:'toto' });
+  assert.deepEqual(parseChatInput('toto', 'mp', 'Zoe'), { channel:'mp', to:'Zoe', text:'toto' });
+  assert.deepEqual(parseChatInput('/1 toto', 'mp', 'Zoe'), { channel:'general', text:'toto' }, 'un raccourci change de canal');
+  const base = { tabs:[{ name:'Tous', hidden:[] }], active:0 };
+  assert.deepEqual(sanitizeChatPrefs({ ...base, channel:'mp', to:'Zoe' }), { ...base, channel:'mp', to:'Zoe' });
+  assert.deepEqual(sanitizeChatPrefs({ ...base, channel:'mp' }), { ...base, channel:'general' }, 'MP sans destinataire : Général');
+  assert.deepEqual(sanitizeChatPrefs({ ...base, channel:'group', to:'Zoe' }), { ...base, channel:'group' });
+});
+
+test('canal gardé : seulement après un envoi réussi, et le suivant du même canal ne réécrit rien', async () => {
+  const { setupChatTabs } = await import('../src/ui/chat-tabs.js');
+  const el = () => ({ innerHTML:'', value:'', hidden:true, contains: () => false });
+  let changes = 0;
+  const tabs = setupChatTabs({ bar: el(), panel: el(), select: el(), save: () => {}, onChange: () => { changes++; } });
+  assert.equal(tabs.channel(), 'general');
+  tabs.sent({ channel:'group', text:'a' });
+  assert.equal(tabs.channel(), 'group'); assert.equal(changes, 1);
+  tabs.sent({ channel:'group', text:'b' });
+  assert.equal(changes, 1);
+  tabs.sent({ channel:'mp', to:'Zoe', text:'c' });
+  assert.equal(tabs.channel(), 'mp'); assert.equal(tabs.target(), 'Zoe');
+  tabs.sent({ channel:'lfg', text:'d' });
+  assert.equal(tabs.channel(), 'lfg'); assert.equal(tabs.target(), null);
+});

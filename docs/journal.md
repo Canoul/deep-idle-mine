@@ -22,6 +22,16 @@ Modèle d'entrée :
 - **À suivre** : Jules a besoin de son fichier `.dim-dev.env` pour s'en servir. `SET ROLE` ne marche pas dans Neon : voir `has_table_privilege`.
 - **État** : ✅ en ligne le 31/10
 
+## 31/10/2026 — Geoffrey — Menu du Lobby : l'équipe à droite
+- **Pour le joueur** : le choix des activités montre ton équipe à droite, seul ou en groupe : inviter, chercher un groupe, et « Je suis prêt » pour un membre. Le Lancer reste dans l'activité.
+- **Décisions** : cliquer sur l'onglet Lobby rouvre toujours le menu, même en groupe ; rejoindre un groupe n'ouvre plus la Mine.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Chat : le canal utilisé reste choisi
+- **Pour le joueur** : après un message en /gr, le suivant part en groupe sans rien préciser, et pareil pour /1, /2 et /c. Après un /w, le suivant repart au même joueur. On change de canal avec un autre raccourci ou le sélecteur, et le canal est gardé sur le compte.
+- **Décisions** : le canal ne change que si le message est bien parti (un /gr refusé sans groupe ne change rien).
+- **État** : ✅ en ligne le 31/10
+
 ## 31/10/2026 — Geoffrey — Chat global : canaux, MP, onglets
 - **Pour le joueur** : chaque message part dans un canal, avec sa couleur : Général (blanc), MP (rose), Groupe (bleu), Commerce (beige), LFG (vert). Raccourcis : /1, /2 (LFG), /c, /gr, /w "pseudo". Un seul onglet au départ ; l'écrou choisit ses canaux, le « + » crée un onglet. Ces réglages sont gardés sur le compte.
 - **Décisions** : sans raccourci, le message part dans le canal du petit sélecteur à côté du champ. Un MP envoyé s'affiche « à pseudo ». MP possible vers un joueur hors ligne. Même modération et même rythme (3 s) sur tous les canaux. Pas de bulle du Carreau pour les MP et le Groupe.
@@ -56,7 +66,7 @@ Modèle d'entrée :
   au lieu d'attendre, et reprend le premier minerai qu'il trouve. Il ne reste presque plus inactif (1 s sur 30, contre 12,5 s avant).
 - **Décisions** : Geoffrey : « il focus minerai, mais s'il n'y en a pas alors il mine ». La roche qu'il casse va au coffre commun, comme le reste.
 - **À suivre** : le rendement de la Couronne augmente (environ +80 % de blocs par gobelin, +35 % de minerais), à surveiller.
-- **État** : 🧪 sur la branche `geoffrey/gobelin-roche` (pas en ligne)
+- **État** : ✅ en ligne le 31/10
 
 ## 31/10/2026 — Geoffrey — Le mineur prend les coffres sur la paroi de son puits
 - **Pour le joueur** : un mineur qui creuse ou descend pour rejoindre son area de travail ouvre maintenant les coffres découverts sur
