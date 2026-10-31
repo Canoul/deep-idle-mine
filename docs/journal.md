@@ -16,6 +16,10 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 31/10/2026 — Geoffrey — Shrines : le bouton Activer / Désactiver répond tout de suite
+- **Pour le joueur** : après un clic, le bouton d'un shrine chargé gardait son ancien texte jusqu'au clic suivant ailleurs, alors que le changement était déjà pris en compte. Il change maintenant tout de suite.
+- **État** : 🧪 sur la branche `geoffrey/fix-bouton-shrine` (pas en ligne)
+
 ## 31/10/2026 — Geoffrey — Le Carreau : clic sur la statue
 - **Pour le joueur** : cliquer sur la statue du meilleur GS n'ouvre plus le Lobby : le mineur marche jusqu'à elle et sa
   plaque s'affiche. Cliquer ailleurs sur la place mène toujours au Lobby.
