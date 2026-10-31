@@ -11,7 +11,7 @@ Modèle d'entrée :
 ```
 ## 31/10/2026 — Geoffrey — Craft : recettes triées par catégorie
 - **Pour le joueur** : l'onglet Craft a les mêmes onglets que l'inventaire (Tout, Blocs, Minerais, Stuff, Butin des mobs, Matériaux, Runes, Divers). Un onglet sans recette est grisé.
-- **État** : 🧪 sur la branche `geoffrey/craft-onglets` (pas en ligne)
+- **État** : ✅ en ligne le 31/10
 
 ## 31/10/2026 — Geoffrey — Chat : des messages n'apparaissaient pas après en avoir envoyé un
 - **Pour le joueur** : envoyer un message juste après l'arrivée de ceux des autres les faisait sauter jusqu'au rechargement de la page : c'est comme ça qu'un compte a raté l'annonce du raffle en tapant `!join`. Corrigé pour le Chat global et le chat de session. Le gagnant d'un raffle voit maintenant son lot dans l'inventaire sans recharger.
