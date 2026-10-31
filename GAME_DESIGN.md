@@ -583,6 +583,9 @@ Une jauge par compte qui limite les sessions de mine classique sans quota fixe :
 - **Recharge** : seulement en prison, **8 par heure de jeu** (`ENERGY.prisonPerHour`), au prorata du temps de jeu du run, versée à la fin de chaque run et à l'arrêt ; le surplus au-delà de 100 est perdu.
 - **Repère** *(30/10/2026, Geoffrey : recharge 4 par heure de jeu, avant 8)* : à 4 par heure de jeu (8 par heure réelle en beta, vitesse ×2) et 9 en moyenne par session, un joueur qui joue toute la journée tient ≈ 15 sessions de mine par jour en beta (avant ≈ 22) ; au réveil (jauge pleine, 100), ≈ 11 sessions d’affilée, puis une session toutes les ≈ 68 min de prison.
 
+### Chat global *(31/10/2026, Geoffrey ; `CHAT` en config)*
+Canaux : **Général**, **MP**, **Groupe**, **Commerce**, **LFG**, chacun sa couleur. MP et Groupe ne sont lus que par leurs destinataires, vérifié par le serveur. Raccourcis `/1`, `/2`, `/c`, `/gr`, `/w "pseudo"`. Onglets par joueur (5 au plus), chacun masque les canaux choisis, gardés sur le compte. Un message toutes les 3 s tous canaux confondus, même modération partout.
+
 ### Prison (Lobby, « Où miner » → Prison) *(idée de Geoffrey, 29/10/2026 ; valeurs provisoires, `PRISON` en config, `src/sim/prison.js`, `src/shared/prison.js` ; spec `docs/superpowers/specs/2026-10-29-prison-energie-design.md`)*
 Un mode **solo sans fin**, le « farm AFK » : rapporte environ la moitié de la part d'un joueur dans une mine à 3 et recharge l'énergie.
 - **Étourdi trop longtemps** *(30/10/2026, Geoffrey ; `PRISON.stunReset` 60 s, `stunGap` 5 s, provisoires)* : si le mineur reste étourdi **60 s de suite** (les étourdissements qui s'enchaînent à moins de 5 s l'un de l'autre s'additionnent, ex. des occultistes en chaîne), le run **finit tout de suite** : le coffre est versé, le sac du mineur est perdu, une carte neuve commence. Avant : il pouvait rester bloqué jusqu'au temps max du run (3 h).

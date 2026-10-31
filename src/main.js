@@ -47,6 +47,8 @@ import { renderLevel, renderNavLevel, levelUpText } from './ui/level.js';
 import { setupFocusPanel } from './ui/focus.js';
 import { setupChat } from './ui/chat.js';
 import { setupChatDock } from './ui/chat-dock.js';
+import { setupChatTabs, chatLine } from './ui/chat-tabs.js';
+import { parseChatInput } from './shared/chat.js';
 import { renderInventory as drawInventory, showLoot, lootError } from './ui/inventory.js';
 import { setupNav } from './ui/nav.js';
 import { setupFurnace } from './ui/furnace.js';
@@ -532,8 +534,11 @@ const chat = setupChat({ get: after => gameApi.chat(after), post: text => gameAp
 /* chat global (28/10 ; permanent depuis le 31/10, src/ui/chat-dock.js) : tous les joueurs, même en session ; pas relu quand il
    est replié ou que la page est cachée */
 const gchatDock = setupChatDock({ dock: $('gchatDock'), edges: $('gchatDock').querySelectorAll('.chatEdge'), fold: $('gchatFold'), onChange: () => { gchat?.toEnd(); if(!gchatDock?.folded) gchat?.poke(); } });
-const gchat = setupChat({ prefix:'gchat', get: after => socialApi.chat(after), post: text => socialApi.say(text), meId: () => acct.account?.id, onWarning,
-                          paused: () => document.hidden || gchatDock.folded, time: true });
+const gchatTabs = setupChatTabs({ bar: $('gchatTabs'), panel: $('gchatPanel'), select: $('gchatChan'),
+                                  save: p => socialApi.chatPrefsSave(p).catch(console.warn), onChange: () => gchat?.refresh() });
+const gchat = setupChat({ prefix:'gchat', get: after => socialApi.chat(after), post: msg => socialApi.say(msg), meId: () => acct.account?.id, onWarning,
+                          paused: () => document.hidden || gchatDock.folded, time: true,
+                          show: gchatTabs.show, line: chatLine, parse: text => parseChatInput(text, gchatTabs.channel()) });
 
 /* dev : vitesse et pause sont l'horloge de la session, sur le serveur */
 async function setClock(opts){
@@ -851,7 +856,7 @@ else {
 startInstant();
 pollSocial();
 pollJudgment();
-if(acct.account && !acct.offline){ gchatDock.show(true); gchat.start(); }   // une déconnexion recharge la page : démarré une fois
+if(acct.account && !acct.offline){ gchatDock.show(true); gchat.start(); socialApi.chatPrefs().then(gchatTabs.set).catch(console.warn); }   // une déconnexion recharge la page : démarré une fois
 
 /* guide « Premiers pas » : relit l'état du joueur (déjà dans la page) et coche ses étapes toutes seules */
 guide = setupGuide($('guide'), {

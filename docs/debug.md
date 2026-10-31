@@ -5794,3 +5794,9 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 ## 31/10/2026 — Onglets : même largeur, 90 % (Geoffrey ; d'abord 80 %)
 - **Quoi** : `.invWrap`, `.furnWrap`, `.lobbyWrap` à `width:100%` et `max-width: 560u` (retirés : `.lobbyWrap` 450u, `.furnWrap` 400u, Stuff 720u, `.skWrap` 520u, `.actMenu` 300u). `zoom:.9` sur `.view:not([data-view="session"])`, au-dessus de 700 px. `centralLeft` lit directement le contenu de l'onglet.
 - ⚠️ `zoom` : les fenêtres et listes posées dans une vue (`#loot`, `#fpick`, `#fview`…) sont réduites aussi. Firefox ne gère `zoom` que depuis la version 126. Session non réduite : la mine se règle sur son canvas.
+
+## 31/10/2026 — Chat global : canaux (Geoffrey)
+- **Quoi** : `CHAT.channels`, `globalKeep` 300 tous canaux, `tabsMax`, `tabNameMax`. `parseChatInput`, `sanitizeChatPrefs`, `chatChannel` (src/shared/chat.js). Serveur : champ `to` sur les MP et messages de groupe, `canRead` filtre chaque lecture, `chatView` retire `to` ; `recentChat` exclut tout message avec `to`. Lecteurs du groupe figés à l'envoi (`party.membersOf`). ns `chat_prefs` (`/api/social/chat-prefs`). Mot coupé cherché dans le même canal et pour les mêmes lecteurs. src/ui/chat-tabs.js.
+- ⚠️ Modération : les MP et messages de groupe passent aussi par le filtre, et le texte d'un mot interdit arrive dans la fiche de modération (visible des créateurs). Le contenu des MP est en clair dans `chat_global`, en base, comme le reste du chat.
+- ⚠️ Connu, ancien : un message reçu juste avant d'envoyer le sien peut sauter à l'écran (`add` avance `last` au numéro du message envoyé).
+- ⚠️ Taille du chat (hauteur, largeur, repli) : gardée dans le navigateur, pas sur le compte.

@@ -1835,7 +1835,10 @@ export const PRISON = { stunReset: 60, stunGap: 5, width: 25, oreMul: 0.27, rese
    (plus long : tout le monde le lit). Relu seulement quand l'onglet Lobby est ouvert. */
 /* maxAgeMs (30/10/2026, Geoffrey) : un message de 18 h ou plus disparaît (serveur et écran), en plus de la limite keep */
 /* dock (31/10/2026, Geoffrey) : chat global permanent, à gauche et en bas ; hauteur en part de l'écran, réglable entre min et max */
-export const CHAT = { maxLen:200, keep:50, gapMs:1000, poll:3000, ttlMs:3*3600e3, globalGapMs:3000, maxAgeMs:18*3600e3, dock:{ share:0.6, min:0.15, max:0.85, minWidth:160, maxWidth:0.6, startWidth:575 } };
+/* Canaux du chat global (31/10/2026, Geoffrey) : id, nom affiché, couleur (style.css, .ch-<id>) ; globalKeep : messages gardés, tous
+   canaux confondus ; tabsMax : onglets par joueur ; tabNameMax : longueur du nom d'un onglet */
+export const CHAT = { channels:[{ id:'general', label:'Général' }, { id:'mp', label:'MP' }, { id:'group', label:'Groupe' }, { id:'commerce', label:'Commerce' }, { id:'lfg', label:'LFG' }],
+  globalKeep:300, tabsMax:5, tabNameMax:12, maxLen:200, keep:50, gapMs:1000, poll:3000, ttlMs:3*3600e3, globalGapMs:3000, maxAgeMs:18*3600e3, dock:{ share:0.6, min:0.15, max:0.85, minWidth:160, maxWidth:0.6, startWidth:575 } };
 
 /* Modération du chat (30/10/2026, Geoffrey ; server/moderation/) : un mot interdit (server/moderation/words.js) est
    remplacé par des astérisques et vaut un avertissement à son auteur, avec un motif. warnings avertissements (comptés

@@ -14,7 +14,8 @@ export const stuckToEnd = (el, prev = true, slack = 8) => el.clientHeight ? el.s
 
 /* h : { prefix (ids <prefix>Log, Input, Note, Form ; 'chat' par défaut), get(after) → { messages },
          post(text) → { message, warning? }, meId() → ID du compte du joueur, onWarning(warning) : mot interdit (30/10),
-         paused() → true : on ne relit pas (ex. onglet fermé ; poke() relit dès qu'il rouvre), time : heure des messages } */
+         paused() → true : on ne relit pas (ex. onglet fermé ; poke() relit dès qu'il rouvre), time : heure des messages,
+         chat global : show(m) : à montrer ?, line(m, me) : sa ligne en HTML, parse(texte) → message à envoyer ou { error } } */
 export function setupChat(h){
   const p = h.prefix ?? 'chat';
   const log = $(p + 'Log'), input = $(p + 'Input'), note = $(p + 'Note');
@@ -28,7 +29,8 @@ export function setupChat(h){
 
   function render(){
     const me = h.meId();
-    log.innerHTML = msgs.length ? msgs.map(m => `<div${m.account === me ? ' class="mine"' : ''}>${h.time ? `<time>${hhmm(m.at)}</time>` : ''}<b>${esc(m.name)}</b> : ${esc(m.text)}</div>`).join('')
+    const shown = h.show ? msgs.filter(h.show) : msgs;
+    log.innerHTML = shown.length ? shown.map(m => h.line ? h.line(m, me) : `<div${m.account === me ? ' class="mine"' : ''}>${h.time ? `<time>${hhmm(m.at)}</time>` : ''}<b>${esc(m.name)}</b> : ${esc(m.text)}</div>`).join('')
       : '<div class="mut small">Aucun message.</div>';
     toEnd();
   }
@@ -58,8 +60,10 @@ export function setupChat(h){
     e.preventDefault();
     const text = cleanChatText(input.value);
     if(!on || busy || text === null) return;
+    const msg = h.parse ? h.parse(text) : text;   // chat global : canal et raccourcis
+    if(msg.error){ note.textContent = msg.error; return; }
     busy = true;
-    try { const r = await h.post(text); add([r.message]); input.value = ''; note.textContent = ''; if(r.warning) h.onWarning?.(r.warning); }
+    try { const r = await h.post(msg); add([r.message]); input.value = ''; note.textContent = ''; if(r.warning) h.onWarning?.(r.warning); }
     catch(err){ note.textContent = err.message; }
     finally { busy = false; }
   };
@@ -69,6 +73,8 @@ export function setupChat(h){
     start(){ gen++; on = true; msgs = []; last = 0; note.textContent = ''; input.value = ''; render(); poll(); },
     /* plus de session (ou plus de compte) : on arrête de relire, le chat est oublié */
     stop(){ gen++; on = false; clearTimeout(timer); msgs = []; last = 0; render(); },
+    /* réafficher (onglet ou canaux changés) */
+    refresh: render,
     /* relire tout de suite (le panneau redevient visible) */
     poke(){ if(on) poll(); },
     /* retour aux derniers messages si le joueur suivait le fil (carte déplacée dans la page) */

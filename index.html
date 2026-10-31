@@ -429,8 +429,9 @@
 <!-- chat global (31/10) : toujours là, à gauche et en bas, quel que soit l'onglet ; hauteur réglable (src/ui/chat-dock.js) -->
 <aside id="gchatDock" class="chatDock" hidden>
   <div class="chatEdge top" data-edge="h"></div><div class="chatEdge right" data-edge="w"></div><div class="chatEdge corner" data-edge="hw"></div>
-  <div class="card" id="gchatCard"><h2>Chat global <i data-qhelp="gchat"></i><button class="chatFold" id="gchatFold" title="Replier ou déplier le chat">–</button></h2><div id="gchatLog" class="chatLog" aria-live="polite"></div>
-    <form id="gchatForm" class="chatForm"><input id="gchatInput" autocomplete="off" placeholder="Message à tous les joueurs…" title="Écrire à tous les joueurs du jeu"><button>Envoyer</button></form>
+  <div class="card" id="gchatCard"><div class="chatHead"><div class="chatTabs" id="gchatTabs"></div><i data-qhelp="gchat"></i><button class="chatFold" id="gchatFold" title="Replier ou déplier le chat">–</button></div>
+    <div class="chatPanel" id="gchatPanel" hidden></div><div id="gchatLog" class="chatLog" aria-live="polite"></div>
+    <form id="gchatForm" class="chatForm"><select id="gchatChan" title="Canal du message"></select><input id="gchatInput" autocomplete="off" placeholder="Message…" title="Raccourcis : /1 général · /2 LFG · /c commerce · /gr groupe · /w &quot;pseudo&quot; message privé"><button>Envoyer</button></form>
     <div id="gchatNote" class="mut small"></div></div>
 </aside>
 <!-- barre d'action (onglets avec leur nom, touches 1 à 9, 0, - et =) entre deux orbes : temps de session et XP, ou oxygène et pods du

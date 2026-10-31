@@ -137,7 +137,7 @@ function setupGlobal(store = createMemoryGameStore()){
   const party = createPartyService({ game, clock, getAccount: async id => ACCOUNTS[id] ?? null });
   const social = createSocialService({ store, game, party, clock,
     accounts:{ getAccount: async id => ACCOUNTS[id] ?? null, findAccountByName: async () => null } });
-  return { store, social, advance: ms => { now += ms; } };
+  return { store, social, party, advance: ms => { now += ms; } };
 }
 
 test('global : tout compte écrit et lit, sans session ni groupe ; le nom vient du compte (invité : « Invité xxxx »)', async () => {
@@ -180,11 +180,11 @@ test('global : séparé du chat de session (dans les deux sens)', async () => {
 
 test('global : seuls les CHAT.keep derniers gardés ; enregistrés et repris après un redémarrage, numéros qui continuent', async () => {
   const { store, social, advance } = setupGlobal();
-  for(let i = 0; i < CHAT.keep + 3; i++){ advance(CHAT.globalGapMs); await social.chatPost(ME, { text:'m' + i }); }
+  for(let i = 0; i < CHAT.globalKeep + 3; i++){ advance(CHAT.globalGapMs); await social.chatPost(ME, { text:'m' + i }); }
   const before = (await social.chatGet(ME, 0)).messages;
   assert.equal(before.length, CHAT.keep);
-  assert.equal(before[0].text, 'm3');
-  assert.equal((await store.getGlobalChat()).msgs.length, CHAT.keep);
+  assert.equal(before[0].text, 'm' + (CHAT.globalKeep + 3 - CHAT.keep));
+  assert.equal((await store.getGlobalChat()).msgs.length, CHAT.globalKeep);
 
   const again = setupGlobal(store).social;                              // redémarrage : même stockage, service neuf
   assert.deepEqual((await again.chatGet(OTHER, 0)).messages, before);
@@ -263,4 +263,93 @@ test("chat permanent : largeur arrêtée au bord de l'interface centrale, jamais
   assert.equal(dockFit(300, 500), 300);
   assert.equal(dockFit(700, 500), 500);
   assert.equal(dockFit(700, 50), CHAT.dock.minWidth);
+});
+
+/* ---------- canaux du chat global (31/10) ---------- */
+function setupChannels(){
+  let now = 5_000_000;
+  const store = createMemoryGameStore(), clock = () => now;
+  const social = createSocialService({ store, clock, game: { energyOf: async () => null }, party: { membersOf: id => id === ME.id || id === OTHER.id ? [ME.id, OTHER.id] : [] },
+    accounts: { getAccount: async id => ACCOUNTS[id] ?? null, findAccountByName: async k => Object.values(ACCOUNTS).find(a => a.name?.toLowerCase() === k) ?? null } });
+  return { store, social, tick: () => { now += CHAT.globalGapMs; } };
+}
+
+test('raccourcis : /1 /2 /c /gr /w, sans raccourci le canal choisi ; texte manquant refusé', async () => {
+  const { parseChatInput } = await import('../src/shared/chat.js');
+  assert.deepEqual(parseChatInput('toto', 'commerce'), { channel:'commerce', text:'toto' });
+  assert.deepEqual(parseChatInput('/1 toto'), { channel:'general', text:'toto' });
+  assert.deepEqual(parseChatInput('/2 toto'), { channel:'lfg', text:'toto' });
+  assert.deepEqual(parseChatInput('/C toto'), { channel:'commerce', text:'toto' });
+  assert.deepEqual(parseChatInput('/gr toto'), { channel:'group', text:'toto' });
+  assert.deepEqual(parseChatInput('/w "Le Nain" toto a'), { channel:'mp', to:'Le Nain', text:'toto a' });
+  assert.deepEqual(parseChatInput('/w Zoe toto'), { channel:'mp', to:'Zoe', text:'toto' });
+  for(const bad of ['/1', '/gr ', '/w', '/w Zoe']) assert.ok(parseChatInput(bad).error, bad);
+  assert.deepEqual(parseChatInput('/12 toto'), { channel:'general', text:'/12 toto' }, 'autre barre oblique : du texte');
+});
+
+test('MP : seuls auteur et destinataire le lisent, la liste des lecteurs ne part jamais ; pseudo inconnu ou soi-même refusé', async () => {
+  const { social, tick } = setupChannels();
+  const { message } = await social.chatPost(ME, { channel:'mp', to:OTHER.name, text:'secret' });
+  assert.equal(message.to, undefined); assert.equal(message.toName, OTHER.name);
+  assert.deepEqual((await social.chatGet(OTHER, 0)).messages.map(m => m.text), ['secret']);
+  assert.deepEqual((await social.chatGet(ME, 0)).messages.map(m => m.text), ['secret']);
+  assert.deepEqual((await social.chatGet(OUT, 0)).messages, [], 'un tiers ne voit rien, même en relisant depuis 0');
+  assert.deepEqual(await social.recentChat(1e9), [], 'pas de bulle dans le Carreau');
+  tick();
+  await assert.rejects(social.chatPost(ME, { channel:'mp', to:'personne', text:'x' }), { status:404 });
+  await assert.rejects(social.chatPost(ME, { channel:'mp', to:['a'], text:'x' }), { status:404 });
+  await assert.rejects(social.chatPost(ME, { channel:'mp', to:ME.name, text:'x' }), { status:400 });
+});
+
+test('groupe : seulement ses membres ; sans groupe refusé ; canal inconnu = Général ; un to envoyé sur un canal public est ignoré', async () => {
+  const { social, tick } = setupChannels();
+  await social.chatPost(ME, { channel:'group', text:'gr' });
+  assert.equal((await social.chatGet(OTHER, 0)).messages.length, 1);
+  assert.deepEqual((await social.chatGet(OUT, 0)).messages, []);
+  await assert.rejects(social.chatPost(OUT, { channel:'group', text:'x' }), { status:400 });
+  tick();
+  const { message } = await social.chatPost(ME, { channel:'hack', to:OTHER.name, text:'pub' });
+  assert.equal(message.channel, 'general'); assert.equal(message.toName, undefined);
+  assert.equal((await social.chatGet(OUT, 0)).messages.length, 1);
+});
+
+test('canaux gardés au redémarrage, lecteurs compris ; ancien message sans canal : Général', async () => {
+  const { store, social } = setupChannels();
+  await social.chatPost(ME, { channel:'mp', to:OTHER.name, text:'secret' });
+  const again = createSocialService({ store, game: {}, party: {}, clock: () => 5_000_001, accounts: { getAccount: async id => ACCOUNTS[id] ?? null } });
+  assert.deepEqual((await again.chatGet(OUT, 0)).messages, [], 'toujours privé après redémarrage');
+  assert.equal((await again.chatGet(OTHER, 0)).messages[0].channel, 'mp');
+  const { chatChannel } = await import('../src/shared/chat.js');
+  assert.equal(chatChannel(undefined).id, 'general');
+});
+
+test('préfixes : [Général], [LFG], de / à pour un MP', async () => {
+  const { chatPrefix } = await import('../src/ui/chat-tabs.js');
+  assert.equal(chatPrefix({ channel:'general', name:'admin' }, 'x'), '[Général] admin');
+  assert.equal(chatPrefix({ channel:'group', name:'admin' }, 'x'), '[Groupe] admin');
+  assert.equal(chatPrefix({ channel:'lfg', name:'admin' }, 'x'), '[LFG] admin');
+  assert.equal(chatPrefix({ channel:'mp', name:'admin', account:'a', toName:'Zoe' }, 'x'), 'de admin');
+  assert.equal(chatPrefix({ channel:'mp', name:'admin', account:'x', toName:'Zoe' }, 'x'), 'à Zoe');
+});
+
+test('réglages du chat : gardés par compte, tout est revérifié', async () => {
+  const { social } = setupChannels();
+  const { sanitizeChatPrefs } = await import('../src/shared/chat.js');
+  assert.deepEqual(sanitizeChatPrefs(null), { tabs:[{ name:'Tous', hidden:[] }], active:0, channel:'general' });
+  assert.deepEqual(await social.chatPrefsSave(ME, { tabs:[{ name:'Trade', hidden:['general', 'hack', 'general'] }], active:9, channel:'mp' }),
+    { tabs:[{ name:'Trade', hidden:['general'] }], active:0, channel:'general' });
+  assert.equal((await social.chatPrefs(ME)).tabs[0].name, 'Trade');
+  assert.equal((await social.chatPrefs(OTHER)).tabs[0].name, 'Tous', 'un autre compte garde les siens');
+  const many = sanitizeChatPrefs({ tabs:Array.from({ length:50 }, () => ({ name:'x'.repeat(99), hidden:7 })) });
+  assert.equal(many.tabs.length, CHAT.tabsMax); assert.equal(many.tabs[0].name.length, CHAT.tabNameMax);
+});
+
+test('groupe, avec le vrai service des groupes : seul refusé ; à deux, lu par le groupe et pas par les autres', async () => {
+  const { social, party } = setupGlobal();
+  await assert.rejects(social.chatPost(ME, { channel:'group', text:'seul' }), { status:400 });
+  const { party: p } = await party.create(ME).then(r => r?.party ? r : { party: r });
+  await party.join(OTHER, p.code);
+  await social.chatPost(ME, { channel:'group', text:'entre nous' });
+  assert.deepEqual((await social.chatGet(OTHER, 0)).messages.map(m => m.text), ['entre nous']);
+  assert.deepEqual((await social.chatGet(OUT, 0)).messages, []);
 });
