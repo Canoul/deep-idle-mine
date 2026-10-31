@@ -31,7 +31,7 @@ Ils agissent dans les mines que tu lances, seul ou en chef de groupe.
 Les stèles (Exorcisme, Pacte) se paient dans le lobby de leur tour : une charge, consommée à la victoire, gardée sinon. Le chef peut les activer ou les désactiver.
 Ton groupe peut t'aider à payer.`,
   gchat: `Chat global
-Tous les joueurs du jeu le lisent, en session ou non, depuis n'importe quel onglet.
+Tous les joueurs du jeu le lisent, en session ou non, depuis n'importe quel onglet (sur téléphone, dans l'onglet Chat).
 Canaux : Général, MP, Groupe, LFG. Raccourcis : /1 général, /2 ou /lfg LFG, /gr groupe, /w "pseudo" message privé. Le canal utilisé reste choisi pour tes messages suivants.
 Lien de lobby : le bouton « Pub LFG » du lobby, ou %lobby dans un message (ex. /lfg %lobby on cherche un last). Survole le lien pour voir le groupe, clique pour le rejoindre.
 L'écrou choisit les canaux de l'onglet, le + en crée un autre ; tes réglages sont gardés sur ton compte.

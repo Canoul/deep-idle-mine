@@ -554,3 +554,5 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   entre les barreaux (`camera.setBox`), fond et transitions d'onglet comme la mine, panneau « Butin de la prison (total) ».
   Correctifs : golem collé sous la surface (arrêt net seulement sous terre), minerais rares arrondis au hasard en prison.
   **À surveiller** : k hole en prison jamais joué en vrai ; tests anciens rouges aussi sur main (dev-spec, perf).
+
+- **Chat sur téléphone** (31/10, Geoffrey ; `CHAT.dock.phone`) : onglet Chat plein écran, sur téléphone seulement ; ailleurs, chat flottant inchangé.

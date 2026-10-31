@@ -1890,7 +1890,7 @@ export const PRISON = { mobXpMul: 0.5, stunReset: 60, stunGap: 5, width: 25, ore
 /* Canaux du chat global (31/10/2026, Geoffrey) : id, nom affiché, couleur (style.css, .ch-<id>) ; globalKeep : messages gardés, tous
    canaux confondus ; tabsMax : onglets par joueur ; tabNameMax : longueur du nom d'un onglet */
 export const CHAT = { channels:[{ id:'general', label:'Général' }, { id:'mp', label:'MP' }, { id:'group', label:'Groupe' }, { id:'lfg', label:'LFG' }],
-  globalKeep:300, tabsMax:5, tabNameMax:12, maxLen:200, keep:50, gapMs:1000, poll:3000, ttlMs:3*3600e3, globalGapMs:3000, maxAgeMs:18*3600e3, dock:{ share:0.6, min:0.15, max:0.85, minWidth:160, maxWidth:0.6, startWidth:575 } };
+  globalKeep:300, tabsMax:5, tabNameMax:12, maxLen:200, keep:50, gapMs:1000, poll:3000, ttlMs:3*3600e3, globalGapMs:3000, maxAgeMs:18*3600e3, dock:{ phone:'(max-width:700px),(max-height:500px)', share:0.6, min:0.15, max:0.85, minWidth:160, maxWidth:0.6, startWidth:575 } };
 
 /* Raffle (31/10/2026, Geoffrey ; server/social/raffle.js) : tirage au sort dans le chat global. Un raffle part everyMin à
    everyMax après la fin du précédent, de openHour à closeHour (heure de timeZone). Tombé dans le créneau fermé : à la
