@@ -13,8 +13,6 @@
      un joueur qui cherche un groupe porte un « ? » doré.
    - Émotes : barre en promenade (TOWN.emotes), vues par les autres au ping suivant.
    - Place : statue du n°1 du classement GS, bannières des jauges Ange / Démon (setJudgment).
-   - Chat global en promenade (29/10 soir, demande de Jules) : la boîte chatSlot en bas à gauche reçoit la carte du chat
-     global du Lobby le temps de la promenade (onWalk, src/main.js), pour écrire aux gens de la ville.
    - Recherche de groupe (30/10, demande de Jules) : bouton dans la barre d'émotes (à la place de « ⛏️ On mine ? ») et à
      côté de « Préparer une session » devant le chevalement et la place ; c'est la recherche du Lobby (mine classique,
      src/ui/lobby.js lfgView / toggleLfg). Le « ? » doré s'affiche aussi au-dessus de son propre mineur.
@@ -92,6 +90,9 @@ export function cardHtml(p, me = false){
    fiche d'un joueur (promesses ; une erreur affiche son message dans la fiche) ; onWalk(on) : la promenade commence
    (true) ou s'arrête (false) ; lfg : { view() : lobby.lfgView(), toggle() : lancer / annuler la recherche, promesse du
    message d'erreur ('' si tout va bien) } */
+/* le chat global permanent (src/ui/chat-dock.js) : la promenade garde ses boutons à côté */
+const $chat = () => document.getElementById('gchatDock');
+
 export function setupTown(root, { ping, emote, me, onEnter, friend, invite, onWalk = () => {}, lfg = null }){
   const cv = document.createElement('canvas');
   root.appendChild(cv);
@@ -118,21 +119,6 @@ export function setupTown(root, { ping, emote, me, onEnter, friend, invite, onWa
   door.append(enterBtn, lfgDoor);
   root.appendChild(door);
   let enterFor = null, lfgKey = null, lfgShown = null, lfgMsgTimer = null;
-  const chatSlot = document.createElement('div');
-  chatSlot.className = 'townChat';
-  root.appendChild(chatSlot);
-  /* chat tout en bas à gauche, à côté de la barre d'action ; trop peu de place à côté d'elle : au-dessus */
-  function placeChat(){
-    const d = document.querySelector('.dock')?.getBoundingClientRect(), gap = 12, avail = d ? d.left - 2 * gap : innerWidth;
-    const below = !d || avail >= TOWN.chatMin;
-    Object.assign(chatSlot.style, below ? { bottom: gap / 2 + 'px', width: Math.min(TOWN.chatMax, avail) + 'px' }
-                                        : { bottom: innerHeight - d.top + gap / 2 + 'px', width: Math.min(TOWN.chatMax, innerWidth - 2 * gap) + 'px' });
-    /* au-dessus de la barre (téléphone) : replié, le champ pour écrire seulement (les messages sont en bulles) ;
-       toucher « Chat global » déplie la liste */
-    chatSlot.classList.toggle('mini', !below);
-  }
-  chatSlot.addEventListener('click', e => { if(chatSlot.classList.contains('mini') && e.target.closest('h2')) chatSlot.classList.toggle('open'); });
-  addEventListener('resize', () => { if(free) placeChat(); });
   const r = createTownRenderer(cv);
   let on = load(KEY, '1') !== '0';
   let shown = false, free = false, tab = 'lobby';
@@ -230,7 +216,7 @@ export function setupTown(root, { ping, emote, me, onEnter, friend, invite, onWa
 
   /* clic : un joueur → sa fiche ; un bâtiment (sa façade) → y aller puis entrer ; ailleurs → y aller */
   root.addEventListener('pointerdown', e => {
-    if(!free || e.target.closest('.townHint, .townCard, .townChat, .townDoor')) return;
+    if(!free || e.target.closest('.townHint, .townCard, .townDoor')) return;
     const b = cv.getBoundingClientRect(), s = b.height / (TOWN.rows * TOWN_TILE);
     const tx = camX + (e.clientX - b.left) / s / TOWN_TILE, ty = (e.clientY - b.top) / s / TOWN_TILE;
     const who = ty >= TOWN.ground - 1.7 && ty < TOWN.ground && [...shownPlayers()].reverse().find(p => Math.abs(p.x - tx) <= 0.5);
@@ -256,7 +242,7 @@ export function setupTown(root, { ping, emote, me, onEnter, friend, invite, onWa
       door.style.top = door.style.bottom = '';
       /* deux boutons devant le chevalement (30/10) : plus large, la paire mordait sur le chat en bas à gauche ; décalée
          vers la droite juste assez pour passer à côté (au milieu sinon) */
-      const c = free ? chatSlot.getBoundingClientRect() : null, d = door.getBoundingClientRect();
+      const dockEl = $chat(), c = free && dockEl && !dockEl.hidden ? dockEl.getBoundingClientRect() : null, d = door.getBoundingClientRect();
       const half = d.width / 2, chat = c && c.top < d.bottom && c.bottom > d.top ? c.right + 12 : 0;
       door.style.left = Math.round(Math.min(Math.max(innerWidth / 2, chat + half), innerWidth - half - 8)) + 'px';
       return;
@@ -265,7 +251,8 @@ export function setupTown(root, { ping, emote, me, onEnter, friend, invite, onWa
        barre d'action, ou du chat replié en promenade ; le sous-sol passe derrière la barre, le ciel remplit le haut */
     const s = innerWidth / cv.width, tile = cv.height / TOWN.rows * s;
     let limit = document.querySelector('.dock')?.getBoundingClientRect().top ?? innerHeight;
-    if(free && chatSlot.classList.contains('mini')) limit = Math.min(limit, chatSlot.getBoundingClientRect().top);
+    const dockEl = $chat();
+    if(free && dockEl && !dockEl.hidden && dockEl.classList.contains('folded')) limit = Math.min(limit, dockEl.getBoundingClientRect().top);
     Object.assign(cv.style, { width: innerWidth + 'px', height: cv.height * s + 'px', left: '0px',
       top: Math.round(limit - 4 - (TOWN.ground + 1) * tile) + 'px' });
     /* boutons « Entrer » (et « Chercher un groupe ») sous le bandeau d'aide, dans le ciel : ils ne cachent ni le mineur
@@ -293,7 +280,6 @@ export function setupTown(root, { ping, emote, me, onEnter, friend, invite, onWa
       document.body.classList.toggle('townWalk', free);
       root.classList.toggle('walk', free);
       onWalk(free);
-      if(free) requestAnimationFrame(placeChat);              // une fois la barre d'action à sa place
       if(shown) poll();
     }
     if(!shown) return;
@@ -326,8 +312,6 @@ export function setupTown(root, { ping, emote, me, onEnter, friend, invite, onWa
     get on(){ return on; },
     /* en promenade (onglet Session sans session) */
     get walking(){ return free; },
-    /* boîte en bas à gauche de la promenade (le chat global y est déplacé) */
-    chatSlot,
     set(v){ on = !!v; save(KEY, on ? '1' : '0'); },
     /* jauges du Jugement (GET /api/game/judgment → value.sides) : { angel: { count, cap, open }, demon: … } */
     setJudgment(sides){ judgment = sides ?? null; },

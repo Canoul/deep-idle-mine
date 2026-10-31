@@ -23,6 +23,8 @@
 <!-- barre du haut : compte, nom du jeu, session en cours (visible depuis tous les onglets), wiki -->
 <header class="topbar">
   <button class="navAccount" id="navAccount" hidden></button>
+  <!-- niveau du mineur, à côté du pseudo (src/ui/level.js) -->
+  <div class="navLevel" id="navLevel" hidden></div>
   <div class="brand"><i data-pxi="pickaxe"></i>Deep Mine Idle</div>
   <div class="navSession" title="La session continue de tourner quand tu changes d'onglet">
     <i data-pxi="hourglass"></i><span id="navTimer">—</span>
@@ -48,41 +50,57 @@
     <span><i data-pxi="pickaxe"></i><b>En session dans la mine</b> <span class="mut" id="lobbySessLeft"></span></span>
     <button class="on" id="lobbyToSession">Voir la session</button>
   </div>
+  <p class="err" id="lobbyErr" hidden></p>
+  <div class="card invitesCard" id="invitesCard" hidden>
+    <h2>Invitations</h2>
+    <div id="invitesList"></div>
+  </div>
+  <!-- choix de l'activité (31/10) : ce qu'on voit en ouvrant le Lobby ; une activité ouverte remplace ce menu (src/ui/lobby.js) -->
+  <div class="card actMenu" id="lobbyMenu">
+    <h2>Que veux-tu faire ? <i data-qhelp="where"></i></h2>
+    <div class="actList" id="mineModes"></div>
+  </div>
+  <div id="lobbyStage" hidden>
+  <div class="actHead"><button id="lobbyBack">← Activités</button><h2 id="actTitle"></h2></div>
   <div class="lobbyCols">
   <div class="lobbyCol">
-  <div class="card"><h2>Mineur</h2><div id="levelBody"></div></div>
-  <div class="card">
-    <h2>Où miner <i data-qhelp="where"></i></h2>
-    <div class="seg mineModes" id="mineModes"></div>
-  </div>
   <!-- Jugement (Ange contre Démon) : jauges communes et tours, choix « Jugement » de « Où miner » (src/ui/judgment.js) -->
   <div class="card" id="judgmentCard" hidden>
     <h2><i data-pxi="radiance"></i>Ange contre Démon <i data-qhelp="judgment"></i></h2>
     <div id="judgmentBody"><p class="mut small">Chargement…</p></div>
-  </div>
-  <!-- mine instantanée : compte à rebours et inscription (src/ui/instant-lobby.js) -->
-  <div class="card miCard" id="miCard" hidden>
-    <h2>Mine instantanée</h2>
-    <div id="miCardBody"></div>
-  </div>
-  <div class="card" id="prefsCard">
-    <h2>Critères / préférences <i data-qhelp="prefs"></i></h2>
-    <div class="prefs" id="prefsBox"></div>
-  </div>
-  <!-- chat global : tous les joueurs du jeu, même en session (src/ui/chat.js) -->
-  <div class="card" id="gchatCard"><h2>Chat global <i data-qhelp="gchat"></i></h2><div id="gchatLog" class="chatLog" aria-live="polite"></div>
-    <form id="gchatForm" class="chatForm"><input id="gchatInput" autocomplete="off" placeholder="Message à tous les joueurs…" title="Écrire à tous les joueurs du jeu"><button>Envoyer</button></form>
-    <div id="gchatNote" class="mut small"></div></div>
-  </div>
-  <div class="lobbyCol">
-  <div class="card invitesCard" id="invitesCard" hidden>
-    <h2>Invitations</h2>
-    <div id="invitesList"></div>
+    <div class="seg" id="towerModes" hidden></div>
   </div>
   <!-- Instances (27/10) : liste des instances, clés (src/ui/lobby.js) -->
   <div class="card instCard" id="instCard" hidden>
     <h2>🗝 Instances</h2>
     <div id="instBody"></div>
+  </div>
+  <!-- sets (src/ui/sets.js) : la même liste que dans Stuff, Skills et Sorts, pour équiper un set avant de lancer -->
+  <div class="card setsCard lobbySets">
+    <h2>Sets</h2>
+    <div id="setsLobby" class="setsBody"></div>
+  </div>
+  <div class="card" id="prefsCard">
+    <h2>Critères / préférences <i data-qhelp="prefs"></i></h2>
+    <div class="prefs" id="prefsBox"></div>
+  </div>
+  <div class="card devCard" id="devCard" hidden>
+    <h2>Mode développeur</h2>
+    <div class="dev">
+      <span>Seed (vide = au hasard)</span><input id="devSeed" type="text" inputmode="numeric">
+      <span>Mineurs de test (sans compte)</span><select id="devBots"><option value="0">0</option><option value="1">1</option><option value="2" selected>2</option></select>
+    </div>
+    <div class="dev" id="devPresets"></div>
+    <p class="mut small devNote" id="devCopyMsg" hidden></p>
+    <div class="dev" id="devSpecs"></div>
+    <div class="dev" id="devStats"></div>
+  </div>
+  </div>
+  <div class="lobbyCol">
+  <!-- mine instantanée : compte à rebours et inscription (src/ui/instant-lobby.js) -->
+  <div class="card miCard" id="miCard" hidden>
+    <h2>Mine instantanée</h2>
+    <div id="miCardBody"></div>
   </div>
   <!-- Bloc géant : session du jour, entrée, scores, classement, récompenses (src/ui/giant.js) -->
   <div class="card giantCard" id="giantCard" hidden>
@@ -118,28 +136,12 @@
       <input id="joinCode" placeholder="K7Q4P2" autocomplete="off" spellcheck="false" maxlength="10"><button>Rejoindre</button></div></form>
     <p class="mut" id="lobbyInfo"></p>
     <div class="towerWho" id="towerWho" hidden></div>
-    <p class="err" id="lobbyErr" hidden></p>
-  </div>
-  <!-- sets (src/ui/sets.js) : la même liste que dans Stuff, Skills et Sorts, pour équiper un set avant de lancer -->
-  <div class="card setsCard lobbySets">
-    <h2>Sets</h2>
-    <div id="setsLobby" class="setsBody"></div>
   </div>
   <!-- shrines : sous « Ton groupe », mine classique seulement (src/ui/lobby.js) -->
   <div class="card shrinesCard" id="shrinesCard" hidden>
     <h2>Shrines <i data-qhelp="shrines"></i></h2>
     <div id="shrinesBody"></div>
   </div>
-  <div class="card devCard" id="devCard" hidden>
-    <h2>Mode développeur</h2>
-    <div class="dev">
-      <span>Seed (vide = au hasard)</span><input id="devSeed" type="text" inputmode="numeric">
-      <span>Mineurs de test (sans compte)</span><select id="devBots"><option value="0">0</option><option value="1">1</option><option value="2" selected>2</option></select>
-    </div>
-    <div class="dev" id="devPresets"></div>
-    <p class="mut small devNote" id="devCopyMsg" hidden></p>
-    <div class="dev" id="devSpecs"></div>
-    <div class="dev" id="devStats"></div>
   </div>
   </div>
   </div>
@@ -425,6 +427,14 @@
   <div id="fpick" hidden><div class="box"></div></div>
 </section>
 </div>
+<!-- chat global (31/10) : toujours là, à gauche et en bas, quel que soit l'onglet ; hauteur réglable (src/ui/chat-dock.js) -->
+<aside id="gchatDock" class="chatDock" hidden>
+  <div class="chatEdge top" data-edge="h"></div><div class="chatEdge right" data-edge="w"></div><div class="chatEdge corner" data-edge="hw"></div>
+  <div class="card" id="gchatCard"><div class="chatHead"><div class="chatTabs" id="gchatTabs"></div><i data-qhelp="gchat"></i><button class="chatFold" id="gchatFold" title="Replier ou déplier le chat">–</button></div>
+    <div class="chatPanel" id="gchatPanel" hidden></div><div id="gchatLog" class="chatLog" aria-live="polite"></div>
+    <form id="gchatForm" class="chatForm"><select id="gchatChan" title="Canal du message"></select><input id="gchatInput" autocomplete="off" placeholder="Message…" title="Raccourcis : /1 général · /2 LFG · /c commerce · /gr groupe · /w &quot;pseudo&quot; message privé"><button>Envoyer</button></form>
+    <div id="gchatNote" class="mut small"></div></div>
+</aside>
 <!-- barre d'action (onglets avec leur nom, touches 1 à 9, 0, - et =) entre deux orbes : temps de session et XP, ou oxygène et pods du
      mineur suivi pendant une session (src/ui/orbs.js) -->
 <nav id="nav" class="dock">

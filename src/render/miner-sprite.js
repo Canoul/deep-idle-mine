@@ -13,7 +13,7 @@ export function createMinerSprite(ctx, TEX, TILE){
     else if(fallback){ ctx.fillStyle=fallback; ctx.fillRect(px,py,TILE,TILE); }
   }
   /* now : heure de l'image (performance.now()), pour animer l'outil entre deux envois du serveur */
-  return function drawMiner(m,px,py,focused,now){
+  function drawMiner(m,px,py,focused,now){
     ctx.save();
     let bx=px;   // dessiné en miroir quand il regarde à gauche
     if(m.face<0){ ctx.translate(px+TILE,0); ctx.scale(-1,1); bx=0; }
@@ -47,11 +47,15 @@ export function createMinerSprite(ctx, TEX, TILE){
       ctx.fillStyle='#ff6b6b'; ctx.fillText('🩸'+m.flesh,px+TILE-3,py+1);
     }
     if(focused){ ctx.strokeStyle='#ffb84d'; ctx.lineWidth=1; ctx.strokeRect(px-1.5,py-1.5,TILE+3,TILE+3); }
-    /* pseudo : petit, contour sombre pour rester lisible sur la roche comme sur le ciel */
-    if(m.name){
-      ctx.font='bold 8px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='bottom';
-      ctx.lineWidth=3; ctx.strokeStyle='rgba(0,0,0,.85)'; ctx.strokeText(m.name,px+TILE/2,py-2);
-      ctx.fillStyle=focused?'#ffd27a':'#f2ece4'; ctx.fillText(m.name,px+TILE/2,py-2);
-    }
-  };
+    label(m.name,px,py,focused);
+  }
+  /* pseudo : petit, contour sombre pour rester lisible sur la roche comme sur le ciel ; aussi seul (mineur couché, 31/10) */
+  function label(name,px,py,focused){
+    if(!name) return;
+    ctx.font='bold 8px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='bottom';
+    ctx.lineWidth=3; ctx.strokeStyle='rgba(0,0,0,.85)'; ctx.strokeText(name,px+TILE/2,py-2);
+    ctx.fillStyle=focused?'#ffd27a':'#f2ece4'; ctx.fillText(name,px+TILE/2,py-2);
+  }
+  drawMiner.label=label;
+  return drawMiner;
 }

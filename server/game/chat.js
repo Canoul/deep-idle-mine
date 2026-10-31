@@ -8,7 +8,7 @@ import { MODERATION } from '../../src/config.js';
 import { moderate } from '../moderation/filter.js';
 
 /* gapMs : délai entre deux messages d'un même joueur ; ttlMs : un salon sans message depuis ce temps est oublié */
-export function createChat({ clock = Date.now, gapMs = CHAT.gapMs, ttlMs = CHAT.ttlMs } = {}){
+export function createChat({ clock = Date.now, gapMs = CHAT.gapMs, ttlMs = CHAT.ttlMs, keep = CHAT.keep } = {}){
   const rooms = new Map();    // id de salon → { next, msgs, at (dernier message) }
   const lastBy = new Map();   // compte → heure de son dernier message
 
@@ -22,8 +22,10 @@ export function createChat({ clock = Date.now, gapMs = CHAT.gapMs, ttlMs = CHAT.
     /* { msg, hits, original } ou { error: 'bad_text' | 'too_fast' } ; name : donné par le serveur.
        Modération (30/10/2026) : le texte publié a ses mots interdits masqués, y compris un mot commencé dans les messages
        précédents du salon (MODERATION.joinMessages, moins de joinWindowMs) ; hits : ce qui a été trouvé (pour l'avertir),
-       original : le texte tel qu'écrit (gardé seulement dans sa fiche de modération). */
-    post(roomId, account, name, text){
+       original : le texte tel qu'écrit (gardé seulement dans sa fiche de modération).
+       extra (chat global, 31/10) : { channel, to?, toName? } ; to : seuls ces comptes le lisent. Un mot coupé ne se cherche que dans
+       le même canal et pour les mêmes lecteurs. */
+    post(roomId, account, name, text, extra = {}){
       const now = clock();
       prune(now);
       const t = cleanChatText(text);
@@ -31,11 +33,12 @@ export function createChat({ clock = Date.now, gapMs = CHAT.gapMs, ttlMs = CHAT.
       if(lastBy.has(account)) return { error: 'too_fast' };
       let r = rooms.get(roomId);
       if(!r) rooms.set(roomId, r = { next: 1, msgs: [], at: now });
-      const prev = r.msgs.filter(m => now - m.at <= MODERATION.joinWindowMs);
+      const same = m => m.channel === extra.channel && String(m.to) === String(extra.to);
+      const prev = r.msgs.filter(m => now - m.at <= MODERATION.joinWindowMs && same(m));
       const mod = moderate(t, prev);
-      const msg = { id: r.next++, at: now, account, name, text: mod.text };
+      const msg = { id: r.next++, at: now, account, name, text: mod.text, ...extra };
       r.msgs.push(msg);
-      if(r.msgs.length > CHAT.keep) r.msgs.shift();
+      if(r.msgs.length > keep) r.msgs.shift();
       r.at = now; lastBy.set(account, now);
       return { msg, hits: mod.hits, original: t };
     },
@@ -55,11 +58,13 @@ export function createChat({ clock = Date.now, gapMs = CHAT.gapMs, ttlMs = CHAT.
       for(const m of raw.msgs){
         if(!m || !Number.isSafeInteger(m.id) || m.id <= last || !Number.isFinite(m.at)) continue;
         if(typeof m.account !== 'string' || typeof m.name !== 'string' || cleanChatText(m.text) !== m.text) continue;
-        msgs.push({ id: m.id, at: m.at, account: m.account, name: m.name, text: m.text });
+        msgs.push({ id: m.id, at: m.at, account: m.account, name: m.name, text: m.text,
+                    ...(typeof m.channel === 'string' ? { channel: m.channel } : {}), ...(typeof m.toName === 'string' ? { toName: m.toName } : {}),
+                    ...(Array.isArray(m.to) ? { to: m.to.filter(a => typeof a === 'string') } : {}) });
         last = m.id;
       }
       const next = Math.max(last + 1, Number.isSafeInteger(raw.next) ? raw.next : 1);
-      rooms.set(roomId, { next, msgs: freshMessages(msgs, clock()).slice(-CHAT.keep), at: msgs.at(-1)?.at ?? clock() });
+      rooms.set(roomId, { next, msgs: freshMessages(msgs, clock()).slice(-keep), at: msgs.at(-1)?.at ?? clock() });
     },
   };
 }

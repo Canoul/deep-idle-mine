@@ -31,6 +31,7 @@ import { SOCIAL_SERVER } from '../config.js';
 import { isBoard, specTree, rankBoard } from '../../src/meta/leaderboard.js';
 import { LEADERBOARD, CHAT } from '../../src/config.js';
 import { createChat } from '../game/chat.js';
+import { chatChannel, sanitizeChatPrefs } from '../../src/shared/chat.js';
 
 export class SocialError extends Error {
   constructor(code, status, message, extra = {}){ super(message); this.code = code; this.status = status; Object.assign(this, extra); }
@@ -67,7 +68,23 @@ export function createSocialService({ store, accounts, party, game, clock = Date
   const online = id => clock() - (seen.get(id) ?? -Infinity) <= config.onlineFor;
   /* chat global : jamais oublié faute de message (ttl infini), relu en base une seule fois */
   const GLOBAL = 'global';
-  const chat = createChat({ clock, gapMs: CHAT.globalGapMs, ttlMs: Infinity });
+  const chat = createChat({ clock, gapMs: CHAT.globalGapMs, ttlMs: Infinity, keep: CHAT.globalKeep });
+  /* canaux (31/10) : un message avec des lecteurs (to : MP, groupe) ne part qu'à eux et à son auteur ; to n'est jamais envoyé */
+  const canRead = (m, id) => !m.to || m.account === id || m.to.includes(id);
+  const chatView = ({ to: _to, ...m }) => m;
+  /* lecteurs d'un message : {} (public), ou { to, toName? } ; le serveur décide, le navigateur donne seulement un pseudo */
+  async function audience(me, channel, to){
+    if(channel === 'group'){
+      const members = await party?.membersOf?.(me.id) ?? [];
+      if(members.length < 2) fail('bad_request', 400, "Tu n'es pas dans un groupe.");
+      return { to: members };
+    }
+    if(channel !== 'mp') return {};
+    const target = typeof to === 'string' ? await accounts.findAccountByName(nameKey(to)) : null;
+    if(!target) fail('not_found', 404, 'Ce joueur n\'existe pas.');
+    if(target.id === me.id) fail('bad_request', 400, 'Tu ne peux pas t\'écrire à toi-même.');
+    return { to: [target.id], toName: displayName(target) };
+  }
   let chatLoad = null;
   const chatReady = () => chatLoad ??= Promise.resolve().then(() => store.getGlobalChat?.())
     .then(raw => chat.restore(GLOBAL, raw)).catch(console.error);
@@ -263,26 +280,30 @@ export function createSocialService({ store, accounts, party, game, clock = Date
     /* chat global : tout compte connecté écrit ; le nom affiché vient du compte (serveur), jamais du navigateur */
     async chatPost(me, body = {}){
       await chatReady();
-      const r = chat.post(GLOBAL, me.id, displayName(me) || formatAccountId(me.id), body.text);
+      const channel = chatChannel(body.channel).id;
+      const r = chat.post(GLOBAL, me.id, displayName(me) || formatAccountId(me.id), body.text, { channel, ...await audience(me, channel, body.to) });
       if(r.error === 'bad_text') fail('bad_request', 400, `Message vide ou trop long (${CHAT.maxLen} caractères au plus).`);
       if(r.error === 'too_fast') fail('too_many', 429, `Doucement : un message toutes les ${CHAT.globalGapMs / 1000} secondes au plus.`);
       await serial(() => store.putGlobalChat(chat.room(GLOBAL)));   // état le plus récent, écritures l'une après l'autre
       /* mot interdit (30/10) : publié masqué, et un avertissement pour son auteur */
       const warning = r.hits.length && moderation
         ? await moderation.warn(me.id, { channel: 'global', text: r.original, masked: r.msg.text, hits: r.hits }) : null;
-      return { message: r.msg, ...(warning ? { warning } : {}) };
+      return { message: chatView(r.msg), ...(warning ? { warning } : {}) };
     },
-    /* messages après le numéro after (absent ou invalide : tous ceux gardés) */
+    /* messages après le numéro after (absent ou invalide : tous ceux gardés), seulement ceux que ce joueur peut lire */
     async chatGet(me, after){
       await chatReady();
-      return { messages: chat.since(GLOBAL, Number.isSafeInteger(after) && after > 0 ? after : 0) };
+      return { messages: chat.since(GLOBAL, Number.isSafeInteger(after) && after > 0 ? after : 0).filter(m => canRead(m, me.id)).slice(-CHAT.keep).map(chatView) };
     },
+    /* réglages du chat de ce joueur (onglets, canaux masqués) */
+    async chatPrefs(me){ return sanitizeChatPrefs(await store.getChatPrefs?.(me.id)); },
+    async chatPrefsSave(me, body = {}){ const p = sanitizeChatPrefs(body); await store.putChatPrefs(me.id, p); return p; },
 
   };
   /* toute demande d'un joueur est un signe de vie (state() en premier : le navigateur l'appelle sans arrêt) */
   for(const k of Object.keys(api)){ const fn = api[k]; api[k] = (me, ...rest) => { seen.set(me.id, clock()); lastSeen.set(me.id, clock()); return fn(me, ...rest); }; }
   /* messages du chat global de moins de ms (bulles du Carreau, server/town/service.js) : pas un signe de vie */
-  api.recentChat = async ms => { await chatReady(); const now = clock(); return chat.since(GLOBAL, 0).filter(m => now - m.at <= ms); };
+  api.recentChat = async ms => { await chatReady(); const now = clock(); return chat.since(GLOBAL, 0).filter(m => !m.to && now - m.at <= ms); };   // jamais un MP ni un message de groupe
   return api;
 
   /* devenir amis : on retire les demandes dans les deux sens */

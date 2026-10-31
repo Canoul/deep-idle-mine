@@ -5805,3 +5805,58 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   inchangé en ligne.
 - ⚠️ `pg` doit être installé dans le dossier d'où le serveur dev tourne (`npm install`).
 
+
+## 31/10/2026 — Prison : mines au focus minerai remplacées par une référence (Geoffrey)
+- **Quoi** : `lastMines` note `oreFocus` (un événement de `rec.focus` d'un joueur quelconque de la session vise un minerai ; le focus d'area seul ne compte pas). `oreParts` (src/meta/prison-profile.js) : une mine `refMine` (oreFocus et `areas` ≥ `PRISON.focusRef.area`, 6) pèse comme `PRISON.focusRef.ores`, les autres comptent pour leur butin. Area, mobs et treasures inchangés. `prisonCompos` : `v` = `PRISON.compoVersion` (2) ; compo gardée d'une autre version avec au moins une mine refMine dans l'historique → paliers refaits depuis l'historique, `saved` effacée, une seule fois. Sans mine refMine : compos gardées telles quelles, `v` posé.
+- **Référence** : somme des « mines/h » de Nbrick, LeTaz et Akake lue dans le tableau du 31/10 (`prison-stats.json`), en dur dans la config. Parts après `capOres` : charbon 39,26, fer 35,78, or 14,81, diamant 1,08, graphite 7,57, mithril 1,28, cobalt 0,13, thorium 0,08 %.
+- **Mesure** (calcul de parts, pas de simulation ; rendement supposé proportionnel à la part, stuff inchangé) : profils du trio aujourd'hui mithril 3,33–3,87 %, cobalt et thorium 0,40 % (plafond) → mithril × 0,33–0,39, cobalt × 0,32, thorium × 0,21, fer × 1,03–1,05.
+- **Tests** ✅ prison-profile +1, prison-steps +2, prison-dashboard, prison-sim, prison-ui, prison-server. ❌ Toujours rouge sans lien : « une tour et une instance lancées terminent la prison ».
+- ⚠️ Pas de lecture de la base : nombre réel de mines au focus inconnu. Si le trio a des mines au focus plus anciennes que le palier ou moins de 10 mines au focus, le résultat est un mélange de ses mines et de la référence.
+- ⚠️ `profile` d'une prison en cours : figé dans son enregistrement, non touché ; le changement s'applique à la prochaine entrée. Une compo enregistrée effacée : le lobby retombe sur Actuelle.
+- ⚠️ Le trio passe sous canoul, Sõnata et Allaiks (mithril 5,8–9,8/h en prison, cobalt ≈ 1,1–1,6/h), qui ne sont pas touchés s'ils n'ont pas de mine au focus.
+- ⚠️ `shares` renormalise à chaque relecture : écart de l'ordre de 1e-16 possible, donc une écriture `prison_compo` de plus au pire (comportement d'avant).
+
+## 31/10/2026 — Golbute : rochers et bras (Geoffrey)
+- **Rochers** : la vue n'envoie un rocher que 15 ticks (1,5 s de jeu, 0,75 s réelle à ×2) pour 0,9 s de chute. `trackRocks` (src/render/golbute-fx.js) les suit dans le navigateur, temps réel.
+- **Bras** : pas de texture de côté. `golbute_body` et `golbute_arm` (+ `_crystal`, scripts/gen_golbute.py) ; `armPose` : levés, frappe, étirés jusqu'au sol, retour (640 ms). Le coup se joue après son effet : la partie n'envoie pas le prochain coup à l'avance.
+- **Tests** ✅ golbute-fx, golbute-sprite, golbute ; rendu vérifié dans Chrome (images du vrai moteur de dessin, pierre, cristal, rochers). ⚠️ Pas vu en partie réelle.
+- **Mineur mort** : corps couché, pseudo droit (`sprite.label`, src/render/miner-sprite.js).
+
+## 31/10/2026 — Treasure sur la paroi du puits ignoré (Geoffrey, seed 134583339, signalé plusieurs fois)
+- **Cause** : `decideWork` (src/sim/ai.js) faisait `if(goal!==null && !onTheWay) return changeArea(...)` AVANT la recherche de cibles. Hors de son area de
+  travail, le mineur ne regardait donc rien. Avec « Plus profond » (réglage de base), c'est le cas dès qu'une area plus basse est débloquée. Le correctif du
+  23/10 (seed 1384517703) ne couvrait que le mineur déjà dans son area (`inFocus`) : celui qui traverse une area du dessus restait concerné.
+- **Correctif** : `away` remplace le `return` : recherche faite, minerais écartés, treasures et résidus visés sous les conditions habituelles (portée, `range`), sinon `changeArea`.
+- **Tests** ✅ treasure +3 (Plus profond, focus d'area, un minerai ne détourne pas), échec vérifié avant correctif (« Change d'area → area 1 »). focus, judgment, path, session.
+  Carte réelle de la seed, mineur placé juste au-dessus de chaque coffre : 1/5 visés avant, 5/5 après. Simulation `--miners 3 --count 5` : 0 bloquée, treasures 0,6 ouverts sur 1,6.
+- ⚠️ Le coffre exact du signalement n'est pas rejoué : le stuff et les réglages du joueur ne sont pas connus, une session simulée n'y passe pas. La cause est prouvée par scénario.
+- ⚠️ Coût : la recherche d'itinéraire tourne maintenant à chaque décision hors de son area (avant, seulement celle de `changeArea`). Non mesuré en jeu ; à surveiller.
+
+## 31/10/2026 — Lobby par activités, chat permanent, niveau dans le bandeau (Geoffrey)
+- **Quoi** : `activityMenu` et `st.screen` ('menu' / 'stage') dans src/ui/lobby.js ; en menu, `cards = {}` cache toutes les cartes. `showMenu` à chaque ouverture de l'onglet Lobby, sans effet dans un groupe. `update` ouvre l'activité si le joueur rejoint un groupe depuis le menu. `#lobbyErr` et `#invitesCard` sont sortis des colonnes pour rester visibles dans le menu.
+- **Chat** : carte `#gchatCard` déplacée dans `#gchatDock` (src/ui/chat-dock.js, `CHAT.dock`), hors de `.app` pour rester cliquable en promenade. Il n'est plus déplacé dans le Carreau : `chatSlot`, `placeChat`, `onWalk` de main.js, `.townChat`, `TOWN.chatMin/Max` retirés ou inutilisés. Relu toutes les 3 s sur tous les onglets (avant : Lobby seulement), sauf replié ou page cachée : **plus de requêtes `/api/social/chat`**.
+- **Mise en page** : au-dessus de 1170 px, `.views` et `.dock` se décalent de `--chat-w` ; entre 1171 et 1320 px, les orbes sont cachées car la barre ne tient pas. En dessous de 1170 px, le chat passe au-dessus de la barre d'action et recouvre le contenu s'il est déplié.
+- **Tests** ✅ lobby +2, level +1, chat +1, town, prison-ui, dev-spec. Navigateur ✅ Chrome sans écran, mode dev, 1920, 1366, 1200 et 390 px : les 6 activités, tour puis retour, glissé du chat, aucune erreur console. Bug trouvé ainsi : le bandeau-titre de la carte captait le clic sur la barre.
+- **Session** : `#run` est fixe et ignore `.views` ; `.runL` reçoit `margin-bottom: var(--chat-h)` (`!important` contre `clearDock`, src/main.js). `#miRun`, `#twRun`, `#gtRun`, `#inRun` se décalent de `--chat-w`. `--chat-h` est posé sur `<html>`. Session dev vérifiée ✅ à 1366 px, tour, instance et MI en direct non vérifiées ⚠️.
+- ⚠️ Non vérifié : un vrai téléphone, un groupe à plusieurs comptes. Ordre fragile : le lien `#jugement` passe par `showMenu` puis `showJudgment`, ordre fixé par deux `setTimeout`.
+
+## 31/10/2026 — Lobby : chat réglable par ses bordures, Instance et Jugement à gauche (Geoffrey)
+- **Chat** : barre orange `.chatGrip` retirée ; bordures invisibles `.chatEdge` (haut, droite, coin), `dockWidth` (src/ui/chat-dock.js),
+  `CHAT.dock` minWidth / maxWidth. Départ : largeur × 2,5 (115 → 287,5 u), hauteur 40 → 60 %. Clé locale `chatDock2` pour oublier l'ancienne hauteur.
+- **Instance, Jugement** : `#judgmentCard` et `#instCard` en tête de la colonne de gauche du lobby, sets juste dessous (index.html).
+- **Tests** ✅ chat, lobby. ⚠️ Écrans de 1171 à 1400 px : le chat prend beaucoup de largeur au contenu, à regarder.
+
+## 31/10/2026 — Chat flottant, largeur limitée par l'interface centrale (Geoffrey)
+- **Quoi** : plus aucun décalage (`.views`, `.dock`, `#miRun`…, orbes cachées : retirés, remplace l'entrée précédente). `dockFit` et `centralLeft` (src/ui/chat-dock.js) : largeur voulue arrêtée au bord gauche de la mine ou des cartes de l'onglet, recalculée par un ResizeObserver. `overNav` : chat plus large que le début de la barre d'action, son champ remonte au-dessus. `.lobbyWrap` passe de 560u à 450u, comme l'Inventaire ; `CHAT.dock.startWidth` 575 px.
+- **Tests** ✅ chat +1 (`dockFit`), lobby, town, level. Chrome sans écran, 1920 et 1366 px : chat tiré au maximum sur menu, Mine, Inventaire, Stuff, Craft, Session ; barre d'action immobile, aucune erreur.
+- ⚠️ Tour, instance, MI et Bloc géant en direct non regardés : leur canvas part du bord gauche, le chat y reste au minimum (160 px) et le recouvre. Inventaire : le contenu commence à ≈ 135 px en 1366, le minimum y mord de ≈ 25 px. La carte `#gchatDock` est revenue dans `.app`, sinon `.app` (z-index 1) la mettait au-dessus de la barre d'action.
+
+## 31/10/2026 — Onglets : même largeur, 90 % (Geoffrey ; d'abord 80 %)
+- **Quoi** : `.invWrap`, `.furnWrap`, `.lobbyWrap` à `width:100%` et `max-width: 560u` (retirés : `.lobbyWrap` 450u, `.furnWrap` 400u, Stuff 720u, `.skWrap` 520u, `.actMenu` 300u). `zoom:.9` sur `.view:not([data-view="session"])`, au-dessus de 700 px. `centralLeft` lit directement le contenu de l'onglet.
+- ⚠️ `zoom` : les fenêtres et listes posées dans une vue (`#loot`, `#fpick`, `#fview`…) sont réduites aussi. Firefox ne gère `zoom` que depuis la version 126. Session non réduite : la mine se règle sur son canvas.
+
+## 31/10/2026 — Chat global : canaux (Geoffrey)
+- **Quoi** : `CHAT.channels`, `globalKeep` 300 tous canaux, `tabsMax`, `tabNameMax`. `parseChatInput`, `sanitizeChatPrefs`, `chatChannel` (src/shared/chat.js). Serveur : champ `to` sur les MP et messages de groupe, `canRead` filtre chaque lecture, `chatView` retire `to` ; `recentChat` exclut tout message avec `to`. Lecteurs du groupe figés à l'envoi (`party.membersOf`). ns `chat_prefs` (`/api/social/chat-prefs`). Mot coupé cherché dans le même canal et pour les mêmes lecteurs. src/ui/chat-tabs.js.
+- ⚠️ Modération : les MP et messages de groupe passent aussi par le filtre, et le texte d'un mot interdit arrive dans la fiche de modération (visible des créateurs). Le contenu des MP est en clair dans `chat_global`, en base, comme le reste du chat.
+- ⚠️ Connu, ancien : un message reçu juste avant d'envoyer le sien peut sauter à l'écran (`add` avance `last` au numéro du message envoyé).
+- ⚠️ Taille du chat (hauteur, largeur, repli) : gardée dans le navigateur, pas sur le compte.
