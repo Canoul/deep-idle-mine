@@ -19,3 +19,41 @@ test('bilan : le détail de ce que chacun portait encore à la fin (perdu)', asy
   assert.deepEqual(G.summary.lostBags, [{ name:G.miners[0].name, items:{ 'Cristal de pleine lune':4, Fer:12 } }]);
   assert.deepEqual(G.summary.lost, [G.miners[0].name]);
 });
+
+/* 31/10/2026 : bilan de tour jamais affiché, depuis les correctifs du 30/10 (bilan « vu » dès qu'il s'affiche, seule la
+   dernière session compte) */
+const ME = { id:'AAAA1111', name:'Zoe', guest:false }, OTHER = { id:'BBBB2222', name:'Max', guest:false };
+async function service(){
+  const { createMemoryGameStore } = await import('../server/game/store.js');
+  const { createGameService } = await import('../server/game/service.js');
+  const { fakeLive } = await import('./helpers.js');
+  const store = createMemoryGameStore();
+  const game = createGameService({ store, liveRunner:fakeLive(rec => ({ id:rec.id, shares:[] })), clock:() => 1e7, randomSeed:() => 7 });
+  const done = (id, mode, startedAt, endedAt, seen = []) => store.putGameSession({ id, mode, status:'done', startedAt, endedAt, seen, leaves:[],
+    players:[{ account:ME.id, name:'Zoe' }], result:{ shares:[{ account:ME.id, bag:{} }] } });
+  return { store, game, done };
+}
+
+test('bilan : la dernière session est celle finie en dernier, pas celle commencée en dernier (mine instantanée pendant une tour)', async () => {
+  const { game, done } = await service();
+  await done('tour', 'tower-angel', 1000, 5000);
+  await done('mi', 'mi', 2000, 3000, [ME.id]);
+  assert.equal((await game.state(ME)).ended?.id, 'tour');
+});
+
+test('bilan : une session vue n\'est pas remontrée au rechargement', async () => {
+  const { game, done } = await service();
+  await done('tour', 'tower-angel', 1000, 5000);
+  assert.equal((await game.state(ME)).ended?.id, 'tour');
+  await game.ack(ME, 'tour');
+  assert.equal((await game.state(ME)).ended, null);
+});
+
+test('bilan : l\'écran qui attendait cette session la reçoit même si un autre onglet l\'a déjà marquée vue', async () => {
+  const { game, done } = await service();
+  await done('tour', 'tower-angel', 1000, 5000, [ME.id]);
+  assert.equal((await game.state(ME, 'tour')).ended?.id, 'tour');
+  assert.equal((await game.state(ME, 'inconnue')).ended, null);
+  assert.equal((await game.state(OTHER, 'tour')).ended, null, 'la session d\'un autre joueur reste invisible');
+  assert.equal((await game.state(ME, { id:'tour' })).ended, null, 'valeur invalide ignorée');
+});

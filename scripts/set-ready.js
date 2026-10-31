@@ -19,5 +19,5 @@ if(!name) fail('--name : le pseudo du joueur.');
 
 const data = await adminPost('/api/admin/party-ready', { name, ready, always });
 const me = data.party.members.find(m => m.name === data.account);
-const state = me?.leader ? 'chef du groupe (lancer = prêt)' : me?.always ? 'prêt tout le temps' : me?.ready ? 'prêt' : 'pas prêt';
+const state = me?.leader ? 'chef du groupe (lancer = prêt)' : me?.ready ? (me.always ? 'prêt tout le temps' : 'prêt') : 'pas prêt';
 console.log(`« ${data.account} » : ${state}, lobby de « ${data.party.leader} » (${data.party.members.map(m => m.name).join(', ')}).`);

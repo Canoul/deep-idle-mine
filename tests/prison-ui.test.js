@@ -101,13 +101,13 @@ test('lancer (chef ou seul) : la confirmation nomme ce qui sera terminé (sa pri
   assert.equal(launchPrisonText({ mine: false, party: { members: [{ account: 'A', name: 'Zoe', prison: true }] }, meId: 'A' }), '', 'sa propre ligne : mine fait foi');
 });
 
-test('membre : « Je suis prêt » et « Prêt tout le temps » demandent confirmation si sa prison tourne', () => {
+test('membre : « Je suis prêt » demande confirmation si sa prison tourne (la case « Prêt tout le temps » non : elle ne rend pas prêt)', () => {
   assert.equal(readyPrisonText({ prison: null }), '');
   assert.equal(readyPrisonText({ prison: { state: 'done' } }), '');
   const t = readyPrisonText({ prison: { state: 'running' } });
   assert.match(t, /quand le chef lance, ta prison est terminée/);
   assert.match(t, /pas ce que le mineur porte/);
-  assert.match(readyPrisonText({ prison: { state: 'waiting' }, always: true }), /^Prêt tout le temps/);
+  assert.match(readyPrisonText({ prison: { state: 'waiting' } }), /^Prêt :/);
 });
 
 test('sondage de la prison : 401 → arrêt ; no_session → état relu ; autre erreur → recul doublé jusqu\'à uiPoll', () => {

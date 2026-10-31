@@ -5869,3 +5869,48 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - ⚠️ Pas mesuré en ligne ni sur plusieurs joueurs. +48 % de requêtes de vue environ (2,7 → 4 par seconde par joueur), pump deux fois plus souvent : à surveiller. Les actions (coup, minage) ne sont pas différées : elles peuvent précéder la position de 0,4 s. `tests/perf.test.js` « boîte de mesures » et `prison-server` « une tour et une instance » échouent, comme avant.
 - Sur le port dev : `?perf` dans l'adresse. Hébergement : l'adresse 82.223.196.89 est chez ARSYS (groupe IONOS), à confronter à la doc (OVH).
 
+
+## 31/10/2026 — Gobelins asservis : roche sans minerai à portée (Geoffrey)
+- **Constat** (3 seeds, 3 mineurs, couronne sur le 1er, stats de base, 38 gobelins) : vie 29,9 s de jeu (≈ 15 s réelles à ×2), mais 12,5 s inactif ; 78 % de cette attente sans aucun minerai à `reach` (10 gobelins sur 38 nés sans minerai).
+- **Quoi** (src/sim/thrall.js) : `pickRock` (bloc cassable le plus proche, -1,5 tout droit dans `o.dir`), repli quand `pickTarget` ne trouve rien. `pickTarget` est relancé à chaque décision : un minerai entré dans `reach` passe devant.
+- **Corrigé au passage** : `stepToward` creusait à travers un bloc `taken` (minerai visé par un mineur) ; refusé maintenant.
+- **Mesure** : avant 7,8 blocs et 3,1 minerais par gobelin, 12,5 s inactif ; après 14,0 blocs et 4,2 minerais, 1,0 s inactif.
+- **Tests** ✅ goblin-thrall +4 (3 adaptés à l'ancien « il attend »), goblin-king, effects, session, anti-triche (119). Simulation `--miners 3 --count 5 --crown` : 0 bloquée.
+- ⚠️ Focus « seulement » : un minerai ignoré par le focus reste cassable comme de la roche (bonus sans gravité). `updateLight` est appelé à chaque bloc : plus souvent qu'avant, à surveiller. Stats de base seulement, pas vu en vrai partie.
+
+## 31/10/2026 — Chat : canal gardé (Geoffrey)
+- **Quoi** : `sent` (src/ui/chat-tabs.js), appelé par src/ui/chat.js après un envoi réussi ; `prefs.channel`, et `prefs.to` pour un MP. `parseChatInput` reçoit le destinataire gardé ; le sélecteur montre « À pseudo » pendant un MP.
+- **Tests** ✅ chat +2.
+- ⚠️ Un joueur renommé ou supprimé : le MP gardé est refusé (« Ce joueur n'existe pas »), changer de canal débloque.
+
+## 31/10/2026 — Menu du Lobby avec l'équipe (Geoffrey)
+- **Quoi** : `#lobbyMenu` dans la colonne de gauche de `.lobbyCols`, `#lobbyStage` réduit à l'en-tête « ← Activités ». `menuCards` ; au menu, `def` vaut null (aucun mode choisi). Retirés : exception de groupe de `showMenu`, ouverture de la Mine en rejoignant un groupe.
+- **Tests** ✅ lobby +1.
+
+## 31/10/2026 — « Prêt tout le temps » revu (Geoffrey) — branche `geoffrey/pret-prison`
+- **Panne** : la case n'était gardée que dans un groupe (`alwaysOn` en mémoire, reconstruit depuis les groupes au `load`).
+  La prison se fait seul : case cachée, et réglage perdu au premier redémarrage (⚠️ de l'entrée du 23/10, corrigé ici).
+- **Quoi** : store `getAlwaysReady` / `setAlwaysReady` (ns `always_ready`, `server/game/store.js`) ; `alwaysOn` relu au
+  `load`, les `m.always` des groupes existants y sont recopiés. `state` renvoie `alwaysReady`. Route `always-ready`
+  possible sans groupe. Sémantique : `m.always` ne vaut plus prêt (`publicParty`, `notReady`, `sweep`, `newMember`) ;
+  `unready` garde `always && ready` ; `ready(false)` enlève prêt ; cocher en session met `ready` (il était prêt).
+  Lobby : `alwaysReadyState` lit `st.alwaysReady`, plus de confirmation prison sur la case (reste sur « Je suis prêt »).
+  `adminReady` : `--always on/off` met aussi prêt / pas prêt ; `ready` donné l'emporte.
+- **Tests** : `tests/party`, `lobby`, `admin-party`, `prison-ui`.
+- ✅ Vérifié par les tests ; ⚠️ pas essayé dans un navigateur.
+- ⚠️ Un membre coché pas prêt et absent est retiré après `memberTimeout`, comme tout membre pas prêt.
+
+## 31/10/2026 — Chat : canal Commerce retiré (Geoffrey) — branche `geoffrey/retire-commerce`
+- **Quoi** : retiré de `CHAT.channels`, `SHORTCUTS` et de la regex de `parseChatInput` (`src/shared/chat.js`), `.ch-commerce`, aide, wiki.
+  Données : rien à migrer, `chatChannel` et `sanitizeChatPrefs` ramènent un canal inconnu sur Général.
+- **Tests** : `tests/chat.test.js`. ✅ Vérifié par les tests.
+- ⚠️ `/c toto` n'est plus un raccourci : il part tel quel dans le canal choisi, comme toute commande inconnue.
+
+## 31/10/2026 — Bilan de tour jamais affiché (Geoffrey), régression des correctifs du 30/10
+- **Cause 1** (`1abfc1c`) : `ack` dès `showResult`. Un autre onglet ou appareil qui reçoit le bilan d'abord le marque vu ; l'écran du joueur reçoit `ended: null`, puis `showNoSession` dans `pollResult`, sans bilan.
+- **Cause 2** (`8757bb5`) : `last = list.find(...)`, liste triée par début. Une MI commencée pendant la tour et déjà vue masquait la tour.
+- **Correctif** : `state(me, waitedId)` (route `?ended=<id>`) : l'écran qui attend sa session la reçoit même vue, seulement si le compte y a participé sans la quitter. `last` = fin la plus récente. `pollResult` et le `no_session` de `pollView` envoient l'id ; une page rechargée ne l'envoie pas.
+- **Tests** ✅ bilan +3, les 2 tests de cause échouaient avant le correctif.
+- ❌ Sans lien, déjà sur `main` : `table de recherche par le serveur` (tests/game-service.test.js:401) est instable, il attend 15 à 30 parts au recyclage et échoue au hasard (2 fois sur 8 sur `main` sans ce correctif, 4 sur 8 avec, même tirage aléatoire). Non traité.
+- ⚠️ La cause réelle du signalement n'est pas prouvée : pas d'accès aux données du serveur. Les deux chemins sont reproduits par test, pas dans un navigateur.
+- ⚠️ `pollResult` : session abandonnée → `showNoSession` ne ferme pas `#end` (« Session terminée… » pourrait rester à l'écran). Vu à la lecture, non testé, non corrigé.

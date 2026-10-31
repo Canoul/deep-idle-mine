@@ -425,7 +425,7 @@ async function pollLobby(){
     if(st.session && st.session !== rec?.id){          // lancée par le chef (ou relancée pendant le bilan : il est lu)
       endAck?.(); await refresh(); return nav.show('session');
     }
-    lobby.update({ party:st.party, invites:st.invites, lfg:st.lfg, shrines:st.shrines ?? [] });
+    lobby.update({ party:st.party, invites:st.invites, lfg:st.lfg, shrines:st.shrines ?? [], alwaysReady:st.alwaysReady });
     setLfgFound(st.lfg?.found);
   } catch(e){ console.warn(e); }
   lobbyTimer = setTimeout(pollLobby, rec ? PARTY.pollInSession : PARTY.poll);
@@ -539,7 +539,7 @@ const gchatTabs = setupChatTabs({ bar: $('gchatTabs'), panel: $('gchatPanel'), s
                                   save: p => socialApi.chatPrefsSave(p).catch(console.warn), onChange: () => gchat?.refresh() });
 const gchat = setupChat({ prefix:'gchat', get: after => socialApi.chat(after), post: msg => socialApi.say(msg), meId: () => acct.account?.id, onWarning,
                           paused: () => document.hidden || gchatDock.folded, time: true,
-                          show: gchatTabs.show, line: chatLine, parse: text => parseChatInput(text, gchatTabs.channel()) });
+                          show: gchatTabs.show, line: chatLine, parse: text => parseChatInput(text, gchatTabs.channel(), gchatTabs.target()), sent: gchatTabs.sent });
 
 /* dev : vitesse et pause sont l'horloge de la session, sur le serveur */
 async function setClock(opts){
@@ -607,7 +607,7 @@ async function pollView(){
     }
     if(!r.view || G.over) return ended();
   } catch(e){
-    if(e instanceof ApiError && e.code === 'no_session') return refresh();   // quittée (autre onglet) ou déjà finie
+    if(e instanceof ApiError && e.code === 'no_session') return refresh(rec?.id);   // quittée (autre onglet) ou déjà finie
     console.warn(e);
   }
   viewTimer = setTimeout(pollView, nextView(document.hidden ? VIEW_HIDDEN : VIEW_EVERY, t0));
@@ -774,7 +774,7 @@ function ended(){
 async function pollResult(){
   if(!waiting) return;
   try {
-    const st = await gameApi.state();
+    const st = await gameApi.state(waitingFor);
     const what = resultChoice(st.ended, waitingFor);
     if(what === 'show') return showResult(st);
     if(what === 'stale') gameApi.ack(st.ended.id).catch(() => {});   // ancien bilan jamais vu : pas celui de cette session
@@ -828,8 +828,8 @@ function setProgress(p){
   return up;
 }
 
-async function refresh(){
-  const st = await gameApi.state();
+async function refresh(waited){
+  const st = await gameApi.state(waited);
   showBan();
   setInventory(st.inventory);
   if(!st.ended || st.session) setProgress(st.progress);
