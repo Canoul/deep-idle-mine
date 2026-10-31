@@ -1,6 +1,7 @@
 /* Chat global permanent (31/10/2026, Geoffrey) : à gauche et en bas de l'écran, quel que soit l'onglet. Il flotte par-dessus : sa taille
    ne décale jamais le reste. Hauteur et largeur réglables en tirant sa bordure, en haut, à droite ou dans le coin (CHAT.dock) ;
-   la largeur s'arrête au bord de l'interface centrale. Repliable ; tout est gardé dans ce navigateur. Petit écran : replié au départ, il recouvrirait le contenu. */
+   la largeur s'arrête au bord de l'interface centrale. Repliable ; tout est gardé dans ce navigateur. Petit écran : replié au départ, il recouvrirait le contenu.
+   Téléphone (31/10/2026, CHAT.dock.phone, classes body.phone et body.chatTab posées par src/ui/nav.js) : il ne s'affiche que dans son onglet Chat, en plein écran, sans repli ni bordures. */
 import { CHAT } from '../config.js';
 
 const KEY = 'deepIdleMine.chatDock2';
@@ -37,6 +38,8 @@ export function setupChatDock({ dock, edges, fold, onChange = () => {} }){
   const saved = load();
   let share = dockShare(saved.share), width = dockWidth(saved.width), folded = typeof saved.folded === 'boolean' ? saved.folded : innerWidth <= 1170;
   const remember = () => save({ share, width, folded });
+  const body = document.body.classList;
+  const shut = () => body.contains('phone') ? !body.contains('chatTab') : folded;   // téléphone : le repli du joueur n'y compte pas
   function fit(){
     const w = dockFit(width, centralLeft());
     document.body.style.setProperty('--chat-w', `${w}px`);
@@ -51,13 +54,13 @@ export function setupChatDock({ dock, edges, fold, onChange = () => {} }){
   function apply(){
     document.documentElement.style.setProperty('--chat-h', `${share * 100}dvh`);
     fit();
-    dock.classList.toggle('folded', folded);
+    dock.classList.toggle('folded', shut());
     fold.textContent = folded ? '+' : '–';
-    document.body.classList.toggle('chatOn', !dock.hidden && !folded);
+    document.body.classList.toggle('chatOn', !dock.hidden && !shut());
     onChange();
   }
   for(const edge of edges) edge.addEventListener('pointerdown', e => {
-    if(folded) return;
+    if(shut()) return;
     e.preventDefault();
     edge.setPointerCapture(e.pointerId);
     const move = ev => {
@@ -69,8 +72,11 @@ export function setupChatDock({ dock, edges, fold, onChange = () => {} }){
     edge.addEventListener('pointermove', move); edge.addEventListener('pointerup', up); edge.addEventListener('pointercancel', up);
   });
   fold.addEventListener('click', e => { e.preventDefault(); folded = !folded; remember(); apply(); });
+  matchMedia(CHAT.dock.phone).addEventListener('change', apply);
   return {
-    get folded(){ return folded; },
+    get folded(){ return shut(); },
     show(on){ dock.hidden = !on; apply(); },
+    /* onglet changé : sur téléphone, c'est lui qui ouvre ou ferme le chat */
+    refresh: apply,
   };
 }
