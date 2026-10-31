@@ -1832,6 +1832,10 @@ export const GUIDE = { pickaxe:'Pioche en pierre', ingot:'Lingot de fer', ore:'F
 /* comptes de l'équipe qui voient les outils d'équilibrage dans le jeu (30/10/2026 : rendement de la prison, Mon compte),
    par pseudo ; le serveur refuse ces données à tout autre compte */
 export const ADMIN_VIEW = { names:['admin'] };
+/* Guilde (31/10/2026, Geoffrey) : xpPct % de l'XP reçue par un membre va à la guilde ; mêmes niveaux que le mineur (XP.curve).
+   poll : relecture de l'onglet ouvert. maxInvites, maxRequests : en attente par guilde ; maxPendingPerPlayer : demandes par joueur. */
+export const GUILD = { maxMembers:30, xpPct:1, nameMin:3, nameMax:24, maxInvites:50, maxRequests:50, maxPendingPerPlayer:5, poll:5000 };
+
 export const LEADERBOARD = { size:50, refresh:30_000, cacheMs:15_000, teamMax:3, hidden:['admin'] };
 
 /* Énergie du compte (29/10/2026) : lancer une mine classique coûte un entier tiré dans cost.min..cost.max (refus sous

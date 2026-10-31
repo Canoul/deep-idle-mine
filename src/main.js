@@ -71,12 +71,13 @@ import { createEffectsBar, placeEffectsBar, focusedMiner } from './ui/effects.js
 import { fillHelp } from './ui/help.js';
 import { setupGuide } from './ui/guide.js';
 import { setupSocial } from './ui/social.js';
+import { setupGuild } from './ui/guild.js';
 import { setupJudgment } from './ui/judgment.js';
 import { setupNotify } from './ui/notify.js';
 import { setupObtained } from './ui/obtained.js';
 import { recipeOf } from './meta/craft.js';
 import { createAccountUI, bootAccount, renderNavAccount } from './ui/account.js';
-import { gameApi, partyApi, instantApi, socialApi, giantApi, townApi, ApiError, moderationApi } from './net/api.js';
+import { gameApi, partyApi, instantApi, socialApi, guildApi, giantApi, townApi, ApiError, moderationApi } from './net/api.js';
 import { ask, tell } from './ui/dialog.js';
 import { warningText, banBarText } from './shared/moderation-text.js';
 import { energyText, energyPct, prisonBanner, awayText, hasAway, prisonActive, launchPrisonText, prisonPollError, prisonOnScreen } from './ui/prison.js';
@@ -272,6 +273,7 @@ fillHelp();        // « ? » d'aide des pages (src/ui/help.js)
 
 /* ---------- navigation ---------- */
 const historyTab = setupHistory({ load: () => gameApi.history() });
+let guildTab = null;   // créé plus bas ; l'onglet peut s'ouvrir dès setupNav
 let nav;   // l'onglet de départ est ouvert pendant setupNav, avant que nav soit assigné
 let giantUI = null;   // Bloc géant (créé plus bas) : sa visite occupe l'onglet Session
 let guide = null;     // guide « Premiers pas » (créé au démarrage, une fois l'état du joueur lu)
@@ -287,6 +289,7 @@ nav = setupNav($('nav'), $('views'), id => {
   if(id==='inventaire'){ renderInventory(ui.inv, ui.fresh); nav?.badge('inventaire', false); }
   if(id==='skills') skills?.refresh();   // le bouton reset suit la session en cours
   if(id==='historique') historyTab?.refresh();
+  if(id==='guilde') guildTab?.open();
   if(nav && (from==='chat' || id==='chat')) gchatDock.refresh();   // téléphone : le chat a son onglet (pas au tout début : il n'est pas encore créé, et il se règle tout seul)
   if(id==='session' && prisonActive(prison)) kickPrison();   // on regarde la prison : envois rapprochés tout de suite
   guide?.refresh();                      // « Regarde ton butin » : l'inventaire vient d'être ouvert
@@ -453,12 +456,13 @@ function setSocial(st){
   if(!st?.friends) return st;
   social.set(st);
   nav.badge('social', st.incoming.length > 0);
+  nav.badge('guilde', st.guildInvites?.length > 0);
   lastSocial = st;
   syncNotifs();
   return st;
 }
 function syncNotifs(){
-  const st = lastSocial ?? { partyInvites: [], incoming: [] };
+  const st = lastSocial ?? { partyInvites: [], incoming: [], guildInvites: [] };
   notify.sync([
     ...(lfgFound && !lfgFound.error && !G ? [{ key: 'lfg:' + lfgFound.at, icon: pxi('group'),
       text: `Groupe trouvé : <b>${esc(lfgFound.names.join(', '))}</b>`,
@@ -466,11 +470,16 @@ function syncNotifs(){
     ...st.partyInvites.map(i => ({ key: 'p:' + i.code + ':' + i.at, icon: pxi('group'), text: `<b>${esc(i.from)}</b> vous a invité dans son lobby${i.full ? ' <span class="mut">(complet)</span>' : ''}`,
       actions: [{ label: 'Rejoindre', primary: true, run: () => joinParty(() => partyApi.join(i.code)) },
                 { label: 'Décliner', run: async () => { await partyApi.decline(i.code); pollSocial(); } }] })),
+    ...(st.guildInvites ?? []).map(i => ({ key: 'g:' + i.guildId, icon: pxi('group'), text: `<b>${esc(i.name)}</b> vous invite dans sa guilde`,
+      actions: [{ label: 'Accepter', primary: true, run: () => answerGuild(guildApi.acceptInvite(i.guildId)) },
+                { label: 'Refuser', run: () => answerGuild(guildApi.refuseInvite(i.guildId)) }] })),
     ...st.incoming.map(r => ({ key: 'f:' + r.id, icon: pxi('person'), text: `<b>${esc(r.name)}</b> vous a envoyé une demande d'ami`,
       actions: [{ label: 'Accepter', primary: true, run: async () => setSocial(await socialApi.accept(r.id)) },
                 { label: 'Refuser', run: async () => setSocial(await socialApi.refuse(r.id)) }] })),
   ]);
 }
+/* réponse à une invitation de guilde : pop-up et onglet à jour */
+async function answerGuild(done){ await done; pollSocial(); guildTab?.refresh(); }
 async function pollSocial(){
   clearTimeout(socialTimer);
   if(acct.offline || !acct.account){ lastSocial = null; lfgFound = null; notify.sync([]); return; }
@@ -485,6 +494,7 @@ async function joinParty(fn){
   nav.show('lobby'); pollLobby(); pollSocial();
   return r;
 }
+guildTab = setupGuild({ root: document.querySelector('.view[data-view="guilde"]'), onChange: () => pollSocial() });
 const social = setupSocial({
   request: async name => setSocial(await socialApi.request(name)),
   accept:  async id => setSocial(await socialApi.accept(id)),

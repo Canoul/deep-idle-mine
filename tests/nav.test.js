@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 import { TABS, pickTab, escapeTab, OVERLAYS } from '../src/ui/nav.js';
 
 test('les onglets sont dans l\'ordre voulu, Lobby puis Session en premier', () => {
-  assert.deepEqual(TABS.map(t => t.label), ['Lobby','Session','Inventaire','Stuff','Craft','Four','Concasseur','Amélioration','Recherche','Skills','Sorts','Historique','Social']);
+  assert.deepEqual(TABS.map(t => t.label), ['Lobby','Session','Inventaire','Stuff','Craft','Four','Concasseur','Amélioration','Recherche','Skills','Sorts','Historique','Social','Guilde']);
   assert.equal(new Set(TABS.map(t => t.id)).size, TABS.length, 'identifiants uniques');
 });
 

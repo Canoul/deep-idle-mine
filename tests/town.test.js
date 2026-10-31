@@ -15,7 +15,7 @@ import { enterTab, enterLabel, tapAction, onStatue, mergeOthers, cardHtml, lfgBu
 
 test('plan : un bâtiment par onglet, de gauche à droite sans chevauchement, dans la ville', () => {
   const { buildings, width } = townLayout();
-  assert.deepEqual(new Set(buildings.map(b => b.tab)), new Set(TABS.map(t => t.id)));
+  assert.deepEqual(new Set(buildings.map(b => b.tab)), new Set(TABS.filter(t => !t.noBuilding).map(t => t.id)));
   for(let i = 1; i < buildings.length; i++) assert.ok(buildings[i].x >= buildings[i - 1].x + buildings[i - 1].w + TOWN.gap);
   assert.equal(width, TOWN_WIDTH);
   assert.ok(buildings[0].x >= TOWN.margin && buildings.at(-1).x + buildings.at(-1).w + TOWN.margin <= width);

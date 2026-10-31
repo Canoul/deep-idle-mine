@@ -48,6 +48,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   refus nommant les joueurs à court, un refus n'arrête pas la prison. Recharge **seulement en prison** : 8 par heure de jeu,
   plafonnée à 100, gardée au dixième. Aucun autre mode ne coûte.
 - **Lobby par activités** (31/10, Geoffrey) : menu des 6 activités, puis sets à gauche et carte de l'activité à droite (ancien : carte « Où miner »). Niveau et XP dans le bandeau du haut. Chat global permanent en bas à gauche, hauteur réglable (`CHAT.dock`, src/ui/chat-dock.js) ; ancien : carte du Lobby.
+- **Guildes** (31/10, Geoffrey ; `GUILD`, server/guild/, src/shared/guild.js, src/ui/guild.js) : onglet Guilde, grades Chef / Officier / Membre, invitations et demandes, 30 membres, 1 % de l'XP des membres, même courbe que le mineur, classement. Bonus et bâtiments à venir.
 - **Raffle** (31/10, Geoffrey ; `RAFFLE`, server/social/raffle.js, src/shared/raffle.js) : tirage au sort dans le chat global, `!join` jamais publié, réservé aux comptes avec pseudo, état en ns `raffle` (reprend après un redémarrage), lot versé une fois par id de raffle. Forcer : `sudo node scripts/force-raffle.js` (route `/api/admin/raffle`).
 - **Canaux du chat global** (31/10, Geoffrey) : Général, MP, Groupe, Commerce, LFG, onglets par compte (ns `chat_prefs`, src/ui/chat-tabs.js).
 - **Plafond de la prison** (31/10, Geoffrey ; provisoire) : `PRISON.oreCap`, cobalt et thorium 0,4 % maximum chacun de la répartition des minerais, surplus redonné aux autres minerais.

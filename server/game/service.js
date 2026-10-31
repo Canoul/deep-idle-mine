@@ -154,8 +154,15 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
                                     random = () => crypto.randomBytes(6).readUIntBE(0, 6) / 2**48,
                                     /* modération du chat (server/moderation/service.js, 30/10) : avertit l'auteur d'un mot interdit ; absente = rien */
                                     moderation = null,
+                                    /* XP d'un joueur tout juste créditée (server/guild/service.js), une seule fois par session */
+                                    onXp = () => {},
                                     /* annonces Discord (server/social/discord.js) : announce(texte), en tâche de fond */
                                     announce = () => {} }){
+  /* transmet l'XP créditée à la guilde : une panne de ce côté ne doit jamais bloquer la fin d'une session */
+  async function shareXp(account, xp, isDev){
+    if(isDev || !(xp > 0)) return;
+    try { await onXp(account, xp); } catch(e){ console.error(e); }
+  }
   /* copies (copy:<pseudo>) des mineurs de test, rangées dans la session au lancement : { botCopies: [copie | null] } ou rien */
   /* preset du joueur qui lance (mode dev) : { selfPreset, selfCopy? } ou rien ; une copie introuvable → rien */
   const selfPresetOf = id => {
@@ -488,7 +495,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     if(fresh){ markFound(Object.keys(bag), p.specs?.name); await store.putInventory(p.account, JSON.parse(serialize(inv))); }
     const xp = Number.isSafeInteger(share.xp) && share.xp > 0 ? share.xp : 0;
     const pr = await loadProgress(p.account);
-    if(creditXp(pr, key, xp, { tree: sanitizeSkills(p.specs?.skills).tree, xp: specXpOf(xp) })) await store.putProgress(p.account, pr);
+    if(creditXp(pr, key, xp, { tree: sanitizeSkills(p.specs?.skills).tree, xp: specXpOf(xp) })){ await store.putProgress(p.account, pr); await shareXp(p.account, xp, dev); }
     const t = Number.isFinite(summary?.t) && summary.t > 0 ? summary.t : 0, energy = energyOfTicks(t / DT);
     /* énergie réellement créditée (plafond ENERGY.max) : c'est elle que comptent le bandeau et le bilan d'absence */
     const e = await loadEnergy(p.account), before = e.value;
@@ -763,7 +770,9 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           if(rec.mode === 'mine' && !rec.dev){ await catchUpAreaMax(share.account, pr); areaUp = raiseAreaMax(pr, summary.areasUnlocked); }
           /* XP de spécialisation : recalculée ici, pour l'arbre figé au lancement (rec.skills, revérifié) */
           const tree = sanitizeSkills(rec.skills?.[share.account]).tree;
-          if(creditXp(pr, rec.id, share.xp ?? 0, { tree, xp: specXpOf(share.xp) }) || areaUp) await store.putProgress(share.account, pr);
+          const credited = creditXp(pr, rec.id, share.xp ?? 0, { tree, xp: specXpOf(share.xp) });
+          if(credited || areaUp) await store.putProgress(share.account, pr);
+          if(credited) await shareXp(share.account, share.xp, rec.dev);
         });
       }
       rec = await store.getGameSession(id);
