@@ -758,6 +758,7 @@ body{--chat-w:calc(287.5*var(--u))}
   :root{--fs:16px;--fs-s:14px;--fs-l:19px;--fs-xl:24px;--fs-h1:36px}
   .topbar{gap:calc(3*var(--u));padding:0 calc(3*var(--u))}
   .navWiki span,.navAccount .who small,.navSession:not(.live){display:none}   /* sans session, le pseudo a sa place */
+  .navSession>.pi{display:none}
   .navEnergy .bar,#navPrisonBtn,.navLevel .bar,.navLevel small{display:none}
   .dock ul button kbd{display:none}
   .guide{right:8px;bottom:calc(var(--dock-h) + 6*var(--u))}
