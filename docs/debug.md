@@ -5914,3 +5914,11 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - ❌ Sans lien, déjà sur `main` : `table de recherche par le serveur` (tests/game-service.test.js:401) est instable, il attend 15 à 30 parts au recyclage et échoue au hasard (2 fois sur 8 sur `main` sans ce correctif, 4 sur 8 avec, même tirage aléatoire). Non traité.
 - ⚠️ La cause réelle du signalement n'est pas prouvée : pas d'accès aux données du serveur. Les deux chemins sont reproduits par test, pas dans un navigateur.
 - ⚠️ `pollResult` : session abandonnée → `showNoSession` ne ferme pas `#end` (« Session terminée… » pourrait rester à l'écran). Vu à la lecture, non testé, non corrigé.
+
+## 31/10/2026 — Chat : largeur en tour (Geoffrey)
+- **Cause** : `centralLeft` lisait le bord de la zone (`#cvTwWrap`, 12 px) et non du canvas centré dedans (421 px à 1872 px de large) : limite sous `minWidth`, chat bloqué à 160 px.
+- **Correctif** : mesure sur `#cv`, `#cvMi`, `#cvTw`, `#cvGt`, `#cvIn`, aussi observés par le ResizeObserver.
+- **Tests** : vérifié ✅ dans Chrome sur une tour dev à 1872 × 815. `centralLeft` lit le DOM, pas de test unitaire. Instance, MI et Bloc géant : même mesure, non lancés ⚠️.
+
+## 31/10/2026 — Grimoire trié (Geoffrey)
+- **Quoi** : `grimoireOrder` (src/ui/spells.js), tri stable par état. **Tests** ✅ spells +1.

@@ -43,6 +43,11 @@ export function spellStatus(st, id, ctx, owned = 0){
   return { status:'locked', label:`${TREE[s.unlock.tree].label} spé ${s.unlock.level}` };
 }
 
+/* ordre du grimoire (31/10/2026, Geoffrey) : les sorts débloqués (dans la barre ou disponibles) d'abord, puis parchemin en poche,
+   réservés à une autre spé, pas débloqués ; dans chaque groupe, l'ordre de la config */
+const RANK = { equipped:0, ready:0, learn:1, other:2, locked:3 };
+export const grimoireOrder = (list, statusOf) => [...list].sort((a, b) => RANK[statusOf(a.id).status] - RANK[statusOf(b.id).status]);
+
 /* onOp({ action:'equip', spell, slot } | { action:'unequip', slot } | { action:'learn', item }) → promesse de la réponse
    du serveur ({ spells, inventory? }) ; onInventory(inv) : inventaire renvoyé après un parchemin appris */
 export function setupSpells({ onOp, onInventory = () => {}, onChange = () => {} }){
@@ -89,7 +94,7 @@ export function setupSpells({ onOp, onInventory = () => {}, onChange = () => {} 
 
   function renderList(){
     const BADGE = { locked:`<span class="spBadge lk">${pxi('lock')}</span>`, learn:'<span class="spBadge nw">!</span>', equipped:'<span class="spBadge eq">✓</span>' };
-    $('spellList').innerHTML = SPELLS.list.filter(s => tab === 'all' || treeOf(s) === tab).map(s => {
+    $('spellList').innerHTML = grimoireOrder(SPELLS.list.filter(s => tab === 'all' || treeOf(s) === tab), statusOf).map(s => {
       const v = statusOf(s.id), drag = v.status === 'ready' || v.status === 'equipped';
       return `<div class="spTile tr-${treeOf(s)} st-${v.status}${v.bad ? ' bad' : ''}${s.id === cur ? ' sel' : ''}" data-spell="${s.id}" role="button" tabindex="0"${drag ? ' draggable="true"' : ''}>`+
              `<span class="spTIco">${pxi(s.px)}${BADGE[v.status] ?? ''}</span><span class="spTName">${esc(s.name)}</span><span class="spTSub">${esc(v.label)}</span></div>`;
