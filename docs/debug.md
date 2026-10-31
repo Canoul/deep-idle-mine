@@ -6113,6 +6113,11 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Panne évitée** : recharger sur #chat plantait (`gchatDock` lu avant sa création) ; le rappel d'onglet attend `nav`.
 - **Pas vérifié ⚠️** : vrai téléphone et clavier virtuel (le champ peut passer dessous). En PC, `#chat` ouvre le Lobby mais l'adresse reste `#chat`, sans effet.
 
+## 31/10/2026 — Raffle : délai 30 à 60 min (Geoffrey)
+- **Quoi** : `RAFFLE.everyMin` 30 min, `everyMax` 60 min (avant 45 et 120). `lateMax` inchangé (75 min). Le `nextAt` déjà enregistré en ligne reste valable : le nouveau délai s'applique à partir du raffle suivant.
+- Annonce du gagnant : ` sur N participant(s)` ajouté dans `draw` (server/social/raffle.js).
+- **Tests** ✅ `tests/raffle.test.js`, `tests/admin-raffle.test.js`.
+
 ## 31/10/2026 — Cape inclusive : stats tirées au craft (Geoffrey)
 - **Quoi** : `STUFF.items['Cape inclusive'].rolled = { lines:4, x:1500 }`. Pièce : champ `rolled` (noms des stats), valeurs recalculées depuis la config (`rolledValue`, src/meta/piece.js). `craft()` tire avec le hasard du serveur et renvoie `pieces` ; sans `rng`, refus avant de rien retirer. `sanitizePiece` retire un tirage trafiqué. `adminGive` tire aussi. `statPrice` et `designPrice` déplacés dans piece.js, réexportés par gearscore.js.
 - **Prix** : `rolledPrice` = `designPrice` × `UPGRADE.runeDiv`, table commune avec les runes et fragments (`runeLineFactor`). Les runes partent de `UPGRADE.prices`, la cape du prix de dessin : même ratio, valeurs différentes. La Portée, à `designPrice` 0, aurait valu Infinity : elle part de `prices` × `runeDiv` ; son GS reste 0, un tirage avec Portée affiche moins de x.

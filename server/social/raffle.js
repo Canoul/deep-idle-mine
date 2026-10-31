@@ -25,7 +25,8 @@ export function createRaffle({ store, give, announce, clock = Date.now, random }
     const c = state.current;
     if(!c.winner && c.players.length){ c.winner = c.players[Math.floor(random() * c.players.length)]; await save(); }
     if(c.winner) await give(c.winner.id, c.id, c.lot);
-    await announce(c.winner ? `[${RAFFLE.name}] ${c.winner.name} a gagné ${lotLabel(c.lot)}` : `[${RAFFLE.name}] Personne n'a participé, le lot est perdu`, c.winner?.id);
+    const n = c.players.length;
+    await announce(c.winner ? `[${RAFFLE.name}] ${c.winner.name} a gagné ${lotLabel(c.lot)} sur ${n} participant${n > 1 ? 's' : ''}` : `[${RAFFLE.name}] Personne n'a participé, le lot est perdu`, c.winner?.id);
     state.current = null;
     state.nextAt = nextRaffleAt(now, random);
     await save();

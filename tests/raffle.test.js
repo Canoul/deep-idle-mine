@@ -52,10 +52,10 @@ test('créneau : ouvert de 8 h à 2 h, heure de Paris', () => {
   assert.ok(!raffleOpen(paris(29, 7, 59)));
 });
 
-test('prochain raffle : 45 à 120 min, reporté après 8 h s\'il tombe la nuit', () => {
-  assert.equal(nextRaffleAt(paris(28, 12), () => 0), paris(28, 12, 45));
-  assert.equal(nextRaffleAt(paris(28, 12), () => 1), paris(28, 14));
-  const t = nextRaffleAt(paris(29, 1, 30), () => 1);   // 3 h 30 : fermé
+test('prochain raffle : 30 à 60 min, reporté après 8 h s\'il tombe la nuit', () => {
+  assert.equal(nextRaffleAt(paris(28, 12), () => 0), paris(28, 12, 30));
+  assert.equal(nextRaffleAt(paris(28, 12), () => 1), paris(28, 13));
+  const t = nextRaffleAt(paris(29, 1, 30), () => 1);   // 2 h 30 : fermé
   assert.ok(raffleOpen(t));
   assert.equal(localHour(t), 9);
   assert.ok(t <= paris(29, 9, 16));
@@ -100,7 +100,7 @@ test('déroulé : annonce, !join privé, gagnant annoncé et payé une fois', as
   assert.equal(await count(store, ZOE.id, 'Chitine'), 0);
   advance(1_000); await social.raffleTick(); await social.raffleTick();
   assert.equal(await count(store, ZOE.id, 'Chitine'), 100);
-  assert.equal((await texts(social, MAX)).at(-1), '[Raffle] Zoe a gagné 100 Chitine');
+  assert.equal((await texts(social, MAX)).at(-1), '[Raffle] Zoe a gagné 100 Chitine sur 1 participant');
   assert.equal((await social.chatGet(MAX, 0)).messages.at(-1).winner, ZOE.id);   // son navigateur relit son inventaire
   assert.ok((await store.getRaffle()).nextAt > 0);
   assert.equal((await store.getRaffle()).current, null);
@@ -114,6 +114,14 @@ test('invité refusé ; un seul ticket par compte ; !join après les 40 s refus�
   assert.equal((await store.getRaffle()).current.players.length, 1);
   advance(40_000);
   assert.match((await social.chatPost(MAX, { text:'!join' })).message.text, /pas de raffle/);
+});
+
+test('annonce du gagnant : nombre de participants au pluriel', async () => {
+  const { social, open, advance } = setup();
+  await open();
+  await social.chatPost(ZOE, { text:'!join' }); await social.chatPost(MAX, { text:'!join' });
+  advance(40_000); await social.raffleTick();
+  assert.match((await texts(social, ZOE)).at(-1), / sur 2 participants$/);
 });
 
 test('personne : lot perdu et annoncé, le prochain est programmé', async () => {
