@@ -539,6 +539,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
        groupe complet ou en cours de lancement). Comme pour toute arrivée, les autres repassent « pas prêt ». */
     /* comptes du groupe de ce joueur, lui compris ; [] sans groupe (chat de groupe, 31/10) */
     membersOf: id => partyOf(id)?.members.map(m => m.account) ?? [],
+    isLeader: id => partyOf(id)?.leader === id,
     /* lien de lobby pour le chat (31/10/2026) : son groupe (créé s'il est seul), avec une place libre et hors session */
     async chatLink(me, ctx){
       touch(me); await sweep();

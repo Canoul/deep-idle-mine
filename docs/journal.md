@@ -16,6 +16,10 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 31/10/2026 — Geoffrey — Chat : [Chef de groupe] dans le canal de groupe
+- **Pour le joueur** : un message du chef dans le canal Groupe (/gr) s'affiche avec **[Chef de groupe]** au lieu de [Groupe], un peu plus clair que le bleu du canal. Tout le groupe le voit, le chef compris.
+- **État** : 🧪 sur la branche `geoffrey/chat-chef-groupe` (pas en ligne)
+
 ## 31/10/2026 — Geoffrey — Shrines : le bouton Activer / Désactiver répond tout de suite
 - **Pour le joueur** : après un clic, le bouton d'un shrine chargé gardait son ancien texte jusqu'au clic suivant ailleurs, alors que le changement était déjà pris en compte. Il change maintenant tout de suite.
 - **État** : ✅ en ligne le 31/10

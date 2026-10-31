@@ -5974,3 +5974,8 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Quoi** : `typingIn` : seul un `INPUT` de la carte bloque le rendu. Vaut aussi pour « Donner ».
 - **Tests** ✅ stele +1.
 - ⚠️ Pas vu en jeu.
+
+## 31/10/2026 — Chat : [Chef de groupe] (Geoffrey)
+- **Quoi** : `party.isLeader`, `audience` (server/social/service.js) pose `leader:true` sur le message à l'envoi, relu par `server/game/chat.js` après redémarrage ; `chatPrefix` / `chatLine` (src/ui/chat-tabs.js), `.chLead`. Le titre est celui du moment de l'envoi.
+- **Tests** ✅ chat. ⚠️ Couleur non vue en jeu.
+

@@ -7,10 +7,13 @@ import { sanitizeChatPrefs, chatChannel, lobbyLabel, LOBBY_TAG } from '../shared
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
 const hhmm = at => new Date(at).toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
 
+/* canal d'une ligne : « [Groupe] », ou « [Chef de groupe] » pour un message du chef (31/10) */
+const LEADER_TAG = '[Chef de groupe]';
+const chatTag = (m, ch) => m.leader && ch.id === 'group' ? LEADER_TAG : `[${ch.label}]`;
 /* début d'une ligne : « [Général] admin », « de admin », « à admin » (message privé envoyé) */
 export function chatPrefix(m, me){
   const ch = chatChannel(m.channel);
-  if(ch.id !== 'mp') return `[${ch.label}] ${m.name}`;
+  if(ch.id !== 'mp') return `${chatTag(m, ch)} ${m.name}`;
   return m.account === me ? `à ${m.toName ?? '?'}` : `de ${m.name}`;
 }
 /* texte d'un message ; lien de lobby (31/10/2026) : à la place de LOBBY_TAG, sinon en tête */
@@ -21,7 +24,7 @@ function chatBody(m){
   return i < 0 ? `${link} ${t}` : t.slice(0, i) + link + t.slice(i + LOBBY_TAG.length);
 }
 /* une ligne du chat, dans la couleur de son canal */
-export const chatLine = (m, me) => `<div class="ch-${chatChannel(m.channel).id}"><time>${hhmm(m.at)}</time>${esc(chatPrefix(m, me))} : ${chatBody(m)}</div>`;
+export const chatLine = (m, me) => `<div class="ch-${chatChannel(m.channel).id}"><time>${hhmm(m.at)}</time>${esc(chatPrefix(m, me)).replace(LEADER_TAG, `<span class="chLead">${LEADER_TAG}</span>`)} : ${chatBody(m)}</div>`;
 
 export function setupChatTabs({ bar, panel, select, save, onChange }){
   let prefs = sanitizeChatPrefs(null), open = false, timer = null;

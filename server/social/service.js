@@ -79,7 +79,7 @@ export function createSocialService({ store, accounts, party, game, clock = Date
     if(channel === 'group'){
       const members = await party?.membersOf?.(me.id) ?? [];
       if(members.length < 2) fail('bad_request', 400, "Tu n'es pas dans un groupe.");
-      return { to: members };
+      return { to: members, ...(party.isLeader?.(me.id) ? { leader: true } : {}) };   // chef du groupe à l'envoi (31/10) : décidé ici, jamais par le navigateur
     }
     if(channel !== 'mp') return {};
     const target = typeof to === 'string' ? await accounts.findAccountByName(nameKey(to)) : null;
