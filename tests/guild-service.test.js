@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { GUILD } from '../src/config.js';
 import { createMemoryGameStore } from '../server/game/store.js';
 import { createGuildService } from '../server/guild/service.js';
+import { createSocialService } from '../server/social/service.js';
 import { nameKey, formatAccountId } from '../src/shared/account.js';
 
 const acc = (id, name, guest = false) => ({ id:id.repeat(8), name, guest });
@@ -200,4 +201,13 @@ test('classement : niveau puis XP ; recherche : filtre sans majuscules', async (
   assert.deepEqual(l.map(g => g.name).sort(), ['Les Nains', 'Les Rois']);
   assert.equal(l.find(g => g.name === 'Les Rois').chief, 'Zoe');
   assert.equal(l[0].max, GUILD.maxMembers);
+});
+
+test('état social : donne les invitations de guilde, pour le pop-up', async () => {
+  const { guild, store } = setup();
+  await guild.create(ZOE, 'Les Rois'); await guild.invite(ZOE, 'Tom');
+  const social = createSocialService({ store, guildInvites:id => guild.invitesOf(id), party:{ groupOf:() => null, invitesOf:() => [] },
+    game:{ activeSessionId:async () => null, activeSessionInfo:async () => null }, accounts:{ getAccount:async () => null, findAccountByName:async () => null } });
+  assert.deepEqual((await social.state(TOM)).guildInvites, [{ guildId:'g1', name:'Les Rois' }]);
+  assert.equal(typeof (await social.statusOf(TOM.id)).status, 'string');
 });

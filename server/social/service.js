@@ -61,6 +61,7 @@ export function sanitizeSocial(raw, cfg = SOCIAL_SERVER){
 
 /* accounts : { getAccount(id), findAccountByName(clé) } ; party : service des groupes ; game : service de jeu */
 export function createSocialService({ store, accounts, party, game, clock = Date.now, config = SOCIAL_SERVER, moderation = null,
+                                      guildInvites = async () => [],   // invitations de guilde d'un joueur (server/guild/service.js)
                                       random = () => crypto.randomBytes(6).readUIntBE(0, 6) / 2**48 }){
   const seen = new Map();                    // compte → dernier signe de vie (ms)
   const lastSeen = new Map();                // compte → dernier signe de vie, gardé whoRecentFor (« Who ? » : hors ligne récents)
@@ -161,6 +162,8 @@ export function createSocialService({ store, accounts, party, game, clock = Date
       outgoing: await Promise.all(s.outgoing.map(async r => ({ id: r.to, displayId: formatAccountId(r.to), name: await nameOf(r.to), at: r.at }))),
       /* invitations de groupe reçues (pop-up « xxx vous a invité dans son lobby ») */
       partyInvites: party.invitesOf(me.id),
+      /* invitations de guilde reçues (pop-up, onglet Guilde) */
+      guildInvites: await guildInvites(me.id),
     };
   }
 
