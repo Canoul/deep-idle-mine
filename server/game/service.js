@@ -156,8 +156,14 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
                                     moderation = null,
                                     /* XP d'un joueur tout juste créditée (server/guild/service.js), une seule fois par session */
                                     onXp = () => {},
+                                    /* nom de guilde d'un joueur, figé au lancement : affiché sous son pseudo (server/guild/service.js) */
+                                    guildNameOf = async () => null,
                                     /* annonces Discord (server/social/discord.js) : announce(texte), en tâche de fond */
                                     announce = () => {} }){
+  /* nom de guilde d'un joueur au lancement ; une panne de ce côté n'empêche jamais de jouer */
+  async function guildField(account){
+    try { const guild = await guildNameOf(account); return guild ? { guild } : {}; } catch(e){ console.error(e); return {}; }
+  }
   /* transmet l'XP créditée à la guilde : une panne de ce côté ne doit jamais bloquer la fin d'une session */
   async function shareXp(account, xp, isDev){
     if(isDev || !(xp > 0)) return;
@@ -965,8 +971,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     /* lance une session. members : joueurs d'un groupe [{account, name}], celui qui lance en premier (mineur Rouge) ;
        absent = seul. Refusé si un des joueurs a déjà une session en cours. */
     async start(me, body = {}, members = null){
-      const players = (members?.length ? members : [{ account: me.id, name: displayName(me) }])
-        .map(p => ({ account: String(p.account), name: String(p.name ?? '') }));
+      const players = await Promise.all((members?.length ? members : [{ account: me.id, name: displayName(me) }])
+        .map(async p => ({ account: String(p.account), name: String(p.name ?? ''), ...await guildField(String(p.account)) })));
       if(players[0].account !== me.id) fail('bad_request', 400, 'Le joueur qui lance doit être le premier.');
       if(new Set(players.map(p => p.account)).size !== players.length || players.length > GAME.maxPlayers)
         fail('bad_request', 400, 'Équipe invalide.');
@@ -1160,7 +1166,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         const compos = await advanceCompos(me.id);   // compos (30/10) : actuelle, ancienne (mines 11 à 20), enregistrée
         const profile = pickCompo(compos, body?.compo ?? 'current'), area = profile?.area;
         if(!profile) fail('no_compo', 409, 'Cette composition n\'existe pas encore.');
-        const specs = { name: displayName(me), ...await freezePlayer(me.id) };
+        const specs = { name: displayName(me), ...await guildField(me.id), ...await freezePlayer(me.id) };
         const runSpeed = dev && GAME.devSpeeds.includes(body?.speed) ? body.speed : speed;
         await loadEnergy(me.id);   // repos soldé jusqu'à l'entrée en prison (30/10/2026)
         const p = newPrisonRecord({ id: crypto.randomUUID(), account: me.id, seed: randomSeed(), specs, areaMax: area, profile, now: clock(), speed: runSpeed });
@@ -1185,7 +1191,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
        une mine instantanée coûte peu (~0,2 s de calcul pour 20 joueurs). Renvoie la session, ou null. */
     async openInstant(id, slot, list){
       const players = [];
-      for(const p of list) if(!players.some(q => q.account === p.account)) players.push({ account: String(p.account), name: String(p.name ?? '') });
+      for(const p of list) if(!players.some(q => q.account === p.account)) players.push({ account: String(p.account), name: String(p.name ?? ''), ...await guildField(String(p.account)) });
       return withLock.many(players.map(p => 'acct:' + p.account), async () => {
         if(await store.getGameSession(id)) return null;
         const ok = [];

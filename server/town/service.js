@@ -29,7 +29,7 @@ export class TownError extends Error {
    game : { playersInSession(), lookFor(id), aurasFor(id), levelFor(id), skillTreeOf(id), gsFor(id), leaderboardData() } ;
    party : { groupOf(id) → { code, size, max } | null, searching(id) } ;
    recentChat(ms) : messages du chat global de moins de ms ([{ account, text, at }], du plus ancien au plus récent) */
-export function createTownService({ accounts, game, party = null, recentChat = async () => [], clock = Date.now, config = TOWN_SERVER }){
+export function createTownService({ accounts, game, party = null, recentChat = async () => [], guildNameOf = async () => null, clock = Date.now, config = TOWN_SERVER }){
   const here = new Map();       // compte → { spot, x, at }
   const faces = new Map();      // compte → { name, look, auras, level, tree, gs, at }
   const emotes = new Map();     // compte → { id, at }
@@ -44,7 +44,7 @@ export function createTownService({ accounts, game, party = null, recentChat = a
     const acc = await accounts.getAccount(id);
     const n = { name: displayName(acc) || formatAccountId(id), look: await game.lookFor?.(id) ?? {},
                 auras: await game.aurasFor?.(id) ?? {}, level: await game.levelFor?.(id) ?? null,
-                tree: await game.skillTreeOf?.(id) ?? null, gs: await game.gsFor?.(id) ?? null, at: now };
+                tree: await game.skillTreeOf?.(id) ?? null, gs: await game.gsFor?.(id) ?? null, guild: await guildNameOf(id), at: now };
     faces.set(id, n);
     return n;
   }
@@ -94,14 +94,14 @@ export function createTownService({ accounts, game, party = null, recentChat = a
       const players = [];
       for(const [id, h] of others){
         const f = await face(id, now);
-        players.push({ id, name: f.name, spot: h.spot, x: h.x, look: f.look, auras: f.auras, level: f.level, tree: f.tree,
+        players.push({ id, name: f.name, guild: f.guild, spot: h.spot, x: h.x, look: f.look, auras: f.auras, level: f.level, tree: f.tree,
                        gs: f.gs, say: said.get(id) ?? null, emote: emotes.get(id)?.id ?? null, group: groupOf(id),
                        lfg: !!party?.searching?.(id) });
       }
       /* repères des groupes disparus : oubliés (la Map ne grossit pas) */
       if(party?.groupOf){ const live = new Set([...here.keys()].map(id => party.groupOf(id)?.code).filter(Boolean));
         for(const code of tags.keys()) if(!live.has(code)) tags.delete(code); }
-      return { players, say: said.get(me.id) ?? null, group: groupOf(me.id), statue: await statueOf(now) };
+      return { players, say: said.get(me.id) ?? null, group: groupOf(me.id), guild: await guildNameOf(me.id), statue: await statueOf(now) };
     },
     /* émote : id de TOWN.emotes ; trop tôt après la précédente : 429 */
     emote(me, id){

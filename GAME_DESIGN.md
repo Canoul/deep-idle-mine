@@ -643,6 +643,7 @@ Onglet Guilde : sa guilde (si on en a une), Rechercher, Leaderboard. Bonus et b�
 - **Sortir** : n'importe qui peut quitter sans restriction. Le chef parti, le plus ancien officier le remplace, sinon le plus ancien membre. Le dernier parti, la guilde disparaît et son nom est libéré.
 - **Niveau** : 1 % de l'XP reçue par un membre (mine, groupe, prison) va à la guilde, même courbe que le niveau du mineur. Pas de rattrapage ; l'XP versée reste à la guilde, mais le compteur d'un membre repart de 0 s'il revient.
 - **Leaderboard** : par niveau, puis par XP de guilde.
+- **Nom au-dessus de la tête** : sous le pseudo, en plus petit, `< Nom de la guilde >`, dans la mine, en prison et dans le Carreau. En session, c'est la guilde du lancement.
 
 ### Raffle *(31/10/2026, Geoffrey ; `RAFFLE` en config)*
 

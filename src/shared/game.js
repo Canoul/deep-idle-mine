@@ -104,6 +104,8 @@ export function minerSpecs(record){
   const prefsOf = i => i < players.length ? sanitizePrefs(record.prefs?.[players[i].account]) : { ...PREFS };
   const nameOf = i => i < players.length ? (String(players[i].name || '').slice(0, 24) || 'Joueur ' + (i + 1))
                                          : presetOf(i)?.name ?? 'Mineur test ' + (i - players.length + 1);
+  /* nom de guilde figé au lancement (record.players[i].guild) : affiché sous le pseudo, sans effet sur la partie */
+  const guildOf = i => i < players.length ? String(players[i].guild || '').slice(0, 24) || undefined : undefined;
   const lookOf = i => own(i) ? sanitizeLook(record.looks?.[players[i].account]) : sanitizeLook(presetOf(i)?.look);
   /* caractéristiques : base + stuff porté au lancement : les pièces avec leur qualité et leur niveau (record.gear,
      revérifié) ; une session plus ancienne n'a que les noms (record.looks) */
@@ -127,7 +129,7 @@ export function minerSpecs(record){
   const aurasAt = i => aurasOf(sanitizeGear(own(i) ? record.gear?.[players[i].account] : presetOf(i)?.gear));
   /* glyphes possédés au lancement (drop : on ne trouve que les autres), figés par le serveur, revérifiés */
   const ownedOf = i => { const o = own(i) ? record.skills?.[players[i].account]?.owned : presetOf(i)?.owned; return Array.isArray(o) ? o.filter(n => nodeOfGlyph(n)) : []; };
-  const spec = i => ({ name: nameOf(i), prefs: prefsOf(i), look: lookOf(i), auras: aurasAt(i), carac: caracOf(i), skills: skillsOf(i), skillTree: treeOf(i), glyphsOwned: ownedOf(i),
+  const spec = i => ({ name: nameOf(i), guild: guildOf(i), prefs: prefsOf(i), look: lookOf(i), auras: aurasAt(i), carac: caracOf(i), skills: skillsOf(i), skillTree: treeOf(i), glyphsOwned: ownedOf(i),
                        xpPct: ringXpPct(ringsOf(gearOf(i))), spells: spellsOf(i),
                        rings: rings.filter(r => !RINGS.items[r.item].xp || ringsOf(gearOf(i)).some(o => o.item === r.item)) });   // anneaux qui agissent sur lui (affichage, src/sim/effects.js) : le nerd seulement pour son porteur
   if(n <= 1) return [{ ...spec(0), name: players.length ? nameOf(0) : undefined }];

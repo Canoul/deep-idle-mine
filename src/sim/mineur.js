@@ -37,7 +37,7 @@ export function createMiner(id, opts={}){
     helping: false,                 // va aider un allié ou se bat pour lui : tacle, donjon, piège (skill braum)
     helpFoe: null,                  // mob qu'il est allé combattre pour un allié (le combat qui suit compte aussi)
     helpSkip: null,                 // mob dont il a abandonné l'aide (trop loin, HELP.keep) : il n'y retourne pas
-    id, name: opts.name || ('Mineur '+(id+1)), color: opts.color || null,
+    id, name: opts.name || ('Mineur '+(id+1)), guild: opts.guild || null, color: opts.color || null,
     look: opts.look || {},          // équipement porté (src/skins.js pour l'apparence ; ses effets sont dans carac)
     auras: opts.auras || {},        // aura des pièces visibles ({ case: qualité }, src/meta/aura.js), visuel seulement
     glyphsOwned: Array.isArray(opts.glyphsOwned) ? [...opts.glyphsOwned] : [],   // glyphes possédés au lancement (drop)
