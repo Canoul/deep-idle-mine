@@ -473,6 +473,9 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   **60 %** de sa recette arrondi vers le bas (`RECYCLE.share`) ; amélioration et rune perdues ; interdit si portée ou
   dans un set. Le serveur vérifie tout (`/api/game/inventory`, `/api/game/recycle`). **Onglets** (29/10, `INVENTORY.tabs`) : icônes au-dessus de la
   grille qui filtrent par type (tout, blocs, minerais, stuff, butin des mobs, matériaux, runes, divers).
+- **Bot Discord de l'équipe** (31/10, Geoffrey ; `bot/`, `docs/bot-discord.md`) : service à part du jeu sur le VPS. Un tag du rôle
+  @admin est copié dans #report avec un ID ; le premier emoji cliqué (1 Joe, 2 Djulo, n'importe qui peut réagir) attribue
+  le sujet ; `/todo` dans #todo liste et retire. Base : un fichier JSON. À distinguer du webhook des annonces.
 - **Annonces Discord** (25/10, Geoffrey) : un trésor de tour, un coffre du Roi Gobelin (instance) ou une identification
   de qualité `ANNOUNCE.minQuality` (**R6** depuis le 28/10 ; ancien : R7) ou plus, et l'ouverture d'une tour du Jugement (26/10), sont annoncés dans le salon du webhook (`server/social/discord.js`, adresse secrète
   `DIM_DISCORD_WEBHOOK` sur le VPS ; absente = aucune annonce). Pseudo visible en jeu, nom de la pièce ; jamais pour

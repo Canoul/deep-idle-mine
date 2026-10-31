@@ -6006,6 +6006,14 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - ⚠️ Pas rejoué : une vraie victoire de tour (l'affichage emprunte le même chemin, seul le texte change). Banc d'essai non gardé dans le dépôt.
 - **Leçon** : pour un bug d'affichage, vérifier dans un navigateur ce qui est au premier plan, pas seulement que l'élément existe.
 
+## 31/10/2026 — Bot Discord : reports et /todo (Geoffrey) — branche `geoffrey/bot-report`
+- **Quoi** : `bot/todo.js` (logique pure, ID par compteur), `bot/store.js` (JSON, écriture atomique), `bot/main.js` (Discord),
+  `deploy/ovh/deep-mine-bot.service`, `docs/bot-discord.md`. `bot/package.json` à part : `discord.js` n'entre pas dans le jeu,
+  le `npm ci` de la mise à jour automatique ne le touche pas. Sous-commandes `/todo joe`, `djulo`, `done`, `help`.
+- **Tests** : `tests/bot-todo.test.js` ✅ 8/8 ; `discord.js` se charge et `bot/main.js` passe la vérification de syntaxe.
+- ⚠️ **`bot/main.js` n'a jamais tourné contre Discord** : pas de jeton. Copie, réactions et `/todo` restent à essayer en vrai.
+- ⚠️ Pas de rattrapage au redémarrage du bot. Une erreur après `save` (ex. `react`) laisse le sujet créé, sans emoji : réagir à la main marche.
+
 ## 31/10/2026 — Téléphone : page dézoomée, plus rien de centré (Geoffrey)
 - **Cause** : le bandeau du haut, allongé par le niveau dans le lobby refait, dépassait l'écran (511 px pour 390 ; 1169 px pour 844 en paysage). Chrome élargit alors la page : les onglets restent à 390 px, calés à gauche, et les éléments fixes (barre d'onglets, guide) suivent la page. Les règles de la barre d'onglets ne valaient que sous 700 px. `.lobbyCols` en `1fr` : la colonne pouvait dépasser (`minmax(0,1fr)`).
 - **Correctif** (src/ui/style.css, sous 1170 px) : `.topbar` sans débordement, pseudo qui se raccourcit, sans titre ni barre de session ; pas de « aucune » sans session (sous 700 px) ; barre d'onglets qui défile ; chat replié sur une ligne ; guide caché chat ouvert.
