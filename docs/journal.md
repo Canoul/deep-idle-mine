@@ -13,6 +13,9 @@ Modèle d'entrée :
 - **Pour le joueur** : le Plastron de l'équilibre donne +112 pods au lieu de +188 ; ses 8 autres stats ne changent pas. Les plastrons déjà fabriqués suivent.
 - **Décisions** : il valait 2,92 fois le x de son tier ; il vaut maintenant 2 fois (1 003 x au lieu de 1 459 x). Valeur provisoire.
 - **À suivre** : il a moins de pods que le Plastron en acier (+137), mais reste plus fort que lui au total (1 003 x contre 822 x).
+
+## 31/10/2026 — Geoffrey — Icône sur les pièces runées
+- **Pour le joueur** : une petite gemme violette en bas à gauche de la case d'une pièce runée (rune ou fragment) : inventaire, stuff porté, fiche d'un ami, onglet Amélioration, listes de choix.
 - **État** : ✅ en ligne le 31/10
 
 ## 31/10/2026 — Geoffrey — Craft : recettes triées par catégorie

@@ -6092,3 +6092,9 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Quoi** : `STUFF.items` (src/config.js), ratio GS / x du tier 2,92 → 2,01 (`pieceGS` 1 459 → 1 003, tier 3 = 500 x). 112 pods = 1 003 x, 111 pods = 997 x.
 - **Tests** : tests/steel-gear (3 valeurs), tests/stuff-balance +1.
 - **Fragile** : les lignes et runes de la pièce ne bougent pas, elles suivent le x du tier (500 x) et non les pods.
+
+## 31/10/2026 — Icône des pièces runées (Geoffrey)
+- **Quoi** : `runeMark(p)` dans src/ui/rarity.js (icône `gem`, rien sans `p.rune`), affichée par `slotHtml` (inventory.js), `renderSlots` et la liste de choix (stuff.js), `box` et `row` (upgrade.js). CSS `.pi.runeMark` et `.runeIco` (les listes n'ont pas de `.slot`), couleur `--rune`.
+- **Tests** ✅ tests/rune-mark.test.js, tests/stuff-slots-css.test.js. ✅ Rendu vérifié dans Chrome sur une page de test avec le vrai style.css (cases de chaque rareté, avec et sans +N, et ligne de liste).
+- ⚠️ Pas vu en partie réelle avec une pièce runée sur un compte. La case d'une pièce portée dans le Stuff et la fiche d'un ami passent par le même code, sans capture dédiée.
+

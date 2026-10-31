@@ -9,7 +9,7 @@ import { recipeOfBlueprint, isUnlocked, recyclable, recycleRefund, recycleRange 
 import { statLines, equipSlotFor } from '../meta/stuff.js';
 import { tipAttr } from './tooltip.js';
 import { pieceName } from '../meta/piece.js';
-import { rcls, rname, rlabel, pname } from './rarity.js';
+import { rcls, rname, rlabel, pname, runeMark } from './rarity.js';
 import { glyphInfo } from '../meta/glyphs.js';
 import { pxi } from './pxicons.js';
 
@@ -41,7 +41,7 @@ const fullQty = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 function slotHtml(s, i, fresh){
   if(!s) return `<div class="slot empty" data-i="${i}"></div>`;
   const q = isStackable(s.item) ? `<span class="q">${fmtQty(s.qty)}</span>` : s.plus > 0 ? `<span class="q">+${s.plus}</span>` : '';
-  return `<div class="slot${rcls(s.item)}${fresh.has(i)?' fresh':''}" data-i="${i}" draggable="true"${tipAttr(s.item, `${pieceName(s)} × ${fullQty(s.qty)}`, s.uid != null ? s : null)}>${iconHtml(s.item)}${q}</div>`;
+  return `<div class="slot${rcls(s.item)}${fresh.has(i)?' fresh':''}" data-i="${i}" draggable="true"${tipAttr(s.item, `${pieceName(s)} × ${fullQty(s.qty)}`, s.uid != null ? s : null)}>${iconHtml(s.item)}${runeMark(s)}${q}</div>`;
 }
 
 /* blueprint : bouton « Utiliser » (débloque sa recette), ou pourquoi on ne peut pas */
