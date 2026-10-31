@@ -5930,6 +5930,8 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** ✅ bilan +3, les 2 tests de cause échouaient avant le correctif.
 - ❌ Sans lien, déjà sur `main` : `table de recherche par le serveur` (tests/game-service.test.js:401) est instable, il attend 15 à 30 parts au recyclage et échoue au hasard (2 fois sur 8 sur `main` sans ce correctif, 4 sur 8 avec, même tirage aléatoire). Non traité.
 - ⚠️ La cause réelle du signalement n'est pas prouvée : pas d'accès aux données du serveur. Les deux chemins sont reproduits par test, pas dans un navigateur.
+- ❌ Ce correctif ne réglait pas le signalement (mêmes symptômes ensuite) : voir l'entrée « bilan caché par la ville ». Les deux chemins corrigés restent de vrais défauts.
+- ❌ Ce correctif ne réglait pas le signalement (mêmes symptômes ensuite) : voir l'entrée « bilan caché par la ville ». Les deux chemins corrigés restent de vrais défauts.
 - ⚠️ `pollResult` : session abandonnée → `showNoSession` ne ferme pas `#end` (« Session terminée… » pourrait rester à l'écran). Vu à la lecture, non testé, non corrigé.
 
 ## 31/10/2026 — Social : pastille verte en prison (Geoffrey) — branche `geoffrey/social-prison-vert`
@@ -5980,7 +5982,20 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** ✅ stele +1.
 - ⚠️ Pas vu en jeu.
 
+## 31/10/2026 — Bilan caché par la ville, vraie cause du « pas de pop-up » (Geoffrey, signalé 3 fois)
+- **Cause** : `#end` est dans l'onglet Session. `showResult` → `setPrison` → `updatePrisonUI` : `if(!on){ ...; $('noSession').hidden = ... }` (commit du 30/10) réaffiche `#noSession` ; `town.frame({ walk })` passe alors en promenade, et `body.townWalk .views{visibility:hidden}` masque `#end`. `$('end').hidden` restait faux : aucun test ne pouvait le voir côté serveur ou état. Toutes les sessions étaient touchées, pas seulement les tours.
+- **Correctif** : `townWalks(tab, noSessionHidden, endHidden)` (src/ui/town.js) : pas de promenade tant qu'un bilan est ouvert.
+- **Tests** ✅ bilan +1. Vrai Chrome piloté, vrai serveur dev, vraie partie jusqu'à la fin (`elementFromPoint` au centre du bilan) : avant caché (tour, mine), après visible (tour, mine, tour avec prison). Fin de partie par `POST /api/game/finish`, en échec de tour.
+- ⚠️ Pas rejoué : une vraie victoire de tour (l'affichage emprunte le même chemin, seul le texte change). Banc d'essai non gardé dans le dépôt.
+- **Leçon** : pour un bug d'affichage, vérifier dans un navigateur ce qui est au premier plan, pas seulement que l'élément existe.
+
 ## 31/10/2026 — Chat : [Chef de groupe] (Geoffrey)
 - **Quoi** : `party.isLeader`, `audience` (server/social/service.js) pose `leader:true` sur le message à l'envoi, relu par `server/game/chat.js` après redémarrage ; `chatPrefix` / `chatLine` (src/ui/chat-tabs.js), `.chLead`. Le titre est celui du moment de l'envoi.
 - **Tests** ✅ chat. ⚠️ Couleur non vue en jeu.
 
+## 31/10/2026 — Bilan caché par la ville, vraie cause du « pas de pop-up » (Geoffrey, signalé 3 fois)
+- **Cause** : `#end` est dans l'onglet Session. `showResult` → `setPrison` → `updatePrisonUI` : `if(!on){ ...; $('noSession').hidden = ... }` (commit du 30/10) réaffiche `#noSession` ; `town.frame({ walk })` passe alors en promenade, et `body.townWalk .views{visibility:hidden}` masque `#end`. `$('end').hidden` restait faux : aucun test ne pouvait le voir côté serveur ou état. Toutes les sessions étaient touchées, pas seulement les tours.
+- **Correctif** : `townWalks(tab, noSessionHidden, endHidden)` (src/ui/town.js) : pas de promenade tant qu'un bilan est ouvert.
+- **Tests** ✅ bilan +1. Vrai Chrome piloté, vrai serveur dev, vraie partie jusqu'à la fin (`elementFromPoint` au centre du bilan) : avant caché (tour, mine), après visible (tour, mine, tour avec prison). Fin de partie par `POST /api/game/finish`, en échec de tour.
+- ⚠️ Pas rejoué : une vraie victoire de tour (l'affichage emprunte le même chemin, seul le texte change). Banc d'essai non gardé dans le dépôt.
+- **Leçon** : pour un bug d'affichage, vérifier dans un navigateur ce qui est au premier plan, pas seulement que l'élément existe.

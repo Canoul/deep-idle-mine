@@ -64,7 +64,7 @@ import { setupCraft } from './ui/craft.js';
 import { setupStuff } from './ui/stuff.js';
 import { setupUpgrade } from './ui/upgrade.js';
 import { createBackdrop, enterPanels, leavePanels } from './ui/backdrop.js';
-import { setupTown } from './ui/town.js';
+import { setupTown, townWalks } from './ui/town.js';
 import { setupTooltips } from './ui/tooltip.js';
 import { createEffectsBar, placeEffectsBar, focusedMiner } from './ui/effects.js';
 import { fillHelp } from './ui/help.js';
@@ -929,7 +929,7 @@ function frame(now){
   const bgG = rec ? shown : prisonBackdrop();
   backdrop.draw(bgG, ui.tab !== 'session', acct.account?.id, ui.follow);
   /* le Carreau : fond quand il n'y a ni session ni prison en fond ; promenade quand l'onglet Session n'a rien d'autre à montrer */
-  town.frame(dtr, { show: !rec && !(ui.prison && ui.tab === 'session') && !(bgG && backdrop.on) && !!acct.account && !acct.offline, walk: ui.tab === 'session' && !$('noSession').hidden, tab: ui.tab }, now);
+  town.frame(dtr, { show: !rec && !(ui.prison && ui.tab === 'session') && !(bgG && backdrop.on) && !!acct.account && !acct.offline, walk: townWalks(ui.tab, $('noSession').hidden, $('end').hidden), tab: ui.tab }, now);
   if(shown && ui.tab==='session') ins ? inRenderer.draw(shown, acct.account?.id) : tw ? twRenderer.draw(shown, acct.account?.id) : mi ? miRenderer.draw(shown, acct.account?.id) : renderer.draw(shown, ui.follow);
   if(now - lastHud > 120){
     if(perfOn){ const t = perfText(perf.stats()); for(const el of document.querySelectorAll('.perfBox')) el.textContent = t; }

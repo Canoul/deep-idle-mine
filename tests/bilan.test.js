@@ -57,3 +57,11 @@ test('bilan : l\'écran qui attendait cette session la reçoit même si un autre
   assert.equal((await game.state(OTHER, 'tour')).ended, null, 'la session d\'un autre joueur reste invisible');
   assert.equal((await game.state(ME, { id:'tour' })).ended, null, 'valeur invalide ignorée');
 });
+
+test('bilan affiché : pas de promenade dans la ville, elle le cacherait (31/10/2026)', async () => {
+  const { townWalks } = await import('../src/ui/town.js');
+  assert.equal(townWalks('session', false, true), true, 'onglet Session sans session : promenade');
+  assert.equal(townWalks('session', false, false), false, 'bilan ouvert : on le lit');
+  assert.equal(townWalks('session', true, true), false, 'session en cours');
+  assert.equal(townWalks('lobby', false, true), false);
+});
