@@ -1076,6 +1076,14 @@ button.danger{color:var(--bad)}
 /* sets : ligne « Set équipé » et set équipé marqué (29/10/2026) */
 .setCur{margin:0 0 calc(2*var(--u))}
 .setRow.on b{color:var(--ok)}
+/* onglet Stuff (31/10/2026, Geoffrey) : les sets en bandeau au-dessus, la largeur va aux noms des pièces */
+@media (min-width:701px){
+  .view[data-view="stuff"] .setLay{grid-template-columns:minmax(0,1fr);gap:calc(14*var(--u))}
+  .view[data-view="stuff"] .setsBody{display:flex;flex-wrap:wrap;align-items:center;gap:calc(2*var(--u)) calc(6*var(--u))}
+  .view[data-view="stuff"] .setsBody>p{flex:1 1 100%;margin:0}
+  .view[data-view="stuff"] .setRow{flex:1 1 0;min-width:calc(95*var(--u));border-bottom:0}
+  .view[data-view="stuff"] .setsBody>.setNew{width:auto;margin:0}
+}
 /* onglets de l'inventaire (29/10/2026) : une icône par catégorie, grisée si vide */
 .invTabs{display:flex;flex-wrap:wrap;gap:calc(3*var(--u));margin:0 0 calc(6*var(--u))}
 .invTab{display:grid;place-items:center;width:calc(26*var(--u));height:calc(26*var(--u));padding:0}

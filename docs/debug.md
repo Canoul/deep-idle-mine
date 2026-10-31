@@ -6011,3 +6011,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Correctif** (src/ui/style.css, sous 1170 px) : `.topbar` sans débordement, pseudo qui se raccourcit, sans titre ni barre de session ; pas de « aucune » sans session (sous 700 px) ; barre d'onglets qui défile ; chat replié sur une ligne ; guide caché chat ouvert.
 - **Vérifié** ✅ Chrome en téléphone simulé, 360 × 780, 390 × 844, 844 × 390, 1024 × 768, 1400 × 900 : page à la largeur de l'écran, marges égales, sans erreur ; onglets Lobby, Session, Inventaire, Stuff, Craft, Skills, Social. ⚠️ Pas vu sur un vrai téléphone.
 
+## 31/10/2026 — Stuff : sets en bandeau (Geoffrey)
+- **Quoi** : CSS seul, `.view[data-view="stuff"]` au-dessus de 700 px : `.setLay` sur une colonne, `.setsBody` en ligne. Skills, Sorts et Lobby gardent leurs sets à gauche.
+- **Tests** : rendu vérifié dans Chrome ; aucun test automatique, c'est du style.
+
