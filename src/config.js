@@ -1378,7 +1378,7 @@ export const ITEMS = {
     f.items.map(i => [i.item, { cat:f.family, tex:i.tex || f.tex, stack:true }])))),
   'Clé d\'instance I': { cat:'key', tex:'key_instance_1', w:1, stack:true },            // Treasure T3 ; ouvre l'Instance I (INSTANCE)
   'Clé d\'instance II': { cat:'key', tex:'key_instance_2', w:1, stack:true },           // Treasure T4 (10 %) ; ouvre l'Instance II, le Golbute (30/10)
-  'Orbe': { cat:'material', tex:'orb', w:1, stack:true },   // 30/10 (Geoffrey) : se crafte de base ; sans usage pour l'instant
+  'Orbe': { cat:'material', tex:'orb', w:1, stack:true },   // 30/10 (Geoffrey) : se crafte de base ; 31/10 : sert à la Clé d'instance I
   'Cristal de pleine lune': { cat:'material', tex:'moon_crystal', w:1, stack:true },   // butin du minotaure (DUNGEON.loot) et du Treasure T3 ; après LOOT pour garder son poids
   ...Object.fromEntries(Object.entries(STUFF.items).map(([n, d]) => [n, { cat:'stuff', slot:d.slot, tex:d.tex, stats:d.stats ?? {}, set:d.set ?? {}, w:0, stack:false }])),
 };

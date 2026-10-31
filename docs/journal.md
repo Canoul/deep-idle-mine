@@ -22,6 +22,12 @@ Modèle d'entrée :
 - **À suivre** : leur prison n'était pas anormale (40 à 50 % de leurs mines, comme les autres) : ils rapportent 8 à 9 cobalt ou thorium par heure en mine, contre 1 à 3 pour les autres. Le plafond les met nettement sous la cible de 50 % sur ces deux minerais.
 - **État** : ✅ en ligne le 31/10
 
+## 31/10/2026 — Geoffrey — Nouveau craft de la Clé d'instance I
+- **Pour le joueur** : la clé se crafte maintenant avec 1 Barre d'argent et 5 Orbes (avant : 250 peaux de gobelin, 20 pierres glissantes,
+  50 tissus sombres et 1 Barre d'argent). L'Orbe a enfin un usage.
+- **Décisions** : valeur d'équilibrage de Geoffrey. 5 Orbes reviennent à 150 tissus sombres, 150 vésicules de gaz et 50 pierres glissantes.
+- **État** : ✅ en ligne le 31/10
+
 ## 31/10/2026 — Geoffrey — Voir l'énergie des gens dans Social
 - **Pour le joueur** : dans Social, les listes Amis et En ligne montrent l'énergie de chacun (« ⚡ 42/100 »), en rouge s'il ne peut plus
   lancer de mine classique. Pratique pour savoir avant d'inviter. Le chiffre peut avoir jusqu'à 30 s de retard.

@@ -80,5 +80,5 @@ export const RECIPES = {
   'Rubis':               { cost: { 'Diamant': 50, 'Rubis inférieur': 3 },  qty: 1, unlock: 'Rubis BP' },
   'Jade':                { cost: { 'Diamant': 50, 'Jade inférieur': 3 },   qty: 1, unlock: 'Jade BP' },
   'Orbe':                { cost: { 'Tissu sombre': 30, 'Vésicule de gaz': 30, 'Pierre glissante': 10 }, qty: 1, unlock: null },   // 30/10 (Geoffrey) : de base
-  'Clé d\'instance I':   { cost: { 'Peau de gobelin': 250, 'Pierre glissante': 20, 'Tissu sombre': 50, 'Barre d\'argent': 1 }, qty: 1, unlock: null },   // 28/10 (Geoffrey) : de base (avant : Clé d'instance I BP, Treasure T4)
+  'Clé d\'instance I':   { cost: { 'Barre d\'argent': 1, 'Orbe': 5 }, qty: 1, unlock: null },   // 31/10 (Geoffrey) ; ancien : 250 Peau de gobelin, 20 Pierre glissante, 50 Tissu sombre, 1 Barre d'argent ; 28/10 : de base (avant : Clé d'instance I BP, Treasure T4)
 };
