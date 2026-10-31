@@ -1,6 +1,7 @@
 /* Le mineur : création, caractéristiques dérivées (lumière, vitesses), actions à durée, inventaire.
    Nommé mineur.js et pas miner.js : les bloqueurs anti-minage de cryptomonnaie (liste NoCoin, active par défaut
    dans Opera GX) bloquent tout fichier « /miner.js », et le jeu entier ne démarre plus. Ne pas le renommer. */
+import { bleedSlow } from './bleed.js';
 import { STATS, CFG, BLOCKS, PREFS, SPAWN_X, SKILLS, WINCH, GLYPHS, SESSION_LEN } from '../config.js';
 import { lumAt } from './light.js';
 import { cleanRings } from './effects.js';
@@ -72,14 +73,14 @@ export const travelling = m => m.mode==='return' || m.mode==='surface' || m.mode
 /* bonus du Barbare (braum) quand il va aider un allié : marche et montée (échelle, seau) */
 export const helpBoost = m => m.helping ? m.skill.braum : 0;
 export const walkBoost = (G,m) => 1 + (G.t < m.rushUntil ? m.skill.ore_rush : 0) + (travelling(m) ? m.skill.travel_rush : 0) + helpBoost(m);
-export const moveT  = (G,m) => 1/(m.carac.speed*dk(G,m)*walkBoost(G,m));
-export const climbT = (G,m) => 1/(m.carac.climbSpeed*dk(G,m)*(1+helpBoost(m)));
+export const moveT  = (G,m) => 1/(m.carac.speed*dk(G,m)*walkBoost(G,m)*bleedSlow(m));
+export const climbT = (G,m) => 1/(m.carac.climbSpeed*dk(G,m)*(1+helpBoost(m))*bleedSlow(m));
 /* dans le puits du treuil : le seau, à WINCH.speedFactor × la vitesse de montée (dans les deux sens), × l'Escalateur
    du groupe (winchMult) */
 export const winchMult = G => (1 + (G.winchBoost || 0))*(G.winch?.lift ? GLYPHS.liftSpeed : 1);   // ascenseur (Glyphe Treuil) : × liftSpeed
-export const winchT = (G,m) => 1/(m.carac.climbSpeed*WINCH.speedFactor*winchMult(G)*dk(G,m)*(1+helpBoost(m)));
+export const winchT = (G,m) => 1/(m.carac.climbSpeed*WINCH.speedFactor*winchMult(G)*dk(G,m)*(1+helpBoost(m))*bleedSlow(m));
 /* vitesse de minage : (base + bonus fixes) × (1 + bonus en %) (stats d'amélioration, src/meta/piece.js) */
-export const mineRate = m => m.carac.mineSpeed*(1+(m.carac.mineSpeedPct||0)/100);
+export const mineRate = m => m.carac.mineSpeed*(1+(m.carac.mineSpeedPct||0)/100)*bleedSlow(m);
 /* sort Cri de guerre (src/sim/spells.js) : bonus de dégâts et de vitesse d'attaque en cours sur ce mineur, ou null */
 export const warcryOf = (G,m) => m.warcry && G.t < m.warcry.until ? m.warcry : null;
 /* sorts : Inspiration (G.inspire, pour tout le groupe) et Fast learner (m.learned, par type de bloc) */

@@ -34,6 +34,7 @@ export function minerEffects(G, m, ctx = {}){
   if(foe?.type === 'mephite') push({ id:'choke' });
   if(foe?.type === 'gobelin' && ctx.robbable) push({ id:'robbed' });
   if(m.fleshStacks > 0 && !(G.t > m.fleshUntil)) push({ id:'flesh', stacks:m.fleshStacks, left:left(G, m.fleshUntil) });
+  if(m.bleed > 0 && !(G.t > m.bleedUntil)) push({ id:'bleed', stacks:m.bleed, left:left(G, m.bleedUntil) });
   if(G.boss && G.boss.hp > 0 && G.boss.focus != null && G.boss.focus === m.id && G.boss.engaged !== false) push({ id:'boss_focus' });
   if(ctx.dark) push({ id:'dark' });
   /* Instance II, le Golbute (30/10/2026) : Sonné (stacks de l'avalanche) et Mort */

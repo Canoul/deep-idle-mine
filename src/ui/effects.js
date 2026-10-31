@@ -37,6 +37,8 @@ export function effectTip(e){
     case 'robbed': L.push(`Le gobelin lui vole un minerai toutes les ${MOBS.goblinStealEvery} s`, 'La ténacité peut l\'éviter'); break;
     case 'flesh': L.push(`Vitesse d'attaque −${MOBS.chair.slow * (e.stacks || 1)} % (−${MOBS.chair.slow} % par stack, ${MOBS.chair.maxStacks} au plus)`,
                          `Un stack toutes les ${MOBS.chair.every} s près du mur ; ils partent ${MOBS.chair.last} s après, ou en s'éloignant`); break;
+    case 'bleed': L.push(`Déplacement et minage −${MOBS.bleed.slow * (e.stacks || 1)} % (−${MOBS.bleed.slow} % par stack, ${MOBS.bleed.maxStacks} au plus)`,
+                         `Tous les stacks tombent ${MOBS.bleed.last} s après le dernier reçu`, 'La ténacité peut l\'éviter'); break;
     case 'boss_focus': L.push('Le boss ne vise que lui', 'C\'est lui qui subit ses coups et son recul'); break;
     case 'dark': L.push(`Sans lumière, il va moins vite (× ${num(CFG.darkSlow)})`); break;
     case 'war_cry': L.push(`Dégâts +${pct(SPELL.war_cry.dmgPct)}, vitesse d'attaque +${pct(SPELL.war_cry.atkSpeed)}`, 'Sort du barbare'); break;

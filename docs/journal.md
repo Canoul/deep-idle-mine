@@ -16,6 +16,12 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 31/10/2026 — Geoffrey — Deux nouveaux mobs en area 7 : Chien de magma et Vers de terre
+- **Pour le joueur** : à partir de l'area 7, le **Chien de magma** applique du **Bleed** toutes les 3 s de tacle (déplacement et minage −10 % par stack). Le **Vers de terre** traverse les blocs et charge toutes les 10 s : étourdi 3 s et un stack de Bleed. Il est intouchable, sauf quand il se coince (30 % par charge, 10 s), avec sa queue qui dépasse.
+- **Décisions** : ver 300 PV ; Bleed plafonné à 5 stacks (−50 %) ; la ténacité marche sur chaque stack ; le ver vise à 12 cases et le mineur frappe tout seul sa queue. 5 % chacun en area 7, 8 % en area 8+, le chien pris sur le mimic, le ver sur l'occultiste. Vitesses de charge et de rotation : valeurs provisoires.
+- **À suivre** : à regarder en vraie partie, surtout l'équilibre du stun et du Bleed en area 7. Les peaux et la chair n'ont pas encore d'usage. Textures provisoires.
+- **État** : 🧪 sur la branche `geoffrey/mobs-a7` (pas en ligne)
+
 ## 31/10/2026 — Geoffrey — Stuff : les sets en bandeau, noms des pièces lisibles
 - **Pour le joueur** : dans l'onglet Stuff, les sets passent en bandeau au-dessus de la carte. Le nom des pièces a bien plus de place et ne s'écrit plus sur une colonne de quelques lettres. L'onglet garde la même largeur que les autres.
 - **État** : ✅ en ligne le 31/10

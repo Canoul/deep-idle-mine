@@ -387,12 +387,13 @@ export const MOBS = {
     { gobelin:0.2, occultiste:0.3, mephite:0.2, mimic:0.2, golem:0.1 },   // golem : 26/10 (Geoffrey), pris sur le gobelin (avant 0,3 ; et 0,5 encore avant)
     /* mur de chair (28/10/2026, Geoffrey) : 2 / 5 / 8 % en areas 6 / 7 / 8+, pris sur le gobelin (avant : la ligne de l'area 5) */
     { gobelin:0.18, occultiste:0.3, mephite:0.2, mimic:0.2, golem:0.1, chair:0.02 },
-    { gobelin:0.15, occultiste:0.3, mephite:0.2, mimic:0.2, golem:0.1, chair:0.05 },
-    { gobelin:0.12, occultiste:0.3, mephite:0.2, mimic:0.2, golem:0.1, chair:0.08 },
+    /* Chien de magma, pris sur le mimic, et Vers de terre, pris sur l'occultiste (31/10/2026, Geoffrey) : 5 / 8 % en areas 7 / 8+ */
+    { gobelin:0.15, occultiste:0.25, mephite:0.2, mimic:0.15, golem:0.1, chair:0.05, chien:0.05, ver:0.05 },
+    { gobelin:0.12, occultiste:0.22, mephite:0.2, mimic:0.12, golem:0.1, chair:0.08, chien:0.08, ver:0.08 },
   ],
   /* PV = hpBase × hpGrowth^(k − minArea) : minArea = première area où le mob peut apparaître */
-  hpBase:  { bestiole:50, gobelin:100, mimic:50, occultiste:150, mephite:70, golem:300, chair:200 },   // occultiste : 150 le 23/10 (avant 100)
-  minArea: { bestiole:0,  gobelin:1,   mimic:0,  occultiste:4,   mephite:3,  golem:5, chair:6 },
+  hpBase:  { bestiole:50, gobelin:100, mimic:50, occultiste:150, mephite:70, golem:300, chair:200, chien:200, ver:300 },   // occultiste : 150 le 23/10 (avant 100)
+  minArea: { bestiole:0,  gobelin:1,   mimic:0,  occultiste:4,   mephite:3,  golem:5, chair:6, chien:7, ver:7 },
   hpGrowth: 1.15,
   /* rythme des apparitions (tous types confondus), selon k = dernière area débloquée (intensité de la partie) */
   spawnDelay: (rng, k) => (40 + rng()*30) / (1 + 0.15*k),
@@ -447,7 +448,20 @@ export const MOBS = {
      dernier reçu, et tombent tous dès qu'il sort du rayon ; la Ténacité peut ignorer chaque stack. */
   chair: { h:6, spawnDist:{ min:8, max:12 }, knockRes:100, every:2, radius:1.5, slow:10, maxStacks:9, last:10,
            flesh:{ item:'Rotten flesh', min:1, max:3 }, chitin:{ min:1, max:5 } },
-  noTrap: ['golem', 'chair'],      // jamais dans un piège ni dans la dimension du k hole (choix de Claude : 2 × 2, 1 × 6)
+  /* Bleed (31/10/2026, Geoffrey ; src/sim/bleed.js) : −slow % de déplacement et de minage par stack, maxStacks au plus, tous
+     retirés last s après le dernier reçu. La Ténacité peut ignorer chaque stack. Plafond : choix de Geoffrey, valeurs provisoires. */
+  bleed: { slow:10, maxStacks:5, last:60 },
+  /* Chien de magma (31/10/2026, Geoffrey) : mob normal, 1 × 1 ; toutes les every s de tacle, un stack de bleed sur sa cible */
+  chien: { every:3, item:'Peau de chien de magma', loot: rng => 1 + Math.floor(rng()*3) },
+  /* Vers de terre (31/10/2026, Geoffrey ; src/sim/worm.js). Il traverse les blocs (len cases de long) ; toutes les chargeEvery s,
+     il charge le mineur le plus proche à reach cases au plus (une case toutes les chargeStep s, chargeFuel cases au plus), va
+     overshoot cases plus loin, puis tourne sur lui-même (roamStep s par case, un quart de tour toutes les turnEvery cases).
+     Mineur traversé (tête à hitDist case au plus) : étourdi stun s et un stack de bleed, la Ténacité tire chacun à part.
+     Inciblable, sauf coincé : stuckChance à chaque fin de charge, stuckFor s, sur un bloc qui touche le vide (cherché à
+     stuckScan cases au plus). Plus de mineur à leash cases : il s'en va. reach, vitesses et leash : valeurs provisoires. */
+  ver: { len:6, chargeEvery:10, reach:12, chargeStep:0.1, chargeFuel:40, overshoot:4, roamStep:0.4, turnEvery:2, hitDist:1, stun:3,
+         stuckChance:0.3, stuckFor:10, stuckScan:6, leash:30, item:'Chair de vers', loot: rng => 1 + Math.floor(rng()*3) },
+  noTrap: ['golem', 'chair', 'ver'],      // jamais dans un piège ni dans la dimension du k hole (choix de Claude : 2 × 2, 1 × 6)
 };
 /* Gallianix (23/10/2026, Geoffrey) : un canard jaune qui se promène à la surface, autour du coffre. Il naît à chaque
    nouvelle area débloquée pendant la session (pas au lancement). Il ne tacle pas et ne chasse personne ; il ne tombe
@@ -480,7 +494,7 @@ export const mobHp = (type, k) => Math.round(MOBS.hpBase[type] * MOBS.hpGrowth *
    maxLevel : garde-fou de calcul. Valeurs provisoires. */
 export const XP = {
   ore: { coal:1, iron:2, gold:4, diamond:7, graphite:4, mithril:5, cobalt:8, thorium:8 },   // mithril, cobalt, thorium : 27/10
-  mob: { bestiole:5, gobelin:10, mimic:5, occultiste:15, mephite:12, golem:30, chair:40, minotaure:100, gallianix:5 },
+  mob: { bestiole:5, gobelin:10, mimic:5, occultiste:15, mephite:12, golem:30, chair:40, chien:40, ver:40, minotaure:100, gallianix:5 },
   curve: { first:1000, factor:1.5 },
   talentPerLevel: 1,
   maxLevel: 200,
@@ -723,6 +737,7 @@ export const EFFECTS = {
     choke:        { kind:'debuff',  name:'Asphyxie',            icon:'bubbles',   color:'#8fd14f' },
     robbed:       { kind:'debuff',  name:'Volé',                icon:'coin',      color:'#e0b03a' },
     flesh:        { kind:'debuff',  name:'Chair putride',       icon:'heartbreak',color:'#ff6b6b' },
+    bleed:        { kind:'debuff',  name:'Bleed',               icon:'heartbreak',color:'#c0392b' },
     boss_focus:   { kind:'debuff',  name:'Ciblé par le boss',   icon:'target',    color:'#e5534b' },
     dark:         { kind:'debuff',  name:'Dans le noir',        icon:'moon',      color:'#8a8fb0' },
     war_cry:      { kind:'buff',    name:'Cri de guerre',       icon:'horn',      color:'#ff8c1a' },
@@ -775,7 +790,7 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'helmet_mithril','chest_mithril','legs_mithril','boots_mithril','helmet_thorium','chest_thorium','legs_thorium','boots_thorium',
   'helmet_cobalt','chest_cobalt','legs_cobalt','boots_cobalt',
   'ring_tiger','ring_lion','ring_rat','ring_whale','ring_cuck','ring_nerd','ring_midas','ring_jester','ring_stone','pickaxe_nemesis','chest_gollex','legs_golbute','soul_golbute',
-  'ladder','chest','miner','mimic','bug','goblin','occultist','mephite','golem','flesh_wall','flesh_icon','duck','heart_fragment','torch','stun','winch_rope','winch_top','bucket','lift_rail','lift_top','lift_cabin','backpack','scroll','glyph',
+  'ladder','chest','miner','mimic','bug','goblin','occultist','mephite','golem','flesh_wall','flesh_icon','magma_dog','worm_head','worm_body','worm_tail','magma_dog_hide','worm_flesh','duck','heart_fragment','torch','stun','winch_rope','winch_top','bucket','lift_rail','lift_top','lift_cabin','backpack','scroll','glyph',
   // le Carreau, ville du spawn (29/10/2026, src/render/town.js)
   'town_cobble','town_campfire','town_lamppost','town_headframe','town_cloud',
   'town_banner_angel','town_banner_demon','town_pedestal','town_tavern','town_archives','town_library','town_training','town_mage_tower',
@@ -1381,6 +1396,8 @@ export const ITEMS = {
   'Pépite d\'argent':  { cat:'material',  tex:'nugget_silver', w:1, stack:true },       // récompense du bloc géant (GIANT.nugget, 27/10)
   'Cuir de minotaure': { cat:'material',  tex:'minotaur_leather', w:1, stack:true },    // butin du minotaure (DUNGEON.leather, 27/10)
   'Rotten flesh':      { cat:'material',  tex:'rotten_flesh', w:1, stack:true },        // butin du mur de chair (28/10)
+  'Peau de chien de magma': { cat:'material', tex:'magma_dog_hide', w:1, stack:true },  // butin du Chien de magma (31/10)
+  'Chair de vers':     { cat:'material',  tex:'worm_flesh',   w:1, stack:true },        // butin du Vers de terre (31/10)
   ...CHEST_ITEMS,                                                                       // ancien : coffres des tours (RUNE)
   [RUNE.item]:       { cat:'rune', tex:RUNE.tex, w:1, stack:false },                   // une rune = une pièce (qualité, lignes)
   [RUNE.fragment.item]: { cat:'rune', tex:RUNE.fragment.tex, w:1, stack:false, fragment:true },   // rune retirée : lignes ÷ 2
@@ -1417,7 +1434,7 @@ export const INVENTORY = { cols:8, minSlots:48, maxUniqueAdd:1000,
     { id:'ore',   icon:'Fer',             name:'Minerais',         cats:['ore', 'combustible', 'residu'] },
     { id:'stuff', icon:'Casque en fer',   name:'Stuff',            cats:['stuff'] },
     { id:'mob',   icon:'Peau de gobelin', name:'Butin des mobs',   cats:['mob'],
-      items:['Tissu sombre', 'Vésicule de gaz', 'Pierre glissante', 'Cuir de minotaure', 'Rotten flesh', 'Fragment de cœur'] },
+      items:['Tissu sombre', 'Vésicule de gaz', 'Pierre glissante', 'Cuir de minotaure', 'Rotten flesh', 'Peau de chien de magma', 'Chair de vers', 'Fragment de cœur'] },
     { id:'mat',   icon:'Lingot de fer',   name:'Matériaux (gemmes, lingots, alliages, plumes, cristaux, argent)', cats:['ingot', 'gem', 'material'] },
     { id:'rune',  icon:'Rune',            name:'Runes',            cats:['rune'], items:['Poudre de rêve'] },
     { id:'misc',  icon:'Treasure T1',     name:'Divers (coffres, clés, plans, parchemins, glyphes…)', cats:['treasure', 'key', 'blueprint', 'scroll', 'glyph', 'furnace'] },
@@ -2110,6 +2127,8 @@ export const MOB_INFO = {
   mephite:    { name:'Méphite',    tex:'mephite' },
   golem:      { name:'Golem de sperme', tex:'golem' },
   chair:      { name:'Mur de chair', tex:'flesh_icon' },   // icône carrée ; le mob se dessine avec flesh_wall (1 × 6)
+  chien:      { name:'Chien de magma', tex:'magma_dog' },
+  ver:        { name:'Vers de terre', tex:'worm_head' },
 };
 
 /* Focus minerai : réglé PENDANT la session (panneau de l'onglet Mine), minerai par minerai. Le serveur enregistre
