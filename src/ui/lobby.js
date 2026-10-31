@@ -4,7 +4,7 @@
    la session elle-même est dans l'onglet Session.
    Lit l'état et appelle des fonctions : le groupe et la session sont gérés par le serveur. */
 import { gearScore } from '../meta/gearscore.js';
-import { statusText } from './social.js';
+import { leftText, statusText } from './social.js';
 import { canBeInvited } from '../shared/party.js';
 import { GAME, PREF_OPTIONS, MOB_INFO, DEV_TUNABLES, DEV_TARGETS, DEV_SPEC, SESSION_LEN, SKILLS, MINE_MODES, TOWER, INSTANCE, SHRINES } from '../config.js';
 import { joinLink } from '../shared/party.js';
@@ -52,6 +52,9 @@ export function specLabel(tree, level = null){
   return t ? `${t.icon} ${t.label}${Number.isSafeInteger(level) ? ` (SP lvl : ${level})` : ''}` : 'Sans spécialisation';
 }
 
+/* membre que le chef attend : son nom et son temps restant (pas de temps en mode dev) */
+const waitingText = m => { const left = leftText(m.playingLeftMs); return left ? `${m.name} (${left})` : m.name; };
+
 /* Ce que fait le bouton principal : seul ou chef = Lancer (si tous les autres membres sont prêts) ; membre = se dire
    prêt / ne plus l'être (action:'ready', ready = la valeur à envoyer) */
 export function launchState({ account, party, offline, busy, session }){
@@ -64,7 +67,8 @@ export function launchState({ account, party, offline, busy, session }){
     return me?.ready ? { can:true, label:'✔ Prêt (annuler)', action:'ready', ready:false }
                      : { can:true, label:'✋ Je suis prêt', action:'ready', ready:true };
   }
-  if(party?.members.some(m => m.playing)) return { can:false, label:'⏳ Le groupe finit sa session…' };
+  const playing = party?.members.filter(m => m.playing) ?? [];
+  if(playing.length) return { can:false, label:`⏳ Attente de ${playing.map(waitingText).join(', ')}` };
   const waiting = party?.members.filter(m => m.account !== party.leader && !m.ready) ?? [];
   if(waiting.length) return { can:false, label:`⏳ Pas prêt : ${waiting.map(m => m.name).join(', ')}` };
   const n = party?.members.length ?? 1;
@@ -303,7 +307,7 @@ export function setupLobby(h){
                (slotButtons(st, s).kick ? `<button class="x" data-kick="${esc(s.displayId)}" title="Annuler l'invitation">×</button>` : '')+`</div>`;
       const ready = party && !s.leader && !s.playing ? (s.ready ? (s.always ? '✔ prêt tout le temps' : '✔ prêt') : 'pas prêt') : null;   // le chef : lancer = prêt
       const gs = s.me ? h.gs?.() : s.gs;
-      const tags = [s.me && 'Toi', s.leader && 'chef', ready, (s.playing || s.me && locked) && 'en session', s.away && 'absent',
+      const tags = [s.me && 'Toi', s.leader && 'chef', ready, (s.playing || s.me && locked) && 'en session', s.playing && leftText(s.playingLeftMs), s.away && 'absent',
                     Number.isFinite(gs) && `${gs.toLocaleString('fr-FR')} GS`].filter(Boolean).join(' · ') || 'Prêt';
       return `<div class="pslot${s.me ? ' me' : ''}${s.away ? ' away' : ''}"><span class="av"><canvas width="16" height="16" data-slot="${i}"></canvas></span>`+
              `<span><b>${esc(s.name)}</b><small class="spec">${esc(s.me && st.myTree !== undefined ? specLabel(st.myTree, st.mySpec?.[st.myTree]?.level) : specLabel(s.tree, s.specLevel))}</small><small>${esc(tags)}</small></span>`+

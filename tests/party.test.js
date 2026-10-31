@@ -235,6 +235,8 @@ test('enchaîner : un membre encore en session est affiché « en session » et 
   const st = await party.state(A);
   assert.equal(st.session, null);
   assert.deepEqual(st.party.members.map(m => [m.account, m.playing, m.away]), [[A.id, false, false], [B.id, true, false]]);
+  assert.equal(st.party.members[0].playingLeftMs, null);
+  assert.ok(st.party.members[1].playingLeftMs > 0, 'le temps restant de B part avec le groupe');
   await assert.rejects(party.launch(A, {}), { code:'not_ready' });   // B, encore en session, ne peut pas se dire prêt
   await assert.rejects(party.ready(B, true), { code:'session_running' });
   assert.equal((await party.state(A)).party.members.length, 2, 'le groupe ne bouge pas');

@@ -34,8 +34,16 @@ test('Lancer : seul ou chef → oui (« Lancer à 2 ») si les autres sont prêt
 
 test('lancer : un membre encore dans la session précédente → le chef attend la fin', () => {
   const account = { id:'AAAA1111' };
-  const party = { leader:'AAAA1111', members:[{ account:'AAAA1111', me:true }, { account:'BBBB2222', playing:true, ready:true }] };
-  assert.deepEqual(launchState({ account, party }), { can:false, label:'⏳ Le groupe finit sa session…' });
+  const party = { leader:'AAAA1111', members:[{ account:'AAAA1111', me:true }, { account:'BBBB2222', name:'Nunu', playing:true, playingLeftMs:360_000, ready:true }] };
+  assert.deepEqual(launchState({ account, party }), { can:false, label:'⏳ Attente de Nunu (reste 6 min)' });
+  party.members[1].playingLeftMs = 20_000;
+  assert.equal(launchState({ account, party }).label, '⏳ Attente de Nunu (reste < 1 min)');
+  party.members[1].playingLeftMs = null;
+  assert.equal(launchState({ account, party }).label, '⏳ Attente de Nunu', 'mode dev : pas de temps');
+  party.members.push({ account:'CCCC3333', name:'Lou', playing:true, playingLeftMs:120_000 });
+  party.members[1].playingLeftMs = 360_000;
+  assert.equal(launchState({ account, party }).label, '⏳ Attente de Nunu (reste 6 min), Lou (reste 2 min)');
+  party.members.pop();
   party.members[1].playing = false;
   assert.equal(launchState({ account, party }).can, true);
 });
