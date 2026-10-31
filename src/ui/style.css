@@ -723,7 +723,7 @@ body{--chat-w:calc(287.5*var(--u))}
   #cvWrap{min-height:calc(260*var(--u))}
   .skTrees{grid-template-columns:1fr}
   .lobbyCols{grid-template-columns:1fr}
-  .lobbyCols>.lobbyCol:last-child{order:-1}   /* l'équipe et Lancer d'abord */
+  #lobby:not(.atMenu) .lobbyCols>.lobbyCol:last-child{order:-1}   /* l'équipe et Lancer d'abord ; au menu, les activités d'abord */
   .invWrap,.stuffMain{grid-template-columns:1fr}
   .invWrap>.invInfo{grid-column:1;grid-row:auto;position:static;margin-top:calc(6*var(--u))}
   .view[data-view="stuff"] .stuffStatsCard{margin-top:calc(18*var(--u))}

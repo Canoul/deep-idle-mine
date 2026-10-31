@@ -30,6 +30,8 @@ export function setupChatTabs({ bar, panel, select, save, onChange }){
       panel.innerHTML = `<input data-name maxlength="${CHAT.tabNameMax}" value="${esc(tab().name)}" title="Nom de l'onglet">`+
         CHAT.channels.map(c => `<label class="chk ch-${c.id}"><input type="checkbox" data-ch="${c.id}"${tab().hidden.includes(c.id) ? '' : ' checked'}> ${esc(c.label)}</label>`).join('')+
         (prefs.tabs.length > 1 ? `<button type="button" class="small" data-del>Supprimer l'onglet</button>` : '');
+    select.innerHTML = CHAT.channels.filter(c => c.id !== 'mp').map(c => `<option value="${c.id}">${esc(c.label)}</option>`).join('')+
+      (prefs.channel === 'mp' ? `<option value="mp">À ${esc(prefs.to)}</option>` : '');
     select.value = prefs.channel;
   }
   bar.onclick = e => {
@@ -49,12 +51,19 @@ export function setupChatTabs({ bar, panel, select, save, onChange }){
     if(!e.target.closest('[data-del]')) return;
     prefs.tabs.splice(prefs.active, 1); prefs.active = Math.max(0, prefs.active - 1); open = false; changed();
   };
-  select.innerHTML = CHAT.channels.filter(c => c.id !== 'mp').map(c => `<option value="${c.id}">${esc(c.label)}</option>`).join('');
-  select.onchange = () => { prefs.channel = select.value; changed(); };
+  select.onchange = () => { if(select.value === prefs.channel) return; prefs.channel = select.value; delete prefs.to; changed(); };
   render();
   return {
     set(raw){ prefs = sanitizeChatPrefs(raw); open = false; render(); onChange(); },
     channel: () => prefs.channel,
+    target: () => prefs.to ?? null,
+    /* message bien envoyé : son canal reste choisi pour le suivant (31/10/2026, Geoffrey) */
+    sent(msg){
+      if(msg.channel === prefs.channel && msg.to === prefs.to) return;
+      prefs.channel = msg.channel;
+      if(msg.channel === 'mp') prefs.to = msg.to; else delete prefs.to;
+      changed();
+    },
     show: m => !tab().hidden.includes(chatChannel(m.channel).id),
   };
 }

@@ -22,12 +22,22 @@ Modèle d'entrée :
   dans un groupe, puis on le reste session après session.
 - **Décisions** : cocher ne rend plus prêt. En revenant de prison, le joueur clique donc une fois : un chef ne peut pas
   lui terminer sa prison sans son accord. « Prêt (annuler) » remarche, sans toucher à la case.
-- **État** : 🧪 sur la branche `geoffrey/pret-prison` (pas en ligne)
+- **État** : ✅ en ligne le 31/10
 
 ## 31/10/2026 — Geoffrey — Mode dev : copier un vrai joueur en tapant son pseudo
 - **Pour l'équipe** : dans le lobby du mode développeur, on tape un pseudo et le personnage du joueur (stuff, skills, sorts, niveau) arrive
   dans les presets, sans console ni fichier. Un preset par mineur, en instance aussi, même avec un compte invité ou invité dans un groupe. Le serveur dev lit la base en ligne avec un compte qui ne peut rien modifier.
 - **À suivre** : Jules a besoin de son fichier `.dim-dev.env` pour s'en servir. `SET ROLE` ne marche pas dans Neon : voir `has_table_privilege`.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Menu du Lobby : l'équipe à droite
+- **Pour le joueur** : le choix des activités montre ton équipe à droite, seul ou en groupe : inviter, chercher un groupe, et « Je suis prêt » pour un membre. Le Lancer reste dans l'activité.
+- **Décisions** : cliquer sur l'onglet Lobby rouvre toujours le menu, même en groupe ; rejoindre un groupe n'ouvre plus la Mine.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Chat : le canal utilisé reste choisi
+- **Pour le joueur** : après un message en /gr, le suivant part en groupe sans rien préciser, et pareil pour /1, /2 et /c. Après un /w, le suivant repart au même joueur. On change de canal avec un autre raccourci ou le sélecteur, et le canal est gardé sur le compte.
+- **Décisions** : le canal ne change que si le message est bien parti (un /gr refusé sans groupe ne change rien).
 - **État** : ✅ en ligne le 31/10
 
 ## 31/10/2026 — Geoffrey — Chat global : canaux, MP, onglets

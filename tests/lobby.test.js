@@ -208,3 +208,10 @@ test('Instance et Jugement : leur carte en haut de la colonne de gauche, les set
   assert.ok(col < jug && col < inst && jug < sets && inst < sets);
 });
 
+test('menu du Lobby : équipe toujours là ; bouton principal seulement pour un membre de groupe', async () => {
+  const { menuCards } = await import('../src/ui/lobby.js');
+  const account = { id:'a' };
+  assert.deepEqual(menuCards({ party:null, account }), { team:true, launch:false });
+  assert.deepEqual(menuCards({ party:{ leader:'a', members:[{}, {}] }, account }), { team:true, launch:false });
+  assert.deepEqual(menuCards({ party:{ leader:'b', members:[{}, {}] }, account }), { team:true, launch:true });
+});
