@@ -5771,3 +5771,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Simulation** ✅ profil Croustiflex, area 7, acier mineur, 5 chaînes de 4 h (95 runs avec et sans plafond, aucun à `runMax`) : cobalt 2,07 → 0,78/h, thorium 2,52 → 1,03/h, fer 76 → 81, charbon 77 → 80, or 35 → 38 ; durée d'un run 768 → 773 s.
 - ⚠️ canoul, Sõnata et Allaiks peuvent être très légèrement touchés s'ils dépassent 0,4 % de peu. Une prison en cours prend le plafond au prochain rejeu : la carte du run en cours peut changer légèrement, comme à chaque réglage de `oreMul`.
 - ⚠️ Treasures et drops de cobalt / thorium non touchés.
+
+## 31/10/2026 — Craft de la Clé d'instance I (Geoffrey)
+- **Quoi** : `RECIPES['Clé d'instance I']` : 1 Barre d'argent + 5 Orbes (src/recipes.js). Tableaux du wiki générés depuis la config.
+- **Tests** ✅ craft +1, instance-key, instance-server, suite anti-triche.
