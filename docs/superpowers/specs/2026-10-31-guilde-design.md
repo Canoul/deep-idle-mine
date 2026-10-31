@@ -19,8 +19,8 @@ Un invité (compte sans pseudo) voit Rechercher et Leaderboard, mais ne peut ni 
 ### Sa guilde
 
 - **À gauche** : liste de tous les membres, classés par grade (Chef, Officier, Membre), puis par activité (Connecté, En
-  session, Absent), puis par pseudo. Chaque ligne : pseudo, grade, activité, et une case d'actions à côté du pseudo quand le
-  joueur a au moins une action possible sur ce membre.
+  session, Absent), puis par pseudo. Chaque ligne : pseudo, grade, activité, XP rapportée à la guilde, et une case d'actions à
+  côté du pseudo quand le joueur a au moins une action possible sur ce membre.
 - **Chef et officiers** : bouton « Inviter un joueur » (saisie du pseudo) et liste des demandes reçues (Accepter / Refuser).
 - **À droite** : niveau de la guilde avec sa barre de progression ; en dessous « Bonus actifs : aucun bonus pour l'instant » ;
   en dessous « Bâtiments : bientôt ».
@@ -101,6 +101,8 @@ Personne n'agit sur le chef, et personne ne s'exclut soi-même (on quitte). Le c
   donnent pas d'XP au joueur (tours, instances, mine instantanée).
 - Pas de rattrapage : seule l'XP gagnée après l'entrée dans la guilde compte. L'XP déjà versée reste à la guilde quand le
   membre part. Le niveau ne descend jamais.
+- Chaque membre a son total d'XP rapportée, en XP de guilde (donc 1 % de ce qu'il a gagné). Il n'est pas gardé s'il part : un
+  joueur qui revient repart de 0, et la guilde garde ce qu'il avait rapporté.
 - La guilde retenue est celle du joueur au moment du versement, à la fin de la session.
 
 Ordre de grandeur (provisoire) : 10 joueurs gagnant 100 M d'XP chacun font une guilde niveau 22, 20 joueurs niveau 23. Doubler
@@ -124,7 +126,7 @@ Une seule fiche (ns `guilds`) pour toutes les guildes, gardée en mémoire et en
 
 ```js
 { guilds: { [id]: { id, name, createdAt, rawXp,
-                    members: [{ id, rank, joinedAt }],
+                    members: [{ id, rank, joinedAt, rawXp }],
                     invites: [{ id, by, at }], requests: [{ id, at }] } } }
 ```
 
@@ -155,7 +157,7 @@ d'invitation passent par la relecture sociale existante, qui ajoute le nombre d'
 
 ## Tests
 
-- `tests/guild.test.js` (logique pure) : droits par grade, successeur, ordre des membres, nom, niveau.
+- `tests/guild.test.js` (logique pure) : droits par grade, successeur, ordre des membres, nom, niveau, XP rapportée par membre.
 - `tests/guild-service.test.js` : création, nom pris, invitation, demande, guilde pleine, annulations à l'entrée, départ du
   chef, dernier membre, invité refusé, redémarrage du serveur (fiche relue).
 - `tests/anticheat/guild.test.js` : action sans droit (membre, officier sur un officier, joueur extérieur), id ou nom
