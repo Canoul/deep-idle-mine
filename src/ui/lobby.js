@@ -577,6 +577,18 @@ export function setupLobby(h){
     $('devPresets').querySelectorAll('select').forEach((s, j) => { if(keep[j] && [...s.options].some(o => o.value === keep[j])) s.value = keep[j]; });
   };
   drawPresets();
+  /* copier un joueur du jeu en ligne (31/10/2026) : la copie rejoint les presets */
+  $('devCopyBtn').onclick = async () => {
+    const msg = $('devCopyMsg');
+    msg.hidden = false; msg.textContent = 'Copie…';
+    try {
+      const r = await h.devCopy($('devCopyName').value);
+      if(st.info) st.info.copies = r.copies;
+      drawPresets(r.copies);
+      msg.textContent = `${r.name} copié : à choisir dans les presets (recopier pour mettre à jour).`;
+      $('devCopyName').value = '';
+    } catch(e){ msg.textContent = e.message; }
+  };
   const botPresets = () => [...$('devPresets').querySelectorAll('[data-preset]')].map(s => s.value || null);
   /* spécialisation imposée par place de mineur (joueurs du groupe dans l'ordre, puis mineurs de test) et niveau */
   $('devSpecs').innerHTML = Array.from({ length: GAME.maxPlayers }, (_, i) =>

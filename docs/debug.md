@@ -5775,3 +5775,24 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 ## 31/10/2026 — Craft de la Clé d'instance I (Geoffrey)
 - **Quoi** : `RECIPES['Clé d'instance I']` : 1 Barre d'argent + 5 Orbes (src/recipes.js). Tableaux du wiki générés depuis la config.
 - **Tests** ✅ craft +1, instance-key, instance-server, suite anti-triche.
+
+## 31/10/2026 — Mode dev : copier un joueur depuis la base en ligne (Geoffrey)
+- **Quoi** : `server/game/dev-live-copies.js` lit la vue `dim_dev_copie` et écrit `data/presets/base-<pseudo>.json`, relu par
+  `readDevCopies` ; `game.devCopyPlayer` + `POST /api/game/dev/copy` (403 hors mode dev) ; champ dans le panneau dev (src/ui/lobby.js) ;
+  `server/dev-env.js` lit `.env` puis `~/.dim-dev.env` et refuse de démarrer si `DATABASE_URL` est présent.
+- **Mise en place Neon** : dans le SQL Editor, avec le compte propriétaire. Créer le compte en SQL, pas par la page Roles : un rôle créé
+  par la console entre dans `neon_superuser`, qui peut voir toute la table. Mot de passe en lettres et chiffres (il va dans une URL).
+  ```sql
+  CREATE ROLE dim_dev_lecture LOGIN PASSWORD '<mot de passe>';
+  CREATE VIEW dim_dev_copie AS
+    SELECT a.value->>'name' AS name, a.value->>'nameKey' AS name_key, d.ns, d.value
+    FROM dim_data a JOIN dim_data d ON d.key = a.key
+    WHERE a.ns = 'account' AND d.ns IN ('stuff', 'skills', 'spells', 'progress');
+  GRANT USAGE ON SCHEMA public TO dim_dev_lecture;
+  GRANT SELECT ON dim_dev_copie TO dim_dev_lecture;
+  ```
+  Puis `DIM_DEV_COPY_URL=postgresql://dim_dev_lecture:<mot de passe>@<hôte Neon>/<base>?sslmode=require` dans `~/.dim-dev.env`.
+  Contrôle : `SET ROLE dim_dev_lecture; SELECT * FROM dim_data LIMIT 1;` doit répondre « permission denied », puis `RESET ROLE;`.
+- **Tests** ✅ tests/dev-live-copies 4/4 (fausse connexion), dev-presets, boot-check ; format réel accepté sur la copie de canoul.
+- ⚠️ Pas encore essayé sur la vraie base. `pg` doit être installé dans le dossier d'où le serveur dev tourne (`npm install`).
+

@@ -16,6 +16,12 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 31/10/2026 — Geoffrey — Mode dev : copier un vrai joueur en tapant son pseudo
+- **Pour l'équipe** : dans le lobby du mode développeur, on tape un pseudo et le personnage du joueur (stuff, skills, sorts, niveau) arrive
+  dans les presets, sans console ni fichier. Le serveur dev lit la base en ligne avec un compte qui ne peut rien modifier.
+- **À suivre** : créer ce compte sur Neon et essayer sur un vrai joueur.
+- **État** : 🧪 sur la branche `geoffrey/dev-copie-joueur` (pas en ligne)
+
 ## 31/10/2026 — Geoffrey — Prison : cobalt et thorium plafonnés
 - **Pour le joueur** : dans la compo de la prison, le cobalt et le thorium ne dépassent plus 0,4 % chacun des minerais de la carte. La place libérée va aux autres minerais : la carte en contient autant qu'avant. Vaut pour toutes les compos (actuelle, ancienne, enregistrée) et le lobby affiche la valeur plafonnée.
 - **Décisions** : plafond commun à tous, pas de règle visant des pseudos. Seuls Croustiflex, Infernatiwar et Monsta sont vraiment touchés (0,9 à 1,1 % avant). Mesure sur la compo de Croustiflex (stuff acier, 20 h simulées) : cobalt 2,07 → 0,78 par heure, thorium 2,52 → 1,03. Valeur provisoire, `PRISON.oreCap`.

@@ -149,6 +149,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
                                     config = GAME_SERVER, prison: cfg = PRISON, randomSeed = () => crypto.randomInt(2**31),
                                     /* mode dev : copies de vrais joueurs pour les mineurs de test, { pseudo: copie } (data/presets/) */
                                     devCopies = () => ({}),
+                                    devLiveCopies = null,
                                     /* hasard du butin, imprévisible, dans [0, 1[ : 48 bits aléatoires (randomInt refuse 2**48) */
                                     random = () => crypto.randomBytes(6).readUIntBE(0, 6) / 2**48,
                                     /* modération du chat (server/moderation/service.js, 30/10) : avertit l'auteur d'un mot interdit ; absente = rien */
@@ -901,6 +902,20 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
 
     /* fiche d'un joueur vue par un ami (onglet Social ; c'est le service social qui vérifie l'amitié) : niveau, stuff
        porté, skills. Lecture seule, rien sur l'inventaire ni la session. */
+    /* mode dev : copie un vrai joueur depuis la base en ligne (lecture seule, server/game/dev-live-copies.js) */
+    async devCopyPlayer(me, body = {}){
+      if(!dev) fail('forbidden', 403, 'Réservé au mode développeur.');
+      if(!devLiveCopies) fail('no_copy_db', 503, 'Accès à la base non réglé (DIM_DEV_COPY_URL, voir docs/debug.md).');
+      const name = typeof body.name === 'string' ? body.name.trim() : '';
+      if(!name || name.length > 32) fail('bad_request', 400, 'Tape le pseudo du joueur.');
+      let r;
+      try { r = await devLiveCopies.read(name); }
+      catch(e){ console.error('Copie de joueur :', e.message); fail('copy_failed', 502, 'Base en ligne injoignable.'); }
+      if(!r) fail('not_found', 404, 'Aucun joueur avec ce pseudo.');
+      if(r.refused) fail('copy_refused', 409, `Copie de ${r.name} refusée par le jeu (stuff ou skills invalides).`);
+      return { who: r.who, name: r.name, copies: Object.keys(devCopies()) };
+    },
+
     async profile(accountId){
       const inv = await loadInventory(accountId);
       return { stuff: (await loadStuff(accountId, inv)).worn,
