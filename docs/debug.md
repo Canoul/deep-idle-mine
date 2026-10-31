@@ -5993,6 +5993,12 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Quoi** : `party.isLeader`, `audience` (server/social/service.js) pose `leader:true` sur le message à l'envoi, relu par `server/game/chat.js` après redémarrage ; `chatPrefix` / `chatLine` (src/ui/chat-tabs.js), `.chLead`. Le titre est celui du moment de l'envoi.
 - **Tests** ✅ chat. ⚠️ Couleur non vue en jeu.
 
+## 31/10/2026 — Cases du stuff décalées, nom long (Geoffrey)
+- **Cause** : colonne du nom en `1fr` dans `.stuffSlot` : son minimum est la largeur du plus long mot, « incandescence » poussait la case hors de la grille (src/ui/style.css).
+- **Quoi** : `minmax(0,1fr)` sur les 3 règles (gauche, droite, téléphone), `min-width:0` et `overflow-wrap:anywhere` sur le libellé et le nom. Vaut pour toutes les cases, et pour la fiche d'un ami (même rendu).
+- **Mesure** ✅ page de test, 13 cases, vrai CSS, Chrome sans écran : bord droit des cases de droite avant 586 et 610 px (fenêtre 590), 5 positions et 7 cases hors grille (480) ; après une seule position, 0 hors grille à 480, 590 et 760 ; `tests/stuff-slots-css.test.js` empêche le retour d'un `1fr` seul.
+- ⚠️ Pas vu dans le vrai jeu.
+
 ## 31/10/2026 — Bilan caché par la ville, vraie cause du « pas de pop-up » (Geoffrey, signalé 3 fois)
 - **Cause** : `#end` est dans l'onglet Session. `showResult` → `setPrison` → `updatePrisonUI` : `if(!on){ ...; $('noSession').hidden = ... }` (commit du 30/10) réaffiche `#noSession` ; `town.frame({ walk })` passe alors en promenade, et `body.townWalk .views{visibility:hidden}` masque `#end`. `$('end').hidden` restait faux : aucun test ne pouvait le voir côté serveur ou état. Toutes les sessions étaient touchées, pas seulement les tours.
 - **Correctif** : `townWalks(tab, noSessionHidden, endHidden)` (src/ui/town.js) : pas de promenade tant qu'un bilan est ouvert.

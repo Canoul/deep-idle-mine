@@ -636,7 +636,8 @@ body{--chat-w:calc(287.5*var(--u))}
 .stuffGrid{display:grid;grid-template-columns:minmax(0,1fr) calc(100*var(--u)) minmax(0,1fr);grid-auto-flow:column;grid-template-rows:repeat(7,auto);gap:calc(4*var(--u)) calc(6*var(--u));
   align-items:center;padding:calc(6*var(--u)) calc(6*var(--u)) calc(9*var(--u));
   border:calc(6*var(--u)) solid transparent;border-image:url(../../textures/ui/panel.png) 6 fill / calc(6*var(--u)) stretch}
-.stuffSlot{display:grid;grid-template-columns:calc(33*var(--u)) 1fr;grid-template-rows:auto auto;column-gap:calc(4*var(--u));align-items:center;justify-content:stretch;
+/* minmax(0,1fr), jamais 1fr seul : un mot plus large que la colonne (« incandescence ») pousserait la case hors de la grille ; le nom se coupe à la place (31/10) */
+.stuffSlot{display:grid;min-width:0;grid-template-columns:calc(33*var(--u)) minmax(0,1fr);grid-template-rows:auto auto;column-gap:calc(4*var(--u));align-items:center;justify-content:stretch;
   text-align:left;white-space:normal;min-height:0;padding:0;border:0;border-image:none;text-shadow:none}
 .stuffSlot:hover{border-image:none}
 .stuffSlot:hover .slot{border-image-source:url(../../textures/ui/slot_sel.png)}
@@ -644,9 +645,10 @@ body{--chat-w:calc(287.5*var(--u))}
 .stuffSlot .sico{opacity:.35}
 .stuffSlot .sico .pi{width:calc(12*var(--u));height:calc(12*var(--u))}
 .stuffSlot .slbl{align-self:end;color:var(--mut);font-size:var(--fs-s);text-transform:uppercase;letter-spacing:.08em}
+.stuffSlot .slbl,.stuffSlot .sname{min-width:0;overflow-wrap:anywhere;hyphens:auto}
 .stuffSlot .sname{align-self:start;font-size:var(--fs)}
 /* colonne de droite : en miroir */
-.stuffSlot:nth-child(n+7){grid-column:3;grid-template-columns:1fr calc(33*var(--u));text-align:right}
+.stuffSlot:nth-child(n+7){grid-column:3;grid-template-columns:minmax(0,1fr) calc(33*var(--u));text-align:right}
 .stuffSlot:nth-child(n+7) .slot{grid-column:2}
 .stuffSlot:nth-child(n+7) .slbl,.stuffSlot:nth-child(n+7) .sname{grid-column:1}
 .stuffSlot:nth-child(-n+6){grid-column:1}
@@ -762,7 +764,7 @@ body{--chat-w:calc(287.5*var(--u))}
   #cvMiWrap,#cvTwWrap,#cvGtWrap,#cvInWrap{flex:0 0 60%}
   .runGrid.mi>aside{flex:1 1 0;margin-bottom:var(--dock-h)!important}   /* au-dessus de la barre d'action */
   .stuffGrid{grid-template-columns:1fr;grid-auto-flow:row;grid-template-rows:none}
-  .stuffSlot:nth-child(n){grid-column:1;grid-template-columns:calc(33*var(--u)) 1fr;text-align:left}
+  .stuffSlot:nth-child(n){grid-column:1;grid-template-columns:calc(33*var(--u)) minmax(0,1fr);text-align:left}
   .stuffSlot:nth-child(n) .slot{grid-column:1}
   .stuffSlot:nth-child(n) .slbl,.stuffSlot:nth-child(n) .sname{grid-column:2}
   .stuffHero{grid-column:1;grid-row:auto;order:-1}
