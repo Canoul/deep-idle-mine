@@ -11,6 +11,7 @@ const FRESH = 5000;   // ms : un aperçu relu au plus souvent que ça (survols r
 /* état d'un groupe lu dans son aperçu ; null : on peut le rejoindre */
 export function peekStatus(p){
   if(!p.open) return 'Ce groupe n\'existe plus';
+  if(p.locked) return 'Groupe verrouillé';
   if(p.playing) return 'En session';
   return p.size >= p.max ? 'Complet' : null;
 }

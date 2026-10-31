@@ -50,6 +50,7 @@ import { setupChat } from './ui/chat.js';
 import { setupChatDock } from './ui/chat-dock.js';
 import { setupChatTabs, chatLine } from './ui/chat-tabs.js';
 import { setupChatLobby } from './ui/chat-lobby.js';
+import { setupForming } from './ui/forming.js';
 import { parseChatInput, LOBBY_TAG } from './shared/chat.js';
 import { renderInventory as drawInventory, showLoot, lootError } from './ui/inventory.js';
 import { setupNav } from './ui/nav.js';
@@ -339,6 +340,7 @@ const lobby = setupLobby({
   prisonProfile: () => gameApi.prisonProfile(),   // { profile, previous } : compo actuelle et précédente (paliers de 10 mines, 30/10)   // contenu de la prison d'après les 10 dernières mines (29/10)
   onPrisonStop: () => stopPrison(),
   onPub: ctx => gchat.send({ channel: 'lfg', text: LOBBY_TAG, lobby: ctx }),   // « Pub LFG » (31/10)
+  onForming: () => forming.open(),                   // « Groupes en formation » (31/10)
   onShowPrison: () => nav.show('session'),
   onLaunch: async (opts, { party } = {}) => {
     lobby.error('');
@@ -544,6 +546,10 @@ const gchat = setupChat({ prefix:'gchat', get: after => socialApi.chat(after), p
                           paused: () => document.hidden || gchatDock.folded, time: true,
                           show: gchatTabs.show, line: chatLine, sent: gchatTabs.sent,
                           parse: text => { const msg = parseChatInput(text, gchatTabs.channel(), gchatTabs.target()); return msg.lobby ? { ...msg, lobby: lobby.pubContext() } : msg; } });
+/* groupes en formation (31/10/2026) : la liste se relit toute seule tant que la fenêtre est ouverte */
+const forming = setupForming({ list: () => partyApi.forming(), team: () => lobby.team(),
+                               join: async code => { await partyApi.join(code); await pollLobby(); },
+                               create: async () => { await partyApi.create(); await pollLobby(); } });
 /* lien de lobby du chat (31/10/2026) : aperçu au survol, clic = rejoindre */
 setupChatLobby({ log: $('gchatLog'), peek: id => socialApi.chatLobby(id), onError: text => { $('gchatNote').textContent = text; },
                  join: async id => { await socialApi.chatLobbyJoin(id); await pollLobby(); nav.show('lobby'); } });

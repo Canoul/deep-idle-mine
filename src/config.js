@@ -1555,7 +1555,7 @@ export const SITE = { url:'https://deepmineidle.fr/' };
 /* ---- Groupes (lobby à plusieurs) ----
    codeLength : caractères du code de groupe (alphabet des ID de compte, ex. K7Q4P2), aussi dans le lien d'invitation.
    poll : intervalle de rafraîchissement du lobby et de la session dans le navigateur (ms). */
-export const PARTY = { codeLength:6, poll:2500, pollInSession:5000 };   // ms : rafraîchissement du lobby (plus lent pendant une session)
+export const PARTY = { codeLength:6, poll:2500, pollInSession:5000, formingPoll:3000 };   // ms : rafraîchissement du lobby (plus lent pendant une session)
 
 /* Types de mine qu'on choisit dans le lobby (ready:false = annoncé, pas encore jouable ; scheduled = ne se lance pas
    avec « Lancer » : s'ouvre à heure fixe pour les inscrits, voir INSTANT_MINE). */

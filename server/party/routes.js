@@ -11,6 +11,9 @@ const str = v => typeof v === 'string' ? v : '';
 export function partyRoutes(party){
   return {
     'GET /api/party':          async ctx => { needMe(ctx); return party.state(ctx.me); },
+    'GET /api/party/forming':  async ctx => { needMe(ctx); return party.forming(ctx.me); },
+    'POST /api/party/lock':    async ctx => { needMe(ctx); return party.lock(ctx.me, ctx.body.locked); },
+    'POST /api/party/activity': async ctx => { needMe(ctx); return party.activity(ctx.me, obj(ctx.body)); },
     'POST /api/party/create':  async ctx => { needMe(ctx); return party.create(ctx.me); },
     'POST /api/party/join':    async ctx => { needMe(ctx); return party.join(ctx.me, str(ctx.body.code)); },
     'POST /api/party/invite':  async ctx => { needMe(ctx); return party.invite(ctx.me, str(ctx.body.id)); },
