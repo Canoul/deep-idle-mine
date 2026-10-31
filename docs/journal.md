@@ -40,7 +40,7 @@ Modèle d'entrée :
 - **Décisions** : 1 500 x au total (2 fois le T4.5), 375 x par ligne ; doublons permis, Découverte possible (une au plus). Tirage définitif. Valeurs provisoires.
 - **Décision** : mêmes ratios pour la cape, les runes et les fragments : vitesse d'attaque ÷ 5, butin des mobs ÷ 4, stats de combat, ténacité et résistance au recul ÷ 3, coup unique ÷ 2. **Toutes les pièces déjà runées changent**. Le perçage des runes remonte (÷ 3 au lieu de ÷ 4).
 - **À suivre** : avec des doublons, une cape peut rester forte sur une seule stat (au pire +76 % de vitesse d'attaque). À surveiller dans les tours.
-- **État** : pas encore en ligne
+- **État** : ✅ en ligne le 31/10
 
 ## 31/10/2026 — Geoffrey — Téléphone : le chat a son propre onglet
 - **Pour le joueur** : sur téléphone, le chat ne recouvre plus les autres écrans. Il a un onglet **Chat**, juste après Session, et y prend tout l'écran. Sur ordinateur, rien ne change.
