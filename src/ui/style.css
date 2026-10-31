@@ -803,6 +803,12 @@ body.phone .chatDock .card{background:#0b0806}
 /* ---------- onglet Social (src/ui/social.js) ---------- */
 #socialBody{display:flex;flex-direction:column;gap:calc(15*var(--u))}
 #socialBody .invHead{margin-bottom:0}
+.gcols{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:calc(4*var(--u))}
+.gcols>div{display:flex;flex-direction:column;gap:calc(4*var(--u))}
+.gxp{font-size:var(--fs-s);white-space:nowrap}
+.gact{max-width:calc(60*var(--u))}
+#guildQuery{width:100%;margin-bottom:calc(3*var(--u))}
+@media (max-width:700px){.gcols{grid-template-columns:minmax(0,1fr)}}
 .sadd{display:flex;align-items:center;gap:calc(3*var(--u));flex-wrap:wrap}
 .sadd input{flex:1;min-width:calc(70*var(--u))}
 .frow{display:flex;align-items:center;gap:calc(4*var(--u));padding:calc(3*var(--u)) var(--u);box-shadow:0 calc(-1*var(--u)) 0 var(--sep)}

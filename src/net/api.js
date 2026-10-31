@@ -103,6 +103,26 @@ export const giantApi = {
   claim: () => request('POST', '/api/giant/claim', {}),
 };
 
+/* Guilde : écritures, chacune renvoie l'état vu par le joueur */
+export const guildApi = {
+  view:  () => request('GET', '/api/guild'),
+  board: () => request('GET', '/api/guild/board'),
+  list:  query => request('POST', '/api/guild/list', { query }),
+  leave: () => request('POST', '/api/guild/leave', {}),
+  create: name => request('POST', '/api/guild/create', { name }),
+  invite: name => request('POST', '/api/guild/invite', { name }),
+  acceptInvite:  id => request('POST', '/api/guild/accept-invite', { id }),
+  refuseInvite:  id => request('POST', '/api/guild/refuse-invite', { id }),
+  request:       id => request('POST', '/api/guild/request', { id }),
+  cancelRequest: id => request('POST', '/api/guild/cancel-request', { id }),
+  acceptRequest: id => request('POST', '/api/guild/accept-request', { id }),
+  refuseRequest: id => request('POST', '/api/guild/refuse-request', { id }),
+  promote:  id => request('POST', '/api/guild/promote', { id }),
+  demote:   id => request('POST', '/api/guild/demote', { id }),
+  kick:     id => request('POST', '/api/guild/kick', { id }),
+  transfer: id => request('POST', '/api/guild/transfer', { id }),
+};
+
 /* Amis (onglet Social) : liste, demandes, présence ; inviter / rejoindre un ami */
 /* Le Carreau, la ville du spawn (29/10) : ma place (onglet ouvert, ou x en promenade) → les autres joueurs de la ville */
 export const townApi = {

@@ -407,6 +407,21 @@
   <!-- fiche d'un ami : son stuff, ses stats et son niveau (lecture seule) -->
   <div id="fview" hidden><div class="box"></div></div>
 </section>
+<section class="view" data-view="guilde" hidden>
+  <div class="furnWrap" id="guildBody">
+    <div class="invHead"><h1><i data-pxi="group"></i>Guilde</h1></div>
+    <div class="seg rsTabs" id="guildTabs"></div>
+    <p id="guildMsg" hidden></p>
+    <div id="guildMineTab" hidden><div id="guildMine"></div></div>
+    <div id="guildSearchTab" hidden>
+      <div class="card" id="guildInvitesCard" hidden><h2>Invitations reçues</h2><div id="guildInvites"></div></div>
+      <form class="card sadd" id="guildCreate" hidden><span>Créer ma guilde</span><input id="guildName" placeholder="Nom de la guilde" autocomplete="off" spellcheck="false" maxlength="24">
+        <button class="on">Créer</button></form>
+      <div class="card"><h2>Toutes les guildes</h2><input id="guildQuery" placeholder="Chercher une guilde" autocomplete="off" spellcheck="false" maxlength="48"><div id="guildList"></div></div>
+    </div>
+    <div id="guildBoardTab" hidden><div class="card"><h2>Leaderboard</h2><div id="guildBoard"></div></div></div>
+  </div>
+</section>
 <section class="view" data-view="chat" hidden><div class="invWrap"><p class="mut">Connecte-toi pour discuter.</p></div></section>
 <section class="view" data-view="historique" hidden>
   <div class="furnWrap">
