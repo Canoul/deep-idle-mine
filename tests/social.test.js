@@ -409,3 +409,17 @@ test('pastille (31/10) : en prison, vert si le jeu est ouvert, orange sinon ; un
   assert.equal(statusDot({ status:'session', mode:'mine' }), 'play');
   assert.equal(statusDot({ status:'online' }), 'on');
 });
+
+test('inviter un joueur en prison (31/10) : possible s\'il est en ligne (vert), pas page fermée ; le bouton Rejoindre reste fermé', async () => {
+  const { social, party, game, advance } = setup();
+  await friends(social, A, D);
+  game.prisonActiveOf = async id => id === D.id;
+  advance(SOCIAL_SERVER.onlineFor + 1);
+  let a = await social.state(A);
+  assert.deepEqual([friend(a, D).mode, friend(a, D).online, friend(a, D).canInvite], ['prison', false, false], 'page fermée');
+  await social.state(D);                                // D ouvre le jeu
+  a = await social.state(A);
+  assert.deepEqual([friend(a, D).mode, friend(a, D).online, friend(a, D).canInvite, friend(a, D).canJoin], ['prison', true, true, false]);
+  await party.invite(A, D.id);
+  assert.equal((await party.state(D)).invites.length, 1, 'il reçoit l\'invitation');
+});

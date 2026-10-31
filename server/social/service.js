@@ -26,6 +26,7 @@
    de demande à moitié faite avec deux requêtes simultanées). Testable seul : comptes, groupes, jeu et horloge passés
    en paramètres. */
 import { displayName, formatAccountId, parseAccountId, nameKey } from '../../src/shared/account.js';
+import { canBeInvited } from '../../src/shared/party.js';
 import { createLimiter } from '../accounts/ratelimit.js';
 import { SOCIAL_SERVER } from '../config.js';
 import { isBoard, specTree, rankBoard } from '../../src/meta/leaderboard.js';
@@ -141,7 +142,7 @@ export function createSocialService({ store, accounts, party, game, clock = Date
       const g = party.groupOf(id);
       const together = !!(g && myGroup && g.code === myGroup.code);
       friends.push({ id, displayId: formatAccountId(id), name: await nameOf(id), ...st, ...await energyField(id), together,
-                     canInvite: !meBusy && st.status !== 'offline' && st.status !== 'session' && !together,
+                     canInvite: !meBusy && canBeInvited(st) && !together,
                      canJoin: !meBusy && (st.status === 'online' || st.status === 'lobby') && !together && !(g && g.size >= g.max) });
     }
     const order = { lobby: 0, online: 1, session: 2, offline: 3 };

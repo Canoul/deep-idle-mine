@@ -16,6 +16,11 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 31/10/2026 — Geoffrey — Social : inviter un joueur en prison
+- **Pour le joueur** : un joueur en vert peut être invité, y compris en prison s'il a le jeu ouvert (Social et « Who ? »).
+  Sa prison continue : elle ne se termine que si le chef lance avec lui, et « Je suis prêt » prévient avant.
+- **État** : 🧪 sur la branche `geoffrey/social-inviter-prison` (pas en ligne)
+
 ## 31/10/2026 — Geoffrey — Le Carreau : clic sur la statue
 - **Pour le joueur** : cliquer sur la statue du meilleur GS n'ouvre plus le Lobby : le mineur marche jusqu'à elle et sa
   plaque s'affiche. Cliquer ailleurs sur la place mène toujours au Lobby.
