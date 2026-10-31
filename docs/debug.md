@@ -5790,4 +5790,4 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Rochers** : la vue n'envoie un rocher que 15 ticks (1,5 s de jeu, 0,75 s réelle à ×2) pour 0,9 s de chute. `trackRocks` (src/render/golbute-fx.js) les suit dans le navigateur, temps réel.
 - **Bras** : pas de texture de côté. `golbute_body` et `golbute_arm` (+ `_crystal`, scripts/gen_golbute.py) ; `armPose` : levés, frappe, étirés jusqu'au sol, retour (640 ms). Le coup se joue après son effet : la partie n'envoie pas le prochain coup à l'avance.
 - **Tests** ✅ golbute-fx, golbute-sprite, golbute ; rendu vérifié dans Chrome (images du vrai moteur de dessin, pierre, cristal, rochers). ⚠️ Pas vu en partie réelle.
-
+- **Mineur mort** : corps couché, pseudo droit (`sprite.label`, src/render/miner-sprite.js).

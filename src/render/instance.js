@@ -159,7 +159,8 @@ export function createInstanceRenderer(cv){
       const [x, y0] = posOf(G, m, now), y = y0 - arcOf(m, now);
       if(m.dead){
         ctx.save(); ctx.globalAlpha = 0.55; ctx.translate(x * T + T, y * T + T); ctx.rotate(Math.PI / 2);
-        sprite({ ...m, action: null }, -T, 0, m === mine, now); ctx.restore();
+        sprite({ ...m, name: null, action: null }, -T, 0, m === mine, now); ctx.restore();
+        ctx.save(); ctx.globalAlpha = 0.55; sprite.label(m.name, x * T, y * T, m === mine); ctx.restore();   // le corps est couché, pas son pseudo
         continue;
       }
       const a = m.action?.type === 'drill' ? { type: 'mine' } : m.action?.type === 'attack' ? { type: 'attack' } : m.action;
