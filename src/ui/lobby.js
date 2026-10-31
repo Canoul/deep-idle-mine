@@ -206,11 +206,13 @@ const ACTIVITIES = [
   { id:'giant',     icon:'🌈', title:'Bloc géant',       desc:'Mine le plus vite possible' },
   { id:'jugement',  icon:'⚖', title:'Jugement',         desc:'Combat le jugement' },
   { id:'instances', icon:'🗝', title:'Instances',        desc:'Affronte un boss en équipe pour son coffre' },
+  { id:'forming',   icon:'👥', title:'Groupes en formation', desc:'Rejoins un groupe qui cherche des joueurs' },
 ];
 /* lignes du menu d'après mineModes (grisées pareil, sauf la Mine : en session, on y regarde son groupe). Les tours ne sont
    pas dans le menu : on les choisit dans le Jugement. note : petit repère à droite (« tour ouverte », « en cours ») */
-export function activityMenu(modes, { towerOpen = false, prisonOn = false } = {}){
+export function activityMenu(modes, { towerOpen = false, prisonOn = false, noForming = false } = {}){
   return ACTIVITIES.map(a => {
+    if(a.id === 'forming') return { ...a, kind:'forming', disabled:noForming };
     if(a.id === 'jugement') return { ...a, kind:'view', note: towerOpen ? 'tour ouverte' : null };
     const m = a.id === 'instances' ? modes.find(x => MINE_MODES.find(d => d.id === x.id)?.instance) : modes.find(x => x.id === a.id);
     return { ...a, kind:'mode', mode:m.id, disabled: a.id === 'mine' ? !!m.soon : m.disabled, soon:m.soon, hint:m.title ?? null, note: a.id === 'prison' && prisonOn ? 'en cours' : null };
@@ -290,8 +292,8 @@ export function setupLobby(h){
     const giantWas = $('giantCard').hidden; $('giantCard').hidden = !cards.giant;
     if(giantWas && cards.giant) h.onMode?.('giant');   // la carte vient d'apparaître : elle se met à jour
     $('launchBtn').hidden = !cards.launch;
-    $('mineModes').innerHTML = activityMenu(modes, { towerOpen: st.judgmentPending, prisonOn: prisonActive(st.prison) }).map(a =>
-      `<button ${a.kind === 'view' ? 'data-view="jugement"' : `data-mode="${a.mode}"`} class="actBtn"${a.disabled ? ' disabled' : ''}${a.hint ? ` title="${esc(a.hint)}"` : ''}>`+
+    $('mineModes').innerHTML = activityMenu(modes, { towerOpen: st.judgmentPending, prisonOn: prisonActive(st.prison), noForming: offline || !account || locked }).map(a =>
+      `<button ${a.kind === 'forming' ? 'data-forming' : a.kind === 'view' ? 'data-view="jugement"' : `data-mode="${a.mode}"`} class="actBtn"${a.disabled ? ' disabled' : ''}${a.hint ? ` title="${esc(a.hint)}"` : ''}>`+
       `<span class="actIcon">${a.icon}</span><span class="actText"><b>${esc(a.title)}</b><small>${esc(a.desc)}</small></span>`+
       (a.note ? `<small class="jnew">● ${esc(a.note)}</small>` : a.soon ? '<small>bientôt</small>' : '')+`</button>`).join('');
     /* mode dev : les tours, même fermées (jeu normal : « Choisir la tour » de la carte du Jugement) */
@@ -371,7 +373,7 @@ export function setupLobby(h){
     $('partyLockBtn').disabled = locked || party?.leader !== account?.id;
     $('partyLockBtn').classList.toggle('on', !!party?.locked);
     $('partyLockBtn').innerHTML = pxi('lock') + (party?.locked ? 'Groupe verrouillé' : 'Verrouiller');
-    $('formingBtn').hidden = offline || !account || locked;
+    $('formingBtn').hidden = menu || offline || !account || locked;   // au menu : la ligne de « Que veux-tu faire ? »
     /* « Pub LFG » (31/10/2026) : annonce son lobby dans le chat, tant qu'il reste une place */
     $('lobbyPubBtn').hidden = !h.onPub || offline || !account || locked || !def || def.solo || def.giant || def.scheduled || !!party?.locked || (party?.members.length ?? 1) >= (party?.max ?? Infinity);
     $('joinRow').hidden = offline || !account || locked || (party && party.members.length > 1);
@@ -524,6 +526,7 @@ export function setupLobby(h){
   };
 
   $('mineModes').onclick = e => {
+    if(e.target.closest('button[data-forming]:not(:disabled)')) return h.onForming?.();
     if(e.target.closest('button[data-view]')) return showJudgment();
     const b = e.target.closest('button[data-mode]');
     if(!b || b.disabled) return;

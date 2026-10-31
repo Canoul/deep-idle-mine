@@ -9,6 +9,10 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 31/10/2026 — Geoffrey — Groupes en formation dans « Que veux-tu faire ? »
+- **Pour le joueur** : Groupes en formation est maintenant une ligne du menu des activités du lobby. Une fois dans une activité, le bouton reste dans la carte Équipe.
+- **État** : 🧪 sur la branche `geoffrey/formation-menu` (pas en ligne)
+
 ## 31/10/2026 — Geoffrey — Lobby : Groupes en formation et cadenas
 - **Pour le joueur** : un bouton **Groupes en formation** montre les groupes de 1 ou 2 joueurs, leur activité et l'apparence de chacun. Un clic pour entrer. Un groupe plein sort de la liste tout seul, sans F5. Le chef peut poser un **cadenas** : seuls les invités entrent. Il n'est jamais posé par défaut et ne passe pas d'un groupe à un autre.
 - **Décisions** : un joueur sans groupe n'apparaît pas dans la liste, il clique sur « Proposer mon groupe » (sinon tous les joueurs seuls du lobby seraient listés, même ceux qui veulent jouer seuls). Le cadenas bloque aussi le code, les liens de lobby et « rejoindre un ami », et coupe la recherche de groupe.
