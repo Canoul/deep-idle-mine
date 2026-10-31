@@ -6088,3 +6088,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Quoi** : `tabsHtml` (src/ui/inventory.js) exporté et partagé : il reçoit l'onglet ouvert, les objets à compter et le mot de la bulle. `recipesIn` et `#craftTabs` dans src/ui/craft.js, classement par `tabOf`, donc `INVENTORY.tabs`.
 - **Tests** ✅ tests/craft.test.js, tests/inventory.test.js. ✅ Vérifié dans Chrome (compte Test_Mineur).
 
+## 31/10/2026 — Plastron de l'équilibre : pods 188 → 112 (Geoffrey)
+- **Quoi** : `STUFF.items` (src/config.js), ratio GS / x du tier 2,92 → 2,01 (`pieceGS` 1 459 → 1 003, tier 3 = 500 x). 112 pods = 1 003 x, 111 pods = 997 x.
+- **Tests** : tests/steel-gear (3 valeurs), tests/stuff-balance +1.
+- **Fragile** : les lignes et runes de la pièce ne bougent pas, elles suivent le x du tier (500 x) et non les pods.

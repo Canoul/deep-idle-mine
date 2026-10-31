@@ -309,7 +309,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - **Stuff tier 3** (23/10, Geoffrey ; en ligne le 23/10) : **Treasure T3** en areas 5
   et 6 (T2 en areas 3 et 4 ; ancien : T2 en 3 à 5 et au-delà) : graphite, tissu sombre, parts, BP acier 1 % chacun,
   BP Plastron de l'équilibre 0,5 %, gemmes 2 %, Cristal 10 %. **Six pièces en acier** (inhabituelles ; ancien : fer × 1,2 ; Steel
-  ingot + Shiny + Tissu sombre ou Diamant) et **Plastron de l'équilibre** (épique, 9 stats, 50 résidus de chaque camp).
+  ingot + Shiny + Tissu sombre ou Diamant) et **Plastron de l'équilibre** (épique, 9 stats, 50 résidus de chaque camp ; 31/10, Geoffrey : pods 112, avant 188, soit ≈ 1 000 x, 2 fois le tier 3, avant 1 459 x).
 - **Buff du stuff fer et acier** (24/10, Geoffrey) : fer × 1,75 (épée et pioche × 1,25 : pioche +0,5), acier × 1,5 (épée et pioche × 1,25 : pioche +0,6), Plastron de
   l'équilibre × 1,5, arrondi à l'entier pour les stats entières ; les pièces déjà fabriquées en profitent (stats relues
   dans le catalogue). But : une équipe en fer (mineur, logisticien, barbare, skills complets) ≈ 5,4 areas au lieu de
