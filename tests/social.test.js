@@ -423,3 +423,8 @@ test('inviter un joueur en prison (31/10) : possible s\'il est en ligne (vert), 
   await party.invite(A, D.id);
   assert.equal((await party.state(D)).invites.length, 1, 'il reçoit l\'invitation');
 });
+
+test('texte du statut (31/10) : « En ligne - Prison » le jeu ouvert, « En session · Prison » page fermée', () => {
+  assert.equal(statusText({ status:'session', mode:'prison', online:true }), 'En ligne - Prison');
+  assert.equal(statusText({ status:'session', mode:'prison', online:false }), 'En session · Prison');
+});

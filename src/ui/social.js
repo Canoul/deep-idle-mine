@@ -33,6 +33,7 @@ export const leftText = ms => !Number.isFinite(ms) ? null : ms < 60_000 ? 'reste
 /* pastille d'un joueur ; en prison et jeu ouvert : vert (31/10/2026, Geoffrey), sa prison tourne mais il est là */
 export const statusDot = f => f.mode === 'prison' && f.online ? STATUS.online.cls : STATUS[f.status]?.cls ?? STATUS.online.cls;
 export function statusText(f){
+  if(f.mode === 'prison' && f.online) return `${STATUS.online.label} - Prison`;
   if(f.status === 'lobby') return `${STATUS.lobby.label} (${f.size}/${f.max})`;
   if(f.status === 'session'){
     const mode = MINE_MODES.find(m => m.id === f.mode);

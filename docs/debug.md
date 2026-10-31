@@ -5971,5 +5971,5 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 
 ## 31/10/2026 — Social : inviter un joueur en prison (Geoffrey) — branche `geoffrey/social-inviter-prison`
 - **Quoi** : `canBeInvited` (`src/shared/party.js`), lu par `canInvite` de Social et `whoRows` du lobby. Le serveur (`party.invite`)
-  acceptait déjà : il ne refuse que `activeSessionId`, qui ne compte pas la prison. `canJoin` inchangé.
+  acceptait déjà : il ne refuse que `activeSessionId`, qui ne compte pas la prison. `canJoin` inchangé. `statusText` : « En ligne - Prison ».
 - **Tests** : `tests/social.test.js`, `tests/tower-who.test.js`. ✅ Vérifié par les tests ; ⚠️ pas essayé dans un navigateur.

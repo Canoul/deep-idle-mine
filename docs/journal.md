@@ -18,6 +18,7 @@ Modèle d'entrée :
 
 ## 31/10/2026 — Geoffrey — Social : inviter un joueur en prison
 - **Pour le joueur** : un joueur en vert peut être invité, y compris en prison s'il a le jeu ouvert (Social et « Who ? »).
+  Son statut affiche alors « En ligne - Prison ».
   Sa prison continue : elle ne se termine que si le chef lance avec lui, et « Je suis prêt » prévient avant.
 - **État** : 🧪 sur la branche `geoffrey/social-inviter-prison` (pas en ligne)
 
