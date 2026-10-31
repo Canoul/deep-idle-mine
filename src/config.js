@@ -1896,7 +1896,7 @@ export const CHAT = { channels:[{ id:'general', label:'Général' }, { id:'mp', 
    everyMax après la fin du précédent, de openHour à closeHour (heure de timeZone). Tombé dans le créneau fermé : à la
    réouverture, plus 0 à lateMax. joinMs : temps pour taper command. lots : un seul tiré, chance en part de 1 (total 1) ;
    energy : points d'énergie ; rune : objet rune, qualité tirée avec les chances de l'identification. */
-export const RAFFLE = { name:'Raffle', command:'!join', joinMs:40e3, everyMin:45*60e3, everyMax:120*60e3, openHour:8, closeHour:2, lateMax:75*60e3, timeZone:'Europe/Paris',
+export const RAFFLE = { name:'Raffle', command:'!join', joinMs:40e3, everyMin:30*60e3, everyMax:60*60e3,   /* 31/10 (Geoffrey) : avant 45 à 120 min */  openHour:8, closeHour:2, lateMax:75*60e3, timeZone:'Europe/Paris',
   lots:[
     { chance:0.30, item:'Chitine', qty:100 },
     { chance:0.01, item:'Treasure T4', qty:1 },

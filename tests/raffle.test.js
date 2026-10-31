@@ -52,10 +52,10 @@ test('créneau : ouvert de 8 h à 2 h, heure de Paris', () => {
   assert.ok(!raffleOpen(paris(29, 7, 59)));
 });
 
-test('prochain raffle : 45 à 120 min, reporté après 8 h s\'il tombe la nuit', () => {
-  assert.equal(nextRaffleAt(paris(28, 12), () => 0), paris(28, 12, 45));
-  assert.equal(nextRaffleAt(paris(28, 12), () => 1), paris(28, 14));
-  const t = nextRaffleAt(paris(29, 1, 30), () => 1);   // 3 h 30 : fermé
+test('prochain raffle : 30 à 60 min, reporté après 8 h s\'il tombe la nuit', () => {
+  assert.equal(nextRaffleAt(paris(28, 12), () => 0), paris(28, 12, 30));
+  assert.equal(nextRaffleAt(paris(28, 12), () => 1), paris(28, 13));
+  const t = nextRaffleAt(paris(29, 1, 30), () => 1);   // 2 h 30 : fermé
   assert.ok(raffleOpen(t));
   assert.equal(localHour(t), 9);
   assert.ok(t <= paris(29, 9, 16));

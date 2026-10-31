@@ -6107,3 +6107,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** : tests/nav +1 ; nav, chat, town, guide : 81 ✅. Chrome sans interface 390×844 et 844×390 : chat plein écran entre bandeau et barre, message envoyé, caché ailleurs, retour Lobby en largeur PC, aucune erreur de page ✅.
 - **Panne évitée** : recharger sur #chat plantait (`gchatDock` lu avant sa création) ; le rappel d'onglet attend `nav`.
 - **Pas vérifié ⚠️** : vrai téléphone et clavier virtuel (le champ peut passer dessous). En PC, `#chat` ouvre le Lobby mais l'adresse reste `#chat`, sans effet.
+
+## 31/10/2026 — Raffle : délai 30 à 60 min (Geoffrey)
+- **Quoi** : `RAFFLE.everyMin` 30 min, `everyMax` 60 min (avant 45 et 120). `lateMax` inchangé (75 min). Le `nextAt` déjà enregistré en ligne reste valable : le nouveau délai s'applique à partir du raffle suivant.
+- **Tests** ✅ `tests/raffle.test.js`, `tests/admin-raffle.test.js`.
