@@ -19,7 +19,7 @@ Modèle d'entrée :
 ## 31/10/2026 — Geoffrey — Chat global : canaux, MP, onglets
 - **Pour le joueur** : chaque message part dans un canal, avec sa couleur : Général (blanc), MP (rose), Groupe (bleu), Commerce (beige), LFG (vert). Raccourcis : /1, /2 (LFG), /c, /gr, /w "pseudo". Un seul onglet au départ ; l'écrou choisit ses canaux, le « + » crée un onglet. Ces réglages sont gardés sur le compte.
 - **Décisions** : sans raccourci, le message part dans le canal du petit sélecteur à côté du champ. Un MP envoyé s'affiche « à pseudo ». MP possible vers un joueur hors ligne. Même modération et même rythme (3 s) sur tous les canaux. Pas de bulle du Carreau pour les MP et le Groupe.
-- **État** : 🧪 sur la branche `geoffrey/lobby-activites` (pas en ligne)
+- **État** : ✅ en ligne le 31/10
 
 ## 31/10/2026 — Geoffrey — Nouveau Lobby : menu des activités, chat permanent, niveau dans le bandeau
 - **Pour le joueur** : le Lobby s'ouvre sur un grand menu (Prison, Mine, Mine instantanée, Bloc géant, Jugement, Instances), une ligne de description pour chacun. Un clic ouvre l'activité : les sets à gauche, l'équipe ou la carte de l'activité à droite, un bouton « ← Activités » pour revenir. Le niveau, la barre d'XP, le % et l'XP sont dans le bandeau du haut, à côté du pseudo ; la carte « Mineur » disparaît. Le chat global n'est plus dans le Lobby : il reste affiché en bas à gauche sur tous les onglets, à 40 % de la hauteur, réglable en tirant sa barre orange, et repliable.
@@ -27,12 +27,32 @@ Modèle d'entrée :
 - **Largeur des onglets** : tous les onglets ont maintenant la même largeur, quel que soit leur contenu, et tout est réduit à 90 %. Session et téléphone gardent leur taille.
 - **À suivre** : en session, la mine garde sa largeur et la colonne Équipe / Mineur s'arrête au-dessus du chat, en défilant ; plus le chat est haut, moins elle a de place. Le chat flotte par-dessus : le changer de taille ne déplace rien et le reste reste centré. Sa largeur s'arrête au début de l'interface centrale de l'onglet ouvert ; En tour, instance, mine instantanée et Bloc géant en direct, il peut recouvrir le bas à gauche de la mine (minimum 160 px).
 - **Chat** : plus de barre orange. On règle la hauteur et la largeur en tirant la bordure du chat (haut, droite ou coin). Au départ, il est 2,5 fois plus large et 1,5 fois plus haut.
-- **État** : 🧪 sur la branche `geoffrey/lobby-activites` (pas en ligne)
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Prison : les mines au focus minerai ne gonflent plus la compo
+- **Pour le joueur** : les mines jouées avec le focus minerai (retiré le 30/10) ne comptent plus pour leur butin dans la compo de la prison, à partir de 6 areas débloquées. Elles comptent pour une répartition de référence, celle des 10 dernières mines de Nbrick, LeTaz et Akake (mithril 1,28 %, cobalt 0,13 %, thorium 0,08 %). Les compos des joueurs concernés sont refaites une fois, et leur compo enregistrée est effacée.
+- **Décisions** : règle pour tous, pas de liste de pseudos ; si un joueur du groupe a mis le focus, toute la mine compte. Pour Croustiflex, Infernatiwar et Monsta : mithril ÷ 3 environ, cobalt ÷ 3, thorium ÷ 5 par rapport à aujourd'hui. Les 10 prochaines mines, sans focus possible, formeront leur palier suivant, sans correction.
+- **À suivre** : canoul, Sõnata ou Allaiks seraient corrigés aussi s'ils ont des mines au focus. Une prison déjà en cours garde sa compo jusqu'à sa sortie. Le tableau de rendement cumule toutes les prisons et baissera lentement.
+- **État** : ✅ en ligne le 31/10
 
 ## 31/10/2026 — Geoffrey — Prison : cobalt et thorium plafonnés
 - **Pour le joueur** : dans la compo de la prison, le cobalt et le thorium ne dépassent plus 0,4 % chacun des minerais de la carte. La place libérée va aux autres minerais : la carte en contient autant qu'avant. Vaut pour toutes les compos (actuelle, ancienne, enregistrée) et le lobby affiche la valeur plafonnée.
 - **Décisions** : plafond commun à tous, pas de règle visant des pseudos. Seuls Croustiflex, Infernatiwar et Monsta sont vraiment touchés (0,9 à 1,1 % avant). Mesure sur la compo de Croustiflex (stuff acier, 20 h simulées) : cobalt 2,07 → 0,78 par heure, thorium 2,52 → 1,03. Valeur provisoire, `PRISON.oreCap`.
 - **À suivre** : leur prison n'était pas anormale (40 à 50 % de leurs mines, comme les autres) : ils rapportent 8 à 9 cobalt ou thorium par heure en mine, contre 1 à 3 pour les autres. Le plafond les met nettement sous la cible de 50 % sur ces deux minerais.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Le mineur prend les coffres sur la paroi de son puits
+- **Pour le joueur** : un mineur qui creuse ou descend pour rejoindre son area de travail ouvre maintenant les coffres découverts sur
+  son chemin. Avant, il passait à côté dès qu'il n'était pas encore dans son area : c'était le cas normal, avec le réglage de base « Plus profond ».
+  Sur la carte de la seed 134583339 : 1 coffre sur 5 était visé avant, 5 sur 5 maintenant.
+- **Décisions** : en route, seuls les coffres et les résidus le détournent, pas les minerais.
+- **À suivre** : vérifier en jeu sur la prochaine partie.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Nouveau craft de la Clé d'instance I
+- **Pour le joueur** : la clé se crafte maintenant avec 1 Barre d'argent et 5 Orbes (avant : 250 peaux de gobelin, 20 pierres glissantes,
+  50 tissus sombres et 1 Barre d'argent). L'Orbe a enfin un usage.
+- **Décisions** : valeur d'équilibrage de Geoffrey. 5 Orbes reviennent à 150 tissus sombres, 150 vésicules de gaz et 50 pierres glissantes.
 - **État** : ✅ en ligne le 31/10
 
 ## 31/10/2026 — Geoffrey — Voir l'énergie des gens dans Social

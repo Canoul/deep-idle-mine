@@ -30,6 +30,20 @@ test('profil : 10 dernières mines classiques où le joueur était là ; area mo
   assert.equal(prisonProfile([mine(22, { dev: true, bag: { Fer: 1 } })], A, true).n, 1, 'serveur de dev : les mines dev comptent');
 });
 
+test('focus minerai (31/10) : les mines visées pèsent comme la référence, les nouvelles mines prennent le relais', () => {
+  const clean = i => mine(i, { areas: 7, bag: { Fer: 100 } });
+  const focused = (i, f, opts = {}) => ({ ...mine(i, { areas: 7, bag: { 'Cobalt ore': 100 }, ...opts }), focus: [{ account: 'ami', tick: 1, focus: f }] });
+  const ref = PRISON.focusRef.ores, tot = Object.values(ref).reduce((a, b) => a + b, 0);
+  const all = prisonProfile(Array.from({ length: 10 }, (_, i) => focused(i, { cobalt: 'only' })), A);
+  assert.ok(Math.abs(all.ores.mithril - ref.mithril / tot) < 1e-9, 'que des mines au focus (même celui d\'un ami du groupe) : la référence');
+  assert.equal(all.area, 7);
+  const half = prisonProfile([...Array.from({ length: 5 }, (_, i) => focused(i, { cobalt: 'target' })), ...Array.from({ length: 5 }, (_, i) => clean(i + 5))], A);
+  assert.ok(Math.abs(half.ores.iron - (0.5 + 0.5 * ref.iron / tot)) < 1e-9, 'moitié de ses vraies mines, moitié de référence');
+  assert.ok(Math.abs(Object.values(half.ores).reduce((a, b) => a + b, 0) - 1) < 1e-9);
+  assert.deepEqual(prisonProfile(Array.from({ length: 10 }, (_, i) => focused(i, { area: 3 })), A).ores, { cobalt: 1 }, 'focus d\'area : pas touché');
+  assert.deepEqual(prisonProfile([focused(1, { iron: 'only' }, { areas: 3 })], A).ores, { cobalt: 1 }, 'petites areas : pas de cobalt offert par la référence');
+});
+
 test('profil relu : parts revérifiées (clés inconnues, nombres invalides) ; tirage pondéré', () => {
   const p = sanitizeProfile({ n: 3, area: 5, ores: { iron: 1, mud: 5, gold: -1 }, treasures: { 'Treasure T9': 1 }, mobs: { golem: Infinity } });
   assert.deepEqual(p, { n: 3, area: 5, ores: { iron: 1 }, treasures: null, mobs: null });

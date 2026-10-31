@@ -66,6 +66,10 @@ test('pièces en chitine : recettes (lingots de fer + chitine), débloquées de 
   assert.equal(countOf(inv, 'Chitine'), 0); assert.equal(countOf(inv, 'Lingot de fer'), 0);
 });
 
+test('Clé d\'instance I (31/10/2026) : de base, 1 Barre d\'argent + 5 Orbes', () => {
+  assert.deepEqual(RECIPES['Clé d\'instance I'], { cost:{ 'Barre d\'argent':1, 'Orbe':5 }, qty:1, unlock:null });
+});
+
 test('Orbe (30/10/2026) : de base, 30 tissus sombres + 30 vésicules de gaz + 10 pierres glissantes', () => {
   assert.deepEqual(RECIPES['Orbe'], { cost:{ 'Tissu sombre':30, 'Vésicule de gaz':30, 'Pierre glissante':10 }, qty:1, unlock:null });
   assert.equal(ITEMS['Orbe'].stack, true);

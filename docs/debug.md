@@ -5772,6 +5772,30 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - ⚠️ canoul, Sõnata et Allaiks peuvent être très légèrement touchés s'ils dépassent 0,4 % de peu. Une prison en cours prend le plafond au prochain rejeu : la carte du run en cours peut changer légèrement, comme à chaque réglage de `oreMul`.
 - ⚠️ Treasures et drops de cobalt / thorium non touchés.
 
+## 31/10/2026 — Craft de la Clé d'instance I (Geoffrey)
+- **Quoi** : `RECIPES['Clé d'instance I']` : 1 Barre d'argent + 5 Orbes (src/recipes.js). Tableaux du wiki générés depuis la config.
+- **Tests** ✅ craft +1, instance-key, instance-server, suite anti-triche.
+
+## 31/10/2026 — Prison : mines au focus minerai remplacées par une référence (Geoffrey)
+- **Quoi** : `lastMines` note `oreFocus` (un événement de `rec.focus` d'un joueur quelconque de la session vise un minerai ; le focus d'area seul ne compte pas). `oreParts` (src/meta/prison-profile.js) : une mine `refMine` (oreFocus et `areas` ≥ `PRISON.focusRef.area`, 6) pèse comme `PRISON.focusRef.ores`, les autres comptent pour leur butin. Area, mobs et treasures inchangés. `prisonCompos` : `v` = `PRISON.compoVersion` (2) ; compo gardée d'une autre version avec au moins une mine refMine dans l'historique → paliers refaits depuis l'historique, `saved` effacée, une seule fois. Sans mine refMine : compos gardées telles quelles, `v` posé.
+- **Référence** : somme des « mines/h » de Nbrick, LeTaz et Akake lue dans le tableau du 31/10 (`prison-stats.json`), en dur dans la config. Parts après `capOres` : charbon 39,26, fer 35,78, or 14,81, diamant 1,08, graphite 7,57, mithril 1,28, cobalt 0,13, thorium 0,08 %.
+- **Mesure** (calcul de parts, pas de simulation ; rendement supposé proportionnel à la part, stuff inchangé) : profils du trio aujourd'hui mithril 3,33–3,87 %, cobalt et thorium 0,40 % (plafond) → mithril × 0,33–0,39, cobalt × 0,32, thorium × 0,21, fer × 1,03–1,05.
+- **Tests** ✅ prison-profile +1, prison-steps +2, prison-dashboard, prison-sim, prison-ui, prison-server. ❌ Toujours rouge sans lien : « une tour et une instance lancées terminent la prison ».
+- ⚠️ Pas de lecture de la base : nombre réel de mines au focus inconnu. Si le trio a des mines au focus plus anciennes que le palier ou moins de 10 mines au focus, le résultat est un mélange de ses mines et de la référence.
+- ⚠️ `profile` d'une prison en cours : figé dans son enregistrement, non touché ; le changement s'applique à la prochaine entrée. Une compo enregistrée effacée : le lobby retombe sur Actuelle.
+- ⚠️ Le trio passe sous canoul, Sõnata et Allaiks (mithril 5,8–9,8/h en prison, cobalt ≈ 1,1–1,6/h), qui ne sont pas touchés s'ils n'ont pas de mine au focus.
+- ⚠️ `shares` renormalise à chaque relecture : écart de l'ordre de 1e-16 possible, donc une écriture `prison_compo` de plus au pire (comportement d'avant).
+
+## 31/10/2026 — Treasure sur la paroi du puits ignoré (Geoffrey, seed 134583339, signalé plusieurs fois)
+- **Cause** : `decideWork` (src/sim/ai.js) faisait `if(goal!==null && !onTheWay) return changeArea(...)` AVANT la recherche de cibles. Hors de son area de
+  travail, le mineur ne regardait donc rien. Avec « Plus profond » (réglage de base), c'est le cas dès qu'une area plus basse est débloquée. Le correctif du
+  23/10 (seed 1384517703) ne couvrait que le mineur déjà dans son area (`inFocus`) : celui qui traverse une area du dessus restait concerné.
+- **Correctif** : `away` remplace le `return` : recherche faite, minerais écartés, treasures et résidus visés sous les conditions habituelles (portée, `range`), sinon `changeArea`.
+- **Tests** ✅ treasure +3 (Plus profond, focus d'area, un minerai ne détourne pas), échec vérifié avant correctif (« Change d'area → area 1 »). focus, judgment, path, session.
+  Carte réelle de la seed, mineur placé juste au-dessus de chaque coffre : 1/5 visés avant, 5/5 après. Simulation `--miners 3 --count 5` : 0 bloquée, treasures 0,6 ouverts sur 1,6.
+- ⚠️ Le coffre exact du signalement n'est pas rejoué : le stuff et les réglages du joueur ne sont pas connus, une session simulée n'y passe pas. La cause est prouvée par scénario.
+- ⚠️ Coût : la recherche d'itinéraire tourne maintenant à chaque décision hors de son area (avant, seulement celle de `changeArea`). Non mesuré en jeu ; à surveiller.
+
 ## 31/10/2026 — Lobby par activités, chat permanent, niveau dans le bandeau (Geoffrey)
 - **Quoi** : `activityMenu` et `st.screen` ('menu' / 'stage') dans src/ui/lobby.js ; en menu, `cards = {}` cache toutes les cartes. `showMenu` à chaque ouverture de l'onglet Lobby, sans effet dans un groupe. `update` ouvre l'activité si le joueur rejoint un groupe depuis le menu. `#lobbyErr` et `#invitesCard` sont sortis des colonnes pour rester visibles dans le menu.
 - **Chat** : carte `#gchatCard` déplacée dans `#gchatDock` (src/ui/chat-dock.js, `CHAT.dock`), hors de `.app` pour rester cliquable en promenade. Il n'est plus déplacé dans le Carreau : `chatSlot`, `placeChat`, `onWalk` de main.js, `.townChat`, `TOWN.chatMin/Max` retirés ou inutilisés. Relu toutes les 3 s sur tous les onglets (avant : Lobby seulement), sauf replié ou page cachée : **plus de requêtes `/api/social/chat`**.
