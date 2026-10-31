@@ -11,7 +11,7 @@ import { STUFF, ITEMS, STATS, RINGS, CFG } from '../config.js';
 import { takePiece, putPiece } from './inventory.js';
 import { withSkillStats, slotMastery, SKILL_STATS, SKILL_ADD } from './skills.js';
 import { withGlyphStats } from './glyphs.js';
-import { pieceBonus, pieceName, sanitizePiece, lineValue, runeLineValue, runeLineFactor, plusMult, roundStat, runeFactor, isRing } from './piece.js';
+import { pieceBonus, pieceName, sanitizePiece, rolledSpec, rolledValue, lineValue, runeLineValue, runeLineFactor, plusMult, roundStat, runeFactor, isRing } from './piece.js';
 import { pieceGS } from './gearscore.js';
 
 export const SLOT_IDS = STUFF.slots.map(s => s.id);
@@ -73,6 +73,8 @@ export function statLines(entry){
   return [
     ...Object.entries(b.set).map(([k, v]) => `${label(k)} ${statNum(k, v)}${unitOf(k)}`),
     ...Object.entries(b.stats).map(([k, v]) => `${label(k)} ${v < 0 ? '−' + statNum(k, -v) : '+' + statNum(k, v)}${unitOf(k)}`),
+    ...(!rolledSpec(p.item) ? [] : Array.isArray(p.rolled) ? p.rolled.map(k => `${label(k)} +${statNum(k, roundStat(k, rolledValue(p.item, k) * m))}${unitOf(k)}`)
+      : [`${rolledSpec(p.item).lines} lignes de stats aléatoires, tirées au craft`]),
     ...(Array.isArray(p.lines) ? p.lines : []).map(l =>
       `${label(l.stat)} +${statNum(l.stat, roundStat(l.stat, lineValue(p.item, l) * m))}${unitOf(l.stat)}`),
     ...(Array.isArray(p.rune?.lines) ? p.rune.lines : []).map(l =>
