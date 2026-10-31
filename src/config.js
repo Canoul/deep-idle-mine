@@ -1833,7 +1833,8 @@ export const ENERGY = { max: 100, start: 0, cost: { min: 6, max: 12 }, prisonPer
 /* stunReset (30/10/2026, Geoffrey) : le mineur étourdi stunReset s de suite (en cumulant les étourdissements qui
    s'enchaînent, à moins de stunGap s l'un de l'autre) → le run est fini tout de suite (coffre versé, sac perdu) et une
    carte neuve commence, au lieu d'attendre runMax. Valeurs provisoires. */
-export const PRISON = { stunReset: 60, stunGap: 5, width: 25, oreMul: 0.27, resetAt: 0.8, runMax: 3 * 3600, returnMax: 600, treasureMul: 0.5, rareMul: 0.5, spawnDelayMul: 2.73,   /* 30/10 : 3 → 2,73 = +10 % de mobs */
+/* mobXpMul (31/10/2026, Geoffrey) : XP des mobs en prison ; elle donnait 70 % de l'XP d'une mine, la moitié venant des mobs */
+export const PRISON = { mobXpMul: 0.5, stunReset: 60, stunGap: 5, width: 25, oreMul: 0.27, resetAt: 0.8, runMax: 3 * 3600, returnMax: 600, treasureMul: 0.5, rareMul: 0.5, spawnDelayMul: 2.73,   /* 30/10 : 3 → 2,73 = +10 % de mobs */
   profileSessions: 10, fallbackArea: 2, trapMul: 0.5, kholeMul: 0.5,
   dungeonWinchGap: 3, offlineMax: 24 * 3600e3, batchMs: 10 * 60e3, presentFor: 90e3, seenWriteMs: 60e3, payoutRetries: 5,
   batchConcurrency: 1, crashMax: 5, uiRetry: 1000, bars: 24, salt: 0x9a150e, uiPoll: 15e3,

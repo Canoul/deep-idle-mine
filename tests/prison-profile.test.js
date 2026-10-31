@@ -82,3 +82,17 @@ test('carte de la prison : même part totale de minerais, répartie selon le pro
   assert.ok(G.mobs.every(m => m.type === 'gobelin' || m.trap != null || m.type === 'chair'), 'mobs du profil (hors pièges)');
   assert.ok(AREAS[6]);
 });
+
+test("prison : un mob donne la moitié de son XP ; en mine, toute son XP ; la part versée reste un entier", async () => {
+  const { killMob } = await import('../src/sim/actions.js');
+  const { XP } = await import('../src/config.js');
+  const G = newPrisonRun(7, { areaMax: 3 }), m = G.miners[0];
+  killMob(G, m, { type: 'bestiole', hp: 1, x: m.x, y: m.y });
+  assert.equal(G.stats.xp, XP.mob.bestiole * PRISON.mobXpMul);
+  assert.equal(PRISON.mobXpMul, 0.5);
+  const { endPrisonRun } = await import('../src/sim/prison.js');
+  assert.ok(Number.isSafeInteger(endPrisonRun(G).shares[0].xp), 'versement entier (2,5 → 2)');
+  const mine = { ...G, prison: null, stats: { xp: 0 } };
+  killMob(mine, m, { type: 'bestiole', hp: 1, x: m.x, y: m.y });
+  assert.equal(mine.stats.xp, XP.mob.bestiole, 'en mine : toute son XP');
+});

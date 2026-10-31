@@ -16,6 +16,12 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 31/10/2026 — Geoffrey — Prison : XP des mobs divisée par 2
+- **Pour le joueur** : en prison, un mob tué donne moitié moins d'XP. L'XP des minerais et le butin ne changent pas.
+- **Décisions** : la prison donnait environ 70 % de l'XP d'une mine, surtout à cause des mobs (la moitié de son XP, contre environ 20 % en mine). Visée : environ 50 %, comme les minerais. Valeur provisoire, `PRISON.mobXpMul`.
+- **À suivre** : refaire la mesure dans quelques jours, surtout sur les débutants.
+- **État** : ✅ en ligne le 31/10
+
 ## 31/10/2026 — Geoffrey — Stuff : les sets en bandeau, noms des pièces lisibles
 - **Pour le joueur** : dans l'onglet Stuff, les sets passent en bandeau au-dessus de la carte. Le nom des pièces a bien plus de place et ne s'écrit plus sur une colonne de quelques lettres. L'onglet garde la même largeur que les autres.
 - **État** : ✅ en ligne le 31/10
