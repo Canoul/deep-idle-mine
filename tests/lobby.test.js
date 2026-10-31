@@ -183,3 +183,23 @@ test("niveau d'instance (29/10) : choisi par celui qui lance (seul ou chef), niv
   const two = instanceLevelState({ instance: true, locked: false, party: null, account: me, cur: 2, mode: 'instance_2' });
   assert.equal(two.show, false, 'Instance II (30/10) : un seul niveau, pas de rangée'); assert.equal(two.level, 1);
 });
+
+test('menu du Lobby : les 6 activités dans l\'ordre, une description chacune, sans les tours', async () => {
+  const { mineModes, activityMenu } = await import('../src/ui/lobby.js');
+  const j = { sides: { angel: { open: true }, demon: { open: false } } };
+  const menu = activityMenu(mineModes('mine', false, j), { towerOpen: true });
+  assert.deepEqual(menu.map(a => a.title), ['Prison', 'Mine', 'Mine instantanée', 'Bloc géant', 'Jugement', 'Instances']);
+  assert.ok(menu.every(a => a.desc));
+  assert.equal(menu[4].kind, 'view'); assert.equal(menu[4].note, 'tour ouverte');
+  assert.equal(menu[5].mode, 'instance_1');
+  assert.equal(activityMenu(mineModes('instance_2'))[5].mode, 'instance_2', 'l\'instance choisie reste choisie');
+});
+
+test('menu du Lobby : en session, la Mine reste ouverte pour voir son groupe ; prison grisée en groupe, repère si elle tourne', async () => {
+  const { mineModes, activityMenu } = await import('../src/ui/lobby.js');
+  const locked = activityMenu(mineModes('mine', true));
+  assert.equal(locked.find(a => a.id === 'mine').disabled, false);
+  assert.equal(locked.find(a => a.id === 'prison').disabled, true);
+  const group = activityMenu(mineModes('mine', false, null, false, 2), { prisonOn: true }).find(a => a.id === 'prison');
+  assert.equal(group.disabled, true); assert.ok(group.hint); assert.equal(group.note, 'en cours');
+});

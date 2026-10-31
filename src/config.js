@@ -1726,7 +1726,6 @@ export const TOWN = {
   poll: 2500, walkPoll: 1000, hiddenPoll: 15000, bubbleMs: 7000, bubbleMax: 60, reach: 2.5,
   emoteMs: 3500, emoteGapMs: 1500,
   portraitCols: 12,   // téléphone en hauteur : cases visibles en largeur (la ville se cale sur la largeur, 29/10)
-  chatMin: 220, chatMax: 360,   // chat global en promenade : largeur (px) ; moins de chatMin à côté de la barre d'action : au-dessus d'elle
   emotes: [
     { id:'wave',  icon:'👋', name:'Salut' },
     { id:'gg',    icon:'🎉', name:'GG' },
@@ -1835,7 +1834,8 @@ export const PRISON = { stunReset: 60, stunGap: 5, width: 25, oreMul: 0.27, rese
    maxLen et keep, gardé en base (survit aux redémarrages). globalGapMs : délai minimal entre deux messages d'un joueur
    (plus long : tout le monde le lit). Relu seulement quand l'onglet Lobby est ouvert. */
 /* maxAgeMs (30/10/2026, Geoffrey) : un message de 18 h ou plus disparaît (serveur et écran), en plus de la limite keep */
-export const CHAT = { maxLen:200, keep:50, gapMs:1000, poll:3000, ttlMs:3*3600e3, globalGapMs:3000, maxAgeMs:18*3600e3 };
+/* dock (31/10/2026, Geoffrey) : chat global permanent, à gauche et en bas ; hauteur en part de l'écran, réglable entre min et max */
+export const CHAT = { maxLen:200, keep:50, gapMs:1000, poll:3000, ttlMs:3*3600e3, globalGapMs:3000, maxAgeMs:18*3600e3, dock:{ share:0.4, min:0.15, max:0.85 } };
 
 /* Modération du chat (30/10/2026, Geoffrey ; server/moderation/) : un mot interdit (server/moderation/words.js) est
    remplacé par des astérisques et vaut un avertissement à son auteur, avec un motif. warnings avertissements (comptés

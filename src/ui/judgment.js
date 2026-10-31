@@ -21,7 +21,7 @@ export function towerState(side, v, now){
   if(v.done) return { cls: 'done', text: `${name} : ouverte · ${fmtLeft(v.openUntil - now)}`, sub: 'Tous ses niveaux sont faits pour cette ouverture : tes trésors sont dans l\'inventaire.' };
   const done = v.doneLevels ?? [];   // niveaux (28/10)
   return { cls: 'open', text: `${name} : ouverte · ${fmtLeft(v.openUntil - now)}`,
-           sub: done.length ? `Niveau ${done.join(', ')} fait ; choisis-la dans « Où miner » pour l'autre niveau.` : 'Choisis-la dans « Où miner », seul ou en groupe de 3, puis son niveau.' };
+           sub: done.length ? `Niveau ${done.join(', ')} fait ; choisis-la ici pour l'autre niveau.` : 'Choisis-la ici, seul ou en groupe de 3, puis son niveau.' };
 }
 
 /* root : élément de la carte (Lobby, choix « Jugement ») ; onTower(side) : choisir la tour de ce camp dans « Où miner » */

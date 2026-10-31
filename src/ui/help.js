@@ -9,7 +9,7 @@ import { FURNACE, CRUSHER, CHAT } from '../config.js';
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
 
 export const HELP = {
-  where: `Où miner
+  where: `Activités
 Mine : la session normale, 1 h dans une mine qui descend d'area en area. Seul ou jusqu'à 3.
 Mine instantanée : quelques minutes, à heure fixe, sur inscription, chacun pour soi.
 Instances, Bloc géant, Jugement : des défis à part, chacun a ses règles (le « ? » de sa carte).`,
@@ -29,7 +29,8 @@ Ils agissent dans les mines que tu lances, seul ou en chef de groupe.
 Les stèles (Exorcisme, Pacte) se paient dans le lobby de leur tour : une charge, consommée à la victoire, gardée sinon. Le chef peut les activer ou les désactiver.
 Ton groupe peut t'aider à payer.`,
   gchat: `Chat global
-Tous les joueurs du jeu le lisent, en session ou non.
+Tous les joueurs du jeu le lisent, en session ou non, depuis n'importe quel onglet.
+Tire sa barre du haut pour régler sa hauteur.
 Un message toutes les ${CHAT.globalGapMs / 1000} secondes au plus ; les ${CHAT.keep} derniers restent affichés.
 Le chat de l'onglet Session, lui, reste entre les joueurs de ta session.`,
   judgment: `Ange contre Démon

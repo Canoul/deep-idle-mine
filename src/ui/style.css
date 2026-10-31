@@ -45,8 +45,6 @@ img,canvas{image-rendering:pixelated}
 .tcBtns{display:flex;flex-wrap:wrap;gap:calc(2*var(--u));margin-top:var(--u)}
 .tcMsg:empty{display:none}
 body.townWalk .topbar,body.townWalk .views,body.townWalk .guide{visibility:hidden}
-/* chat global en promenade (sa carte est déplacée ici, src/main.js onWalk) : tout en bas à gauche */
-.townChat{display:none}
 /* bouton « Entrer » devant une porte (src/ui/town.js) : au milieu, au-dessus de la barre d'action ; « Chercher un
    groupe » à côté devant le chevalement et la place (30/10) */
 .townDoor{position:absolute;left:50%;bottom:calc(var(--dock-h) + 12px);transform:translateX(-50%);z-index:3;pointer-events:auto;   /* téléphone : sous le bandeau (town.js size) */
@@ -60,12 +58,6 @@ body.townWalk .topbar,body.townWalk .views,body.townWalk .guide{visibility:hidde
 .townEmotes .townLfg span:empty{display:none}
 .townLfgMsg{color:var(--bad)}
 .townLfgMsg:empty{display:none}
-.bgTown.walk .townChat{display:block;position:absolute;left:12px;bottom:6px;width:min(360px,calc(100vw - 24px));pointer-events:auto;cursor:auto}   /* place exacte : src/ui/town.js placeChat */
-.townChat .card{margin:0;background:rgba(11,8,6,.85)}
-.townChat .chatLog{max-height:calc(46*var(--u))}
-/* téléphone : chat replié (champ seulement) ; toucher le titre le déplie (src/ui/town.js placeChat) */
-.townChat.mini:not(.open) .chatLog,.townChat.mini:not(.open) #gchatNote{display:none}
-.townChat.mini h2{cursor:pointer}
 body.townWalk .app{pointer-events:none}   /* les clics passent à la ville… */
 body.townWalk .dock,body.townWalk #notifs{pointer-events:auto}   /* … sauf la barre d'action et les pop-ups */
 /* transition avec l'onglet Session (backdrop.js) : les panneaux glissent depuis les bords (.bgEnter) ou y repartent
@@ -217,6 +209,11 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .navSession.live{cursor:pointer}
 .navSession.live:hover{color:var(--acc-lt)}
 /* énergie et prison (29/10, src/ui/prison.js) : jauge et boutons de la barre du haut */
+.navLevel{display:flex;align-items:center;gap:calc(3*var(--u));font-variant-numeric:tabular-nums;white-space:nowrap}
+.navLevel>b{font:400 var(--fs-l)/1 var(--f-title);color:#ffcf8a}
+.navLevel .bar{width:calc(50*var(--u))}
+.navLevel .bar i{background:var(--o2)}
+.navLevel small{color:var(--mut);font-size:var(--fs-s)}
 .navEnergy{display:flex;align-items:center;gap:calc(2*var(--u));font-size:var(--fs-l);font-variant-numeric:tabular-nums;white-space:nowrap}
 .navEnergy .bolt{color:#ffd23f;text-shadow:var(--u) var(--u) 0 #000}
 .navEnergy .bar{width:calc(36*var(--u))}
@@ -275,6 +272,15 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .inSession{display:flex;align-items:center;justify-content:space-between;gap:calc(4*var(--u));flex-wrap:wrap;margin-bottom:calc(15*var(--u));
   padding:calc(3*var(--u)) calc(6*var(--u));background:var(--sel);box-shadow:0 0 0 var(--u) var(--acc),calc(2*var(--u)) calc(2*var(--u)) 0 #000}
 .inSession .pi{color:var(--acc);margin-right:calc(2*var(--u))}
+.actMenu{max-width:calc(300*var(--u));margin:0 auto}
+.actList{display:flex;flex-direction:column;gap:calc(3*var(--u))}
+.actBtn{width:100%;justify-content:flex-start;gap:calc(6*var(--u));min-height:calc(30*var(--u));padding:calc(3*var(--u)) calc(8*var(--u));text-align:left}
+.actIcon{flex:none;width:calc(16*var(--u));text-align:center;font-size:var(--fs-xl)}
+.actText{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.1}
+.actText b{font:400 var(--fs-xl)/1.1 var(--f-title);color:#ffe6c4}
+.actText small{color:var(--mut);font-size:var(--fs)}
+.actHead{display:flex;align-items:center;gap:calc(6*var(--u));margin-bottom:calc(9*var(--u))}
+.actHead h2{margin:0}
 .lobbyCols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:calc(18*var(--u)) calc(12*var(--u));align-items:start}
 .lobbyCol{display:flex;flex-direction:column;gap:calc(18*var(--u))}
 .lobbyWrap.locked .lockable{opacity:.55}
@@ -390,12 +396,32 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
    jusqu'aux onglets) ; il montre ses 8 dernières lignes et la page défile */
 @media (max-width:700px){#log,.miLog{max-height:none;overflow:visible} #log div:nth-child(n+9),.miLog div:nth-child(n+9){display:none}}
 /* chat de session et chat global du lobby (src/ui/chat.js) */
+.chatDock{position:fixed;left:0;bottom:0;z-index:35;width:var(--chat-w);height:var(--chat-h,40dvh);display:flex;flex-direction:column}
+.chatDock.folded{height:auto}
+.chatGrip{position:relative;z-index:2;flex:none;height:calc(4*var(--u));cursor:ns-resize;background:var(--acc);touch-action:none}
+.chatDock.folded .chatGrip,.chatDock.folded .chatLog,.chatDock.folded .chatForm,.chatDock.folded #gchatNote{display:none}
+.chatDock .card{flex:1;min-height:0;margin:calc(7*var(--u)) 0 0;display:flex;flex-direction:column;background:rgba(11,8,6,.92)}
+.chatDock h2{display:flex;align-items:center;gap:calc(2*var(--u))}
+.chatFold{margin-left:auto;min-height:0;min-width:calc(12*var(--u));height:calc(10*var(--u));padding:0}
+#gchatLog{flex:1;min-height:0;max-height:none}
+body{--chat-w:calc(115*var(--u))}
+@media (min-width:1171px){   /* le contenu et la barre d'action se décalent : rien ne passe sous le chat */
+  body.chatOn .views{margin-left:var(--chat-w)}
+  body.chatOn .dock{left:calc(50% + var(--chat-w)/2);gap:0}
+  body.chatOn #miRun,body.chatOn #twRun,body.chatOn #gtRun,body.chatOn #inRun{left:var(--chat-w)}
+  body.chatOn #run .runL{margin-bottom:var(--chat-h,40dvh)!important}   /* la mine garde sa largeur : la colonne de gauche s'arrête au-dessus du chat */
+}
+@media (min-width:1171px) and (max-width:1320px){ body.chatOn .dock .orb{display:none} }
+@media (max-width:1170px){
+  .chatDock{width:100%;bottom:calc(var(--dock-h) + 2*var(--u))}
+  .chatDock.folded{width:calc(70*var(--u))}
+  .guide{bottom:calc(var(--dock-h) + 30*var(--u))}   /* au-dessus du chat replié */
+}
 .chatLog{max-height:calc(90*var(--u));overflow:auto;overflow-wrap:anywhere}
 .chatLog div{padding:var(--u) 0}
 .chatLog b{color:var(--txt);font-weight:400}
 .chatLog .mine b{color:var(--ok)}
 .chatLog time{color:var(--mut);margin-right:calc(2*var(--u))}
-#gchatLog{height:calc(90*var(--u))}
 .chatForm{display:flex;gap:calc(3*var(--u));margin-top:calc(3*var(--u))}
 .chatForm input{flex:1;min-width:0}
 /* jauge de profondeur : surface en haut, fond de la mine ouverte en bas */
@@ -684,7 +710,7 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
   .topbar{gap:calc(3*var(--u));padding:0 calc(3*var(--u))}
   .brand,.navWiki span,.navAccount .who small{display:none}
   .navSession .bar{width:calc(30*var(--u))}
-  .navEnergy .bar,#navPrisonBtn{display:none}
+  .navEnergy .bar,#navPrisonBtn,.navLevel .bar,.navLevel small{display:none}
   .dock{left:calc(2*var(--u));right:calc(2*var(--u));transform:none;justify-content:center}
   .orb{display:none}
   .dock ul{overflow-x:auto;max-width:100%}
