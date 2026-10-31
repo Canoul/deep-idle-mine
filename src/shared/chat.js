@@ -15,6 +15,12 @@ export function cleanChatText(v){
 /* messages encore assez récents (moins de CHAT.maxAgeMs à l'instant now) : les plus vieux disparaissent (30/10/2026) */
 export const freshMessages = (msgs, now, maxAge = CHAT.maxAgeMs) => (msgs || []).filter(m => now - m.at < maxAge);
 
+/* messages déjà affichés + nouveaux : triés par numéro, sans doublon */
+export function mergeMessages(msgs, list){
+  const ids = new Set(msgs.map(m => m.id));
+  return msgs.concat(list.filter(m => !ids.has(m.id))).sort((a, b) => a.id - b.id);
+}
+
 /* canal d'un message ; absent ou inconnu (messages d'avant le 31/10, ancien canal Commerce) : Général */
 export const chatChannel = id => CHAT.channels.find(c => c.id === id) ?? CHAT.channels[0];
 

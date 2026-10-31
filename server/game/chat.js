@@ -42,12 +42,12 @@ export function createChat({ clock = Date.now, gapMs = CHAT.gapMs, ttlMs = CHAT.
       r.at = now; lastBy.set(account, now);
       return { msg, hits: mod.hits, original: t };
     },
-    /* message du jeu (Raffle, 31/10/2026) : public, sans cadence ni modération */
-    system(roomId, name, text, channel){
+    /* message du jeu (Raffle, 31/10/2026) : public, sans cadence ni modération ; extra : { winner } pour le gagnant */
+    system(roomId, name, text, channel, extra = {}){
       const now = clock();
       prune(now);
       const r = rooms.get(roomId) ?? rooms.set(roomId, { next: 1, msgs: [], at: now }).get(roomId);
-      const msg = { id: r.next++, at: now, account: 'system', name, text, channel, system: true };
+      const msg = { id: r.next++, at: now, account: 'system', name, text, channel, system: true, ...extra };
       r.msgs.push(msg);
       if(r.msgs.length > keep) r.msgs.shift();
       r.at = now;

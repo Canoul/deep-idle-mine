@@ -2,7 +2,7 @@
    joueurs avec un pseudo tapent !join (réponse visible par eux seuls), et un inscrit le gagne au bout de joinMs.
    L'état est enregistré à chaque étape (ns raffle) : un raffle reprend après un redémarrage du serveur, le gagnant est gardé
    avant d'être payé, et give est idempotent (id du raffle) : relancer la fin ne paie jamais deux fois.
-   give(compte, id, lot) : crédit ; announce(texte) : message public ; tick() : appelé par la boucle du serveur. */
+   give(compte, id, lot) : crédit ; announce(texte, gagnant?) : message public ; tick() : appelé par la boucle du serveur. */
 import { RAFFLE } from '../../src/config.js';
 import { nextRaffleAt, raffleOpen, rollLot, lotLabel, lotPlural, sanitizeRaffle } from '../../src/shared/raffle.js';
 
@@ -25,7 +25,7 @@ export function createRaffle({ store, give, announce, clock = Date.now, random }
     const c = state.current;
     if(!c.winner && c.players.length){ c.winner = c.players[Math.floor(random() * c.players.length)]; await save(); }
     if(c.winner) await give(c.winner.id, c.id, c.lot);
-    await announce(c.winner ? `[${RAFFLE.name}] ${c.winner.name} a gagné ${lotLabel(c.lot)}` : `[${RAFFLE.name}] Personne n'a participé, le lot est perdu`);
+    await announce(c.winner ? `[${RAFFLE.name}] ${c.winner.name} a gagné ${lotLabel(c.lot)}` : `[${RAFFLE.name}] Personne n'a participé, le lot est perdu`, c.winner?.id);
     state.current = null;
     state.nextAt = nextRaffleAt(now, random);
     await save();
