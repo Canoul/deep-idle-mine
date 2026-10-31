@@ -16,6 +16,10 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 31/10/2026 — Geoffrey — Grimoire : sorts débloqués devant
+- **Pour le joueur** : dans l'onglet Sorts, le grimoire montre d'abord les sorts débloqués, puis les parchemins en poche, les sorts d'une autre spé, et enfin ceux pas encore débloqués.
+- **État** : ✅ en ligne le 31/10
+
 ## 31/10/2026 — Geoffrey — Chat : canal Commerce retiré
 - **Pour le joueur** : plus de canal Commerce ni de raccourci /c dans le chat global : il n'y a pas d'échanges dans le
   jeu. Les anciens messages de ce canal s'affichent en Général.
@@ -33,6 +37,10 @@ Modèle d'entrée :
 - **Pour l'équipe** : dans le lobby du mode développeur, on tape un pseudo et le personnage du joueur (stuff, skills, sorts, niveau) arrive
   dans les presets, sans console ni fichier. Un preset par mineur, en instance aussi, même avec un compte invité ou invité dans un groupe. Le serveur dev lit la base en ligne avec un compte qui ne peut rien modifier.
 - **À suivre** : Jules a besoin de son fichier `.dim-dev.env` pour s'en servir. `SET ROLE` ne marche pas dans Neon : voir `has_table_privilege`.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Chat : largeur débloquée en tour et en instance
+- **Pour le joueur** : en tour, en instance, en mine instantanée et au Bloc géant, le chat peut s'élargir jusqu'au bord de la mine ; il restait bloqué au minimum alors qu'il y avait de la place.
 - **État** : ✅ en ligne le 31/10
 
 ## 31/10/2026 — Geoffrey — Menu du Lobby : l'équipe à droite
