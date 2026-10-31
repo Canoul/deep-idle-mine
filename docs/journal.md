@@ -11,7 +11,7 @@ Modèle d'entrée :
 ```
 ## 31/10/2026 — Geoffrey — Commande pour forcer un raffle
 - **Pour l'équipe** : sur le serveur, `sudo node /opt/deep-idle-mine/scripts/force-raffle.js` lance un raffle tout de suite, même la nuit. Le lot sort de la table habituelle, et la commande est refusée si un raffle est déjà en cours. Le prochain raffle automatique est reprogrammé après celui-ci.
-- **État** : 🧪 sur la branche `geoffrey/raffle-force` (pas en ligne)
+- **État** : ✅ en ligne le 31/10
 
 ## 31/10/2026 — Geoffrey — Raffle : un tirage au sort dans le chat
 - **Pour le joueur** : toutes les 45 à 120 min, entre 8 h et 2 h, un lot est annoncé dans le chat global. On a 40 s pour taper `!join` : la commande n'apparaît pas dans le chat et une réponse visible par soi seul confirme l'inscription. À la fin, un inscrit gagne le lot, annoncé à tous.
