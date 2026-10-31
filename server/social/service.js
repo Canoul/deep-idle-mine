@@ -105,7 +105,7 @@ export function createSocialService({ store, accounts, party, game, clock = Date
   const nameOf = async id => displayName(await accounts.getAccount(id)) || formatAccountId(id);
   const saveChat = () => serial(() => store.putGlobalChat(chat.room(GLOBAL)));
   const raffle = createRaffle({ store, clock, random, give: (id, key, lot) => game.raffleGive(id, key, lot),
-    announce: async text => { await chatReady(); chat.system(GLOBAL, RAFFLE.name, text, CHAT.channels[0].id); await saveChat(); } });
+    announce: async (text, winner) => { await chatReady(); chat.system(GLOBAL, RAFFLE.name, text, CHAT.channels[0].id, winner ? { winner } : {}); await saveChat(); } });
 
   /* l'ami visé : par pseudo d'abord, sinon par ID (« 7K3Q-9XHP ») */
   async function findTarget(input){

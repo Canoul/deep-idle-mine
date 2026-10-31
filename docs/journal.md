@@ -9,6 +9,11 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 31/10/2026 — Geoffrey — Chat : des messages n'apparaissaient pas après en avoir envoyé un
+- **Pour le joueur** : envoyer un message juste après l'arrivée de ceux des autres les faisait sauter jusqu'au rechargement de la page : c'est comme ça qu'un compte a raté l'annonce du raffle en tapant `!join`. Corrigé pour le Chat global et le chat de session. Le gagnant d'un raffle voit maintenant son lot dans l'inventaire sans recharger.
+- **Vérifié** : raffle réel sur un serveur local, le lot arrive bien dans l'inventaire du gagnant.
+- **État** : ✅ en ligne le 31/10
+
 ## 31/10/2026 — Geoffrey — Commande pour forcer un raffle
 - **Pour l'équipe** : sur le serveur, `sudo node /opt/deep-idle-mine/scripts/force-raffle.js` lance un raffle tout de suite, même la nuit. Le lot sort de la table habituelle, et la commande est refusée si un raffle est déjà en cours. Le prochain raffle automatique est reprogrammé après celui-ci.
 - **État** : ✅ en ligne le 31/10

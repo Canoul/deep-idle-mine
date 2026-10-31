@@ -101,6 +101,7 @@ test('déroulé : annonce, !join privé, gagnant annoncé et payé une fois', as
   advance(1_000); await social.raffleTick(); await social.raffleTick();
   assert.equal(await count(store, ZOE.id, 'Chitine'), 100);
   assert.equal((await texts(social, MAX)).at(-1), '[Raffle] Zoe a gagné 100 Chitine');
+  assert.equal((await social.chatGet(MAX, 0)).messages.at(-1).winner, ZOE.id);   // son navigateur relit son inventaire
   assert.ok((await store.getRaffle()).nextAt > 0);
   assert.equal((await store.getRaffle()).current, null);
 });

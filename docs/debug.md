@@ -6077,3 +6077,9 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 ## 31/10/2026 — Raffle forcé (Geoffrey)
 - **Quoi** : `scripts/force-raffle.js` → `POST /api/admin/raffle` (mêmes gardes que les autres routes admin) → `social.raffleForce` → `raffle.force` : `start` sans regarder le créneau ni `nextAt`, `null` (409) si un raffle est en cours. `social` passé à `adminRoutes` par server/app.js.
 - **Tests** ✅ `tests/admin-raffle.test.js` (2), `tests/raffle.test.js`, `tests/chat.test.js`. Pas lancé sur le vrai serveur.
+
+## 31/10/2026 — Chat : messages sautés après un envoi (Geoffrey)
+- **Cause** ✅ reproduite (vrai serveur local, deux comptes) : `send` passait la réponse à `add`, qui fait `last = id` ; les messages de numéro plus petit pas encore relus n'étaient plus jamais demandés (`since(last)`). Faiblesse d'origine du chat, notée dans l'entrée Raffle ; la relecture passe à 15 s en fenêtre cachée, d'où un compte qui rate l'annonce en tapant `!join` depuis l'autre fenêtre. Un rechargement rend les messages gardés.
+- **Correction** : src/ui/chat.js : `display` montre sans toucher `last`, `add` réservé à la relecture, `poll()` juste après l'envoi ; `mergeMessages` (src/shared/chat.js) enlève les doublons.
+- **Lot** ✅ vérifié sur vrai serveur local : 10 Graphite ingot chez le gagnant, rien chez le perdant. Pas vérifiable d'ici sur le serveur en ligne. Le navigateur ne relisait pas l'inventaire : message du gagnant marqué `winner` (id de compte), `fresh` de `setupChat` → `gameApi.state()`.
+- **Tests** ✅ `tests/chat-ui.test.js` (DOM imité, rouge avant correction), `tests/raffle.test.js`, `tests/chat.test.js`.

@@ -545,6 +545,8 @@ const gchatTabs = setupChatTabs({ bar: $('gchatTabs'), panel: $('gchatPanel'), s
 const gchat = setupChat({ prefix:'gchat', get: after => socialApi.chat(after), post: msg => socialApi.say(msg), meId: () => acct.account?.id, onWarning,
                           paused: () => document.hidden || gchatDock.folded, time: true,
                           show: gchatTabs.show, line: chatLine, sent: gchatTabs.sent,
+                          /* gagnant d'un raffle : son lot est sur le serveur, à relire tout de suite */
+                          fresh: list => { if(list.some(m => m.winner && m.winner === acct.account?.id)) gameApi.state().then(st => { setInventory(st.inventory); setEnergy(st.energy); }).catch(() => {}); },
                           parse: text => { const msg = parseChatInput(text, gchatTabs.channel(), gchatTabs.target()); return msg.lobby ? { ...msg, lobby: lobby.pubContext() } : msg; } });
 /* groupes en formation (31/10/2026) : la liste se relit toute seule tant que la fenêtre est ouverte */
 const forming = setupForming({ list: () => partyApi.forming(), team: () => lobby.team(),
