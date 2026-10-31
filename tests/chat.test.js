@@ -274,12 +274,14 @@ function setupChannels(){
   return { store, social, tick: () => { now += CHAT.globalGapMs; } };
 }
 
-test('raccourcis : /1 /2 /c /gr /w, sans raccourci le canal choisi ; texte manquant refusé', async () => {
-  const { parseChatInput } = await import('../src/shared/chat.js');
-  assert.deepEqual(parseChatInput('toto', 'commerce'), { channel:'commerce', text:'toto' });
+test('raccourcis : /1 /2 /gr /w, sans raccourci le canal choisi ; texte manquant refusé', async () => {
+  const { parseChatInput, chatChannel } = await import('../src/shared/chat.js');
+  assert.deepEqual(parseChatInput('toto', 'lfg'), { channel:'lfg', text:'toto' });
   assert.deepEqual(parseChatInput('/1 toto'), { channel:'general', text:'toto' });
   assert.deepEqual(parseChatInput('/2 toto'), { channel:'lfg', text:'toto' });
-  assert.deepEqual(parseChatInput('/C toto'), { channel:'commerce', text:'toto' });
+  assert.deepEqual(parseChatInput('/GR toto'), { channel:'group', text:'toto' });
+  assert.deepEqual(parseChatInput('/c toto'), { channel:'general', text:'/c toto' }, 'plus de canal Commerce (31/10)');
+  assert.equal(chatChannel('commerce').id, 'general', 'ses anciens messages passent en Général');
   assert.deepEqual(parseChatInput('/gr toto'), { channel:'group', text:'toto' });
   assert.deepEqual(parseChatInput('/w "Le Nain" toto a'), { channel:'mp', to:'Le Nain', text:'toto a' });
   assert.deepEqual(parseChatInput('/w Zoe toto'), { channel:'mp', to:'Zoe', text:'toto' });
