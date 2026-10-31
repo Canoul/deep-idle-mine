@@ -760,7 +760,7 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'pickaxe_iron','sword_stone','sword_iron','spear_iron','helmet_iron','chest_iron','legs_iron','boots_iron','belt_goblin',
   'lamp_incandescent','pickaxe_steel','sword_steel','helmet_steel','chest_steel','legs_steel','boots_steel','chest_balance',
   'gloves_tactical','gloves_worker','cape_naingui','straps_goblin','hood_dark','cloud_magic','belt_giant','dark_cloth','gas_vesicle','slippery_stone','dungeon_brick','minotaur','minotaur_black','moon_crystal','orb','key_instance_1','key_instance_2','angel_feather','angel_feathers',
-  'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon','giant_block','giant_fountain','giant_torch','instance_spawner','instance_cage','goblin_king','golbute','golbute_crystal','golbute_rock','chest_golbute',
+  'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon','giant_block','giant_fountain','giant_torch','instance_spawner','instance_cage','goblin_king','golbute','golbute_crystal','golbute_body','golbute_body_crystal','golbute_arm','golbute_arm_crystal','golbute_rock','chest_golbute',
   'brick_angel','brick_angel_hard','brick_demon','brick_demon_hard','boss_angel','boss_demon','seraph','imp',
   'crown_goblin_king','mace_goblin_king','cape_goblin_royal','furnace_gold','recipe_chitin','chest_goblin_king','nugget_silver','ingot_silver','shrine_abundance',
   'ingot_mithril','refined_cobalt','refined_thorium','ingot_cobalt','ingot_thorium','minotaur_leather','rotten_flesh','treasure_t4',
@@ -1726,7 +1726,6 @@ export const TOWN = {
   poll: 2500, walkPoll: 1000, hiddenPoll: 15000, bubbleMs: 7000, bubbleMax: 60, reach: 2.5,
   emoteMs: 3500, emoteGapMs: 1500,
   portraitCols: 12,   // téléphone en hauteur : cases visibles en largeur (la ville se cale sur la largeur, 29/10)
-  chatMin: 220, chatMax: 360,   // chat global en promenade : largeur (px) ; moins de chatMin à côté de la barre d'action : au-dessus d'elle
   emotes: [
     { id:'wave',  icon:'👋', name:'Salut' },
     { id:'gg',    icon:'🎉', name:'GG' },
@@ -1841,7 +1840,11 @@ export const PRISON = { stunReset: 60, stunGap: 5, width: 25, oreMul: 0.27, rese
    maxLen et keep, gardé en base (survit aux redémarrages). globalGapMs : délai minimal entre deux messages d'un joueur
    (plus long : tout le monde le lit). Relu seulement quand l'onglet Lobby est ouvert. */
 /* maxAgeMs (30/10/2026, Geoffrey) : un message de 18 h ou plus disparaît (serveur et écran), en plus de la limite keep */
-export const CHAT = { maxLen:200, keep:50, gapMs:1000, poll:3000, ttlMs:3*3600e3, globalGapMs:3000, maxAgeMs:18*3600e3 };
+/* dock (31/10/2026, Geoffrey) : chat global permanent, à gauche et en bas ; hauteur en part de l'écran, réglable entre min et max */
+/* Canaux du chat global (31/10/2026, Geoffrey) : id, nom affiché, couleur (style.css, .ch-<id>) ; globalKeep : messages gardés, tous
+   canaux confondus ; tabsMax : onglets par joueur ; tabNameMax : longueur du nom d'un onglet */
+export const CHAT = { channels:[{ id:'general', label:'Général' }, { id:'mp', label:'MP' }, { id:'group', label:'Groupe' }, { id:'lfg', label:'LFG' }],
+  globalKeep:300, tabsMax:5, tabNameMax:12, maxLen:200, keep:50, gapMs:1000, poll:3000, ttlMs:3*3600e3, globalGapMs:3000, maxAgeMs:18*3600e3, dock:{ share:0.6, min:0.15, max:0.85, minWidth:160, maxWidth:0.6, startWidth:575 } };
 
 /* Modération du chat (30/10/2026, Geoffrey ; server/moderation/) : un mot interdit (server/moderation/words.js) est
    remplacé par des astérisques et vaut un avertissement à son auteur, avec un motif. warnings avertissements (comptés

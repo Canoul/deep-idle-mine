@@ -87,12 +87,15 @@ export function minerSpecs(record){
      mode dev, preset du joueur qui lance (29/10/2026) : record.selfPreset (et record.selfCopy pour une copie), son mineur
      (place 0) prend stuff, skills, glyphes et sorts du preset, garde son nom ; XP et butin restent à son compte */
   const selfTree = sanitizeBotPresets([record.selfPreset])?.[0] ?? null;
+  /* un preset par place de joueur (31/10/2026, mode dev : record.playerPresets[i], record.playerCopies[i]) */
+  const placeTrees = sanitizeBotPresets(record.playerPresets) ?? [];
   const build = (t, copy) => isCopyPresetId(t) ? copyMiner(t.slice(COPY_PREFIX.length), copy) : presetMiner(t);
   const presetOf = i => {
     if(i < players.length){
-      if(i !== 0 || !selfTree) return null;
-      if(!presets.has('self')) presets.set('self', build(selfTree, record.selfCopy));
-      return presets.get('self');
+      const t = placeTrees[i] ?? (i === 0 ? selfTree : null), key = 'place' + i;
+      if(!t) return null;
+      if(!presets.has(key)) presets.set(key, build(t, placeTrees[i] ? record.playerCopies?.[i] : record.selfCopy));
+      return presets.get(key);
     }
     const j = i - players.length, t = botTrees[j];
     if(t && !presets.has(t)) presets.set(t, build(t, record.botCopies?.[j]));
@@ -112,7 +115,7 @@ export function minerSpecs(record){
   const rawSkills = i => record.devSpecs?.[i] ? devSkills(record.devSpecs[i]) : own(i) ? record.skills?.[players[i].account] : presetOf(i)?.skills ?? null;
   const skillsOf = i => skillEffects(sanitizeSkills(rawSkills(i)));
   /* anneaux : leur effet va à tout le groupe (une fois par anneau différent), après stuff et skills (RINGS) */
-  const rings = record.rings ?? groupRings(record, selfTree ? presetOf(0)?.gear : null);   // Bloc géant : anneaux de tous les présents, passés à part (src/shared/giant-room.js)
+  const rings = record.rings ?? groupRings(record, selfTree || placeTrees[0] ? presetOf(0)?.gear : null);   // Bloc géant : anneaux de tous les présents, passés à part (src/shared/giant-room.js)
   const modeDef = MINE_MODES.find(m => m.id === record.mode);
   const mine = !modeDef?.tower && !modeDef?.giant;   // tour, Bloc géant : pas de Glyphe Mule (son skill n'y agit pas)
   const caracOf = i => withGlyphStats(withRings(withSkillStats(equippedStats(gearOf(i), slotMastery(skillsOf(i))), skillsOf(i)), rings), skillsOf(i), mine);   // glyphes en dernier ; maîtrises (28/10) : stats de la pièce

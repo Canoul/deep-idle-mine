@@ -22,6 +22,52 @@ Modèle d'entrée :
 - **À suivre** : sur 5 sessions, les quantités rapportées ne bougent presque pas : ça corrige un comportement bizarre, pas le rendement. Le serveur calcule environ 15 % de plus dans les sessions profondes.
 - **État** : 🧪 sur la branche `geoffrey/fix-galerie-rares` (pas en ligne)
 
+## 31/10/2026 — Geoffrey — Chat : canal Commerce retiré
+- **Pour le joueur** : plus de canal Commerce ni de raccourci /c dans le chat global : il n'y a pas d'échanges dans le
+  jeu. Les anciens messages de ce canal s'affichent en Général.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — « Prêt tout le temps » revu
+- **Pour le joueur** : la case est maintenant visible partout, même seul ou en prison, et elle ne se décoche plus
+  toute seule : elle est gardée sur le compte. Elle sert à rester prêt : on clique « Je suis prêt » une fois en entrant
+  dans un groupe, puis on le reste session après session.
+- **Décisions** : cocher ne rend plus prêt. En revenant de prison, le joueur clique donc une fois : un chef ne peut pas
+  lui terminer sa prison sans son accord. « Prêt (annuler) » remarche, sans toucher à la case.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Mode dev : copier un vrai joueur en tapant son pseudo
+- **Pour l'équipe** : dans le lobby du mode développeur, on tape un pseudo et le personnage du joueur (stuff, skills, sorts, niveau) arrive
+  dans les presets, sans console ni fichier. Un preset par mineur, en instance aussi, même avec un compte invité ou invité dans un groupe. Le serveur dev lit la base en ligne avec un compte qui ne peut rien modifier.
+- **À suivre** : Jules a besoin de son fichier `.dim-dev.env` pour s'en servir. `SET ROLE` ne marche pas dans Neon : voir `has_table_privilege`.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Menu du Lobby : l'équipe à droite
+- **Pour le joueur** : le choix des activités montre ton équipe à droite, seul ou en groupe : inviter, chercher un groupe, et « Je suis prêt » pour un membre. Le Lancer reste dans l'activité.
+- **Décisions** : cliquer sur l'onglet Lobby rouvre toujours le menu, même en groupe ; rejoindre un groupe n'ouvre plus la Mine.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Chat : le canal utilisé reste choisi
+- **Pour le joueur** : après un message en /gr, le suivant part en groupe sans rien préciser, et pareil pour /1, /2 et /c. Après un /w, le suivant repart au même joueur. On change de canal avec un autre raccourci ou le sélecteur, et le canal est gardé sur le compte.
+- **Décisions** : le canal ne change que si le message est bien parti (un /gr refusé sans groupe ne change rien).
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Chat global : canaux, MP, onglets
+- **Pour le joueur** : chaque message part dans un canal, avec sa couleur : Général (blanc), MP (rose), Groupe (bleu), Commerce (beige), LFG (vert). Raccourcis : /1, /2 (LFG), /c, /gr, /w "pseudo". Un seul onglet au départ ; l'écrou choisit ses canaux, le « + » crée un onglet. Ces réglages sont gardés sur le compte.
+- **Décisions** : sans raccourci, le message part dans le canal du petit sélecteur à côté du champ. Un MP envoyé s'affiche « à pseudo ». MP possible vers un joueur hors ligne. Même modération et même rythme (3 s) sur tous les canaux. Pas de bulle du Carreau pour les MP et le Groupe.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Nouveau Lobby : menu des activités, chat permanent, niveau dans le bandeau
+- **Pour le joueur** : le Lobby s'ouvre sur un grand menu (Prison, Mine, Mine instantanée, Bloc géant, Jugement, Instances), une ligne de description pour chacun. Un clic ouvre l'activité : les sets à gauche, l'équipe ou la carte de l'activité à droite, un bouton « ← Activités » pour revenir. Le niveau, la barre d'XP, le % et l'XP sont dans le bandeau du haut, à côté du pseudo ; la carte « Mineur » disparaît. Le chat global n'est plus dans le Lobby : il reste affiché en bas à gauche sur tous les onglets, à 40 % de la hauteur, réglable en tirant sa barre orange, et repliable.
+- **Décisions** : préférences et réglages dev sous les sets, à gauche. Tours choisies depuis le Jugement, « ← Activités » y ramène. Instance et Jugement : leur carte à gauche, les sets dessous, l'équipe à droite. Cliquer sur l'onglet Lobby rouvre le menu, sauf dans un groupe (on reste sur l'activité, pour « Je suis prêt »). Rejoindre un groupe depuis le menu ouvre la Mine. Le chat de session reste dans l'onglet Session. Petit écran (moins de 1170 px) : chat replié au départ.
+- **Largeur des onglets** : tous les onglets ont maintenant la même largeur, quel que soit leur contenu, et tout est réduit à 90 %. Session et téléphone gardent leur taille.
+- **À suivre** : en session, la mine garde sa largeur et la colonne Équipe / Mineur s'arrête au-dessus du chat, en défilant ; plus le chat est haut, moins elle a de place. Le chat flotte par-dessus : le changer de taille ne déplace rien et le reste reste centré. Sa largeur s'arrête au début de l'interface centrale de l'onglet ouvert ; En tour, instance, mine instantanée et Bloc géant en direct, il peut recouvrir le bas à gauche de la mine (minimum 160 px).
+- **Chat** : plus de barre orange. On règle la hauteur et la largeur en tirant la bordure du chat (haut, droite ou coin). Au départ, il est 2,5 fois plus large et 1,5 fois plus haut.
+
+## 31/10/2026 — Geoffrey — Golbute : avalanche et coup au sol retravaillés
+- **Pour le joueur** : les rochers de l'avalanche vont maintenant jusqu'au sol et s'y brisent dans la poussière. Pour son coup, le Golbute lève ses vrais bras et les écrase au sol de chaque côté, au lieu de deux rectangles gris.
+- **À suivre** : à regarder en jeu, en pierre et en cristal.
+- **État** : ✅ en ligne le 31/10
+
 ## 31/10/2026 — Geoffrey — Prison : les mines au focus minerai ne gonflent plus la compo
 - **Pour le joueur** : les mines jouées avec le focus minerai (retiré le 30/10) ne comptent plus pour leur butin dans la compo de la prison, à partir de 6 areas débloquées. Elles comptent pour une répartition de référence, celle des 10 dernières mines de Nbrick, LeTaz et Akake (mithril 1,28 %, cobalt 0,13 %, thorium 0,08 %). Les compos des joueurs concernés sont refaites une fois, et leur compo enregistrée est effacée.
 - **Décisions** : règle pour tous, pas de liste de pseudos ; si un joueur du groupe a mis le focus, toute la mine compte. Pour Croustiflex, Infernatiwar et Monsta : mithril ÷ 3 environ, cobalt ÷ 3, thorium ÷ 5 par rapport à aujourd'hui. Les 10 prochaines mines, sans focus possible, formeront leur palier suivant, sans correction.
@@ -32,6 +78,28 @@ Modèle d'entrée :
 - **Pour le joueur** : dans la compo de la prison, le cobalt et le thorium ne dépassent plus 0,4 % chacun des minerais de la carte. La place libérée va aux autres minerais : la carte en contient autant qu'avant. Vaut pour toutes les compos (actuelle, ancienne, enregistrée) et le lobby affiche la valeur plafonnée.
 - **Décisions** : plafond commun à tous, pas de règle visant des pseudos. Seuls Croustiflex, Infernatiwar et Monsta sont vraiment touchés (0,9 à 1,1 % avant). Mesure sur la compo de Croustiflex (stuff acier, 20 h simulées) : cobalt 2,07 → 0,78 par heure, thorium 2,52 → 1,03. Valeur provisoire, `PRISON.oreCap`.
 - **À suivre** : leur prison n'était pas anormale (40 à 50 % de leurs mines, comme les autres) : ils rapportent 8 à 9 cobalt ou thorium par heure en mine, contre 1 à 3 pour les autres. Le plafond les met nettement sous la cible de 50 % sur ces deux minerais.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Le bilan de fin de session s'affiche à nouveau à tous les coups
+- **Pour le joueur** : après une tour (ou toute autre session), le bilan pouvait ne jamais s'afficher depuis les correctifs du 30/10. Deux cas : le jeu
+  ouvert dans un autre onglet ou sur un autre appareil, qui recevait le bilan à ta place ; une mine instantanée commencée pendant la session.
+  Le bilan fermé ne revient toujours pas quand on recharge la page.
+- **À suivre** : vérifier sur la prochaine tour.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Gobelins asservis : ils creusent quand il n'y a plus de minerai
+- **Pour le joueur** : un gobelin asservi vise toujours les minerais d'abord. S'il n'y en a pas à 6 cases, il creuse tout droit dans la roche
+  au lieu d'attendre, et reprend le premier minerai qu'il trouve. Il ne reste presque plus inactif (1 s sur 30, contre 12,5 s avant).
+- **Décisions** : Geoffrey : « il focus minerai, mais s'il n'y en a pas alors il mine ». La roche qu'il casse va au coffre commun, comme le reste.
+- **À suivre** : le rendement de la Couronne augmente (environ +80 % de blocs par gobelin, +35 % de minerais), à surveiller.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Le mineur prend les coffres sur la paroi de son puits
+- **Pour le joueur** : un mineur qui creuse ou descend pour rejoindre son area de travail ouvre maintenant les coffres découverts sur
+  son chemin. Avant, il passait à côté dès qu'il n'était pas encore dans son area : c'était le cas normal, avec le réglage de base « Plus profond ».
+  Sur la carte de la seed 134583339 : 1 coffre sur 5 était visé avant, 5 sur 5 maintenant.
+- **Décisions** : en route, seuls les coffres et les résidus le détournent, pas les minerais.
+- **À suivre** : vérifier en jeu sur la prochaine partie.
 - **État** : ✅ en ligne le 31/10
 
 ## 31/10/2026 — Geoffrey — Nouveau craft de la Clé d'instance I

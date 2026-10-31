@@ -43,9 +43,12 @@ import { updateHUD, showEnd, showSettling, updateNavSession, fmt, showSpellBar, 
 import { setupRunControls, setupCamera, renderSpeeds } from './ui/controls.js';
 import { setupLobby } from './ui/lobby.js';
 import { gearScore } from './meta/gearscore.js';
-import { renderLevel, levelUpText } from './ui/level.js';
+import { renderLevel, renderNavLevel, levelUpText } from './ui/level.js';
 import { setupFocusPanel } from './ui/focus.js';
 import { setupChat } from './ui/chat.js';
+import { setupChatDock } from './ui/chat-dock.js';
+import { setupChatTabs, chatLine } from './ui/chat-tabs.js';
+import { parseChatInput } from './shared/chat.js';
 import { renderInventory as drawInventory, showLoot, lootError } from './ui/inventory.js';
 import { setupNav } from './ui/nav.js';
 import { setupFurnace } from './ui/furnace.js';
@@ -110,16 +113,7 @@ const town = setupTown($('bgTown'), {
   invite: async id => { await partyApi.invite(id); pollLobby(); },
   /* recherche de groupe depuis la ville (30/10) : celle du Lobby (lobby est créé plus bas, appelé seulement ensuite) */
   lfg: { view: () => lobby.lfgView(), toggle: () => lobby.toggleLfg() },
-  /* promenade : la carte du chat global quitte le Lobby pour le bas de l'écran, et y revient à la fin */
-  onWalk: on => {
-    const card = $('gchatCard');
-    if(on){ gchatHome = { parent: card.parentNode, next: card.nextSibling }; town.chatSlot.appendChild(card); }
-    else if(gchatHome){ gchatHome.parent.insertBefore(card, gchatHome.next); gchatHome = null; }
-    requestAnimationFrame(() => gchat?.toEnd());   // déplacée, la liste repart en haut : on la remet sur les derniers messages
-    gchat?.poke();
-  },
 });
-let gchatHome = null;                                // place de la carte du chat global dans le Lobby, pendant la promenade
 window.TOWN_UI = town;                               // débogage depuis la console (F12) : TOWN_UI.state()
 const isIn = () => isInstanceMode(rec?.mode);   // instance (27/10) : même principe d'affichage que les tours
 const isTw = () => isTowerMode(rec?.mode);   // tour de l'Ange ou du Démon : même principe d'affichage que la MI
@@ -278,7 +272,6 @@ const historyTab = setupHistory({ load: () => gameApi.history() });
 let nav;   // l'onglet de départ est ouvert pendant setupNav, avant que nav soit assigné
 let giantUI = null;   // Bloc géant (créé plus bas) : sa visite occupe l'onglet Session
 let guide = null;     // guide « Premiers pas » (créé au démarrage, une fois l'état du joueur lu)
-let gchat = null;     // chat global du Lobby (créé plus bas)
 let wantJudgment = /^#jugement$/i.test(location.hash);   // ancien onglet Jugement : ouvre le Lobby sur les jauges
 nav = setupNav($('nav'), $('views'), id => {
   if(ui.tab==='inventaire' && id!=='inventaire') ui.fresh.clear();   // les nouveautés ont été vues
@@ -293,7 +286,7 @@ nav = setupNav($('nav'), $('views'), id => {
   if(id==='historique') historyTab?.refresh();
   if(id==='session' && prisonActive(prison)) kickPrison();   // on regarde la prison : envois rapprochés tout de suite
   guide?.refresh();                      // « Regarde ton butin » : l'inventaire vient d'être ouvert
-  if(id==='lobby') gchat?.poke();        // chat global : relu seulement Lobby ouvert, tout de suite en y revenant
+  if(id==='lobby') setTimeout(() => lobby.showMenu());   // cliquer sur Lobby rouvre le menu des activités (différé : le lobby n'est pas encore créé au tout début)
   if(id==='lobby' && wantJudgment){ wantJudgment = false; setTimeout(() => lobby.showJudgment()); }   // différé : le lobby n'est pas encore créé au tout début
 });
 
@@ -339,6 +332,7 @@ const lobby = setupLobby({
   onMode: mode => { if(mode === 'mi') instantLobby.refresh(); if(mode === 'giant') giantUI?.shown(); },
   onJudgment: () => pollJudgment(),
   onPrisonStart: opts => startPrison(opts),
+  devCopy: name => gameApi.devCopy(name),   // mode dev : copier un joueur du jeu en ligne (31/10)
   prisonSaveCompo: compo => gameApi.prisonSaveCompo(compo),   // enregistrer une compo (30/10)
   prisonProfile: () => gameApi.prisonProfile(),   // { profile, previous } : compo actuelle et précédente (paliers de 10 mines, 30/10)   // contenu de la prison d'après les 10 dernières mines (29/10)
   onPrisonStop: () => stopPrison(),
@@ -431,7 +425,7 @@ async function pollLobby(){
     if(st.session && st.session !== rec?.id){          // lancée par le chef (ou relancée pendant le bilan : il est lu)
       endAck?.(); await refresh(); return nav.show('session');
     }
-    lobby.update({ party:st.party, invites:st.invites, lfg:st.lfg, shrines:st.shrines ?? [] });
+    lobby.update({ party:st.party, invites:st.invites, lfg:st.lfg, shrines:st.shrines ?? [], alwaysReady:st.alwaysReady });
     setLfgFound(st.lfg?.found);
   } catch(e){ console.warn(e); }
   lobbyTimer = setTimeout(pollLobby, rec ? PARTY.pollInSession : PARTY.poll);
@@ -538,10 +532,14 @@ async function showBan(){
 }
 window.addEventListener('dim:banned', showBan);
 const chat = setupChat({ get: after => gameApi.chat(after), post: text => gameApi.say(text), meId: () => acct.account?.id, onWarning });
-/* chat global du Lobby (28/10) : tous les joueurs, même en session ; relu seulement quand l'onglet Lobby est ouvert, ou
-   pendant la promenade dans le Carreau (sa carte est alors en bas de l'écran, 29/10) */
-gchat = setupChat({ prefix:'gchat', get: after => socialApi.chat(after), post: text => socialApi.say(text), meId: () => acct.account?.id, onWarning,
-                    paused: () => ui.tab !== 'lobby' && !town.walking, time: true });
+/* chat global (28/10 ; permanent depuis le 31/10, src/ui/chat-dock.js) : tous les joueurs, même en session ; pas relu quand il
+   est replié ou que la page est cachée */
+const gchatDock = setupChatDock({ dock: $('gchatDock'), edges: $('gchatDock').querySelectorAll('.chatEdge'), fold: $('gchatFold'), onChange: () => { gchat?.toEnd(); if(!gchatDock?.folded) gchat?.poke(); } });
+const gchatTabs = setupChatTabs({ bar: $('gchatTabs'), panel: $('gchatPanel'), select: $('gchatChan'),
+                                  save: p => socialApi.chatPrefsSave(p).catch(console.warn), onChange: () => gchat?.refresh() });
+const gchat = setupChat({ prefix:'gchat', get: after => socialApi.chat(after), post: msg => socialApi.say(msg), meId: () => acct.account?.id, onWarning,
+                          paused: () => document.hidden || gchatDock.folded, time: true,
+                          show: gchatTabs.show, line: chatLine, parse: text => parseChatInput(text, gchatTabs.channel(), gchatTabs.target()), sent: gchatTabs.sent });
 
 /* dev : vitesse et pause sont l'horloge de la session, sur le serveur */
 async function setClock(opts){
@@ -607,7 +605,7 @@ async function pollView(){
     }
     if(!r.view || G.over) return ended();
   } catch(e){
-    if(e instanceof ApiError && e.code === 'no_session') return refresh();   // quittée (autre onglet) ou déjà finie
+    if(e instanceof ApiError && e.code === 'no_session') return refresh(rec?.id);   // quittée (autre onglet) ou déjà finie
     console.warn(e);
   }
   viewTimer = setTimeout(pollView, document.hidden ? VIEW_HIDDEN : VIEW_EVERY);
@@ -774,7 +772,7 @@ function ended(){
 async function pollResult(){
   if(!waiting) return;
   try {
-    const st = await gameApi.state();
+    const st = await gameApi.state(waitingFor);
     const what = resultChoice(st.ended, waitingFor);
     if(what === 'show') return showResult(st);
     if(what === 'stale') gameApi.ack(st.ended.id).catch(() => {});   // ancien bilan jamais vu : pas celui de cette session
@@ -822,14 +820,14 @@ function setInventory(inv, bag){
 let progress = null;
 function setProgress(p){
   const up = levelUpText(progress, p); progress = p ?? null;
-  renderLevel($('levelBody'), progress); renderLevel($('stuffLevelBody'), progress);   // lobby et onglet Stuff
+  renderNavLevel($('navLevel'), progress); renderLevel($('stuffLevelBody'), progress);   // bandeau du haut et onglet Stuff
   skills.setSpec(progress?.spec); lobby.update({ mySpec: progress?.spec ?? null });    // niveaux de spécialisation
   spells.setContext({ spec: Object.fromEntries(Object.entries(progress?.spec ?? {}).map(([t, s]) => [t, s.level])) });
   return up;
 }
 
-async function refresh(){
-  const st = await gameApi.state();
+async function refresh(waited){
+  const st = await gameApi.state(waited);
   showBan();
   setInventory(st.inventory);
   if(!st.ended || st.session) setProgress(st.progress);
@@ -859,7 +857,7 @@ else {
 startInstant();
 pollSocial();
 pollJudgment();
-if(acct.account && !acct.offline) gchat.start();   // une déconnexion recharge la page : démarré une fois
+if(acct.account && !acct.offline){ gchatDock.show(true); gchat.start(); socialApi.chatPrefs().then(gchatTabs.set).catch(console.warn); }   // une déconnexion recharge la page : démarré une fois
 
 /* guide « Premiers pas » : relit l'état du joueur (déjà dans la page) et coche ses étapes toutes seules */
 guide = setupGuide($('guide'), {

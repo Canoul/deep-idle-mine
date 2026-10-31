@@ -46,7 +46,7 @@ export const accountApi = {
 /* Sessions de jeu : le serveur décide et vérifie tout ; le navigateur affiche et prévient. */
 export const gameApi = {
   info:   ()           => request('GET', '/api/game/info'),
-  state:  ()           => request('GET', '/api/game/state'),
+  state:  (ended)      => request('GET', '/api/game/state' + (ended ? `?ended=${encodeURIComponent(ended)}` : '')),   // ended : la session que cet écran vient de jouer
   history: ()          => request('GET', '/api/game/history'),
   judgment: ()         => request('GET', '/api/game/judgment'),  // jauges Ange / Démon (onglet Jugement)   // sessions terminées : seed et sa part
   prefs:  prefs        => request('POST', '/api/game/prefs', prefs),
@@ -77,6 +77,7 @@ export const gameApi = {
      run en cours depuis le tick since ; le serveur joue le retard avant de répondre) → { prison, view } */
   prisonStart: (opts = {}) => request('POST', '/api/game/prison/start', opts),   // { area, speed (dev) }
   prisonSaveCompo: compo => request('POST', '/api/game/prison/compo/save', { compo }),   // { profile, previous, saved }
+  devCopy: name        => request('POST', '/api/game/dev/copy', { name }),           // mode dev : { who, name, copies }
   prisonProfile: ()    => request('GET', '/api/game/prison/profile'),            // { profile } : contenu d'après les 10 dernières mines
   prisonClock: speed   => request('POST', '/api/game/prison/clock', { speed }),  // mode dev : vitesse de la prison
   prisonStop:  ()      => request('POST', '/api/game/prison/stop', {}),
@@ -124,7 +125,9 @@ export const socialApi = {
   profile: id   => request('POST', '/api/social/profile', { id }),   // stuff, niveau et skills d'un ami
   leaderboard: board => request('POST', '/api/social/leaderboard', { board }),   // un classement (gs, xp, spec:<arbre>, tower)
   chat:    after => request('GET', '/api/social/chat?after=' + (after | 0)),   // chat global du lobby
-  say:     text  => request('POST', '/api/social/chat', { text }),
+  say:     msg   => request('POST', '/api/social/chat', msg),                // { channel, text, to? }
+  chatPrefs:     () => request('GET', '/api/social/chat-prefs'),
+  chatPrefsSave: p  => request('POST', '/api/social/chat-prefs', p),
 };
 
 /* Groupes : se réunir avant une session commune. Lancer reste gameApi.start (le serveur sait qui est dans le groupe). */
@@ -137,6 +140,7 @@ export const partyApi = {
   leave:   ()   => request('POST', '/api/party/leave', {}),
   kick:    id   => request('POST', '/api/party/kick', { id }),
   ready:   ready => request('POST', '/api/party/ready', { ready }),
+  devPresets: presets => request('POST', '/api/party/dev-presets', { presets }),   // mode dev : preset de chaque mineur
   alwaysReady: always => request('POST', '/api/party/always-ready', { always }),
   promote: id   => request('POST', '/api/party/promote', { id }),
   lfg:     auto => request('POST', '/api/party/lfg', { auto: auto === true }),   // recherche de groupe (mine classique)

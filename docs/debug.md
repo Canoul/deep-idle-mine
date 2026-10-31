@@ -5776,6 +5776,36 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Quoi** : `RECIPES['Clé d'instance I']` : 1 Barre d'argent + 5 Orbes (src/recipes.js). Tableaux du wiki générés depuis la config.
 - **Tests** ✅ craft +1, instance-key, instance-server, suite anti-triche.
 
+## 31/10/2026 — Mode dev : copier un joueur depuis la base en ligne (Geoffrey)
+- **Quoi** : `server/game/dev-live-copies.js` lit la vue `dim_dev_copie` et écrit `data/presets/base-<pseudo>.json`, relu par
+  `readDevCopies` ; `game.devCopyPlayer` + `POST /api/game/dev/copy` (403 hors mode dev) ; champ dans le panneau dev (src/ui/lobby.js) ;
+  `server/dev-env.js` lit `.env` puis `~/.dim-dev.env` et refuse de démarrer si `DATABASE_URL` est présent.
+- **Mise en place Neon** : dans le SQL Editor, avec le compte propriétaire. Créer le compte en SQL, pas par la page Roles : un rôle créé
+  par la console entre dans `neon_superuser`, qui peut voir toute la table. Mot de passe en lettres et chiffres (il va dans une URL).
+  ```sql
+  CREATE ROLE dim_dev_lecture LOGIN PASSWORD '<mot de passe>';
+  CREATE VIEW dim_dev_copie AS
+    SELECT a.value->>'name' AS name, a.value->>'nameKey' AS name_key, d.ns, d.value
+    FROM dim_data a JOIN dim_data d ON d.key = a.key
+    WHERE a.ns = 'account' AND d.ns IN ('stuff', 'skills', 'spells', 'progress');
+  GRANT USAGE ON SCHEMA public TO dim_dev_lecture;
+  GRANT SELECT ON dim_dev_copie TO dim_dev_lecture;
+  ```
+  Puis `DIM_DEV_COPY_URL=postgresql://dim_dev_lecture:<mot de passe>@<hôte Neon>/<base>?sslmode=require` dans `~/.dim-dev.env`.
+  Contrôle : `SET ROLE dim_dev_lecture; SELECT * FROM dim_data LIMIT 1;` doit répondre « permission denied », puis `RESET ROLE;`.
+- **Tests** ✅ tests/dev-live-copies 4/4 (fausse connexion), dev-presets, boot-check ; format réel accepté sur la copie de canoul.
+- **Vérifié sur la vraie base** ✅ 31/10 : vue lue (31 joueurs), `dim_data` refusée (permission denied), écriture refusée ; Croustiflex,
+  Infernatiwar et Monsta copiés par la route, 12 à 13 pièces, sorts réels. Session lancée avec ces copies : pas encore essayée.
+- **Un preset par mineur** (31/10) : `body.presets` (joueurs puis mineurs de test) → `record.playerPresets` / `playerCopies` et `botPresets` ;
+  mineurs de test déduits des presets ; groupe : `POST /api/party/dev-presets`, n'importe quel membre choisit, le chef lance ; panneau dev
+  ouvert aux instances et aux membres (`.devMember` : presets seulement) ; mode dev sans clé d'instance (compte invité).
+- ❌→✅ 31/10 : plantage au démarrage (`drawPlaces is not defined`), bloc effacé par un patch. Ni `node --check` ni les tests ne l'ont vu : ils ne
+  chargent pas `setupLobby`. Vérifié ensuite dans Chrome sans écran, compte connecté : lignes, Instance, « Prendre », aucune erreur.
+- **Cookie** (31/10) : `cookieName` (server/config.js) : `dim_session_<port>` en mode dev, deux serveurs dev se déconnectaient l'un l'autre ;
+  inchangé en ligne.
+- ⚠️ `pg` doit être installé dans le dossier d'où le serveur dev tourne (`npm install`).
+
+
 ## 31/10/2026 — Prison : mines au focus minerai remplacées par une référence (Geoffrey)
 - **Quoi** : `lastMines` note `oreFocus` (un événement de `rec.focus` d'un joueur quelconque de la session vise un minerai ; le focus d'area seul ne compte pas). `oreParts` (src/meta/prison-profile.js) : une mine `refMine` (oreFocus et `areas` ≥ `PRISON.focusRef.area`, 6) pèse comme `PRISON.focusRef.ores`, les autres comptent pour leur butin. Area, mobs et treasures inchangés. `prisonCompos` : `v` = `PRISON.compoVersion` (2) ; compo gardée d'une autre version avec au moins une mine refMine dans l'historique → paliers refaits depuis l'historique, `saved` effacée, une seule fois. Sans mine refMine : compos gardées telles quelles, `v` posé.
 - **Référence** : somme des « mines/h » de Nbrick, LeTaz et Akake lue dans le tableau du 31/10 (`prison-stats.json`), en dur dans la config. Parts après `capOres` : charbon 39,26, fer 35,78, or 14,81, diamant 1,08, graphite 7,57, mithril 1,28, cobalt 0,13, thorium 0,08 %.
@@ -5795,3 +5825,93 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - ⚠️ Temps de calcul 234,5 → 269,1 s (+15 %, une seule mesure) : recherche sans limite à chaque décision pendant un trajet lointain. À surveiller sur le serveur ; piste : garder l'itinéraire.
 - ⚠️ Pas vu en jeu. Une session en cours rejouée après la mise en ligne peut diverger, comme à chaque changement d'IA.
 - ⚠️ Seul le cas « galerie » est traité : un mineur qui peut encore descendre descend.
+
+## 31/10/2026 — Golbute : rochers et bras (Geoffrey)
+- **Rochers** : la vue n'envoie un rocher que 15 ticks (1,5 s de jeu, 0,75 s réelle à ×2) pour 0,9 s de chute. `trackRocks` (src/render/golbute-fx.js) les suit dans le navigateur, temps réel.
+- **Bras** : pas de texture de côté. `golbute_body` et `golbute_arm` (+ `_crystal`, scripts/gen_golbute.py) ; `armPose` : levés, frappe, étirés jusqu'au sol, retour (640 ms). Le coup se joue après son effet : la partie n'envoie pas le prochain coup à l'avance.
+- **Tests** ✅ golbute-fx, golbute-sprite, golbute ; rendu vérifié dans Chrome (images du vrai moteur de dessin, pierre, cristal, rochers). ⚠️ Pas vu en partie réelle.
+- **Mineur mort** : corps couché, pseudo droit (`sprite.label`, src/render/miner-sprite.js).
+
+## 31/10/2026 — Treasure sur la paroi du puits ignoré (Geoffrey, seed 134583339, signalé plusieurs fois)
+- **Cause** : `decideWork` (src/sim/ai.js) faisait `if(goal!==null && !onTheWay) return changeArea(...)` AVANT la recherche de cibles. Hors de son area de
+  travail, le mineur ne regardait donc rien. Avec « Plus profond » (réglage de base), c'est le cas dès qu'une area plus basse est débloquée. Le correctif du
+  23/10 (seed 1384517703) ne couvrait que le mineur déjà dans son area (`inFocus`) : celui qui traverse une area du dessus restait concerné.
+- **Correctif** : `away` remplace le `return` : recherche faite, minerais écartés, treasures et résidus visés sous les conditions habituelles (portée, `range`), sinon `changeArea`.
+- **Tests** ✅ treasure +3 (Plus profond, focus d'area, un minerai ne détourne pas), échec vérifié avant correctif (« Change d'area → area 1 »). focus, judgment, path, session.
+  Carte réelle de la seed, mineur placé juste au-dessus de chaque coffre : 1/5 visés avant, 5/5 après. Simulation `--miners 3 --count 5` : 0 bloquée, treasures 0,6 ouverts sur 1,6.
+- ⚠️ Le coffre exact du signalement n'est pas rejoué : le stuff et les réglages du joueur ne sont pas connus, une session simulée n'y passe pas. La cause est prouvée par scénario.
+- ⚠️ Coût : la recherche d'itinéraire tourne maintenant à chaque décision hors de son area (avant, seulement celle de `changeArea`). Non mesuré en jeu ; à surveiller.
+
+## 31/10/2026 — Lobby par activités, chat permanent, niveau dans le bandeau (Geoffrey)
+- **Quoi** : `activityMenu` et `st.screen` ('menu' / 'stage') dans src/ui/lobby.js ; en menu, `cards = {}` cache toutes les cartes. `showMenu` à chaque ouverture de l'onglet Lobby, sans effet dans un groupe. `update` ouvre l'activité si le joueur rejoint un groupe depuis le menu. `#lobbyErr` et `#invitesCard` sont sortis des colonnes pour rester visibles dans le menu.
+- **Chat** : carte `#gchatCard` déplacée dans `#gchatDock` (src/ui/chat-dock.js, `CHAT.dock`), hors de `.app` pour rester cliquable en promenade. Il n'est plus déplacé dans le Carreau : `chatSlot`, `placeChat`, `onWalk` de main.js, `.townChat`, `TOWN.chatMin/Max` retirés ou inutilisés. Relu toutes les 3 s sur tous les onglets (avant : Lobby seulement), sauf replié ou page cachée : **plus de requêtes `/api/social/chat`**.
+- **Mise en page** : au-dessus de 1170 px, `.views` et `.dock` se décalent de `--chat-w` ; entre 1171 et 1320 px, les orbes sont cachées car la barre ne tient pas. En dessous de 1170 px, le chat passe au-dessus de la barre d'action et recouvre le contenu s'il est déplié.
+- **Tests** ✅ lobby +2, level +1, chat +1, town, prison-ui, dev-spec. Navigateur ✅ Chrome sans écran, mode dev, 1920, 1366, 1200 et 390 px : les 6 activités, tour puis retour, glissé du chat, aucune erreur console. Bug trouvé ainsi : le bandeau-titre de la carte captait le clic sur la barre.
+- **Session** : `#run` est fixe et ignore `.views` ; `.runL` reçoit `margin-bottom: var(--chat-h)` (`!important` contre `clearDock`, src/main.js). `#miRun`, `#twRun`, `#gtRun`, `#inRun` se décalent de `--chat-w`. `--chat-h` est posé sur `<html>`. Session dev vérifiée ✅ à 1366 px, tour, instance et MI en direct non vérifiées ⚠️.
+- ⚠️ Non vérifié : un vrai téléphone, un groupe à plusieurs comptes. Ordre fragile : le lien `#jugement` passe par `showMenu` puis `showJudgment`, ordre fixé par deux `setTimeout`.
+
+## 31/10/2026 — Lobby : chat réglable par ses bordures, Instance et Jugement à gauche (Geoffrey)
+- **Chat** : barre orange `.chatGrip` retirée ; bordures invisibles `.chatEdge` (haut, droite, coin), `dockWidth` (src/ui/chat-dock.js),
+  `CHAT.dock` minWidth / maxWidth. Départ : largeur × 2,5 (115 → 287,5 u), hauteur 40 → 60 %. Clé locale `chatDock2` pour oublier l'ancienne hauteur.
+- **Instance, Jugement** : `#judgmentCard` et `#instCard` en tête de la colonne de gauche du lobby, sets juste dessous (index.html).
+- **Tests** ✅ chat, lobby. ⚠️ Écrans de 1171 à 1400 px : le chat prend beaucoup de largeur au contenu, à regarder.
+
+## 31/10/2026 — Chat flottant, largeur limitée par l'interface centrale (Geoffrey)
+- **Quoi** : plus aucun décalage (`.views`, `.dock`, `#miRun`…, orbes cachées : retirés, remplace l'entrée précédente). `dockFit` et `centralLeft` (src/ui/chat-dock.js) : largeur voulue arrêtée au bord gauche de la mine ou des cartes de l'onglet, recalculée par un ResizeObserver. `overNav` : chat plus large que le début de la barre d'action, son champ remonte au-dessus. `.lobbyWrap` passe de 560u à 450u, comme l'Inventaire ; `CHAT.dock.startWidth` 575 px.
+- **Tests** ✅ chat +1 (`dockFit`), lobby, town, level. Chrome sans écran, 1920 et 1366 px : chat tiré au maximum sur menu, Mine, Inventaire, Stuff, Craft, Session ; barre d'action immobile, aucune erreur.
+- ⚠️ Tour, instance, MI et Bloc géant en direct non regardés : leur canvas part du bord gauche, le chat y reste au minimum (160 px) et le recouvre. Inventaire : le contenu commence à ≈ 135 px en 1366, le minimum y mord de ≈ 25 px. La carte `#gchatDock` est revenue dans `.app`, sinon `.app` (z-index 1) la mettait au-dessus de la barre d'action.
+
+## 31/10/2026 — Onglets : même largeur, 90 % (Geoffrey ; d'abord 80 %)
+- **Quoi** : `.invWrap`, `.furnWrap`, `.lobbyWrap` à `width:100%` et `max-width: 560u` (retirés : `.lobbyWrap` 450u, `.furnWrap` 400u, Stuff 720u, `.skWrap` 520u, `.actMenu` 300u). `zoom:.9` sur `.view:not([data-view="session"])`, au-dessus de 700 px. `centralLeft` lit directement le contenu de l'onglet.
+- ⚠️ `zoom` : les fenêtres et listes posées dans une vue (`#loot`, `#fpick`, `#fview`…) sont réduites aussi. Firefox ne gère `zoom` que depuis la version 126. Session non réduite : la mine se règle sur son canvas.
+
+## 31/10/2026 — Chat global : canaux (Geoffrey)
+- **Quoi** : `CHAT.channels`, `globalKeep` 300 tous canaux, `tabsMax`, `tabNameMax`. `parseChatInput`, `sanitizeChatPrefs`, `chatChannel` (src/shared/chat.js). Serveur : champ `to` sur les MP et messages de groupe, `canRead` filtre chaque lecture, `chatView` retire `to` ; `recentChat` exclut tout message avec `to`. Lecteurs du groupe figés à l'envoi (`party.membersOf`). ns `chat_prefs` (`/api/social/chat-prefs`). Mot coupé cherché dans le même canal et pour les mêmes lecteurs. src/ui/chat-tabs.js.
+- ⚠️ Modération : les MP et messages de groupe passent aussi par le filtre, et le texte d'un mot interdit arrive dans la fiche de modération (visible des créateurs). Le contenu des MP est en clair dans `chat_global`, en base, comme le reste du chat.
+- ⚠️ Connu, ancien : un message reçu juste avant d'envoyer le sien peut sauter à l'écran (`add` avance `last` au numéro du message envoyé).
+- ⚠️ Taille du chat (hauteur, largeur, repli) : gardée dans le navigateur, pas sur le compte.
+
+## 31/10/2026 — Gobelins asservis : roche sans minerai à portée (Geoffrey)
+- **Constat** (3 seeds, 3 mineurs, couronne sur le 1er, stats de base, 38 gobelins) : vie 29,9 s de jeu (≈ 15 s réelles à ×2), mais 12,5 s inactif ; 78 % de cette attente sans aucun minerai à `reach` (10 gobelins sur 38 nés sans minerai).
+- **Quoi** (src/sim/thrall.js) : `pickRock` (bloc cassable le plus proche, -1,5 tout droit dans `o.dir`), repli quand `pickTarget` ne trouve rien. `pickTarget` est relancé à chaque décision : un minerai entré dans `reach` passe devant.
+- **Corrigé au passage** : `stepToward` creusait à travers un bloc `taken` (minerai visé par un mineur) ; refusé maintenant.
+- **Mesure** : avant 7,8 blocs et 3,1 minerais par gobelin, 12,5 s inactif ; après 14,0 blocs et 4,2 minerais, 1,0 s inactif.
+- **Tests** ✅ goblin-thrall +4 (3 adaptés à l'ancien « il attend »), goblin-king, effects, session, anti-triche (119). Simulation `--miners 3 --count 5 --crown` : 0 bloquée.
+- ⚠️ Focus « seulement » : un minerai ignoré par le focus reste cassable comme de la roche (bonus sans gravité). `updateLight` est appelé à chaque bloc : plus souvent qu'avant, à surveiller. Stats de base seulement, pas vu en vrai partie.
+
+## 31/10/2026 — Chat : canal gardé (Geoffrey)
+- **Quoi** : `sent` (src/ui/chat-tabs.js), appelé par src/ui/chat.js après un envoi réussi ; `prefs.channel`, et `prefs.to` pour un MP. `parseChatInput` reçoit le destinataire gardé ; le sélecteur montre « À pseudo » pendant un MP.
+- **Tests** ✅ chat +2.
+- ⚠️ Un joueur renommé ou supprimé : le MP gardé est refusé (« Ce joueur n'existe pas »), changer de canal débloque.
+
+## 31/10/2026 — Menu du Lobby avec l'équipe (Geoffrey)
+- **Quoi** : `#lobbyMenu` dans la colonne de gauche de `.lobbyCols`, `#lobbyStage` réduit à l'en-tête « ← Activités ». `menuCards` ; au menu, `def` vaut null (aucun mode choisi). Retirés : exception de groupe de `showMenu`, ouverture de la Mine en rejoignant un groupe.
+- **Tests** ✅ lobby +1.
+
+## 31/10/2026 — « Prêt tout le temps » revu (Geoffrey) — branche `geoffrey/pret-prison`
+- **Panne** : la case n'était gardée que dans un groupe (`alwaysOn` en mémoire, reconstruit depuis les groupes au `load`).
+  La prison se fait seul : case cachée, et réglage perdu au premier redémarrage (⚠️ de l'entrée du 23/10, corrigé ici).
+- **Quoi** : store `getAlwaysReady` / `setAlwaysReady` (ns `always_ready`, `server/game/store.js`) ; `alwaysOn` relu au
+  `load`, les `m.always` des groupes existants y sont recopiés. `state` renvoie `alwaysReady`. Route `always-ready`
+  possible sans groupe. Sémantique : `m.always` ne vaut plus prêt (`publicParty`, `notReady`, `sweep`, `newMember`) ;
+  `unready` garde `always && ready` ; `ready(false)` enlève prêt ; cocher en session met `ready` (il était prêt).
+  Lobby : `alwaysReadyState` lit `st.alwaysReady`, plus de confirmation prison sur la case (reste sur « Je suis prêt »).
+  `adminReady` : `--always on/off` met aussi prêt / pas prêt ; `ready` donné l'emporte.
+- **Tests** : `tests/party`, `lobby`, `admin-party`, `prison-ui`.
+- ✅ Vérifié par les tests ; ⚠️ pas essayé dans un navigateur.
+- ⚠️ Un membre coché pas prêt et absent est retiré après `memberTimeout`, comme tout membre pas prêt.
+
+## 31/10/2026 — Chat : canal Commerce retiré (Geoffrey) — branche `geoffrey/retire-commerce`
+- **Quoi** : retiré de `CHAT.channels`, `SHORTCUTS` et de la regex de `parseChatInput` (`src/shared/chat.js`), `.ch-commerce`, aide, wiki.
+  Données : rien à migrer, `chatChannel` et `sanitizeChatPrefs` ramènent un canal inconnu sur Général.
+- **Tests** : `tests/chat.test.js`. ✅ Vérifié par les tests.
+- ⚠️ `/c toto` n'est plus un raccourci : il part tel quel dans le canal choisi, comme toute commande inconnue.
+
+## 31/10/2026 — Bilan de tour jamais affiché (Geoffrey), régression des correctifs du 30/10
+- **Cause 1** (`1abfc1c`) : `ack` dès `showResult`. Un autre onglet ou appareil qui reçoit le bilan d'abord le marque vu ; l'écran du joueur reçoit `ended: null`, puis `showNoSession` dans `pollResult`, sans bilan.
+- **Cause 2** (`8757bb5`) : `last = list.find(...)`, liste triée par début. Une MI commencée pendant la tour et déjà vue masquait la tour.
+- **Correctif** : `state(me, waitedId)` (route `?ended=<id>`) : l'écran qui attend sa session la reçoit même vue, seulement si le compte y a participé sans la quitter. `last` = fin la plus récente. `pollResult` et le `no_session` de `pollView` envoient l'id ; une page rechargée ne l'envoie pas.
+- **Tests** ✅ bilan +3, les 2 tests de cause échouaient avant le correctif.
+- ❌ Sans lien, déjà sur `main` : `table de recherche par le serveur` (tests/game-service.test.js:401) est instable, il attend 15 à 30 parts au recyclage et échoue au hasard (2 fois sur 8 sur `main` sans ce correctif, 4 sur 8 avec, même tirage aléatoire). Non traité.
+- ⚠️ La cause réelle du signalement n'est pas prouvée : pas d'accès aux données du serveur. Les deux chemins sont reproduits par test, pas dans un navigateur.
+- ⚠️ `pollResult` : session abandonnée → `showNoSession` ne ferme pas `#end` (« Session terminée… » pourrait rester à l'écran). Vu à la lecture, non testé, non corrigé.

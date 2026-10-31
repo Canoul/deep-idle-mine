@@ -16,6 +16,7 @@
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html{background:var(--void) url(../../textures/ui/wall.png) 0 0/calc(96*var(--u)) repeat;image-rendering:pixelated}
+html{scrollbar-gutter:stable}
 body{margin:0;min-height:100dvh;color:var(--txt);font:400 var(--fs)/1.3 var(--f-body);overflow-x:clip}
 /* assombrit le mur par paliers (vignette sans flou) */
 body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
@@ -45,8 +46,6 @@ img,canvas{image-rendering:pixelated}
 .tcBtns{display:flex;flex-wrap:wrap;gap:calc(2*var(--u));margin-top:var(--u)}
 .tcMsg:empty{display:none}
 body.townWalk .topbar,body.townWalk .views,body.townWalk .guide{visibility:hidden}
-/* chat global en promenade (sa carte est déplacée ici, src/main.js onWalk) : tout en bas à gauche */
-.townChat{display:none}
 /* bouton « Entrer » devant une porte (src/ui/town.js) : au milieu, au-dessus de la barre d'action ; « Chercher un
    groupe » à côté devant le chevalement et la place (30/10) */
 .townDoor{position:absolute;left:50%;bottom:calc(var(--dock-h) + 12px);transform:translateX(-50%);z-index:3;pointer-events:auto;   /* téléphone : sous le bandeau (town.js size) */
@@ -60,14 +59,8 @@ body.townWalk .topbar,body.townWalk .views,body.townWalk .guide{visibility:hidde
 .townEmotes .townLfg span:empty{display:none}
 .townLfgMsg{color:var(--bad)}
 .townLfgMsg:empty{display:none}
-.bgTown.walk .townChat{display:block;position:absolute;left:12px;bottom:6px;width:min(360px,calc(100vw - 24px));pointer-events:auto;cursor:auto}   /* place exacte : src/ui/town.js placeChat */
-.townChat .card{margin:0;background:rgba(11,8,6,.85)}
-.townChat .chatLog{max-height:calc(46*var(--u))}
-/* téléphone : chat replié (champ seulement) ; toucher le titre le déplie (src/ui/town.js placeChat) */
-.townChat.mini:not(.open) .chatLog,.townChat.mini:not(.open) #gchatNote{display:none}
-.townChat.mini h2{cursor:pointer}
 body.townWalk .app{pointer-events:none}   /* les clics passent à la ville… */
-body.townWalk .dock,body.townWalk #notifs{pointer-events:auto}   /* … sauf la barre d'action et les pop-ups */
+body.townWalk .dock,body.townWalk .chatDock,body.townWalk #notifs{pointer-events:auto}   /* … sauf la barre d'action et les pop-ups */
 /* transition avec l'onglet Session (backdrop.js) : les panneaux glissent depuis les bords (.bgEnter) ou y repartent
    (.bgLeave, l'onglet reste affiché par-dessus le nouveau le temps de la sortie), linéaire comme le zoom de la mine */
 @keyframes bgFromL{from{transform:translateX(-110%);opacity:0}}
@@ -217,6 +210,11 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .navSession.live{cursor:pointer}
 .navSession.live:hover{color:var(--acc-lt)}
 /* énergie et prison (29/10, src/ui/prison.js) : jauge et boutons de la barre du haut */
+.navLevel{display:flex;align-items:center;gap:calc(3*var(--u));font-variant-numeric:tabular-nums;white-space:nowrap}
+.navLevel>b{font:400 var(--fs-l)/1 var(--f-title);color:#ffcf8a}
+.navLevel .bar{width:calc(50*var(--u))}
+.navLevel .bar i{background:var(--o2)}
+.navLevel small{color:var(--mut);font-size:var(--fs-s)}
 .navEnergy{display:flex;align-items:center;gap:calc(2*var(--u));font-size:var(--fs-l);font-variant-numeric:tabular-nums;white-space:nowrap}
 .navEnergy .bolt{color:#ffd23f;text-shadow:var(--u) var(--u) 0 #000}
 .navEnergy .bar{width:calc(36*var(--u))}
@@ -257,7 +255,10 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .soon{text-align:center}
 .soon .big .pi{width:calc(48*var(--u));height:calc(48*var(--u));color:var(--mut)}
 .soon h2{margin:calc(3*var(--u)) 0 var(--u);font-size:var(--fs-xl)}
-.invWrap,.furnWrap,.lobbyWrap{position:relative;max-width:calc(450*var(--u));margin:0 auto;padding:calc(12*var(--u)) calc(9*var(--u)) calc(18*var(--u))}
+/* tous les onglets ont la même largeur, quel que soit leur contenu, et sont réduits à 90 % (31/10/2026, Geoffrey ; téléphone :
+   taille normale, le texte deviendrait illisible ; Session : son affichage suit la mine) */
+@media (min-width:701px){ .view:not([data-view="session"]){zoom:.9} }
+.invWrap,.furnWrap,.lobbyWrap{position:relative;width:100%;max-width:calc(560*var(--u));margin:0 auto;padding:calc(12*var(--u)) calc(9*var(--u)) calc(18*var(--u))}
 .invHead{display:flex;align-items:flex-end;justify-content:space-between;gap:calc(6*var(--u));margin-bottom:calc(15*var(--u));flex-wrap:wrap}
 .invHead h1,.lobbyWrap h1{display:flex;align-items:center;gap:calc(6*var(--u));margin:0;font-size:var(--fs-h1);line-height:.85;color:#ffe6c4;
   text-shadow:var(--u) var(--u) 0 var(--shadow),calc(2*var(--u)) calc(2*var(--u)) 0 #000}
@@ -270,11 +271,18 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .ringStats{color:#c79bff}   /* effet des anneaux (groupe) */
 
 /* ---------- lobby (lecture seule pendant une session) ---------- */
-.lobbyWrap{max-width:calc(560*var(--u))}
 .lobbyWrap>h1{margin-bottom:calc(15*var(--u))}
 .inSession{display:flex;align-items:center;justify-content:space-between;gap:calc(4*var(--u));flex-wrap:wrap;margin-bottom:calc(15*var(--u));
   padding:calc(3*var(--u)) calc(6*var(--u));background:var(--sel);box-shadow:0 0 0 var(--u) var(--acc),calc(2*var(--u)) calc(2*var(--u)) 0 #000}
 .inSession .pi{color:var(--acc);margin-right:calc(2*var(--u))}
+.actList{display:flex;flex-direction:column;gap:calc(3*var(--u))}
+.actBtn{width:100%;justify-content:flex-start;gap:calc(6*var(--u));min-height:calc(30*var(--u));padding:calc(3*var(--u)) calc(8*var(--u));text-align:left}
+.actIcon{flex:none;width:calc(16*var(--u));text-align:center;font-size:var(--fs-xl)}
+.actText{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.1}
+.actText b{font:400 var(--fs-xl)/1.1 var(--f-title);color:#ffe6c4}
+.actText small{color:var(--mut);font-size:var(--fs)}
+.actHead{display:flex;align-items:center;gap:calc(6*var(--u));margin-bottom:calc(9*var(--u))}
+.actHead h2{margin:0}
 .lobbyCols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:calc(18*var(--u)) calc(12*var(--u));align-items:start}
 .lobbyCol{display:flex;flex-direction:column;gap:calc(18*var(--u))}
 .lobbyWrap.locked .lockable{opacity:.55}
@@ -323,6 +331,15 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .dev input,.dev select{width:100%}
 .devSpec{display:grid;grid-template-columns:1fr calc(14*var(--u));gap:calc(2*var(--u))}
 .devNote{grid-column:1/-1;margin:0}
+.devCard button,.devCard input,.devCard select{min-height:calc(18*var(--u));font-size:var(--fs)}
+.devCard.devMember>.dev:not(#devPresets){display:none}
+#devPresets{grid-template-columns:1fr;gap:calc(4*var(--u))}
+.devMiner{display:grid;grid-template-columns:calc(62*var(--u)) minmax(0,1fr) minmax(0,1.2fr);gap:calc(3*var(--u));align-items:center}
+.devMiner b{font-weight:400;font-size:var(--fs);overflow-wrap:anywhere}
+.devPick{display:flex;gap:calc(2*var(--u))}
+.devPick input{flex:1;min-width:0}
+.devPick button{flex:none;padding:0 calc(6*var(--u))}
+@media (max-width:700px){ .devMiner{grid-template-columns:1fr} }
 
 /* ---------- onglet Session : panneaux à gauche, mine au centre, jauge, panneaux à droite ; collé à la fenêtre ---------- */
 /* le bilan ne couvre que l'onglet Session (pas toute la fenêtre) : calque limité à cette section */
@@ -390,12 +407,47 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
    jusqu'aux onglets) ; il montre ses 8 dernières lignes et la page défile */
 @media (max-width:700px){#log,.miLog{max-height:none;overflow:visible} #log div:nth-child(n+9),.miLog div:nth-child(n+9){display:none}}
 /* chat de session et chat global du lobby (src/ui/chat.js) */
+.chatDock{position:fixed;left:0;bottom:0;z-index:35;width:var(--chat-w);height:var(--chat-h,60dvh);display:flex;flex-direction:column}
+.chatDock.folded{height:auto}
+/* bordures à tirer, invisibles, à cheval sur le bord de la boîte (src/ui/chat-dock.js) */
+.chatEdge{position:absolute;z-index:2;touch-action:none}
+.chatEdge.top{left:0;right:0;top:-6px;height:12px;cursor:ns-resize}
+.chatEdge.right{top:0;bottom:0;right:-6px;width:12px;cursor:ew-resize}
+.chatEdge.corner{top:-6px;right:-6px;width:16px;height:16px;cursor:nesw-resize}
+.chatDock.folded .chatPanel,.chatDock.folded .chatEdge,.chatDock.folded .chatLog,.chatDock.folded .chatForm,.chatDock.folded #gchatNote{display:none}
+.chatDock .card{flex:1;min-height:0;margin:0;display:flex;flex-direction:column;background:rgba(11,8,6,.92)}
+.chatHead{display:flex;align-items:center;gap:calc(2*var(--u));margin-bottom:calc(3*var(--u))}
+.chatTabs{flex:1;min-width:0;display:flex;flex-wrap:wrap;align-items:center;gap:var(--u)}
+.chatTabs button,.chatPanel button{min-height:0;height:calc(11*var(--u));padding:0 calc(3*var(--u));font-size:var(--fs-s)}
+.chatTabs .chatGear,.chatTabs .chatPlus{padding:0 calc(2*var(--u))}
+.chatPanel{display:flex;flex-wrap:wrap;gap:calc(2*var(--u)) calc(4*var(--u));align-items:center;margin-bottom:calc(3*var(--u));padding-bottom:calc(3*var(--u));border-bottom:var(--u) solid var(--line);font-size:var(--fs-s)}
+.chatPanel input:not([type]){width:100%}
+#gchatForm{flex-wrap:wrap}   /* chat étroit : le champ sur sa ligne, le canal et Envoyer dessous */
+#gchatInput{flex:1 1 100%;order:-1}
+#gchatChan{flex:1;min-width:0;font-size:var(--fs-s)}
+.ch-general{color:#fff}
+.ch-mp{color:#ff9ad5}
+.ch-group{color:#6db3ff}
+.ch-lfg{color:#7be07b}
+.chatFold{flex:none;min-height:0;min-width:calc(12*var(--u));height:calc(10*var(--u));padding:0}
+#gchatLog{flex:1;min-height:0;max-height:none}
+body{--chat-w:calc(287.5*var(--u))}
+/* le chat flotte par-dessus : sa taille ne décale rien (31/10). overNav : plus large que le début de la barre d'action, son
+   champ reste au-dessus d'elle */
+.chatDock.overNav .card{padding-bottom:calc(var(--dock-h) + 6*var(--u))}
+@media (min-width:1171px){ body.chatOn #run .runL{margin-bottom:var(--chat-h,60dvh)!important} }   /* la colonne de gauche s'arrête au-dessus du chat */
+@media (max-width:1170px){
+  .chatDock{width:100%;bottom:calc(var(--dock-h) + 2*var(--u))}
+  .chatDock.overNav .card{padding-bottom:0}
+  .chatEdge.right,.chatEdge.corner{display:none}   /* toute la largeur de l'écran */
+  .chatDock.folded{width:calc(70*var(--u))}
+  .guide{bottom:calc(var(--dock-h) + 30*var(--u))}   /* au-dessus du chat replié */
+}
 .chatLog{max-height:calc(90*var(--u));overflow:auto;overflow-wrap:anywhere}
 .chatLog div{padding:var(--u) 0}
 .chatLog b{color:var(--txt);font-weight:400}
 .chatLog .mine b{color:var(--ok)}
 .chatLog time{color:var(--mut);margin-right:calc(2*var(--u))}
-#gchatLog{height:calc(90*var(--u))}
 .chatForm{display:flex;gap:calc(3*var(--u));margin-top:calc(3*var(--u))}
 .chatForm input{flex:1;min-width:0}
 /* jauge de profondeur : surface en haut, fond de la mine ouverte en bas */
@@ -457,7 +509,7 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .iiStats{margin:calc(3*var(--u)) 0 0;padding:0;list-style:none}
 .iiActs{display:flex;flex-wrap:wrap;align-items:center;gap:calc(2*var(--u));margin-top:calc(4*var(--u))}
 /* sur ordinateur : le détail de l'objet à droite de la grille (sinon caché sous la barre d'action) */
-.invWrap{max-width:calc(560*var(--u));display:grid;grid-template-columns:minmax(0,1fr) calc(150*var(--u));grid-template-rows:auto auto 1fr;column-gap:calc(9*var(--u));align-items:start}
+.invWrap{display:grid;grid-template-columns:minmax(0,1fr) calc(150*var(--u));grid-template-rows:auto auto 1fr;column-gap:calc(9*var(--u));align-items:start}
 .invWrap>.invHead{grid-column:1/-1}
 .invWrap>.invTabs,.invWrap>.invGrid{grid-column:1}   /* onglets au-dessus de la grille, colonne de gauche */
 .invWrap>.invInfo{grid-column:2;grid-row:2/span 2;margin-top:0;position:sticky;top:calc(var(--top-h) + 6*var(--u))}
@@ -489,7 +541,6 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 #account .chk input{min-height:0;width:calc(8*var(--u));height:calc(8*var(--u))}
 
 /* ---------- onglets Four et Concasseur ---------- */
-.furnWrap{max-width:calc(400*var(--u))}
 .furnList{display:flex;flex-direction:column;gap:calc(15*var(--u))}
 .furn h3,.crush h3{margin:0 0 calc(3*var(--u));font-size:var(--fs-l)}
 .fhead{display:flex;align-items:center;gap:calc(3*var(--u));flex-wrap:wrap;margin-bottom:calc(3*var(--u))}
@@ -595,14 +646,12 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
   background:radial-gradient(ellipse at 50% 50%,#ff7a2e55 0 30%,#ff7a2e22 30% 60%,transparent 60%)}
 .stuffStatsCard{margin-top:calc(18*var(--u));max-width:calc(220*var(--u))}
 /* sur ordinateur : Sets | cases | stats (les stats à droite des cases) */
-.view[data-view="stuff"] .furnWrap{max-width:calc(720*var(--u))}
 .stuffMain{display:grid;grid-template-columns:minmax(0,1fr) calc(150*var(--u));column-gap:calc(9*var(--u));align-items:start}
 .view[data-view="stuff"] .stuffStatsCard{margin-top:0;max-width:none}
 .stuffLevel{padding-bottom:calc(4*var(--u));margin-bottom:calc(3*var(--u));box-shadow:0 var(--u) 0 var(--sep)}
 .view[data-view="stuff"]{position:relative}
 
 /* ---------- onglet Skills ---------- */
-.skWrap{max-width:calc(520*var(--u))}
 .skHead{display:flex;align-items:center;gap:calc(4*var(--u));flex-wrap:wrap;margin-bottom:calc(15*var(--u))}
 .skTrees{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:calc(9*var(--u))}
 .skTree h3{margin:0 0 calc(4*var(--u));font-size:var(--fs-l);text-align:center}
@@ -673,7 +722,7 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
   #cvWrap{min-height:calc(260*var(--u))}
   .skTrees{grid-template-columns:1fr}
   .lobbyCols{grid-template-columns:1fr}
-  .lobbyCols>.lobbyCol:last-child{order:-1}   /* l'équipe et Lancer d'abord */
+  #lobby:not(.atMenu) .lobbyCols>.lobbyCol:last-child{order:-1}   /* l'équipe et Lancer d'abord ; au menu, les activités d'abord */
   .invWrap,.stuffMain{grid-template-columns:1fr}
   .invWrap>.invInfo{grid-column:1;grid-row:auto;position:static;margin-top:calc(6*var(--u))}
   .view[data-view="stuff"] .stuffStatsCard{margin-top:calc(18*var(--u))}
@@ -684,7 +733,7 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
   .topbar{gap:calc(3*var(--u));padding:0 calc(3*var(--u))}
   .brand,.navWiki span,.navAccount .who small{display:none}
   .navSession .bar{width:calc(30*var(--u))}
-  .navEnergy .bar,#navPrisonBtn{display:none}
+  .navEnergy .bar,#navPrisonBtn,.navLevel .bar,.navLevel small{display:none}
   .dock{left:calc(2*var(--u));right:calc(2*var(--u));transform:none;justify-content:center}
   .orb{display:none}
   .dock ul{overflow-x:auto;max-width:100%}
@@ -819,7 +868,6 @@ button.danger{color:var(--bad)}
 .jnew{color:var(--gold, #ffd23f)}
 
 /* ---------- onglet Sorts (src/ui/spells.js) : la barre en haut, le grimoire et la fiche du sort dessous ---------- */
-.spWrap{max-width:calc(680*var(--u))}
 /* couleur d'une famille de sorts : --c (icône, texte), --cdk (fond de l'icône) */
 .tr-mineur{--c:#ffb347;--cdk:#4a2c0e} .tr-logisticien{--c:#7cc6f2;--cdk:#143247}
 .tr-barbare{--c:#ff6a5a;--cdk:#4d1510} .tr-scroll{--c:#c79bff;--cdk:#33205a}
@@ -949,8 +997,6 @@ button.danger{color:var(--bad)}
 @keyframes fxPulse{50%{box-shadow:0 0 0 var(--u) #000,inset 0 0 0 calc(2*var(--u)) var(--fx)}}
 
 /* ---------- sets (src/ui/sets.js) : à gauche dans Stuff, Skills et Sorts ---------- */
-.setWrap{max-width:calc(520*var(--u))}
-.skWrap{max-width:calc(640*var(--u))}
 .setLay{display:grid;grid-template-columns:calc(120*var(--u)) minmax(0,1fr);gap:calc(9*var(--u));align-items:start}
 .spGrid{display:grid;grid-template-columns:calc(120*var(--u)) minmax(0,1fr);gap:calc(9*var(--u));align-items:start}
 .setsCard h2{font-size:var(--fs)}

@@ -348,7 +348,10 @@ function decideWork(G,m){
   // … et pour un treasure ou un résidu visé hors de l'area de travail (voir inFocus plus bas)
   const onTheWay = goal!==null && ((m.target && (m.target.far || areaOf(m.target.y)===goal || !isOre(G.tiles[m.target.y][m.target.x])))
     || (m.exploring && m.galleryRow!=null && areaOf(m.galleryRow)===goal));
-  if(goal!==null && !onTheWay) return changeArea(G,m,goal);
+  /* il doit rejoindre l'area goal : il ne vise en route que les treasures et résidus (seed 134583339 : coffre sur la paroi
+     du puits qui mène à l'area de travail, ignoré ; le test d'origine sautait toute la recherche de cible) */
+  const away = goal!==null && !onTheWay;
+  if(away){ m.exploring=false; m.target=null; m.galleryRow=null; }
   const R=compassR(G,m), ores=compassScan(G,m,R);
   let best=null,bs=0;
   /* l'IA ne vise que les minerais découverts (révélés) ou signalés par la boussole (sa ligne),
@@ -389,7 +392,7 @@ function decideWork(G,m){
     if(isTarget(t) && targetVal(G,m,t)!==null && inFocus(tg.y,t) && nb.bn>=0 && !(rival && rival.id<m.id)){ m.status=targetStatus(t); return goOre(G,m,tg,r,nb.bn); }
     m.target=null; }
   for(const o of known.values()){
-    if(!inFocus(o.y,o.t)) continue;
+    if(!inFocus(o.y,o.t) || (away && isOre(o.t))) continue;
     const dist=Math.abs(o.x-m.x)+Math.abs(o.y-m.y);
     if(dist>CFG.oreReach) continue;   // un filon lointain n'est pas plus attirant que creuser du neuf
     if(oreTakenBy(G,m,o.x,o.y)) continue;   // déjà visé ou en cours de minage par un autre
@@ -411,6 +414,7 @@ function decideWork(G,m){
   const down = !m.exploring && stopK===null && tileAt(G,m.x,m.y+1) !== BARRIER && m.y<cap;
   const range = (m.prefs.priority==='minerais'||!down) ? R : 3;
   if(best && Math.abs(best.x-m.x)<=range){ m.target={x:best.x,y:best.y}; m.status=targetStatus(best.t); return goOre(G,m,best,r,bestN); }
+  if(away) return changeArea(G,m,goal);
   if(down) return digDown(G,m);
   /* cibles de valeur découvertes hors de portée : il va les chercher avant de creuser à l'aveugle (seed 1832289715) */
   const f = G.khole ? null : farGoal(G,m,[...known.values()].filter(o=>o.y<=cap && (targetVal(G,m,o.t)??0)>=CFG.farVal && !oreTakenBy(G,m,o.x,o.y) && !veinTaken(G,m,o.x,o.y)));

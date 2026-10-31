@@ -104,7 +104,7 @@ export function setupInstantLobby(h){
   function notice(s){
     const box = $('miNotice'), invite = s <= MI.inviteAt && !st.registered;
     const sub = st.registered ? (h.inSession?.() ? 'Tu es inscrit : finis ta session avant le départ.' : 'Tu es inscrit.')
-              : s >= MI.signupBefore ? 'Les inscriptions sont ouvertes (Lobby, « Où miner »).' : '';
+              : s >= MI.signupBefore ? 'Les inscriptions sont ouvertes (Lobby, Mine instantanée).' : '';
     box.innerHTML = `<div><b>🌀 La mine instantanée commence dans ${noticeDelay(s)}</b>`+
       (sub ? `<div class="mut small">${sub}</div>` : '')+`</div>`+
       (invite ? `<div class="miNoticeBtns"><button class="on" id="miNoticeJoin">Rejoindre</button><button id="miNoticeNo">Décliner</button></div>`

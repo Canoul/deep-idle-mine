@@ -35,9 +35,9 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - **Lobby et Session séparés** (21/10/2026) : l'onglet **Lobby** prépare et lance (groupe, préférences, choix
   « Mine / Mine instantanée / tours ouvertes ») et reste visible en **lecture seule** pendant une session ;
   l'onglet **Session** montre la partie puis le bilan, « Tu n'es pas en session » sinon. Au lancement, tout le
-  groupe bascule sur Session. **« Prêt tout le temps »** (23/10) : case pour un membre, il reste prêt d'une session à
-  l'autre, le chef enchaîne sans attendre ; depuis l'après-midi du 23/10, seule la case la décoche et elle suit le
-  joueur d'un groupe à l'autre (ancien : « Prêt (annuler) » la décochait). Le serveur enregistre le type de mine (`mode`) et refuse un type pas prêt.
+  groupe bascule sur Session. **« Prêt tout le temps »** (revu le 31/10) : réglage du compte (`always_ready`), case visible
+  partout, même seul ou en prison ; elle garde prêt celui qui l'est (un clic « Je suis prêt » en entrant dans un groupe),
+  le chef enchaîne sans attendre (ancien : cocher rendait prêt, case réservée à un membre d'un groupe). Le serveur enregistre le type de mine (`mode`) et refuse un type pas prêt.
   (Ancien : un seul onglet « Mine » avec lobby → session → bilan ; `#mine` mène maintenant à Session.)
 
 ## Systèmes en place
@@ -47,6 +47,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   et mode dev exclus) ; **dès 6** le lancement passe, le coût débité est plafonné à l'énergie restante (jamais négative) ; sous 6,
   refus nommant les joueurs à court, un refus n'arrête pas la prison. Recharge **seulement en prison** : 8 par heure de jeu,
   plafonnée à 100, gardée au dixième. Aucun autre mode ne coûte.
+- **Lobby par activités** (31/10, Geoffrey) : menu des 6 activités, puis sets à gauche et carte de l'activité à droite (ancien : carte « Où miner »). Niveau et XP dans le bandeau du haut. Chat global permanent en bas à gauche, hauteur réglable (`CHAT.dock`, src/ui/chat-dock.js) ; ancien : carte du Lobby.
+- **Canaux du chat global** (31/10, Geoffrey) : Général, MP, Groupe, Commerce, LFG, onglets par compte (ns `chat_prefs`, src/ui/chat-tabs.js).
 - **Plafond de la prison** (31/10, Geoffrey ; provisoire) : `PRISON.oreCap`, cobalt et thorium 0,4 % maximum chacun de la répartition des minerais, surplus redonné aux autres minerais.
 - **Mines au focus minerai et prison** (31/10, Geoffrey) : `PRISON.focusRef`, dès 6 areas débloquées une mine où un joueur du groupe a visé un minerai compte dans le profil pour la répartition de Nbrick, LeTaz et Akake ; compos gardées refaites une fois (`PRISON.compoVersion`), compo enregistrée effacée pour ces joueurs.
 - **Prison** (29/10, Geoffrey ; 🧪 branche `geoffrey/prison`, pas en ligne ; config `PRISON`, `src/sim/prison.js`,

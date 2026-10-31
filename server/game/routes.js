@@ -12,7 +12,8 @@ export function gameRoutes(game){
   return {
     'GET /api/game/info':    async () => game.info(),
     'GET /api/wiki':         async () => game.wiki(),             // public (le wiki, sans compte) : objets secrets trouvés
-    'GET /api/game/state':   async ctx => { needMe(ctx); return game.state(ctx.me); },
+    'GET /api/game/state':   async ctx => { needMe(ctx);
+      return game.state(ctx.me, new URL(ctx.req.url, 'http://x').searchParams.get('ended')); },
     'GET /api/game/judgment': async ctx => { needMe(ctx); return game.judgment(ctx.me); },
     'GET /api/game/history': async ctx => { needMe(ctx); return game.history(ctx.me); },
     'POST /api/game/prefs':  async ctx => { needMe(ctx); return game.setPrefs(ctx.me, obj(ctx.body)); },
@@ -22,6 +23,7 @@ export function gameRoutes(game){
       const since = new URL(ctx.req.url, 'http://x').searchParams.get('since');
       return game.view(ctx.me, since === null || since === '' ? null : Number(since)); },
     'POST /api/game/clock':  async ctx => { needMe(ctx); return game.devClock(ctx.me, obj(ctx.body)); },
+    'POST /api/game/dev/copy': async ctx => { needMe(ctx); return game.devCopyPlayer(ctx.me, obj(ctx.body)); },   // mode dev : copier un joueur
     'POST /api/game/focus':  async ctx => { needMe(ctx); return game.focus(ctx.me, obj(ctx.body)); },
     'GET /api/game/chat':    async ctx => { needMe(ctx);
       const after = new URL(ctx.req.url, 'http://x').searchParams.get('after');

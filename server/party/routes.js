@@ -21,6 +21,7 @@ export function partyRoutes(party){
     'POST /api/party/kick':    async ctx => { needMe(ctx); return party.kick(ctx.me, str(ctx.body.id)); },
     'POST /api/party/ready':   async ctx => { needMe(ctx); return party.ready(ctx.me, ctx.body.ready); },
     'POST /api/party/always-ready': async ctx => { needMe(ctx); return party.alwaysReady(ctx.me, ctx.body.always); },
+    'POST /api/party/dev-presets': async ctx => { needMe(ctx); return party.setDevPresets(ctx.me, ctx.body.presets); },   // mode dev
     'POST /api/party/promote': async ctx => { needMe(ctx); return party.promote(ctx.me, str(ctx.body.id)); },
     'POST /api/party/shrine':  async ctx => { needMe(ctx); return party.shrineGive(ctx.me, obj(ctx.body)); },
     'POST /api/party/stele':   async ctx => { needMe(ctx); return party.steleSet(ctx.me, obj(ctx.body)); },
