@@ -15,6 +15,7 @@ import { gameRoutes } from './game/routes.js';
 import { partyRoutes } from './party/routes.js';
 import { instantRoutes } from './instant/routes.js';
 import { socialRoutes } from './social/routes.js';
+import { guildRoutes } from './guild/routes.js';
 import { giantRoutes } from './giant/routes.js';
 import { townRoutes } from './town/routes.js';
 import { adminRoutes } from './admin/routes.js';
@@ -27,11 +28,11 @@ import { adminRoutes } from './admin/routes.js';
 const banDate = t => new Intl.DateTimeFormat('fr-FR', { timeZone: 'Europe/Paris', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
   .format(new Date(t)).replace(' ', ' à ');
 
-export function createApp({ store, root, config = SERVER, service, game, party, instant, social, giant, town, moderation } = {}){
+export function createApp({ store, root, config = SERVER, service, game, party, instant, social, guild, giant, town, moderation } = {}){
   const accounts = service ?? createAccountService({ store });
   /* les futures routes (sauvegarde…) s'ajoutent ici, chacune dans son module */
   const routes = { ...accountRoutes(accounts, { onRename: (id, name) => party?.rename(id, name) }), ...(game ? gameRoutes(game) : {}), ...(party ? partyRoutes(party) : {}),
-                   ...(instant ? instantRoutes(instant) : {}), ...(social ? socialRoutes(social) : {}), ...(giant ? giantRoutes(giant) : {}),
+                   ...(instant ? instantRoutes(instant) : {}), ...(social ? socialRoutes(social) : {}), ...(guild ? guildRoutes(guild) : {}), ...(giant ? giantRoutes(giant) : {}),
                    ...(town ? townRoutes(town) : {}),
                    /* administration : depuis le serveur lui-même, avec la clé DIM_ADMIN_TOKEN (server/admin/routes.js) */
                    ...(game && store ? adminRoutes({ accounts: store, game, party, moderation, social, token: config.adminToken }) : {}),
