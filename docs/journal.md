@@ -34,7 +34,7 @@ Modèle d'entrée :
   Sur la carte de la seed 134583339 : 1 coffre sur 5 était visé avant, 5 sur 5 maintenant.
 - **Décisions** : en route, seuls les coffres et les résidus le détournent, pas les minerais.
 - **À suivre** : vérifier en jeu sur la prochaine partie.
-- **État** : 🧪 sur la branche `geoffrey/fix-coffre-paroi` (pas en ligne)
+- **État** : ✅ en ligne le 31/10
 
 ## 31/10/2026 — Geoffrey — Nouveau craft de la Clé d'instance I
 - **Pour le joueur** : la clé se crafte maintenant avec 1 Barre d'argent et 5 Orbes (avant : 250 peaux de gobelin, 20 pierres glissantes,
