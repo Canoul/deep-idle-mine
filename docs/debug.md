@@ -5905,3 +5905,8 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - ❌ Sans lien, déjà sur `main` : `table de recherche par le serveur` (tests/game-service.test.js:401) est instable, il attend 15 à 30 parts au recyclage et échoue au hasard (2 fois sur 8 sur `main` sans ce correctif, 4 sur 8 avec, même tirage aléatoire). Non traité.
 - ⚠️ La cause réelle du signalement n'est pas prouvée : pas d'accès aux données du serveur. Les deux chemins sont reproduits par test, pas dans un navigateur.
 - ⚠️ `pollResult` : session abandonnée → `showNoSession` ne ferme pas `#end` (« Session terminée… » pourrait rester à l'écran). Vu à la lecture, non testé, non corrigé.
+
+## 31/10/2026 — Social : pastille verte en prison (Geoffrey) — branche `geoffrey/social-prison-vert`
+- **Quoi** : `statusOf` ajoute `online` au statut prison (`server/social/service.js`), `statusDot` (`src/ui/social.js`) choisit la pastille
+  des listes Amis et Online. Le statut reste `session` : inviter / rejoindre refusés, tri inchangés.
+- **Tests** : `tests/social.test.js`. ✅ Vérifié par les tests ; ⚠️ pas essayé dans un navigateur.

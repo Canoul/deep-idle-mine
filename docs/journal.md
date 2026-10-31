@@ -16,6 +16,11 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 31/10/2026 — Geoffrey — Social : joueur en prison en vert
+- **Pour le joueur** : dans l'onglet Social, un joueur en prison qui a le jeu ouvert a une pastille verte. Si sa prison
+  tourne page fermée, la pastille reste orange. Le texte « En session · Prison » et les boutons ne changent pas.
+- **État** : 🧪 sur la branche `geoffrey/social-prison-vert` (pas en ligne)
+
 ## 31/10/2026 — Geoffrey — Chat : canal Commerce retiré
 - **Pour le joueur** : plus de canal Commerce ni de raccourci /c dans le chat global : il n'y a pas d'échanges dans le
   jeu. Les anciens messages de ce canal s'affichent en Général.
