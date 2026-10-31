@@ -20,12 +20,12 @@ export function dockWidth(v, screen = innerWidth){
 /* largeur affichée : celle voulue, arrêtée au bord de l'interface centrale (limit), jamais sous minWidth */
 export const dockFit = (want, limit) => Math.max(CHAT.dock.minWidth, Math.min(want ?? CHAT.dock.startWidth, limit));
 
-/* bord gauche de l'interface centrale de l'onglet ouvert : la mine en session, sinon son contenu (même largeur partout) */
+/* bord gauche de l'interface centrale de l'onglet ouvert : la mine elle-même en session (pas sa zone, plus large), sinon son contenu (même largeur partout) */
 function centralLeft(){
   const seen = el => el.getClientRects().length > 0;
   const view = document.querySelector('.view:not([hidden])');
   if(!view) return Infinity;
-  const el = [...view.querySelectorAll('#cvWrap, #cvMiWrap, #cvTwWrap, #cvGtWrap, #cvInWrap')].find(seen) ?? view.querySelector('.lobbyWrap, .invWrap, .furnWrap');
+  const el = [...view.querySelectorAll('#cv, #cvMi, #cvTw, #cvGt, #cvIn')].find(seen) ?? view.querySelector('.lobbyWrap, .invWrap, .furnWrap');
   if(!el) return Infinity;
   const pad = el.matches('.lobbyWrap, .invWrap, .furnWrap') ? (parseFloat(getComputedStyle(el).paddingLeft) || 0) * 0.9 : 0;
   return el.getBoundingClientRect().left + pad;
@@ -45,7 +45,7 @@ export function setupChatDock({ dock, edges, fold, onChange = () => {} }){
   /* le bord de l'interface centrale bouge avec l'onglet, l'écran du Lobby et la taille de la fenêtre */
   if(typeof ResizeObserver !== 'undefined'){
     const ro = new ResizeObserver(fit);
-    for(const el of document.querySelectorAll('#views, #lobbyMenu, #lobbyStage, #run, #miRun, #twRun, #gtRun, #inRun')) ro.observe(el);
+    for(const el of document.querySelectorAll('#views, #lobbyMenu, #lobbyStage, #run, #miRun, #twRun, #gtRun, #inRun, #cv, #cvMi, #cvTw, #cvGt, #cvIn')) ro.observe(el);
   }
   addEventListener('resize', fit);
   function apply(){

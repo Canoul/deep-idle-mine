@@ -884,14 +884,18 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
                    ...(dev ? { copies: Object.keys(devCopies()) } : {}) }),
 
     /* état du joueur : inventaire, préférences, session en cours, et résultat d'une session terminée pas encore vu */
-    async state(me){
+    async state(me, waitedId = null){
       const list = await store.sessionsOf(me.id);
       const active = list.find(s => ACTIVE.includes(s.status) && !hasLeft(s, me.id)) ?? null;
       /* bilan à montrer : seulement celui de sa DERNIÈRE session finie, s'il ne l'a pas vu (30/10/2026, Geoffrey). Avant :
          le plus récent des non vus ; les bilans quittés sans bouton (avant le correctif du 30/10) revenaient alors un par
          un, un plus ancien à chaque rechargement, jusqu'à 30 jours en arrière (keepEnded) */
-      const last = list.find(s => s.status === 'done' && !hasLeft(s, me.id));
-      const ended = last && !last.seen.includes(me.id) ? last : null;
+      const finished = list.filter(s => s.status === 'done' && !hasLeft(s, me.id));
+      /* 31/10/2026 : dernière = finie en dernier (list est triée par début : une mine instantanée commencée pendant une
+         tour cachait son bilan). waitedId : la session que cet écran vient de jouer, à lui montrer même déjà vue (un autre
+         onglet ou appareil l'a marquée en l'affichant) ; un rechargement ne l'envoie pas, le bilan ne revient donc pas */
+      const last = finished.reduce((a, s) => !a || (s.endedAt ?? 0) > (a.endedAt ?? 0) ? s : a, null);
+      const ended = finished.find(s => s.id === waitedId) ?? (last && !last.seen.includes(me.id) ? last : null);
       const inv = await loadInventory(me.id);
       const crusher = await withCrusher(me.id, (_, c) => publicCrusher(c, clock()));
       return { inventory: publicInventory(inv), furnaces: publicFurnaces(await loadFurnaces(me.id)), crusher,

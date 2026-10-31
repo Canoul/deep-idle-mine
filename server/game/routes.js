@@ -12,7 +12,8 @@ export function gameRoutes(game){
   return {
     'GET /api/game/info':    async () => game.info(),
     'GET /api/wiki':         async () => game.wiki(),             // public (le wiki, sans compte) : objets secrets trouvés
-    'GET /api/game/state':   async ctx => { needMe(ctx); return game.state(ctx.me); },
+    'GET /api/game/state':   async ctx => { needMe(ctx);
+      return game.state(ctx.me, new URL(ctx.req.url, 'http://x').searchParams.get('ended')); },
     'GET /api/game/judgment': async ctx => { needMe(ctx); return game.judgment(ctx.me); },
     'GET /api/game/history': async ctx => { needMe(ctx); return game.history(ctx.me); },
     'POST /api/game/prefs':  async ctx => { needMe(ctx); return game.setPrefs(ctx.me, obj(ctx.body)); },

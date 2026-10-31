@@ -472,3 +472,10 @@ test('onglet Sorts : chiffres de la fiche tirés de la config (recharge d\'abord
   assert.ok(of('ulti_shen').some(r => r.value === '20 % PV max'));
   for(const s of SPELLS.list) assert.equal(spellStats(s)[0].value, `${s.cd} s`);
 });
+
+test('grimoire : débloqués devant, puis parchemin en poche, autre spé, pas débloqués ; ordre de la config dans chaque groupe', async () => {
+  const { grimoireOrder } = await import('../src/ui/spells.js');
+  const st = { a:'locked', b:'other', c:'ready', d:'learn', e:'equipped', f:'locked', g:'ready' };
+  const order = grimoireOrder(Object.keys(st).map(id => ({ id })), id => ({ status: st[id] })).map(s => s.id);
+  assert.deepEqual(order, ['c', 'e', 'g', 'd', 'b', 'a', 'f']);
+});

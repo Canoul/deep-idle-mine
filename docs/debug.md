@@ -5816,6 +5816,16 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - ⚠️ Le trio passe sous canoul, Sõnata et Allaiks (mithril 5,8–9,8/h en prison, cobalt ≈ 1,1–1,6/h), qui ne sont pas touchés s'ils n'ont pas de mine au focus.
 - ⚠️ `shares` renormalise à chaque relecture : écart de l'ordre de 1e-16 possible, donc une écriture `prison_compo` de plus au pire (comportement d'avant).
 
+## 31/10/2026 — Galerie creusée alors que des résidus sont découverts, seed 1832289715 (Geoffrey)
+- **Cause** : `decideWork` (src/sim/ai.js) ignore toute cible à plus de `CFG.oreReach` (12) cases, résidus et treasures compris, puis tombe sur `explore`. La recherche de chemin normale est aussi bornée (`planMaxCost`).
+- **Quoi** : juste avant `explore`, `farGoal` cherche sans limite la plus proche des cibles connues de valeur ≥ `CFG.farVal` (5 : mithril et mieux, résidus, treasures), sous `m.tripCap`, non prises par un autre, hors k hole. Cible gardée avec `m.target.far` : son propre chemin à chaque décision, `onTheWay` vrai (pas de rappel par `focusGoal`), pas de filtre d'area.
+- **Reproduction** ✅ sonde sur la seed, 3 mineurs acier (mineur, logisticien, barbare ; le vrai stuff de la session est inconnu) : Test_Mineur 99 s de galerie sur 118 avec une cible connue, toutes à plus de 12 cases → 2 s sur 65. Avec des mineurs de base : non reproduit, ils ne vont pas assez bas.
+- **Tests** ✅ `tests/galerie-cibles.test.js` (4, dont 2 rouges avant le correctif) ; 51 fichiers de simulation : 585/587. ❌ Rouges aussi sur `main` propre, sans lien : `tests/tier2.test.js`, « fortune : le doublon… » et « recycle : un BP du T2… ». Les fichiers server et perf n'ont pas été relancés.
+- **Simulation** ✅ `--miners 3 --count 5` : 0 bloquée, areas 3,0, profondeur 189,8, allers-retours 28,6. Acier, 5 seeds, `farVal` Infinity → 5 : areas 7,2 = 7,2, profondeur 348 = 348, allers-retours 33,0 → 33,2, Fer 670,8 → 665,4, Or 277 → 279, Diamant 22 → 23, Mithril 29 → 27,6, résidus 20 → 19,8. Pas de gain mesurable sur cet échantillon.
+- ⚠️ Temps de calcul 234,5 → 269,1 s (+15 %, une seule mesure) : recherche sans limite à chaque décision pendant un trajet lointain. À surveiller sur le serveur ; piste : garder l'itinéraire.
+- ⚠️ Pas vu en jeu. Une session en cours rejouée après la mise en ligne peut diverger, comme à chaque changement d'IA.
+- ⚠️ Seul le cas « galerie » est traité : un mineur qui peut encore descendre descend.
+
 ## 31/10/2026 — Golbute : rochers et bras (Geoffrey)
 - **Rochers** : la vue n'envoie un rocher que 15 ticks (1,5 s de jeu, 0,75 s réelle à ×2) pour 0,9 s de chute. `trackRocks` (src/render/golbute-fx.js) les suit dans le navigateur, temps réel.
 - **Bras** : pas de texture de côté. `golbute_body` et `golbute_arm` (+ `_crystal`, scripts/gen_golbute.py) ; `armPose` : levés, frappe, étirés jusqu'au sol, retour (640 ms). Le coup se joue après son effet : la partie n'envoie pas le prochain coup à l'avance.
@@ -5861,6 +5871,15 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - ⚠️ Connu, ancien : un message reçu juste avant d'envoyer le sien peut sauter à l'écran (`add` avance `last` au numéro du message envoyé).
 - ⚠️ Taille du chat (hauteur, largeur, repli) : gardée dans le navigateur, pas sur le compte.
 
+## 31/10/2026 — Fluidité : lecture en différé (Geoffrey)
+- **Cause** : partie avancée par paquets de 200 ms, envois à 250 ms + temps de réponse, glissade calée sur l'heure d'arrivée. Un envoi en retard = arrêt puis rattrapage ; plus de 6 cases d'écart = téléportation.
+- **Quoi** : `src/shared/view.js` : `playClock`, `playTrack`, `playCopy`, `moveHead` : chaque objet garde ses positions avec leur tick, une tête de lecture avance `FLUID.bufferMs` (400) derrière le dernier envoi, sans le dépasser, et rattrape à ±30 % au plus. Actif si `speed` est passé à `applyView`, `applyTowerView`, `applyInstanceView`, `applyInstantView` (src/main.js `viewRate`) ; sinon ancienne glissade. Bloc géant non migré. Grande distance = téléportation seulement au-delà de `FLUID.teleport` case par tick. Envois à rythme fixe (`nextView`). `pumpEvery` 200 → 100. `?perf` : écart entre envois, micro-arrêts.
+- **Mesure** ✅ même partie (seed 4242, ×2, 30 s), Chrome, réseau simulé sur les envois, comparée à la partie rejouée tick par tick. Réseau 105 ms ± 30 : écart moyen 0,26 → 0,18 case, pire écart 1,0 → 0,7. Wifi 140 ± 60 : 0,31 → 0,25, pire écart 1,2 → 1,0, images à plus d'une case 0,9 → 0,2 %. Dispersion de vitesse un peu plus haute (40 → 51 %) : les vraies pauses du mineur ne sont plus gommées.
+- **Fausse piste** : une première simulation (mineur à vitesse constante, modèle de lecture sans mémoire) promettait 513 → 50 % : très surestimé. La première version sautait après un pic réseau (×27) : d'où la tête de lecture.
+- ⚠️ Pas mesuré en ligne ni sur plusieurs joueurs. +48 % de requêtes de vue environ (2,7 → 4 par seconde par joueur), pump deux fois plus souvent : à surveiller. Les actions (coup, minage) ne sont pas différées : elles peuvent précéder la position de 0,4 s. `tests/perf.test.js` « boîte de mesures » et `prison-server` « une tour et une instance » échouent, comme avant.
+- Sur le port dev : `?perf` dans l'adresse. Hébergement : l'adresse 82.223.196.89 est chez ARSYS (groupe IONOS), à confronter à la doc (OVH).
+
+
 ## 31/10/2026 — Gobelins asservis : roche sans minerai à portée (Geoffrey)
 - **Constat** (3 seeds, 3 mineurs, couronne sur le 1er, stats de base, 38 gobelins) : vie 29,9 s de jeu (≈ 15 s réelles à ×2), mais 12,5 s inactif ; 78 % de cette attente sans aucun minerai à `reach` (10 gobelins sur 38 nés sans minerai).
 - **Quoi** (src/sim/thrall.js) : `pickRock` (bloc cassable le plus proche, -1,5 tout droit dans `o.dir`), repli quand `pickTarget` ne trouve rien. `pickTarget` est relancé à chaque décision : un minerai entré dans `reach` passe devant.
@@ -5903,3 +5922,20 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - ⚠️ Rendu du lobby pas regardé dans un navigateur. Pas de simulation de l'Héroïque + stèle (`npm run simulate:tower -- --stele`, niveau 2).
 - ⚠️ Une tour déjà lancée au moment de la mise en ligne garde son niveau. Une victoire d'avant, quel que soit son niveau, vaut « déjà gagnée » pour l'ouverture en cours.
 - ⚠️ `tests/tower-level.test.js` : le test du choix de niveau dans le lobby est retiré avec `towerLevelState`.
+
+## 31/10/2026 — Bilan de tour jamais affiché (Geoffrey), régression des correctifs du 30/10
+- **Cause 1** (`1abfc1c`) : `ack` dès `showResult`. Un autre onglet ou appareil qui reçoit le bilan d'abord le marque vu ; l'écran du joueur reçoit `ended: null`, puis `showNoSession` dans `pollResult`, sans bilan.
+- **Cause 2** (`8757bb5`) : `last = list.find(...)`, liste triée par début. Une MI commencée pendant la tour et déjà vue masquait la tour.
+- **Correctif** : `state(me, waitedId)` (route `?ended=<id>`) : l'écran qui attend sa session la reçoit même vue, seulement si le compte y a participé sans la quitter. `last` = fin la plus récente. `pollResult` et le `no_session` de `pollView` envoient l'id ; une page rechargée ne l'envoie pas.
+- **Tests** ✅ bilan +3, les 2 tests de cause échouaient avant le correctif.
+- ❌ Sans lien, déjà sur `main` : `table de recherche par le serveur` (tests/game-service.test.js:401) est instable, il attend 15 à 30 parts au recyclage et échoue au hasard (2 fois sur 8 sur `main` sans ce correctif, 4 sur 8 avec, même tirage aléatoire). Non traité.
+- ⚠️ La cause réelle du signalement n'est pas prouvée : pas d'accès aux données du serveur. Les deux chemins sont reproduits par test, pas dans un navigateur.
+- ⚠️ `pollResult` : session abandonnée → `showNoSession` ne ferme pas `#end` (« Session terminée… » pourrait rester à l'écran). Vu à la lecture, non testé, non corrigé.
+
+## 31/10/2026 — Chat : largeur en tour (Geoffrey)
+- **Cause** : `centralLeft` lisait le bord de la zone (`#cvTwWrap`, 12 px) et non du canvas centré dedans (421 px à 1872 px de large) : limite sous `minWidth`, chat bloqué à 160 px.
+- **Correctif** : mesure sur `#cv`, `#cvMi`, `#cvTw`, `#cvGt`, `#cvIn`, aussi observés par le ResizeObserver.
+- **Tests** : vérifié ✅ dans Chrome sur une tour dev à 1872 × 815. `centralLeft` lit le DOM, pas de test unitaire. Instance, MI et Bloc géant : même mesure, non lancés ⚠️.
+
+## 31/10/2026 — Grimoire trié (Geoffrey)
+- **Quoi** : `grimoireOrder` (src/ui/spells.js), tri stable par état. **Tests** ✅ spells +1.
