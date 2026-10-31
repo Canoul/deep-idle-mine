@@ -9,6 +9,10 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 31/10/2026 — Geoffrey — Craft : plus d'onglet vide
+- **Pour le joueur** : dans le Craft, un onglet sans recette disponible n'est plus affiché. Il apparaît dès qu'une recette de sa catégorie est apprise.
+- **État** : ✅ en ligne le 31/10
+
 ## 31/10/2026 — Geoffrey — Téléphone : le clavier ne s'ouvre plus tout seul au four
 - **Pour le joueur** : sur téléphone, ouvrir une case du four, ses recettes ou une case du concasseur n'ouvre plus le clavier chiffré : il faut toucher la case de quantité. Sur ordinateur, le curseur s'y place toujours.
 - **État** : ✅ en ligne le 31/10
