@@ -40,7 +40,7 @@ test('Treasure T4 : areas 7 et 8 ; toujours mithril, cobalt, thorium et BP parts
   const t = LOOT['Treasure T4'];
   assert.deepEqual(t.always.map(a => [a.item, a.min, a.max]), [['Mithril ore', 20, 40], ['Cobalt ore', 5, 10], ['Thorium ore', 5, 10], ['Blueprint parts', 12, 14]]);
   const first = t.oneOf[0].items;
-  assert.equal(Math.round(first.reduce((s, i) => s + i.chance, 0) * 1e4) / 1e4, 0.125);
+  assert.equal(Math.round(first.reduce((s, i) => s + i.chance, 0) * 1e4) / 1e4, 0.13);
   for(const p of PIECES){
     assert.equal(first.find(i => i.item === `${p} en mithril BP`).chance, 0.01);
     assert.equal(first.find(i => i.item === `${p} en thorium BP`).chance, 0.005);

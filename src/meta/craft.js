@@ -9,7 +9,7 @@ import { RECIPES } from '../recipes.js';
 import { RECYCLE, STUFF, FURNACE, RUNE, ITEMS } from '../config.js';
 import { furnaceRecipeName } from './furnace.js';
 import { countOf, removeItem, addItem, takePiece, CRAFT_MEMORY } from './inventory.js';
-import { isStuff, isRune, rollRune, rollCraftedRuneQuality } from './piece.js';
+import { isStuff, isRune, rollRune, rollCraftedRuneQuality, rolledSpec, rollStats } from './piece.js';
 
 export const recipeOf = item => (typeof item === 'string' && Object.hasOwn(RECIPES, item)) ? RECIPES[item] : null;
 /* recette disponible pour ce joueur : de base (unlock null), ou débloquée par son blueprint */
@@ -47,13 +47,15 @@ export const plainestFirst = (inv, item) => inv.slots.filter(s => s && s.item ==
 
 /* fabrique item : renvoie { ok, repeated, pieces? } ou { error } (unknown, locked, not_enough).
    Une Rune (29/10/2026) tire sa qualité (RUNE.craftChances) et ses lignes avec rng, le hasard du serveur : pieces = les
-   runes fabriquées. Sans rng, la recette Rune est refusée (unknown) avant de rien retirer. */
+   runes fabriquées. Sans rng, la recette Rune est refusée (unknown) avant de rien retirer. Même chose pour une pièce à
+   stats tirées (Cape inclusive, 31/10/2026) : pieces = la pièce et ses stats, révélées dans le pop-up du craft. */
 export function craft(inv, item, opId, rng){
   if(inv.crafted.includes(opId)) return { ok:true, repeated:true };
   const r = recipeOf(item);
   if(!r) return { error:'unknown' };
   const rune = item === RUNE.item;
-  if(rune && typeof rng !== 'function') return { error:'unknown' };
+  const rolled = !!rolledSpec(item);
+  if((rune || rolled) && typeof rng !== 'function') return { error:'unknown' };
   if(!isUnlocked(item, inv)) return { error:'locked' };
   if(!canCraft(inv, item)) return { error:'not_enough' };
   for(const [k, n] of Object.entries(r.cost)){                       // tout est là : vérifié juste avant
@@ -62,6 +64,7 @@ export function craft(inv, item, opId, rng){
   }
   const slots = addItem(inv, item, r.qty);
   remember(inv, opId);
+  if(rolled) return { ok:true, repeated:false, pieces:slots.map(i => { const p = Object.assign(inv.slots[i], rollStats(item, rng)); return { ...p, rolled:[...p.rolled] }; }) };
   if(!rune) return { ok:true, repeated:false };
   const pieces = slots.map(i => Object.assign(inv.slots[i], rollRune(rollCraftedRuneQuality(rng), rng)));
   return { ok:true, repeated:false, pieces:pieces.map(p => ({ ...p, lines:p.lines.map(l => ({ ...l })) })) };

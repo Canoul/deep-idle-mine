@@ -23,6 +23,12 @@ Modèle d'entrée :
 - **À suivre** : il a moins de pods que le Plastron en acier (+137), mais reste plus fort que lui au total (1 003 x contre 822 x).
 - **État** : ✅ en ligne le 31/10
 
+## 31/10/2026 — Geoffrey — Nouvelle pièce : Cape inclusive
+- **Pour le joueur** : une cape épique aux couleurs du drapeau LGBT, avec 4 lignes de stats tirées au hasard quand on la fabrique et montrées dans le pop-up. Son plan sort du Treasure T4 (0,5 %) et de la dernière étape de la recherche, avec les Jambières titanesques. Le wiki la cache tant que son plan n'est pas sorti.
+- **Décisions** : 1 500 x au total (2 fois le T4.5), 375 x par ligne ; doublons permis, Découverte possible (une au plus). Tirage définitif. Valeurs provisoires.
+- **À suivre** : avec des doublons, une cape peut être très forte sur une seule stat (par exemple +383 % de vitesse d'attaque). À surveiller dans les tours.
+- **État** : pas encore en ligne
+
 ## 31/10/2026 — Geoffrey — Téléphone : le chat a son propre onglet
 - **Pour le joueur** : sur téléphone, le chat ne recouvre plus les autres écrans. Il a un onglet **Chat**, juste après Session, et y prend tout l'écran. Sur ordinateur, rien ne change.
 - **Décisions** : « téléphone » = écran de 700 px de large ou moins, ou de 500 px de haut ou moins (téléphone tourné).

@@ -6112,3 +6112,10 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** : tests/nav +1 ; nav, chat, town, guide : 81 ✅. Chrome sans interface 390×844 et 844×390 : chat plein écran entre bandeau et barre, message envoyé, caché ailleurs, retour Lobby en largeur PC, aucune erreur de page ✅.
 - **Panne évitée** : recharger sur #chat plantait (`gchatDock` lu avant sa création) ; le rappel d'onglet attend `nav`.
 - **Pas vérifié ⚠️** : vrai téléphone et clavier virtuel (le champ peut passer dessous). En PC, `#chat` ouvre le Lobby mais l'adresse reste `#chat`, sans effet.
+
+## 31/10/2026 — Cape inclusive : stats tirées au craft (Geoffrey)
+- **Quoi** : `STUFF.items['Cape inclusive'].rolled = { lines:4, x:1500 }`. Pièce : champ `rolled` (noms des stats), valeurs recalculées depuis la config (`rolledValue`, src/meta/piece.js). `craft()` tire avec le hasard du serveur et renvoie `pieces` ; sans `rng`, refus avant de rien retirer. `sanitizePiece` retire un tirage trafiqué. `adminGive` tire aussi. `statPrice` et `designPrice` déplacés dans piece.js, réexportés par gearscore.js.
+- **Portée** : `designPrice` = 0, une ligne aurait valu Infinity ; `rolledPrice` prend `UPGRADE.prices` × ajustement. Son GS reste 0 : un tirage avec Portée affiche moins de x.
+- **Tests** : tests/cape-inclusive (nouveau), research, tier4, rarity ; anticheat 122 ✅. Chrome sans interface : plan appris, craft, pop-up, port et skin, aucune erreur de page ✅.
+- **Déjà faux avant ⚠️** : tests/tier4 « recettes du T4 » attend l'ancienne recette de la Clé d'instance I.
+- **Fragile** : une cape sans `rolled` n'a aucun effet (ne devrait pas exister, tous les chemins tirent). Une demande de craft rejouée ne renvoie pas la pièce : le pop-up affiche alors le texte générique.
