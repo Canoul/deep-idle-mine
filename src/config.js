@@ -760,7 +760,7 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'pickaxe_iron','sword_stone','sword_iron','spear_iron','helmet_iron','chest_iron','legs_iron','boots_iron','belt_goblin',
   'lamp_incandescent','pickaxe_steel','sword_steel','helmet_steel','chest_steel','legs_steel','boots_steel','chest_balance',
   'gloves_tactical','gloves_worker','cape_naingui','straps_goblin','hood_dark','cloud_magic','belt_giant','dark_cloth','gas_vesicle','slippery_stone','dungeon_brick','minotaur','minotaur_black','moon_crystal','orb','key_instance_1','key_instance_2','angel_feather','angel_feathers',
-  'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon','giant_block','giant_fountain','giant_torch','instance_spawner','instance_cage','goblin_king','golbute','golbute_crystal','golbute_rock','chest_golbute',
+  'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon','giant_block','giant_fountain','giant_torch','instance_spawner','instance_cage','goblin_king','golbute','golbute_crystal','golbute_body','golbute_body_crystal','golbute_arm','golbute_arm_crystal','golbute_rock','chest_golbute',
   'brick_angel','brick_angel_hard','brick_demon','brick_demon_hard','boss_angel','boss_demon','seraph','imp',
   'crown_goblin_king','mace_goblin_king','cape_goblin_royal','furnace_gold','recipe_chitin','chest_goblin_king','nugget_silver','ingot_silver','shrine_abundance',
   'ingot_mithril','refined_cobalt','refined_thorium','ingot_cobalt','ingot_thorium','minotaur_leather','rotten_flesh','treasure_t4',
