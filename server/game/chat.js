@@ -60,7 +60,7 @@ export function createChat({ clock = Date.now, gapMs = CHAT.gapMs, ttlMs = CHAT.
         if(typeof m.account !== 'string' || typeof m.name !== 'string' || cleanChatText(m.text) !== m.text) continue;
         msgs.push({ id: m.id, at: m.at, account: m.account, name: m.name, text: m.text,
                     ...(typeof m.channel === 'string' ? { channel: m.channel } : {}), ...(typeof m.toName === 'string' ? { toName: m.toName } : {}),
-                    ...(Array.isArray(m.to) ? { to: m.to.filter(a => typeof a === 'string') } : {}),
+                    ...(Array.isArray(m.to) ? { to: m.to.filter(a => typeof a === 'string') } : {}), ...(m.leader === true ? { leader: true } : {}),
                     ...(typeof m.lobby?.code === 'string' ? { lobby: { code: m.lobby.code, ...lobbyLink(m.lobby.mode, m.lobby.level), size: m.lobby.size | 0, max: m.lobby.max | 0 } } : {}) });
         last = m.id;
       }
