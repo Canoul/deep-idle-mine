@@ -11,7 +11,7 @@ import { createTownService } from '../server/town/service.js';
 import { townRoutes } from '../server/town/routes.js';
 import { TOWN_SERVER } from '../server/config.js';
 import { bubbleLines } from '../src/render/town.js';
-import { enterTab, enterLabel, tapAction, mergeOthers, cardHtml, lfgButtons, launchSpot } from '../src/ui/town.js';
+import { enterTab, enterLabel, tapAction, onStatue, mergeOthers, cardHtml, lfgButtons, launchSpot } from '../src/ui/town.js';
 
 test('plan : un bâtiment par onglet, de gauche à droite sans chevauchement, dans la ville', () => {
   const { buildings, width } = townLayout();
@@ -311,4 +311,15 @@ test('recherche de groupe dans la ville : boutons selon la recherche du Lobby', 
   assert.ok(launchSpot(buildingOf('session')) && launchSpot(buildingOf('lobby')));
   assert.ok(!launchSpot(buildingOf('four')) && !launchSpot(null));
   assert.ok(!TOWN.emotes.some(e => e.id === 'mine'), '« On mine ? » remplacée par le bouton');
+});
+
+test('statue de la place (31/10) : un clic dessus ne mène pas au Lobby, le reste de la place si', () => {
+  const place = townBuildings().find(b => b.kind === 'place'), sx = place.x + TOWN.place.statue;
+  assert.equal(place.tab, 'lobby');
+  assert.equal(onStatue(place, sx + 1, TOWN.ground - 1), true, 'le socle');
+  assert.equal(onStatue(place, sx + 1, TOWN.ground - 3.5), true, 'le mineur de pierre');
+  assert.equal(onStatue(place, sx - 0.5, TOWN.ground - 1), false, 'à gauche');
+  assert.equal(onStatue(place, sx + 2, TOWN.ground - 1), false, 'à droite');
+  assert.equal(onStatue(townBuildings().find(b => b.kind !== 'place'), sx + 1, TOWN.ground - 1), false, 'autre bâtiment');
+  assert.equal(onStatue(null, sx + 1, TOWN.ground - 1), false);
 });

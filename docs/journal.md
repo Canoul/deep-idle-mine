@@ -16,6 +16,11 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 31/10/2026 — Geoffrey — Le Carreau : clic sur la statue
+- **Pour le joueur** : cliquer sur la statue du meilleur GS n'ouvre plus le Lobby : le mineur marche jusqu'à elle et sa
+  plaque s'affiche. Cliquer ailleurs sur la place mène toujours au Lobby.
+- **État** : ✅ en ligne le 31/10
+
 ## 31/10/2026 — Geoffrey — Chat : lien vers son lobby
 - **Pour le joueur** : le bouton **Pub LFG** du lobby, ou **%lobby** dans un message (`/lfg %lobby on cherche un last`), met un lien
   `[Instance I 2/3]` dans le chat. Au survol : un aperçu du groupe (portraits, places libres). Au clic : on rejoint le groupe.
