@@ -6084,6 +6084,10 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Lot** ✅ vérifié sur vrai serveur local : 10 Graphite ingot chez le gagnant, rien chez le perdant. Pas vérifiable d'ici sur le serveur en ligne. Le navigateur ne relisait pas l'inventaire : message du gagnant marqué `winner` (id de compte), `fresh` de `setupChat` → `gameApi.state()`.
 - **Tests** ✅ `tests/chat-ui.test.js` (DOM imité, rouge avant correction), `tests/raffle.test.js`, `tests/chat.test.js`.
 
+## 31/10/2026 — Tri des runes par qualité (Geoffrey)
+- **Quoi** : `sortKey` (src/meta/inventory.js) : `-runeQuality` après l'ordre du catalogue, seulement pour `RUNE.item` et `RUNE.fragment.item`. Qualité des autres pièces toujours ignorée (test du 25/10 gardé).
+- **Tests** ✅ `tests/inventory-arrange.test.js`, `tests/anticheat/arrange.test.js`.
+
 ## 31/10/2026 — Craft : onglets par catégorie (Geoffrey)
 - **Quoi** : `tabsHtml` (src/ui/inventory.js) exporté et partagé : il reçoit l'onglet ouvert, les objets à compter et le mot de la bulle. `recipesIn` et `#craftTabs` dans src/ui/craft.js, classement par `tabOf`, donc `INVENTORY.tabs`.
 - **Tests** ✅ tests/craft.test.js, tests/inventory.test.js. ✅ Vérifié dans Chrome (compte Test_Mineur).
@@ -6103,3 +6107,8 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** ✅ tests/rune-mark.test.js. ✅ Rendu vérifié dans Chrome sur une page de test (rune, fragment, avec et sans +N, ligne de liste).
 - ⚠️ Toujours pas vu en partie réelle. Le chemin `textures/…` de l'image de fond est relatif à index.html : à regarder si l'image manque.
 
+## 31/10/2026 — Chat : onglet à part sur téléphone (Geoffrey)
+- **Quoi** : `CHAT.dock.phone` (media query) ; `CHAT_TAB` et `tabFor` dans src/ui/nav.js, hors de `TABS` (ni touche ni bâtiment du Carreau) ; nav pose `body.phone` et `body.chatTab`. src/ui/chat-dock.js : `shut()` remplace le repli sur téléphone, `refresh` à chaque entrée ou sortie de l'onglet. Un seul chat (#gchatDock), déplacé en CSS. src/ui/town.js : test du chat replié par `getClientRects`, sinon la rue se calait sur le haut de l'écran.
+- **Tests** : tests/nav +1 ; nav, chat, town, guide : 81 ✅. Chrome sans interface 390×844 et 844×390 : chat plein écran entre bandeau et barre, message envoyé, caché ailleurs, retour Lobby en largeur PC, aucune erreur de page ✅.
+- **Panne évitée** : recharger sur #chat plantait (`gchatDock` lu avant sa création) ; le rappel d'onglet attend `nav`.
+- **Pas vérifié ⚠️** : vrai téléphone et clavier virtuel (le champ peut passer dessous). En PC, `#chat` ouvre le Lobby mais l'adresse reste `#chat`, sans effet.

@@ -11,12 +11,23 @@ Modèle d'entrée :
 ```
 ## 31/10/2026 — Geoffrey — Pièces runées : la texture de la rune
 - **Pour le joueur** : la gemme violette est remplacée par la vraie texture, en petit : la rune, ou le fragment si la pièce porte un fragment.
-- **État** : 🧪 sur la branche `geoffrey/icone-rune-texture` (pas en ligne)
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Le bouton Trier range les runes par qualité
+- **Pour le joueur** : dans l'inventaire, **Trier** met les runes de la R7 à la R1, puis les fragments de rune de la même façon. Les autres pièces ne changent pas d'ordre.
+- **État** : ✅ en ligne le 31/10
 
 ## 31/10/2026 — Geoffrey — Plastron de l'équilibre : moins de pods
 - **Pour le joueur** : le Plastron de l'équilibre donne +112 pods au lieu de +188 ; ses 8 autres stats ne changent pas. Les plastrons déjà fabriqués suivent.
 - **Décisions** : il valait 2,92 fois le x de son tier ; il vaut maintenant 2 fois (1 003 x au lieu de 1 459 x). Valeur provisoire.
 - **À suivre** : il a moins de pods que le Plastron en acier (+137), mais reste plus fort que lui au total (1 003 x contre 822 x).
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Téléphone : le chat a son propre onglet
+- **Pour le joueur** : sur téléphone, le chat ne recouvre plus les autres écrans. Il a un onglet **Chat**, juste après Session, et y prend tout l'écran. Sur ordinateur, rien ne change.
+- **Décisions** : « téléphone » = écran de 700 px de large ou moins, ou de 500 px de haut ou moins (téléphone tourné).
+- **À suivre** : pas de pastille de nouveau message sur l'onglet (le chat n'est pas relu quand il est fermé). À essayer sur un vrai téléphone, surtout le clavier.
+- **État** : ✅ en ligne le 31/10
 
 ## 31/10/2026 — Geoffrey — Icône sur les pièces runées
 - **Pour le joueur** : une petite gemme violette en bas à gauche de la case d'une pièce runée (rune ou fragment) : inventaire, stuff porté, fiche d'un ami, onglet Amélioration, listes de choix.
