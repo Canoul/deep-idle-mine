@@ -1892,6 +1892,31 @@ export const PRISON = { mobXpMul: 0.5, stunReset: 60, stunGap: 5, width: 25, ore
 export const CHAT = { channels:[{ id:'general', label:'Général' }, { id:'mp', label:'MP' }, { id:'group', label:'Groupe' }, { id:'lfg', label:'LFG' }],
   globalKeep:300, tabsMax:5, tabNameMax:12, maxLen:200, keep:50, gapMs:1000, poll:3000, ttlMs:3*3600e3, globalGapMs:3000, maxAgeMs:18*3600e3, dock:{ share:0.6, min:0.15, max:0.85, minWidth:160, maxWidth:0.6, startWidth:575 } };
 
+/* Raffle (31/10/2026, Geoffrey ; server/social/raffle.js) : tirage au sort dans le chat global. Un raffle part everyMin à
+   everyMax après la fin du précédent, de openHour à closeHour (heure de timeZone). Tombé dans le créneau fermé : à la
+   réouverture, plus 0 à lateMax. joinMs : temps pour taper command. lots : un seul tiré, chance en part de 1 (total 1) ;
+   energy : points d'énergie ; rune : objet rune, qualité tirée avec les chances de l'identification. */
+export const RAFFLE = { name:'Raffle', command:'!join', joinMs:40e3, everyMin:45*60e3, everyMax:120*60e3, openHour:8, closeHour:2, lateMax:75*60e3, timeZone:'Europe/Paris',
+  lots:[
+    { chance:0.30, item:'Chitine', qty:100 },
+    { chance:0.01, item:'Treasure T4', qty:1 },
+    { chance:0.02, item:'Treasure T3', qty:1 },
+    { chance:0.05, item:'Treasure T2', qty:1 },
+    { chance:0.05, item:'Treasure T1', qty:2 },
+    { chance:0.05, item:'Clé d\'instance I', qty:1 },
+    { chance:0.03, item:'Clé d\'instance II', qty:1 },
+    { chance:0.05, energy:10 },
+    { chance:0.05, item:'Tainted iron', qty:10 },
+    { chance:0.03, item:'Barre d\'argent', qty:1 },
+    { chance:0.05, item:'Tainted gold', qty:10 },
+    { chance:0.01, rune:RUNE.item },
+    { chance:0.05, item:'Blueprint parts', qty:50 },
+    { chance:0.10, item:'Blueprint parts', qty:25 },
+    { chance:0.02, item:'Blueprint parts', qty:100 },
+    { chance:0.03, item:'Steel ingot', qty:10 },
+    { chance:0.10, item:'Graphite ingot', qty:10 },
+  ] };
+
 /* Modération du chat (30/10/2026, Geoffrey ; server/moderation/) : un mot interdit (server/moderation/words.js) est
    remplacé par des astérisques et vaut un avertissement à son auteur, avec un motif. warnings avertissements (comptés
    depuis le dernier ban) → ban de banMs : plus aucune action de jeu (seulement lire, et se déconnecter), sa prison

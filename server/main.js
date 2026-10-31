@@ -52,7 +52,7 @@ const server = http.createServer(createApp({ store, service, game, party, instan
 /* sessions de jeu : le serveur les fait tourner en direct (reprises au démarrage), puis les fait avancer en continu ;
    chacune se termine et se partage d'elle-même au dernier tick, joueurs présents ou non */
 game.recover().catch(console.error);       // sans attendre : le serveur répond tout de suite, les sessions rattrapent ensuite
-const pump = setInterval(() => { instant.tick().catch(console.error); game.pump().catch(console.error); giant.pump().catch(console.error); }, GAME_SERVER.pumpEvery);
+const pump = setInterval(() => { instant.tick().catch(console.error); game.pump().catch(console.error); giant.pump().catch(console.error); social.raffleTick().catch(console.error); }, GAME_SERVER.pumpEvery);
 pump.unref();
 
 /* ménage des connexions expirées, au démarrage puis toutes les heures */

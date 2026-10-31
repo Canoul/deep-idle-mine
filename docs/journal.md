@@ -9,6 +9,12 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 31/10/2026 — Geoffrey — Raffle : un tirage au sort dans le chat
+- **Pour le joueur** : toutes les 45 à 120 min, entre 8 h et 2 h, un lot est annoncé dans le chat global. On a 40 s pour taper `!join` : la commande n'apparaît pas dans le chat et une réponse visible par soi seul confirme l'inscription. À la fin, un inscrit gagne le lot, annoncé à tous.
+- **Décisions** : il faut un compte avec pseudo (pas les invités, à cause du multi-compte) ; la rune suit la table de l'identification ; sans inscrit, le lot est perdu et le chat le dit. Silver ingot = Barre d'argent, clés T1 / T2 = Clé d'instance I / II. Tombé la nuit, le raffle part entre 8 h et 9 h 15.
+- **À suivre** : à regarder en vrai. `!join` ne marche que dans le Chat global, pas dans le chat de l'onglet Session. Un joueur qui masque Général ne voit pas l'annonce.
+- **État** : 🧪 sur la branche `geoffrey/raffle` (pas en ligne)
+
 ## 31/10/2026 — Geoffrey — Lobby : Groupes en formation et cadenas
 - **Pour le joueur** : un bouton **Groupes en formation** montre les groupes de 1 ou 2 joueurs, leur activité et l'apparence de chacun. Un clic pour entrer. Un groupe plein sort de la liste tout seul, sans F5. Le chef peut poser un **cadenas** : seuls les invités entrent. Il n'est jamais posé par défaut et ne passe pas d'un groupe à un autre.
 - **Décisions** : un joueur sans groupe n'apparaît pas dans la liste, il clique sur « Proposer mon groupe » (sinon tous les joueurs seuls du lobby seraient listés, même ceux qui veulent jouer seuls). Le cadenas bloque aussi le code, les liens de lobby et « rejoindre un ami », et coupe la recherche de groupe.

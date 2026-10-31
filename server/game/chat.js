@@ -42,6 +42,23 @@ export function createChat({ clock = Date.now, gapMs = CHAT.gapMs, ttlMs = CHAT.
       r.at = now; lastBy.set(account, now);
       return { msg, hits: mod.hits, original: t };
     },
+    /* message du jeu (Raffle, 31/10/2026) : public, sans cadence ni modération */
+    system(roomId, name, text, channel){
+      const now = clock();
+      prune(now);
+      const r = rooms.get(roomId) ?? rooms.set(roomId, { next: 1, msgs: [], at: now }).get(roomId);
+      const msg = { id: r.next++, at: now, account: 'system', name, text, channel, system: true };
+      r.msgs.push(msg);
+      if(r.msgs.length > keep) r.msgs.shift();
+      r.at = now;
+      return msg;
+    },
+    /* réponse du jeu à un seul joueur : rendue à sa demande, jamais gardée dans le salon (elle ne prend la place d'aucun message) */
+    notice(roomId, name, text, channel){
+      const now = clock();
+      const r = rooms.get(roomId) ?? rooms.set(roomId, { next: 1, msgs: [], at: now }).get(roomId);
+      return { id: r.next++, at: now, account: 'system', name, text, channel, system: true };
+    },
     /* messages après le numéro after (0 : tous ceux gardés) */
     since: (roomId, after) => freshMessages(rooms.get(roomId)?.msgs, clock()).filter(m => m.id > after),
     drop: roomId => { rooms.delete(roomId); },
@@ -60,7 +77,7 @@ export function createChat({ clock = Date.now, gapMs = CHAT.gapMs, ttlMs = CHAT.
         if(typeof m.account !== 'string' || typeof m.name !== 'string' || cleanChatText(m.text) !== m.text) continue;
         msgs.push({ id: m.id, at: m.at, account: m.account, name: m.name, text: m.text,
                     ...(typeof m.channel === 'string' ? { channel: m.channel } : {}), ...(typeof m.toName === 'string' ? { toName: m.toName } : {}),
-                    ...(Array.isArray(m.to) ? { to: m.to.filter(a => typeof a === 'string') } : {}), ...(m.leader === true ? { leader: true } : {}),
+                    ...(Array.isArray(m.to) ? { to: m.to.filter(a => typeof a === 'string') } : {}), ...(m.leader === true ? { leader: true } : {}), ...(m.system === true ? { system: true } : {}),
                     ...(typeof m.lobby?.code === 'string' ? { lobby: { code: m.lobby.code, ...lobbyLink(m.lobby.mode, m.lobby.level), size: m.lobby.size | 0, max: m.lobby.max | 0 } } : {}) });
         last = m.id;
       }
