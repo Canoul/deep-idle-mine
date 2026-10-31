@@ -16,6 +16,14 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 31/10/2026 — Geoffrey — « Prêt tout le temps » revu
+- **Pour le joueur** : la case est maintenant visible partout, même seul ou en prison, et elle ne se décoche plus
+  toute seule : elle est gardée sur le compte. Elle sert à rester prêt : on clique « Je suis prêt » une fois en entrant
+  dans un groupe, puis on le reste session après session.
+- **Décisions** : cocher ne rend plus prêt. En revenant de prison, le joueur clique donc une fois : un chef ne peut pas
+  lui terminer sa prison sans son accord. « Prêt (annuler) » remarche, sans toucher à la case.
+- **État** : 🧪 sur la branche `geoffrey/pret-prison` (pas en ligne)
+
 ## 31/10/2026 — Geoffrey — Mode dev : copier un vrai joueur en tapant son pseudo
 - **Pour l'équipe** : dans le lobby du mode développeur, on tape un pseudo et le personnage du joueur (stuff, skills, sorts, niveau) arrive
   dans les presets, sans console ni fichier. Un preset par mineur, en instance aussi, même avec un compte invité ou invité dans un groupe. Le serveur dev lit la base en ligne avec un compte qui ne peut rien modifier.

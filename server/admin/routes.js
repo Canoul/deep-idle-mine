@@ -58,7 +58,7 @@ export function adminRoutes({ accounts, game, party = null, moderation = null, t
     return acc;
   };
   const noParty = () => { if(!party) throw new HttpError(503, 'no_party_service', 'Groupes indisponibles sur ce serveur.'); };
-  const members = r => r.party.members.map(m => `${m.name}${m.leader ? ' (chef)' : m.always ? ' (prêt tout le temps)' : m.ready ? ' (prêt)' : ''}`).join(', ');
+  const members = r => r.party.members.map(m => `${m.name}${m.leader ? ' (chef)' : m.ready ? (m.always ? ' (prêt tout le temps)' : ' (prêt)') : ''}`).join(', ');
   return {
     /* lobbies (29/10/2026, Geoffrey) : déplacer un joueur dans le lobby d'un autre, le mettre prêt */
     'POST /api/admin/party-move': async ctx => {

@@ -113,20 +113,17 @@ test('recherche en cours : celui qui l\'a lancée peut annuler, le membre voit s
   assert.equal(lfgState({ account:{ id:'BBBB2222' }, party:two, mode:'mine', lfg:{ search:{ mine:false, auto:false } } }).cancel, false);
 });
 
-test('« Prêt tout le temps » : seulement pour un membre (pas le chef, pas seul), cochée selon le serveur, aussi en session', () => {
-  const p = party([M('AAAA1111', 'Zoe'), M('BBBB2222', 'Max', { ready:true, always:true })]);
-  assert.deepEqual(alwaysReadyState({ account:{ id:'BBBB2222' }, party:p }), { show:true, checked:true });
-  assert.deepEqual(alwaysReadyState({ account:{ id:'BBBB2222' }, party:p, session:{ id:'s1' } }), { show:true, checked:true });
-  assert.equal(alwaysReadyState({ account:me, party:p }).show, false, 'le chef');
-  assert.equal(alwaysReadyState({ account:me, party:null }).show, false, 'seul');
-  assert.equal(alwaysReadyState({ account:{ id:'BBBB2222' }, party:p, offline:true }).show, false);
-  const q = party([M('AAAA1111', 'Zoe'), M('BBBB2222', 'Max')]);
-  assert.deepEqual(alwaysReadyState({ account:{ id:'BBBB2222' }, party:q }), { show:true, checked:false });
+test('« Prêt tout le temps » (31/10) : visible partout pour un compte connecté, seul, chef ou en prison, cochée selon le serveur', () => {
+  assert.deepEqual(alwaysReadyState({ account:me, alwaysReady:true }), { show:true, checked:true });
+  assert.deepEqual(alwaysReadyState({ account:me, alwaysReady:false }), { show:true, checked:false });
+  assert.deepEqual(alwaysReadyState({ account:me }), { show:true, checked:false });
+  assert.equal(alwaysReadyState({ account:me, alwaysReady:true, offline:true }).show, false);
+  assert.equal(alwaysReadyState({ account:null, alwaysReady:true }).show, false);
 });
 
 test('prêt tout le temps (23/10) : le bouton principal ne permet pas de l\'annuler (seule la case)', () => {
   const p = { leader:'AAAA1111', members:[{ account:'AAAA1111', name:'Zoe' }, { account:'BBBB2222', name:'Max', ready:true, always:true }] };
-  assert.deepEqual(launchState({ account:{ id:'BBBB2222' }, party:p }), { can:false, label:'✔ Prêt tout le temps' });
+  assert.deepEqual(launchState({ account:{ id:'BBBB2222' }, party:p }), { can:true, label:'✔ Prêt (annuler)', action:'ready', ready:false });
 });
 
 

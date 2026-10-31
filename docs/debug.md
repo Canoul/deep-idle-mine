@@ -5860,3 +5860,16 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - ⚠️ Modération : les MP et messages de groupe passent aussi par le filtre, et le texte d'un mot interdit arrive dans la fiche de modération (visible des créateurs). Le contenu des MP est en clair dans `chat_global`, en base, comme le reste du chat.
 - ⚠️ Connu, ancien : un message reçu juste avant d'envoyer le sien peut sauter à l'écran (`add` avance `last` au numéro du message envoyé).
 - ⚠️ Taille du chat (hauteur, largeur, repli) : gardée dans le navigateur, pas sur le compte.
+
+## 31/10/2026 — « Prêt tout le temps » revu (Geoffrey) — branche `geoffrey/pret-prison`
+- **Panne** : la case n'était gardée que dans un groupe (`alwaysOn` en mémoire, reconstruit depuis les groupes au `load`).
+  La prison se fait seul : case cachée, et réglage perdu au premier redémarrage (⚠️ de l'entrée du 23/10, corrigé ici).
+- **Quoi** : store `getAlwaysReady` / `setAlwaysReady` (ns `always_ready`, `server/game/store.js`) ; `alwaysOn` relu au
+  `load`, les `m.always` des groupes existants y sont recopiés. `state` renvoie `alwaysReady`. Route `always-ready`
+  possible sans groupe. Sémantique : `m.always` ne vaut plus prêt (`publicParty`, `notReady`, `sweep`, `newMember`) ;
+  `unready` garde `always && ready` ; `ready(false)` enlève prêt ; cocher en session met `ready` (il était prêt).
+  Lobby : `alwaysReadyState` lit `st.alwaysReady`, plus de confirmation prison sur la case (reste sur « Je suis prêt »).
+  `adminReady` : `--always on/off` met aussi prêt / pas prêt ; `ready` donné l'emporte.
+- **Tests** : `tests/party`, `lobby`, `admin-party`, `prison-ui`.
+- ✅ Vérifié par les tests ; ⚠️ pas essayé dans un navigateur.
+- ⚠️ Un membre coché pas prêt et absent est retiré après `memberTimeout`, comme tout membre pas prêt.

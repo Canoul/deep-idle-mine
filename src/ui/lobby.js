@@ -60,7 +60,6 @@ export function launchState({ account, party, offline, busy, session }){
   const leader = !party || party.leader === account.id;
   if(!leader){
     const me = party.members.find(m => m.account === account.id);
-    if(me?.always) return { can:false, label:'✔ Prêt tout le temps' };   // seule la case l'enlève (23/10)
     return me?.ready ? { can:true, label:'✔ Prêt (annuler)', action:'ready', ready:false }
                      : { can:true, label:'✋ Je suis prêt', action:'ready', ready:true };
   }
@@ -81,8 +80,6 @@ export function prisonLaunchState({ account, party, offline, busy, session, pris
   return { can:true, label:'⛓ Entrer en prison', action:'start' };
 }
 
-/* Case « Prêt tout le temps » : seulement pour un membre (pas le chef) d'un groupe ; utilisable aussi pendant une
-   session, pour être prêt dès la suivante */
 /* case « Modulation » du lobby (tours) : visible pour celui qui lance (seul, ou chef du groupe) quand une tour est choisie,
    si elle est ouverte (TOWER.modulation.open) ou en mode dev ; over : les joueurs au-dessus du plafond (le serveur
    revérifie au lancement) */
@@ -156,10 +153,10 @@ export function seenText(at, now = Date.now()){
   return `Hors ligne · vu il y a ${min < 60 ? `${Math.max(1, min)} min` : `${Math.round(min / 60)} h`}`;
 }
 
-export function alwaysReadyState({ account, party, offline }){
-  if(offline || !account || !party || party.members.length < 2 || party.leader === account.id) return { show:false };
-  const me = party.members.find(m => m.account === account.id);
-  return { show: !!me, checked: !!me?.always };
+/* Case « Prêt tout le temps » (31/10, Geoffrey) : réglage du compte, visible partout (seul, chef, en prison, en session),
+   cochée selon le serveur. Elle garde prêt celui qui l'est, elle ne le rend pas prêt. */
+export function alwaysReadyState({ account, offline, alwaysReady }){
+  return { show: !offline && !!account, checked: !!alwaysReady };
 }
 
 /* compteur de la recherche de groupe, visible même sans chercher (23/10) : vaut-il la peine de s'inscrire ? Mine
@@ -304,7 +301,7 @@ export function setupLobby(h){
       if(s.kind === 'invited')
         return `<div class="pslot free invited"><span class="av">${pxi('group')}</span><span><b>${esc(s.name)}</b><small>invité · en attente</small></span>`+
                (slotButtons(st, s).kick ? `<button class="x" data-kick="${esc(s.displayId)}" title="Annuler l'invitation">×</button>` : '')+`</div>`;
-      const ready = party && !s.leader && !s.playing ? (s.always ? '✔ prêt tout le temps' : s.ready ? '✔ prêt' : 'pas prêt') : null;   // le chef : lancer = prêt
+      const ready = party && !s.leader && !s.playing ? (s.ready ? (s.always ? '✔ prêt tout le temps' : '✔ prêt') : 'pas prêt') : null;   // le chef : lancer = prêt
       const gs = s.me ? h.gs?.() : s.gs;
       const tags = [s.me && 'Toi', s.leader && 'chef', ready, (s.playing || s.me && locked) && 'en session', s.away && 'absent',
                     Number.isFinite(gs) && `${gs.toLocaleString('fr-FR')} GS`].filter(Boolean).join(' · ') || 'Prêt';
@@ -478,6 +475,7 @@ export function setupLobby(h){
     try {
       const r = await fn();
       if(r && 'party' in r) st.party = r.party;
+      if(r && 'alwaysReady' in r) st.alwaysReady = r.alwaysReady;
       if(r && 'lfg' in r) setLfg(r.lfg);
       done?.();
     } catch(e){ error(e.message); }
@@ -555,12 +553,7 @@ export function setupLobby(h){
     act(async () => { const r = await h.shrineGive(id, item, qty); st.shrines = r.shrines; if(r.activated) error(''); return r; }, () => { st.busy = false; }).finally(() => { st.busy = false; render(); });
   };
   $('towerLevelRow').onclick = e => { const b = e.target.closest('button[data-level]'); if(b && !b.disabled){ st.towerLevel = +b.dataset.level; render(); } };
-  /* prêt tout le temps alors que sa prison tourne : le lancement du chef la terminera, on demande d'abord (29/10) */
-  $('alwaysReady').onchange = async () => {
-    const on = $('alwaysReady').checked, q = on ? readyPrisonText({ prison: st.prison, always: true }) : '';
-    if(q && !await ask(q, { ok:'Prêt tout le temps' })){ $('alwaysReady').checked = false; return; }
-    act(() => h.party.alwaysReady(on));
-  };
+  $('alwaysReady').onchange = () => act(() => h.party.alwaysReady($('alwaysReady').checked));
   $('lfgAuto').onchange = () => {
     st.lfgAuto = $('lfgAuto').checked;
     if(st.lfg?.search?.mine) act(() => h.party.lfg(st.lfgAuto));     // déjà en recherche : on garde sa place
