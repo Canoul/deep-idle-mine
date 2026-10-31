@@ -80,16 +80,16 @@ export function rollQuality(rnd){
 const pct1 = v => Math.round(v * 10) / 10;
 /* valeur d'une ligne sur cet objet, en points de sa stat */
 export const lineValue = (item, l, f = 1) => l.stat === 'discoverMax' ? UPGRADE.discover.value : linePoints(item, l.stat, l.pct * f);
-/* ligne d'une rune ou d'un fragment (f : runeFactor) : ajustements offensifs UPGRADE.runeDiv (31/10/2026) */
+/* ligne d'une rune ou d'un fragment (f : runeFactor) : ratios UPGRADE.runeDiv (31/10/2026) */
 export const runeLineFactor = (l, f = 1) => f / (UPGRADE.runeDiv[l.stat] ?? 1);
 export const runeLineValue = (item, l, f = 1) => lineValue(item, l, runeLineFactor(l, f));
 
 /* stats tirées au craft (STUFF.items[…].rolled, Cape inclusive, 31/10/2026) */
 export const rolledSpec = item => (Object.hasOwn(STUFF.items, item) ? STUFF.items[item].rolled : null) ?? null;
-/* prix d'une ligne tirée : prix de dessin ; stat de combat (UPGRADE.runeDiv) : ce prix × UPGRADE.rolledCombatDiv, sa valeur ou .all (31/10/2026, Geoffrey).
+/* prix d'une ligne tirée : prix de dessin × le ratio de la stat (UPGRADE.runeDiv, 31/10/2026, Geoffrey).
    Portée, sans prix mesuré : le prix du tableau des lignes, ajusté pareil */
 export const rolledPrice = stat => stat in UPGRADE.runeDiv
-  ? (designPrice(stat) || UPGRADE.prices[stat] * UPGRADE.runeDiv[stat]) * (UPGRADE.rolledCombatDiv[stat] ?? UPGRADE.rolledCombatDiv.all) : designPrice(stat);
+  ? (designPrice(stat) || UPGRADE.prices[stat] * (UPGRADE.priceAdjust[stat] ?? 1)) * UPGRADE.runeDiv[stat] : designPrice(stat);
 /* points d'une ligne tirée au craft : sa part du x de l'objet (au moins un pas) ; Découverte : +1 */
 export const rolledValue = (item, stat) => { const r = rolledSpec(item);
   return stat === 'discoverMax' ? UPGRADE.discover.value : Math.max(stepOf(stat), roundStat(stat, r.x / r.lines / rolledPrice(stat))); };

@@ -26,7 +26,7 @@ Modèle d'entrée :
 ## 31/10/2026 — Geoffrey — Nouvelle pièce : Cape inclusive
 - **Pour le joueur** : une cape épique aux couleurs du drapeau LGBT, avec 4 lignes de stats tirées au hasard quand on la fabrique et montrées dans le pop-up. Son plan sort du Treasure T4 (0,5 %) et de la dernière étape de la recherche, avec les Jambières titanesques. Le wiki la cache tant que son plan n'est pas sorti.
 - **Décisions** : 1 500 x au total (2 fois le T4.5), 375 x par ligne ; doublons permis, Découverte possible (une au plus). Tirage définitif. Valeurs provisoires.
-- **Décision** : les stats de combat, perçage et recul compris, donnent 3 fois moins de points (dégâts +20,8 % par ligne) ; la vitesse d'attaque 5 fois moins (+19,1 %).
+- **Décision** : mêmes ratios pour la cape, les runes et les fragments : vitesse d'attaque ÷ 5, butin des mobs ÷ 4, stats de combat, ténacité et résistance au recul ÷ 3, coup unique ÷ 2. **Toutes les pièces déjà runées changent**. Le perçage des runes remonte (÷ 3 au lieu de ÷ 4).
 - **À suivre** : avec des doublons, une cape peut rester forte sur une seule stat (au pire +76 % de vitesse d'attaque). À surveiller dans les tours.
 - **État** : pas encore en ligne
 

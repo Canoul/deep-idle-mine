@@ -223,14 +223,14 @@ test('tier : chaque pièce qu\'on peut runer a un tier (T1 100 x, T2 250 x, T3 5
   assert.equal(tierOf('Plastron de l\'équilibre'), 3);
 });
 
-test('ajustements offensifs sur les runes (31/10/2026) : vitesse d\'attaque ÷ 2, dégâts % ÷ 3, perçage ÷ 4 ; identification et autres stats intactes', () => {
+test('ratios sur les runes (31/10/2026) : vitesse d\'attaque ÷ 5, butin ÷ 4, coup unique ÷ 2, combat ÷ 3 ; identification et autres stats intactes', () => {
   const line = { stat: 'attackSpeed', pct: 29.1 };
   assert.equal(lineValue('Doc Martins', line), 37.8, 'identification : comme avant');
-  assert.equal(runeLineValue('Doc Martins', line), 18.9, 'rune : ÷ 2');
-  assert.equal(runeLineValue('Doc Martins', line, 0.5), 9.5, 'fragment : encore ÷ 2');
-  const off = { damage: 2, attackSpeed: 2, doubleAttack: 2, crit: 2, reach: 2, knockback: 2, damagePct: 3, piercing: 4 };
+  assert.equal(runeLineValue('Doc Martins', line), 7.6, 'rune : ÷ 5');
+  assert.equal(runeLineValue('Doc Martins', line, 0.5), 3.8, 'fragment : encore ÷ 2');
+  const off = { damage: 3, attackSpeed: 5, doubleAttack: 3, crit: 3, reach: 3, knockback: 3, damagePct: 3, piercing: 3, looting: 4, oneTap: 2, tenacity: 3, knockRes: 3 };
   assert.deepEqual(UPGRADE.runeDiv, off);
-  for(const stat of ['pods', 'mineSpeed', 'mineSpeedPct', 'tenacity', 'knockRes', 'looting', 'fortune']){
+  for(const stat of ['pods', 'mineSpeed', 'mineSpeedPct', 'fortune', 'speed', 'climbSpeed', 'oxygenMax']){
     const l = { stat, pct: 30 };
     assert.equal(runeLineValue('Doc Martins', l), lineValue('Doc Martins', l), stat);
   }
