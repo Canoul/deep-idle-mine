@@ -5786,3 +5786,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Instance, Jugement** : `#judgmentCard` et `#instCard` en tête de la colonne de gauche du lobby, sets juste dessous (index.html).
 - **Tests** ✅ chat, lobby. ⚠️ Écrans de 1171 à 1400 px : le chat prend beaucoup de largeur au contenu, à regarder.
 
+## 31/10/2026 — Chat flottant, largeur limitée par l'interface centrale (Geoffrey)
+- **Quoi** : plus aucun décalage (`.views`, `.dock`, `#miRun`…, orbes cachées : retirés, remplace l'entrée précédente). `dockFit` et `centralLeft` (src/ui/chat-dock.js) : largeur voulue arrêtée au bord gauche de la mine ou des cartes de l'onglet, recalculée par un ResizeObserver. `overNav` : chat plus large que le début de la barre d'action, son champ remonte au-dessus. `.lobbyWrap` passe de 560u à 450u, comme l'Inventaire ; `CHAT.dock.startWidth` 575 px.
+- **Tests** ✅ chat +1 (`dockFit`), lobby, town, level. Chrome sans écran, 1920 et 1366 px : chat tiré au maximum sur menu, Mine, Inventaire, Stuff, Craft, Session ; barre d'action immobile, aucune erreur.
+- ⚠️ Tour, instance, MI et Bloc géant en direct non regardés : leur canvas part du bord gauche, le chat y reste au minimum (160 px) et le recouvre. Inventaire : le contenu commence à ≈ 135 px en 1366, le minimum y mord de ≈ 25 px. La carte `#gchatDock` est revenue dans `.app`, sinon `.app` (z-index 1) la mettait au-dessus de la barre d'action.

@@ -255,3 +255,12 @@ test('chat permanent : hauteur de départ 60 %, bornée quand on la règle ; lar
   assert.equal(dockShare(0.55), 0.55);
   assert.equal(dockShare(0), CHAT.dock.min); assert.equal(dockShare(1), CHAT.dock.max);
 });
+
+test("chat permanent : largeur arrêtée au bord de l'interface centrale, jamais sous le minimum", async () => {
+  const { dockFit } = await import('../src/ui/chat-dock.js');
+  const { CHAT } = await import('../src/config.js');
+  assert.equal(dockFit(null, Infinity), CHAT.dock.startWidth);
+  assert.equal(dockFit(300, 500), 300);
+  assert.equal(dockFit(700, 500), 500);
+  assert.equal(dockFit(700, 50), CHAT.dock.minWidth);
+});

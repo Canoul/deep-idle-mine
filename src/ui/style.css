@@ -59,7 +59,7 @@ body.townWalk .topbar,body.townWalk .views,body.townWalk .guide{visibility:hidde
 .townLfgMsg{color:var(--bad)}
 .townLfgMsg:empty{display:none}
 body.townWalk .app{pointer-events:none}   /* les clics passent à la ville… */
-body.townWalk .dock,body.townWalk #notifs{pointer-events:auto}   /* … sauf la barre d'action et les pop-ups */
+body.townWalk .dock,body.townWalk .chatDock,body.townWalk #notifs{pointer-events:auto}   /* … sauf la barre d'action et les pop-ups */
 /* transition avec l'onglet Session (backdrop.js) : les panneaux glissent depuis les bords (.bgEnter) ou y repartent
    (.bgLeave, l'onglet reste affiché par-dessus le nouveau le temps de la sortie), linéaire comme le zoom de la mine */
 @keyframes bgFromL{from{transform:translateX(-110%);opacity:0}}
@@ -267,7 +267,7 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .ringStats{color:#c79bff}   /* effet des anneaux (groupe) */
 
 /* ---------- lobby (lecture seule pendant une session) ---------- */
-.lobbyWrap{max-width:calc(560*var(--u))}
+.lobbyWrap{max-width:calc(450*var(--u))}
 .lobbyWrap>h1{margin-bottom:calc(15*var(--u))}
 .inSession{display:flex;align-items:center;justify-content:space-between;gap:calc(4*var(--u));flex-wrap:wrap;margin-bottom:calc(15*var(--u));
   padding:calc(3*var(--u)) calc(6*var(--u));background:var(--sel);box-shadow:0 0 0 var(--u) var(--acc),calc(2*var(--u)) calc(2*var(--u)) 0 #000}
@@ -409,15 +409,13 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .chatFold{margin-left:auto;min-height:0;min-width:calc(12*var(--u));height:calc(10*var(--u));padding:0}
 #gchatLog{flex:1;min-height:0;max-height:none}
 body{--chat-w:calc(287.5*var(--u))}
-@media (min-width:1171px){   /* le contenu et la barre d'action se décalent : rien ne passe sous le chat */
-  body.chatOn .views{margin-left:var(--chat-w)}
-  body.chatOn .dock{left:calc(50% + var(--chat-w)/2);gap:0}
-  body.chatOn #miRun,body.chatOn #twRun,body.chatOn #gtRun,body.chatOn #inRun{left:var(--chat-w)}
-  body.chatOn #run .runL{margin-bottom:var(--chat-h,60dvh)!important}   /* la mine garde sa largeur : la colonne de gauche s'arrête au-dessus du chat */
-}
-@media (min-width:1171px) and (max-width:1320px){ body.chatOn .dock .orb{display:none} }
+/* le chat flotte par-dessus : sa taille ne décale rien (31/10). overNav : plus large que le début de la barre d'action, son
+   champ reste au-dessus d'elle */
+.chatDock.overNav .card{padding-bottom:calc(var(--dock-h) + 6*var(--u))}
+@media (min-width:1171px){ body.chatOn #run .runL{margin-bottom:var(--chat-h,60dvh)!important} }   /* la colonne de gauche s'arrête au-dessus du chat */
 @media (max-width:1170px){
   .chatDock{width:100%;bottom:calc(var(--dock-h) + 2*var(--u))}
+  .chatDock.overNav .card{padding-bottom:0}
   .chatEdge.right,.chatEdge.corner{display:none}   /* toute la largeur de l'écran */
   .chatDock.folded{width:calc(70*var(--u))}
   .guide{bottom:calc(var(--dock-h) + 30*var(--u))}   /* au-dessus du chat replié */
