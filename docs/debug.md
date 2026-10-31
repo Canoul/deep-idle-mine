@@ -6039,3 +6039,8 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Simulation** : acier, 3 mineurs, 3 seeds, table réelle : 0 ver, les mineurs n'atteignent pas l'area 7, donc les vraies valeurs ne sont pas mesurées. Forcé (chiens et vers 80 % de la table dès l'area 2, 2 seeds) ✅ 0 bloquée, 31,5 vers et 423,5 stacks par session, Bleed plafonné à 5, 75 chiens et 38 vers tués ; profondeur 301 (350), coffre 3 667 (4 400).
 - ⚠️ Équilibrage en area 7 jamais observé. Pas vu dans un navigateur : rendu du ver, textures. Une session en cours rejouée après la mise en ligne peut diverger (tables, IA).
 - ⚠️ Stun cause `worm` : pas de libellé dédié dans la bulle. Un ver coincé dont on mine le bloc reste à sa place. Peau et chair sans usage.
+
+## 31/10/2026 — Prison : XP des mobs ×0,5 (Geoffrey)
+- **Mesure base (20 joueurs)** : prison ÷ mines ≈ 0,7 en XP par heure de jeu ; minerais ≈ 0,37 ; XP des mobs déduite par soustraction, ×1,4 à ×3,8 selon le joueur en area 6-7. Cause du surplus de mobs non prouvée.
+- **Quoi** : `PRISON.mobXpMul` 0,5 lu dans `killMob` (src/sim/actions.js). `stats.xp` peut valoir x,5 en prison ; la part versée est arrondie vers le bas (`shareBySegments`), le HUD aussi.
+- **Tests** ✅ prison-profile +1, prison-sim, prison-ui, prison-server (❌ `une tour et une instance lancées terminent la prison` : déjà en échec sur main, sans lien). Simulation prison lancée sans blocage ; effet réel à mesurer en base.
