@@ -6098,3 +6098,8 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** ✅ tests/rune-mark.test.js, tests/stuff-slots-css.test.js. ✅ Rendu vérifié dans Chrome sur une page de test avec le vrai style.css (cases de chaque rareté, avec et sans +N, et ligne de liste).
 - ⚠️ Pas vu en partie réelle avec une pièce runée sur un compte. La case d'une pièce portée dans le Stuff et la fiche d'un ami passent par le même code, sans capture dédiée.
 
+## 31/10/2026 — Pièces runées : texture à la place de la gemme (Geoffrey)
+- **Quoi** : `runeMark` (src/ui/rarity.js) rend un `<span>` avec `RUNE.tex` ou `RUNE.fragment.tex` en image de fond (`p.rune.frag`), et plus l'icône `gem`. Un `<span>` car les `<img>` des cases et des listes reçoivent des tailles de style.css (dont `#spick img`). `--rune` retiré. Remplace l'entrée précédente pour l'apparence.
+- **Tests** ✅ tests/rune-mark.test.js. ✅ Rendu vérifié dans Chrome sur une page de test (rune, fragment, avec et sans +N, ligne de liste).
+- ⚠️ Toujours pas vu en partie réelle. Le chemin `textures/…` de l'image de fond est relatif à index.html : à regarder si l'image manque.
+

@@ -1,9 +1,8 @@
 /* Affichage de la rareté : classe CSS d'une case (contour) et nom d'objet coloré. Couleurs : style.css (--r-…),
    reprises de RARITY en config. */
-import { RARITY } from '../config.js';
+import { RARITY, RUNE } from '../config.js';
 import { rarityOf, rarityDef } from '../meta/rarity.js';
 import { pieceName, pieceColor, itemName, itemColor } from '../meta/piece.js';
-import { pxi } from './pxicons.js';
 
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
 
@@ -24,8 +23,11 @@ export function pname(p, tag = 'span'){
   return c ? `<${tag} class="rn rq" style="color:${c}">${esc(pieceName(p))}</${tag}>` : rname(p.item, pieceName(p), tag);
 }
 
-/* petite icône en bas à gauche de la case d'une pièce qui porte une rune ou un fragment (rien sinon) */
-export const runeMark = p => p?.rune ? pxi('gem', 'runeMark') : '';
+/* petite texture en bas à gauche de la case d'une pièce : la rune ou le fragment qu'elle porte (rien sinon). En fond
+   de <span>, pour échapper aux tailles que style.css impose aux <img> des cases et des listes */
+export const runeMark = p => p?.rune
+  ? `<span class="runeMark" style="background-image:url(textures/${p.rune.frag ? RUNE.fragment.tex : RUNE.tex}.png)"></span>`
+  : '';
 
 /* libellé de la rareté, dans sa couleur (« Inhabituel ») */
 export const rlabel = item => `<span class="rn r-${rarityOf(item)}">${esc(rarityDef(item).label)}</span>`;
