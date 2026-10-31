@@ -5785,3 +5785,9 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - ⚠️ `profile` d'une prison en cours : figé dans son enregistrement, non touché ; le changement s'applique à la prochaine entrée. Une compo enregistrée effacée : le lobby retombe sur Actuelle.
 - ⚠️ Le trio passe sous canoul, Sõnata et Allaiks (mithril 5,8–9,8/h en prison, cobalt ≈ 1,1–1,6/h), qui ne sont pas touchés s'ils n'ont pas de mine au focus.
 - ⚠️ `shares` renormalise à chaque relecture : écart de l'ordre de 1e-16 possible, donc une écriture `prison_compo` de plus au pire (comportement d'avant).
+
+## 31/10/2026 — Golbute : rochers et bras (Geoffrey)
+- **Rochers** : la vue n'envoie un rocher que 15 ticks (1,5 s de jeu, 0,75 s réelle à ×2) pour 0,9 s de chute. `trackRocks` (src/render/golbute-fx.js) les suit dans le navigateur, temps réel.
+- **Bras** : pas de texture de côté. `golbute_body` et `golbute_arm` (+ `_crystal`, scripts/gen_golbute.py) ; `armPose` : levés, frappe, étirés jusqu'au sol, retour (640 ms). Le coup se joue après son effet : la partie n'envoie pas le prochain coup à l'avance.
+- **Tests** ✅ golbute-fx, golbute-sprite, golbute ; rendu vérifié dans Chrome (images du vrai moteur de dessin, pierre, cristal, rochers). ⚠️ Pas vu en partie réelle.
+

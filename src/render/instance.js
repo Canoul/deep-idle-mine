@@ -9,6 +9,7 @@ import { createMinerSprite } from './miner-sprite.js';
 import { drawMobFx } from './effects.js';
 import { shownPos } from '../shared/view.js';
 import { ROCK, CAGE, SPAWNER } from '../sim/instance/world.js';
+import { armPose, trackRocks, SLAM_MS } from './golbute-fx.js';
 
 export const IN_TILE = 16;
 const ARC_MS = 350;
@@ -102,10 +103,20 @@ export function createInstanceRenderer(cv){
   }
 
   /* Instance II, le Golbute (30/10/2026) : arène vide (sol de briques), le Golbute 5 × 5 (cristal : texture de cristal ;
-     coup au sol : il s'abaisse, poussière sur 3 cases de chaque côté), ses golems, les rochers de l'avalanche qui tombent
-     sur chaque mineur, les mineurs (un mort est couché, grisé) */
-  const SLAM_MS = 450, ROCK_MS = 900;
-  const seen = { slam: null, slamAt: 0, rocks: new Map() };
+     coup au sol : il lève les bras et frappe de chaque côté, poussière sur 3 cases, src/render/golbute-fx.js), ses golems,
+     les rochers de l'avalanche qui tombent sur chaque mineur, les mineurs (un mort est couché, grisé) */
+  const seen = { slam: null, slamAt: -Infinity, rocks: new Map() };
+  /* bras du Golbute : texture du bras gauche (34 × 80 px), pivot à l'épaule ; le droit en miroir */
+  function drawArm(b, px, py, side, pose, name, fallback){
+    const k = T / 16, pivX = 18 * k, pivY = 24 * k;
+    ctx.save();
+    ctx.translate(side < 0 ? px + pivX : px + b.w * T - pivX, py + pivY);
+    if(side > 0) ctx.scale(-1, 1);
+    ctx.rotate(pose.angle);
+    ctx.scale(1, pose.stretch);
+    blit(name, -pivX, -pivY, fallback, 34 * k, b.h * T);
+    ctx.restore();
+  }
   function drawGolbute(G, me, now){
     for(let y = 0; y <= G.h; y++) for(let x = 0; x < G.w; x++){
       const px = x * T, py = y * T;
@@ -113,23 +124,23 @@ export function createInstanceRenderer(cv){
       if(G.tiles[y][x]) blit('dungeon_brick', px, py, '#4a3a2e');
     }
     const b = G.boss;
-    if(b && b.slamAt != null && b.slamAt !== seen.slam){ seen.slam = b.slamAt; seen.slamAt = now; }
-    const sp = (now - seen.slamAt) / SLAM_MS, slamming = sp >= 0 && sp < 1;
+    if(b && b.slamAt != null && b.slamAt !== seen.slam){
+      seen.slam = b.slamAt;
+      if(now - seen.slamAt >= SLAM_MS) seen.slamAt = now;   // une animation commencée va au bout
+    }
+    const pose = armPose((now - seen.slamAt) / SLAM_MS);
     if(b && b.hp > 0 && b.state !== 'split'){
-      const px = b.x * T, py = (b.y - b.h + 1) * T, dip = slamming ? Math.round(3 * Math.sin(Math.PI * sp)) : 0;
+      const px = b.x * T, py = (b.y - b.h + 1) * T, crystal = b.state === 'crystal', end = crystal ? '_crystal' : '', stone = crystal ? '#7fd6ff' : '#6b6f78';
       ctx.save();
       if(b.rage){ ctx.shadowColor = '#ff3b3b'; ctx.shadowBlur = 10; }
-      if(b.state === 'crystal'){ ctx.shadowColor = '#9fe8ff'; ctx.shadowBlur = 12; }
-      blit(b.state === 'crystal' ? 'golbute_crystal' : 'golbute', px, py + dip, b.state === 'crystal' ? '#7fd6ff' : '#6b6f78', b.w * T, b.h * T);
+      if(crystal){ ctx.shadowColor = '#9fe8ff'; ctx.shadowBlur = 12; }
+      blit('golbute_body' + end, px, py + pose.dip, stone, b.w * T, b.h * T);
+      for(const side of [-1, 1]) drawArm(b, px, py + pose.dip, side, pose, 'golbute_arm' + end, stone);
       ctx.restore();
-      /* bras qui tapent le sol : deux poings qui descendent de chaque côté, puis la poussière sur sa portée */
-      if(slamming){
-        ctx.fillStyle = '#5d626a';
-        const fy = py + (b.h - 2) * T + Math.round(T * Math.sin(Math.PI * Math.min(1, sp * 2)));
-        ctx.fillRect(px - 6, fy, 8, 12); ctx.fillRect(px + b.w * T - 2, fy, 8, 12);
-        ctx.fillStyle = `rgba(200,180,150,${(1 - sp) * 0.7})`;
-        const R = INSTANCE.golbute.slam.range * T;
-        ctx.fillRect(px - R, (b.y + 1) * T - 5, R, 4); ctx.fillRect(px + b.w * T, (b.y + 1) * T - 5, R, 4);
+      if(pose.dust > 0){
+        ctx.fillStyle = `rgba(200,180,150,${pose.dust * 0.7})`;
+        const R = INSTANCE.golbute.slam.range * T, floor = (b.y + 1) * T, up = Math.round((1 - pose.dust) * 6);
+        ctx.fillRect(px - R, floor - 5 - up, R, 4 + up); ctx.fillRect(px + b.w * T, floor - 5 - up, R, 4 + up);
       }
       if(b.state === 'crystal' && b.crystal) bar(px - 2, py - 13, b.w * T + 4, b.crystal.hp / b.crystal.max, '#9fe8ff');
       bar(px - 2, py - 7, b.w * T + 4, b.hp / b.maxhp, b.rage ? '#ff3b3b' : '#c9b48a');
@@ -154,15 +165,15 @@ export function createInstanceRenderer(cv){
       const a = m.action?.type === 'drill' ? { type: 'mine' } : m.action?.type === 'attack' ? { type: 'attack' } : m.action;
       sprite({ ...m, action: a }, x * T, y * T, m === mine, now);
     }
-    /* rochers de l'avalanche : chacun tombe du plafond sur sa colonne (ROCK_MS), puis disparaît */
-    for(const r of G.rocks || []){
-      const k = r.at + ':' + r.x;
-      if(!seen.rocks.has(k)) seen.rocks.set(k, now);
-      const p = (now - seen.rocks.get(k)) / ROCK_MS;
-      if(p < 0 || p >= 1) continue;
-      blit('golbute_rock', r.x * T, Math.round(p * G.floorY * T), '#8a7a66');
+    /* rochers de l'avalanche : chacun tombe du plafond sur sa colonne jusqu'au sol, s'y brise dans la poussière */
+    for(const r of trackRocks(seen.rocks, G.rocks, now)){
+      const px = r.x * T, py = Math.round(r.fall * G.floorY * T);
+      if(!r.dust){ blit('golbute_rock', px, py, '#8a7a66'); continue; }
+      ctx.save(); ctx.globalAlpha = r.dust; blit('golbute_rock', px, py, '#8a7a66'); ctx.restore();
+      ctx.fillStyle = `rgba(200,180,150,${r.dust * 0.7})`;
+      const w = Math.round(T * (2.2 - r.dust));
+      ctx.fillRect(px + T / 2 - w / 2, py + T - 4 - Math.round((1 - r.dust) * 5), w, 4);
     }
-    if(seen.rocks.size > 60) for(const [k, t0] of seen.rocks) if(now - t0 > ROCK_MS * 3) seen.rocks.delete(k);
   }
   return { draw };
 }
