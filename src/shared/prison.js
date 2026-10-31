@@ -71,7 +71,7 @@ export const runId = p => `prison:${p.id}:${p.run}`;
 /* pseudo-session pour le moteur (server/game/live-game.js) */
 export const runRecord = p => ({
   id: runId(p), mode: 'prison', seed: p.seed, run: p.run, specs: p.specs, areaMax: p.areaMax, profile: p.profile ?? null,
-  players: [{ account: p.account, name: String(p.specs?.name ?? '') }], leaves: [], focus: [],
+  players: [{ account: p.account, name: String(p.specs?.name ?? ''), ...(p.specs?.guild ? { guild: String(p.specs.guild) } : {}) }], leaves: [], focus: [],
 });
 
 /* la partie d'un run : le mineur du joueur (stuff, skills, glyphes, sorts, anneaux et préférences figés) */

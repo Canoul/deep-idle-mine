@@ -18,10 +18,10 @@ const enc36 = v => v.toString(36);
 const dec36 = c => parseInt(c, 36);
 
 /* ce que l'affichage lit d'un mineur (pas de références internes à la simulation) */
-function minerView(G, m){
+export function minerView(G, m){
   const a = m.action, d = a?.data || {};
   return {
-    id: m.id, name: m.name, color: m.color, account: m.account, x: m.x, y: m.y, kx: m.kx || 0, ky: m.ky || 0, face: m.face,
+    id: m.id, name: m.name, guild: m.guild, color: m.color, account: m.account, x: m.x, y: m.y, kx: m.kx || 0, ky: m.ky || 0, face: m.face,
     status: m.status, mode: m.mode, reason: m.reason, ox: m.ox, load: m.load, inv: m.inv,
     torches: m.torches, bridges: m.bridges, prefs: m.prefs, focusNotice: m.focusNotice ?? null, stats: m.stats,
     pings: (m.pings || []).map(({ x, y, t }) => ({ x, y, t })),     // minerais signalés par la boussole (cadres jaunes)

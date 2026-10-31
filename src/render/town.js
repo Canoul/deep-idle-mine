@@ -7,7 +7,7 @@
    en résolution × HIRES : les textures restent en gros pixels, les textes (noms, bulles) sont plus nets. */
 import { TOWN, JUDGMENT } from '../config.js';
 import { loadTextures } from './textures.js';
-import { createMinerSprite } from './miner-sprite.js';
+import { LABEL_GUILD_H, createMinerSprite } from './miner-sprite.js';
 import { townBuildings, TOWN_WIDTH, hash01, emoteOf } from '../shared/town.js';
 
 export const TOWN_TILE = 16;
@@ -172,8 +172,8 @@ export function createTownRenderer(cv){
     const hop = e && (e.id === 'wave' || e.id === 'gg') && age < 600 ? -Math.round(4 * Math.sin(age / 600 * Math.PI)) : 0;
     const bob = p.walking && Math.floor(now / 110 + hash01(p.id ?? '') * 4) % 2 ? -1 : 0;
     const py = (G - 1) * T + bob + hop, cx = Math.round(px + T / 2);
-    sprite({ id: 0, face: p.face, look: p.look ?? {}, auras: p.auras ?? {}, name: p.name, action: null }, Math.round(px), Math.round(py), p.me, now);
-    let top = py - 11;
+    sprite({ id: 0, face: p.face, look: p.look ?? {}, auras: p.auras ?? {}, name: p.name, guild: p.guild, action: null }, Math.round(px), Math.round(py), p.me, now);
+    let top = py - 11 - (p.guild ? LABEL_GUILD_H : 0);
     ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
     if(p.group){
       const txt = `${p.group.size}/${p.group.max}`;

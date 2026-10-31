@@ -103,6 +103,8 @@ export function createGuildService({ store, accounts, statusOf, clock = Date.now
       const sorted = all().sort((a, b) => b.rawXp - a.rawXp || a.createdAt - b.createdAt);
       return { guilds:await Promise.all(sorted.map(async (g, i) => ({ rank:i + 1, ...await summary(g) }))) };
     },
+    /* nom de la guilde d'un joueur, null sans guilde (sous son pseudo) */
+    async nameOf(id){ await load(); return guildOf(id)?.name ?? null; },
     /* invitations reçues par un joueur (pop-up, server/social/service.js) */
     async invitesOf(id){ await load(); return invitesFor(id).map(g => ({ guildId:g.id, name:g.name })); },
 

@@ -144,7 +144,7 @@ export function setupTown(root, { ping, emote, me, onEnter, friend, invite, onWa
     try {
       const res = await ping({ spot: free ? 'session' : tab, x: free ? Math.round(x * 100) / 100 : null });
       others = mergeOthers(others, res?.players ?? [], performance.now());
-      mySay = res?.say ?? null; statue = res?.statue ?? null;
+      mySay = res?.say ?? null; myGuild = res?.guild ?? null; statue = res?.statue ?? null;
       const g = res?.group ?? null;
       if((g?.tag ?? null) !== (myGroup?.tag ?? null) && !free){ myGroup = g; go(restX(tab, m.id, g?.tag)); }
       myGroup = g;
@@ -269,12 +269,12 @@ export function setupTown(root, { ping, emote, me, onEnter, friend, invite, onWa
     door.style.top = Math.round(hint.getBoundingClientRect().bottom + 12) + 'px'; door.style.bottom = 'auto'; door.style.left = '';
   }
   /* joueurs affichés, moi en dernier (dessiné par-dessus) */
-  let walking = false;
+  let walking = false, myGuild = null;
   function shownPlayers(){
     const m = me(), list = [...others.values()];
     if(m && x !== null){
       const em = myEmote && performance.now() - myEmote.at < TOWN.emoteMs ? myEmote : null;
-      list.push({ id: m.id, name: m.name, look: m.look, auras: m.auras, level: m.level, tree: m.tree, gs: m.gs, x, face, walking,
+      list.push({ id: m.id, name: m.name, guild: myGuild, look: m.look, auras: m.auras, level: m.level, tree: m.tree, gs: m.gs, x, face, walking,
                   say: mySay, emote: em?.id ?? null, emoteAt: em?.at, group: myGroup, lfg: !!lfgShown?.on, me: true });
     }
     return list;

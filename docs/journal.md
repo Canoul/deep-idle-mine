@@ -9,6 +9,10 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 31/10/2026 — Geoffrey — Nom de guilde au-dessus de la tête
+- **Pour le joueur** : sous le pseudo, en plus petit, `< Nom de la guilde >`, centré au-dessus du personnage, dans la mine, en prison et dans le Carreau. En session, c'est la guilde du lancement : en changer se voit à la session suivante.
+- **État** : 🧪 sur la branche `geoffrey/guilde-pseudo` (pas en ligne)
+
 ## 31/10/2026 — Geoffrey — Guildes
 - **Pour le joueur** : nouvel onglet Guilde (touche G). Créer une guilde (gratuit), inviter un joueur par pseudo ou demander à rejoindre depuis Rechercher, grades Chef / Officier / Membre, promotion et exclusion, jusqu'à 30 membres. 1 % de l'XP de chaque membre va à la guilde, dont le niveau suit la même courbe que le mineur, et chaque membre voit l'XP qu'il a rapportée. Classement des guildes par niveau.
 - **Pas encore là** : les bonus et les bâtiments (emplacements prévus à l'écran, vides). Pas de bâtiment Guilde dans le Carreau.
