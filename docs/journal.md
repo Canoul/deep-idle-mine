@@ -16,6 +16,11 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 31/10/2026 — Geoffrey — Le Carreau : clic sur la statue
+- **Pour le joueur** : cliquer sur la statue du meilleur GS n'ouvre plus le Lobby : le mineur marche jusqu'à elle et sa
+  plaque s'affiche. Cliquer ailleurs sur la place mène toujours au Lobby.
+- **État** : 🧪 sur la branche `geoffrey/fix-statue-gs` (pas en ligne)
+
 ## 31/10/2026 — Geoffrey — Social : joueur en prison en vert
 - **Pour le joueur** : dans l'onglet Social, un joueur en prison qui a le jeu ouvert a une pastille verte. Si sa prison
   tourne page fermée, la pastille reste orange. Le texte « En session · Prison » et les boutons ne changent pas.

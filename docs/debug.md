@@ -5944,3 +5944,9 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 
 ## 31/10/2026 — Grimoire trié (Geoffrey)
 - **Quoi** : `grimoireOrder` (src/ui/spells.js), tri stable par état. **Tests** ✅ spells +1.
+
+## 31/10/2026 — Le Carreau : clic sur la statue (Geoffrey) — branche `geoffrey/fix-statue-gs`
+- **Panne** : la statue est dans la façade de la place (`kind:'place'`, onglet Lobby), le clic valait « entrer ».
+- **Quoi** : `onStatue` (`src/ui/town.js`) : sur la statue, le clic n'est plus un clic de bâtiment, le mineur y marche.
+- **Tests** : `tests/town.test.js`. ✅ Vérifié par les tests ; ⚠️ pas essayé dans un navigateur.
+- ⚠️ Les bannières Ange / Démon, sur la même place, mènent toujours au Lobby.

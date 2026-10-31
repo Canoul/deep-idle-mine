@@ -41,6 +41,10 @@ export const enterLabel = b => b.tab === 'session' || b.tab === 'lobby' ? 'Prép
    bâtiment y va puis entre. */
 export const tapAction = (hit, tx, touch) => hit && !touch ? { to: hit.door, enter: true } : { to: tx, enter: false };
 
+/* la case visée est-elle sur la statue (socle de 2 cases et mineur de pierre, 4 cases de haut) ? La place mène au Lobby,
+   mais un clic sur la statue y marche seulement : sa plaque s'affiche devant elle (31/10/2026) */
+export const onStatue = (b, tx, ty) => b?.kind === 'place' && tx >= b.x + TOWN.place.statue && tx < b.x + TOWN.place.statue + 2 && ty >= TOWN.ground - 4;
+
 /* devant ce bâtiment, « Préparer une session » (le chevalement, la place) : on y propose aussi la recherche de groupe */
 export const launchSpot = b => !!b && (b.tab === 'session' || b.tab === 'lobby');
 
@@ -222,7 +226,8 @@ export function setupTown(root, { ping, emote, me, onEnter, friend, invite, onWa
     const who = ty >= TOWN.ground - 1.7 && ty < TOWN.ground && [...shownPlayers()].reverse().find(p => Math.abs(p.x - tx) <= 0.5);
     if(who){ openCard(who, e.clientX, b.top + (TOWN.ground - 1.7) * s * TOWN_TILE); return; }
     closeCard();
-    const hit = (ty < TOWN.ground && townBuildings().find(k => tx >= k.x && tx < k.x + k.w && ty >= TOWN.ground - k.h)) || null;
+    const touched = (ty < TOWN.ground && townBuildings().find(k => tx >= k.x && tx < k.x + k.w && ty >= TOWN.ground - k.h)) || null;
+    const hit = onStatue(touched, tx, ty) ? null : touched;
     const act = tapAction(hit, tx, e.pointerType === 'touch' || e.pointerType === 'pen');
     go(act.to);
     enterOnArrive = act.enter ? hit : null;
