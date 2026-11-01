@@ -1443,6 +1443,29 @@ def main():
     rect(sk_mace, 9, 3, 4, 4, hexc('#8d939c')); rect(sk_mace, 10, 2, 2, 6, hexc('#8d939c')); rect(sk_mace, 8, 4, 6, 2, hexc('#8d939c'))
     rect(sk_mace, 10, 3, 1, 1, hexc('#d4d8de'))
     tex['skins/mace_goblin_king'] = sk_mace
+    # Arc de l'Admin (01/11/2026) : bois sombre et or, regard vers la droite
+    wood, gold_l, cord, feather = hexc('#5a2d0c'), hexc('#ffd23f'), hexc('#f4f1ea'), hexc('#ff8c1a')
+    limb = [(6, 1), (8, 2), (9, 3), (10, 4), (11, 5), (11, 6), (12, 7), (12, 8), (11, 9), (11, 10), (10, 11), (9, 12), (8, 13), (6, 14)]
+    def bow(pull):
+        b = blank()
+        for x, y in limb:
+            rect(b, x, y, 1, 1, wood); rect(b, x + 1, y, 1, 1, gold_l)
+        for i in range(13):
+            y = 1 + i
+            d = 7 - abs(y - 7.5)                          # corde : tirée vers l'arrière au milieu
+            rect(b, 6 - int(d * pull / 6), y, 1, 1, cord)
+        return b
+    sk_bow = bow(0); tex['skins/bow_admin'] = sk_bow
+    tex['bow_admin'] = sk_bow
+    sk_bow_d = bow(5)
+    rect(sk_bow_d, 1, 7, 13, 1, hexc('#c9cdd4'))           # flèche encochée
+    rect(sk_bow_d, 14, 7, 1, 1, gold_l)
+    tex['skins/bow_admin_drawn'] = sk_bow_d
+    sk_arrow = blank()
+    rect(sk_arrow, 2, 7, 11, 1, hexc('#c9cdd4'))
+    rect(sk_arrow, 13, 7, 2, 1, gold_l); rect(sk_arrow, 13, 6, 1, 3, gold_l)
+    rect(sk_arrow, 1, 6, 2, 1, feather); rect(sk_arrow, 1, 8, 2, 1, feather)
+    tex['skins/arrow'] = sk_arrow
     # épée tenue en main (combat) : même repère que les pioches (poignée en bas à gauche)
     sk_sword = blank()
     for i in range(9):

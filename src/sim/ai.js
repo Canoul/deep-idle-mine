@@ -131,7 +131,7 @@ function nearestThreat(G,m){
     const c=o.h ? nearCell(o,m) : o, d=Math.hypot(c.x-m.x,c.y-m.y);   // mur de chair : depuis sa case la plus proche
     if(o.type==='mimic' && !o.revealed && d<=MOBS.mimicRevealDist) revealMimic(G,o);
     if(o.type==='mimic' && !o.revealed) continue;
-    if(d>R){ if(d<fd){fd=d;far=o;} continue; }
+    if(d>R && !inReach(G,m,o,reachOf(m))){ if(d<fd){fd=d;far=o;} continue; }   // à portée de coup, ligne dégagée : il le vise même dans le noir (arc, 01/11/2026)
     if(d<bd){bd=d;best=o;}
   }
   return best ?? (G.khole?.map.seeAll ? far : null);

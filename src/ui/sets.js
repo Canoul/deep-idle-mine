@@ -20,13 +20,21 @@ export function setsHtml({ list = [], max = 20 }, { locked = false, busy = false
   return head + (rows || '<p class="mut small">Aucun set : enregistre ton équipement actuel.</p>')+
     (list.length < max ? `<button class="setNew" data-act="create"${off}>+ Nouveau set</button>` : '')+
     (locked ? '<p class="mut small">Session en cours : un set équipé maintenant compte dès la prochaine session.</p>' : '')+
-    (msg ? `<p class="small ${msg.ok ? 'mut' : 'err'}">${esc(msg.text)}</p>` : '');
+    (msg ? `<p class="small err">${esc(msg)}</p>` : '');
+}
+
+/* textes de la pop-up de confirmation */
+export const savedText = name => `Stuff bien sauvegardé dans « ${name} »`;
+export function equippedText(name, missing = 0, inSession = false){
+  const pieces = missing > 1 ? `${missing} pièces introuvables` : `${missing} pièce introuvable`;
+  return (missing ? `Set « ${name} » équipé : ${pieces}` : `Set « ${name} » bien équipé`)+(inSession ? '. Il compte dès la prochaine session.' : '');
 }
 
 /* onOp(op) → promesse de la réponse du serveur ({ sets, inventory, stuff, skills, spells, missing? }) ;
    onLoadout(réponse) : l'équipement a peut-être changé ; inSession() : une session est en cours ;
-   current() : l'équipement actuel { worn, skills, spells } (pour le set équipé ; refresh() quand il change) */
-export function setupSets({ onOp, onLoadout = () => {}, inSession = () => false, current = () => null }){
+   current() : l'équipement actuel { worn, skills, spells } (pour le set équipé ; refresh() quand il change) ;
+   onDone(texte) : la pop-up de confirmation */
+export function setupSets({ onOp, onLoadout = () => {}, inSession = () => false, current = () => null, onDone = () => {} }){
   let st = { list:[], max:20 }, busy = false, msg = '';
   const $ = id => document.getElementById(id);
 
@@ -38,20 +46,17 @@ export function setupSets({ onOp, onLoadout = () => {}, inSession = () => false,
   async function send(op, done){
     if(busy) return;
     busy = true; msg = ''; render();
-    try { const r = await onOp(op); st = r.sets; onLoadout(r); msg = done ? { ok:true, text:done(r) } : ''; }
-    catch(e){ msg = { ok:false, text:e.message }; }
+    try { const before = st.list, r = await onOp(op); st = r.sets; onLoadout(r); if(done) onDone(done(r, before)); }
+    catch(e){ msg = e.message; }
     finally { busy = false; render(); }
   }
   async function onClick(e){
     const b = e.target.closest('[data-act]'); if(!b) return;
     const act = b.dataset.act, id = +b.closest('[data-set]')?.dataset.set, set = st.list.find(s => s.id === id);
-    if(act === 'create') return send({ action:'create' }, () => 'Set créé avec ton équipement actuel.');
+    if(act === 'create') return send({ action:'create' }, (r, before) => savedText(r.sets.list.find(s => !before.some(o => o.id === s.id))?.name ?? 'ton nouveau set'));
     if(!set) return;
-    if(act === 'equip'){
-      const next = inSession() ? ' Il compte dès la prochaine session.' : '';
-      send({ action:'equip', id }, r => (r.missing ? `${set.name} équipé : ${r.missing} pièce${r.missing > 1 ? 's' : ''} introuvable${r.missing > 1 ? 's' : ''}.` : `${set.name} équipé.`) + next);
-    }
-    else if(act === 'save'){ if(await ask(`Remplacer « ${set.name} » par ton équipement actuel ?`, { ok:'Enregistrer' })) send({ action:'save', id }, () => `${set.name} enregistré.`); }
+    if(act === 'equip') send({ action:'equip', id }, r => equippedText(set.name, r.missing, inSession()));
+    else if(act === 'save'){ if(await ask(`Remplacer « ${set.name} » par ton équipement actuel ?`, { ok:'Enregistrer' })) send({ action:'save', id }, () => savedText(set.name)); }
     else if(act === 'rename'){ const name = await askText('Nom du set', set.name, { ok:'Renommer', maxLength:24 }); if(name != null && name.trim()) send({ action:'rename', id, name }); }
     else if(act === 'delete'){ if(await ask(`Supprimer « ${set.name} » ?`, { ok:'Supprimer', danger:true })) send({ action:'delete', id }); }
   }

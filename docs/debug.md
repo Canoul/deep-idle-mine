@@ -6171,7 +6171,33 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Don** : réservation dans la file de la guilde (`pending`, `giving`), retrait de l'inventaire HORS de la file, puis comptage. Raison : le versement d'une session attend `addXp` (la file) en tenant `inv:<compte>` ; attendre ce verrou dans la file serait un interblocage. Rien n'est écrit à la guilde avant le retrait. Coupure entre retrait et comptage : la matière est perdue pour ce don, jamais dupliquée ; un renvoi du même opId la compte sans la retirer à nouveau.
 - **Bonus** : `skills.guild` figé par `frozenSkills` (freezePlayer, ouverture de mine instantanée, Bloc géant), relu par `sanitizeSkills` (stats de la config et plafond), transmis par `skillEffects`, appliqué en fin de `withSkillStats`. Il suit donc toutes les parties et leurs rejeux. La fortune est en `add` (points de %), comme l'Anneau de Midas : un `mult` sur une fortune de 0 ne donnerait rien.
 - **Journal** : ns `guild_log`, clé `guilde:page`, `GUILD.logPage` lignes par page, `g.log` = nombre de lignes. Hors de la fiche `guilds`, qui est réécrite à chaque action. Non supprimé quand la guilde disparaît.
-- **Tests** ✅ tests/guild-buildings.test.js, tests/anticheat/guild-buildings.test.js (a trouvé un double comptage de deux envois simultanés du même opId, corrigé par `giving`), guild-service, guild-ui, guild, skills. ✅ Chrome avec le vrai serveur : textures, dons, plafond, refus sans matière, construction, journal, `skills.guild` dans une vraie session.
-- ⚠️ Pas essayé : PostgreSQL (le ns `guild_log` est ajouté à `db.load`, à regarder après la 1re mise en ligne : un redémarrage doit garder le journal), deux vrais joueurs en même temps, bouton Voir dans Chrome (couvert seulement par les tests du serveur).
+- **Tests** ✅ tests/guild-buildings.test.js, tests/anticheat/guild-buildings.test.js (a trouvé un double comptage de deux envois simultanés du même opId, corrigé par `giving`), guild-service, guild-ui, guild, skills. ✅ Chrome avec le vrai serveur : textures, dons, plafond, refus sans matière, construction, journal, `skills.guild` dans une vraie session, bouton Voir (lecture seule).
+- ⚠️ Pas essayé : PostgreSQL (le ns `guild_log` est ajouté à `db.load`, à regarder après la 1re mise en ligne : un redémarrage doit garder le journal), deux vrais joueurs en même temps.
 - ⚠️ L'onglet Stuff n'affiche pas le bonus de guilde dans les stats du mineur : seule la carte Bonus actifs le montre.
+
+## 01/11/2026 — Arc de l'Admin (Geoffrey)
+- **Quoi** : `STUFF.items['Arc de l'Admin']` (T4.5, secret au wiki), `SKIN.bow`, `bowOf`, `src/render/bow.js` (bowShot, pur), `shoot` dans miner-sprite.js, 4 textures. Le coup reste instantané (landHit, reachOf) : la flèche est un dessin, son cycle suit l'horloge de la page (BOW_SHOT), pas les vrais coups.
+- **Cible de la flèche** : `action.data.aim` ; mine : calculée dans minerView depuis `d.mob` ; tour, Instances I et II : posée par `strike`. Sans aim (boss) : une case devant lui.
+- **IA** : `nearestThreat` (ai.js) compte aussi un mob hors lumière s'il est dans `inReach(reachOf(m))`. Sans ça, la portée 8 ne servait qu'à 2-5 cases (rayon de lumière). Sans effet sur les armes actuelles tant que la portée reste sous le rayon de lumière.
+- **Limites** : ligne droite seulement (`gap` : Infinity en diagonale). Roi Gobelin et Golbute : `inContact`, pas de tir de loin. Un mineur Ignorer/Fuir ne tire pas.
+- **Tests** ✅ tests/bow.test.js, lance, combat, focus, gearscore, rarity, wiki-secret, rune, stuff, instance*, tower* ; simulation 5 sessions OK (3 areas, prof. 189,8, sans arc équipé).
+- ⚠️ Pas vu dans un navigateur : dessin de l'arc, de la flèche, tir vertical. Rendu en tour et Instances non testé (fonction pure seulement). Arc jamais simulé sur une session complète.
+
+## 01/11/2026 — Prêt tout le temps : prêt d'office (Geoffrey) — branche `geoffrey/fix-toujours-pret`
+- **Cause** : la case restait cochée, mais `leave` retire le membre et `newMember` le recréait `ready:false`. La prison étant solo,
+  le retour de prison passait toujours par là. C'était la règle posée le 31/10.
+- **Quoi** (`server/party/service.js`) : `addMember` remplace les 4 `push(newMember)` ; `m.afterPrison` (enregistré) attend la fin de
+  prison, résolu dans `sweep`. `ready()` l'efface. Texte d'aide de la case dans `index.html`.
+- **Tests** : `tests/party.test.js` ✅ (3 nouveaux) ; ⚠️ pas vu dans un navigateur.
+- **Point fragile** : la route `POST /api/game/prison/start` passe `members:null`, donc « solo seulement » n'est vérifié que par le
+  navigateur.
+
+## 01/11/2026 — Sets : pop-up de confirmation (Geoffrey) — branche `geoffrey/set-popup`
+- **Quoi** : `notify.flash` (`src/ui/notify.js`, à part de `sync` qui retire ce qu'il ne connaît pas), `NOTIFY.flashMs`, `savedText` /
+  `equippedText` et `onDone` (`src/ui/sets.js`), branché dans `src/main.js`. Les erreurs restent sous la liste des sets.
+- **Tests** : `tests/notify.test.js`, `tests/sets.test.js` ✅ ; ⚠️ pas vu dans un navigateur.
+
+## 01/11/2026 — Guilde : membres visibles depuis Rechercher (Geoffrey)
+- **Quoi** : `guild.members(me, id)` (server/guild/service.js), `POST /api/guild/members`, `guildApi.members`. Renvoie pseudo, grade, XP : ni identifiant de compte ni présence, qui restent réservés aux membres. Dans src/ui/guild.js, `open` = guilde dépliée, relue à chaque relecture ; refermée si elle sort de la liste ou disparaît. `members` garde l'id de sa guilde : une réponse en retard ne s'affiche pas sous une autre.
+- **Tests** ✅ tests/guild-service.test.js, tests/guild-ui.test.js.
 

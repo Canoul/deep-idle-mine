@@ -220,3 +220,20 @@ test('créer sa guilde annule ses demandes et invitations en attente', async () 
   assert.deepEqual(v.invites, []); assert.deepEqual(v.requests, []);
   assert.deepEqual((await guild.view(ZOE)).mine.requests, []);
 });
+
+test('membres d\'une guilde : visibles de tous, triés par grade, sans identifiant ni présence', async () => {
+  const { guild } = await trio();
+  await guild.addXp(LEA.id, 200000);
+  const r = await guild.members(TOM, 'g1');
+  assert.deepEqual(r.members.map(m => [m.name, m.rank]), [['Zoe', 'chief'], ['Max', 'officer'], ['Lea', 'member']]);
+  assert.equal(r.members[2].xp, 2000);
+  assert.deepEqual(Object.keys(r.members[0]).sort(), ['name', 'rank', 'xp']);
+});
+
+test('membres d\'une guilde : guilde inconnue ou identifiant invalide refusés', async () => {
+  const { guild } = await trio();
+  await rejects(guild.members(TOM, 'g9'), 'not_found');
+  await rejects(guild.members(TOM, '__proto__'), 'not_found');
+  for(const bad of ['', null, 12, 'x'.repeat(65)]) await rejects(guild.members(TOM, bad), 'bad_request');
+});
+

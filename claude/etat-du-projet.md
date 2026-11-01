@@ -36,8 +36,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   « Mine / Mine instantanée / tours ouvertes ») et reste visible en **lecture seule** pendant une session ;
   l'onglet **Session** montre la partie puis le bilan, « Tu n'es pas en session » sinon. Au lancement, tout le
   groupe bascule sur Session. **« Prêt tout le temps »** (revu le 31/10) : réglage du compte (`always_ready`), case visible
-  partout, même seul ou en prison ; elle garde prêt celui qui l'est (un clic « Je suis prêt » en entrant dans un groupe),
-  le chef enchaîne sans attendre (ancien : cocher rendait prêt, case réservée à un membre d'un groupe). Le serveur enregistre le type de mine (`mode`) et refuse un type pas prêt.
+  partout, même seul ou en prison ; cochée, prêt d'office en entrant dans un groupe et en sortant de prison, jamais tant que la prison tourne (01/11),
+  le chef enchaîne sans attendre (ancien : un clic à chaque nouveau groupe et au retour de prison ; case réservée à un membre d'un groupe). Le serveur enregistre le type de mine (`mode`) et refuse un type pas prêt.
   (Ancien : un seul onglet « Mine » avec lobby → session → bilan ; `#mine` mène maintenant à Session.)
 
 ## Systèmes en place
@@ -51,6 +51,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - **Guildes** (31/10, Geoffrey ; `GUILD`, server/guild/, src/shared/guild.js, src/ui/guild.js) : onglet Guilde, grades Chef / Officier / Membre, invitations et demandes, 30 membres, 1 % de l'XP des membres, même courbe que le mineur, classement. Bonus et bâtiments à venir.
 - **Bâtiments de guilde** (01/11, Geoffrey ; `GUILD.buildings`, server/guild/service.js) : Armurerie, Trésorerie, Forge, niveau 1 ; dons définitifs, construction par chef ou officier ; bonus figé avec les skills (`skills.guild`), dans tous les modes ; journal public sans limite (ns `guild_log`).
 - **Raffle** (31/10, Geoffrey ; `RAFFLE`, server/social/raffle.js, src/shared/raffle.js) : tirage au sort dans le chat global, `!join` jamais publié, réservé aux comptes avec pseudo, état en ns `raffle` (reprend après un redémarrage), lot versé une fois par id de raffle. Forcer : `sudo node scripts/force-raffle.js` (route `/api/admin/raffle`).
+- **Arc de l'Admin** (01/11, Geoffrey) : légendaire, case épée, portée +8, dégâts +15, recul +2, T4.5 pour les runes, aucune obtention (`give-item.js`), secret au wiki. Première arme à distance : flèche seulement affichée (`src/render/bow.js`, `SKIN.bow`).
 - **Canaux du chat global** (31/10, Geoffrey ; Commerce retiré, Guilde `/g` ajoutée le 01/11, lecteurs figés à l'envoi) : Général, MP, Groupe, Guilde, LFG, onglets par compte (ns `chat_prefs`, src/ui/chat-tabs.js).
 - **Plafond de la prison** (31/10, Geoffrey ; provisoire) : `PRISON.oreCap`, cobalt et thorium 0,4 % maximum chacun de la répartition des minerais, surplus redonné aux autres minerais.
 - **Mobs de l'area 7** (31/10, Geoffrey ; `MOBS.chien`, `MOBS.ver`, `MOBS.bleed`, src/sim/worm.js, src/sim/bleed.js) : Chien de magma (Bleed au tacle) ; Vers de terre rangé dans `G.worms` tant qu'il navigue (inciblable), dans `G.mobs` seulement coincé.

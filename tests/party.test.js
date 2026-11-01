@@ -468,11 +468,11 @@ test('prêt tout le temps (31/10) : « plus prêt » garde la case ; gardé en c
   await party.create(A); await party.join(B, 'K7Q4P2');
   await party.alwaysReady(B, true); await party.ready(B, true); await party.ready(B, false);
   assert.deepEqual((await party.state(B)).party.members.map(m => [m.ready, m.always]), [[false, false], [false, true]], 'plus prêt, toujours coché');
-  /* B quitte et rejoint un autre groupe : la case le suit, il clique une fois */
+  /* B quitte et rejoint un autre groupe : la case le suit, il y est prêt d'office (01/11) */
   await party.leave(B); await party.create(C);
   const code = (await party.state(C)).party.code;
   await party.join(B, code);
-  assert.deepEqual((await party.state(C)).party.members.map(m => [m.ready, m.always]), [[false, false], [false, true]], 'nouveau groupe : coché, pas encore prêt');
+  assert.deepEqual((await party.state(C)).party.members.map(m => [m.ready, m.always]), [[false, false], [true, true]], 'nouveau groupe : coché, prêt sans clic');
   await party.leave(B); await party.join(B, 'K7Q4P2');
   await party.ready(B, true);
   await party.alwaysReady(B, false);
@@ -500,9 +500,9 @@ test('prêt tout le temps (31/10) : se coche et reste coché sans groupe, y comp
   const st2 = createMemoryGameStore(store.snapshot()), party2 = mk(st2);
   await party2.load();
   assert.equal((await party2.state(D)).alwaysReady, true);
-  /* il revient dans un groupe : case cochée, un clic, et il reste prêt */
+  /* il revient dans un groupe : case cochée, prêt sans clic (01/11) */
   await party2.create(A); await party2.join(D, 'K7Q4P2');
-  assert.deepEqual((await party2.state(D)).party.members.map(m => [m.ready, m.always]), [[false, false], [false, true]]);
+  assert.deepEqual((await party2.state(D)).party.members.map(m => [m.ready, m.always]), [[false, false], [true, true]]);
   await party2.alwaysReady(D, false);
   const party3 = mk(createMemoryGameStore(st2.snapshot()));
   await party3.load();
@@ -557,4 +557,57 @@ test('prêt et chef : gardés au redémarrage du serveur', async () => {
   const st = (await party2.state(B)).party;
   assert.equal(st.leader, B.id);
   assert.deepEqual(st.members.map(m => m.ready), [false, false, true]);
+});
+
+/* groupe avec un jeu minimal : inPrison = les comptes dont la prison tourne */
+function prisonSetup(store = createMemoryGameStore()){
+  const inPrison = new Set();
+  const game = { activeSessionId:async () => null, prisonActiveOf:async id => inPrison.has(id) };
+  const party = createPartyService({ game, store, getAccount:async id => ACCOUNTS[id], newCode:() => 'K7Q4P2' });
+  return { party, inPrison, store };
+}
+const readyOf = async (party, acc) => (await party.state(A)).party.members.find(m => m.account === acc.id).ready;
+
+test('prêt tout le temps (01/11) : retour de prison, prêt sans clic, jamais pendant la prison', async () => {
+  const { party, inPrison } = prisonSetup();
+  await party.create(A); await party.alwaysReady(B, true);
+  inPrison.add(B.id);
+  await party.join(B, 'K7Q4P2');
+  assert.equal(await readyOf(party, B), false, 'sa prison tourne : le chef ne peut pas la lui terminer');
+  await assert.rejects(party.launch(A, {}), { code:'not_ready' });
+  inPrison.delete(B.id);
+  assert.equal(await readyOf(party, B), true, 'sorti de prison');
+  await party.ready(B, false);
+  assert.equal(await readyOf(party, B), false, '« Prêt (annuler) » reste possible : rien ne le remet prêt');
+});
+
+test('prêt tout le temps (01/11) : sorti de prison déjà dans le groupe, sa place suit ses choix', async () => {
+  const { party, inPrison } = prisonSetup();
+  await party.create(A); inPrison.add(B.id); await party.join(B, 'K7Q4P2');
+  await party.alwaysReady(B, true);
+  inPrison.delete(B.id);
+  assert.equal(await readyOf(party, B), true, 'cochée en prison, dans le groupe');
+  await party.leave(B); inPrison.add(B.id); await party.join(B, 'K7Q4P2');
+  await party.alwaysReady(B, false);
+  inPrison.delete(B.id);
+  assert.equal(await readyOf(party, B), false, 'décochée avant la sortie : pas prêt');
+  await party.leave(B); await party.alwaysReady(B, true); inPrison.add(B.id); await party.join(B, 'K7Q4P2');
+  await party.ready(B, true); await party.ready(B, false);
+  inPrison.delete(B.id);
+  assert.equal(await readyOf(party, B), false, 'annulé pendant la prison : son choix reste');
+});
+
+test('prêt tout le temps (01/11) : le chef sorti de prison n\'a pas d\'état prêt ; l\'attente survit à un redémarrage', async () => {
+  const { party, inPrison, store } = prisonSetup();
+  await party.create(A); await party.alwaysReady(B, true); inPrison.add(B.id); await party.join(B, 'K7Q4P2');
+  await party.state(A);
+  const next = prisonSetup(createMemoryGameStore(store.snapshot()));
+  await next.party.load();
+  next.inPrison.add(B.id);
+  assert.equal(await readyOf(next.party, B), false);
+  next.inPrison.delete(B.id);
+  assert.equal(await readyOf(next.party, B), true, 'après le redémarrage');
+  await party.promote(A, B.id);
+  inPrison.delete(B.id);
+  assert.equal((await party.state(B)).party.members.find(m => m.account === B.id).ready, false, 'devenu chef pendant la prison');
 });

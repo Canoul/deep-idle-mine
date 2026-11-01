@@ -15,7 +15,7 @@ function minerView(G, m){
   return {
     id: m.id, name: m.name, color: m.color, account: m.account, x: m.x, y: m.y, kx: m.kx || 0, ky: m.ky || 0, face: m.face, status: m.status,
     stats: m.stats, look: m.look || {}, auras: m.auras || {}, skillTree: m.skillTree,
-    action: a ? { type: a.type, t: a.t, dur: a.dur, data: { x: d.x, y: d.y, winch: d.winch, cause: d.cause } } : null,
+    action: a ? { type: a.type, t: a.t, dur: a.dur, data: { x: d.x, y: d.y, winch: d.winch, cause: d.cause, aim: d.aim } } : null,
     hop: m.hop ?? null,                                              // petit arc quand le boss le repousse (affichage)
     load: m.load || 0, pods: m.carac?.pods ?? null,                  // sac (pods : TOWER.chest)
     spells: m.spells || [], spellCd: { ...(m.spellCd || {}) },       // sorts (animation au lancement, src/render/miner-sprite.js)

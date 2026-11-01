@@ -786,7 +786,7 @@ export const EFFECTS = {
 export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold','diamond','graphite','mithril','cobalt','thorium','tunnel','barrier','prison_bars','chest_base','khole','sky','bridge','treasure','treasure_t1','treasure_t2','treasure_t3',
   'blueprint','bp_parts','gem_ruby','gem_jade','gem_sapphire',
   'ingot_iron','ingot_gold','ingot_tainted','ingot_tainted_gold','ingot_graphite','ingot_steel','furnace_iron','compass_gold','shiny_iron','shiny_gold','pickaxe_stone','helmet_chitin','chest_chitin','legs_chitin','boots_chitin',
-  'pickaxe_iron','sword_stone','sword_iron','spear_iron','helmet_iron','chest_iron','legs_iron','boots_iron','belt_goblin',
+  'pickaxe_iron','sword_stone','sword_iron','spear_iron','bow_admin','helmet_iron','chest_iron','legs_iron','boots_iron','belt_goblin',
   'lamp_incandescent','pickaxe_steel','sword_steel','helmet_steel','chest_steel','legs_steel','boots_steel','chest_balance',
   'gloves_tactical','gloves_worker','cape_naingui','straps_goblin','hood_dark','cloud_magic','belt_giant','dark_cloth','gas_vesicle','slippery_stone','dungeon_brick','minotaur','minotaur_black','moon_crystal','orb','orb_superior','pick_goblin','kilt_dark','hat_naab','sword_cardboard','key_instance_1','key_instance_2','angel_feather','angel_feathers',
   'guild_armory','guild_treasury','guild_forge',
@@ -1093,6 +1093,7 @@ export const RARITY = {
     'Clé d\'instance I':'inhabituel', 'Clé d\'instance II':'inhabituel',
     'Plume d\'ange':'rare',
     /* Roi Gobelin (27/10/2026, Geoffrey) ; ses coffres : comme les trésors des tours */
+    'Arc de l\'Admin':'legendaire',   // 01/11 (Geoffrey)
     'Némésis du Golbute':'legendaire', 'Âme du Golbute':'epique', 'Torse de Gollex':'rare', 'Jambières du Golbute':'rare',   // Coffre du Golbute (30/10)
     'Couronne du Roi Gobelin':'legendaire', 'Masse du Roi Gobelin':'rare', 'Cape royale du Gobelin':'rare',
     'Recette : Chitine':'inhabituel', 'Four en or':'rare', 'Four en or BP':'rare',
@@ -1154,6 +1155,9 @@ export const STUFF = {
        l'épée, aucun tacle évité. Dégâts +8 sur les mains nues (13), vitesse d'attaque −10 % (idée de Geoffrey ; le verrou
        du recul suffit déjà contre la boucle, src/sim/actions.js landHit). Valeurs provisoires. */
     'Lance en fer':        { slot:'epee',   tex:'spear_iron',    stats:{ damage:8, attackSpeed:-10, knockback:0.5, reach:0.25 } },
+    /* Arc de l'Admin (01/11/2026, Geoffrey) : aucune obtention (sans recette ni butin, scripts/give-item.js seulement) ; tire de loin
+       comme au contact (SKIN.bow, src/render/bow.js) ; le tir reste un coup à portée, en ligne droite, sans bloc entre les deux */
+    'Arc de l\'Admin':     { slot:'epee',   tex:'bow_admin',     stats:{ reach:8, damage:15, knockback:2 } },
     'Casque en fer':       { slot:'casque', tex:'helmet_iron',   stats:{ oxygenMax:63 } },   // 27/10 (Geoffrey) : valeur du tier, ≈ 250 x (avant 67 ; 24/10 : 38)
     'Plastron en fer':     { slot:'torse',  tex:'chest_iron',    stats:{ pods:88 } },   // 24/10 : avant 50 (23/10 : avant 33). Torse hors règle du tier (27/10)
     'Jambes en fer':       { slot:'jambes', tex:'legs_iron',     stats:{ climbSpeed:1 } },   // 27/10 (Geoffrey) : valeur du tier, 250 x (avant 1,05 ; 24/10 : 0,6)
@@ -1364,7 +1368,8 @@ export const UPGRADE = {
                        'Lunettes Gucci', 'Doc Martins', 'Ceinture golémique', 'Gants de boucher'] },
     /* tier 4.5 (27/10/2026, Geoffrey) : 750 x, thorium, cobalt, Jambières titanesques */
     '4.5': { x:750, items:[...['thorium', 'cobalt'].flatMap(m => ['Casque', 'Plastron', 'Jambes', 'Bottes'].map(p => `${p} en ${m}`)),
-                           'Jambières titanesques', 'Cape inclusive', 'Némésis du Golbute', 'Torse de Gollex', 'Jambières du Golbute', 'Âme du Golbute'] },   // Coffre du Golbute (30/10) : T4.5
+                           'Jambières titanesques', 'Cape inclusive', 'Némésis du Golbute', 'Torse de Gollex', 'Jambières du Golbute', 'Âme du Golbute',   // Coffre du Golbute (30/10) : T4.5
+                           'Arc de l\'Admin'] },   // 01/11 : le tier le plus haut (lignes de runes)
   },
   /* pas d'arrondi de chaque stat (valeur d'une ligne, et stats d'une pièce améliorée) */
   steps: { mineSpeed:0.001, speed:0.01, climbSpeed:0.01, pods:1, oxygenMax:1, damage:0.1, attackSpeed:0.1, fortune:0.1,
@@ -1594,11 +1599,14 @@ export const MINE_MODES = [
 /* Wiki (27/10/2026, Geoffrey) : objets dont les effets restent cachés dans le wiki tant qu'aucun joueur ne les a
    trouvés en jeu (ouverture d'un coffre ou d'un trésor, fin de session ; un don d'administration ne compte pas). Le
    serveur retient le premier (server/game/service.js, ns « discovered ») ; le wiki le lui demande (GET /api/wiki). */
+/* tir à l'arc (src/render/bow.js) : cycles d'animation par seconde, comme le coup d'épée ; release : part du cycle où l'arc reste bandé */
+export const BOW_SHOT = { perSec:2.2, release:0.55 };
+
 export const WIKI = { secret: ['Couronne du Roi Gobelin', 'Masse du Roi Gobelin', 'Cape royale du Gobelin',
   /* Treasure T4 (27/10/2026, Geoffrey) : révélés dès que leur BP sort pour la première fois (le stuff en mithril reste
      visible) ; cette première découverte est annoncée sur Discord avec les stats de la pièce */
   ...['thorium', 'cobalt'].flatMap(m => ['Casque', 'Plastron', 'Jambes', 'Bottes'].map(p => `${p} en ${m}`)),
-  'Lunettes Gucci', 'Doc Martins', 'Ceinture golémique', 'Gants de boucher', 'Jambières titanesques', 'Cape inclusive'] };
+  'Lunettes Gucci', 'Doc Martins', 'Ceinture golémique', 'Gants de boucher', 'Jambières titanesques', 'Cape inclusive', 'Arc de l\'Admin'] };
 
 /* Instances (concept de Geoffrey, 27/10/2026 ; spec docs/superpowers/specs/2026-10-27-instances-design.md). Valeurs
    provisoires. Lobby, « Où miner » → Instances : list (les instances pas prêtes sont grisées). Un groupe de 1 à 3, une
@@ -1828,7 +1836,7 @@ export const TOWN = {
    gauche (invitation, demande d'ami, groupe trouvé) se ferme seule au bout de ce temps (ms) ; l'invitation et la demande
    restent dans le Lobby et l'onglet Social. noticeMs : un rappel de mine instantanée sans bouton se ferme au bout de ce
    temps ; le dernier (Rejoindre / Décliner) se ferme à l'ouverture de la mine. */
-export const NOTIFY = { popupMs:20_000, noticeMs:12_000 };
+export const NOTIFY = { popupMs:20_000, noticeMs:12_000, flashMs:4000 };   // flashMs : petite confirmation sans bouton (sets, 01/11)
 /* Guide « Premiers pas » des nouveaux joueurs (src/ui/guide.js, 28/10/2026, Jules) : les objets que visent ses étapes
    (première pioche à crafter, lingot à fondre), et le délai entre deux relectures de l'état du joueur */
 export const GUIDE = { pickaxe:'Pioche en pierre', ingot:'Lingot de fer', ore:'Fer', refreshMs:1500 };

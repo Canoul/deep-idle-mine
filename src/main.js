@@ -265,6 +265,7 @@ setsUI = setupSets({
   onLoadout: r => { setInventory(r.inventory); stuff.set(r.stuff); skills.set(r.skills); spells.set(r.spells); },
   inSession: () => !!rec,
   current: () => ui.skills ? { worn: stuff.worn(), skills: ui.skills, spells: spells.slots() } : null,
+  onDone: text => notify.flash(text),
 });
 
 applyRarityColors();   // couleurs des raretés (config)

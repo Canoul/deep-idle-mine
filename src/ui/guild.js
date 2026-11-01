@@ -73,14 +73,18 @@ export function mineHTML(g, older){
   </div></div>`;
 }
 const place = g => `Niv. ${g.level} · ${g.members}/${g.max} membres · chef : ${esc(g.chief)}`;
-export function listHTML(list, { mine, requests }){
+/* membres d'une guilde dépliée : rows = null tant que le serveur n'a pas répondu */
+const foldHTML = rows => `<div class="gfold">${rows ? rows.map(m =>
+  `<div class="frow"><span class="fname"><b>${esc(m.name)}</b><small class="mut">${RANK_LABEL[m.rank]}</small></span><span class="gxp">${fr(m.xp)} XP</span></div>`).join('')
+  : '<p class="mut small">Chargement…</p>'}</div>`;
+export function listHTML(list, { mine, requests, open = null, members = null }){
   if(!list.length) return '<p class="mut small">Aucune guilde trouvée.</p>';
   return list.map(g => {
     const asked = requests.includes(g.id);
     const peek = `<button data-g="peek" data-id="${esc(g.id)}">Voir</button>`;
     const button = mine ? '' : asked ? `<button data-g="cancelRequest" data-id="${esc(g.id)}">Annuler ma demande</button>`
       : g.members >= g.max ? '<small class="mut">Pleine</small>' : `<button class="on" data-g="request" data-id="${esc(g.id)}">Demander à rejoindre</button>`;
-    return `<div class="frow"><span class="fname"><b>${esc(g.name)}</b><small class="mut">${place(g)}</small></span><span class="fbtns">${peek}${button}</span></div>`;
+    return `<div class="frow"><button class="fname gopen" data-gopen="${esc(g.id)}" aria-expanded="${g.id === open}"><b>${g.id === open ? '▾' : '▸'} ${esc(g.name)}</b><small class="mut">${place(g)}</small></button><span class="fbtns">${peek}${button}</span></div>${g.id === open ? foldHTML(members) : ''}`;
   }).join('');
 }
 export const boardHTML = list => list.length ? list.map(g =>
@@ -92,7 +96,7 @@ export const invitesHTML = list => list.map(g =>
 /* onChange() : un changement peut retirer un pop-up d'invitation (src/main.js) */
 export function setupGuild({ root, api = guildApi, onChange = () => {} }){
   const $ = id => document.getElementById(id);
-  let st = { mine:null, invites:[], requests:[] }, tab = null, list = [], board = [], at = 0;
+  let st = { mine:null, invites:[], requests:[] }, tab = null, list = [], board = [], at = 0, open = null, members = null;
   let older = {}, peek = null, peekOlder = {};        // lignes anciennes du journal déjà demandées ; fiche d'une autre guilde
   const shown = () => !root.hidden && !document.hidden;
   /* un contenu inchangé n'est pas réécrit : une case ouverte ne se ferme pas à chaque relecture */
@@ -109,13 +113,18 @@ export function setupGuild({ root, api = guildApi, onChange = () => {} }){
     $('guildCreate').hidden = !!st.mine;
     $('guildInvitesCard').hidden = !st.invites.length;
     put($('guildInvites'), invitesHTML(st.invites));
-    put($('guildList'), listHTML(list, { mine:!!st.mine, requests:st.requests }));
+    put($('guildList'), listHTML(list, { mine:!!st.mine, requests:st.requests, open, members:members?.id === open ? members.rows : null }));
     put($('guildBoard'), boardHTML(board));
   }
   async function refresh(){
     at = Date.now();
     st = await api.view();
     if((tab ?? (st.mine ? 'mine' : 'search')) === 'search') list = (await api.list($('guildQuery').value)).guilds;
+    if(open && !list.some(g => g.id === open)) open = null;
+    if(open){
+      const id = open;
+      try { members = { id, rows:(await api.members(id)).members }; } catch { if(open === id) open = null; }
+    }
     if(tab === 'board') board = (await api.board()).guilds;
     render();
   }
@@ -161,6 +170,8 @@ export function setupGuild({ root, api = guildApi, onChange = () => {} }){
   root.addEventListener('click', e => {
     const t = e.target.closest('[data-gtab]');
     if(t){ tab = t.dataset.gtab; say(null); render(); quiet(); return; }
+    const f = e.target.closest('[data-gopen]');
+    if(f){ open = open === f.dataset.gopen ? null : f.dataset.gopen; render(); if(open) quiet(); return; }
     const b = e.target.closest('[data-g]');
     if(b) action(b.dataset.g, b.dataset.id, b);
   });

@@ -13,7 +13,28 @@ Modèle d'entrée :
 - **Pour le joueur** : à droite de l'onglet de sa guilde, trois bâtiments avec leur texture : Armurerie (+2 % de dégâts), Trésorerie (+2 % de fortune), Forge (+2 % de vitesse de minage). Chaque membre donne des matériaux ; quand tout est réuni, le chef ou un officier lance la construction. Le bonus vaut pour tous les membres, dans tous les modes. En dessous, un journal des dons sans limite, jamais effacé.
 - **Décisions** : « Poussière magique » = Poudre de rêve. Don définitif, ramené à ce qu'il manque. Bonus dès l'arrivée dans la guilde, figé au lancement. Bâtiments et journal publics (bouton Voir dans Rechercher). Niveau 1 seul pour l'instant, les suivants s'ajoutent en config.
 - **À suivre** : les coûts sont ceux donnés par Geoffrey, à juger une fois en jeu. Un joueur peut changer de guilde pour profiter des bonus d'une autre.
-- **État** : 🧪 sur la branche `geoffrey/guilde-batiments` (pas en ligne)
+- **État** : ✅ en ligne le 01/11
+
+## 01/11/2026 — Geoffrey — Sets : pop-up de confirmation
+- **Pour l'équipe** : sauvegarder un set ou en équiper un affiche une petite pop-up de 4 s en haut à gauche, avec le nom du
+  set. Elle remplace la petite ligne sous la liste des sets.
+- **État** : ✅ en ligne le 01/11
+
+## 01/11/2026 — Geoffrey — Arc de l'Admin
+- **Pour le joueur** : nouvelle arme légendaire, portée +8, dégâts +15, recul +2. Le mineur tire des flèches de loin, et continue quand le mob est au contact. On ne peut pas l'obtenir dans le jeu : seule l'administration le donne.
+- **État** : ✅ en ligne le 01/11
+
+## 01/11/2026 — Geoffrey — Guilde : voir les membres depuis la recherche
+- **Pour le joueur** : dans Guilde > Rechercher, un clic sur une guilde déplie ses membres (pseudo, grade, XP rapportée). Un autre clic la replie.
+- **État** : ✅ en ligne le 01/11
+
+## 01/11/2026 — Geoffrey — Prêt tout le temps : prêt d'office au retour de prison
+- **Pour l'équipe** : avec la case cochée, on est prêt sans clic en entrant dans un groupe et en sortant de prison. Avant,
+  la prison obligeait à quitter le groupe, ce qui effaçait « prêt » même si la case restait cochée.
+- **Décision** : tant que la prison tourne, le joueur n'est pas prêt d'office, pour que le chef ne puisse pas la lui terminer
+  sans son accord.
+- **État** : ✅ en ligne le 01/11
+
 
 ## 01/11/2026 — Geoffrey — Trois nouveaux talents (étage 6)
 - **Pour le joueur** : un nouveau talent à 1 point au bout de chaque arbre. **Ivresse Minérale** (Mineur) : chaque minerai ajoute 1 dégât à la prochaine attaque. **Reconnaissance** (Logisticien) : chaque autre mineur dans le seau du treuil lui rend 1 d'oxygène toutes les 2 s. **Saccager** (Barbare) : après 2 critiques d'affilée, la prochaine attaque est double.

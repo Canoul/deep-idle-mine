@@ -74,3 +74,14 @@ test("relecture : seule une case ouverte retient le panneau, pas un bouton qui g
   assert.equal(holdsPanel(el('button')), false);
   assert.equal(holdsPanel(null), false);
 });
+
+test('liste : cliquer une guilde déplie ses membres, échappés', () => {
+  const g = { id:'g1', name:'Rois', level:2, members:1, max:30, chief:'Zoe', xp:0 }, base = { mine:false, requests:[] };
+  const closed = listHTML([g], base);
+  assert.ok(closed.includes('data-gopen="g1"')); assert.ok(closed.includes('aria-expanded="false"')); assert.ok(!closed.includes('gfold'));
+  assert.match(listHTML([g], { ...base, open:'g1' }), /Chargement/);
+  const h = listHTML([g], { ...base, open:'g1', members:[{ name:'<img src=x>', rank:'chief', xp:1234 }] });
+  assert.ok(h.includes('aria-expanded="true"')); assert.match(h, /Chef de guilde/); assert.match(h, /1\s234 XP/); assert.ok(!h.includes('<img'));
+  assert.ok(h.includes('data-g="request"'), 'le bouton reste là');
+});
+
