@@ -9,6 +9,22 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## JJ/MM/AAAA — Prénom — Titre court
+- **Pour le joueur** : ce qui change en jeu (ou « rien, c'est de l'organisation »).
+- **Décisions** : choix de design ou d'équilibrage tranchés (s'il y en a).
+- **À suivre** : ce qui reste à faire ou à vérifier.
+- **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
+```
+
+## 01/11/2026 — Jules — Correctif : le jeu ne démarrait plus
+- **Pour le joueur** : depuis la mise en ligne des notifications de l'appli (01/11 au soir), le jeu s'arrêtait au
+  démarrage sur « Le jeu a planté au démarrage — Identifier 'setClock' has already been declared », pour tout le monde.
+  Deux morceaux du jeu portaient le même nom ; l'un est renommé, le jeu démarre de nouveau. Rien n'est perdu : les
+  sessions tournent sur le serveur, seul l'affichage était bloqué.
+- **À suivre** : un nouveau test vérifie maintenant que chaque fichier chargé par le jeu est lisible par le navigateur ;
+  ce genre d'erreur sera arrêté par les tests avant la mise en ligne.
+- **État** : ✅ en ligne le 01/11
+
 ## 01/11/2026 — Geoffrey — Appli mobile : notifications
 - **Pour le joueur** : rien sur le site. L'appli Android prévient, même fermée : session terminée, mine instantanée dans
   5 min (sauf de 23 h à 8 h), Bloc géant accessible, four terminé. Toucher la notification ouvre le bon écran. Dans Mon
@@ -19,17 +35,6 @@ Modèle d'entrée :
 ## 01/11/2026 — Geoffrey — Guilde : message de guilde
 - **Pour le joueur** : en haut de l'onglet de sa guilde, une case **Message de guilde**. Le chef et les officiers l'écrivent, tous les membres le lisent.
 - **État** : ✅ en ligne le 01/11
-
-## 01/11/2026 — Geoffrey — Guilde : inviter un membre dans son lobby, voir ce qu'il fait
-- **Pour le joueur** : dans l'onglet de sa guilde, chaque membre a un bouton **Inviter** (dans son lobby, même sans être amis), et on voit ce qu'il fait comme dans Social : en ligne, dans le lobby, en session avec le temps restant, en prison, hors ligne.
-- **État** : ✅ en ligne le 01/11
-
-## JJ/MM/AAAA — Prénom — Titre court
-- **Pour le joueur** : ce qui change en jeu (ou « rien, c'est de l'organisation »).
-- **Décisions** : choix de design ou d'équilibrage tranchés (s'il y en a).
-- **À suivre** : ce qui reste à faire ou à vérifier.
-- **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
-```
 
 ## 01/11/2026 — Geoffrey — Prison : des runs ne donnaient aucune XP
 - **Pour le joueur** : depuis le 31/10, environ 4 runs de prison sur 10 ne rapportaient aucune XP à cause d'un arrondi. Chaque run donne maintenant son XP. L'XP perdue avant la correction n'est pas rendue.

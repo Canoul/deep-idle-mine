@@ -6458,3 +6458,25 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   donc inexactes (quelques minutes de retard possibles). Heures calmes testées sur l'heure de la notification : celle de
   la mine de 8 h (7 h 55) ne sonne pas. Identifiant de mine lié à l'heure du créneau.
 - **Relecture indépendante** : ✅ corrigés : tout était reprogrammé à chaque synchro en session (`clockOffset` bouge de quelques ms, tolérance `syncTolerance`) ; horloge non recalée hors session (`setClock`, avec l'heure des fours).
+- **❌ 01/11 (Jules)** : ce `const setClock` doublonnait `async function setClock` (vitesse / pause du mode dev) dans
+  src/main.js → SyntaxError, jeu en ligne bloqué au démarrage. Renommé `syncClock` : voir l'entrée suivante.
+
+## 01/11/2026 — Jeu bloqué au démarrage : `setClock` déclaré deux fois (Jules) — branche `jules/fix-setclock`
+- **Symptôme** (remonté par plusieurs joueurs, Chrome 156) : cadre « Le jeu a planté au démarrage », `Uncaught SyntaxError:
+  Identifier 'setClock' has already been declared — /src/main.js:593:1`. Le navigateur refuse tout le module : rien ne
+  se lance (site et appli, qui charge le site).
+- **Cause** : commit 1d28f9d (`geoffrey/appli-notifs`, en ligne le 01/11) ajoute `const setClock = t => …` (horloge hors
+  session, heure des fours) ligne 107, alors que `async function setClock(opts)` (horloge dev : vitesse / pause, envoyée au
+  serveur) existe depuis le 20/10 ligne 593. Deux déclarations du même nom dans un module = erreur de syntaxe au chargement.
+  Pas vu par les tests : main.js n'est importé par aucun test (DOM), et `tests/app-mode.test.js` vérifiait le texte du
+  fichier (`/const setClock = /`), pas qu'il se charge.
+- **Correctif** : la nouvelle fonction devient `syncClock` (définition + 2 appels : `refresh` et `furnace.onOp`). `setClock`
+  reste celle du dev (`onClock` de `setupRunControls`, `renderSpeeds`). Test texte d'app-mode mis au nouveau nom.
+- **Garde-fou** : `tests/boot-check.test.js`, « chaque fichier chargé par le jeu est du JavaScript valide » : parcourt les
+  imports depuis main.js (`findMissing` de src/boot-check.js) et passe `node --check` sur chacun (en parallèle, ~3 s).
+  Échouait avant le correctif avec l'erreur exacte du joueur.
+- **Tests** ✅ boot-check, app-mode, app-native, app-notifs, controls (63). ✅ Chromium sur `npm start` : écran de connexion,
+  puis « Jouer en invité » → `DIM_BOOT.started` vrai, 0 erreur console.
+- **Point fragile** : `node --check` ne voit que la syntaxe ; une erreur à l'exécution (variable inconnue, import d'un nom
+  qui n'existe pas) passe encore. Les imports nommés absents sont, eux, une erreur de liaison du navigateur, pas de
+  `node --check`.
