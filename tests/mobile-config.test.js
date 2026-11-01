@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createRequire } from 'node:module';
 import { SERVER } from '../server/config.js';
 import { APP_UA } from '../src/app/mode.js';
 
@@ -124,4 +125,18 @@ test('dépôt : clés et profils Apple ignorés par git', () => {
 
 test('appli : le serveur ne sert jamais mobile/', () => {
   assert.ok(SERVER.publicPaths.every(p => !p.startsWith('/mobile')));
+});
+
+test('appli iOS : le contrôle attend le bouton (délai maximal, plusieurs captures), sans seuil affaibli', () => {
+  const w = read('.github/workflows/ios.yml');
+  assert.doesNotMatch(w, /sleep 40/);
+  assert.match(w, /MAX=120/); assert.match(w, /while :; do/);
+  assert.match(w, /"\$orange" -gt 2000/);
+  assert.match(w, /if: always\(\) && env\.WANT == 'controle'/, 'la capture de l\'échec reste dans l\'artefact');
+  const { measure, BUTTON_MIN } = createRequire(import.meta.url)('../mobile/scripts/ios-screen.cjs');
+  assert.equal(BUTTON_MIN, 2000);
+  const px = (n, r, g, b) => Buffer.from(Array.from({ length: n }, () => [r, g, b]).flat());
+  assert.deepEqual(measure(px(10, 255, 122, 46)), { orange: 10, colors: 1, light: 141 });
+  assert.equal(measure(px(10, 25, 19, 16)).orange, 0, 'fond sombre');
+  assert.equal(measure(Buffer.concat([px(1, 0, 0, 0), px(1, 255, 255, 255)])).colors, 2);
 });
