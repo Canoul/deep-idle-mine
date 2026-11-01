@@ -6376,3 +6376,8 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Quoi** : `HES_COMING.tiers` (src/config.js) remplace les Plumes d'ange de `GIANT.tiers` par des Cristaux, mêmes quantités. Les paliers se calculent à la réclamation : une journée pas encore réclamée donne déjà des Cristaux.
 - **Tests** ✅ tests/hescoming-sim.test.js, hescoming-service, anticheat.
 - **À surveiller** : 30 Cristaux par jour au dernier palier, à comparer aux 1 à 3 d'un minotaure ; un +9 en coûte 32.
+
+## 01/11/2026 — Amélioration : cristaux = plumes (Geoffrey)
+- **Quoi** : `UPGRADE.levels` (src/config.js), cristaux 6 / 9 / 14 / 18 / 24 / 32 / 40 / 50 / 63. Anneaux inchangés (doublon).
+- **Tests** ✅ tests/amelioration.test.js, tests/anneaux.test.js, `npm run test:anticheat`.
+
