@@ -24,6 +24,9 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - Jeu découpé en modules ES (sans bundler ni dépendance), **3 mineurs** sur la même carte par défaut (1 possible).
   Une seule page (`index.html`) avec des onglets (`#lobby`, `#session`, `#jugement`, `#inventaire`…) : la session
   continue de tourner quand on change d'onglet. Chaque onglet a son module dans `src/ui/`.
+- **Bulles « Butin »** (01/11, Jules ; `src/meta/loot-table.js`, `src/ui/loot-tip.js`) : tableau de loot dans la bulle
+  commune, lu dans la config : survol d'un treasure / trésor / coffre dans l'inventaire, « ? Butin » des instances et des
+  tours dans le Lobby, « ? Butin des mobs » à côté de « Face aux mobs ».
 - **Aide « ? »** (28/10, Jules) : les explications de l'interface sont des bulles « ? » (survol, toucher), pas des
   paragraphes dans les pages. Tous les textes des pages fixes sont dans `src/ui/help.js` (`HELP`) ; un écran construit
   par le code utilise `qhelp()` / `helpLine()`. « Pris en compte à la prochaine session » : bandeau en haut de Stuff,
@@ -447,7 +450,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   **valeur du tier de la pièce** (25/10, Geoffrey ; `UPGRADE.tiers` : T1 pierre/chitine/plans T1 100 x, T2 fer/plans T2 250 x,
   T3 acier/équilibre/plans T3 500 x (400 x avant le 27/10) ; ancien : la valeur de l'objet, `UPGRADE.worth`, qui ne sert plus aux lignes). **Amélioration** **+1 à +9** (26/10, Geoffrey : +3 % de
   toutes les stats par rang, réussite 100 % puis −5 % par rang jusqu'à 60 %, plumes 6 / 9 / 14 / 18 / 24 / 32 / 40 / 50 / 63
-  et cristaux 3 / 5 / 7 / 9 / 12 / 16 / 20 / 25 / 32 ; un échec ne coûte que les matériaux ; ancien : +1 à +3, +5 / 10 / 15 %
+  et autant de cristaux (01/11 ; ancien : 3 / 5 / 7 / 9 / 12 / 16 / 20 / 25 / 32) ; un échec ne coûte que les matériaux ; ancien : +1 à +3, +5 / 10 / 15 %
   (25/10), plumes 20 / 30 / 50, cristaux 3 / 5 / 7) ; lignes affichées une par une. **Enchantement** (22/10) : les runes des tours (elles tirent toujours des
   lignes). Stats : minage % et dégâts % (multiplicatifs), critique, coup unique, perçage, butin des mobs. Une pièce
   porte `q`, `lines` (anciennes seulement), `plus`, `rune`. Plumes d'ange : mine instantanée ; Cristaux de pleine
@@ -487,7 +490,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   grille qui filtrent par type (tout, blocs, minerais, stuff, butin des mobs, matériaux, runes, divers).
 - **Bot Discord de l'équipe** (31/10, Geoffrey ; `bot/`, `docs/bot-discord.md`) : service à part du jeu sur le VPS. Un tag du rôle
   @admin est copié dans #report avec un ID ; le premier emoji cliqué (1 Joe, 2 Djulo, n'importe qui peut réagir) attribue
-  le sujet ; `/todo` dans #todo liste et retire. Base : un fichier JSON. À distinguer du webhook des annonces.
+  le sujet ; `/todo` dans #todo liste et retire (`done` efface le message de #report, 01/11 ; ancien : ✅). Base : un fichier JSON. À distinguer du webhook des annonces.
 - **Annonces Discord** (25/10, Geoffrey) : un trésor de tour, un coffre du Roi Gobelin (instance) ou une identification
   de qualité `ANNOUNCE.minQuality` (**R6** depuis le 28/10 ; ancien : R7) ou plus, et l'ouverture d'une tour du Jugement (26/10), sont annoncés dans le salon du webhook (`server/social/discord.js`, adresse secrète
   `DIM_DISCORD_WEBHOOK` sur le VPS ; absente = aucune annonce). Pseudo visible en jeu, nom de la pièce ; jamais pour

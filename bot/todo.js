@@ -93,8 +93,8 @@ export function listMessages(owner, subjects){
 export const HELP = [
   '**Commandes du salon #todo**',
   '`/todo joe` ou `/todo djulo` : liste ses sujets, avec leurs ID',
-  '`/todo done 2483` : retire ce sujet',
-  '`/todo done joe all` : retire tous les sujets de joe',
+  '`/todo done 2483` : retire ce sujet et efface son message de #report',
+  '`/todo done joe all` : retire tous les sujets de joe et efface leurs messages',
   '`/todo help` : cette aide',
   '',
   `Dans #report, le premier emoji cliqué décide : 1 pour Joe, 2 pour Djulo, ${IGNORE} pour ignorer le sujet.`,

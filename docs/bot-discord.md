@@ -10,7 +10,8 @@ Service à part du jeu (dossier `bot/`). Il ne redémarre pas quand le jeu se me
   2 pour Djulo. La croix ❌, si elle est cliquée en premier, ignore le sujet : il quitte la base et le message l'indique.
   Retirer sa réaction ou en ajouter une autre ne change plus rien.
 - Dans **#todo** : `/todo joe`, `/todo djulo`, `/todo done 2483`, `/todo done joe all`, `/todo help`.
-- Un sujet terminé quitte la base et son message de #report reçoit ✅. Un ID n'est jamais réutilisé.
+- Un sujet terminé quitte la base et son message de #report est effacé (01/11/2026 ; avant : il restait avec ✅, ces anciens
+  messages ne sont pas effacés). Un ID n'est jamais réutilisé.
 
 ## Installer (une seule fois)
 

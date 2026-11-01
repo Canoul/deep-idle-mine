@@ -138,19 +138,19 @@ test('identifier : une demande renvoyée ne tire pas une seconde fois et ne sacr
 /* ---------- améliorer ---------- */
 
 test('améliorer : coût du palier, +1 à +9, puis maximum', () => {
-  const { inv, uids:[a] } = setup(1, 256, 129);                       // 26/10 : total des 9 paliers
+  const { inv, uids:[a] } = setup(1, 256, 256);                       // 26/10 : total des 9 paliers
   assert.equal(UPGRADE.levels.length, 9);
   for(let lv = 1; lv <= 9; lv++){
     const r = upgrade(inv, { uid:a, opId:id() }, fixed(0));
     assert.equal(r.success, true); assert.equal(r.piece.plus, lv);
   }
-  assert.equal(countOf(inv, FEATHER), 0); assert.equal(countOf(inv, STONE), 0);   // plumes 6+9+14+18+24+32+40+50+63, cristaux 3+5+7+9+12+16+20+25+32
+  assert.equal(countOf(inv, FEATHER), 0); assert.equal(countOf(inv, STONE), 0);   // plumes et cristaux : 6+9+14+18+24+32+40+50+63 = 256 chacun
   assert.equal(nextLevel(inv.slots.find(s => s?.uid === a)), null);
   assert.equal(upgrade(inv, { uid:a, opId:id() }, fixed(0)).error, 'maxed');
 });
 
 test('améliorer : un échec ne coûte que les matériaux ; sans matériaux, refusé sans rien consommer', () => {
-  const { inv, uids:[a] } = setup(1, 50, 8);
+  const { inv, uids:[a] } = setup(1, 50, 15);
   upgrade(inv, { uid:a, opId:id() }, fixed(0));                       // +1 (100 %)
   const r = upgrade(inv, { uid:a, opId:id() }, fixed(0.97));          // +2 : 95 % → raté
   assert.equal(r.success, false); assert.equal(r.piece.plus, 1);
@@ -170,7 +170,7 @@ test('améliorer : une demande renvoyée ne consomme pas deux fois et redonne le
 /* ---------- sauvegarde, stuff, session ---------- */
 
 test('sauvegarde : qualité, lignes et niveau gardés ; équiper puis retirer les garde aussi', () => {
-  const { inv, uids:[a, b] } = setup(2, 20, 3);
+  const { inv, uids:[a, b] } = setup(2, 20, 6);
   identify(inv, { uid:a, sacrifice:b, opId:id() }, fixed(0.5));
   upgrade(inv, { uid:a, opId:id() }, fixed(0));
   const before = JSON.stringify(inv.slots.find(s => s?.uid === a));

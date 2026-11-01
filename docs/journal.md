@@ -11,11 +11,45 @@ Modèle d'entrée :
 ```
 ## 01/11/2026 — Geoffrey — Prison : des runs ne donnaient aucune XP
 - **Pour le joueur** : depuis le 31/10, environ 4 runs de prison sur 10 ne rapportaient aucune XP à cause d'un arrondi. Chaque run donne maintenant son XP. L'XP perdue avant la correction n'est pas rendue.
-- **État** : 🧪 sur la branche `geoffrey/prison-gobelins-gs`, pas en ligne
+- **État** : ✅ en ligne le 01/11
 
 ## 01/11/2026 — Geoffrey — Prison : moins de gobelins pour les joueurs sous 2 500 GS
 - **Pour le joueur** : en prison, un mineur faible se faisait voler la moitié de son butin. Sous 2 500 GS, il y a moins de gobelins : aucun à 0 GS, puis de plus en plus jusqu'au nombre normal à 2 500 GS. Le nombre de mobs ne change pas, d'autres types prennent leur place. Rendement simulé : de 22 à 53 % sans stuff.
-- **État** : 🧪 sur la branche `geoffrey/prison-gobelins-gs`, pas en ligne
+- **État** : ✅ en ligne le 01/11
+## JJ/MM/AAAA — Prénom — Titre court
+- **Pour le joueur** : ce qui change en jeu (ou « rien, c'est de l'organisation »).
+- **Décisions** : choix de design ou d'équilibrage tranchés (s'il y en a).
+- **À suivre** : ce qui reste à faire ou à vérifier.
+- **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
+```
+
+## 01/11/2026 — Jules — K hole : le donjon des Filons n'est plus muré
+- **Pour le joueur** : dans la carte « Filons » du k hole, le donjon pouvait être collé au bord droit avec son entrée du côté du mur : impossible d'y entrer (vu sur la seed 176946784). Un donjon collé au bord ouvre maintenant toujours vers l'intérieur. Ça touchait environ 1 Filons sur 12.
+- **État** : ✅ en ligne le 01/11
+
+## 01/11/2026 — Jules — Bulles « Butin » : le tableau de loot en survol
+- **Pour le joueur** : on voit ce que peut donner une chose avant de l'ouvrir ou de la tenter, dans la bulle habituelle
+  (survol à la souris, toucher sur téléphone) :
+  - **Inventaire** : survoler un Treasure T1 à T4, un trésor de tour (angélique, démoniaque, béni) ou un coffre
+    d'instance (Roi Gobelin, Roi Gobelin II, Golbute) montre son tableau : ce qui sort toujours (quantités), puis
+    chaque tirage (« un au plus », avec les % de chaque objet) ;
+  - **Lobby, Instances** : « ? Butin » à côté du coffre (et « ? Butin niveau 2 » pour l'Instance I), avec les
+    chances de qualité R1 à R7 ;
+  - **Lobby, Tours** : « ? Butin » à côté de « Victoire : un trésor… » (rune, anneaux, effet de la stèle) ;
+  - **Lobby, Critères** : « ? Butin des mobs » à côté de « Face aux mobs » : chaque mob, l'area où il apparaît, son butin
+    et ses objets rares, et le minotaure des donjons.
+  Les chiffres viennent de la config : un réglage changé met la bulle à jour tout seul. Le wiki montre maintenant aussi
+  le butin du Chien de magma et des Vers de terre (il les oubliait).
+- **État** : ✅ en ligne le 01/11
+
+## 01/11/2026 — Geoffrey — Bot Discord : #report se vide des sujets terminés
+- **Pour l'équipe** : `/todo done` efface maintenant le message du sujet dans #report, au lieu d'y mettre ✅. Les sujets ignorés (❌) et les anciens messages avec ✅ restent.
+- **À suivre** : après la mise en ligne, relancer le bot sur le serveur (`sudo systemctl restart deep-mine-bot`).
+- **État** : ✅ code en ligne le 01/11, bot à relancer sur le serveur
+
+## 01/11/2026 — Geoffrey — Amélioration : autant de cristaux que de plumes
+- **Pour le joueur** : chaque niveau d'amélioration d'une pièce coûte maintenant autant de Cristaux de pleine lune que de Plumes d'ange (6 au +1, 63 au +9). De +0 à +9 sans échec : 256 cristaux au lieu de 129.
+- **État** : ✅ en ligne le 01/11
 
 ## 01/11/2026 — Geoffrey — Lobby : la jauge d'énergie de chacun dans l'équipe
 - **Pour le joueur** : chaque place de l'équipe montre une barre et l'énergie du joueur, en rouge s'il n'en a plus assez pour une mine. La sienne est exacte ; celle des autres se met à jour toutes les 30 s.
@@ -71,6 +105,11 @@ Modèle d'entrée :
 
 ## 01/11/2026 — Geoffrey — Raffle : 2 min pour rejoindre
 - **Pour le joueur** : on a maintenant 2 minutes pour taper `!join` au lieu de 40 secondes.
+- **État** : ✅ en ligne le 01/11
+
+## 01/11/2026 — Geoffrey — Appli mobile : plus de transition entre les onglets
+- **Pour le joueur** : rien sur le site. Dans l'appli, passer de la Session à un autre onglet pendant une partie est
+  immédiat : plus de zoom de la mine ni de panneaux qui glissent.
 - **État** : ✅ en ligne le 01/11
 
 ## 01/11/2026 — Geoffrey — Appli mobile : navigation en 5 familles
@@ -250,14 +289,6 @@ Modèle d'entrée :
 - **Pour le joueur** : un **Orbe supérieur** se fabrique dans l'onglet Craft, dès le départ : 20 Rotten flesh + 20 Chair de vers + 20 Peau de chien de magma.
 - **À suivre** : il ne sert à rien pour l'instant ; son usage reste à décider.
 - **État** : ✅ en ligne le 31/10
-
-## JJ/MM/AAAA — Prénom — Titre court
-- **Pour le joueur** : ce qui change en jeu (ou « rien, c'est de l'organisation »).
-- **Décisions** : choix de design ou d'équilibrage tranchés (s'il y en a).
-- **À suivre** : ce qui reste à faire ou à vérifier.
-- **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
-```
-
 ## 31/10/2026 — Geoffrey — Lobby : on sait qui on attend
 - **Pour l'équipe** : quand un membre du groupe est encore en session, le bouton du chef affiche son nom et le temps
   restant (« Attente de Nunu (reste 6 min) ») au lieu de « Le groupe finit sa session… ». Tout le groupe voit aussi le temps

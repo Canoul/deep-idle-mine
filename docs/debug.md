@@ -6390,3 +6390,49 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Correction** : `shareBySegments` (`src/sim/session.js`) arrondit le pot à l'entier inférieur, y compris pour `prevXp` (sessions à plusieurs tranches).
 - **Tests** : `tests/prison-sim.test.js`, prison-*. ✅ `G.summary.xp` (bilan) garde le ,5, sans effet sur les versements.
 - **À vérifier** : ⚠️ l'XP perdue depuis le 31/10 n'est pas rendue. ⚠️ Ce chantier augmente l'XP de prison réelle d'environ 70 % par rapport à ce qui était versé (le niveau prévu au réglage du 31/10) : à garder en tête si le réglage de `mobXpMul` s'était appuyé sur des chiffres en ligne.
+
+## 01/11/2026 — Amélioration : cristaux = plumes (Geoffrey)
+- **Quoi** : `UPGRADE.levels` (src/config.js), cristaux 6 / 9 / 14 / 18 / 24 / 32 / 40 / 50 / 63. Anneaux inchangés (doublon).
+- **Tests** ✅ tests/amelioration.test.js, tests/anneaux.test.js, `npm run test:anticheat`.
+
+## 01/11/2026 — Geoffrey — Appli mobile : plus de transition entre les onglets
+- **Quoi** : `src/main.js`, `!appBoot.app` devant `backdrop.switchTab` (même chemin que `prefers-reduced-motion`). Site inchangé.
+- **Tests** : ✅ `app-mode`, `backdrop`, `nav`. ✅ Chrome headless, partie en cours : 0 transition dans `?app` (Session ↔ Sac), 1 sur le site, aucune erreur.
+
+## 01/11/2026 — Bulles « Butin » (tableau de loot) (Jules) — branche `jules/bulle-loot`
+- **Quoi** : `src/meta/loot-table.js` (logique pure) : `lootTableOf(item)` (LOOT, coffres Roi Gobelin via `goblinChestTable`,
+  Golbute, trésors de tour + `RUNE.luck`, anciens coffres de tour), `instanceLootTable(id, level)`, `towerLootTable(side, luck)`,
+  `mobLootTable()` / `mobLoot(m)` / `mobRare(m)`. `src/ui/loot-tip.js` : HTML (`lootTipHtml(clé)`) et « ? Butin » (`lootHelp`).
+  Clés `data-loot` : `item:<objet>`, `instance:<id>:<niveau>`, `tower:<camp>[:<bonus>]`, `mobs`.
+- **Bulle commune** (`src/ui/tooltip.js`) : un élément avec `data-loot` affiche le tableau (classe `#tip.loot`) ;
+  `tipAttr` met `data-loot` sur tout objet qui a un tableau (avant : `title` natif). Position : au-dessus, sinon en
+  dessous, sinon collée en haut de l'écran (grands tableaux). CSS `.lt*` dans style.css.
+- **Lobby** (`src/ui/lobby.js`) : « ? Butin » dans `renderInstances` (Instance I niveaux 1 et 2, Instance II ; phrase
+  « son butin arrive bientôt » du Golbute retirée), texte des tours (`lobbyInfo`), ligne `fightMobs` des critères.
+- **Wiki** : `MOB_INFO[m].loot` (src/wiki/data.js) vient de `mobLoot` (chien et ver avaient un butin vide) ; mimic : `[]`
+  (le wiki écrit sa phrase).
+- **Non pris en compte dans la bulle** (le serveur, lui, les applique) : recettes déjà apprises (`learnOnce`, noté « si
+  pas encore apprise »), `treasureBlueprintsDone`, `PRISON.rareMul`, bonus Butin / Pillage (en note).
+- **Tests** ✅ tests/loot-table.test.js (9), help, lobby, wiki, wiki-secret, inventory (67). ✅ Rendu vérifié dans
+  Chromium (Treasure T4, Coffre du Roi Gobelin II, Tour de l'Ange, trésor béni, mobs) sur une page d'aperçu jetable.
+- **⚠️ À vérifier en vrai** : bulle sur téléphone (tableau T4 haut : ≈ 30 lignes) ; « ? Butin des mobs » dans la ligne
+  « Face aux mobs » sur écran étroit.
+
+## 01/11/2026 — K hole Filons : entrée du donjon contre la barrière (Jules) — ✅ en ligne le 01/11
+- **Quoi** : `buildVeins` (src/sim/khole.js) : `placeBox` accepte un donjon jusqu'au bord droit de la carte (x0 = map.w − 10)
+  et le côté de l'entrée était tiré à pile ou face ; côté R au bord, l'entrée (x = 24) donnait sur la barrière (x = 25).
+  Mesuré : 172 donjons sur 2 000 seeds (n = 0). Correctif : le tirage `r()` est gardé (le reste de la dimension ne change
+  pas), mais `x0 + DUNGEON.size >= map.w` force 'L'. Seuls les donjons qui étaient murés changent. Le bord gauche n'a pas
+  le problème (x0 ≥ spawnCols, entrée sur une colonne d'arrivée vide) ; haut et bas non plus (entrée sur les lignes du bas
+  de l'intérieur, jamais sur la ligne du mur).
+- **Repro** : seed 176946784 (k hole sans doute imposé : cette seed n'en tire aucun naturellement) ; seed 2, n = 0, carte
+  Filons : entrée (24, 216) côté R avant le correctif.
+- **Tests** ✅ tests/khole.test.js (nouveau : « l'entrée du donjon donne toujours dans la carte », 300 seeds, échouait
+  avant), tests/admin-khole.test.js (29 au total). ✅ Simulation 3 mineurs × 5 : 0 blocage.
+- **Point fragile** : la mine classique garde 2 cases de marge (`DUNGEON.margin`) ; le k hole n'en garde pas, d'où ce cas.
+  Une autre boîte (piège) collée à l'entrée est exclue par l'écart d'une case de `placeBox`.
+
+## 01/11/2026 — Bot Discord : /todo done efface le message de #report (Geoffrey)
+- **Quoi** : `removeReport` remplace `markDone` dans bot/main.js. Aucun droit Discord en plus : le bot efface ses propres messages.
+- **Tests** ✅ tests/bot-todo.test.js (logique et aide), `node --check bot/main.js`. ⚠️ Effacement non essayé sur le vrai Discord : main.js n'a pas de test sans connexion.
+

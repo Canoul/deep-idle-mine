@@ -293,7 +293,7 @@ nav = setupNav($('nav'), $('views'), id => {
   /* transition avec l'onglet Session (src/ui/backdrop.js) : la mine du fond rétrécit ou s'agrandit, les panneaux glissent */
   const sessView = document.querySelector('.view[data-view="session"]');
   /* … et la prison comme la mine (30/10/2026) */
-  if(backdrop.switchTab(from, id, transitionGame(rec && G?.ready ? G : prisonBackdrop(), inRoom() && pane !== 'session'))) id==='session' ? enterPanels(sessView) : leavePanels(sessView, $('views'), () => ui.tab==='session');
+  if(!appBoot.app && backdrop.switchTab(from, id, transitionGame(rec && G?.ready ? G : prisonBackdrop(), inRoom() && pane !== 'session'))) id==='session' ? enterPanels(sessView) : leavePanels(sessView, $('views'), () => ui.tab==='session');
   if(id==='inventaire'){ renderInventory(ui.inv, ui.fresh); nav?.badge('inventaire', false); }
   if(id==='skills') skills?.refresh();   // le bouton reset suit la session en cours
   if(id==='historique') historyTab?.refresh();

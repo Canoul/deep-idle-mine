@@ -55,10 +55,11 @@ async function onReaction(reaction, user){
   await (await report.messages.fetch(s.reportId)).edit({ content: reportText(s, ignored), allowedMentions: NO_PING });
 }
 
-/* le message de #report reste, avec ✅ : on voit ce qui est réglé */
-async function markDone(s){
-  try { await (await (await client.channels.fetch(REPORT)).messages.fetch(s.reportId)).react('✅'); }
-  catch(e){ console.error(`✅ impossible sur ID ${s.id} :`, e); }
+/* un sujet terminé sort de #report (01/11/2026, Geoffrey ; avant : le message restait avec ✅). Un bot peut toujours
+   effacer ses propres messages. Message déjà effacé à la main : l'erreur est notée, le sujet reste retiré. */
+async function removeReport(s){
+  try { await (await client.channels.fetch(REPORT)).messages.delete(s.reportId); }
+  catch(e){ console.error(`Message de #report non effacé pour ID ${s.id} :`, e); }
 }
 
 async function answer(i){
@@ -70,7 +71,7 @@ async function answer(i){
   const gone = todo.done(target);
   if(!gone.length) return [target.id !== undefined ? `Aucun sujet avec l'ID ${target.id}.` : 'Rien à retirer.'];
   save();
-  for(const s of gone) await markDone(s);
+  for(const s of gone) await removeReport(s);
   return [`✅ Retiré : ${gone.map(s => `ID ${s.id}`).join(', ')}`.slice(0, 1900)];
 }
 
