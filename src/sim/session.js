@@ -1,7 +1,7 @@
 /* Session : création de la partie et boucle de simulation à pas fixe (DT).
    Ne touche ni au DOM ni au canvas : tourne aussi bien dans le navigateur que dans Node (tests, simulate). */
 import { shrineOf, shrineEffects } from '../meta/shrines.js';
-import { W, DT, SESSION_LEN, TOP_DIRT_ROWS, STATS, CFG, IDS, CHEST_X, CHEST_BASE, MOBS, SPAWN_X, TEAM, SHINY, FORTUNE, GEAR_RNG, GLYPHS, PRISON } from '../config.js';
+import { W, DT, SESSION_LEN, TOP_DIRT_ROWS, STATS, CFG, IDS, CHEST_X, CHEST_BASE, MOBS, SPAWN_X, TEAM, SHINY, FORTUNE, GEAR_RNG, GLYPHS, PRISON, SKILLS } from '../config.js';
 import { inReach, reachOf, stopAction } from './knock.js';
 import { mulberry32 } from '../core/rng.js';
 import { genArea, maxRow, prisonBox } from './world.js';
@@ -120,6 +120,18 @@ export function timeClass(a){
   return 'other';
 }
 
+/* Reconnaissance (logisticien) : chaque autre mineur dans le seau du treuil fait avancer le compteur ; SKILLS.reconEvery s par
+   mineur donnent 1 d'oxygène. Pas dans les tours : on n'y respire pas. */
+export function reconnaissance(G){
+  for(const m of G.miners){
+    if(!m.skill.recon) continue;
+    const n=G.miners.filter(o => o!==m && o.action?.type==='move' && o.action.data.winch).length;
+    if(!n) continue;
+    m.reconT=(m.reconT||0)+n*DT;
+    for(; m.reconT>=SKILLS.reconEvery; m.reconT-=SKILLS.reconEvery) m.ox=Math.min(m.carac.oxygenMax, m.ox+m.skill.recon);
+  }
+}
+
 export function tick(G){
   if(G.over) return;
   G.ticks++; G.t=G.ticks*DT;   // temps recalculé depuis le compteur : aucune dérive d'arrondi
@@ -129,6 +141,7 @@ export function tick(G){
     stepMiner(G,m);
   }
   braumGlyph(G);   // Glyphe Braum : oxygène en entrant dans un piège ou un donjon
+  reconnaissance(G);
   updateSpells(G);  // sorts : Illumination, Inspiration, Ulti shen
   updateTraps(G);   // un bloc de paroi de piège a disparu : le piège s'ouvre
   updateMobs(G);

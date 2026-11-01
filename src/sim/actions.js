@@ -25,6 +25,7 @@ function oreSkills(G,m){
   /* Glyphe Second souffle : une chance de rendre une torche, jamais au-delà du max */
   if(m.skill.glyph_ore_oxygen && m.torches<m.carac.torches && G.rng()<GLYPHS.torchChance) m.torches++;
   if(m.skill.ore_rush) m.rushUntil=G.t+rushTime(m);   // Glyphe Ruée : plus long
+  if(m.skill.ore_drunk) m.oreDrunk=(m.oreDrunk||0)+m.skill.ore_drunk;   // Ivresse Minérale : consommée par landHit
 }
 /* skill Barbare loot et stat looting (butin des mobs, en %) : b = loot + looting/100 est la CHANCE d'un butin en plus
    (pas un multiplicateur, décision du 22/10, Geoffrey) : 9 % → 9 % de chance d'avoir 1 de plus ; au-delà de 100 %,
@@ -77,8 +78,9 @@ export function fortuneExtra(G,m){
 const gearChance = (G,pct) => pct>0 && G.gearRng()*100 < pct;
 /* dégâts d'un coup : (base + bonus fixes) × (1 + bonus en %), doublés sur un coup critique */
 /* dégâts d'un coup (Glyphe Pillage : + m.pillage %, gagné en tuant des mobs) */
-export const hitDamage = (G,m) => m.carac.damage*(1+((m.carac.damagePct||0)+(m.pillage||0))/100)*(1+(warcryOf(G,m)?.dmg||0))
-                                 *(gearChance(G,m.carac.crit||0) ? 2 : 1);   // Cri de guerre : × (1 + 10 %)
+/* flat : dégâts fixes de ce coup seul (Ivresse Minérale) ; m.hitCrit : ce coup était-il critique (Saccager) */
+export const hitDamage = (G,m,flat=0) => { m.hitCrit=gearChance(G,m.carac.crit||0);
+  return (m.carac.damage+flat)*(1+((m.carac.damagePct||0)+(m.pillage||0))/100)*(1+(warcryOf(G,m)?.dmg||0))*(m.hitCrit ? 2 : 1); };   // Cri de guerre : × (1 + 10 %)
 /* coup unique : chance de casser le bloc instantanément (durée de minage minimale) */
 export const mineDuration = (G,m,t) => gearChance(G,m.carac.oneTap||0) ? 0 : mineT(G,m,t);
 
@@ -267,13 +269,18 @@ export function finishAction(G,m,a){
 export function landHit(G,m,o){
   if(!(o.hp>0) || !inReach(G,m,o,reachOf(m))) return;
   if(m.skill.taunt) provoke(G,o,m);   // provocation : il ne vise plus que ce mineur (tous les mobs)
-  const dmg=hitDamage(G,m)*exposedMul(G,o);
+  const ravaged=m.ravage;   // Saccager : la série de critiques d'avant garantit le second coup de cette attaque
+  const dmg=hitDamage(G,m,m.oreDrunk||0)*exposedMul(G,o);
+  m.oreDrunk=0;
+  /* Saccager : seul le premier coup d'une attaque normale compte ; rien ne compte tant que le second coup est dû */
+  if(m.skill.ravage && !ravaged){ m.critRun=m.hitCrit ? (m.critRun||0)+1 : 0; if(m.critRun>=SKILLS.ravageCrits){ m.ravage=true; m.critRun=0; } }
   o.hp-=dmg; m.foeHit=G.t;
   if(o.grab===m.id) o.grabHit=G.t;   // tacle : il se bat, la soupape repart (COMBAT.tackleGiveUp)
   splash(G,m,o,dmg);
   if(o.hp<=0){ killMob(G,m,o); return; }
   /* double attaque (stat doubleAttack, %) : un second coup, avec son propre critique ; un seul recul */
-  if(gearChance(G,m.carac.doubleAttack||0)){
+  if(gearChance(G,m.carac.doubleAttack||0) || ravaged){
+    m.ravage=false;
     const d2=hitDamage(G,m)*exposedMul(G,o);
     o.hp-=d2; splash(G,m,o,d2);
     m.stats.doubleHits=(m.stats.doubleHits||0)+1;

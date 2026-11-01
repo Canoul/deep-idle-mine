@@ -558,3 +558,4 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 
 - **Chat sur téléphone** (31/10, Geoffrey ; `CHAT.dock.phone`) : onglet Chat plein écran, sur téléphone seulement ; ailleurs, chat flottant inchangé.
 - **Cape inclusive** (31/10, Geoffrey ; épique, T4.5) : 4 stats tirées au craft (champ `rolled` de la pièce), 375 x chacune au prix de dessin ÷ les ratios de `UPGRADE.runeDiv`, doublons et Découverte possibles ; plan à 0,5 % dans le Treasure T4 et à la dernière étape de la recherche ; dans `WIKI.secret`.
+- **Talents de l'étage 6** (01/11, Geoffrey) : Ivresse Minérale (Mineur), Reconnaissance (Logisticien), Saccager (Barbare), un point chacun, après la Maîtrise.
