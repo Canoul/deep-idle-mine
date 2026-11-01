@@ -9,6 +9,10 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 01/11/2026 — Geoffrey — Correctif : le jeu ne démarrait plus (onglet Classement)
+- **Pour le joueur** : le site affichait « Le jeu a planté au démarrage » juste après la mise en ligne. Réparé en quelques minutes.
+- **État** : ✅ en ligne le 01/11
+
 ## 01/11/2026 — Geoffrey — Appli Android prête pour Google Play
 - **Pour le joueur** : rien sur le site. L'appli « Deep Mine Idle MMO » contient maintenant le jeu : elle s'ouvre même avec un réseau lent, gère l'encoche, le bouton retour Android (fenêtre, onglet précédent, confirmation pour quitter), affiche « Pas de connexion, nouvelle tentative… », et ouvre Discord, le wiki et les pages légales dans le navigateur du téléphone.
 - **Décisions** : fichiers du jeu dans l'appli (ancien : l'appli ouvrait le site à distance). Connexion par jeton dans un en-tête pour l'appli seulement, le site garde son cookie. Écran vertical, à confirmer. Icône provisoire : la pioche d'acier.

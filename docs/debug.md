@@ -6531,3 +6531,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 ## 01/11/2026 — Mise en ligne groupée : modération, suppression de compte, marques et pages légales, appli Android (Geoffrey)
 - **Tests** : `npm test` complet : 8 échecs, les mêmes que sur `main` juste avant (comparaison des deux suites) : energyOfTicks, fortune, boîte de mesures, lobby mode dev, recettes du T4, recycle, roi gobelin, tour et instance terminent la prison. ❌ À regarder, sans lien avec ces chantiers. `test:anticheat` 152/152, simulation 3 mineurs × 5 sans blocage.
 - **Fusion** : classements déplacés par `geoffrey/onglet-classement` dans src/ui/leaderboard.js : le bouton ⋮ y a été remis.
+
+## 01/11/2026 — Site planté : boardTab jamais déclaré (Geoffrey)
+- **Quoi** : `geoffrey/onglet-classement` écrivait `boardTab = setupLeaderboard(…)` sans déclaration ; dans un module, ReferenceError au démarrage. Constaté juste après la mise en ligne groupée (les deux étaient sur `main`), corrigé en quelques minutes : `let guildTab = null, boardTab = null`.
+- **Tests** ✅ vrai Chrome en local puis sur le site en ligne. ✅ tests/main-module.test.js : variable de premier niveau non déclarée. **Leçon** : `node --check` ne voit pas ce genre d'erreur, et `npm test` ne charge jamais src/main.js : avant de pousser, ouvrir la page dans un navigateur.

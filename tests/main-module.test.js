@@ -14,3 +14,9 @@ test('src/main.js est un module valide', () => {
     assert.equal(r.status, 0, r.stderr);
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
+
+test('src/main.js : toute variable affectée au premier niveau est déclarée', () => {
+  const src = fs.readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  for(const [, name] of src.matchAll(/^([A-Za-z_$][\w$]*) = /gm))
+    assert.match(src, new RegExp(`^(?:let|var|const)\\s[^\\n]*\\b${name}\\b`, 'm'), `${name} n'est déclarée nulle part : le jeu ne démarrerait pas`);
+});
