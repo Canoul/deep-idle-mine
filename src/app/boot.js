@@ -31,5 +31,5 @@ export function bootApp({ doc, win }){
   }
   /* téléphone seulement : bouton retour, liens, écran « Pas de connexion ». Prêt avant le premier appel au serveur */
   if(status !== 'ok') return { status, app };
-  return { status, app, native: import('./native.js').then(m => m.startNative({ doc, win })).catch(e => { console.warn(e); return null; }) };
+  return { status, app, native: import('./device.js').then(m => m.startNative({ doc, win })).catch(e => { console.warn(e); return null; }) };
 }

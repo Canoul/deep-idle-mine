@@ -907,7 +907,7 @@ async function refresh(waited){
 /* ---------- démarrage ---------- */
 await appBoot.native;
 Object.assign(acct, await bootAccount(accountUI));
-window.dimBootOffline = acct.offline;      // appli : parti sans serveur, src/app/native.js recharge quand il revient
+window.dimBootOffline = acct.offline;      // appli : parti sans serveur, src/app/device.js recharge quand il revient
 renderNavAccount($('navAccount'), acct);
 lobby.update({ account:acct.account, offline:acct.offline });   // tout de suite : une page ouverte pendant une session ne passe par showNoSession qu'en quittant le bilan (27/10)
 $('navAccount').onclick = () => accountUI.openProfile();

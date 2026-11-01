@@ -9,7 +9,7 @@ export class ApiError extends Error {
 /* Pas de serveur de jeu joignable (hors ligne, ou page servie par un simple serveur de fichiers). */
 export class OfflineError extends Error {}
 
-/* appli : l'écran « Pas de connexion » (src/app/native.js) */
+/* appli : l'écran « Pas de connexion » (src/app/device.js) */
 function offline(text){
   if(inLocalApp && typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('dim:offline'));
   return new OfflineError(text);

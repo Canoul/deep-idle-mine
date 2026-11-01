@@ -95,7 +95,7 @@ puis commiter ce qui change dans `mobile/android`.
 ## Modifier l'appli
 
 - Réglages : `mobile/capacitor.config.json`.
-- Code propre au téléphone : `src/app/` (`native.js` : bouton retour, liens, écran « Pas de connexion »).
+- Code propre au téléphone : `src/app/` (`device.js` : bouton retour, liens, écran « Pas de connexion »).
 - Orientation : portrait, `android:screenOrientation` dans `AndroidManifest.xml`. L'interface de l'appli est pensée pour un écran vertical.
 - Permissions : seulement `INTERNET`. Le résumé de chaque compilation les affiche.
 - Essai dans un navigateur : `http://localhost:8000/?app` montre l'interface de l'appli, avec le serveur local et le cookie.

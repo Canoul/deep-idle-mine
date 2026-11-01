@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
-import { backStep, externalUrl } from '../src/app/native.js';
+import { backStep, externalUrl } from '../src/app/device.js';
 import { appIndex, copyWeb } from '../mobile/scripts/copy-web.js';
 
 const SITE = 'https://deepmineidle.fr/', HERE = 'https://localhost/index.html';
