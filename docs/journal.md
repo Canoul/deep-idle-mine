@@ -11,7 +11,7 @@ Modèle d'entrée :
 ```
 ## 01/11/2026 — Geoffrey — Lobby : la jauge d'énergie de chacun dans l'équipe
 - **Pour le joueur** : chaque place de l'équipe montre une barre et l'énergie du joueur, en rouge s'il n'en a plus assez pour une mine. La sienne est exacte ; celle des autres se met à jour toutes les 30 s.
-- **État** : pas encore en ligne
+- **État** : ✅ en ligne le 01/11
 
 ## 01/11/2026 — Geoffrey — Lobby : contour doré quand le Bloc géant ou He's coming est disponible
 - **Pour le joueur** : dans le menu du Lobby, le bouton Bloc géant et le bouton He's coming s'entourent d'or dès qu'on peut y entrer (attente de 3 h finie, salle pas pleine, pas déjà en visite). Plus besoin d'ouvrir la carte pour vérifier.
