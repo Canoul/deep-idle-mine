@@ -1,41 +1,49 @@
-"""Icône de l'appli mobile -> mobile/ (projet Android de Capacitor, et une grande image pour iOS et les stores).
+"""Icône de l'appli mobile -> mobile/ (projets Android et iOS de Capacitor, et une grande image).
 
-La pioche en acier du jeu (textures/pickaxe_steel.png, 16 × 16) agrandie d'un facteur ENTIER au plus proche voisin
-(pixels nets), centrée sur le fond de la Forge noire. Écrit, pour chaque densité Android :
+Source unique : mobile/assets/icon-art.png, la lampe de mine en pixel art sur une grille de 64 × 64 (choix de Jules,
+01/11/2026 : image faite avec Gemini, remise sur une vraie grille de pixels, voir docs/debug.md). Agrandie d'un facteur
+ENTIER au plus proche voisin (pixels nets), puis réduite par moyenne si la taille voulue n'est pas un multiple de 64.
+Écrit, pour chaque densité Android :
   - ic_launcher.png (icône classique) et ic_launcher_round.png (la même, découpée en disque) ;
-  - ic_launcher_foreground.png (avant-plan de l'icône adaptative, fond transparent : la pioche reste dans la zone
-    sûre, 66 px sur 108) ; le fond vient de values/ic_launcher_background.xml, réécrit ici.
+  - ic_launcher_foreground.png (avant-plan de l'icône adaptative : l'icône entière sur la partie visible, 72 px sur 108,
+    que le téléphone découpe en rond ou en carré arrondi) ; le fond, couleur du bord de l'icône, vient de
+    values/ic_launcher_background.xml, réécrit ici ;
+puis mobile/assets/icon-1024.png, et l'icône de l'iPhone (1024 px sans transparence) quand le projet iOS est là.
+Les visuels des stores (scripts/gen_store_art.py) reprennent la même icône.
 
     python scripts/gen_app_icon.py      (ou npm run app:icon)
 """
+import math
 import os
+import statistics
 from PIL import Image, ImageDraw
 
 ROOT = os.path.join(os.path.dirname(__file__), '..')
-SRC = os.path.join(ROOT, 'textures', 'pickaxe_steel.png')
+ART = os.path.join(ROOT, 'mobile', 'assets', 'icon-art.png')
 RES = os.path.join(ROOT, 'mobile', 'android', 'app', 'src', 'main', 'res')
 BIG = os.path.join(ROOT, 'mobile', 'assets', 'icon-1024.png')
-BG = '#191310'                 # fond des panneaux de la Forge noire (scripts/gen_ui.py, C['fill'])
+# iPhone : une seule image 1024 × 1024, sans transparence (Apple la refuse) ; l'iPhone arrondit les coins lui-même
+IOS = os.path.join(ROOT, 'mobile', 'ios', 'App', 'App', 'Assets.xcassets', 'AppIcon.appiconset', 'AppIcon-512@2x.png')
 
 # densité -> (icône classique, avant-plan adaptatif), en px
 DENSITIES = {'mdpi': (48, 108), 'hdpi': (72, 162), 'xhdpi': (96, 216), 'xxhdpi': (144, 324), 'xxxhdpi': (192, 432)}
-ICON_SHARE = 0.6               # part du côté occupée par la pioche, icône classique
-FG_SHARE = 0.5                 # avant-plan adaptatif : dans la zone sûre (66 / 108 ≈ 0,61)
+VISIBLE = 72 / 108             # icône adaptative : part visible de l'avant-plan (le reste ne se voit que s'il bouge)
 
 
-def pickaxe(size, share):
-    """la pioche (sans les marges vides de la texture) agrandie d'un facteur entier, au plus près de share × size"""
-    src = Image.open(SRC).convert('RGBA')
-    src = src.crop(src.getbbox())
-    k = max(1, int(size * share // max(src.size)))
-    return src.resize((src.width * k, src.height * k), Image.NEAREST)
+def icon(size):
+    """l'icône carrée, opaque, en size × size"""
+    art = Image.open(ART).convert('RGBA')
+    k = math.ceil(size / art.width)
+    img = art.resize((art.width * k, art.height * k), Image.NEAREST)
+    return img if img.width == size else img.resize((size, size), Image.BOX)
 
 
-def centered(size, share, background):
-    img = Image.new('RGBA', (size, size), background)
-    p = pickaxe(size, share)
-    img.alpha_composite(p, ((size - p.width) // 2, (size - p.height) // 2))
-    return img
+def edge_color():
+    """couleur du bord de l'icône (médiane du tour), en #rrggbb"""
+    art = Image.open(ART).convert('RGB')
+    n = art.width - 1
+    edge = [art.getpixel(p) for i in range(art.width) for p in ((i, 0), (i, n), (0, i), (n, i))]
+    return '#' + ''.join(f'{int(statistics.median(c[k] for c in edge)):02x}' for k in range(3))
 
 
 def round_crop(img):
@@ -47,18 +55,24 @@ def round_crop(img):
 
 
 def main():
-    for d, (icon, fg) in DENSITIES.items():
+    for d, (size, fg) in DENSITIES.items():
         folder = os.path.join(RES, f'mipmap-{d}')
-        square = centered(icon, ICON_SHARE, BG)
+        square = icon(size)
         square.save(os.path.join(folder, 'ic_launcher.png'))
         round_crop(square).save(os.path.join(folder, 'ic_launcher_round.png'))
-        centered(fg, FG_SHARE, (0, 0, 0, 0)).save(os.path.join(folder, 'ic_launcher_foreground.png'))
+        front = Image.new('RGBA', (fg, fg), (0, 0, 0, 0))
+        inner = icon(round(fg * VISIBLE))
+        front.alpha_composite(inner, ((fg - inner.width) // 2, (fg - inner.height) // 2))
+        front.save(os.path.join(folder, 'ic_launcher_foreground.png'))
     with open(os.path.join(RES, 'values', 'ic_launcher_background.xml'), 'w', encoding='utf-8', newline='\n') as f:
         f.write('<?xml version="1.0" encoding="utf-8"?>\n<resources>\n'
-                f'    <color name="ic_launcher_background">{BG}</color>\n</resources>\n')
-    os.makedirs(os.path.dirname(BIG), exist_ok=True)
-    centered(1024, ICON_SHARE, BG).save(BIG)
-    print('Icône écrite :', os.path.relpath(RES, ROOT), 'et', os.path.relpath(BIG, ROOT))
+                f'    <color name="ic_launcher_background">{edge_color()}</color>\n</resources>\n')
+    icon(1024).save(BIG)
+    written = [RES, BIG]
+    if os.path.isdir(os.path.dirname(IOS)):
+        icon(1024).convert('RGB').save(IOS)
+        written.append(IOS)
+    print('Icône écrite :', ', '.join(os.path.relpath(p, ROOT) for p in written))
 
 
 if __name__ == '__main__':

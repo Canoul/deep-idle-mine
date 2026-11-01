@@ -24,7 +24,7 @@ Android 7 ou plus récent. Pas d'iPhone pour l'instant (il faut le compte Apple)
 
 ## Ce qu'on doit voir
 
-- L'icône : la pioche en acier sur fond sombre.
+- L'icône : une lampe de mine allumée dans la roche (avant le 01/11 : la pioche en acier).
 - En bas, 5 boutons : Accueil, Session, Sac, Perso, Social. Ils remplacent la barre d'onglets du site.
 - En haut à droite du jeu, plus de badge (APPLI ✓ confirmé le 01/11, retiré depuis), sauf en cas de problème :
   - **APPLI ⚠ pont bloqué** (orange) : l'appli s'ouvre mais ne peut pas parler au téléphone (notifications impossibles).
@@ -34,7 +34,7 @@ Android 7 ou plus récent. Pas d'iPhone pour l'instant (il faut le compte Apple)
 
 ## Liste d'essais (à remonter dans `docs/debug.md`)
 
-1. L'APK s'installe, l'icône pioche apparaît.
+1. L'APK s'installe, l'icône lampe de mine apparaît.
 2. Pas de badge orange en haut à droite.
 3. Connexion, lancement d'une session, la mine tourne.
 4. Fermer l'appli, la rouvrir : toujours connecté.

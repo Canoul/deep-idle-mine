@@ -6464,3 +6464,15 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   iPhone seul ou iPhone + iPad (`TARGETED_DEVICE_FAMILY = "1,2"` dans le projet iOS : captures iPad 13" exigées).
 - **Point fragile** : si l'icône de l'appli change (`gen_app_icon.py`), relancer aussi `npm run store:art` : les stores
   veulent la même icône sur la fiche et sur le téléphone.
+- **Nouvelle icône (même jour)** : lampe de mine choisie par Jules, image Gemini 640 × 640 (icône dans un carré arrondi de
+  384 px, x et y de 128 à 511). Grille mesurée sur les bords (profil des écarts de couleur) : 60 cases de 6,4 px, phase 0.
+  Une couleur par case = médiane des pixels du centre de la case (les bords sont flous) ; pas de réduction de palette
+  (à 32 couleurs, la lueur orange et les paillettes disparaissaient). Coins arrondis : les cases couleur du fond extérieur
+  prennent la couleur de la première case de roche vers le centre. Bord de 2 cases recopié (la chaîne monte jusqu'en
+  haut) → `mobile/assets/icon-art.png`, 64 × 64, ×16 = 1024. `gen_app_icon.py` lit cette source : agrandissement entier
+  au plus proche voisin puis réduction BOX si la taille n'est pas un multiple de 64 ; avant-plan adaptatif = icône
+  entière sur les 72 px visibles sur 108, fond = couleur médiane du bord (`#100c0b`) ; écrit l'icône iOS seulement si
+  le projet iOS est là. ✅ tests/mobile-icon.test.js (source 64 × 64, fond sombre), tests/store-art.test.js ; vu en
+  aperçu à toutes les tailles Android, en rond et en carré. ⚠️ Pas encore vu sur un vrai téléphone.
+  ⚠️ À la fusion avec `jules/appli-ios` : conflit attendu dans `gen_app_icon.py` (garder cette version, qui écrit déjà
+  l'icône iOS), puis relancer `npm run app:icon` pour réécrire `AppIcon-512@2x.png`.

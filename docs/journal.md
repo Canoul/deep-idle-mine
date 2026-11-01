@@ -24,13 +24,14 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
-## 01/11/2026 — Jules — Fiches des stores : icônes et bannière
-- **Pour le joueur** : rien pour l'instant. Les images des futures fiches Google Play et App Store sont prêtes, dans
-  `mobile/store/` : l'icône (la pioche de l'appli) en 512 × 512 pour Google et en 1024 × 1024 sans transparence pour
-  Apple, et la bannière Google (1024 × 500) : le titre en lettres pixel et une mine en coupe avec une session à 3.
-- **Décisions** : les captures d'écran attendent la version tactile ; scènes choisies : une session à 3, le Bloc géant,
-  une tour, le Carreau. Ordre, légendes et tailles proposés dans `docs/fiches-stores.md`.
-- **À suivre** : valider la bannière et les légendes ; une 5e capture « Stuff / Craft » pour montrer la progression ?
+## 01/11/2026 — Jules — Fiches des stores : nouvelle icône et bannière
+- **Pour le joueur** : l'appli change d'icône : **une lampe de mine allumée** remplace la pioche (sur le téléphone après
+  avoir réinstallé l'appli). Les images des futures fiches Google Play et App Store sont prêtes, dans `mobile/store/` :
+  cette icône en 512 × 512 pour Google et en 1024 × 1024 sans transparence pour Apple, et la bannière Google
+  (1024 × 500) : le titre en lettres pixel et une mine en coupe avec une session à 3.
+- **Décisions** : icône et bannière validées par Jules. Les captures d'écran attendent la version tactile ; scènes
+  choisies : une session à 3, le Bloc géant, une tour, le Carreau. Ordre, légendes et tailles dans `docs/fiches-stores.md`.
+- **À suivre** : valider les légendes ; une 5e capture « Stuff / Craft » pour montrer la progression ?
   L'appli iPhone est déclarée aussi pour iPad : Apple demandera alors des captures iPad (à trancher : iPhone seulement ?).
 - **État** : 🧪 sur la branche `jules/visuels-stores` (pas en ligne)
 

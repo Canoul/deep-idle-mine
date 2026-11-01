@@ -1,6 +1,6 @@
 """Visuels des fiches des stores -> mobile/store/ (Google Play et App Store), à partir des textures du jeu.
 
-  - icon-google-512.png : l'icône de l'appli (la pioche de scripts/gen_app_icon.py) en 512 × 512 ;
+  - icon-google-512.png : l'icône de l'appli (la lampe de mine de scripts/gen_app_icon.py) en 512 × 512 ;
   - icon-apple-1024.png : la même en 1024 × 1024, sans transparence (Apple la refuse, et arrondit les coins lui-même) ;
   - banner-google-1024x500.png : la bannière de Google Play (« feature graphic »), sans transparence. Une mine en coupe
     dessinée comme en session (src/render/canvas.js : cases de 16 px, assombries loin des lumières, noires tant qu'on
@@ -12,7 +12,7 @@
 import math
 import os
 from PIL import Image
-from gen_app_icon import centered, BG, ICON_SHARE
+from gen_app_icon import icon
 
 ROOT = os.path.join(os.path.dirname(__file__), '..')
 TEX = os.path.join(ROOT, 'textures')
@@ -199,8 +199,8 @@ def banner():
 def main():
     os.makedirs(OUT, exist_ok=True)
     files = {
-        'icon-google-512.png': centered(512, ICON_SHARE, BG),
-        'icon-apple-1024.png': centered(1024, ICON_SHARE, BG).convert('RGB'),
+        'icon-google-512.png': icon(512),
+        'icon-apple-1024.png': icon(1024).convert('RGB'),
         'banner-google-1024x500.png': banner(),
     }
     for name, img in files.items():

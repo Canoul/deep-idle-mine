@@ -16,9 +16,11 @@ textures du jeu. Changer ces fichiers ne relance pas la fabrication de l'APK.
 
 Apple n'a pas de bannière.
 
-- **Icône** : la même que celle de l'appli sur le téléphone (la pioche en acier sur le fond de la Forge noire,
-  `scripts/gen_app_icon.py`). Les stores demandent que l'icône de la fiche soit celle de l'appli : si on la change, on
-  change les deux (`npm run app:icon` puis `npm run store:art`).
+- **Icône** : une lampe de mine allumée dans la roche, avec des paillettes d'or et de diamant (choix de Jules, 01/11).
+  Image faite avec Gemini, puis remise sur une vraie grille de pixels (64 × 64) : `mobile/assets/icon-art.png`, la seule
+  source de l'icône. C'est la même sur le téléphone et sur les fiches, comme le demandent les stores : pour la changer,
+  remplacer `icon-art.png` puis lancer `npm run app:icon` et `npm run store:art`. Pistes écartées le 01/11 : la pioche
+  seule (l'ancienne icône) et ses variantes, un portrait de mineur.
 - **Bannière** : le titre « DEEP MINE IDLE » en lettres pixel à gauche, dans le noir des cases jamais vues ; à droite une
   mine en coupe dessinée comme en session : le ciel du crépuscule du Carreau, le coffre en surface, le puits et son
   échelle, deux torches, et une session à 3 (acier qui pioche un diamant, chitine qui ouvre un treasure, mithril qui

@@ -553,7 +553,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   notifications programmées → 4 push, iOS, stores (comptes Apple / Google : plus tard, avec un business plan, Geoffrey).
   **Étape 1 faite le 28/10** : `mobile/`, `src/app/` (classe `app`, badge provisoire « APPLI ✓ / ⚠ pont bloqué »),
   icône (`npm run app:icon`), `.github/workflows/android-apk.yml` ; **APPLI ✓ confirmé sur un vrai Android le 01/11** (Geoffrey). **Étape 2 en 5 morceaux** : navigation (**en ligne le 01/11**, plan `2026-11-01-appli-mobile-etape2a-navigation.md`, `src/app/families.js`, `bar.js`, `main.js`, `app.css` : 5 familles, Guilde et Chat dans Social, Historique hors session, pas de Carreau, Geoffrey) → session → Accueil → Stuff et Skills → gestes au doigt.
-  **Visuels des stores** (01/11, Jules, branche `jules/visuels-stores`) : `mobile/store/` (icônes Google 512 et Apple 1024
+  **Visuels des stores** (01/11, Jules, branche `jules/visuels-stores`) : **icône = lampe de mine** (source unique
+  `mobile/assets/icon-art.png`, 64 × 64 ; ancien : la pioche en acier), `mobile/store/` (icônes Google 512 et Apple 1024
   sans transparence, bannière Google 1024 × 500), `npm run store:art` ; captures d'écran à faire avec l'interface
   tactile (session à 3, Bloc géant, tour, Carreau), plan dans `docs/fiches-stores.md`.
 
