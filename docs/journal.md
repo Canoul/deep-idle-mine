@@ -35,6 +35,10 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 01/11/2026 — Geoffrey — Classement : son propre onglet
+- **Pour le joueur** : les classements quittent Social et ont leur onglet **Classement**. Les boutons sont dans l'ordre Classement, Guilde, Social. Touches du clavier : C, G et S.
+- **État** : ✅ en ligne le 01/11
+
 ## 01/11/2026 — Jules — Correctif : le jeu ne démarrait plus
 - **Pour le joueur** : depuis la mise en ligne des notifications de l'appli (01/11 au soir), le jeu s'arrêtait au
   démarrage sur « Le jeu a planté au démarrage — Identifier 'setClock' has already been declared », pour tout le monde.

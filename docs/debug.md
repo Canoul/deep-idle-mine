@@ -6478,6 +6478,12 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Natif** : `src/app/device.js` (`backStep`, `externalUrl`, écran hors ligne sur l'événement `dim:offline`), chargé si le pont est là, attendu avant `bootAccount`. `window.Capacitor.Plugins` : pas de bundler. Barres : `SystemBars` de Capacitor 8 (`insetsHandling: css`), `EdgeToEdge.enable` dans `MainActivity`.
 - **Tests** ✅ tests/app-origin.test.js, tests/app-device.test.js. ✅ Vrai Chrome en 390 px, autre origine, faux pont (23 étapes) : CORS, jeton, rechargement, polices locales, bouton retour, liens, serveur coupé et rendu, démarrage sans serveur, déconnexion, puis site au cookie.
 - **Points fragiles** : **client figé** : aucune vérification de version entre appli et serveur ; une nouveauté serveur peut casser une vieille appli. `src/config.js` est aussi dans l'appli. Le nom de fichier `android-apk.yml` doit rester, GitHub ne lance à la main que les workflows connus de `main`. `jules/appli-ios` touche `mobile/` et `src/app/mode.js` : à refaire partir d'ici.
+## 01/11/2026 — Onglet Classement (Geoffrey) — branche `geoffrey/onglet-classement`
+- **Quoi** : code des classements déplacé de `src/ui/social.js` vers `src/ui/leaderboard.js` (mêmes logiques, route serveur inchangée), section `classement` dans `index.html`, `TABS` et `TAB_KEYS` (c, g, s ; ² retiré), famille Social de l'appli.
+- **Tests** : `tests/nav.test.js`, `tests/app-families.test.js`, `tests/app-bar.test.js`, `tests/leaderboard.test.js`, `tests/town.test.js` ; ⚠️ pas vu dans un navigateur (15 boutons dans la barre).
+- **Point fragile** : pas de bâtiment au Carreau pour Classement (`noBuilding`, comme Guilde).
+- **Déjà cassé avant ce chantier** : `tests/leaderboard.test.js`, « roi gobelin : record revérifié », échoue aussi sur `main` (il attend un refus de `instance_2`, prête depuis le 30/10). Pas touché.
+
 ## 01/11/2026 — Message de guilde (Geoffrey) — branche `geoffrey/guilde-message`
 - **Quoi** : champ `message { text, by, at }` de la guilde (`sanitizeGuilds` le garde), `setMessage` (`server/guild/service.js`, grade vérifié par `recruiter`), route `POST /api/guild/message`, `messageHTML` (`src/ui/guild.js`), option `multiline` de `askText`. Saisie dans une fenêtre et pas dans la page : la liste des membres est réécrite à chaque relecture et effacerait le texte en cours.
 - **Tests** : `tests/guild-service.test.js`, `tests/guild-ui.test.js`, `tests/dialog.test.js` ; ⚠️ pas vu dans un navigateur.

@@ -73,6 +73,7 @@ import { fillHelp } from './ui/help.js';
 import { setupGuide } from './ui/guide.js';
 import { setupSocial } from './ui/social.js';
 import { setupGuild } from './ui/guild.js';
+import { setupLeaderboard } from './ui/leaderboard.js';
 import { setupJudgment } from './ui/judgment.js';
 import { setupNotify } from './ui/notify.js';
 import { setupObtained } from './ui/obtained.js';
@@ -304,6 +305,7 @@ nav = setupNav($('nav'), $('views'), id => {
   if(id==='skills') skills?.refresh();   // le bouton reset suit la session en cours
   if(id==='historique') historyTab?.refresh();
   if(id==='guilde') guildTab?.open();
+  if(id==='classement') boardTab?.open();
   if(nav && (from==='chat' || id==='chat')) gchatDock.refresh();   // téléphone : le chat a son onglet (pas au tout début : il n'est pas encore créé, et il se règle tout seul)
   if(id==='session' && prisonActive(prison)) kickPrison();   // on regarde la prison : envois rapprochés tout de suite
   guide?.refresh();                      // « Regarde ton butin » : l'inventaire vient d'être ouvert
@@ -522,6 +524,7 @@ async function joinParty(fn){
   nav.show('lobby'); pollLobby(); pollSocial();
   return r;
 }
+boardTab = setupLeaderboard({ root: document.querySelector('.view[data-view="classement"]'), load: board => socialApi.leaderboard(board), moderate: p => moderate.playerMenu(p) });
 guildTab = setupGuild({ root: document.querySelector('.view[data-view="guilde"]'), onChange: () => { pollSocial(); pollLobby(); } });
 const social = setupSocial({
   request: async name => setSocial(await socialApi.request(name)),
@@ -532,7 +535,6 @@ const social = setupSocial({
   join:    id => joinParty(() => socialApi.join(id)),
   profile: id => socialApi.profile(id),
   online:  () => socialApi.online(),
-  leaderboard: board => socialApi.leaderboard(board),
   moderate: p => moderate.playerMenu(p),
   unblock: async id => setSocial(await socialApi.unblock(id)),
 });
