@@ -30,8 +30,7 @@ test('récompense : 5 demandes en même temps → versée une seule fois', async
   clock.now = dayEnd(clock.now) + VISIT + 1;
   const all = await Promise.all(Array.from({ length: 5 }, () => giant.claim(A)));
   assert.equal(all.filter(r => Object.keys(r.given).length).length, 1);
-  assert.equal(await count(store, A.id, 'Treasure T3'), 1);
-  assert.equal(await count(store, A.id, 'Treasure T1'), 2);
+  assert.equal(await count(store, A.id, 'Plume d\'ange'), 30);
 });
 
 test('récompense : jamais sans visite, même si le compte est inscrit à la main dans claimed d\'un autre jour', async () => {

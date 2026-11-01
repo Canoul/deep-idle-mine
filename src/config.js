@@ -1754,11 +1754,12 @@ export const GIANT = {
   dynamitePoints: 1,
   tiers: [
     /* paliers 26/10/2026, Geoffrey (avant 1 000 / 2 500 / 5 000 / 7 500 / 10 000) */
-    { min: 1000,  items: { 'Treasure T1': 1 } },
-    { min: 5000,  items: { 'Treasure T1': 1, 'Blueprint parts': 15 } },
-    { min: 10000, items: { 'Treasure T2': 1 } },
-    { min: 15000, items: { 'Treasure T2': 1, 'Blueprint parts': 30 } },
-    { min: 20000, items: { 'Treasure T3': 1 } },
+    /* objets 01/11/2026, Geoffrey, aussi pour He's coming (avant : Treasure T1, T1 + 15 parts, T2, T2 + 30 parts, T3) */
+    { min: 1000,  items: { 'Plume d\'ange': 5 } },
+    { min: 5000,  items: { 'Pépite d\'argent': 5 } },
+    { min: 10000, items: { 'Plume d\'ange': 10 } },
+    { min: 15000, items: { 'Pépite d\'argent': 10 } },
+    { min: 20000, items: { 'Plume d\'ange': 15 } },
   ],
   /* récompense seulement pour un joueur venu au moins minVisits fois dans la journée (27/10/2026, Geoffrey ; avant : une
      fois). Compté pour les journées à partir de minVisitsFrom : celles déjà finies gardent l'ancienne règle. */

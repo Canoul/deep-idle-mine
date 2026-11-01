@@ -6238,3 +6238,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Quoi** : `RAFFLE.joinMs` à 120 s ; l'annonce (`server/social/raffle.js`) affiche maintenant des minutes.
 - **Tests** : `tests/raffle.test.js`, `tests/admin-raffle.test.js` ✅.
 - **Point fragile** : l'annonce divise `joinMs` par 60 s : une durée qui n'est pas un nombre rond de minutes s'afficherait « 1.5 min ».
+
+## 01/11/2026 — Récompenses de palier du Bloc géant et de He's coming (Geoffrey)
+- **Quoi** : `GIANT.tiers` (src/config.js), `HES_COMING.tiers` en dérive. Les pépites des paliers s'ajoutent à celles du score (`playerRewardFor`).
+- **Conséquence** : ces deux modes ne donnent plus de Treasure ni de Blueprint parts.
