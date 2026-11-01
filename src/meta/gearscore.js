@@ -6,7 +6,7 @@
    GS du joueur = somme des GS des pièces portées = stats avec le stuff − stats de base (en x).
    Pas comptés : les skills, les sorts, les glyphes ; les anneaux (effet de groupe) ; les stats sans prix en x
    (torches portées, pose des torches, lumière, portée de la boussole…). */
-import { STATS, UPGRADE } from '../config.js';
+import { STATS, UPGRADE, PRISON } from '../config.js';
 import { pieceBonus, isRing, statPrice, designPrice } from './piece.js';
 export { statPrice, designPrice };
 
@@ -30,4 +30,10 @@ export function pieceGS(entry){
 export function gearScore(worn){
   const pieces = Array.isArray(worn) ? worn : Object.values(worn || {});
   return pieces.filter(Boolean).reduce((s, p) => s + pieceGS(p), 0);
+}
+
+/* gobelins en prison selon le GS (PRISON.lowGs) : multiplicateur de leur part dans la table des mobs */
+export function prisonGoblinMul(gs, { gsMax, goblinMul } = PRISON.lowGs){
+  if(!Number.isFinite(gs) || gs >= gsMax) return 1;
+  return goblinMul + (1 - goblinMul) * Math.max(0, gs) / gsMax;
 }

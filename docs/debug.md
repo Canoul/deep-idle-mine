@@ -6376,3 +6376,10 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Quoi** : `HES_COMING.tiers` (src/config.js) remplace les Plumes d'ange de `GIANT.tiers` par des Cristaux, mêmes quantités. Les paliers se calculent à la réclamation : une journée pas encore réclamée donne déjà des Cristaux.
 - **Tests** ✅ tests/hescoming-sim.test.js, hescoming-service, anticheat.
 - **À surveiller** : 30 Cristaux par jour au dernier palier, à comparer aux 1 à 3 d'un minotaure ; un +9 en coûte 32.
+
+## 01/11/2026 — Geoffrey — Prison : moins de gobelins sous 2 500 GS
+
+- **Quoi** : `PRISON.lowGs { gsMax: 2500, goblinMul: 0 }` ; `prisonGoblinMul(gs)` (`src/meta/gearscore.js`) va de `goblinMul` à 0 GS à 1 à `gsMax`, en ligne droite. `fewerGoblins(table, mul)` (`src/sim/mobs.js`) baisse la part des gobelins et redonne le reste aux autres mobs à proportion (mimics compris). `buildPrisonRun` (`src/shared/prison.js`) calcule le multiplicateur depuis `specs.gear`, relu à chaque run ; il passe par `newPrisonRun` → `G.prison.goblinMul`.
+- **Mesures** (6 chaînes de 1,5 h, area 4, compo à jour) : 0 GS 22 → 53 % ; 1 132 GS 48 → 50 % ; 2 160 GS (fer, area 5) ≈ 53 % ; 3 615 GS (acier) 61 %, inchangé. Plancher 0,25 puis 0,1 : 46 et 48 % à 0 GS, sous la cible, d'où 0. Bruit : ± 3 à 5 points.
+- **Tests** : `tests/prison-gobelins-gs.test.js`, prison-*. ✅ `une tour et une instance lancées terminent la prison` (`tests/prison-server.test.js`) ❌ échoue aussi sur `main` sans ce chantier, non traité ici.
+- **À vérifier / fragile** : ⚠️ les gobelins de pièges et les pièges restent (encore ~7 vols/h à 0 GS). ⚠️ `src/ui/prison.js` affiche la part de mobs de la compo sans cette baisse. ⚠️ En area 5 et plus la table contient moins de gobelins : l'effet y est plus faible. ⚠️ Rendement des vrais joueurs à revérifier sur le tableau, dont le biais (toutes les prisons / 10 dernières mines) reste entier.
