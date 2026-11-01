@@ -4,7 +4,8 @@
      tiré au hasard parmi ceux du Treasure du tier dont la recette n'est pas encore apprise (un BP déjà en stock peut
      ressortir ; un BP qui ne débloque encore rien reste toujours dans le tirage). Tirage pondéré par
      RESEARCH.tiers[t].weights (1 par défaut ; ex. tier 3 : le plan épique pèse 0,25). Tier à étapes (stages, tier 4) :
-     seulement les plans de la première étape pas finie (researchStage).
+     seulement les plans de la première étape pas finie (researchStage). Un plan sorti de la recherche depuis moins de
+     RESEARCH.recentMs ne peut pas ressortir (recentPlans) : s'il ne reste que ceux-là, la recherche est refusée, sans dépense.
    - Un tier n'est ouvert que si le joueur a appris TOUTES les recettes de tous les tiers inférieurs (tierUnlocked). Les blueprints
      qui ne débloquent encore aucune recette (Four en fer, Boussole en or) ne comptent pas.
    - Recycle : un blueprint (n'importe lequel) est détruit et rend entre min et max Blueprint parts, selon le tier du
@@ -74,25 +75,31 @@ export const tiersBlocking = (inv, t) => RESEARCH.tiers.filter(d => d.tier < t)
 export const isBlueprint = item => typeof item === 'string' && ITEMS[item]?.cat === 'blueprint' && item !== PARTS;
 export const canResearch = (inv, t) => !!tierOf(t) && tierUnlocked(inv, t) && researchPool(inv, t).length > 0 && countOf(inv, PARTS) >= tierOf(t).cost;
 
+/* plans sortis de la recherche depuis moins de RESEARCH.recentMs (now : heure du serveur, ms) */
+export const recentPlans = (inv, now) => new Set(inv.research
+  .filter(e => e.kind === 'research' && e.at <= now && now - e.at < RESEARCH.recentMs).map(e => e.result.item));
+
 function remember(inv, entry){
   inv.research.push(entry);
   if(inv.research.length > RESEARCH.opMemory) inv.research.splice(0, inv.research.length - RESEARCH.opMemory);
 }
 const replay = (inv, opId, kind) => { const p = inv.research.find(e => e.id === opId); return p ? (p.kind === kind ? { ...p.result, repeated:true } : { error:'bad_request' }) : null; };
 
-/* Recherche au tier t : renvoie { ok, item, repeated } ou { error } (bad_tier, tier_locked, nothing_left, not_enough) */
-export function research(inv, t, opId, rng){
+/* Recherche au tier t : renvoie { ok, item, repeated } ou { error } (bad_tier, tier_locked, nothing_left, too_recent,
+   not_enough). now : heure du serveur (ms), retenue pour recentPlans ; sans now, pas de règle des plans récents */
+export function research(inv, t, opId, rng, now = null){
   const prev = replay(inv, opId, 'research'); if(prev) return prev;
   const def = tierOf(t);
   if(!def) return { error:'bad_tier' };
   if(!tierUnlocked(inv, t)) return { error:'tier_locked' };
-  const pool = researchPool(inv, t);
-  if(!pool.length) return { error:'nothing_left' };
+  const recent = recentPlans(inv, now), left = researchPool(inv, t), pool = left.filter(bp => !recent.has(bp));
+  if(!left.length) return { error:'nothing_left' };
+  if(!pool.length) return { error:'too_recent' };
   if(!removeItem(inv, PARTS, def.cost)) return { error:'not_enough' };
   const item = pick(pool, t, rng);
   addItem(inv, item, 1);
   const result = { ok:true, item };
-  remember(inv, { id:opId, kind:'research', result });
+  remember(inv, { id:opId, kind:'research', result, ...(now === null ? {} : { at:now }) });
   return { ...result, repeated:false };
 }
 

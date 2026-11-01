@@ -6214,3 +6214,11 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Vérifié** ✅ 7 `game.start` d'affilée sur le vrai service (mémoire, dev false) : `session.shrines` = abundance pour les mines 1 à 5, vide pour 6 et 7 ; `left` 4, 3, 2, 1, 0, 0, 0. Non vérifié sur la base en ligne.
 - **Cause** : `shrinesHtml` affichait la règle sur la carte d'un shrine non actif (`left` 0). Actif, la carte dit déjà « encore N sessions ».
 - **Quoi** : texte de src/ui/lobby.js. **Tests** ✅ tests/shrines.test.js. ⚠️ Pas vu dans un navigateur.
+
+## 01/11/2026 — Recherche : pas de doublon immédiat (Geoffrey) — branche `geoffrey/plan-doublon`
+- **Quoi** : `recentPlans`, erreur `too_recent` et champ `at` des entrées de `inv.research` (`src/meta/research.js`, relu par `deserialize`) ;
+  `RESEARCH.recentMs` ; heure du serveur passée par `server/game/service.js`. L'affichage ne change pas : le navigateur ne connaît pas
+  `inv.research`, le compteur de plans possibles inclut donc les plans récents, et le refus arrive au clic.
+- **Tests** : `tests/research.test.js`, `tests/game-service.test.js`, `npm run test:anticheat` ✅ ; ⚠️ pas vu dans un navigateur. Test du recyclage de `game-service` remis à 10-20 parts (il échouait depuis le 30/10).
+- **Point fragile** : `opMemory` (50) peut évincer une entrée récente après 50 recherches ou recyclages en moins de 2 min : le plan
+  redevient possible, sans autre effet.

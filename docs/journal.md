@@ -9,6 +9,11 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 01/11/2026 — Geoffrey — Recherche : pas de doublon immédiat
+- **Pour le joueur** : un plan sorti de la recherche ne peut pas ressortir pendant 2 min. S'il ne reste que des plans dans ce
+  cas, la recherche est refusée avec un message et les parts ne sont pas dépensées.
+- **État** : 🧪 sur la branche `geoffrey/plan-doublon` (pas en ligne)
+
 ## 01/11/2026 — Geoffrey — Bâtiments de guilde : Armurerie et Forge plus chères
 - **Pour le joueur** : le niveau 1 de l'Armurerie demande 500 000 Pierre et celui de la Forge 250 000 Pierre dure, au lieu de 100 000 chacun. Les dons déjà faits restent comptés.
 - **État** : ✅ en ligne le 01/11

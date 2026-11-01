@@ -4,9 +4,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { RESEARCH, LOOT } from '../src/config.js';
 import { createInventory, addAll, countOf, serialize, deserialize } from '../src/meta/inventory.js';
-import { research, recycle, researchPool, researchStage, researchOdds, tierBlueprints, tierUnlocked, canResearch, PARTS } from '../src/meta/research.js';
+import { research, recycle, recentPlans, researchPool, researchStage, researchOdds, tierBlueprints, tierUnlocked, canResearch, PARTS } from '../src/meta/research.js';
 import { RECIPES } from '../src/recipes.js';
-import { learn } from '../src/meta/craft.js';
+import { learn, recipeOfBlueprint } from '../src/meta/craft.js';
 import { TABS } from '../src/ui/nav.js';
 
 const invWith = bag => { const inv = createInventory(); addAll(inv, bag); return inv; };
@@ -191,4 +191,35 @@ test('tier 4 : on tire dans l\'étape en cours ; la suivante s\'ouvre quand tout
   assert.equal(researchStage(all, 4), null);
   assert.equal(research(all, 4, id(), fixed(0)).error, 'nothing_left');
   assert.equal(countOf(all, PARTS), 250, 'rien payé');
+});
+
+test('plan sorti il y a moins de 2 min : ne ressort pas ; s\'il ne reste que lui, refus sans dépense ; après, il peut ressortir', () => {
+  const inv = invWith({ [PARTS]:300 });
+  const pool = researchPool(inv, 1), t0 = 1_000_000;
+  for(const bp of pool.slice(2)) inv.unlocked.push(recipeOfBlueprint(bp));
+  const [a, b] = researchPool(inv, 1);
+  assert.equal(researchPool(inv, 1).length, 2);
+  assert.equal(research(inv, 1, id(), fixed(0), t0).item, a);
+  assert.equal(research(inv, 1, id(), fixed(0), t0 + 1000).item, b, 'le premier est écarté, même tiré');
+  assert.equal(research(inv, 1, id(), fixed(0), t0 + 2000).error, 'too_recent');
+  assert.equal(countOf(inv, PARTS), 100, 'rien de dépensé');
+  assert.equal(research(inv, 1, id(), fixed(0), t0 + RESEARCH.recentMs - 1).error, 'too_recent');
+  assert.equal(research(inv, 1, id(), fixed(0), t0 + RESEARCH.recentMs).item, a, '2 min après');
+});
+
+test('plan récent : gardé après un redémarrage ; une date trafiquée ne bloque rien ; un recyclage ne compte pas', () => {
+  const inv = invWith({ [PARTS]:100, 'Épée en fer BP':1 });
+  const pool = researchPool(inv, 1);
+  for(const bp of pool.slice(1)) inv.unlocked.push(recipeOfBlueprint(bp));
+  const t0 = 1_000_000, opId = id();
+  research(inv, 1, opId, fixed(0), t0);
+  const back = deserialize(serialize(inv));
+  assert.equal(research(back, 1, id(), fixed(0), t0 + 1000).error, 'too_recent');
+  assert.equal(research(back, 1, opId, fixed(0), t0 + 1000).repeated, true, 'une demande renvoyée rend toujours son résultat');
+  const bad = JSON.parse(serialize(inv));
+  bad.research[0].at = 'demain';
+  assert.equal(recentPlans(deserialize(JSON.stringify(bad)), t0).size, 0);
+  const rec = invWith({ 'Épée en fer BP':1 });
+  recycle(rec, 'Épée en fer BP', id(), fixed(0));
+  assert.equal(recentPlans(rec, Date.now()).size, 0);
 });

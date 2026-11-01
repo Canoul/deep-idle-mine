@@ -363,6 +363,7 @@ export const RESEARCH = {
       ['Jambières titanesques BP', 'Cape inclusive BP'],
     ] },
   ],
+  recentMs: 120_000,   // 01/11 (Geoffrey) : un plan sorti de la recherche ne peut pas ressortir pendant ce temps (valeur provisoire)
   opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
 };
 

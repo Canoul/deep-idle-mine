@@ -386,7 +386,7 @@ test('blueprint par le serveur : consommé une fois, recette débloquée et renv
   assert.ok(!st.inventory.slots.some(s => s?.item === 'Épée en fer BP' || s?.item === 'Tainted iron'));
 });
 
-test('table de recherche par le serveur : 100 parts → un blueprint ; recycler → 15 à 30 parts ; demandes rejouées', async () => {
+test('table de recherche par le serveur : 100 parts → un blueprint ; recycler → 10 à 20 parts ; demandes rejouées', async () => {
   const { game, store } = setup();
   await store.putInventory(ME.id, { slots:[{ item:'Blueprint parts', qty:150 }], nextUid:1, credited:[] });
   const o = { action:'research', tier:1, opId:'op-research-1' };
@@ -398,7 +398,7 @@ test('table de recherche par le serveur : 100 parts → un blueprint ; recycler 
   await assert.rejects(game.research(ME, { action:'research', tier:7, opId:'op-research-3' }), { code:'bad_tier' });
   await assert.rejects(game.research(ME, { action:'voler', opId:'op-research-4' }), { code:'bad_request' });
   const c = await game.research(ME, { action:'recycle', item:a.item, opId:'op-recycle-1' });
-  assert.ok(c.parts >= 15 && c.parts <= 30);
+  assert.ok(c.parts >= 10 && c.parts <= 20);
   assert.equal(has(c, 'Blueprint parts'), 50 + c.parts); assert.equal(has(c, a.item), 0);
   await assert.rejects(game.research(ME, { action:'recycle', item:a.item, opId:'op-recycle-2' }), { code:'not_owned' });
   const st = await game.state(ME);
@@ -740,4 +740,20 @@ test('bilans jamais vus (30/10) : seul le dernier est montré ; une fois vu, les
   assert.equal((await game.state(ME)).ended.id, ids[2], 'le plus récent');
   await game.ack(ME, ids[2]);
   assert.equal((await game.state(ME)).ended, null, 'les anciens non vus ne reviennent pas un par un');
+});
+
+test('table de recherche par le serveur : un plan sorti ne ressort pas avant 2 min, refus sans dépense', async () => {
+  const { tierBlueprints } = await import('../src/meta/research.js');
+  const { recipeOfBlueprint } = await import('../src/meta/craft.js');
+  const { game, store, advance } = setup();
+  const [last, ...others] = tierBlueprints(1).filter(recipeOfBlueprint);
+  await store.putInventory(ME.id, { slots:[{ item:'Blueprint parts', qty:300 }], nextUid:1, credited:[], unlocked: others.map(recipeOfBlueprint) });
+  const go = n => game.research(ME, { action:'research', tier:1, opId:'op-recent-' + n });
+  assert.equal((await go(1)).item, last);
+  advance(119_000);
+  await assert.rejects(go(2), e => e.code === 'too_recent' && e.status === 409 && /viennent de sortir.*2 min/.test(e.message));
+  advance(1000);
+  const r = await go(3);
+  assert.equal(r.item, last);
+  assert.equal(r.inventory.slots.find(s => s?.item === 'Blueprint parts').qty, 100, 'seules les 2 recherches réussies ont coûté');
 });
