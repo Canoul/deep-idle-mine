@@ -210,13 +210,14 @@ const ACTIVITIES = [
   { id:'forming',   icon:'👥', title:'Groupes en formation', desc:'Rejoins un groupe qui cherche des joueurs' },
 ];
 /* lignes du menu d'après mineModes (grisées pareil, sauf la Mine : en session, on y regarde son groupe). Les tours ne sont
-   pas dans le menu : on les choisit dans le Jugement. note : petit repère à droite (« tour ouverte », « en cours ») */
-export function activityMenu(modes, { towerOpen = false, prisonOn = false, noForming = false } = {}){
+   pas dans le menu : on les choisit dans le Jugement. note : petit repère à droite (« tour ouverte », « en cours »).
+   ready : activités dont l'entrée est disponible (Bloc géant, He's coming), entourées d'or (01/11/2026, Geoffrey) */
+export function activityMenu(modes, { towerOpen = false, prisonOn = false, noForming = false, ready = {} } = {}){
   return ACTIVITIES.map(a => {
     if(a.id === 'forming') return { ...a, kind:'forming', disabled:noForming };
     if(a.id === 'jugement') return { ...a, kind:'view', note: towerOpen ? 'tour ouverte' : null };
     const m = a.id === 'instances' ? modes.find(x => MINE_MODES.find(d => d.id === x.id)?.instance) : modes.find(x => x.id === a.id);
-    return { ...a, kind:'mode', mode:m.id, disabled: a.id === 'mine' ? !!m.soon : m.disabled, soon:m.soon, hint:m.title ?? null, note: a.id === 'prison' && prisonOn ? 'en cours' : null };
+    return { ...a, kind:'mode', mode:m.id, disabled: a.id === 'mine' ? !!m.soon : m.disabled, soon:m.soon, hint:m.title ?? null, note: a.id === 'prison' && prisonOn ? 'en cours' : null, ready: !!ready[a.id] && !m.disabled };
   });
 }
 
@@ -297,8 +298,8 @@ export function setupLobby(h){
       if(was && on) h.onMode?.(id);   // la carte vient d'apparaître : elle se met à jour
     }
     $('launchBtn').hidden = !cards.launch;
-    $('mineModes').innerHTML = activityMenu(modes, { towerOpen: st.judgmentPending, prisonOn: prisonActive(st.prison), noForming: offline || !account || locked }).map(a =>
-      `<button ${a.kind === 'forming' ? 'data-forming' : a.kind === 'view' ? 'data-view="jugement"' : `data-mode="${a.mode}"`} class="actBtn"${a.disabled ? ' disabled' : ''}${a.hint ? ` title="${esc(a.hint)}"` : ''}>`+
+    $('mineModes').innerHTML = activityMenu(modes, { towerOpen: st.judgmentPending, prisonOn: prisonActive(st.prison), noForming: offline || !account || locked, ready: { giant: st.giantReady, hescoming: st.hcReady } }).map(a =>
+      `<button ${a.kind === 'forming' ? 'data-forming' : a.kind === 'view' ? 'data-view="jugement"' : `data-mode="${a.mode}"`} class="actBtn${a.ready ? ' ready' : ''}"${a.disabled ? ' disabled' : ''}${a.hint ? ` title="${esc(a.hint)}"` : ''}>`+
       `<span class="actIcon">${a.icon}</span><span class="actText"><b>${esc(a.title)}</b><small>${esc(a.desc)}</small></span>`+
       (a.note ? `<small class="jnew">● ${esc(a.note)}</small>` : a.soon ? '<small>bientôt</small>' : '')+`</button>`).join('');
     /* mode dev : les tours, même fermées (jeu normal : « Choisir la tour » de la carte du Jugement) */

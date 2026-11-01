@@ -51,7 +51,7 @@ export function setupGiant(h){
     rules:'Ton mineur frappe le bloc : chaque seconde rapporte sa vitesse de minage en points.', ...h.words };
   const renderer = (h.renderer ?? createGiantRenderer)($('cvGt'));
   let info = null, skew = 0, infoTimer = null, viewTimer = null, raf = null, busy = false, msg = '', ok = false;
-  let view = null, lastMe = null, lastHtml = '';
+  let view = null, lastMe = null, lastHtml = '', ready = false;
   const now = () => Date.now() + skew;
   const cardShown = () => !$('giantCard').hidden && !$('giantCard').closest('section').hidden;
   const visiting = () => !$('gtRun').hidden;
@@ -87,16 +87,23 @@ export function setupGiant(h){
     if(html !== lastHtml){ $('giantBody').innerHTML = html; lastHtml = html; }
   }
 
+  /* entrée disponible : contour doré du bouton dans le menu du Lobby (01/11/2026) */
+  function setReady(on){ if(on !== ready){ ready = on; h.onReady?.(on); } }
+
   async function refresh(){
     clearTimeout(infoTimer);
+    if(!h.me?.()) return setReady(false);
     try {
       const t0 = Date.now();
       info = await h.api.info();
       skew = info.now - (t0 + Date.now()) / 2;
       if(info.visit && !visiting() && $('gtDone').hidden) showRun();
-    } catch(e){ console.warn(e); }
+      setReady(entryState(info, now()).can);
+    } catch(e){ console.warn(e); setReady(false); }
     renderCard();
-    if(cardShown() || visiting()) infoTimer = setTimeout(refresh, C.poll);
+    /* carte fermée : on revérifie sans cesse, moins souvent, et pile à l'heure de la prochaine entrée */
+    const left = info?.nextEntry - now();
+    infoTimer = setTimeout(refresh, cardShown() || visiting() ? C.poll : left > 0 ? Math.min(C.readyPoll, left + 500) : C.readyPoll);
   }
 
   async function act(fn, okText){

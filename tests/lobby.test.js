@@ -199,6 +199,10 @@ test('menu du Lobby : les 7 activités et Groupes en formation dans l\'ordre, un
   assert.equal(menu[5].kind, 'view'); assert.equal(menu[5].note, 'tour ouverte');
   assert.equal(menu[6].mode, 'instance_1');
   assert.equal(activityMenu(mineModes('instance_2'))[6].mode, 'instance_2', 'l\'instance choisie reste choisie');
+  const gold = activityMenu(mineModes('mine'), { ready: { giant: true, hescoming: false } });
+  assert.deepEqual(gold.filter(a => a.ready).map(a => a.id), ['giant'], 'contour doré : seulement l\'activité dont l\'entrée est disponible');
+  const off = mineModes('mine').map(m => m.id === 'giant' ? { ...m, disabled: true } : m);
+  assert.equal(activityMenu(off, { ready: { giant: true } }).find(a => a.id === 'giant').ready, false, 'pas d\'or sur un bouton grisé');
   const forming = activityMenu(mineModes('mine')).at(-1);
   assert.deepEqual([forming.id, forming.kind, forming.disabled], ['forming', 'forming', false], 'Groupes en formation, dans le menu (31/10)');
   assert.equal(activityMenu(mineModes('mine'), { noForming:true }).at(-1).disabled, true, 'pas en session ni hors ligne');

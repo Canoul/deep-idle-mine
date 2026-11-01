@@ -1768,6 +1768,7 @@ export const GIANT = {
      faits ce jour-là (ses points à lui, arrondi vers le bas) ; elle se fond au four (27/10/2026, Geoffrey) */
   nugget: { item:'Pépite d\'argent', per:100 },
   top: 10, poll: 3000, viewPoll: 500,
+  readyPoll: 60000,   // ms : carte fermée, le navigateur revérifie l'entrée pour le contour doré du menu du Lobby (01/11/2026)
 };
 /* He's coming (01/11/2026, Geoffrey ; src/sim/hescoming/session.js, valeurs provisoires) : le Bloc géant où l'on frappe Lucifer. Tout GIANT,
    sauf : paliers × 8, pépites ÷ 8 (Geoffrey, à la simulation ; essayé : × 25, 4 fois plus dur que le Bloc) ; 1 dégât = 1 point. roar : toutes les every s, Fear de fear s à radius cases ou moins (wander : s

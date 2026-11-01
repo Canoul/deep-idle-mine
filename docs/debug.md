@@ -6329,6 +6329,11 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Points fragiles** : le site a maintenant un onglet Chat réservé au téléphone (`CHAT_TAB`, 31/10) et le Carreau en fond :
   à reprendre dans la navigation de l'appli (étape 2). `gh` absent de ce PC : suivre les fabrications par l'API GitHub.
 
+## 01/11/2026 — Contour doré du Bloc géant et de He's coming dans le menu du Lobby (Geoffrey)
+- **Quoi** : `setupGiant` (src/ui/giant.js) appelle `h.onReady` quand `entryState(...).can` change ; main.js le passe au lobby (`giantReady`, `hcReady`), `activityMenu` pose `ready` (jamais sur un bouton grisé), classe `.actBtn.ready` (style.css).
+- **Rafraîchissement** : `refresh` tourne maintenant aussi carte fermée, toutes les `GIANT.readyPoll` ms (60 s, valeur reprise par HES_COMING), et à l'heure de `nextEntry`. Soit 2 GET de plus par minute et par joueur connecté, classement compris. Sans compte : pas d'appel, pas d'or. `startInstant` appelle donc `refresh` aussi à la déconnexion.
+- **Tests** : tests/lobby.test.js (activityMenu). ⚠️ À surveiller : charge de GET /api/giant si beaucoup de joueurs ; dans ce cas, augmenter `readyPoll`.
+
 ## 01/11/2026 — Contour des runes selon leur qualité (Geoffrey)
 - **Quoi** : `rframe(p)` (src/ui/rarity.js) pose `--rc` en style sur la case, ce qui l'emporte sur `.slot.r-…`. Seulement pour les objets `cat:'rune'` avec une qualité connue ; les pièces de stuff gardent la rareté de leur type. Utilisé dans src/ui/inventory.js, upgrade.js (`box`), obtained.js.
 - **Tests** ✅ tests/rune-mark.test.js. ⚠️ Pas vu dans un navigateur.
