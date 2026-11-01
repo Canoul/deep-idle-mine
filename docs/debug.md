@@ -6384,3 +6384,23 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 ## 01/11/2026 — Geoffrey — Appli mobile : plus de transition entre les onglets
 - **Quoi** : `src/main.js`, `!appBoot.app` devant `backdrop.switchTab` (même chemin que `prefers-reduced-motion`). Site inchangé.
 - **Tests** : ✅ `app-mode`, `backdrop`, `nav`. ✅ Chrome headless, partie en cours : 0 transition dans `?app` (Session ↔ Sac), 1 sur le site, aucune erreur.
+
+## 01/11/2026 — Bulles « Butin » (tableau de loot) (Jules) — branche `jules/bulle-loot`
+- **Quoi** : `src/meta/loot-table.js` (logique pure) : `lootTableOf(item)` (LOOT, coffres Roi Gobelin via `goblinChestTable`,
+  Golbute, trésors de tour + `RUNE.luck`, anciens coffres de tour), `instanceLootTable(id, level)`, `towerLootTable(side, luck)`,
+  `mobLootTable()` / `mobLoot(m)` / `mobRare(m)`. `src/ui/loot-tip.js` : HTML (`lootTipHtml(clé)`) et « ? Butin » (`lootHelp`).
+  Clés `data-loot` : `item:<objet>`, `instance:<id>:<niveau>`, `tower:<camp>[:<bonus>]`, `mobs`.
+- **Bulle commune** (`src/ui/tooltip.js`) : un élément avec `data-loot` affiche le tableau (classe `#tip.loot`) ;
+  `tipAttr` met `data-loot` sur tout objet qui a un tableau (avant : `title` natif). Position : au-dessus, sinon en
+  dessous, sinon collée en haut de l'écran (grands tableaux). CSS `.lt*` dans style.css.
+- **Lobby** (`src/ui/lobby.js`) : « ? Butin » dans `renderInstances` (Instance I niveaux 1 et 2, Instance II ; phrase
+  « son butin arrive bientôt » du Golbute retirée), texte des tours (`lobbyInfo`), ligne `fightMobs` des critères.
+- **Wiki** : `MOB_INFO[m].loot` (src/wiki/data.js) vient de `mobLoot` (chien et ver avaient un butin vide) ; mimic : `[]`
+  (le wiki écrit sa phrase).
+- **Non pris en compte dans la bulle** (le serveur, lui, les applique) : recettes déjà apprises (`learnOnce`, noté « si
+  pas encore apprise »), `treasureBlueprintsDone`, `PRISON.rareMul`, bonus Butin / Pillage (en note).
+- **Tests** ✅ tests/loot-table.test.js (9), help, lobby, wiki, wiki-secret, inventory (67). ✅ Rendu vérifié dans
+  Chromium (Treasure T4, Coffre du Roi Gobelin II, Tour de l'Ange, trésor béni, mobs) sur une page d'aperçu jetable.
+- **⚠️ À vérifier en vrai** : bulle sur téléphone (tableau T4 haut : ≈ 30 lignes) ; « ? Butin des mobs » dans la ligne
+  « Face aux mobs » sur écran étroit.
+
