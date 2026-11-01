@@ -86,3 +86,8 @@ test('appli : le Carreau ne tourne pas dans l’appli (ni dessin ni appels au se
   const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
   assert.match(main, /town\.frame\(dtr, \{ show: !appBoot\.app &&/);
 });
+
+test('appli : pas de transition entre les onglets', () => {
+  const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  assert.match(main, /if\(!appBoot\.app && backdrop\.switchTab\(/);
+});

@@ -6381,3 +6381,6 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Quoi** : `UPGRADE.levels` (src/config.js), cristaux 6 / 9 / 14 / 18 / 24 / 32 / 40 / 50 / 63. Anneaux inchangés (doublon).
 - **Tests** ✅ tests/amelioration.test.js, tests/anneaux.test.js, `npm run test:anticheat`.
 
+## 01/11/2026 — Geoffrey — Appli mobile : plus de transition entre les onglets
+- **Quoi** : `src/main.js`, `!appBoot.app` devant `backdrop.switchTab` (même chemin que `prefers-reduced-motion`). Site inchangé.
+- **Tests** : ✅ `app-mode`, `backdrop`, `nav`. ✅ Chrome headless, partie en cours : 0 transition dans `?app` (Session ↔ Sac), 1 sur le site, aucune erreur.
