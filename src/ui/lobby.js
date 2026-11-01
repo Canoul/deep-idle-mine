@@ -16,6 +16,7 @@ import { drawPortrait } from '../render/portrait.js';
 import { sanitizeLook } from '../meta/stuff.js';
 import { sanitizeAuras } from '../meta/aura.js';
 import { ask, askText } from './dialog.js';
+import { energyGauge } from './energy-tag.js';
 import { prisonActive, launchCostText, readyPrisonText, prisonProfileText } from './prison.js';
 
 const $ = id => document.getElementById(id);
@@ -318,7 +319,7 @@ export function setupLobby(h){
       const tags = [s.me && 'Toi', s.leader && 'chef', ready, (s.playing || s.me && locked) && 'en session', s.playing && leftText(s.playingLeftMs), s.away && 'absent',
                     Number.isFinite(gs) && `${gs.toLocaleString('fr-FR')} GS`].filter(Boolean).join(' · ') || 'Prêt';
       return `<div class="pslot${s.me ? ' me' : ''}${s.away ? ' away' : ''}"><span class="av"><canvas width="16" height="16" data-slot="${i}"></canvas></span>`+
-             `<span><b>${esc(s.name)}</b><small class="spec">${esc(s.me && st.myTree !== undefined ? specLabel(st.myTree, st.mySpec?.[st.myTree]?.level) : specLabel(s.tree, s.specLevel))}</small><small>${esc(tags)}</small></span>`+
+             `<span><b>${esc(s.name)}</b><small class="spec">${esc(s.me && st.myTree !== undefined ? specLabel(st.myTree, st.mySpec?.[st.myTree]?.level) : specLabel(s.tree, s.specLevel))}</small><small>${esc(tags)}</small>${energyGauge(s.me ? st.energy : s.energy)}</span>`+
              (slotButtons(st, s).promote ? `<button class="x promote" data-promote="${esc(s.displayId)}" title="Nommer chef">★</button>` : '')+
              (slotButtons(st, s).kick ? `<button class="x" data-kick="${esc(s.displayId)}" title="Retirer du groupe">×</button>` : '')+`</div>`;
     }).join('');

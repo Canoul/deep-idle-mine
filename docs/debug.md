@@ -6356,6 +6356,11 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** ✅ tests/rune-mark.test.js. ⚠️ Pas vu dans un navigateur.
 - **Non touché** : la petite icône d'une rune posée sur une pièce (`runeMark`) et la liste de choix des runes (sans case, le nom est déjà coloré).
 
+## 01/11/2026 — Jauge d'énergie dans l'équipe du Lobby (Geoffrey)
+- **Quoi** : `energy` dans chaque membre de `publicParty` (server/party/service.js), `energyGauge` (src/ui/energy-tag.js), classe `.pslotEnergy`. Son propre mineur : `st.energy`, aussi sans groupe.
+- **Cache** : `PARTY_SERVER.energyFor` (30 s) par compte, comme Social et le panneau Équipe de la session : `energyOf` parcourt les sessions du joueur et le lobby interroge le groupe toutes les 2,5 s. Une énergie vue chez un coéquipier peut donc retarder de 30 s.
+- **Tests** : tests/party.test.js, tests/lobby.test.js.
+
 ## 01/11/2026 — Treasure T3 sans Cristal de pleine lune (Geoffrey) — branche `geoffrey/coffre-t3-cristal`
 - **Quoi** : famille `material` retirée de `LOOT['Treasure T3']` (`src/config.js`). Le tableau du wiki vient de la config.
 - **Tests** : `tests/steel-gear.test.js`, `tests/instance-key.test.js` (gemme à la place du cristal pour vérifier que la clé ne retire rien).
