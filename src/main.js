@@ -83,6 +83,10 @@ import { ask, tell } from './ui/dialog.js';
 import { warningText, banBarText } from './shared/moderation-text.js';
 import { energyText, energyPct, prisonBanner, awayText, hasAway, prisonActive, launchPrisonText, prisonPollError, prisonOnScreen } from './ui/prison.js';
 import { prisonLootHtml, showPrisonRecap } from './ui/prison-loot.js';
+import { bootApp } from './app/boot.js';
+
+/* appli mobile (src/app/) : sur le site, ne fait rien */
+bootApp({ doc:document, win:window });
 
 const $ = id => document.getElementById(id);
 const ui = { speed:1, paused:false, follow:null, inv:{ slots:[] }, fresh:new Set(), tab:'lobby' };

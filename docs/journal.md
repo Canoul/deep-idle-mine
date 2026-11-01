@@ -41,6 +41,15 @@ Modèle d'entrée :
 - **Pour le joueur** : on a maintenant 2 minutes pour taper `!join` au lieu de 40 secondes.
 - **État** : ✅ en ligne le 01/11
 
+## 01/11/2026 — Geoffrey — Appli mobile : reprise du chantier de Jules
+- **Pour le joueur** : rien sur le site. L'appli Android de test est remise à jour avec le jeu actuel.
+- **Décisions** (Geoffrey) : on garde le plan de Jules, avec une **interface pensée pour le téléphone**, dans l'appli
+  seulement ; **Android d'abord**, iOS plus tard (même jeu, mais il faut le compte Apple ou un Mac). Guilde et Chat
+  rejoignent la famille Social de l'appli.
+- **À suivre** : essayer l'APK sur l'Android de Geoffrey (liste dans `docs/appli-mobile.md`) ; plan de l'étape 2,
+  l'interface téléphone.
+- **État** : ✅ en ligne le 01/11 (détection de l'appli et badge ; l'interface téléphone reste à faire)
+
 ## 01/11/2026 — Geoffrey — Recherche : pas de doublon immédiat
 - **Pour le joueur** : un plan sorti de la recherche ne peut pas ressortir pendant 2 min. S'il ne reste que des plans dans ce
   cas, la recherche est refusée avec un message et les parts ne sont pas dépensées.
@@ -1269,6 +1278,32 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
 - **À suivre** : regarder en vrai si « Dans le noir » n'apparaît pas trop souvent (bruit) ; les icônes viennent de la
   planche Kenney, à remplacer si on veut un style à nous.
 - **État** : ✅ en ligne le 28/10
+
+## 28/10/2026 — Jules — Appli mobile : première appli Android de test
+- **Pour le joueur** : rien sur le site. Une **première appli Android de test** existe : elle ouvre le vrai jeu
+  (mêmes comptes), avec l'icône de la pioche, et une page « Pas de connexion » avec un bouton Réessayer quand le
+  serveur ne répond pas. Un petit badge provisoire « APPLI ✓ » en haut à droite dit qu'elle est bien branchée au
+  téléphone. Pas encore d'interface pour téléphone ni de notifications (étapes suivantes).
+- **Pour l'équipe** : l'appli est fabriquée par GitHub (onglet Actions) ; comment la récupérer et l'installer :
+  `docs/appli-mobile.md`.
+- **À suivre** (en pause le 28/10, Jules reprendra) : 1) décider de mettre la branche en ligne (rien ne change sur le
+  site, mais sans elle le badge n'apparaît pas dans l'appli) ; 2) l'essayer sur un vrai Android (liste de 7 essais
+  dans le guide) ; 3) écrire le plan de l'étape 2, l'interface téléphone (spec, « Les étapes »).
+- **État** : ✅ en ligne le 01/11 (avec `geoffrey/appli-mobile`)
+
+## 28/10/2026 — Jules — Appli mobile : le plan
+- **Pour le joueur** : rien pour l'instant, c'est le plan. Le jeu aura une **appli iOS et Android** : le même jeu que le
+  site (mêmes comptes, toujours à jour), avec une **interface pensée pour le téléphone** (5 familles d'onglets en bas :
+  Accueil, Session, Sac, Perso, Social ; un Accueil avec le bouton Lancer et les rendez-vous ouverts ; la mine en haut de
+  l'écran de session), et des **notifications** (fin de session, mine instantanée, Bloc géant, four ; plus tard tours,
+  invitations, amis), réglables une par une.
+- **Décisions** : Capacitor (on emballe le jeu actuel, pas de réécriture) ; Android d'abord ; iOS et stores quand les
+  comptes seront pris (Geoffrey : plus tard, avec un business plan). **Le site ne change pas** (Jules), ni sur PC ni
+  dans le navigateur du téléphone : la nouvelle interface n'existe que dans l'appli, qui réutilise le code du jeu (pas
+  de deuxième jeu à maintenir). Le détail : `docs/superpowers/specs/2026-10-28-appli-mobile-design.md`.
+- **À suivre** : vérifier sur un vrai iPhone si la mine de la session déborde de l'écran (vu en émulation) ; étape 1 :
+  la coque Android, installable sur les téléphones des amis.
+- **État** : ✅ plan en ligne le 01/11 (avec `geoffrey/appli-mobile`) ; interface et notifications à faire
 
 ## 28/10/2026 — Geoffrey — Correctif : la vitesse d'attaque comptait par paliers
 - **Pour le joueur** : chaque point de vitesse d'attaque compte enfin. Avant, un coup ne pouvait repartir qu'au dixième
