@@ -4,6 +4,7 @@
 #     ipa         signe et garde l'IPA en artefact, sans rien envoyer ;
 #     testflight  signe, garde l'IPA et l'envoie sur App Store Connect.
 # - Tout seul quand mobile/ change (sauf Android) : « controle » seulement, jamais de clé.
+#   Le premier lancement à froid dans le simulateur peut prendre près d'une minute : le contrôle attend le bouton (docs/debug.md).
 # Signature : la clé d'API seule (xcodebuild -allowProvisioningUpdates). Le rôle Admin de la clé permet à Apple de signer dans son
 # cloud : pas de certificat, pas de profil, pas d'identifiant Apple. macos-26 et pas macos-latest : Apple exige le SDK d'iOS 26.
 # Le serveur du jeu ne l'utilise jamais.
