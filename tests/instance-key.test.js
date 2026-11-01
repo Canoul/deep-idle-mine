@@ -22,15 +22,16 @@ test('Treasure T3 : la clé est un tirage à part (sa propre famille), à sa cha
 test('Treasure T3 : la clé tombe à sa chance, sans retirer les autres objets', () => {
   const P = LOOT['Treasure T3'].oneOf.find(f => f.items.some(i => i.item === KEY)).items[0].chance;
   const rng = mulberry32(42), N = 20000;
-  let keys = 0, crystals = 0, crystalsWithKey = 0;
+  const GEM = 'Rubis inférieur';
+  let keys = 0, gems = 0, gemsWithKey = 0;
   for(let i = 0; i < N; i++){
     const l = rollLoot(LOOT['Treasure T3'], rng);
-    if(l[KEY]){ keys++; assert.equal(l[KEY], 1); if(l['Cristal de pleine lune']) crystalsWithKey++; }
-    if(l['Cristal de pleine lune']) crystals++;
+    if(l[KEY]){ keys++; assert.equal(l[KEY], 1); if(l[GEM]) gemsWithKey++; }
+    if(l[GEM]) gems++;
   }
   assert.ok(Math.abs(keys / N - P) < 0.012, `${keys / N} pour ${P}`);
-  assert.ok(Math.abs(crystals / N - 0.10) < 0.01, 'le cristal garde sa chance');
-  assert.ok(crystalsWithKey > 0, 'clé et cristal peuvent tomber ensemble');
+  assert.ok(Math.abs(gems / N - 0.02) < 0.006, 'la gemme garde sa chance');
+  assert.ok(gemsWithKey > 0, 'clé et gemme peuvent tomber ensemble');
 });
 
 /* 28/10/2026 (Geoffrey) : la clé se crafte de base ; son plan ne sort plus du Treasure T4 ; un plan gardé se recycle */
