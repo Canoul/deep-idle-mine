@@ -155,6 +155,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
                                     random = () => crypto.randomBytes(6).readUIntBE(0, 6) / 2**48,
                                     /* modération du chat (server/moderation/service.js, 30/10) : avertit l'auteur d'un mot interdit ; absente = rien */
                                     moderation = null,
+                                    /* comptes bloqués par un joueur (server/social/service.js, 01/11) : leurs messages lui sont masqués */
+                                    blockedOf = async () => new Set(),
                                     /* XP d'un joueur tout juste créditée (server/guild/service.js), une seule fois par session */
                                     onXp = () => {},
                                     /* nom de guilde d'un joueur, figé au lancement : affiché sous son pseudo (server/guild/service.js) */
@@ -1262,6 +1264,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     async chatPost(me, body = {}){
       const rec = await activeOf(me.id);
       if(!rec || rec.status !== 'running') fail('no_session', 404, 'Aucune session en cours.');
+      const no = await moderation?.chatRefusal(me);    // muet, ou règles pas encore acceptées (01/11)
+      if(no) fail(no.code, no.status, no.message);
       const r = chat.post(rec.id, me.id, rec.players.find(p => p.account === me.id).name, body.text);
       if(r.error === 'bad_text') fail('bad_request', 400, `Message vide ou trop long (${CHAT.maxLen} caractères au plus).`);
       if(r.error === 'too_fast') fail('too_many', 429, 'Doucement : un message par seconde au plus.');
@@ -1274,7 +1278,15 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     async chatGet(me, after){
       const rec = await activeOf(me.id);
       if(!rec) fail('no_session', 404, 'Aucune session en cours.');
-      return { messages: chat.since(rec.id, Number.isSafeInteger(after) && after > 0 ? after : 0) };
+      const blocked = await blockedOf(me.id);
+      return { messages: chat.since(rec.id, Number.isSafeInteger(after) && after > 0 ? after : 0).filter(m => !blocked.has(m.account)) };
+    },
+    /* un message de sa session, pour le signaler (server/moderation/reports.js) ; null sinon. room : le numéro n'est unique que dans une session */
+    async chatFind(me, id){
+      const rec = await activeOf(me.id);
+      if(!rec || !Number.isSafeInteger(id) || id < 1) return null;
+      const m = chat.since(rec.id, id - 1).find(x => x.id === id);
+      return m ? { id: m.id, account: m.account, text: m.text, at: m.at, room: rec.id } : null;
     },
 
     /* la partie, pour l'afficher : depuis le tick since que le navigateur a déjà (absent : la carte entière).

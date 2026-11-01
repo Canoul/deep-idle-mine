@@ -45,7 +45,7 @@ test('sans compte : on ne peut pas jouer', async () => {
 
 test('parcours : invité, préférences, lancement, fin refusée avant l\'heure, fin, inventaire', async () => {
   const b = browser();
-  await b('POST', '/api/account/guest', {});
+  await b('POST', '/api/account/guest', { acceptRules: true });
   const info = (await b('GET', '/api/game/info')).data;
   assert.deepEqual([info.dev, info.speed], [false, 2]);
 
@@ -71,7 +71,7 @@ test('parcours : invité, préférences, lancement, fin refusée avant l\'heure,
 
 test('aucune route ne permet d\'écrire dans un inventaire', async () => {
   const b = browser();
-  await b('POST', '/api/account/guest', {});
+  await b('POST', '/api/account/guest', { acceptRules: true });
   /* /api/game/inventory existe depuis le 25/10 (trier, déplacer : src/meta/inventory.js) : il refuse ce corps (400) */
   for(const p of ['/api/game/inventory', '/api/game/credit', '/api/game/state'])
     assert.ok([400, 404, 405].includes((await b('POST', p, { slots:[{ item:'Diamant', qty:1e6 }] })).status), p);
@@ -80,7 +80,7 @@ test('aucune route ne permet d\'écrire dans un inventaire', async () => {
 
 test('corps invalides : pas de plantage', async () => {
   const b = browser();
-  await b('POST', '/api/account/guest', {});
+  await b('POST', '/api/account/guest', { acceptRules: true });
   assert.equal((await b('POST', '/api/game/prefs', [1, 2])).status, 400, 'tableau refusé');
   assert.equal((await b('POST', '/api/game/ack', { id: 12 })).status, 400);
   assert.equal((await b('POST', '/api/game/leave', {})).status, 404);
@@ -90,7 +90,7 @@ test('chat de session : connecté seulement ; écrire puis relire après un num�
   assert.equal((await browser()('GET', '/api/game/chat')).status, 401);
   assert.equal((await browser()('POST', '/api/game/chat', { text:'x' })).status, 401);
   const b = browser();
-  await b('POST', '/api/account/guest', {});
+  await b('POST', '/api/account/guest', { acceptRules: true });
   assert.equal((await b('GET', '/api/game/chat')).status, 404, 'pas de session : pas de chat');
   await b('POST', '/api/game/start', {});
   const sent = await b('POST', '/api/game/chat', { text:'  hello <b>mine</b> ' });

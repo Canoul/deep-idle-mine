@@ -26,7 +26,9 @@
    Chat global (ns chat_global, clé 'state', 28/10/2026) : { next, msgs:[{ id, at, account, name, text, channel, to?, toName? }] }, les CHAT.keep
    derniers messages, gardés pour survivre aux redémarrages (server/social/service.js).
    Modération (ns moderation, clé = compte, 30/10/2026) : { warnings:[{ at, channel, motif, words, text, masked, with }],
-   bans:[{ at, until, motif }], bannedUntil, countFrom } (server/moderation/service.js). */
+   bans:[{ at, until, motif }], bannedUntil, countFrom, mutedUntil, suspended:{ at, until, reason } } (server/moderation/service.js).
+   Signalements (ns report, clé = numéro, 01/11/2026) : voir server/moderation/reports.js. Journal des actions admin (ns mod_log, clé = numéro) :
+   { id, at, by, action, target, detail } ; jamais effacés. */
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
@@ -63,6 +65,8 @@ export function createMemoryGameStore(initial = {}){
   const guildLogs = new Map(Object.entries(initial.guildLogs ?? {}));   // journal des bâtiments, jamais effacé : 'guilde:page' → lignes
   const alwaysReady = new Map(Object.entries(initial.alwaysReady ?? {}));   // comptes qui ont coché « Prêt tout le temps »
   const chatPrefs = new Map(Object.entries(initial.chatPrefs ?? {}));   // réglages du chat par compte (31/10/2026)
+  const reports = new Map(Object.entries(initial.reports ?? {}));
+  const modLogs = new Map(Object.entries(initial.modLogs ?? {}));
   const moderations = new Map(Object.entries(initial.moderations ?? {}));   // modération du chat, par compte (server/moderation/, 30/10)         // chat global du lobby, clé 'state'
   const copy = o => o && structuredClone(o);
 
@@ -197,6 +201,11 @@ export function createMemoryGameStore(initial = {}){
     async getModeration(accountId){ return copy(moderations.get(accountId)) ?? null; },
     async listModerations(){ return [...moderations.entries()].map(([account, m]) => ({ account, value: copy(m) })); },
     async putModeration(accountId, m){ moderations.set(accountId, copy(m)); await store.changed([{ ns: 'moderation', key: accountId, value: m }]); },
+    /* signalements et journal des actions admin (01/11/2026) */
+    async listReports(){ return [...reports.values()].map(copy).sort((a, b) => a.id - b.id); },
+    async putReport(r){ reports.set(String(r.id), copy(r)); await store.changed([{ ns: 'report', key: String(r.id), value: r }]); },
+    async listModLog(){ return [...modLogs.values()].map(copy).sort((a, b) => a.id - b.id); },
+    async addModLog(entry){ const e = { id: modLogs.size + 1, ...entry }; modLogs.set(String(e.id), copy(e)); await store.changed([{ ns: 'mod_log', key: String(e.id), value: e }]); return e; },
 
     /* tableau de bord : lignes de stats ; une ligne déjà écrite n'est jamais remplacée (fin de session rejouée) */
     async putSessionStats(rows){
@@ -280,7 +289,7 @@ export function createMemoryGameStore(initial = {}){
                          signups: Object.fromEntries(signups), socials: Object.fromEntries(socials),
                          judgments: Object.fromEntries(judgments), discovered: Object.fromEntries(discovered),
                          giantDays: Object.fromEntries(giantDays), giantPlayers: Object.fromEntries(giantPlayers), hcDays: Object.fromEntries(hcDays), hcPlayers: Object.fromEntries(hcPlayers), sessionStats: Object.fromEntries(sessionStats),
-                         towerRecords: Object.fromEntries(towerRecords), instanceRecords: Object.fromEntries(instanceRecords), energies: Object.fromEntries(energies), alwaysReady: Object.fromEntries(alwaysReady), chatPrefs: Object.fromEntries(chatPrefs), prisons: Object.fromEntries(prisons), prisonCompos: Object.fromEntries(prisonCompos), chats: Object.fromEntries(chats), raffles: Object.fromEntries(raffles), guilds: Object.fromEntries(guilds), guildLogs: Object.fromEntries(guildLogs), moderations: Object.fromEntries(moderations) }; },
+                         towerRecords: Object.fromEntries(towerRecords), instanceRecords: Object.fromEntries(instanceRecords), energies: Object.fromEntries(energies), alwaysReady: Object.fromEntries(alwaysReady), chatPrefs: Object.fromEntries(chatPrefs), prisons: Object.fromEntries(prisons), prisonCompos: Object.fromEntries(prisonCompos), chats: Object.fromEntries(chats), raffles: Object.fromEntries(raffles), guilds: Object.fromEntries(guilds), guildLogs: Object.fromEntries(guildLogs), moderations: Object.fromEntries(moderations), reports: Object.fromEntries(reports), modLogs: Object.fromEntries(modLogs) }; },
   };
   return store;
 }
@@ -310,12 +319,12 @@ export async function createFileGameStore(dir){
 
 /* PostgreSQL (en ligne) : db ouverte par server/db/postgres.js, partagée avec les comptes */
 export async function createPgGameStore(db){
-  const rows = await db.load(['inventory', 'furnace', 'crusher', 'stuff', 'prefs', 'progress', 'skills', 'spells', 'sets', 'game_session', 'party', 'always_ready', 'mi_signup', 'social', 'judgment', 'giant_day', 'giant_player', 'hc_day', 'hc_player', 'discovered', 'session_stat', 'tower_record', 'instance_record', 'shrine', 'energy', 'prison', 'prison_compo', 'chat_global', 'chat_prefs', 'moderation', 'raffle', 'guilds', 'guild_log']);
+  const rows = await db.load(['inventory', 'furnace', 'crusher', 'stuff', 'prefs', 'progress', 'skills', 'spells', 'sets', 'game_session', 'party', 'always_ready', 'mi_signup', 'social', 'judgment', 'giant_day', 'giant_player', 'hc_day', 'hc_player', 'discovered', 'session_stat', 'tower_record', 'instance_record', 'shrine', 'energy', 'prison', 'prison_compo', 'chat_global', 'chat_prefs', 'moderation', 'report', 'mod_log', 'raffle', 'guilds', 'guild_log']);
   const store = createMemoryGameStore({ guildLogs: rows.guild_log, inventories: rows.inventory, furnaces: rows.furnace, crushers: rows.crusher, stuff: rows.stuff, prefs: rows.prefs,
                                         progress: rows.progress, skills: rows.skills, spells: rows.spells, sets: rows.sets,
                                         sessions: rows.game_session, parties: rows.party, signups: rows.mi_signup, socials: rows.social,
                                         judgments: rows.judgment, giantDays: rows.giant_day, giantPlayers: rows.giant_player, hcDays: rows.hc_day, hcPlayers: rows.hc_player, discovered: rows.discovered, sessionStats: rows.session_stat,
-                                        towerRecords: rows.tower_record, instanceRecords: rows.instance_record, shrines: rows.shrine, energies: rows.energy, alwaysReady: rows.always_ready, chatPrefs: rows.chat_prefs, prisons: rows.prison, prisonCompos: rows.prison_compo, chats: rows.chat_global, raffles: rows.raffle, guilds: rows.guilds, moderations: rows.moderation });
+                                        towerRecords: rows.tower_record, instanceRecords: rows.instance_record, shrines: rows.shrine, energies: rows.energy, alwaysReady: rows.always_ready, chatPrefs: rows.chat_prefs, prisons: rows.prison, prisonCompos: rows.prison_compo, chats: rows.chat_global, raffles: rows.raffle, guilds: rows.guilds, moderations: rows.moderation, reports: rows.report, modLogs: rows.mod_log });
   store.changed = changes => db.write(changes);
   store.close = () => db.flush();
   store.file = 'PostgreSQL';

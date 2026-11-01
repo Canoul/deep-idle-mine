@@ -29,7 +29,7 @@ export class TownError extends Error {
    game : { playersInSession(), lookFor(id), aurasFor(id), levelFor(id), skillTreeOf(id), gsFor(id), leaderboardData() } ;
    party : { groupOf(id) → { code, size, max } | null, searching(id) } ;
    recentChat(ms) : messages du chat global de moins de ms ([{ account, text, at }], du plus ancien au plus récent) */
-export function createTownService({ accounts, game, party = null, recentChat = async () => [], guildNameOf = async () => null, clock = Date.now, config = TOWN_SERVER }){
+export function createTownService({ accounts, game, party = null, recentChat = async () => [], guildNameOf = async () => null, blockedOf = async () => new Set(), clock = Date.now, config = TOWN_SERVER }){
   const here = new Map();       // compte → { spot, x, at }
   const faces = new Map();      // compte → { name, look, auras, level, tree, gs, at }
   const emotes = new Map();     // compte → { id, at }
@@ -89,13 +89,14 @@ export function createTownService({ accounts, game, party = null, recentChat = a
       const playing = await inSession(now);
       const said = new Map();
       for(const m of await recentChat(TOWN.bubbleMs)) said.set(m.account, m.text);   // le plus récent l'emporte
+      const blocked = await blockedOf(me.id);   // bloqués (01/11) : présents, mais sans bulle
       const others = [...here].filter(([id]) => id !== me.id && !playing.has(id))
         .sort((a, b) => b[1].at - a[1].at).slice(0, config.maxPlayers);
       const players = [];
       for(const [id, h] of others){
         const f = await face(id, now);
         players.push({ id, name: f.name, guild: f.guild, spot: h.spot, x: h.x, look: f.look, auras: f.auras, level: f.level, tree: f.tree,
-                       gs: f.gs, say: said.get(id) ?? null, emote: emotes.get(id)?.id ?? null, group: groupOf(id),
+                       gs: f.gs, say: blocked.has(id) ? null : said.get(id) ?? null, emote: emotes.get(id)?.id ?? null, group: groupOf(id),
                        lfg: !!party?.searching?.(id) });
       }
       /* repères des groupes disparus : oubliés (la Map ne grossit pas) */

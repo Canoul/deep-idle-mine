@@ -21,7 +21,11 @@
    - Inviter : passe par le service des groupes (invitation par ID, refusée si l'ami est en session). Rejoindre : entre
      dans le groupe de l'ami (créé s'il n'en a pas), seulement s'il est en ligne et pas en session.
 
-   Stockage par compte (ns « social ») : { friends:[id], incoming:[{ from, at }], outgoing:[{ to, at }] }. Une
+   - Bloquer (01/11/2026, exigence des stores) : par compte, sans que l'autre le sache. Ses messages (tous les canaux, chat de
+     session, bulle du Carreau) sont retirés par le serveur à la lecture ; sa demande d'ami reste chez lui (il la croit partie) et
+     n'arrive jamais ; son invitation de groupe non plus (server/party/service.js) ; l'amitié et les demandes sont retirées.
+
+   Stockage par compte (ns « social ») : { friends:[id], incoming:[{ from, at }], outgoing:[{ to, at }], blocked:[id] }. Une
    demande touche deux comptes : ils sont écrits ensemble, et toutes les écritures passent l'une après l'autre (pas
    de demande à moitié faite avec deux requêtes simultanées). Testable seul : comptes, groupes, jeu et horloge passés
    en paramètres. */
@@ -30,7 +34,7 @@ import { canBeInvited } from '../../src/shared/party.js';
 import { createLimiter } from '../accounts/ratelimit.js';
 import { SOCIAL_SERVER } from '../config.js';
 import { isBoard, specTree, rankBoard } from '../../src/meta/leaderboard.js';
-import { LEADERBOARD, CHAT } from '../../src/config.js';
+import { LEADERBOARD, CHAT, MODERATION } from '../../src/config.js';
 import { LOBBY_TAG } from '../../src/shared/chat.js';
 import crypto from 'node:crypto';
 import { createChat } from '../game/chat.js';
@@ -44,7 +48,7 @@ export class SocialError extends Error {
 }
 const fail = (code, status, message, extra) => { throw new SocialError(code, status, message, extra); };
 
-const empty = () => ({ friends: [], incoming: [], outgoing: [] });
+const empty = () => ({ friends: [], incoming: [], outgoing: [], blocked: [] });
 /* relu et revérifié à chaque fois : listes d'ID valides, sans doublon, bornées */
 const isId = v => typeof v === 'string' && parseAccountId(v) === v;
 export function sanitizeSocial(raw, cfg = SOCIAL_SERVER){
@@ -56,6 +60,7 @@ export function sanitizeSocial(raw, cfg = SOCIAL_SERVER){
     .map(r => ({ from: r.from, at: r.at })).slice(-cfg.maxIncoming);
   s.outgoing = uniq(Array.isArray(raw.outgoing) ? raw.outgoing.filter(r => r && isId(r.to) && Number.isFinite(r.at) && !s.friends.includes(r.to)) : [], r => r.to)
     .map(r => ({ to: r.to, at: r.at })).slice(-cfg.maxOutgoing);
+  s.blocked = uniq(Array.isArray(raw.blocked) ? raw.blocked.filter(isId) : [], x => x).slice(0, MODERATION.blockedMax);
   return s;
 }
 
@@ -110,6 +115,7 @@ export function createSocialService({ store, accounts, party, game, clock = Date
   const chatReady = () => chatLoad ??= Promise.resolve().then(() => store.getGlobalChat?.())
     .then(raw => chat.restore(GLOBAL, raw)).catch(console.error);
   const nameOf = async id => displayName(await accounts.getAccount(id)) || formatAccountId(id);
+  const blockedSet = async id => new Set((await load(id)).blocked);
   const saveChat = () => serial(() => store.putGlobalChat(chat.room(GLOBAL)));
   const raffle = createRaffle({ store, clock, random, give: (id, key, lot) => game.raffleGive(id, key, lot),
     announce: async (text, winner) => { await chatReady(); chat.system(GLOBAL, RAFFLE.name, text, CHAT.channels[0].id, winner ? { winner } : {}); await saveChat(); } });
@@ -170,6 +176,8 @@ export function createSocialService({ store, accounts, party, game, clock = Date
       partyInvites: party.invitesOf(me.id),
       /* invitations de guilde reçues (pop-up, onglet Guilde) */
       guildInvites: await guildInvites(me.id),
+      /* joueurs bloqués (liste à débloquer de l'onglet Social) */
+      blocked: await Promise.all(s.blocked.map(async id => ({ id, displayId: formatAccountId(id), name: await nameOf(id) }))),
     };
   }
 
@@ -189,6 +197,7 @@ export function createSocialService({ store, accounts, party, game, clock = Date
       if(target.id === me.id) fail('self', 400, 'Tu ne peux pas t\'ajouter toi-même.');
       const a = await load(me.id), b = await load(target.id);
       const name = displayName(target);
+      if(a.blocked.includes(target.id)) fail('blocked', 409, `Tu as bloqué ${name} : débloque ce joueur d'abord.`);
       if(a.friends.includes(target.id)) fail('already_friend', 409, `${name} est déjà dans tes amis.`);
       if(a.incoming.some(r => r.from === target.id)) return accept(me, a, b, target.id);
       if(a.outgoing.some(r => r.to === target.id)) fail('already_sent', 409, `Demande déjà envoyée à ${name}.`);
@@ -200,7 +209,7 @@ export function createSocialService({ store, accounts, party, game, clock = Date
       limit.hit(me.id);
       const at = clock();
       a.outgoing.push({ to: target.id, at });
-      b.incoming.push({ from: me.id, at });
+      if(!b.blocked.includes(me.id)) b.incoming.push({ from: me.id, at });   // il m'a bloqué : elle reste chez moi, sans lui arriver
       if(b.incoming.length > config.maxIncoming) b.incoming.splice(0, b.incoming.length - config.maxIncoming);
       await save([[me.id, a], [target.id, b]]);
       return { sent: name, ...await view(me) };
@@ -227,6 +236,33 @@ export function createSocialService({ store, accounts, party, game, clock = Date
       a.friends = a.friends.filter(x => x !== id); b.friends = b.friends.filter(x => x !== me.id);
       a.outgoing = a.outgoing.filter(r => r.to !== id); b.incoming = b.incoming.filter(r => r.from !== me.id);
       await save([[me.id, a], [id, b]]);
+      return view(me);
+    }),
+
+    /* bloquer un joueur (ID de compte) : plus d'amitié ni de demande, dans les deux sens ; il n'en sait rien */
+    block: (me, input) => serial(async () => {
+      const id = parseAccountId(typeof input === 'string' ? input : '');
+      if(!id) fail('bad_request', 400, 'Joueur invalide.');
+      if(id === me.id) fail('bad_request', 400, 'Tu ne peux pas te bloquer toi-même.');
+      if(!await accounts.getAccount(id)) fail('not_found', 404, 'Ce joueur n\'existe plus.');
+      const a = await load(me.id), b = await load(id);
+      if(!a.blocked.includes(id)){
+        if(a.blocked.length >= MODERATION.blockedMax) fail('too_many', 409, 'Ta liste de joueurs bloqués est pleine.');
+        a.blocked.push(id);
+      }
+      a.friends = a.friends.filter(x => x !== id); b.friends = b.friends.filter(x => x !== me.id);
+      a.incoming = a.incoming.filter(r => r.from !== id); b.outgoing = b.outgoing.filter(r => r.to !== me.id);
+      a.outgoing = a.outgoing.filter(r => r.to !== id); b.incoming = b.incoming.filter(r => r.from !== me.id);
+      await save([[me.id, a], [id, b]]);
+      await party.dropInvites?.(me.id, id);
+      return view(me);
+    }),
+    unblock: (me, input) => serial(async () => {
+      const id = parseAccountId(typeof input === 'string' ? input : '');
+      if(!id) fail('bad_request', 400, 'Joueur invalide.');
+      const a = await load(me.id);
+      a.blocked = a.blocked.filter(x => x !== id);
+      await save([[me.id, a]]);
       return view(me);
     }),
 
@@ -277,7 +313,7 @@ export function createSocialService({ store, accounts, party, game, clock = Date
       const hidden = new Set((await Promise.all(LEADERBOARD.hidden.map(n => accounts.findAccountByName(nameKey(n))))).filter(Boolean).map(a => a.id));
       const r = rankBoard(board, (tree ? data.spec[tree] : data[board]).filter(e => !hidden.has(e.id)), me.id);
       const row = async ({ id, rank, value, me: mine, level, side, team, fight }) =>
-        ({ rank, name: await nameOf(id), value, me: mine, ...(level ? { level } : {}), ...(side ? { side, team } : {}),
+        ({ id, rank, name: await nameOf(id), value, me: mine, ...(level ? { level } : {}), ...(side ? { side, team } : {}),
            ...(board === 'instance' || board === 'instance2' ? { team: team ?? [], fight: fight ?? null } : {}) });   // roi gobelin (niveaux 1 et 2) : équipe, temps de combat (29/10)
       return { board, total: r.total, rows: await Promise.all(r.rows.map(row)), me: r.me && await row(r.me) };
     },
@@ -313,6 +349,9 @@ export function createSocialService({ store, accounts, party, game, clock = Date
         await saveChat();
         return { message };
       }
+      /* muet, ou règles pas encore acceptées (01/11) : refusé avant tout, ni message ni cadence consommée */
+      const no = await moderation?.chatRefusal(me);
+      if(no) fail(no.code, no.status, no.message);
       const reach = await audience(me, channel, body.to);
       const lobby = typeof body.text === 'string' && body.text.includes(LOBBY_TAG) ? { lobby: await party.chatLink(me, body.lobby) } : {};
       const r = chat.post(GLOBAL, me.id, displayName(me) || formatAccountId(me.id), body.text, { channel, ...reach, ...lobby });
@@ -327,7 +366,17 @@ export function createSocialService({ store, accounts, party, game, clock = Date
     /* messages après le numéro after (absent ou invalide : tous ceux gardés), seulement ceux que ce joueur peut lire */
     async chatGet(me, after){
       await chatReady();
-      return { messages: chat.since(GLOBAL, Number.isSafeInteger(after) && after > 0 ? after : 0).filter(m => canRead(m, me.id)).slice(-CHAT.keep).map(chatView) };
+      const blocked = await blockedSet(me.id);
+      /* removed : messages retirés par les créateurs, à effacer des pages ouvertes */
+      return { messages: chat.since(GLOBAL, Number.isSafeInteger(after) && after > 0 ? after : 0).filter(m => canRead(m, me.id) && !blocked.has(m.account)).slice(-CHAT.keep).map(chatView),
+               removed: chat.removed(GLOBAL) };
+    },
+    /* un message que ce joueur peut lire, pour le signaler (server/moderation/reports.js) ; null sinon */
+    async findMessage(me, id){
+      await chatReady();
+      if(!Number.isSafeInteger(id) || id < 1) return null;
+      const m = chat.since(GLOBAL, id - 1).find(x => x.id === id && !x.system && canRead(x, me.id));
+      return m ? { id: m.id, account: m.account, channel: m.channel, text: m.text, at: m.at } : null;
     },
     /* lien de lobby d'un message (31/10/2026) : son aperçu, tel qu'il est maintenant ; { open:false } si le groupe n'existe plus */
     async chatLobby(me, id){
@@ -351,6 +400,12 @@ export function createSocialService({ store, accounts, party, game, clock = Date
   api.statusOf = statusOf;   // présence d'un membre de guilde (server/guild/service.js) : pas un signe de vie
   api.raffleForce = () => raffle.force();   // administration (server/admin/routes.js)
   api.raffleTick = () => raffle.tick();   // boucle du serveur (server/main.js) : pas un signe de vie
+  /* blocage, pour le jeu, les groupes et le Carreau : pas un signe de vie */
+  api.blockedOf = blockedSet;
+  api.isBlocked = async (id, by) => (await blockedSet(by)).has(id);
+  /* administration (server/admin/routes.js) */
+  api.adminRecentChat = async ({ account = null, limit = 50 } = {}) => { await chatReady(); return chat.since(GLOBAL, 0).filter(m => !m.system && (!account || m.account === account)).slice(-limit); };
+  api.adminDeleteMessage = async id => { await chatReady(); const m = chat.remove(GLOBAL, id); if(m) await saveChat(); return m; };
   api.recentChat = async ms => { await chatReady(); const now = clock(); return chat.since(GLOBAL, 0).filter(m => !m.to && now - m.at <= ms); };   // jamais un MP ni un message de groupe ou de guilde
   return api;
 

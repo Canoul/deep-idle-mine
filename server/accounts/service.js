@@ -2,7 +2,7 @@
    récupération par code de secours, changement de mot de passe, connexions (sessions) qui expirent.
    Testable seul : on lui passe un stockage et une horloge. */
 import { nameBanned } from '../moderation/filter.js';
-import { ACCOUNT } from '../../src/config.js';
+import { ACCOUNT, RULES } from '../../src/config.js';
 import { cleanName, nameKey, checkName, checkPassword, parseRecoveryCode, formatCode, formatAccountId,
          displayName } from '../../src/shared/account.js';
 import { SESSIONS, LIMITS, SCRYPT } from '../config.js';
@@ -28,6 +28,8 @@ export function createAccountService({ store, clock = Date.now, scrypt = SCRYPT,
     create: createLimiter(limits.createPerIp, clock),
   };
   const ttlOf = acc => acc.guest ? sessions.guestTtl : sessions.ttl;
+  /* version des règles acceptée et date (01/11/2026) ; la case est exigée par la route (server/accounts/routes.js) */
+  const rulesFields = () => ({ rulesVersion: RULES.version, rulesAt: clock() });
 
   function blocked(...checks){
     for(const c of checks) if(!c.ok){
@@ -82,21 +84,21 @@ export function createAccountService({ store, clock = Date.now, scrypt = SCRYPT,
 
   return {
     /* Jouer tout de suite : un compte sans pseudo ni mot de passe, lié à ce navigateur par son cookie. */
-    async createGuest({ ip = '' } = {}){
+    async createGuest({ ip = '', acceptRules = false } = {}){
       blocked(limit.create.check(ip));
-      const acc = await insertNew({ name: null, nameKey: null, guest: true, passHash: null, recoveryHash: null });
+      const acc = await insertNew({ name: null, nameKey: null, guest: true, passHash: null, recoveryHash: null, ...(acceptRules ? rulesFields() : {}) });
       limit.create.hit(ip);
       return { account: publicAccount(acc), ...await openSession(acc) };
     },
 
     /* Créer un compte avec pseudo + mot de passe. Renvoie le code de secours, montré une seule fois. */
-    async register({ name, password, ip = '' } = {}){
+    async register({ name, password, ip = '', acceptRules = false } = {}){
       const n = validName(name); validPassword(password, n);
       blocked(limit.create.check(ip));
       if(await store.findAccountByName(nameKey(n))) fail('name_taken', 409, 'Ce pseudo est déjà pris.');
       const rec = await newRecovery();
       const acc = await insertNew({ name: n, nameKey: nameKey(n), guest: false,
-                                    passHash: await hashSecret(password, scrypt), recoveryHash: rec.hash });
+                                    passHash: await hashSecret(password, scrypt), recoveryHash: rec.hash, ...(acceptRules ? rulesFields() : {}) });
       limit.create.hit(ip);
       return { account: publicAccount(acc), recoveryCode: rec.display, ...await openSession(acc) };
     },
@@ -154,6 +156,27 @@ export function createAccountService({ store, clock = Date.now, scrypt = SCRYPT,
       try { await store.updateAccount(acc); }
       catch(e){ if(e instanceof ConflictError) fail('name_taken', 409, 'Ce pseudo est déjà pris.'); throw e; }
       return { account: publicAccount(acc) };
+    },
+
+    /* Pseudo forcé par les créateurs (scripts/rename.js, 01/11/2026) : mêmes règles qu'un pseudo choisi. Il garde son ID. */
+    async adminRename(accountId, { name } = {}){
+      const acc = await store.getAccount(accountId);
+      if(!acc) fail('no_account', 404, 'Compte introuvable.');
+      if(acc.guest) fail('guest', 409, 'Un compte invité n\'a pas de pseudo.');
+      const n = validName(name), old = acc.name;
+      Object.assign(acc, { name: n, nameKey: nameKey(n) });
+      try { await store.updateAccount(acc); }
+      catch(e){ if(e instanceof ConflictError) fail('name_taken', 409, 'Ce pseudo est déjà pris.'); throw e; }
+      return { account: publicAccount(acc), old };
+    },
+
+    /* Accepter les règles (compte d'avant leur arrivée, ou conditions changées) */
+    async acceptRules(accountId){
+      const acc = await store.getAccount(accountId);
+      if(!acc) fail('not_authenticated', 401, 'Connexion expirée.');
+      Object.assign(acc, rulesFields());
+      await store.updateAccount(acc);
+      return { ok: true, version: acc.rulesVersion };
     },
 
     /* Mot de passe oublié (pas d'e-mail) : pseudo + code de secours → nouveau mot de passe.

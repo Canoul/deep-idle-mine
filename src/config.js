@@ -1982,7 +1982,14 @@ export const RAFFLE = { name:'Raffle', command:'!join', joinMs:120e3,   /* 01/11
    s'arrête. Mots coupés sur plusieurs messages : les joinMessages derniers messages du salon de moins de joinWindowMs
    comptent avec le nouveau (« ni » puis « gger », même d'un autre joueur : c'est celui qui complète qui est averti).
    keep : avertissements et bans gardés par joueur (historique pour la commande scripts/moderation.js). */
-export const MODERATION = { warnings: 3, banMs: 24 * 3600e3, joinMessages: 3, joinWindowMs: 60e3, keep: 50 };
+export const MODERATION = { warnings: 3, banMs: 24 * 3600e3, joinMessages: 3, joinWindowMs: 60e3, keep: 50,
+  /* signalements et blocage (01/11/2026, exigence des stores) : server/moderation/reports.js, server/social/service.js */
+  reportsPerHour: 10, reportCommentMax: 300, blockedMax: 200,
+  muteHoursMax: 8760, banDaysMax: 3650,   // bornes des outils admin (scripts/mute.js, scripts/ban.js)
+  reasons: [{ id:'harassment', label:'Insulte ou harcèlement' }, { id:'hate', label:'Contenu haineux' }, { id:'sexual', label:'Contenu sexuel' },
+            { id:'spam', label:'Spam' }, { id:'name', label:'Pseudo inapproprié' }, { id:'cheat', label:'Triche' }, { id:'other', label:'Autre' }] };
+/* Règles acceptées par le joueur (01/11/2026) : augmenter version redemande l'accord de tout le monde au prochain message de chat */
+export const RULES = { version: 1, terms: 'https://deepmineidle.fr/conditions', privacy: 'https://deepmineidle.fr/confidentialite' };
 
 /* Préférences de l'IA réglables dans le lobby (« Critères / préférences »), avec leurs valeurs permises.
    Ajouter une préférence = une entrée ici + sa lecture dans l'IA (principe d'architecture n°3). */

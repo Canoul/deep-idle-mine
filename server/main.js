@@ -24,6 +24,7 @@ import { luciferSim } from '../src/shared/giant-room.js';
 import { createTownService } from './town/service.js';
 import { createDiscordAnnouncer } from './social/discord.js';
 import { createModerationService } from './moderation/service.js';
+import { createReportService } from './moderation/reports.js';
 
 const port = +(process.argv[2] || SERVER.port);
 /* stockage : PostgreSQL si DATABASE_URL est défini (en ligne), sinon fichiers dans data/ (en local) */
@@ -35,18 +36,20 @@ const gameStore = db ? await createPgGameStore(db) : await createFileGameStore(S
 /* mode dev : copies de vrais joueurs pour les mineurs de test (data/presets/*.json, server/game/dev-copies.js) */
 /* modération du chat (30/10) : un joueur banni voit sa prison arrêtée */
 const moderation = createModerationService({ store: gameStore, onBan: id => game.prisonStop({ id }).catch(() => {}) });
-const game = createGameService({ store: gameStore, announce: createDiscordAnnouncer({ url: SERVER.discordWebhook }), moderation,
+const game = createGameService({ store: gameStore, announce: createDiscordAnnouncer({ url: SERVER.discordWebhook }), moderation, blockedOf: id => social.blockedOf(id),
                                  onXp: (id, xp) => guild.addXp(id, xp), guildNameOf: id => guild.nameOf(id), guildBonusOf: id => guild.bonusOf(id),
                                  devCopies: () => readDevCopies(path.join(SERVER.dataDir, 'presets')),
                                  devLiveCopies: GAME_SERVER.dev && process.env.DIM_DEV_COPY_URL
                                    ? createLiveCopies({ url: process.env.DIM_DEV_COPY_URL, dir: path.join(SERVER.dataDir, 'presets') }) : null });
-const party = createPartyService({ game, store: gameStore, dev: GAME_SERVER.dev, getAccount: id => store.getAccount(id) });
+const party = createPartyService({ game, store: gameStore, dev: GAME_SERVER.dev, getAccount: id => store.getAccount(id), blockedBy: (id, by) => social.isBlocked(id, by) });
 await party.load();                        // groupes d'avant le redémarrage (mise à jour automatique)
 /* mine instantanée : inscriptions retrouvées (lancer une session normale ne désinscrit plus : 22/10) */
 const instant = createInstantService({ game, party, store: gameStore, dev: GAME_SERVER.dev });
 await instant.load();
 /* amis (onglet Social) : demandes, présence, inviter / rejoindre un ami */
 const social = createSocialService({ store: gameStore, accounts: store, party, game, moderation, guildInvites: id => guild.invitesOf(id), guildMembers: id => guild.membersOf(id) });
+/* signalements (01/11) : en base, et sur le salon Discord privé de modération si DIM_DISCORD_MOD_WEBHOOK est défini */
+const reports = createReportService({ store: gameStore, accounts: store, social, game, announce: createDiscordAnnouncer({ url: SERVER.discordModWebhook }) });
 /* guildes : créées après les amis (présence des membres) ; game et social ne les appellent qu'une fois le serveur lancé */
 const guild = createGuildService({ store: gameStore, accounts: store, statusOf: id => social.statusOf(id), spend: game.guildSpend, counts: game.itemCounts });
 /* Bloc géant : salle commune, visites, scores du jour, récompenses */
@@ -54,8 +57,8 @@ const giant = createGiantService({ store: gameStore, game, dev: GAME_SERVER.dev 
 /* He's coming : le même service, sa partie et ses fiches */
 const hescoming = createGiantService({ store: gameStore, game, dev: GAME_SERVER.dev, config: HES_COMING, sim: luciferSim, key: 'Hc', mode: 'hescoming', place: HES_COMING.bossName });
 /* le Carreau : la ville du spawn (joueurs en ligne hors session, leur place, bulles du chat global) */
-const town = createTownService({ accounts: store, game, party, recentChat: ms => social.recentChat(ms), guildNameOf: id => guild.nameOf(id) });
-const server = http.createServer(createApp({ store, service, game, party, instant, social, guild, giant, hescoming, town, moderation, root: ROOT }));
+const town = createTownService({ accounts: store, game, party, recentChat: ms => social.recentChat(ms), blockedOf: id => social.blockedOf(id), guildNameOf: id => guild.nameOf(id) });
+const server = http.createServer(createApp({ store, service, game, party, instant, social, guild, giant, hescoming, town, moderation, reports, root: ROOT }));
 
 /* sessions de jeu : le serveur les fait tourner en direct (reprises au démarrage), puis les fait avancer en continu ;
    chacune se termine et se partage d'elle-même au dernier tick, joueurs présents ou non */

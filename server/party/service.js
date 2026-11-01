@@ -38,7 +38,7 @@ export class PartyError extends Error {
 const fail = (code, status, message, extra) => { throw new PartyError(code, status, message, extra); };
 
 /* game : service des sessions ; getAccount(id) : compte ou null (pour inviter par ID) */
-export function createPartyService({ game, getAccount, store = null, clock = Date.now, config = PARTY_SERVER, dev = false,
+export function createPartyService({ game, getAccount, store = null, clock = Date.now, config = PARTY_SERVER, dev = false, blockedBy = async () => false,
                                      newCode = () => Array.from({ length: PARTY.codeLength }, () => CODE_ALPHABET[crypto.randomInt(32)]).join('') }){
   const parties = new Map();                 // code → groupe
   /* « Prêt tout le temps » (23/10/2026) : réglage du JOUEUR, pas du groupe, enregistré sur son compte (31/10, Geoffrey :
@@ -417,7 +417,9 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       if(!p.invites.has(id) && p.invites.size >= config.maxPendingInvites)
         fail('too_many_invites', 409, 'Trop d\'invitations en attente pour ce groupe.');
       limit.invite.hit(me.id);
-      p.invites.set(id, { account: id, name: displayName(friend), from: displayName(me), at: clock() });
+      /* il m'a bloqué (01/11/2026) : l'invitation n'arrive pas, et je n'en sais rien */
+      if(await blockedBy(me.id, id)) return { party: publicParty(p, me.id) };
+      p.invites.set(id, { account: id, fromId: me.id, name: displayName(friend), from: displayName(me), at: clock() });
       return { party: publicParty(p, me.id) };
     },
 
@@ -749,6 +751,8 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
     groupOf: accountId => { const p = partyOf(accountId); return p ? { code: p.code, size: p.members.length, max: GAME.maxPlayers, locked: !!p.locked } : null; },
     invitesOf: accountId => invitesFor(accountId).map(q => ({ code: q.code, from: q.invites.get(accountId).from, at: q.invites.get(accountId).at,
                                                               members: q.members.map(m => m.name), full: q.members.length >= GAME.maxPlayers })),
+    /* invitations envoyées à ce joueur par celui qu'il vient de bloquer (server/social/service.js) */
+    dropInvites(to, from){ for(const p of parties.values()) if(p.invites.get(to)?.fromId === from) p.invites.delete(to); },
     /* pour les tests et le journal */
     count: () => parties.size,
     lfgCount: () => queue.size,

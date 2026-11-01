@@ -41,7 +41,7 @@ function browser(){
 test('parcours complet : inscription, qui suis-je, déconnexion, connexion', async () => {
   const b = browser();
   assert.deepEqual((await b('GET', '/api/account/me')).data, { account: null }, 'personne : pas une erreur');
-  const reg = await b('POST', '/api/account/register', { name: 'Zoé', password: 'motdepasse' });
+  const reg = await b('POST', '/api/account/register', { acceptRules: true, name: 'Zoé', password: 'motdepasse' });
   assert.equal(reg.status, 201);
   assert.match(reg.data.recoveryCode, /^[0-9A-Z]{4}(-[0-9A-Z]{4}){3}$/);
   const cookie = reg.setCookie[0];
@@ -61,14 +61,14 @@ test('erreurs lisibles en JSON', async () => {
   const r = await b('POST', '/api/account/login', { name: 'Personne', password: 'mauvais!!' });
   assert.equal(r.status, 401);
   assert.deepEqual(Object.keys(r.data.error), ['code', 'message']);
-  assert.equal((await b('POST', '/api/account/register', { name: 'x', password: 'motdepasse' })).data.error.code, 'invalid_name');
+  assert.equal((await b('POST', '/api/account/register', { acceptRules: true, name: 'x', password: 'motdepasse' })).data.error.code, 'invalid_name');
   assert.equal((await b('GET', '/api/nimportequoi')).status, 404);
   assert.equal((await b('GET', '/api/account/login')).status, 405);
 });
 
 test('invité puis sécurisation, sans perdre l\'ID', async () => {
   const b = browser();
-  const g = await b('POST', '/api/account/guest', {});
+  const g = await b('POST', '/api/account/guest', { acceptRules: true });
   assert.equal(g.status, 201);
   assert.match(g.setCookie[0], /Max-Age=31536000/, 'un an pour un invité');
   const c = await b('POST', '/api/account/claim', { name: 'InviteSecu', password: 'motdepasse' });

@@ -4,6 +4,13 @@
           -H "Content-Type: application/json" -d '{"name":"crousti","item":"Treasure T3","qty":1}'
      (« quality »: 1 à 7, facultatif : une pièce de stuff déjà identifiée dans cette qualité)
    POST /api/admin/moderation {"name":"crousti","action":"show"} : avertissements et bans (unban, forgive, recent) (scripts/moderation.js).
+   Modération (01/11/2026), « name » = pseudo ou ID de compte (un invité n'a pas de pseudo), « by » = qui agit, pour le journal :
+   POST /api/admin/reports {"name":"crousti","open":true} : signalements ; {"action":"close","id":12} : traité (scripts/reports.js).
+   POST /api/admin/chat-recent {"name":"crousti"} : derniers messages du chat global ; POST /api/admin/chat-delete {"id":42} : le supprime (scripts/delete-message.js).
+   POST /api/admin/mute {"name":"crousti","hours":24} : plus de chat ; {"off":true} : levé (scripts/mute.js).
+   POST /api/admin/ban {"name":"crousti","days":7,"reason":"…"} : compte suspendu, sans days = définitif ; {"off":true} : levé (scripts/ban.js).
+   POST /api/admin/rename {"name":"crousti","to":"Nouveau"} : force un pseudo (scripts/rename.js).
+   POST /api/admin/mod-log {"limit":50} : journal de ces actions (scripts/reports.js --log).
    POST /api/admin/take {"name":"crousti","item":"Glyphe Ruée","qty":1} : retire un objet (inventaire, ou glyphe posé) (scripts/take-item.js).
    POST /api/admin/judgment {"side":"demon","count":175} : règle une jauge du Jugement (scripts/set-judgment.js).
    POST /api/admin/stats {} : lignes du tableau de bord (scripts/dashboard.js).
@@ -27,7 +34,8 @@
    Le dépôt est public : la clé n'est jamais dans git. */
 import crypto from 'node:crypto';
 import { HttpError } from '../http/http.js';
-import { nameKey } from '../../src/shared/account.js';
+import { nameKey, parseAccountId, displayName, formatAccountId } from '../../src/shared/account.js';
+import { MODERATION } from '../../src/config.js';
 
 export const ADMIN_TOKEN_MIN = 32;
 const LOOPBACK = new Set(['127.0.0.1', '::1', '::ffff:127.0.0.1']);
@@ -50,7 +58,7 @@ export function adminAllowed(req, token){
 
 /* accounts : le stockage des comptes (findAccountByName) ; game : le service de jeu (adminGive, adminTake, adminJudgment) ;
    party : le service des groupes (adminMove, adminReady), facultatif ; social : raffle, facultatif */
-export function adminRoutes({ accounts, game, party = null, moderation = null, social = null, token }){
+export function adminRoutes({ accounts, service = null, game, party = null, moderation = null, social = null, reports = null, token }){
   const guard = ctx => { if(!adminAllowed(ctx.req, token)) throw hidden(); };
   /* compte désigné par son pseudo (champ `field` du corps) */
   const byName = async (ctx, field = 'name') => {
@@ -60,9 +68,86 @@ export function adminRoutes({ accounts, game, party = null, moderation = null, s
     if(!acc) throw new HttpError(404, 'no_account', `Aucun compte « ${name} ».`);
     return acc;
   };
+  /* comme byName, ou par ID de compte : un invité écrit dans le chat sans avoir de pseudo */
+  const byNameOrId = async ctx => {
+    const text = ctx.body?.name, id = typeof text === 'string' ? parseAccountId(text) : null;
+    const acc = id && !await accounts.findAccountByName(nameKey(text)) ? await accounts.getAccount(id) : null;
+    return acc ?? byName(ctx);
+  };
+  const noMod = () => { if(!moderation) throw new HttpError(503, 'no_moderation', 'Modération indisponible sur ce serveur.'); };
+  const label = acc => displayName(acc) || formatAccountId(acc.id);
+  /* qui agit (le script donne son nom de session) et trace de l'action */
+  const journal = async (ctx, action, target, detail = '') => {
+    const by = typeof ctx.body?.by === 'string' && ctx.body.by.trim() ? ctx.body.by.trim().slice(0, 40) : 'admin';
+    await moderation?.log({ by, action, target, detail });
+    console.log(`Admin (${by}) : ${action} ${target ?? ''} ${detail}`.trim());
+    return by;
+  };
+  /* entier de 1 à max, sinon 400 */
+  const count = (v, max, what) => { if(!Number.isSafeInteger(v) || v < 1 || v > max) throw new HttpError(400, 'bad_request', `${what} : un entier de 1 à ${max}.`); return v; };
   const noParty = () => { if(!party) throw new HttpError(503, 'no_party_service', 'Groupes indisponibles sur ce serveur.'); };
   const members = r => r.party.members.map(m => `${m.name}${m.leader ? ' (chef)' : m.ready ? (m.always ? ' (prêt tout le temps)' : ' (prêt)') : ''}`).join(', ');
   return {
+    /* ---- modération (01/11/2026, exigence des stores) ---- */
+    'POST /api/admin/reports': async ctx => {
+      guard(ctx);
+      if(!reports) throw new HttpError(503, 'no_reports', 'Signalements indisponibles sur ce serveur.');
+      if(ctx.body?.action === 'close'){
+        const report = await reports.close(count(ctx.body?.id, Number.MAX_SAFE_INTEGER, 'id'), 'admin');
+        await journal(ctx, 'report-close', report.targetName, `n° ${report.id}`);
+        return { report };
+      }
+      const account = ctx.body?.name ? (await byNameOrId(ctx)).id : null;
+      return { rows: await reports.list({ account, open: ctx.body?.open === true, limit: Number.isSafeInteger(ctx.body?.limit) ? Math.min(200, Math.max(1, ctx.body.limit)) : 50 }) };
+    },
+    'POST /api/admin/chat-recent': async ctx => {
+      guard(ctx);
+      if(!social) throw new HttpError(503, 'no_social', 'Chat indisponible sur ce serveur.');
+      const account = ctx.body?.name ? (await byNameOrId(ctx)).id : null;
+      return { rows: await social.adminRecentChat({ account, limit: Number.isSafeInteger(ctx.body?.limit) ? Math.min(200, Math.max(1, ctx.body.limit)) : 50 }) };
+    },
+    'POST /api/admin/chat-delete': async ctx => {
+      guard(ctx);
+      if(!social) throw new HttpError(503, 'no_social', 'Chat indisponible sur ce serveur.');
+      const id = count(ctx.body?.id, Number.MAX_SAFE_INTEGER, 'id');
+      const m = await social.adminDeleteMessage(id);
+      if(!m) throw new HttpError(404, 'not_found', `Aucun message n° ${id} dans le chat global.`);
+      await journal(ctx, 'message-delete', m.name, `n° ${id} : ${m.text}`);
+      return { id, name: m.name, text: m.text };
+    },
+    'POST /api/admin/mute': async ctx => {
+      guard(ctx); noMod();
+      const acc = await byNameOrId(ctx);
+      if(ctx.body?.off === true){ await moderation.mute(acc.id); await journal(ctx, 'unmute', label(acc)); return { account: label(acc), mutedUntil: 0 }; }
+      const hours = count(ctx.body?.hours, MODERATION.muteHoursMax, 'hours');
+      const r = await moderation.mute(acc.id, hours * 3600e3);
+      await journal(ctx, 'mute', label(acc), `${hours} h`);
+      return { account: label(acc), ...r };
+    },
+    'POST /api/admin/ban': async ctx => {
+      guard(ctx); noMod();
+      const acc = await byNameOrId(ctx);
+      if(ctx.body?.off === true){ await moderation.suspend(acc.id, { lift: true }); await journal(ctx, 'unban', label(acc)); return { account: label(acc), suspended: null }; }
+      const days = ctx.body?.days === undefined || ctx.body?.days === null ? null : count(ctx.body.days, MODERATION.banDaysMax, 'days');
+      const reason = typeof ctx.body?.reason === 'string' ? ctx.body.reason.trim().slice(0, 200) : '';
+      const r = await moderation.suspend(acc.id, { ms: days === null ? null : days * 24 * 3600e3, reason });
+      await game.adminLeave?.(acc.id).catch(() => {});       // sa session en cours : comme son bouton « Quitter » ; pas de session : rien
+      await journal(ctx, 'ban', label(acc), `${days === null ? 'définitif' : `${days} j`}${reason ? ` : ${reason}` : ''}`);
+      return { account: label(acc), ...r };
+    },
+    'POST /api/admin/rename': async ctx => {
+      guard(ctx);
+      if(!service) throw new HttpError(503, 'no_accounts', 'Comptes indisponibles sur ce serveur.');
+      const acc = await byNameOrId(ctx);
+      const r = await service.adminRename(acc.id, { name: typeof ctx.body?.to === 'string' ? ctx.body.to : undefined });
+      await party?.rename?.(acc.id, r.account.name);
+      await journal(ctx, 'rename', r.old, `→ ${r.account.name}`);
+      return { old: r.old, name: r.account.name };
+    },
+    'POST /api/admin/mod-log': async ctx => {
+      guard(ctx); noMod();
+      return { rows: await moderation.logList(Number.isSafeInteger(ctx.body?.limit) ? Math.min(500, Math.max(1, ctx.body.limit)) : 50) };
+    },
     /* lobbies (29/10/2026, Geoffrey) : déplacer un joueur dans le lobby d'un autre, le mettre prêt */
     'POST /api/admin/party-move': async ctx => {
       guard(ctx); noParty();
@@ -142,12 +227,12 @@ export function adminRoutes({ accounts, game, party = null, moderation = null, s
       }
       const acc = await byName(ctx);
       if(action === 'show') return { account: acc.name, ...(await moderation.show(acc.id)) };
-      if(action === 'unban'){ const r = await moderation.unban(acc.id); console.log(`Admin : ban levé pour ${acc.name} (${acc.id})`); return { account: acc.name, ...r }; }
+      if(action === 'unban'){ const r = await moderation.unban(acc.id); await journal(ctx, 'unban-auto', acc.name); return { account: acc.name, ...r }; }
       if(action === 'forgive'){
         const index = ctx.body?.index ?? null;
         const r = await moderation.forgive(acc.id, index);
         if(!r.ok) throw new HttpError(400, 'bad_request', `Avertissement n° ${index} introuvable (${r.count} au total).`);
-        console.log(`Admin : avertissement ${index ?? 'tous'} retiré pour ${acc.name} (${acc.id})`);
+        await journal(ctx, 'forgive', acc.name, `avertissement ${index ?? 'tous'}`);
         return { account: acc.name, ...r };
       }
       throw new HttpError(400, 'bad_request', 'action : show, unban, forgive ou recent.');

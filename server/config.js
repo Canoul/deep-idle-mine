@@ -48,6 +48,9 @@ export const SERVER = {
   /* webhook Discord des annonces (trésor ou identification R7, server/social/discord.js) : DIM_DISCORD_WEBHOOK, dans
      /etc/deep-idle-mine.env sur le VPS, JAMAIS dans git. Absent : aucune annonce. */
   discordWebhook: process.env.DIM_DISCORD_WEBHOOK || '',
+  /* salon Discord PRIVÉ de modération (signalements, server/moderation/reports.js) : DIM_DISCORD_MOD_WEBHOOK, même principe,
+     jamais le salon public des annonces. Absent : les signalements restent en base, rien n'est envoyé. */
+  discordModWebhook: process.env.DIM_DISCORD_MOD_WEBHOOK || '',
   /* seuls ces chemins sont servis au navigateur (le reste du dépôt, dont data/ et l'ancien prototype, ne l'est jamais) */
   publicPaths: ['/index.html', '/wiki.html', '/src/', '/textures/'],
   /* en-têtes de sécurité, sur toutes les réponses (pages, fichiers, API) :
