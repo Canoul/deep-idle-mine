@@ -108,6 +108,7 @@ export const guildApi = {
   view:  () => request('GET', '/api/guild'),
   board: () => request('GET', '/api/guild/board'),
   list:  query => request('POST', '/api/guild/list', { query }),
+  members: id => request('POST', '/api/guild/members', { id }),
   leave: () => request('POST', '/api/guild/leave', {}),
   create: name => request('POST', '/api/guild/create', { name }),
   invite: name => request('POST', '/api/guild/invite', { name }),
