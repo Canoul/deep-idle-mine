@@ -6205,6 +6205,10 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Quoi** : `sendInvite` (src/ui/guild.js) passe par `tell` (src/ui/dialog.js) au lieu de `say`, succès compris. Une invitation déjà envoyée au même joueur dit aussi « envoyée » (le service ne distingue pas ce cas).
 - **Tests** ✅ tests/guild-ui.test.js, guild-service. ⚠️ Fenêtre pas vue dans un navigateur.
 
+## 01/11/2026 — Armurerie et Forge de guilde : coûts (Geoffrey)
+- **Quoi** : `GUILD.buildings` armurerie, Pierre 100 000 → 500 000 ; forge, Pierre dure 100 000 → 250 000 (demande écrite « 250 0000 », lue 250 000). Dons gardés (`given`) ; un bâtiment déjà construit reste au niveau 1.
+- **Tests** ✅ tests/guild-buildings.test.js, guild-service.
+
 ## 01/11/2026 — Shrine « illimité » : faux problème de décompte, vrai problème de texte (Geoffrey)
 - **Signalé** : « Prix atteint : actif pour 5 mines » sur un shrine activé plusieurs mines plus tôt, chiffre figé, impression d'illimité.
 - **Vérifié** ✅ 7 `game.start` d'affilée sur le vrai service (mémoire, dev false) : `session.shrines` = abundance pour les mines 1 à 5, vide pour 6 et 7 ; `left` 4, 3, 2, 1, 0, 0, 0. Non vérifié sur la base en ligne.
