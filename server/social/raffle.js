@@ -18,7 +18,7 @@ export function createRaffle({ store, give, announce, clock = Date.now, random }
     state.current = { id: `raffle:${now}`, lot, endsAt: now + RAFFLE.joinMs, players: [] };
     state.nextAt = null;
     await save();
-    await announce(`[${RAFFLE.name}] ${lotLabel(lot)} ${lotPlural(lot) ? 'seront attribués' : 'sera attribué'} aléatoirement à quelqu'un dans le chat dans ${RAFFLE.joinMs / 1000} s`);
+    await announce(`[${RAFFLE.name}] ${lotLabel(lot)} ${lotPlural(lot) ? 'seront attribués' : 'sera attribué'} aléatoirement à quelqu'un dans le chat dans ${RAFFLE.joinMs / 60e3} min`);
     await announce(`${RAFFLE.command} pour participer`);
   }
   async function draw(now){
