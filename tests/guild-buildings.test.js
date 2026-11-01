@@ -156,3 +156,7 @@ test('bonus : lu par une partie et par la mine instantanée, pour ce joueur seul
   assert.equal(b.carac.damage, STATS.damage);
 });
 
+test('coût : Armurerie 500 000 Pierre, Forge 250 000 Pierre dure (01/11/2026, Geoffrey)', () => {
+  assert.equal(GUILD.buildings.find(b => b.id === 'armurerie').levels[0].cost['Pierre'], 500000);
+  assert.equal(GUILD.buildings.find(b => b.id === 'forge').levels[0].cost['Pierre dure'], 250000);
+});
