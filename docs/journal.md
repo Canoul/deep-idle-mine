@@ -9,8 +9,8 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
-## 01/11/2026 — Geoffrey — Armurerie de guilde : 500 000 Pierre
-- **Pour le joueur** : le niveau 1 de l'Armurerie demande 500 000 Pierre au lieu de 100 000. Les dons déjà faits restent comptés.
+## 01/11/2026 — Geoffrey — Bâtiments de guilde : Armurerie et Forge plus chères
+- **Pour le joueur** : le niveau 1 de l'Armurerie demande 500 000 Pierre et celui de la Forge 250 000 Pierre dure, au lieu de 100 000 chacun. Les dons déjà faits restent comptés.
 - **État** : 🧪 sur la branche `geoffrey/armurerie-pierre` (pas en ligne)
 
 ## 01/11/2026 — Geoffrey — Guilde : message après une invitation

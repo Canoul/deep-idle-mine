@@ -1862,7 +1862,7 @@ export const GUILD = { maxMembers:30, xpPct:1, nameMin:3, nameMax:24, maxInvites
       { label:'+2 % de fortune', add:{ fortune:2 }, cost:{ 'Shiny iron':1000, 'Shiny gold':500, 'Poudre de rêve':1000 } },
     ] },
     { id:'forge', name:'Forge', tex:'guild_forge', levels:[
-      { label:'+2 % de vitesse de minage', mult:{ mineSpeed:2 }, cost:{ 'Pierre dure':100000, 'Diamant':5000, 'Jade inférieur':25, 'Rubis inférieur':25, 'Saphir inférieur':25 } },
+      { label:'+2 % de vitesse de minage', mult:{ mineSpeed:2 }, cost:{ 'Pierre dure':250000, 'Diamant':5000, 'Jade inférieur':25, 'Rubis inférieur':25, 'Saphir inférieur':25 } },
     ] },
   ] };
 
