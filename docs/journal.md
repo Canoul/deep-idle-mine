@@ -9,6 +9,12 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 01/11/2026 — Geoffrey — He's coming : les sorts de combat servent enfin
+- **Pour le joueur** : le Dash, le Cleave, la Dynamite, la Bonbonne de zipette et l'Ulti shen sont maintenant utilisés contre
+  Lucifer. Illumination, Fast learner et Hand of Justice restent sans effet ici.
+- **Décision** : mêmes règles que contre un boss de tour. Ulti shen ne fait pas de dégâts, car Lucifer n'a pas de PV.
+- **État** : 🧪 sur la branche `geoffrey/hc-sorts` (pas en ligne)
+
 ## 01/11/2026 — Geoffrey — Administration : envoyer un joueur en prison
 - **Pour l'équipe** : `sudo node scripts/send-to-prison.js --name PSEUDO` envoie un joueur en prison, sans redémarrer le jeu. Il
   quitte son groupe et peut en sortir quand il veut. C'est refusé s'il est en session ou déjà en prison.

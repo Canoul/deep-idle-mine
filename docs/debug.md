@@ -6249,3 +6249,12 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Quoi** : `GIANT.tiers` (src/config.js), `HES_COMING.tiers` en dérive. Les pépites des paliers s'ajoutent à celles du score (`playerRewardFor`).
 - **Conséquence** : ces deux modes ne donnent plus de Treasure ni de Blueprint parts.
 - **Incident de mise en ligne** : fusion partie avec un test faux dans tests/giant-service (2 pépites attendues au lieu de 17, jeu non touché) ; corrigé juste après.
+
+## 01/11/2026 — He's coming : sorts de combat (Geoffrey) — branche `geoffrey/hc-sorts`
+- **Cause** : pas un bug, la spec du 01/11 disait « sans effet ». `castSpells` de `src/sim/hescoming/session.js` ne gérait qu'Inspiration
+  et Cri de guerre.
+- **Quoi** : `dash`, `ulti`, Cleave, Dynamite et zipette dans cette même simulation, qui n'utilise pas `src/sim/spells.js`. Déplacements
+  instantanés, comme dans les tours.
+- **Tests** : `tests/hescoming-sim.test.js`, `tests/hescoming-service.test.js`, `tests/anticheat/hescoming.test.js` ✅ ; ⚠️ pas vu dans un navigateur.
+- **Simulation** (dégâts 18, seul, 40 visites, points moyens) : sans sort 1 410, Dash 2 412, Cleave 1 526, Dynamite 1 428, Dash + Cleave + Dynamite + Cri 2 619.
+- ⚠️ **Équilibrage** : le Dash vaut +71 %, car 5 × ses dégâts toutes les 15 s, et les paliers ont été réglés sans lui. Valeur à revoir à l'usage.

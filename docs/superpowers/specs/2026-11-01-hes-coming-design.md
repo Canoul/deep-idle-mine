@@ -42,7 +42,7 @@ un bloc, on frappe Lucifer. C'est le DPS qui compte, plus la vitesse de minage. 
 
 **Autoattaque** : toutes les 5 s, chaque mineur à portée de contact de Lucifer est projeté de 4 cases vers la gauche, en arc de 2 de haut, sans dégâts. Ténacité : l'ignore. Résistance au recul : réduit la distance, comme au Bloc. Le contact est mesuré avec `COMBAT.reach` : un mineur qui tire de plus loin n'est pas touché.
 
-**Sorts et skills** : les bonus passifs de dégâts et de vitesse d'attaque comptent. Inspiration comme au Bloc, Cri de guerre pour les présents. Dynamite, Dash, Illumination et Ulti shen : sans effet. À ajuster à la simulation.
+**Sorts et skills** : les bonus passifs de dégâts et de vitesse d'attaque comptent. Inspiration comme au Bloc, Cri de guerre pour les présents. Ancien : Dynamite, Dash, Illumination et Ulti shen sans effet ; revu le 01/11/2026, voir GAME_DESIGN.md. À ajuster à la simulation.
 
 ## Conséquences d'équilibrage à surveiller
 

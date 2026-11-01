@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { HES_COMING as HC, GIANT, STATS, DT, CFG } from '../src/config.js';
 import { newLucifer, joinLucifer, tickLucifer, standX, luciferDps } from '../src/sim/hescoming/session.js';
 import { minerEffects } from '../src/sim/effects.js';
+import { SPELL } from '../src/meta/spells.js';
 
 const spec = (carac = {}) => ({ account:'A', name:'A', carac:{ ...STATS, damage:20, oxygenMax:1e6, ...carac } });
 const room = (carac, seed = 1) => { const G = newLucifer(seed), m = joinLucifer(G, spec(carac)); return { G, m }; };
@@ -177,4 +178,72 @@ test('Inspiration : tout le monde frappe plus vite', () => {
   run(G, 3);
   assert.ok(G.inspire);
   assert.ok(luciferDps(G, b) > 20 / CFG.attackInterval);
+});
+
+const withSpells = (spells, carac = {}) => { const G = newLucifer(1), m = joinLucifer(G, { ...spec(carac), spells }); return { G, m }; };
+
+test('Dash : à portée de sa place de frappe, il y fonce et frappe ; recharge réduite ; trop loin, il le garde', () => {
+  const { G, m } = withSpells(['dash']), S = SPELL.dash;
+  m.x = G.contact - S.range - 1;
+  tickLucifer(G);
+  assert.equal(m.points, 0, 'trop loin : il marche');
+  assert.ok(!m.spellCd.dash);
+  while(!m.spellCd.dash) tickLucifer(G);
+  assert.equal(m.x, G.contact);
+  assert.ok(m.points >= 20 * S.dmg);
+  assert.equal(m.spellCd.dash, G.t + S.cd * S.hitCd);
+});
+
+test('Dash : pas de Dash à une case, ni pendant le Fear', () => {
+  const { G, m } = withSpells(['dash']);
+  m.x = G.contact - 1;
+  tickLucifer(G);
+  assert.ok(!m.spellCd.dash);
+  const b = withSpells(['dash']);
+  b.m.x = b.G.contact - 3; b.m.fearUntil = 100;
+  tickLucifer(b.G);
+  assert.ok(!b.m.spellCd.dash);
+});
+
+test('Cleave et Dynamite : marquent des points à portée, pas de loin', () => {
+  for(const id of ['cleave', 'dynamite']){
+    const { G, m } = withSpells([id]);
+    m.x = G.contact;
+    tickLucifer(G);
+    assert.ok(m.points >= 20 * SPELL[id].dmg, id);
+    assert.equal(m.spellCd[id], G.t + SPELL[id].cd);
+    const far = withSpells([id], { reach:9 });
+    far.m.x = standX(far.G, far.m);
+    tickLucifer(far.G);
+    assert.ok(!far.m.spellCd[id], id + ' : hors de portée');
+  }
+});
+
+test('Bonbonne de zipette : l\'allié proche qui manque d\'oxygène, jamais lui-même', () => {
+  const G = newLucifer(1), a = joinLucifer(G, { ...spec({ oxygenMax:1000, pods:200 }), spells:['zipette'] }), b = joinLucifer(G, { ...spec({ oxygenMax:1000 }), account:'B' });
+  a.x = b.x = G.contact; a.ox = 100; b.ox = 500;
+  tickLucifer(G);
+  assert.ok(Math.abs(b.ox - (500 + 200 * SPELL.zipette.podsPct)) < 1, 'a gagné de l\'oxygène');
+  assert.ok(a.ox <= 100);
+  assert.ok(a.spellCd.zipette);
+});
+
+test('Ulti shen : rejoint un allié qui frappe, sans dégâts ; seul, il marche', () => {
+  const G = newLucifer(1), a = joinLucifer(G, { ...spec(), spells:['ulti_shen'] }), b = joinLucifer(G, { ...spec(), account:'B' });
+  b.x = G.contact; a.x = 1; b.status = `Frappe ${HC.bossName}`;
+  tickLucifer(G);
+  assert.equal(a.x, b.x);
+  assert.equal(a.points, 0);
+  assert.equal(a.spellCd.ulti_shen, G.t + SPELL.ulti_shen.cd);
+  const seul = withSpells(['ulti_shen']);
+  seul.m.x = 1;
+  tickLucifer(seul.G);
+  assert.ok(!seul.m.spellCd.ulti_shen);
+});
+
+test('sorts sans effet ici : Illumination, Fast learner, Hand of Justice ne partent pas', () => {
+  const { G, m } = withSpells(['illumination', 'fast_learner', 'hand_of_justice']);
+  m.x = G.contact;
+  run(G, 5);
+  assert.deepEqual(m.spellCd, {});
 });
