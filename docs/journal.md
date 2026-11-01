@@ -11,7 +11,7 @@ Modèle d'entrée :
 ```
 ## 01/11/2026 — Geoffrey — Raffle : 2 min pour rejoindre
 - **Pour le joueur** : on a maintenant 2 minutes pour taper `!join` au lieu de 40 secondes.
-- **État** : 🧪 sur la branche `geoffrey/raffle-2min` (pas en ligne)
+- **État** : ✅ en ligne le 01/11
 
 ## 01/11/2026 — Geoffrey — Recherche : pas de doublon immédiat
 - **Pour le joueur** : un plan sorti de la recherche ne peut pas ressortir pendant 2 min. S'il ne reste que des plans dans ce
