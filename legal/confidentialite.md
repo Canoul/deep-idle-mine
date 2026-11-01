@@ -1,6 +1,6 @@
 # Politique de confidentialité
 
-*Dernière mise à jour : \[date de mise en ligne\]*
+*Dernière mise à jour : 1er novembre 2026*
 
 Deep Mine Idle collecte le moins de données possible : pas d'adresse e-mail, pas de publicité, pas de revente de données.
 
@@ -16,10 +16,15 @@ Geoffrey Boilay, éditeur du jeu Deep Mine Idle (site deepmineidle.fr et applica
 | Compte invité (sans pseudo ni mot de passe) | Jouer sans créer de compte | Jusqu'à la suppression du compte |
 | Progression : inventaire, équipement, niveaux, compétences, historique des sessions, statistiques de jeu | Faire fonctionner le jeu, équilibrer le jeu | Jusqu'à la suppression du compte |
 | Liste d'amis, demandes d'amis, présence en ligne | Fonctions sociales | Amis : jusqu'à la suppression du compte. Présence : en mémoire, effacée au redémarrage du serveur |
-| Messages du chat global | Discussion entre joueurs, modération | Les 50 derniers messages sont gardés, les plus anciens sont effacés |
+| Messages du chat global (y compris messages privés, de groupe et de guilde) | Discussion entre joueurs, modération | Les 300 derniers messages sont gardés, 18 heures au plus |
 | Messages du chat de session | Discussion dans une partie | Jamais enregistrés, effacés à la fin de la session |
 | Classements (pseudo, records, équipe) | Classements publics | Jusqu'à la suppression du compte |
-| Adresse IP et journaux techniques du serveur | Sécurité, lutte contre les abus | \[durée à vérifier\] |
+| Date et version des conditions acceptées | Prouver votre accord | Jusqu'à la suppression du compte |
+| Fiche de modération : avertissements (avec le message d'origine), mutes, suspensions | Faire respecter les règles du jeu | Jusqu'à la suppression du compte |
+| Signalements : auteur, joueur visé, motif, commentaire, texte signalé | Sécurité des joueurs, modération | Conservés après la suppression du compte, pour la sécurité des joueurs ; le nom de l'auteur du signalement est alors retiré |
+| Journal de modération, dont la ligne « compte supprimé » (identifiant et date) | Prouver les actions de l'équipe et le traitement des demandes | Conservé après la suppression du compte |
+| Statistiques de jeu anonymisées | Équilibrer le jeu | Conservées sans aucun lien avec le compte |
+| Adresse IP et journaux techniques du serveur | Sécurité, lutte contre les abus | 6 mois au plus |
 
 Nous ne collectons ni nom réel, ni adresse e-mail, ni numéro de téléphone, ni position.
 
@@ -36,6 +41,7 @@ Ces traitements sont nécessaires pour vous fournir le jeu que vous avez choisi 
 - Serveur du jeu : OVHcloud, en France.
 - Base de données : Neon, \[région à vérifier\]. Si elle est hors de l'Union européenne, le transfert est encadré par les clauses contractuelles types de la Commission européenne.
 - Annonces : Discord (États-Unis), uniquement le pseudo et le nom de l'objet ou de l'événement.
+- Modération : un salon Discord privé, réservé à l'équipe, reçoit chaque signalement (pseudos, motif, commentaire et texte signalé).
 
 Vos données ne sont ni vendues, ni louées, ni partagées à des fins publicitaires.
 
@@ -45,7 +51,7 @@ Le jeu enregistre sur votre appareil votre jeton de connexion et vos préférenc
 
 ## Vos droits
 
-Vous pouvez à tout moment accéder à vos données, les corriger, les supprimer, vous opposer à un traitement, en demander la limitation ou en obtenir une copie. Pour supprimer votre compte et toutes ses données : \[menu du jeu où se trouve « Supprimer mon compte »\], ou écrivez à contact@deepmineidle.fr en indiquant votre identifiant de compte. Nous répondons sous un mois.
+Vous pouvez à tout moment accéder à vos données, les corriger, les supprimer, vous opposer à un traitement, en demander la limitation ou en obtenir une copie. Pour supprimer votre compte et toutes ses données : dans le jeu, Mon compte → Supprimer mon compte, ou écrivez à contact@deepmineidle.fr en indiquant votre identifiant de compte. Nous répondons sous un mois.
 
 Si vous estimez que vos droits ne sont pas respectés, vous pouvez saisir la CNIL (cnil.fr).
 

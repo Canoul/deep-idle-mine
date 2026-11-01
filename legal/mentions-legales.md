@@ -1,18 +1,10 @@
 # Mentions légales
 
-*Dernière mise à jour : \[date de mise en ligne\]*
+*Dernière mise à jour : 1er novembre 2026*
 
 ## Éditeur du site et des applications
 
-Le site deepmineidle.fr et les applications « Deep Mine Idle MMO » sont édités à titre non professionnel par une personne physique. Deux rédactions possibles, à choisir :
-
-**Option 1 — identité publique**
-
-Geoffrey Boilay, \[adresse postale\], \[téléphone\], contact@deepmineidle.fr.
-
-**Option 2 — identité confiée à l'hébergeur** (permise aux éditeurs non professionnels par l'article 6, III, 2 de la loi n° 2004-575 du 21 juin 2004)
-
-L'éditeur, personne physique non professionnelle, a choisi de préserver son anonymat. Ses coordonnées ont été communiquées à l'hébergeur ci-dessous. Contact : contact@deepmineidle.fr.
+Le site deepmineidle.fr et les applications « Deep Mine Idle MMO » sont édités à titre non professionnel par une personne physique. L'éditeur a choisi de préserver son anonymat, comme l'article 6, III, 2 de la loi n° 2004-575 du 21 juin 2004 le permet aux éditeurs non professionnels. Ses coordonnées ont été communiquées à l'hébergeur ci-dessous. Contact : contact@deepmineidle.fr.
 
 Directeur de la publication : Geoffrey Boilay.
 

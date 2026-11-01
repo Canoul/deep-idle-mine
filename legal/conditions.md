@@ -1,6 +1,6 @@
 # Conditions générales d'utilisation
 
-*Dernière mise à jour : \[date de mise en ligne\]*
+*Dernière mise à jour : 1er novembre 2026*
 
 En créant un compte ou en jouant à Deep Mine Idle (site deepmineidle.fr et applications « Deep Mine Idle MMO »), vous acceptez ces conditions.
 
@@ -49,7 +49,7 @@ Le jeu et son contenu appartiennent à leurs créateurs (voir les mentions léga
 
 ## 9. Suppression du compte
 
-Vous pouvez supprimer votre compte à tout moment depuis \[menu du jeu\]. La suppression efface votre progression et vos données personnelles, selon la politique de confidentialité.
+Vous pouvez supprimer votre compte à tout moment depuis le jeu (Mon compte → Supprimer mon compte) ou la page deepmineidle.fr/suppression-compte. La suppression efface votre progression et vos données personnelles, selon la politique de confidentialité.
 
 ## 10. Modification des conditions
 
