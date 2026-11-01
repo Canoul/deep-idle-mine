@@ -6205,6 +6205,10 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Quoi** : `sendInvite` (src/ui/guild.js) passe par `tell` (src/ui/dialog.js) au lieu de `say`, succès compris. Une invitation déjà envoyée au même joueur dit aussi « envoyée » (le service ne distingue pas ce cas).
 - **Tests** ✅ tests/guild-ui.test.js, guild-service. ⚠️ Fenêtre pas vue dans un navigateur.
 
+## 01/11/2026 — Chat de l'onglet Session retiré (Geoffrey)
+- **Quoi** : `#chatCard` (index.html), son `setupChat` (src/main.js), `gameApi.chat` et `say` (src/net/api.js). `setupChat` reste pour le chat global.
+- **Gardé** : routes `/api/game/chat` et server/game/chat.js, encore couvertes par tests/chat et game-http ; une page restée ouverte peut les appeler jusqu'à son rechargement. À retirer plus tard si on veut.
+
 ## 01/11/2026 — Armurerie et Forge de guilde : coûts (Geoffrey)
 - **Quoi** : `GUILD.buildings` armurerie, Pierre 100 000 → 500 000 ; forge, Pierre dure 100 000 → 250 000 (demande écrite « 250 0000 », lue 250 000). Dons gardés (`given`) ; un bâtiment déjà construit reste au niveau 1.
 - **Tests** ✅ tests/guild-buildings.test.js, guild-service.
