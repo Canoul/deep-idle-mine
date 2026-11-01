@@ -23,7 +23,7 @@ Modèle d'entrée :
   sessions tournent sur le serveur, seul l'affichage était bloqué.
 - **À suivre** : un nouveau test vérifie maintenant que chaque fichier chargé par le jeu est lisible par le navigateur ;
   ce genre d'erreur sera arrêté par les tests avant la mise en ligne.
-- **État** : 🧪 sur la branche `jules/fix-setclock` (pas en ligne)
+- **État** : ✅ en ligne le 01/11
 
 ## 01/11/2026 — Geoffrey — Appli mobile : notifications
 - **Pour le joueur** : rien sur le site. L'appli Android prévient, même fermée : session terminée, mine instantanée dans
