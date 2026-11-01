@@ -12,7 +12,11 @@ Modèle d'entrée :
 ## 01/11/2026 — Geoffrey — Administration : envoyer un joueur en prison
 - **Pour l'équipe** : `sudo node scripts/send-to-prison.js --name PSEUDO` envoie un joueur en prison, sans redémarrer le jeu. Il
   quitte son groupe et peut en sortir quand il veut. C'est refusé s'il est en session ou déjà en prison.
-- **État** : 🧪 sur la branche `geoffrey/admin-prison` (pas en ligne)
+- **État** : ✅ en ligne le 01/11
+
+## 01/11/2026 — Geoffrey — Bloc géant et He's coming : nouvelles récompenses de palier
+- **Pour le joueur** : les 5 paliers donnent 5 Plumes d'ange, 5 Pépites d'argent, 10 Plumes d'ange, 10 Pépites d'argent, 15 Plumes d'ange. Mêmes seuils de score, plus de Treasure ni de Blueprint parts.
+- **État** : ✅ en ligne le 01/11
 
 ## 01/11/2026 — Geoffrey — He's coming, nouveau mode de jeu
 - **Pour le joueur** : le Bloc géant version combat. On frappe Lucifer, 1 dégât = 1 point, mêmes visites et mêmes récompenses de minuit, avec des paliers × 8. Toutes les 30 s il rugit (Fear 15 s à 3 cases ou moins), toutes les 5 s il projette ceux à son contact. La ténacité résiste aux deux. Il a son propre délai et son propre score.

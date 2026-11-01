@@ -31,11 +31,11 @@ test('entrer : une fois toutes les 3 h, comptées depuis la dernière entrée', 
 test('récompense : les paliers s\'additionnent', () => {
   assert.ok(tierItemsKnown(), 'les objets des paliers existent');
   assert.deepEqual(rewardFor(999), {});
-  assert.deepEqual(rewardFor(1000), { 'Treasure T1': 1 });
-  assert.deepEqual(rewardFor(5000), { 'Treasure T1': 2, 'Blueprint parts': 15 });
-  assert.deepEqual(rewardFor(10000), { 'Treasure T1': 2, 'Blueprint parts': 15, 'Treasure T2': 1 });
-  assert.deepEqual(rewardFor(19999), { 'Treasure T1': 2, 'Blueprint parts': 45, 'Treasure T2': 2 });
-  assert.deepEqual(rewardFor(1e9), { 'Treasure T1': 2, 'Blueprint parts': 45, 'Treasure T2': 2, 'Treasure T3': 1 });
+  assert.deepEqual(rewardFor(1000), { 'Plume d\'ange': 5 });
+  assert.deepEqual(rewardFor(5000), { 'Plume d\'ange': 5, 'Pépite d\'argent': 5 });
+  assert.deepEqual(rewardFor(10000), { 'Plume d\'ange': 15, 'Pépite d\'argent': 5 });
+  assert.deepEqual(rewardFor(19999), { 'Plume d\'ange': 15, 'Pépite d\'argent': 15 });
+  assert.deepEqual(rewardFor(1e9), { 'Plume d\'ange': 30, 'Pépite d\'argent': 15 });
   assert.equal(tiersReached(15000).length, 4);
   for(const bad of [NaN, -1, Infinity * -1, undefined]) assert.deepEqual(rewardFor(bad), {});
 });
@@ -46,9 +46,9 @@ test('pépites d\'argent (27/10) : 1 par tranche de 100 de ses points, arrondi v
   assert.equal(nuggetsFor(99.99), 0); assert.equal(nuggetsFor(100), 1); assert.equal(nuggetsFor(299.5), 2); assert.equal(nuggetsFor(1234), 12);
   for(const bad of [NaN, -500, Infinity, -Infinity, undefined, '500', null]) assert.equal(nuggetsFor(bad), 0, String(bad));
   assert.deepEqual(playerRewardFor(999, 250), { [N]: 2 }, 'sous le premier palier : seulement les pépites');
-  assert.deepEqual(playerRewardFor(5000, 150), { 'Treasure T1': 2, 'Blueprint parts': 15, [N]: 1 });
+  assert.deepEqual(playerRewardFor(5000, 150), { 'Plume d\'ange': 5, [N]: 6 }, 'pépites du palier + celles du score');
   assert.deepEqual(playerRewardFor(999, 50), {});
-  assert.deepEqual(playerRewardFor(1000, 0, { ...GIANT, nugget: null }), { 'Treasure T1': 1 }, 'sans nugget en config : comme avant');
+  assert.deepEqual(playerRewardFor(1000, 0, { ...GIANT, nugget: null }), { 'Plume d\'ange': 5 }, 'sans nugget en config : comme avant');
   assert.ok(Object.hasOwn(ITEMS, N));
 });
 
