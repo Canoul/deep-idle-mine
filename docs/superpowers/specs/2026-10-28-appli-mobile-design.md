@@ -159,6 +159,8 @@ Le Lobby sur téléphone, dans cet ordre, sans défiler pour l'essentiel :
 - En dessous, de petits onglets : **Équipe · Coffre · Area · Journal** (les cartes actuelles, une à la fois ;
   le chat de session a disparu le 01/11, le chat global est dans la famille Social).
 - Les 5 écrans de jeu (mine, MI, tours, instance, Bloc géant) suivent la même mise en page.
+- **Hors session** (Geoffrey, 01/11) : la famille Session affiche l'**Historique**, avec le bilan de la dernière session
+  en premier. Le Carreau n'apparaît pas dans l'appli pour l'instant.
 - Écarté pour l'instant : mine plein écran avec tiroir (plus de travail, cache la mine).
 
 ### Notifications (validé par Jules : tout sauf le concasseur)
