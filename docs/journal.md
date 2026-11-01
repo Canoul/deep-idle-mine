@@ -13,6 +13,10 @@ Modèle d'entrée :
 - **Pour le joueur** : les paliers de He's coming donnent des Cristaux de pleine lune à la place des Plumes d'ange, mêmes quantités (5, 10, 15). Le Bloc géant garde ses Plumes.
 - **État** : 🧪 sur la branche `geoffrey/hc-cristal` (pas en ligne)
 
+## 01/11/2026 — Geoffrey — Treasure T3 : plus de Cristal de pleine lune
+- **Pour le joueur** : le Treasure T3 ne donne plus de Cristal de pleine lune (10 % de chance avant). Les autres objets gardent leurs chances. Les cristaux viennent maintenant uniquement des minotaures.
+- **État** : ✅ en ligne le 01/11
+
 ## 01/11/2026 — Geoffrey — Lobby : contour doré quand le Bloc géant ou He's coming est disponible
 - **Pour le joueur** : dans le menu du Lobby, le bouton Bloc géant et le bouton He's coming s'entourent d'or dès qu'on peut y entrer (attente de 3 h finie, salle pas pleine, pas déjà en visite). Plus besoin d'ouvrir la carte pour vérifier.
 - **État** : ✅ en ligne le 01/11

@@ -6339,6 +6339,11 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** ✅ tests/rune-mark.test.js. ⚠️ Pas vu dans un navigateur.
 - **Non touché** : la petite icône d'une rune posée sur une pièce (`runeMark`) et la liste de choix des runes (sans case, le nom est déjà coloré).
 
+## 01/11/2026 — Treasure T3 sans Cristal de pleine lune (Geoffrey) — branche `geoffrey/coffre-t3-cristal`
+- **Quoi** : famille `material` retirée de `LOOT['Treasure T3']` (`src/config.js`). Le tableau du wiki vient de la config.
+- **Tests** : `tests/steel-gear.test.js`, `tests/instance-key.test.js` (gemme à la place du cristal pour vérifier que la clé ne retire rien).
+- **Point à surveiller** : le cristal sert à l'amélioration (3 à 32 par rang) ; il ne reste que les minotaures (1 à 3 par victoire, donjon et arène).
+
 ## 01/11/2026 — Coup unique sur les boss qui se minent (Geoffrey)
 - **Quoi** : `oneTapBonus` (src/sim/one-tap.js, `ONE_TAP.every` en config), appelé par le Bloc géant (`mine`, hasard `G.rng`), les spawners (src/sim/instance/session.js) et le cristal (src/sim/instance/golbute.js), hasard `G.fightRng`. Temps gardé dans `m.tapAcc` : une interruption (recul, recharge) ne perd pas la fraction de seconde. Ne compte pas comme des coups : ni oxygène, ni recul.
 - **Effet** : espérance = vitesse × (1 + coup unique). Le tirage ne se fait qu'avec la stat : sans elle, une partie est identique.

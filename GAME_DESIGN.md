@@ -129,7 +129,9 @@ Vocabulaire : le **treasure** est l'entité enfouie dans la mine (on peut l'appe
   | Blueprint parts | 10 à 20 | 100 % |
   | **Un blueprint** parmi : Casque, Plastron, Jambes, Bottes, Pioche, Épée en acier (1 % chacun) ; Plastron de l'équilibre (0,5 %) | 1 | 6,5 % au total |
   | **Une gemme** parmi : Rubis inférieur, Jade inférieur, Saphir inférieur | 1 | 2 % chacune (6 % au total) |
-  | Cristal de pleine lune | 1 | 10 % |
+
+  Le Cristal de pleine lune n'en sort plus depuis le 01/11/2026 (ancien : 10 %) : seuls les minotaures en donnent.
+
 - **Contenu du Treasure T4** *(27/10/2026, Geoffrey ; areas 7 et 8 ; valeurs du créateur)* :
 
   | Objet | Quantité | Chance |
