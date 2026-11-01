@@ -9,6 +9,10 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 01/11/2026 — Geoffrey — Guilde : message après une invitation
+- **Pour le joueur** : inviter un joueur ouvre maintenant une petite fenêtre : « Invitation envoyée à X. », ou « Ce pseudo n'existe pas. » (ou tout autre refus du serveur).
+- **État** : 🧪 sur la branche `geoffrey/guilde-invite-msg` (pas en ligne)
+
 ## 01/11/2026 — Geoffrey — Guilde : les bâtiments
 - **Pour le joueur** : à droite de l'onglet de sa guilde, trois bâtiments avec leur texture : Armurerie (+2 % de dégâts), Trésorerie (+2 % de fortune), Forge (+2 % de vitesse de minage). Chaque membre donne des matériaux ; quand tout est réuni, le chef ou un officier lance la construction. Le bonus vaut pour tous les membres, dans tous les modes. En dessous, un journal des dons sans limite, jamais effacé.
 - **Décisions** : « Poussière magique » = Poudre de rêve. Don définitif, ramené à ce qu'il manque. Bonus dès l'arrivée dans la guilde, figé au lancement. Bâtiments et journal publics (bouton Voir dans Rechercher). Niveau 1 seul pour l'instant, les suivants s'ajoutent en config.
