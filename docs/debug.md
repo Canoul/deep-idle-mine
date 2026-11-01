@@ -6328,3 +6328,8 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   le badge doit maintenant apparaître dans l'appli.
 - **Points fragiles** : le site a maintenant un onglet Chat réservé au téléphone (`CHAT_TAB`, 31/10) et le Carreau en fond :
   à reprendre dans la navigation de l'appli (étape 2). `gh` absent de ce PC : suivre les fabrications par l'API GitHub.
+
+## 01/11/2026 — Contour des runes selon leur qualité (Geoffrey)
+- **Quoi** : `rframe(p)` (src/ui/rarity.js) pose `--rc` en style sur la case, ce qui l'emporte sur `.slot.r-…`. Seulement pour les objets `cat:'rune'` avec une qualité connue ; les pièces de stuff gardent la rareté de leur type. Utilisé dans src/ui/inventory.js, upgrade.js (`box`), obtained.js.
+- **Tests** ✅ tests/rune-mark.test.js. ⚠️ Pas vu dans un navigateur.
+- **Non touché** : la petite icône d'une rune posée sur une pièce (`runeMark`) et la liste de choix des runes (sans case, le nom est déjà coloré).
