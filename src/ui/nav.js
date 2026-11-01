@@ -20,7 +20,7 @@ export const TABS = [
   { id:'sorts',      label:'Sorts',      icon:'radiance',  ready:true  },   // sorts équipés (déclenchés tout seuls en session)
   { id:'historique', label:'Historique', icon:'hourglass', ready:true  },   // sessions passées : seed et butin
   { id:'social',     label:'Social',     icon:'group',     ready:true  },   // amis : présence, inviter, rejoindre
-  { id:'guilde',     label:'Guilde',     icon:'group',     ready:true, noBuilding:true },   // sa guilde, recherche, classement ; pas de bâtiment dans le Carreau pour l'instant
+  { id:'guilde',     label:'Guilde',     icon:'shield',    ready:true, noBuilding:true },   // sa guilde, recherche, classement ; pas de bâtiment dans le Carreau pour l'instant
 ];
 
 /* onglet Chat (31/10/2026, Geoffrey) : téléphone seulement (CHAT.dock.phone), le chat y recouvrait les autres onglets ;

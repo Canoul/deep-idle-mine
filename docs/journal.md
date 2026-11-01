@@ -9,6 +9,10 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 01/11/2026 — Geoffrey — Guilde : une icône à elle
+- **Pour le joueur** : l'onglet Guilde a maintenant un bouclier, il ne ressemble plus à Social.
+- **État** : ✅ en ligne le 01/11
+
 ## 01/11/2026 — Geoffrey — Raffle : 2 min pour rejoindre
 - **Pour le joueur** : on a maintenant 2 minutes pour taper `!join` au lieu de 40 secondes.
 - **État** : ✅ en ligne le 01/11
