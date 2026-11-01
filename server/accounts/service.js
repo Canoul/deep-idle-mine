@@ -170,6 +170,16 @@ export function createAccountService({ store, clock = Date.now, scrypt = SCRYPT,
       return { account: publicAccount(acc), old };
     },
 
+    /* Suppression demandée par le joueur : pseudo et mot de passe (mêmes limites de tentatives que la connexion), mot exact pour un invité.
+       Vérifie seulement : la suppression est dans server/accounts/erase.js. */
+    async checkDeletion(accountId, { name, password, confirm, word, ip = '' } = {}){
+      const acc = await store.getAccount(accountId);
+      if(!acc) fail('not_authenticated', 401, 'Connexion expirée.');
+      if(acc.guest){ if(confirm !== word) fail('bad_confirm', 400, `Tape ${word} pour confirmer.`); return; }
+      if(nameKey(name ?? '') !== acc.nameKey) fail('bad_credentials', 401, 'Pseudo ou mot de passe incorrect.');
+      await checkCredentials(name, ip, a => verifySecret(String(password ?? ''), a.passHash), 'bad_credentials', 'Pseudo ou mot de passe incorrect.');
+    },
+
     /* Accepter les règles (compte d'avant leur arrivée, ou conditions changées) */
     async acceptRules(accountId){
       const acc = await store.getAccount(accountId);

@@ -62,6 +62,7 @@ import { treasureMessage, identifyMessage, towerOpenMessage, blueprintMessage, d
 import { RECIPES } from '../../src/recipes.js';
 import { createLiveRunner } from './live.js';
 import { createChat } from './chat.js';
+import { DELETED_NAME } from './store.js';
 import { instantDurationMs } from '../../src/shared/instant.js';
 import { launchSnapshot, statRows } from '../admin/dashboard.js';
 
@@ -795,7 +796,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       rec = await store.getGameSession(id);
       rec.status = 'done'; rec.result = summary; rec.endedAt = clock();
       chat.drop(id);
-      await store.putGameSession(rec);
+      await store.putGameSession(rec = store.scrubSession(rec));      // joueur supprimé pendant la partie : plus aucune trace
       /* tableau de bord : une ligne par joueur présent (écrite une seule fois, même si la fin est rejouée) */
       await store.putSessionStats(statRows(rec, summary, a => hasLeft(rec, a)));
       await recordTower(rec);
@@ -881,6 +882,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
 
   /* quitter : le joueur ne recevra rien de cette session (GAME_DESIGN §6). Son mineur quitte la partie tout de suite.
      Renvoie { left, session, mode, ended } (ended : il était le dernier, la partie s'arrête pour de bon). */
+  const api_prisonStop = accountId => withLock.many(['acct:' + accountId, ...prisonLocks(accountId)], () => stopPrisonOf(accountId)).catch(() => {});
   async function leaveSession(accountId){
     return withLock('acct:' + accountId, async () => {
       const rec0 = await activeOf(accountId);
@@ -1400,6 +1402,23 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     /* administration (29/10/2026, Geoffrey) : sort un joueur de sa session en cours, comme son bouton « Quitter » (il ne
        reçoit rien de cette session ; les autres continuent ; dernier joueur : la partie s'arrête, personne ne reçoit rien) */
     adminLeave: accountId => leaveSession(accountId),
+    /* suppression d'un compte (server/accounts/erase.js) : prison arrêtée, sessions quittées (comme « Quitter », les autres continuent),
+       versements en cours attendus : après ça, plus rien n'écrit pour ce compte. Sans erreur s'il n'a rien en cours. */
+    async eraseAccount(accountId, who){
+      await api_prisonStop(accountId);
+      for(const s of (await store.sessionsOf(accountId)).filter(x => ACTIVE.includes(x.status))){
+        if(!hasLeft(s, accountId)) await leaveSession(accountId).catch(() => {});
+        await settle(s.id).catch(() => {});        // l'heure est passée : la fin qui était due, tant qu'il est encore là
+        await settling.get(s.id)?.catch(() => {});
+        chat.removeAccount(s.id, who, DELETED_NAME);
+        /* ses shrines partent avec lui : la session ne doit pas les réécrire à sa fin */
+        await withLock('sess:' + s.id, async () => {
+          const rec = await store.getGameSession(s.id);
+          if(rec?.steleOwner === accountId){ delete rec.steleOwner; await store.putGameSession(rec); }
+        });
+      }
+      seen.delete(accountId); seenWritten.delete(accountId); energyCache.delete(accountId);
+    },
 
     /* administration (01/11/2026, Geoffrey) : change la vitesse de la session du joueur, donc de tout son groupe. Le temps déjà
        écoulé et le temps restant sont remis à l'échelle : la partie reste au même tick et finit normalement, butin compris.

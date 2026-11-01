@@ -7,17 +7,21 @@
      askMenu(text, [{ id, label, danger }]) → promesse de l'id choisi, ou null si annulé (01/11/2026)
      askForm({ text, ok, choices:[{ id, label }], noteLabel, noteMax }) → promesse de { choice, note }, ou null si annulé : un choix
        obligatoire et une note facultative (01/11/2026)
+     askFields(text, [{ name, label, type }], { ok, danger }) → promesse de { nom: valeur }, ou null si annulé (01/11/2026)
    ask accepte aussi links:[{ href, label }] : des liens ouverts à part, sous le texte. */
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
 
 /* contenu de la fenêtre (logique pure, testée) ; kind : 'ask' | 'tell' | 'text' */
-export function dialogHtml({ kind, text, ok = 'OK', cancel = 'Annuler', danger = false, value = '', maxLength = 200, readOnly = false, links = [], actions = [], choices = [], noteLabel = '', noteMax = 200 }){
+export function dialogHtml({ kind, text, ok = 'OK', cancel = 'Annuler', danger = false, value = '', maxLength = 200, readOnly = false, links = [], actions = [], choices = [], noteLabel = '', noteMax = 200, fields = [] }){
   const input = kind === 'text'
     ? `<input class="dlgInput" value="${esc(value)}" maxlength="${maxLength}"${readOnly ? ' readonly' : ''} autocomplete="off" spellcheck="false">` : '';
-  const no = kind === 'ask' || kind === 'menu' || kind === 'form' || (kind === 'text' && !readOnly) ? `<button data-dlg="no">${esc(cancel)}</button>` : '';
+  const no = kind === 'ask' || kind === 'menu' || kind === 'form' || kind === 'fields' || (kind === 'text' && !readOnly) ? `<button data-dlg="no">${esc(cancel)}</button>` : '';
   const head = `<div class="box" role="dialog" aria-modal="true"><p class="dlgText">${esc(text).split('\n').join('<br>')}</p>`;
   if(kind === 'menu')
     return head + `<p class="dlgBtns dlgMenu">${actions.map(a => `<button${a.danger ? ' class="danger"' : ''} data-dlg-act="${esc(a.id)}">${esc(a.label)}</button>`).join('')}${no}</p></div>`;
+  if(kind === 'fields')
+    return head + fields.map(f => `<label class="dlgNote"><span>${esc(f.label)}</span><input class="dlgInput" data-field="${esc(f.name)}" type="${esc(f.type ?? 'text')}" autocomplete="off" spellcheck="false" autocapitalize="off"></label>`).join('')+
+      `<p class="dlgBtns">${no}<button class="${danger ? 'danger' : 'on'}" data-dlg="yes">${esc(ok)}</button></p></div>`;
   if(kind === 'form')
     return head + `<div class="dlgChoices">${choices.map(c => `<label class="chk"><input type="radio" name="dlgChoice" value="${esc(c.id)}"> ${esc(c.label)}</label>`).join('')}</div>`+
       `<label class="dlgNote"><span>${esc(noteLabel)}</span><textarea class="dlgInput" rows="3" maxlength="${noteMax}"></textarea></label>`+
@@ -38,7 +42,9 @@ function open(opts){
     const done = (yes, act = null) => {
       removeEventListener('keydown', onKey, true);
       const v = input ? input.value : '', choice = picked();
+      const values = Object.fromEntries([...root.querySelectorAll('[data-field]')].map(el => [el.dataset.field, el.value]));
       root.hidden = true; root.innerHTML = '';
+      if(opts.kind === 'fields') return resolve(yes ? values : null);
       if(opts.kind === 'menu') return resolve(act);
       if(opts.kind === 'form') return resolve(yes && choice ? { choice, note: v.trim() } : null);
       resolve(opts.kind === 'text' ? (yes || opts.readOnly ? v : null) : opts.kind === 'tell' ? undefined : yes);
@@ -68,4 +74,5 @@ export const ask = (text, o = {}) => open({ ...o, kind:'ask', text });
 export const tell = text => open({ kind:'tell', text });
 export const askText = (text, value = '', o = {}) => open({ ...o, kind:'text', text, value });
 export const askMenu = (text, actions) => open({ kind:'menu', text, actions });
+export const askFields = (text, fields, o = {}) => open({ ...o, kind:'fields', text, fields });
 export const askForm = o => open({ ...o, kind:'form' });

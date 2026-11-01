@@ -52,6 +52,21 @@ export function createChat({ clock = Date.now, gapMs = CHAT.gapMs, ttlMs = CHAT.
       return m;
     },
     removed: roomId => rooms.get(roomId)?.removed ?? [],
+    /* compte supprimé (01/11/2026) : ses messages et les MP qu'il a reçus partent ; il sort des lecteurs des autres ; son pseudo sort des
+       annonces du jeu. who : { id, names } ; replace : son remplaçant dans ces textes */
+    removeAccount(roomId, who, replace){
+      const r = rooms.get(roomId);
+      if(!r) return;
+      const gone = r.msgs.filter(m => m.account === who.id || (m.channel === 'mp' && m.to?.includes(who.id))).map(m => m.id);
+      r.msgs = r.msgs.filter(m => !gone.includes(m.id)).map(m => {
+        const n = { ...m };
+        if(n.to) n.to = n.to.filter(a => a !== who.id);
+        if(n.winner === who.id) delete n.winner;
+        if(n.system) for(const name of who.names) n.text = n.text.replaceAll(name, replace);
+        return n;
+      });
+      r.removed = [...(r.removed ?? []), ...gone].slice(-keep * 2);
+    },
     /* message du jeu (Raffle, 31/10/2026) : public, sans cadence ni modération ; extra : { winner } pour le gagnant */
     system(roomId, name, text, channel, extra = {}){
       const now = clock();

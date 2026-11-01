@@ -9,6 +9,13 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 01/11/2026 — Geoffrey — Supprimer son compte (Google Play, App Store)
+- **Pour le joueur** : dans « Mon compte », un bouton **Supprimer mon compte**, dans une zone rouge à part. Le jeu dit ce qui sera perdu, puis demande le pseudo et le mot de passe (ou le mot SUPPRIMER pour un invité). Une page publique https://deepmineidle.fr/suppression-compte explique tout, et donne l'adresse contact@deepmineidle.fr pour qui n'a plus accès au jeu.
+- **Pour l'équipe** : `scripts/delete-account.js` traite les demandes reçues par mail. Le compte et ses données partent d'un coup. Dans les records et l'historique des coéquipiers, son pseudo devient « Joueur supprimé » ; les statistiques du tableau de bord restent, sous un compte anonyme.
+- **Décisions** : on garde les signalements qui le visent et une ligne de journal, rien d'autre. Le script ne supprime qu'avec `--yes`. Une session encore en cours avec d'autres joueurs est nettoyée à sa fin.
+- **À suivre** : cette branche contient la modération, pas encore en ligne (les deux partiront ensemble) ; créer l'adresse contact@deepmineidle.fr ; relire la politique de confidentialité (liste dans `docs/comptes.md`).
+- **État** : 🧪 sur la branche `geoffrey/suppression-compte` (pas en ligne)
+
 ## 01/11/2026 — Geoffrey — Guilde : inviter un membre dans son lobby, voir ce qu'il fait
 - **Pour le joueur** : dans l'onglet de sa guilde, chaque membre a un bouton **Inviter** (dans son lobby, même sans être amis), et on voit ce qu'il fait comme dans Social : en ligne, dans le lobby, en session avec le temps restant, en prison, hors ligne.
 - **État** : ✅ en ligne le 01/11

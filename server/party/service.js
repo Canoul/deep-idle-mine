@@ -751,6 +751,18 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
     groupOf: accountId => { const p = partyOf(accountId); return p ? { code: p.code, size: p.members.length, max: GAME.maxPlayers, locked: !!p.locked } : null; },
     invitesOf: accountId => invitesFor(accountId).map(q => ({ code: q.code, from: q.invites.get(accountId).from, at: q.invites.get(accountId).at,
                                                               members: q.members.map(m => m.name), full: q.members.length >= GAME.maxPlayers })),
+    /* compte supprimé : il sort de son groupe (le suivant devient chef), de la recherche, de toutes les invitations */
+    async eraseAccount(id, who){
+      const p = partyOf(id);
+      if(p) removeMember(p, id);
+      queue.delete(id); found.delete(id); alwaysOn.delete(id);
+      for(const [k, e] of queue) if(e.members?.includes(id)) queue.delete(k);
+      for(const q of parties.values()){
+        q.invites.delete(id);
+        for(const [to, inv] of q.invites) if(inv.fromId === id || who.names.includes(inv.from)) q.invites.delete(to);
+      }
+      await save();
+    },
     /* invitations envoyées à ce joueur par celui qu'il vient de bloquer (server/social/service.js) */
     dropInvites(to, from){ for(const p of parties.values()) if(p.invites.get(to)?.fromId === from) p.invites.delete(to); },
     /* pour les tests et le journal */

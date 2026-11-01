@@ -40,6 +40,7 @@ export const accountApi = {
   guest:    ()                       => request('POST', '/api/account/guest', { acceptRules: true }),    // la case du formulaire est cochée
   register: (name, password)         => request('POST', '/api/account/register', { name, password, acceptRules: true }),
   acceptRules: ()                    => request('POST', '/api/account/rules', { accept: true }),
+  deleteAccount: body                => request('POST', '/api/account/delete', body),   // { name, password } ou { confirm } (invité)
   login:    (name, password)         => request('POST', '/api/account/login', { name, password }),
   logout:   ()                       => request('POST', '/api/account/logout', {}),
   claim:    (name, password)         => request('POST', '/api/account/claim', { name, password }),

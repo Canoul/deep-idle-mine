@@ -35,6 +35,7 @@ import { createLimiter } from '../accounts/ratelimit.js';
 import { SOCIAL_SERVER } from '../config.js';
 import { isBoard, specTree, rankBoard } from '../../src/meta/leaderboard.js';
 import { LEADERBOARD, CHAT, MODERATION } from '../../src/config.js';
+import { DELETED_NAME } from '../game/store.js';
 import { LOBBY_TAG } from '../../src/shared/chat.js';
 import crypto from 'node:crypto';
 import { createChat } from '../game/chat.js';
@@ -423,6 +424,15 @@ export function createSocialService({ store, accounts, party, game, clock = Date
   api.raffleTick = () => raffle.tick();   // boucle du serveur (server/main.js) : pas un signe de vie
   /* blocage, pour le jeu, les groupes et le Carreau : pas un signe de vie */
   api.blockedOf = blockedSet;
+  /* suppression d'un compte (server/accounts/erase.js) : présence, raffle, messages ; ses amis et blocages partent avec le stockage */
+  api.eraseAccount = async (id, who) => {
+    seen.delete(id); lastSeen.delete(id); energies.delete(id);
+    await raffle.eraseAccount(id);
+    await chatReady();
+    chat.removeAccount(GLOBAL, who, DELETED_NAME);
+    await saveChat();
+  };
+  api.exclusive = serial;      // une écriture à la fois, avec les demandes d'ami
   api.isBlocked = async (id, by) => (await blockedSet(by)).has(id);
   /* administration (server/admin/routes.js) */
   api.adminRecentChat = async ({ account = null, limit = 50 } = {}) => { await chatReady(); return chat.since(GLOBAL, 0).filter(m => !m.system && (!account || m.account === account)).slice(-limit); };

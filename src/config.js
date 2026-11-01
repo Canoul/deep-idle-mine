@@ -1992,6 +1992,8 @@ export const MODERATION = { warnings: 3, banMs: 24 * 3600e3, joinMessages: 3, jo
   muteHoursMax: 8760, banDaysMax: 3650,   // bornes des outils admin (scripts/mute.js, scripts/ban.js)
   reasons: [{ id:'harassment', label:'Insulte ou harcèlement' }, { id:'hate', label:'Contenu haineux' }, { id:'sexual', label:'Contenu sexuel' },
             { id:'spam', label:'Spam' }, { id:'name', label:'Pseudo inapproprié' }, { id:'cheat', label:'Triche' }, { id:'other', label:'Autre' }] };
+/* mot à taper pour supprimer un compte invité (pas de mot de passe à redemander) */
+export const ACCOUNT_DELETE_WORD = 'SUPPRIMER';
 /* Règles acceptées par le joueur (01/11/2026) : augmenter version redemande l'accord de tout le monde au prochain message de chat */
 export const RULES = { version: 1, terms: 'https://deepmineidle.fr/conditions', privacy: 'https://deepmineidle.fr/confidentialite' };
 

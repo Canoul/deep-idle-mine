@@ -25,6 +25,7 @@ import { createTownService } from './town/service.js';
 import { createDiscordAnnouncer } from './social/discord.js';
 import { createModerationService } from './moderation/service.js';
 import { createReportService } from './moderation/reports.js';
+import { createAccountEraser } from './accounts/erase.js';
 
 const port = +(process.argv[2] || SERVER.port);
 /* stockage : PostgreSQL si DATABASE_URL est défini (en ligne), sinon fichiers dans data/ (en local) */
@@ -58,7 +59,9 @@ const giant = createGiantService({ store: gameStore, game, dev: GAME_SERVER.dev 
 const hescoming = createGiantService({ store: gameStore, game, dev: GAME_SERVER.dev, config: HES_COMING, sim: luciferSim, key: 'Hc', mode: 'hescoming', place: HES_COMING.bossName });
 /* le Carreau : la ville du spawn (joueurs en ligne hors session, leur place, bulles du chat global) */
 const town = createTownService({ accounts: store, game, party, recentChat: ms => social.recentChat(ms), blockedOf: id => social.blockedOf(id), guildNameOf: id => guild.nameOf(id) });
-const server = http.createServer(createApp({ store, service, game, party, instant, social, guild, giant, hescoming, town, moderation, reports, root: ROOT }));
+/* suppression d'un compte (01/11) : Mon compte et scripts/delete-account.js */
+const eraser = createAccountEraser({ accounts: store, gameStore, game, party, instant, social, guild, giants: [giant, hescoming], town });
+const server = http.createServer(createApp({ store, service, game, party, instant, social, guild, giant, hescoming, town, moderation, reports, eraser, root: ROOT }));
 
 /* sessions de jeu : le serveur les fait tourner en direct (reprises au démarrage), puis les fait avancer en continu ;
    chacune se termine et se partage d'elle-même au dernier tick, joueurs présents ou non */

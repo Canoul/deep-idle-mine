@@ -4,10 +4,10 @@
 import { ADMIN_VIEW } from '../config.js';
 import { renderPrisonDashboard } from '../meta/prison-dashboard.js';
 const isTeam = a => !!a && !a.guest && ADMIN_VIEW.names.some(n => n.toLowerCase() === String(a.name ?? a.displayName ?? '').toLowerCase());
-import { ACCOUNT, RULES } from '../config.js';
+import { ACCOUNT, RULES, ACCOUNT_DELETE_WORD } from '../config.js';
 import { checkName, checkPassword, parseRecoveryCode } from '../shared/account.js';
 import { accountApi, ApiError, OfflineError } from '../net/api.js';
-import { tell } from './dialog.js';
+import { ask, askFields, tell } from './dialog.js';
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
 
@@ -46,6 +46,12 @@ const newPassFields = () =>
 const rulesCheck = () => `<label class="chk rulesChk"><input type="checkbox" name="acceptRules" data-rules> <span>J'accepte les
   <a href="${RULES.terms}" target="_blank" rel="noopener">conditions d'utilisation</a> et la
   <a href="${RULES.privacy}" target="_blank" rel="noopener">politique de confidentialité</a></span></label>`;
+
+/* supprimer son compte (01/11/2026) : textes et champs de la fenêtre ; le serveur revérifie tout */
+export const deleteWarning = account => `Supprimer ton compte ?\nTu perdras pour toujours ta progression, ton inventaire, ton stuff, tes amis et tes records. Cette action est irréversible.${account.guest ? '' : '\nTes messages du chat seront effacés.'}`;
+export const deleteFields = account => account.guest ? [{ name: 'confirm', label: `Tape ${ACCOUNT_DELETE_WORD}` }]
+  : [{ name: 'name', label: 'Ton pseudo' }, { name: 'password', label: 'Ton mot de passe', type: 'password' }];
+export const profileDanger = () => `<div class="dangerZone"><button class="danger" data-act="deleteAccount">Supprimer mon compte</button></div>`;
 
 /* options du joueur dans « Mon compte » : une case à cocher par option (rien s'il n'y en a pas) */
 export const optionsHtml = (options = []) => options.length ? `<h4>Options</h4>` + options.map(o =>
@@ -111,7 +117,8 @@ const VIEWS = {
       <div class="acts"><button data-go="password">Changer de mot de passe</button></div>`}
     ${isTeam(account) ? `<div class="acts"><button data-act="prisonDash" title="Rendement de la prison de chaque joueur contre ses 10 dernières mines (compte de l'équipe)">📊 Rendement de la prison</button></div>` : ''}
     ${optionsHtml(options)}
-    <div class="acts end"><button data-act="logout">Se déconnecter</button><button data-act="close">Fermer</button></div>`,
+    <div class="acts end"><button data-act="logout">Se déconnecter</button><button data-act="close">Fermer</button></div>
+    ${profileDanger()}`,
 
   claim: () => `
     <h3>Sécuriser mon compte</h3>
@@ -222,6 +229,16 @@ export function createAccountUI(root, state, handlers = {}){
         const html = renderPrisonDashboard((await r.json()).rows || []);
         if(w){ w.document.open(); w.document.write(html); w.document.close(); }
       } catch(e){ w?.close(); tell('Tableau de bord indisponible : ' + e.message); }
+      return;
+    }
+    if(name === 'deleteAccount'){
+      if(!await ask(deleteWarning(state.account), { ok: 'Continuer', danger: true })) return;
+      const v = await askFields('Confirme la suppression de ton compte.', deleteFields(state.account), { ok: 'Supprimer définitivement', danger: true });
+      if(!v) return;
+      try { await accountApi.deleteAccount(v); }
+      catch(e){ return tell(e instanceof ApiError ? e.message : 'Serveur injoignable. Réessaie dans un instant.'); }
+      await tell('Ton compte a été supprimé.');
+      location.reload();     // écran d'accueil : rien du compte ne reste en mémoire
       return;
     }
     if(name === 'logout'){

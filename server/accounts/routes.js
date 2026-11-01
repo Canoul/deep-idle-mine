@@ -1,6 +1,7 @@
 /* Routes HTTP des comptes (/api/account/…). Chaque route reçoit un contexte préparé par server/app.js :
    body (JSON lu), ip, me (compte connecté ou null), login(résultat) pour poser le cookie, logout(). */
 import { publicAccount } from './service.js';
+import { ACCOUNT_DELETE_WORD } from '../../src/config.js';
 
 const needMe = ctx => { if(!ctx.me) throw Object.assign(new Error('Tu n\'es pas connecté.'), { status: 401, code: 'not_authenticated' }); };
 const str = v => typeof v === 'string' ? v : undefined;
@@ -9,7 +10,7 @@ const rulesRequired = () => Object.assign(new Error("Accepte les conditions d'ut
 const needRules = ctx => { if(ctx.body.acceptRules !== true) throw rulesRequired(); };
 
 /* suspendedText(id) : texte du refus si ce compte est suspendu (scripts/ban.js), sinon null */
-export function accountRoutes(service, { onRename = () => {}, suspendedText = async () => null } = {}){
+export function accountRoutes(service, { onRename = () => {}, suspendedText = async () => null, eraser = null } = {}){
   /* compte suspendu : on ne lui ouvre pas de connexion */
   async function refuseSuspended(r){
     const text = await suspendedText(r.account.id);
@@ -48,6 +49,16 @@ export function accountRoutes(service, { onRename = () => {}, suspendedText = as
       needMe(ctx);
       const r = await service.claim(ctx.me.id, { name: str(ctx.body.name), password: str(ctx.body.password) });
       ctx.login(r); return { account: r.account, recoveryCode: r.recoveryCode };
+    },
+
+    /* supprimer son compte : { name, password }, ou { confirm: 'SUPPRIMER' } pour un invité. Marche aussi banni ou suspendu. */
+    'POST /api/account/delete': async ctx => {
+      needMe(ctx);
+      if(!eraser) throw Object.assign(new Error('Suppression indisponible sur ce serveur.'), { status: 503, code: 'no_eraser' });
+      await service.checkDeletion(ctx.me.id, { name: str(ctx.body.name), password: str(ctx.body.password), confirm: ctx.body.confirm, word: ACCOUNT_DELETE_WORD, ip: ctx.ip });
+      await eraser.deleteAccount(ctx.me.id, { by: 'joueur' });
+      await ctx.logout();
+      return { deleted: true };
     },
 
     /* accepter les règles (compte existant, conditions changées) : { accept: true } */

@@ -113,6 +113,11 @@ export function createTownService({ accounts, game, party = null, recentChat = a
       emotes.set(me.id, { id: e.id, at: now });
       return { emote: e.id };
     },
+    /* compte supprimé : il quitte la ville ; la statue est relue */
+    eraseAccount(id){
+      here.delete(id); faces.delete(id); emotes.delete(id); busy.ids.delete(id);
+      if(statue.value?.id === id) statue = { value: null, at: -Infinity };
+    },
     /* nombre de joueurs dans la ville (débogage, tests) */
     count: () => here.size,
   };

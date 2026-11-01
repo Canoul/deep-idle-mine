@@ -11,6 +11,7 @@
    POST /api/admin/ban {"name":"crousti","days":7,"reason":"…"} : compte suspendu, sans days = définitif ; {"off":true} : levé (scripts/ban.js).
    POST /api/admin/rename {"name":"crousti","to":"Nouveau"} : force un pseudo (scripts/rename.js).
    POST /api/admin/mod-log {"limit":50} : journal de ces actions (scripts/reports.js --log).
+   POST /api/admin/delete-account {"name":"crousti"} : dit quel compte serait supprimé ; avec "confirm":true, le supprime (scripts/delete-account.js).
    POST /api/admin/take {"name":"crousti","item":"Glyphe Ruée","qty":1} : retire un objet (inventaire, ou glyphe posé) (scripts/take-item.js).
    POST /api/admin/judgment {"side":"demon","count":175} : règle une jauge du Jugement (scripts/set-judgment.js).
    POST /api/admin/stats {} : lignes du tableau de bord (scripts/dashboard.js).
@@ -58,7 +59,7 @@ export function adminAllowed(req, token){
 
 /* accounts : le stockage des comptes (findAccountByName) ; game : le service de jeu (adminGive, adminTake, adminJudgment) ;
    party : le service des groupes (adminMove, adminReady), facultatif ; social : raffle, facultatif */
-export function adminRoutes({ accounts, service = null, game, party = null, moderation = null, social = null, reports = null, token }){
+export function adminRoutes({ accounts, service = null, game, party = null, moderation = null, social = null, reports = null, eraser = null, token }){
   const guard = ctx => { if(!adminAllowed(ctx.req, token)) throw hidden(); };
   /* compte désigné par son pseudo (champ `field` du corps) */
   const byName = async (ctx, field = 'name') => {
@@ -144,6 +145,16 @@ export function adminRoutes({ accounts, service = null, game, party = null, mode
       await party?.rename?.(acc.id, r.account.name);
       await journal(ctx, 'rename', r.old, `→ ${r.account.name}`);
       return { old: r.old, name: r.account.name };
+    },
+    /* demande de suppression reçue par mail : la même fonction que le bouton du jeu (server/accounts/erase.js) */
+    'POST /api/admin/delete-account': async ctx => {
+      guard(ctx);
+      if(!eraser) throw new HttpError(503, 'no_eraser', 'Suppression indisponible sur ce serveur.');
+      const acc = await byNameOrId(ctx), who = { account: label(acc), id: formatAccountId(acc.id), guest: !!acc.guest };
+      if(ctx.body?.confirm !== true) return { ...who, deleted: false };
+      await eraser.deleteAccount(acc.id, { by: adminName(ctx) });
+      console.log(`Admin (${adminName(ctx)}) : compte ${who.id} supprimé`);
+      return { ...who, deleted: true };
     },
     'POST /api/admin/mod-log': async ctx => {
       guard(ctx); noMod();
