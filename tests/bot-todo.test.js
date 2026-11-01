@@ -85,6 +85,7 @@ test('/todo pseudo : liste vide, liste avec ID, longue liste découpée', () => 
 
 test('help explique toutes les commandes', () => {
   for(const c of ['/todo joe', '/todo djulo', '/todo done 2483', '/todo done joe all', '/todo help']) assert.ok(HELP.includes(c), c);
+  assert.match(HELP, /efface son message de #report/);
 });
 
 test('base JSON : absente = vide, gardée après écriture, illisible = erreur (rien n\'est effacé)', () => {
