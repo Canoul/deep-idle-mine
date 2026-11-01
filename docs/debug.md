@@ -6336,3 +6336,8 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Points fragiles** : `sync()` tourne toutes les secondes (aucun événement commun aux modes de jeu). Onglet Chat :
   `POST /api/town` répond 400, probablement parce que `chat` n'est pas un bâtiment ; déjà vrai sur le site côté téléphone,
   sans effet. Guide « Premiers pas » : il couvre l'écran sur téléphone.
+- **Relecture indépendante** : ✅ 5 points de risque validés, 3 corrections : `dropApp` si la couche ne se charge pas (la barre du
+  site revient), Carreau vraiment coupé dans l'appli (ni dessin ni `POST /api/town`, option de Mon compte masquée), colonnes de
+  session mesurées contre `#appBar` (`dockEl`). Restent : ⚠️ orbes oxygène / pods cachés avec `#nav` jusqu'au plan de la
+  session ; JSON corrompu dans `deepIdleMine.appFamilyTab` ; `startApp` sans test de câblage ; bouton Session vers l'Historique
+  si c'était le dernier sous-onglet, même en pleine partie lancée ailleurs.

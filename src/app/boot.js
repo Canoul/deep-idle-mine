@@ -6,6 +6,9 @@
    Le badge ne reste que si le pont natif est bloqué : sans lui, pas de notifications. */
 import { nativeStatus, isAppMode } from './mode.js';
 
+/* la couche appli n'a pas pu se charger (réseau, serveur qui redémarre) : la barre du site revient, le jeu reste jouable */
+export const dropApp = doc => doc.body.classList.remove('app');
+
 export function bootApp({ doc, win }){
   const status = nativeStatus(win), app = isAppMode({ status, search: win.location.search });
   if(!app) return { status, app };

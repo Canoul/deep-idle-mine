@@ -3,6 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { barHtml, subHtml } from '../src/app/bar.js';
 import { phoneMode } from '../src/ui/nav.js';
+import { dockEl } from '../src/ui/fit.js';
 
 test('barre : 5 boutons, famille active, pastille', () => {
   const h = barHtml({ active:'sac', marks:new Set(['social']) });
@@ -29,4 +30,10 @@ test('Chat s\'ouvre dans l\'appli sur un grand écran', () => {
   const body = { classList:{ contains: c => c === 'app' } };
   assert.equal(phoneMode({ matches:false }, body), true);
   assert.equal(phoneMode({ matches:false }, { classList:{ contains: () => false } }), false);
+});
+
+test('colonnes de session : mesurées contre la barre de l\'appli si elle existe, sinon celle du site', () => {
+  const bar = {}, nav = {};
+  assert.equal(dockEl(id => ({ appBar:bar, nav })[id]), bar);
+  assert.equal(dockEl(id => ({ appBar:null, nav })[id]), nav);
 });

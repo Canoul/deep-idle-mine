@@ -4,6 +4,9 @@
 
 /* Colonne de la session : elle descend jusqu'en bas de l'écran quand la barre d'action (centrée, plus ou moins large
    selon l'écran) ne passe pas sous elle ; sinon elle s'arrête au-dessus (marge du CSS). */
+/* barre du bas : celle de l'appli mobile si elle existe (celle du site y est cachée, donc sans taille) */
+export const dockEl = $ => $('appBar') ?? $('nav');
+
 export function clearDock(col, dock){
   if(!col || !dock) return;
   const a = col.getBoundingClientRect(), d = dock.getBoundingClientRect();

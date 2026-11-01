@@ -2,7 +2,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { nativeStatus, isAppMode } from '../src/app/mode.js';
-import { bootApp } from '../src/app/boot.js';
+import { readFileSync } from 'node:fs';
+import { bootApp, dropApp } from '../src/app/boot.js';
 
 /* faux document : note les classes posées et les éléments ajoutés */
 function fakeDoc(){
@@ -73,4 +74,15 @@ test('appli : pont bloqué → badge « APPLI ⚠ pont bloqué »', () => {
   const doc = fakeDoc();
   assert.deepEqual(bootApp({ doc, win: { ...web(''), ...ourWebView, androidBridge: {} } }), { status: 'blocked', app: true });
   assert.equal(doc.added[0].textContent, 'APPLI ⚠ pont bloqué');
+});
+
+test('appli : couche impossible à charger → retour à l’interface du site', () => {
+  const removed = [];
+  dropApp({ body: { classList: { remove: c => removed.push(c) } } });
+  assert.deepEqual(removed, ['app']);
+});
+
+test('appli : le Carreau ne tourne pas dans l’appli (ni dessin ni appels au serveur)', () => {
+  const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  assert.match(main, /town\.frame\(dtr, \{ show: !appBoot\.app &&/);
 });
