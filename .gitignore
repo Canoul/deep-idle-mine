@@ -20,3 +20,11 @@ mobile/www/
 *.pem
 keystore.properties
 upload-key*.txt
+# appli iPhone : clé d'API et fichiers de signature (dépôt public : JAMAIS dans git)
+*.p8
+*.key
+*.cer
+*.certSigningRequest
+*.mobileprovision
+*.ipa
+*.xcarchive

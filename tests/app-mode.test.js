@@ -1,7 +1,7 @@
 /* Couche appli (src/app/) : détection de l'appli (pont natif ou ?app), et rien du tout sur le site. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { nativeStatus, isAppMode } from '../src/app/mode.js';
+import { nativeStatus, isAppMode, APP_UA } from '../src/app/mode.js';
 import { readFileSync } from 'node:fs';
 import { bootApp, dropApp } from '../src/app/boot.js';
 
@@ -104,4 +104,10 @@ test("appli : hors session, l'horloge se cale sur l'heure du serveur reçue avec
   assert.match(main, /const syncClock = /);
   assert.match(main, /syncClock\(st\.furnaces\?\.now\)/);
   assert.match(main, /syncClock\(r\.furnaces\?\.now\)/);
+});
+
+test('iPhone : pont bloqué dans notre appli (canal natif de WebKit), rien dans une autre appli', () => {
+  const channel = { webkit: { messageHandlers: { bridge: {} } } };
+  assert.equal(nativeStatus({ ...channel, navigator: { userAgent: 'iPhone ' + APP_UA } }), 'blocked');
+  assert.equal(nativeStatus({ ...channel, navigator: { userAgent: 'iPhone' } }), 'web');
 });
