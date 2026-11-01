@@ -129,7 +129,9 @@ Vocabulaire : le **treasure** est l'entité enfouie dans la mine (on peut l'appe
   | Blueprint parts | 10 à 20 | 100 % |
   | **Un blueprint** parmi : Casque, Plastron, Jambes, Bottes, Pioche, Épée en acier (1 % chacun) ; Plastron de l'équilibre (0,5 %) | 1 | 6,5 % au total |
   | **Une gemme** parmi : Rubis inférieur, Jade inférieur, Saphir inférieur | 1 | 2 % chacune (6 % au total) |
-  | Cristal de pleine lune | 1 | 10 % |
+
+  Le Cristal de pleine lune n'en sort plus depuis le 01/11/2026 (ancien : 10 %) : seuls les minotaures en donnent.
+
 - **Contenu du Treasure T4** *(27/10/2026, Geoffrey ; areas 7 et 8 ; valeurs du créateur)* :
 
   | Objet | Quantité | Chance |
@@ -242,7 +244,7 @@ Pendant la session, un panneau **Focus area** de l'onglet Session permet de choi
 | Vitesse de minage % | Bonus en % : **vitesse de minage = (base + bonus fixes) × (1 + bonus en %)**. Différente de la vitesse de minage « fixe » (+0,1 de la pioche) |
 | Dégâts % | Même calcul pour les dégâts : (base ou épée + bonus fixes) × (1 + bonus en %) |
 | Critique | Chance qu'un coup contre un mob fasse **le double** de dégâts |
-| Coup unique | Chance de casser un bloc **instantanément** |
+| Coup unique | Chance de casser un bloc **instantanément**. Sur ce qui se mine sans se casser d'un coup (Bloc géant, spawners, cristal du Golbute) : **à chaque seconde de minage**, chance d'ajouter au compteur une seconde de minage en plus (1,5 de vitesse = 1,5 de plus), sans oxygène ni recul en plus *(01/11/2026, Geoffrey ; `ONE_TAP`)* |
 | Perçage | Chance de casser aussi **le bloc juste derrière** celui miné (dans la direction du coup) ; il rapporte son butin comme un bloc miné (fortune, shiny, déblocage), jamais une barrière, un mur de donjon ni un mimic, jamais en chaîne |
 | Butin des mobs | **Chance, en %, d'un butin en plus** à chaque mob tué (pas un multiplicateur, 22/10/2026) : 9 % = 9 % de chance d'avoir 1 de plus ; au-delà de 100 %, la partie entière est sûre (150 % = +1, et 50 % de chance de +2). S'ajoute au skill Pillage ; l'onglet Stats montre le total. Le butin en plus **ne pèse rien dans les pods** *(30/10/2026)* |
 
@@ -1101,7 +1103,7 @@ Un effort commun à **tout le serveur**, par petites visites : on frappe ensembl
 - **Entrer** : **seul**, depuis la carte du Bloc géant du Lobby (pas de groupe ni de Lancer), **une fois toutes les 3 h**, comptées **depuis sa dernière entrée**. **Possible pendant une session** (mine, MI, tour), **et une session peut se lancer pendant une visite** (le chef lance le groupe, la MI ouvre à l'heure) *(27/10/2026, Geoffrey ; avant : l'un ou l'autre, « Entrer » grisé en session)* : la session et la visite tournent chacune de leur côté. L'onglet Session montre alors l'une ou l'autre, avec une barre « ⛏ Ma session / 🌈 Bloc géant » pour passer de l'une à l'autre (ce qui vient de commencer passe devant). **30 mineurs** au plus en même temps *(valeur de config)* ; plein, on réessaie plus tard sans perdre son entrée.
 - **La salle** : 15 × 7 cases d'air (avant 10 × 7) ; le **bloc géant** (5 × 5, minerai de toutes les couleurs, il pulse) en bas à droite ; spawn en bas à gauche ; une **fontaine à oxygène** près du spawn ; une **grosse torche** qui éclaire tout. Tout le monde voit les autres mineurs présents.
 - **Une visite** : **3 min de jeu** (1 min 30 réelle à ×2). Le mineur marche au bloc et le frappe **par la gauche seulement** (les mineurs se superposent).
-  - **Points** : chaque seconde à frapper rapporte sa **vitesse de minage effective** (stuff, skills, anneaux, sorts) : 1,3 de vitesse = 1,3 point par seconde.
+  - **Points** : chaque seconde à frapper rapporte sa **vitesse de minage effective** (stuff, skills, anneaux, sorts) : 1,3 de vitesse = 1,3 point par seconde. Le **coup unique** peut doubler une seconde.
   - **Recul** : chaque coup (vitesse de minage = coups par seconde) a **10 %** de chance de le **repousser en arc de 1 à 3 cases** vers la gauche. La **ténacité** l'ignore ; la **résistance au recul** réduit la distance (arrondie, 1 case au moins).
   - **Oxygène** : il baisse **2 fois plus vite** qu'en mine (2 par seconde : 300 de base ne suffisent pas pour 3 min), et **chaque coup sur le bloc coûte 1 oxygène de plus** *(26/10/2026, Geoffrey ; `GIANT.oxygenPerHit`)* : plus il mine vite, plus il boit. La fontaine recharge **30 par seconde** *(décision du créateur)* le mineur qui **s'y arrête** (pas celui qui passe devant ou qu'un recul y pose : sinon la résistance au recul ferait perdre des points) ; il y va quand il lui reste juste de quoi y aller.
   - **Pas de pods** (rien à ramasser), **pas d'XP**, pas de mob, pas de butin, pas de glyphe.
@@ -1114,6 +1116,7 @@ Un effort commun à **tout le serveur**, par petites visites : on frappe ensembl
 ### He's coming (Lobby, menu des activités) *(concept de Geoffrey, 01/11/2026 ; valeurs provisoires, `HES_COMING` en config ; spec `docs/superpowers/specs/2026-11-01-hes-coming-design.md`)*
 Le Bloc géant version combat : on frappe Lucifer au lieu de miner, c'est le DPS qui compte.
 - **Comme le Bloc géant** : journée de minuit à minuit, score collectif, classement, visites de 3 min, seul, une entrée toutes les 3 h, 30 joueurs, oxygène et fontaine, 2 visites au moins pour la récompense. **Indépendant** de lui : son délai, son score et sa récompense à part.
+- **Récompenses de palier** : celles du Bloc géant, avec des **Cristaux de pleine lune à la place des Plumes d'ange**, mêmes quantités (5, 10, 15 ; 30 au total) *(01/11/2026, Geoffrey)*.
 - **Points** : 1 dégât infligé = 1 point (critiques et double attaque compris). Paliers : ceux du Bloc géant × 8 (8 000, 40 000, 80 000, 120 000, 160 000 ; 01/11 : × 25 essayé à la simulation, trop dur), mêmes objets. 1 Pépite d'argent par 800 points.
 - **La salle** : Lucifer à droite, seuls son torse, ses bras et sa tête sortent d'un portail de lave. Il ne meurt pas et ne bouge pas. **La portée compte** : un mineur à portée frappe de plus loin.
 - **Rugissement** : toutes les 30 s, aura violette ; à 3 cases ou moins, **Fear** 15 s (il erre au hasard, ne frappe plus, ne va pas à la fontaine). Un Fear en cours n'est pas prolongé. La **ténacité** l'ignore.

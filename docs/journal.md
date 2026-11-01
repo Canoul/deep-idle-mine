@@ -13,6 +13,14 @@ Modèle d'entrée :
 - **Pour le joueur** : chaque place de l'équipe montre une barre et l'énergie du joueur, en rouge s'il n'en a plus assez pour une mine. La sienne est exacte ; celle des autres se met à jour toutes les 30 s.
 - **État** : ✅ en ligne le 01/11
 
+## 01/11/2026 — Geoffrey — He's coming : des Cristaux de pleine lune aux paliers
+- **Pour le joueur** : les paliers de He's coming donnent des Cristaux de pleine lune à la place des Plumes d'ange, mêmes quantités (5, 10, 15). Le Bloc géant garde ses Plumes.
+- **État** : ✅ en ligne le 01/11
+
+## 01/11/2026 — Geoffrey — Treasure T3 : plus de Cristal de pleine lune
+- **Pour le joueur** : le Treasure T3 ne donne plus de Cristal de pleine lune (10 % de chance avant). Les autres objets gardent leurs chances. Les cristaux viennent maintenant uniquement des minotaures.
+- **État** : ✅ en ligne le 01/11
+
 ## 01/11/2026 — Geoffrey — Lobby : contour doré quand le Bloc géant ou He's coming est disponible
 - **Pour le joueur** : dans le menu du Lobby, le bouton Bloc géant et le bouton He's coming s'entourent d'or dès qu'on peut y entrer (attente de 3 h finie, salle pas pleine, pas déjà en visite). Plus besoin d'ouvrir la carte pour vérifier.
 - **État** : ✅ en ligne le 01/11
@@ -55,6 +63,16 @@ Modèle d'entrée :
 
 ## 01/11/2026 — Geoffrey — Raffle : 2 min pour rejoindre
 - **Pour le joueur** : on a maintenant 2 minutes pour taper `!join` au lieu de 40 secondes.
+- **État** : ✅ en ligne le 01/11
+
+## 01/11/2026 — Geoffrey — Appli mobile : navigation en 5 familles
+- **Pour le joueur** : rien sur le site. Dans l'appli Android, les 15 onglets laissent la place à 5 boutons en bas
+  (Accueil, Session, Sac, Perso, Social) et à des sous-onglets en haut. Hors partie, Session montre l'Historique.
+- **Décisions** (Geoffrey) : pas de Carreau dans l'appli pour l'instant. Le badge vert « APPLI ✓ » est retiré, seule
+  l'alerte « pont bloqué » reste. Oxygène et pods absents de l'appli pour l'instant : accepté par Geoffrey.
+- **À suivre** : essai sur l'Android de Geoffrey après la mise en ligne ; le contenu des écrans reste celui du site
+  (prochains morceaux : session, Accueil, Stuff et Skills, gestes au doigt). Le guide « Premiers pas » couvre presque
+  tout l'écran sur téléphone.
 - **État** : ✅ en ligne le 01/11
 
 ## 01/11/2026 — Geoffrey — Appli mobile : reprise du chantier de Jules
@@ -100,6 +118,10 @@ Modèle d'entrée :
 
 ## 01/11/2026 — Geoffrey — Arc de l'Admin
 - **Pour le joueur** : nouvelle arme légendaire, portée +8, dégâts +15, recul +2. Le mineur tire des flèches de loin, et continue quand le mob est au contact. On ne peut pas l'obtenir dans le jeu : seule l'administration le donne.
+- **État** : ✅ en ligne le 01/11
+
+## 01/11/2026 — Geoffrey — Coup unique sur les boss qui se minent
+- **Pour le joueur** : sur le Bloc géant, les spawners et le cristal du Golbute, chaque seconde de minage a la chance du coup unique de compter double (1,5 de vitesse = 1,5 de plus au compteur). Ça ne coûte pas d'oxygène et ne fait pas reculer davantage.
 - **État** : ✅ en ligne le 01/11
 
 ## 01/11/2026 — Geoffrey — Guilde : voir les membres depuis la recherche

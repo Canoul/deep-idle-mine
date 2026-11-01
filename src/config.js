@@ -23,7 +23,7 @@ export const SPAWN_X = 25, CHEST_X = 22;
    (25/10/2026, Geoffrey : Lance en fer) ; 0 de base. Les mobs gardent COMBAT.reach pour tacler. */
 /* stats d'amélioration (onglet Amélioration, lignes tirées à l'identification ; 0 de base, en %) :
    mineSpeedPct / damagePct = bonus en % : vitesse de minage = mineSpeed × (1 + mineSpeedPct/100), pareil pour les dégâts ;
-   crit = chance qu'un coup fasse le double de dégâts ; oneTap = chance de casser un bloc instantanément ;
+   crit = chance qu'un coup fasse le double de dégâts ; oneTap = chance de casser un bloc instantanément (Bloc géant, spawners, cristal : ONE_TAP) ;
    piercing = chance de casser aussi le bloc juste derrière celui miné ; looting = butin des mobs en plus (comme Pillage) */
 export const STATS = { oxygenMax:300, speed:3, climbSpeed:2.25, mineSpeed:1, damage:5, attackSpeed:100, fortune:0, pods:200, light:6, compass:8,
   compassRows:0, torches:20, torchRadius:5, torchTime:1, discoverMax:2, tenacity:0, knockRes:0, reach:0, knockback:0,
@@ -269,7 +269,6 @@ export const LOOT = {
         { item:'Plastron de l\'équilibre BP', chance:0.005 },
       ]},
       { family:'gem', items:gems(0.02) },
-      { family:'material', tex:'moon_crystal', items:[ { item:'Cristal de pleine lune', chance:0.10, tex:'moon_crystal' } ] },
       /* Clé d'instance I (27/10/2026, Geoffrey) : son propre tirage, en plus du reste (INSTANCE) */
       { family:'key', tex:'key_instance_1', items:[ { item:'Clé d\'instance I', chance:0.20, tex:'key_instance_1' } ] },   // 20 % (27/10, Geoffrey ; avant 5 %)
     ],
@@ -1122,6 +1121,9 @@ export const FORTUNE = { salt: 0x0f07c0de };
 /* hasard « live » des stats d'amélioration (critique, coup unique, perçage) : G.gearRng, tiré de la seed, à part.
    Il n'est tiré que si la stat est au-dessus de 0 : sans ces stats, une partie est identique à avant. */
 export const GEAR_RNG = { salt: 0x6ea7c0de };
+/* coup unique sur ce qui se mine sans se casser d'un coup (Bloc géant, spawners, cristal du Golbute ; 01/11/2026, Geoffrey) :
+   toutes les every secondes de minage, chance oneTap d'ajouter au compteur ce que ces every secondes ont rapporté */
+export const ONE_TAP = { every: 1 };
 
 /* ---- Hors session : stuff (onglet Stuff) ----
    slots : les cases d'équipement du mineur, dans l'ordre d'affichage (id, libellé, icône d'une case vide).
@@ -1442,7 +1444,7 @@ export const ITEMS = {
   'Clé d\'instance II': { cat:'key', tex:'key_instance_2', w:1, stack:true },           // Treasure T4 (10 %) ; ouvre l'Instance II, le Golbute (30/10)
   'Orbe supérieur': { cat:'material', tex:'orb_superior', w:1, stack:true },   // 31/10 (Geoffrey) : se crafte de base ; sans usage pour l'instant
   'Orbe': { cat:'material', tex:'orb', w:1, stack:true },   // 30/10 (Geoffrey) : se crafte de base ; 31/10 : sert à la Clé d'instance I
-  'Cristal de pleine lune': { cat:'material', tex:'moon_crystal', w:1, stack:true },   // butin du minotaure (DUNGEON.loot) et du Treasure T3 ; après LOOT pour garder son poids
+  'Cristal de pleine lune': { cat:'material', tex:'moon_crystal', w:1, stack:true },   // butin du minotaure (DUNGEON.loot) ; plus dans le Treasure T3 depuis le 01/11/2026 ; après LOOT pour garder son poids
   ...Object.fromEntries(Object.entries(STUFF.items).map(([n, d]) => [n, { cat:'stuff', slot:d.slot, tex:d.tex, stats:d.stats ?? {}, set:d.set ?? {}, w:0, stack:false }])),
 };
 
@@ -1773,8 +1775,9 @@ export const GIANT = {
 /* He's coming (01/11/2026, Geoffrey ; src/sim/hescoming/session.js, valeurs provisoires) : le Bloc géant où l'on frappe Lucifer. Tout GIANT,
    sauf : paliers × 8, pépites ÷ 8 (Geoffrey, à la simulation ; essayé : × 25, 4 fois plus dur que le Bloc) ; 1 dégât = 1 point. roar : toutes les every s, Fear de fear s à radius cases ou moins (wander : s
    avant de changer de sens) ; swing : toutes les every s, tous ceux au contact projetés de knock cases, en arc de high cases, en flight s. */
+/* tiers : Cristaux de pleine lune à la place des Plumes d'ange du Bloc géant, mêmes quantités (01/11/2026, Geoffrey) */
 export const HES_COMING = { ...GIANT, bossName:'Lucifer',
-  tiers: GIANT.tiers.map(t => ({ ...t, min:t.min * 8 })), nugget: { ...GIANT.nugget, per:GIANT.nugget.per * 8 },
+  tiers: GIANT.tiers.map(({ min, items:{ 'Plume d\'ange':n, ...items } }) => ({ min:min * 8, items:n ? { 'Cristal de pleine lune':n, ...items } : items })), nugget: { ...GIANT.nugget, per:GIANT.nugget.per * 8 },
   roar: { every:30, radius:3, fear:15, wander:1 }, swing: { every:5, knock:4, high:2, flight:0.6 } };
 
 /* onglet Social : le navigateur redemande la liste d'amis et les notifications toutes les `poll` ms (onglet visible),

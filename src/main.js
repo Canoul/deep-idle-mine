@@ -39,7 +39,7 @@ import { drawPortrait, lookOf } from './render/portrait.js';
 import { aurasOf } from './meta/aura.js';
 import { displayName, formatAccountId } from './shared/account.js';
 import { setupOrbs } from './ui/orbs.js';
-import { fitCanvas, fitMine, fitInstant, clearDock } from './ui/fit.js';
+import { fitCanvas, fitMine, fitInstant, clearDock, dockEl } from './ui/fit.js';
 import { pxi } from './ui/pxicons.js';
 import { updateHUD, showEnd, showSettling, updateNavSession, fmt, showSpellBar, placeSpellBar } from './ui/hud.js';
 import { setupRunControls, setupCamera, renderSpeeds } from './ui/controls.js';
@@ -83,10 +83,11 @@ import { ask, tell } from './ui/dialog.js';
 import { warningText, banBarText } from './shared/moderation-text.js';
 import { energyText, energyPct, prisonBanner, awayText, hasAway, prisonActive, launchPrisonText, prisonPollError, prisonOnScreen } from './ui/prison.js';
 import { prisonLootHtml, showPrisonRecap } from './ui/prison-loot.js';
-import { bootApp } from './app/boot.js';
+import { bootApp, dropApp } from './app/boot.js';
 
 /* appli mobile (src/app/) : sur le site, ne fait rien */
-bootApp({ doc:document, win:window });
+const appBoot = bootApp({ doc:document, win:window });
+let appLayer = null;   // couche appli, chargée seulement dans l'appli (après setupNav)
 
 const $ = id => document.getElementById(id);
 const ui = { speed:1, paused:false, follow:null, inv:{ slots:[] }, fresh:new Set(), tab:'lobby' };
@@ -302,7 +303,11 @@ nav = setupNav($('nav'), $('views'), id => {
   guide?.refresh();                      // « Regarde ton butin » : l'inventaire vient d'être ouvert
   if(id==='lobby') setTimeout(() => lobby.showMenu());   // cliquer sur Lobby rouvre le menu des activités (différé : le lobby n'est pas encore créé au tout début)
   if(id==='lobby' && wantJudgment){ wantJudgment = false; setTimeout(() => lobby.showJudgment()); }   // différé : le lobby n'est pas encore créé au tout début
+  appLayer?.onTab(id);
 });
+/* appli mobile : barre des familles ; shown : l'onglet Session a-t-il quelque chose à montrer (partie, prison, bilan) ? */
+if(appBoot.app) import('./app/main.js').then(m => { appLayer = m.startApp({ doc:document, win:window, nav,
+  shown: () => !!rec || inRoom() || prisonShown() || !$('end').hidden }); }).catch(e => { console.warn(e); dropApp(document); });
 
 /* orbes de la barre d'action : temps de session et XP ; pendant une session, oxygène et pods du mineur suivi */
 const orbs = setupOrbs($('orbL'), $('orbR'));
@@ -327,7 +332,7 @@ const accountUI = createAccountUI($('account'), acct, {
     G && !G.over && 'Ta session continue sur le serveur : tu la retrouveras en te reconnectant.',
     'Se déconnecter quand même ?'].filter(Boolean).join('\n'), { ok:'Se déconnecter' }),
   options: () => [{ key:'bgSession', label:'Session en cours en fond d\'écran', title:'Pendant une session, la mine s\'affiche en fond, assombrie, derrière les autres onglets.', on: backdrop.on },
-                   { key:'bgTown', label:'Le Carreau (la ville) en fond d\'écran', title:'Hors session, la ville du spawn s\'affiche en fond, avec les autres joueurs en ligne ; l\'onglet Session sans session permet de s\'y promener.', on: town.on }],
+                   ...(appBoot.app ? [] : [{ key:'bgTown', label:'Le Carreau (la ville) en fond d\'écran', title:'Hors session, la ville du spawn s\'affiche en fond, avec les autres joueurs en ligne ; l\'onglet Session sans session permet de s\'y promener.', on: town.on }])],
   setOption: (key, v) => { if(key === 'bgSession') backdrop.set(v); if(key === 'bgTown') town.set(v); },
 });
 
@@ -961,7 +966,7 @@ function frame(now){
   const bgG = rec ? shown : prisonBackdrop();
   backdrop.draw(bgG, ui.tab !== 'session', acct.account?.id, ui.follow);
   /* le Carreau : fond quand il n'y a ni session ni prison en fond ; promenade quand l'onglet Session n'a rien d'autre à montrer */
-  town.frame(dtr, { show: !rec && !(ui.prison && ui.tab === 'session') && !(bgG && backdrop.on) && !!acct.account && !acct.offline, walk: townWalks(ui.tab, $('noSession').hidden, $('end').hidden), tab: ui.tab }, now);
+  town.frame(dtr, { show: !appBoot.app && !rec && !(ui.prison && ui.tab === 'session') && !(bgG && backdrop.on) && !!acct.account && !acct.offline, walk: townWalks(ui.tab, $('noSession').hidden, $('end').hidden), tab: ui.tab }, now);
   if(shown && ui.tab==='session') ins ? inRenderer.draw(shown, acct.account?.id) : tw ? twRenderer.draw(shown, acct.account?.id) : mi ? miRenderer.draw(shown, acct.account?.id) : renderer.draw(shown, ui.follow);
   if(now - lastHud > 120){
     if(perfOn){ const t = perfText(perf.stats()); for(const el of document.querySelectorAll('.perfBox')) el.textContent = t; }
@@ -992,7 +997,7 @@ function frame(now){
     if(ui.tab==='session'){
       ins ? fitCanvas($('cvIn'), $('cvInWrap')) : tw ? fitCanvas($('cvTw'), $('cvTwWrap')) : mi ? fitInstant($('cvMi'), $('cvMiWrap'), miRenderer, MI_TILE) : fitMine($('cv'), $('cvWrap'), renderer, CAMERA, TILE);   // la mine remplit la place libre
       if(shown) backdrop.measure(ins ? 'instance' : tw ? 'tower' : mi ? 'mi' : 'mine', $(SESSION_CV[ins ? 'instance' : tw ? 'tower' : mi ? 'mi' : 'mine']), mi ? miRenderer.rows : renderer.rows);   // le fond reprend cette place et cette échelle
-      document.querySelectorAll('.runL, .runR, .runGrid.mi > aside').forEach(c => clearDock(c, $('nav')));   // colonnes jusqu'en bas si possible
+      document.querySelectorAll('.runL, .runR, .runGrid.mi > aside').forEach(c => clearDock(c, dockEl($)));   // colonnes jusqu'en bas si possible
     }
     const face = $('navAccount').querySelector('canvas');
     if(face) drawPortrait(face, lookOf(stuff.worn()), aurasOf(stuff.worn()));                  // portrait : le mineur avec son stuff

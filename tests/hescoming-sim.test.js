@@ -14,7 +14,8 @@ const ready = (carac, seed) => { const r = room(carac, seed); r.m.x = standX(r.G
 
 test('config : paliers du Bloc × 8, pépites ÷ 8, mêmes objets, même durée', () => {
   assert.deepEqual(HC.tiers.map(t => t.min), [8000, 40000, 80000, 120000, 160000]);
-  assert.deepEqual(HC.tiers.map(t => t.items), GIANT.tiers.map(t => t.items));
+  assert.deepEqual(HC.tiers.map(t => t.items), [{ 'Cristal de pleine lune':5 }, { 'Pépite d\'argent':5 }, { 'Cristal de pleine lune':10 }, { 'Pépite d\'argent':10 }, { 'Cristal de pleine lune':15 }]);
+  assert.equal(GIANT.tiers[0].items['Plume d\'ange'], 5, 'le Bloc géant garde ses Plumes');
   assert.equal(HC.nugget.per, 800);
   assert.equal(HC.visit, GIANT.visit); assert.equal(HC.cooldownMs, GIANT.cooldownMs);
 });

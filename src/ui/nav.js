@@ -29,6 +29,8 @@ export const CHAT_TAB = { id:'chat', label:'Chat', icon:'shout', ready:true, pho
 const ALL_TABS = [...TABS.slice(0, 2), CHAT_TAB, ...TABS.slice(2)];
 /* onglet réellement ouvert : Chat hors téléphone (adresse, onglet gardé, écran tourné) redonne le Lobby */
 export const tabFor = (id, phone) => id === CHAT_TAB.id && !phone ? TABS[0].id : id;
+/* format téléphone : celui de l'écran, ou l'appli mobile, quelle que soit sa taille (tablette, paysage) */
+export const phoneMode = (media, body) => media.matches || body.classList.contains('app');
 
 /* touche du clavier de chaque onglet, dans l'ordre de la barre (les onglets en attente n'en ont pas) */
 export const TAB_KEYS = ['1','2','3','4','5','6','7','8','9','0','-','=','²','g'];
@@ -77,9 +79,10 @@ export function setupNav(navEl, viewsEl, onChange=()=>{}){
 
   let cur = null;
   const phone = matchMedia(CHAT.dock.phone);
-  document.body.classList.toggle('phone', phone.matches);
+  const isPhone = () => phoneMode(phone, document.body);
+  document.body.classList.toggle('phone', isPhone());
   function show(want){
-    const id = tabFor(want, phone.matches);
+    const id = tabFor(want, isPhone());
     if(!isTab(id) || id === cur) return;
     cur = id;
     document.body.classList.toggle('chatTab', id === CHAT_TAB.id);
@@ -89,7 +92,7 @@ export function setupNav(navEl, viewsEl, onChange=()=>{}){
     if(location.hash.slice(1) !== id) history.replaceState(null, '', '#'+id);
     onChange(id);
   }
-  phone.addEventListener('change', () => { document.body.classList.toggle('phone', phone.matches); show(cur); });
+  phone.addEventListener('change', () => { document.body.classList.toggle('phone', isPhone()); show(cur); });
   list.onclick = e => { const b = e.target.closest('[data-tab]'); if(b) show(b.dataset.tab); };
   addEventListener('hashchange', () => show(pickTab(location.hash, cur)));
   /* raccourcis : la touche d'un onglet l'ouvre (pas pendant la saisie d'un texte) ; Échap quitte l'onglet, sauf si une
@@ -108,8 +111,11 @@ export function setupNav(navEl, viewsEl, onChange=()=>{}){
   let saved = null; try { saved = localStorage.getItem(KEY); } catch(e){}
   show(pickTab(location.hash, saved));
   /* pastille « nouveau » sur un onglet (ex. objets arrivés dans l'inventaire) */
-  const badge = (id, on) => { const d = list.querySelector(`[data-tab="${id}"] .dot`); if(d) d.hidden = !on; };
+  const marks = { badges:new Set(), guide:null };
+  let markFn = null;   // appli mobile : suit pastilles et guide sur sa propre barre (src/app/)
+  const badge = (id, on) => { const d = list.querySelector(`[data-tab="${id}"] .dot`); if(d) d.hidden = !on; marks.badges[on ? 'add' : 'delete'](id); markFn?.(marks); };
   /* onglet mis en avant par le guide « Premiers pas » (src/ui/guide.js) ; null : aucun */
-  const highlight = id => list.querySelectorAll('[data-tab]').forEach(b => b.classList.toggle('guideTab', b.dataset.tab === id));
-  return { current: () => cur, show, badge, highlight };
+  const highlight = id => { list.querySelectorAll('[data-tab]').forEach(b => b.classList.toggle('guideTab', b.dataset.tab === id)); marks.guide = id; markFn?.(marks); };
+  const onMark = fn => { markFn = fn; fn(marks); };
+  return { current: () => cur, show, badge, highlight, onMark };
 }

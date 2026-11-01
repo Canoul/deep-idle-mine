@@ -6329,6 +6329,23 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Points fragiles** : le site a maintenant un onglet Chat réservé au téléphone (`CHAT_TAB`, 31/10) et le Carreau en fond :
   à reprendre dans la navigation de l'appli (étape 2). `gh` absent de ce PC : suivre les fabrications par l'API GitHub.
 
+## 01/11/2026 — Geoffrey — Appli mobile, étape 2a : navigation en 5 familles (en ligne le 01/11)
+- **Quoi** : `src/app/families.js` (logique pure), `bar.js` (HTML), `main.js` (`startApp`, chargé par import dynamique),
+  `app.css` ; accroches `phoneMode` et `nav.onMark` dans `src/ui/nav.js`, `appLayer` dans `src/main.js`. `boot.js` : CSS et
+  `viewport-fit=cover` par le code, badge seulement si le pont est bloqué.
+- **Tests** : ✅ `app-families`, `app-bar`, `app-mode`, `nav`, `chat-ui`. ✅ Chrome headless : site à 393 et 1440 px, seuls
+  `boot.js` et `mode.js` chargés, barre d'origine ; `?app` à 393 et 360 px, 14 onglets sans débordement horizontal, `#craft`
+  ouvre Sac / Craft ; 1024 × 768, Chat s'ouvre ; session lancée puis page rechargée : retour sur `#session`.
+- **À vérifier** : ⚠️ vrai Android ; ⚠️ bilan de fin de session jamais joué en navigateur (seulement `sessionRedirect` et
+  `#end` dans `shown()`) ; ⚠️ marges d'encoche (`env(safe-area-inset-*)`) à voir sur téléphone.
+- **Points fragiles** : `sync()` tourne toutes les secondes (aucun événement commun aux modes de jeu). Onglet Chat :
+  `POST /api/town` répond 400, probablement parce que `chat` n'est pas un bâtiment ; déjà vrai sur le site côté téléphone,
+  sans effet. Guide « Premiers pas » : il couvre l'écran sur téléphone.
+- **Relecture indépendante** : ✅ 5 points de risque validés, 3 corrections : `dropApp` si la couche ne se charge pas (la barre du
+  site revient), Carreau vraiment coupé dans l'appli (ni dessin ni `POST /api/town`, option de Mon compte masquée), colonnes de
+  session mesurées contre `#appBar` (`dockEl`). Restent : orbes oxygène / pods cachés avec `#nav` (accepté par Geoffrey) ; JSON corrompu dans `deepIdleMine.appFamilyTab` ; `startApp` sans test de câblage ; bouton Session vers l'Historique
+  si c'était le dernier sous-onglet, même en pleine partie lancée ailleurs.
+
 ## 01/11/2026 — Contour doré du Bloc géant et de He's coming dans le menu du Lobby (Geoffrey)
 - **Quoi** : `setupGiant` (src/ui/giant.js) appelle `h.onReady` quand `entryState(...).can` change ; main.js le passe au lobby (`giantReady`, `hcReady`), `activityMenu` pose `ready` (jamais sur un bouton grisé), classe `.actBtn.ready` (style.css).
 - **Rafraîchissement** : `refresh` tourne maintenant aussi carte fermée, toutes les `GIANT.readyPoll` ms (60 s, valeur reprise par HES_COMING), et à l'heure de `nextEntry`. Soit 2 GET de plus par minute et par joueur connecté, classement compris. Sans compte : pas d'appel, pas d'or. `startInstant` appelle donc `refresh` aussi à la déconnexion.
@@ -6343,3 +6360,19 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Quoi** : `energy` dans chaque membre de `publicParty` (server/party/service.js), `energyGauge` (src/ui/energy-tag.js), classe `.pslotEnergy`. Son propre mineur : `st.energy`, aussi sans groupe.
 - **Cache** : `PARTY_SERVER.energyFor` (30 s) par compte, comme Social et le panneau Équipe de la session : `energyOf` parcourt les sessions du joueur et le lobby interroge le groupe toutes les 2,5 s. Une énergie vue chez un coéquipier peut donc retarder de 30 s.
 - **Tests** : tests/party.test.js, tests/lobby.test.js.
+
+## 01/11/2026 — Treasure T3 sans Cristal de pleine lune (Geoffrey) — branche `geoffrey/coffre-t3-cristal`
+- **Quoi** : famille `material` retirée de `LOOT['Treasure T3']` (`src/config.js`). Le tableau du wiki vient de la config.
+- **Tests** : `tests/steel-gear.test.js`, `tests/instance-key.test.js` (gemme à la place du cristal pour vérifier que la clé ne retire rien).
+- **Point à surveiller** : le cristal sert à l'amélioration (3 à 32 par rang) ; il ne reste que les minotaures (1 à 3 par victoire, donjon et arène).
+
+## 01/11/2026 — Coup unique sur les boss qui se minent (Geoffrey)
+- **Quoi** : `oneTapBonus` (src/sim/one-tap.js, `ONE_TAP.every` en config), appelé par le Bloc géant (`mine`, hasard `G.rng`), les spawners (src/sim/instance/session.js) et le cristal (src/sim/instance/golbute.js), hasard `G.fightRng`. Temps gardé dans `m.tapAcc` : une interruption (recul, recharge) ne perd pas la fraction de seconde. Ne compte pas comme des coups : ni oxygène, ni recul.
+- **Effet** : espérance = vitesse × (1 + coup unique). Le tirage ne se fait qu'avec la stat : sans elle, une partie est identique.
+- **Non vérifié** : pas de nouvelle mesure de la valeur du coup unique en x ; paliers du Bloc géant et 720 coups du cristal inchangés.
+- **Tests** ✅ tests/one-tap.test.js, giant-sim, golbute, instance-sim.
+
+## 01/11/2026 — He's coming : Cristaux de pleine lune aux paliers (Geoffrey)
+- **Quoi** : `HES_COMING.tiers` (src/config.js) remplace les Plumes d'ange de `GIANT.tiers` par des Cristaux, mêmes quantités. Les paliers se calculent à la réclamation : une journée pas encore réclamée donne déjà des Cristaux.
+- **Tests** ✅ tests/hescoming-sim.test.js, hescoming-service, anticheat.
+- **À surveiller** : 30 Cristaux par jour au dernier palier, à comparer aux 1 à 3 d'un minotaure ; un +9 en coûte 32.
