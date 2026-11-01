@@ -6417,3 +6417,8 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   avant), tests/admin-khole.test.js (29 au total). ✅ Simulation 3 mineurs × 5 : 0 blocage.
 - **Point fragile** : la mine classique garde 2 cases de marge (`DUNGEON.margin`) ; le k hole n'en garde pas, d'où ce cas.
   Une autre boîte (piège) collée à l'entrée est exclue par l'écart d'une case de `placeBox`.
+
+## 01/11/2026 — Bot Discord : /todo done efface le message de #report (Geoffrey)
+- **Quoi** : `removeReport` remplace `markDone` dans bot/main.js. Aucun droit Discord en plus : le bot efface ses propres messages.
+- **Tests** ✅ tests/bot-todo.test.js (logique et aide), `node --check bot/main.js`. ⚠️ Effacement non essayé sur le vrai Discord : main.js n'a pas de test sans connexion.
+
