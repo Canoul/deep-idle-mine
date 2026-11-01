@@ -11,7 +11,7 @@ Modèle d'entrée :
 ```
 ## 01/11/2026 — Geoffrey — He's coming, nouveau mode de jeu
 - **Pour le joueur** : le Bloc géant version combat. On frappe Lucifer, 1 dégât = 1 point, mêmes visites et mêmes récompenses de minuit, avec des paliers × 8. Toutes les 30 s il rugit (Fear 15 s à 3 cases ou moins), toutes les 5 s il projette ceux à son contact. La ténacité résiste aux deux. Il a son propre délai et son propre score.
-- **État** : 🧪 sur la branche `geoffrey/hes-coming` (pas en ligne)
+- **État** : ✅ en ligne le 01/11
 
 ## 01/11/2026 — Geoffrey — Recherche : pas de doublon immédiat
 - **Pour le joueur** : un plan sorti de la recherche ne peut pas ressortir pendant 2 min. S'il ne reste que des plans dans ce
