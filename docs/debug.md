@@ -6422,3 +6422,8 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Quoi** : `mineView` (`server/guild/service.js`) envoie le statut complet de `statusOf`, `me`, `canInvite` ; `inviteCheck(me)` et `guildInvite` dans `server/social/service.js`, route `POST /api/social/guild-invite` ; `memberRow` (`src/ui/guild.js`) réutilise `statusDot` / `statusText` de Social. Le serveur revérifie : membre de ma guilde, en ligne, puis les règles de `party.invite`.
 - **Tests** : `tests/social.test.js`, `tests/guild-service.test.js`, `tests/guild-ui.test.js` ; ⚠️ pas vu dans un navigateur.
 - **Point fragile** : `leftMs` change à chaque relecture, la liste est donc réécrite ; `holdsPanel` protège le menu Actions ouvert.
+
+## 01/11/2026 — Bot Discord : /todo done efface le message de #report (Geoffrey)
+- **Quoi** : `removeReport` remplace `markDone` dans bot/main.js. Aucun droit Discord en plus : le bot efface ses propres messages.
+- **Tests** ✅ tests/bot-todo.test.js (logique et aide), `node --check bot/main.js`. ⚠️ Effacement non essayé sur le vrai Discord : main.js n'a pas de test sans connexion.
+

@@ -11,7 +11,7 @@ Modèle d'entrée :
 ```
 ## 01/11/2026 — Geoffrey — Guilde : inviter un membre dans son lobby, voir ce qu'il fait
 - **Pour le joueur** : dans l'onglet de sa guilde, chaque membre a un bouton **Inviter** (dans son lobby, même sans être amis), et on voit ce qu'il fait comme dans Social : en ligne, dans le lobby, en session avec le temps restant, en prison, hors ligne.
-- **État** : 🧪 sur la branche `geoffrey/guilde-membres` (pas en ligne)
+- **État** : ✅ en ligne le 01/11
 
 ## JJ/MM/AAAA — Prénom — Titre court
 - **Pour le joueur** : ce qui change en jeu (ou « rien, c'est de l'organisation »).
@@ -38,6 +38,11 @@ Modèle d'entrée :
   Les chiffres viennent de la config : un réglage changé met la bulle à jour tout seul. Le wiki montre maintenant aussi
   le butin du Chien de magma et des Vers de terre (il les oubliait).
 - **État** : ✅ en ligne le 01/11
+
+## 01/11/2026 — Geoffrey — Bot Discord : #report se vide des sujets terminés
+- **Pour l'équipe** : `/todo done` efface maintenant le message du sujet dans #report, au lieu d'y mettre ✅. Les sujets ignorés (❌) et les anciens messages avec ✅ restent.
+- **À suivre** : après la mise en ligne, relancer le bot sur le serveur (`sudo systemctl restart deep-mine-bot`).
+- **État** : ✅ code en ligne le 01/11, bot à relancer sur le serveur
 
 ## 01/11/2026 — Geoffrey — Amélioration : autant de cristaux que de plumes
 - **Pour le joueur** : chaque niveau d'amélioration d'une pièce coûte maintenant autant de Cristaux de pleine lune que de Plumes d'ange (6 au +1, 63 au +9). De +0 à +9 sans échec : 256 cristaux au lieu de 129.
