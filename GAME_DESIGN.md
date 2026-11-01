@@ -1114,6 +1114,7 @@ Un effort commun à **tout le serveur**, par petites visites : on frappe ensembl
 ### He's coming (Lobby, menu des activités) *(concept de Geoffrey, 01/11/2026 ; valeurs provisoires, `HES_COMING` en config ; spec `docs/superpowers/specs/2026-11-01-hes-coming-design.md`)*
 Le Bloc géant version combat : on frappe Lucifer au lieu de miner, c'est le DPS qui compte.
 - **Comme le Bloc géant** : journée de minuit à minuit, score collectif, classement, visites de 3 min, seul, une entrée toutes les 3 h, 30 joueurs, oxygène et fontaine, 2 visites au moins pour la récompense. **Indépendant** de lui : son délai, son score et sa récompense à part.
+- **Récompenses de palier** : celles du Bloc géant, avec des **Cristaux de pleine lune à la place des Plumes d'ange**, mêmes quantités (5, 10, 15 ; 30 au total) *(01/11/2026, Geoffrey)*.
 - **Points** : 1 dégât infligé = 1 point (critiques et double attaque compris). Paliers : ceux du Bloc géant × 8 (8 000, 40 000, 80 000, 120 000, 160 000 ; 01/11 : × 25 essayé à la simulation, trop dur), mêmes objets. 1 Pépite d'argent par 800 points.
 - **La salle** : Lucifer à droite, seuls son torse, ses bras et sa tête sortent d'un portail de lave. Il ne meurt pas et ne bouge pas. **La portée compte** : un mineur à portée frappe de plus loin.
 - **Rugissement** : toutes les 30 s, aura violette ; à 3 cases ou moins, **Fear** 15 s (il erre au hasard, ne frappe plus, ne va pas à la fontaine). Un Fear en cours n'est pas prolongé. La **ténacité** l'ignore.

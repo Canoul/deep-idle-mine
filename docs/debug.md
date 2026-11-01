@@ -6345,3 +6345,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Non vérifié** : pas de nouvelle mesure de la valeur du coup unique en x ; paliers du Bloc géant et 720 coups du cristal inchangés.
 - **Tests** ✅ tests/one-tap.test.js, giant-sim, golbute, instance-sim.
 
+## 01/11/2026 — He's coming : Cristaux de pleine lune aux paliers (Geoffrey)
+- **Quoi** : `HES_COMING.tiers` (src/config.js) remplace les Plumes d'ange de `GIANT.tiers` par des Cristaux, mêmes quantités. Les paliers se calculent à la réclamation : une journée pas encore réclamée donne déjà des Cristaux.
+- **Tests** ✅ tests/hescoming-sim.test.js, hescoming-service, anticheat.
+- **À surveiller** : 30 Cristaux par jour au dernier palier, à comparer aux 1 à 3 d'un minotaure ; un +9 en coûte 32.
