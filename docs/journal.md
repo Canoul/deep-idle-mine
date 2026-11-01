@@ -11,7 +11,7 @@ Modèle d'entrée :
 ```
 ## 01/11/2026 — Geoffrey — Canal Guilde dans le chat
 - **Pour le joueur** : nouveau canal **Guilde**, en violet, avec le raccourci `/g`. Seuls les membres de la guilde lisent ces messages, et ils ne font pas de bulle dans le Carreau. Le canal se masque par onglet, comme les autres.
-- **État** : 🧪 sur la branche `geoffrey/chat-guilde` (pas en ligne)
+- **État** : ✅ en ligne le 01/11
 
 ## 31/10/2026 — Geoffrey — Nom de guilde au-dessus de la tête
 - **Pour le joueur** : sous le pseudo, en plus petit, `< Nom de la guilde >`, centré au-dessus du personnage, dans la mine, en prison et dans le Carreau. En session, c'est la guilde du lancement : en changer se voit à la session suivante.
