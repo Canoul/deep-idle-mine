@@ -1,5 +1,6 @@
-/* Appels au serveur du jeu (/api/…). La connexion voyage dans un cookie que le JavaScript ne voit pas :
-   ici on n'a jamais de jeton à manipuler ni à stocker. */
+/* Appels au serveur du jeu (/api/…). Sur le site, la connexion voyage dans un cookie que le JavaScript ne voit pas. Dans l'appli
+   mobile, où ce cookie ne passe pas, un jeton dans un en-tête (src/net/base.js). */
+import { API_BASE, inLocalApp, authOptions, setToken } from './base.js';
 
 /* Le serveur répond par une erreur lisible (pseudo pris, mauvais mot de passe…). */
 export class ApiError extends Error {
@@ -8,24 +9,35 @@ export class ApiError extends Error {
 /* Pas de serveur de jeu joignable (hors ligne, ou page servie par un simple serveur de fichiers). */
 export class OfflineError extends Error {}
 
+/* appli : l'écran « Pas de connexion » (src/app/device.js) */
+function offline(text){
+  if(inLocalApp && typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('dim:offline'));
+  return new OfflineError(text);
+}
+
 export async function request(method, path, body){
   let res;
+  const auth = await authOptions();
   try {
-    res = await fetch(path, {
-      method, credentials: 'same-origin',
-      headers: body !== undefined ? { 'Content-Type': 'application/json' } : {},
+    res = await fetch(API_BASE + path, {
+      method, credentials: auth.credentials,
+      headers: { ...auth.headers, ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}) },
       body: body !== undefined ? JSON.stringify(body) : undefined,
     });
-  } catch { throw new OfflineError('Serveur injoignable.'); }
+  } catch { throw offline('Serveur injoignable.'); }
+  if(inLocalApp && (path === '/api/account/logout' || path === '/api/account/delete') && res.ok) await setToken(null);   // connexion finie
   if(res.status === 204) return null;
   const isJson = (res.headers.get('content-type') ?? '').includes('application/json');
-  if(!isJson) throw new OfflineError('Pas de serveur de jeu à cette adresse.');
+  if(!isJson) throw offline('Pas de serveur de jeu à cette adresse.');
   const data = await res.json();
+  if(inLocalApp && typeof data?.token === 'string') await setToken(data.token);
   if(!res.ok){
     const err = new ApiError(res.status, data?.error?.code ?? 'error', data?.error?.message ?? 'Erreur inconnue.',
                              +res.headers.get('retry-after') || null);
     /* joueur banni (modération du chat, 30/10) : la page affiche le bandeau, quelle que soit l'action refusée */
     if(err.code === 'banned' && typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('dim:banned'));
+    /* compte suspendu en pleine partie (01/11) : la page repart sur l'écran de connexion, qui dit pourquoi */
+    if(err.code === 'suspended' && !path.startsWith('/api/account/') && typeof window !== 'undefined') window.location.reload();
     throw err;
   }
   return data;
@@ -34,8 +46,11 @@ export async function request(method, path, body){
 export const accountApi = {
   /* compte connecté, ou null si personne ne l'est (OfflineError si pas de serveur) */
   me: async () => (await request('GET', '/api/account/me')).account,
-  guest:    ()                       => request('POST', '/api/account/guest', {}),
-  register: (name, password)         => request('POST', '/api/account/register', { name, password }),
+  whoAmI: () => request('GET', '/api/account/me'),                     // { account, suspended? : texte, compte suspendu }
+  guest:    ()                       => request('POST', '/api/account/guest', { acceptRules: true }),    // la case du formulaire est cochée
+  register: (name, password)         => request('POST', '/api/account/register', { name, password, acceptRules: true }),
+  acceptRules: ()                    => request('POST', '/api/account/rules', { accept: true }),
+  deleteAccount: body                => request('POST', '/api/account/delete', body),   // { name, password } ou { confirm } (invité)
   login:    (name, password)         => request('POST', '/api/account/login', { name, password }),
   logout:   ()                       => request('POST', '/api/account/logout', {}),
   claim:    (name, password)         => request('POST', '/api/account/claim', { name, password }),
@@ -137,7 +152,8 @@ export const townApi = {
 };
 
 /* modération du chat (30/10) : { warnings, max, bannedUntil, motif } */
-export const moderationApi = { me: () => request('GET', '/api/moderation/me') };
+export const moderationApi = { me: () => request('GET', '/api/moderation/me'),
+  report: body => request('POST', '/api/moderation/report', body) };   // { source, message | target, reason, comment? }
 
 export const socialApi = {
   state:   ()   => request('GET', '/api/social'),
@@ -147,6 +163,8 @@ export const socialApi = {
   accept:  id   => request('POST', '/api/social/accept', { id }),
   refuse:  id   => request('POST', '/api/social/refuse', { id }),
   remove:  id   => request('POST', '/api/social/remove', { id }),     // retirer un ami ou annuler une demande
+  block:   id   => request('POST', '/api/social/block', { id }),      // bloquer un joueur (01/11)
+  unblock: id   => request('POST', '/api/social/unblock', { id }),
   invite:  id   => request('POST', '/api/social/invite', { id }),
   join:    id   => request('POST', '/api/social/join', { id }),
   profile: id   => request('POST', '/api/social/profile', { id }),   // stuff, niveau et skills d'un ami

@@ -225,17 +225,17 @@ test('tier : chaque pièce qu\'on peut runer a un tier (T1 100 x, T2 250 x, T3 5
 
 test('ratios sur les runes (31/10/2026) : vitesse d\'attaque ÷ 5, butin ÷ 4, coup unique ÷ 2, combat ÷ 3 ; identification et autres stats intactes', () => {
   const line = { stat: 'attackSpeed', pct: 29.1 };
-  assert.equal(lineValue('Doc Martins', line), 37.8, 'identification : comme avant');
-  assert.equal(runeLineValue('Doc Martins', line), 7.6, 'rune : ÷ 5');
-  assert.equal(runeLineValue('Doc Martins', line, 0.5), 3.8, 'fragment : encore ÷ 2');
+  assert.equal(lineValue('Bottes de chantier', line), 37.8, 'identification : comme avant');
+  assert.equal(runeLineValue('Bottes de chantier', line), 7.6, 'rune : ÷ 5');
+  assert.equal(runeLineValue('Bottes de chantier', line, 0.5), 3.8, 'fragment : encore ÷ 2');
   const off = { damage: 3, attackSpeed: 5, doubleAttack: 3, crit: 3, reach: 3, knockback: 3, damagePct: 3, piercing: 3, looting: 4, oneTap: 2, tenacity: 3, knockRes: 3 };
   assert.deepEqual(UPGRADE.runeDiv, off);
   for(const stat of ['pods', 'mineSpeed', 'mineSpeedPct', 'fortune', 'speed', 'climbSpeed', 'oxygenMax']){
     const l = { stat, pct: 30 };
-    assert.equal(runeLineValue('Doc Martins', l), lineValue('Doc Martins', l), stat);
+    assert.equal(runeLineValue('Bottes de chantier', l), lineValue('Bottes de chantier', l), stat);
   }
   assert.equal(runeLineValue(PICK, { stat: 'discoverMax' }), lineValue(PICK, { stat: 'discoverMax' }), 'Découverte : pas un %');
-  const piece = sanitizePiece({ uid: 1, item: 'Doc Martins', q: 2, s: UPGRADE.scale, lines: [{ stat: 'attackSpeed', pct: 20 }], rune: { q: 2, s: UPGRADE.scale, lines: [line] } });
+  const piece = sanitizePiece({ uid: 1, item: 'Bottes de chantier', q: 2, s: UPGRADE.scale, lines: [{ stat: 'attackSpeed', pct: 20 }], rune: { q: 2, s: UPGRADE.scale, lines: [line] } });
   assert.equal(pieceBonus(piece).stats.attackSpeed, roundStat('attackSpeed', 26 + 7.6), 'même pièce : identification entière, rune divisée');
 });
 

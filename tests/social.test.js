@@ -232,7 +232,7 @@ test('relecture : stockage trafiqué nettoyé (ID invalides, doublons, demandes 
   assert.deepEqual(s.friends, ['AAAA1111', 'CCCC3333']);
   assert.deepEqual(s.incoming, [{ from:'DDDD4444', at:2 }]);
   assert.deepEqual(s.outgoing, [{ to:'BBBB2222', at:5 }]);
-  assert.deepEqual(sanitizeSocial('n\'importe quoi'), { friends:[], incoming:[], outgoing:[] });
+  assert.deepEqual(sanitizeSocial('n\'importe quoi'), { friends:[], incoming:[], outgoing:[], blocked:[] });
 });
 
 test('stockage : une demande écrit les deux comptes en une seule fois', async () => {
@@ -274,8 +274,8 @@ test('HTTP : s\'inscrire, demander en ami par pseudo, accepter, voir l\'ami en l
   const { server, client } = await serve();
   try {
     const zoe = client(), max = client();
-    await zoe('POST', '/api/account/register', { name:'Zoe', password:'motdepasse-zoe' });
-    await max('POST', '/api/account/register', { name:'Max', password:'motdepasse-max' });
+    await zoe('POST', '/api/account/register', { acceptRules: true, name:'Zoe', password:'motdepasse-zoe' });
+    await max('POST', '/api/account/register', { acceptRules: true, name:'Max', password:'motdepasse-max' });
     assert.equal((await client()('GET', '/api/social')).status, 401);
     let r = await zoe('POST', '/api/social/request', { name:'max' });
     assert.equal(r.status, 200); assert.equal(r.data.sent, 'Max');
@@ -301,8 +301,8 @@ test('HTTP : chat global, connecté seulement ; écrire puis relire après un nu
   const { server, client } = await serve();
   try {
     const zoe = client(), guest = client();
-    await zoe('POST', '/api/account/register', { name:'Zoe', password:'motdepasse-zoe' });
-    await guest('POST', '/api/account/guest', {});
+    await zoe('POST', '/api/account/register', { acceptRules: true, name:'Zoe', password:'motdepasse-zoe' });
+    await guest('POST', '/api/account/guest', { acceptRules: true });
     assert.equal((await client()('GET', '/api/social/chat')).status, 401);
     assert.equal((await client()('POST', '/api/social/chat', { text:'x' })).status, 401);
     const sent = await zoe('POST', '/api/social/chat', { text:'  hello <b>mine</b> ' });

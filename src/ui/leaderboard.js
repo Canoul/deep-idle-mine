@@ -45,7 +45,7 @@ export const towerDetail = r => [JUDGMENT.sides[r.side]?.label, r.team?.filter(n
 export const rankText = (rank, total) => `${rank}${rank === 1 ? 'er' : 'e'} sur ${total}`;
 
 /* root : la section de l'onglet ; load(board) : demande un classement au serveur */
-export function setupLeaderboard({ root, load }){
+export function setupLeaderboard({ root, load, moderate = () => {} }){
   /* board : bouton choisi (gs, xp, spec, tower, instance) ; sub : sous-onglet choisi de chaque bouton (id de classement) */
   let board = 'gs', boards = {}, boardAt = 0, boardBusy = false;
   const sub = Object.fromEntries(['spec', 'tower', 'instance'].map(g => [g, boardSubs(g)[0].id]));
@@ -55,7 +55,7 @@ export function setupLeaderboard({ root, load }){
     const detail = board === 'tower' ? towerDetail(r) : board === 'instance' ? instanceDetail(r) : '';
     return `<div class="frow lrow${r.me ? ' mine' : ''}"><span class="lrank">${r.rank}</span>`+
       `<span class="fname"><b>${esc(r.name)}</b>${detail ? `<small class="mut">${esc(detail)}</small>` : ''}</span>`+
-      `<span class="lval">${esc(BOARD_INFO[board === 'spec' ? 'spec' : boardId()].value(r))}</span></div>`;
+      `<span class="lval">${esc(BOARD_INFO[board === 'spec' ? 'spec' : boardId()].value(r))}</span>${r.me || !r.id ? '' : `<span class="fbtns"><button class="x" data-mod="${esc(r.id)}" data-name="${esc(r.name)}" title="Signaler ou bloquer" aria-label="Signaler ou bloquer">⋮</button></span>`}</div>`;
   }
   function renderBoard(){
     const info = BOARD_INFO[board === 'spec' ? 'spec' : boardId()], subs = boardSubs(board), cur = subs?.find(s => s.id === boardId());
@@ -80,6 +80,8 @@ export function setupLeaderboard({ root, load }){
   }
   setInterval(() => { if(boardShown() && Date.now() - boardAt >= LEADERBOARD.refresh) loadBoard(); }, 1000);
   root.onclick = e => {
+    const mod = e.target.closest('[data-mod]');
+    if(mod) return moderate({ id: mod.dataset.mod, name: mod.dataset.name });   // Signaler, Bloquer (src/ui/moderate.js)
     const b = e.target.closest('[data-board], [data-sub]'); if(!b) return;
     if(b.dataset.board) board = b.dataset.board; else sub[board] = b.dataset.sub;
     renderBoard();

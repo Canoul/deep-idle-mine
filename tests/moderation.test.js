@@ -3,7 +3,7 @@
 import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
 import http from 'node:http';
-import { MODERATION } from '../src/config.js';
+import { MODERATION, RULES } from '../src/config.js';
 import { createMemoryGameStore } from '../server/game/store.js';
 import { createGameService } from '../server/game/service.js';
 import { createPartyService } from '../server/party/service.js';
@@ -16,7 +16,7 @@ import { ROOT } from '../server/config.js';
 import { warningText, banBarText } from '../src/shared/moderation-text.js';
 import { FAST_SCRYPT, fakeLive } from './helpers.js';
 
-const ME = { id:'AAAA1111', name:'Zoe', guest:false }, OTHER = { id:'BBBB2222', name:'Max', guest:false };
+const ME = { id:'AAAA1111', name:'Zoe', guest:false, rulesVersion: RULES.version }, OTHER = { id:'BBBB2222', name:'Max', guest:false, rulesVersion: RULES.version };
 const ACCOUNTS = { [ME.id]: ME, [OTHER.id]: OTHER };
 function setup(){
   const t = { now: 2_000_000 }, clock = () => t.now, store = createMemoryGameStore(), banned = [];
@@ -39,7 +39,7 @@ test('mot interdit : masqué pour tous, avertissement avec motif, texte d\'origi
   const { say, social, moderation } = setup();
   const r = await say(ME, 'ferme-la connard');
   assert.equal(r.message.text, 'ferme-la *******');
-  assert.deepEqual({ ...r.warning, bannedUntil: 0 }, { warnings: 1, max: 3, bannedUntil: 0, banned: false, motif: 'Insulte' });
+  assert.deepEqual({ ...r.warning, bannedUntil: 0 }, { warnings: 1, max: 3, bannedUntil: 0, mutedUntil: 0, banned: false, motif: 'Insulte' });
   assert.equal((await social.chatGet(OTHER, 0)).messages.at(-1).text, 'ferme-la *******', 'les autres voient le texte masqué');
   const f = await moderation.show(ME.id);
   assert.equal(f.warnings[0].text, 'ferme-la connard'); assert.equal(f.warnings[0].channel, 'global');
@@ -106,7 +106,7 @@ test('banni : toute action (POST) refusée avec le motif, lire et son compte res
     const text = await res.text();
     return { status: res.status, data: text ? JSON.parse(text) : null };
   };
-  const me = (await call('POST', '/api/account/guest', {})).data.account;
+  const me = (await call('POST', '/api/account/guest', { acceptRules: true })).data.account;
   assert.equal((await call('GET', '/api/moderation/me')).data.bannedUntil, 0);
   for(const text of ['connard', 'salope', 'fdp']) await moderation.warn(me.id, { channel: 'global', text, masked: '***', hits: [{ word: text, motif: 'Insulte' }] });
   const r = await call('POST', '/api/game/start', {});

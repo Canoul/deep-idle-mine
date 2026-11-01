@@ -49,6 +49,14 @@ export function createRaffle({ store, give, announce, clock = Date.now, random }
       await start(clock());
       return { lot: lotLabel(state.current.lot), seconds: RAFFLE.joinMs / 1000 };
     }),
+    /* compte supprimé : il sort du tirage en cours */
+    eraseAccount: id => serial(async () => {
+      await load();
+      if(!state.current) return;
+      state.current.players = state.current.players.filter(p => p.id !== id);
+      if(state.current.winner?.id === id) delete state.current.winner;
+      await save();
+    }),
     /* !join : le texte de la réponse, pour ce joueur seul */
     join: me => serial(async () => {
       await load();

@@ -241,6 +241,16 @@ export function createGiantService({ store, game, clock = Date.now, config = GIA
     /* appelé en continu par le serveur : la salle avance, les visites finies sont closes, les points enregistrés */
     pump: () => serial(async () => { const now = clock(); await sync(now); await checkpoint(now); }),
 
+    /* compte supprimé : il quitte la salle ; ses points restent dans le total du jour, son nom non (server/game/store.js) */
+    eraseAccount: id => serial(async () => {
+      const now = clock();
+      await sync(now);
+      if(liveOf(id)){
+        exitRoom(room.G, id);
+        await closeVisits(takeDone(room.G), now);
+        if(!room.G.miners.length) room = null;
+      }
+    }),
     /* pour le service de jeu : une visite en cours compte comme une session */
     busy: async account => {
       const m = liveOf(account);

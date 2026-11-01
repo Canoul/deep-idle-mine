@@ -20,9 +20,11 @@ export function resolvePublic(root, publicPaths, urlPath){
   return ok ? file : null;
 }
 
-export async function serveStatic(req, res, root, publicPaths){
+/* pages : adresses sans extension → fichier public (/suppression-compte) */
+export async function serveStatic(req, res, root, publicPaths, pages = {}){
   if(req.method !== 'GET' && req.method !== 'HEAD'){ res.writeHead(405); return res.end(); }
-  const file = resolvePublic(root, publicPaths, req.url.split('?')[0]);
+  const url = req.url.split('?')[0];
+  const file = resolvePublic(root, publicPaths, Object.hasOwn(pages, url) ? pages[url] : url);
   if(!file){ res.writeHead(404, { 'Content-Type':'text/plain; charset=utf-8' }); return res.end('Introuvable'); }
   try {
     const data = await fs.readFile(file);

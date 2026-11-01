@@ -18,7 +18,7 @@ export function bootApp({ doc, win }){
   css.href = 'src/app/app.css';
   doc.head.append(css);
   const viewport = doc.querySelector('meta[name="viewport"]');
-  viewport.content += ',viewport-fit=cover';
+  if(!viewport.content.includes('viewport-fit')) viewport.content += ',viewport-fit=cover';
   if(status === 'blocked'){
     const b = doc.createElement('div');
     b.id = 'appBadge';
@@ -29,5 +29,7 @@ export function bootApp({ doc, win }){
       background: '#ffb84d' });
     doc.body.append(b);
   }
-  return { status, app };
+  /* téléphone seulement : bouton retour, liens, écran « Pas de connexion ». Prêt avant le premier appel au serveur */
+  if(status !== 'ok') return { status, app };
+  return { status, app, native: import('./device.js').then(m => m.startNative({ doc, win })).catch(e => { console.warn(e); return null; }) };
 }

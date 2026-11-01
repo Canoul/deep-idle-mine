@@ -46,6 +46,16 @@ export function createMemoryStore(initial = {}){
       await store.changed([{ ns: 'account', key: acc.id, value: acc }]);
     },
     async countAccounts(){ return accounts.size; },
+    /* Suppression d'un compte (server/accounts/erase.js) : retire le compte et ses connexions, et renvoie les changements sans les écrire */
+    eraseAccount(id){
+      const acc = accounts.get(id), out = [];
+      if(!acc) return out;
+      if(acc.nameKey) byName.delete(acc.nameKey);
+      accounts.delete(id);
+      out.push({ ns: 'account', key: id, value: null });
+      for(const [h, s] of sessions) if(s.accountId === id){ sessions.delete(h); out.push({ ns: 'session', key: h, value: null }); }
+      return out;
+    },
 
     async getSession(hash){ return copy(sessions.get(hash)) ?? null; },
     async putSession(hash, s){ sessions.set(hash, copy(s)); await store.changed([{ ns: 'session', key: hash, value: s }]); },
@@ -87,6 +97,7 @@ export async function createPgStore(db){
   store.changed = changes => db.write(changes);
   store.close = () => db.flush();
   store.file = 'PostgreSQL';
+  store.db = db;
   return store;
 }
 

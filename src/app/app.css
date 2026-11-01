@@ -1,6 +1,6 @@
 /* Couche appli : chargée seulement dans l'appli ou avec ?app (src/app/boot.js). Chaque règle commence par body.app.
    --top-h et --dock-h du jeu sont agrandis : mine, chat et panneaux laissent ainsi la place aux barres de l'appli. */
-body.app{--bar-h:calc(30*var(--u));--sub-h:0px;--safe-t:env(safe-area-inset-top);--safe-b:env(safe-area-inset-bottom);
+body.app{--bar-h:calc(30*var(--u));--sub-h:0px;--safe-t:var(--safe-area-inset-top,env(safe-area-inset-top));--safe-b:var(--safe-area-inset-bottom,env(safe-area-inset-bottom));
   --top-h:calc(var(--bar-h) + var(--safe-t) + var(--sub-h));--dock-h:calc(56px + var(--safe-b))}
 body.app.appSubOn{--sub-h:44px}
 body.app #nav,body.app #bgTown{display:none}
@@ -21,3 +21,9 @@ body.app #appSub button{position:relative;flex:1 0 auto;min-height:0;height:100%
   text-shadow:none;font:400 var(--fs-s)/1 var(--f-body);white-space:nowrap}
 body.app #appSub button.on{color:var(--acc-lt);box-shadow:inset 0 -3px 0 var(--acc)}
 body.app #appBar .dot,body.app #appSub .dot{position:absolute;right:6px;top:6px;width:8px;height:8px;background:var(--acc);box-shadow:0 0 0 2px #000}
+/* téléphone : pas de rebond ni de zoom au pincement, pas de surbrillance au toucher (01/11/2026) */
+html:has(body.app),body.app{overscroll-behavior:none}
+body.app{touch-action:pan-x pan-y;-webkit-tap-highlight-color:transparent}
+/* pas de connexion (src/app/device.js) : par-dessus tout, jamais de page blanche */
+#appOffline{position:fixed;inset:0;z-index:9000;display:flex;align-items:center;justify-content:center;padding:24px;background:#191310;color:#f0e0c8;font:20px/1.4 'VT323',monospace;text-align:center}
+#appOffline[hidden]{display:none}

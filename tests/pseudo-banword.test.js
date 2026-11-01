@@ -44,14 +44,13 @@ test('filtre : la liste du chat, déguisée ou collée à un mot ; les pseudos i
 });
 
 test('création : pseudo interdit refusé avec un message, sécurisation d\'un invité aussi ; rien n\'est créé', async () => {
-  const r = await call('/api/account/register', { name: 'Connard', password: PASS });
-  assert.equal(r.status, 400); assert.equal(r.data.error.code, 'invalid_name');
-  assert.match(r.data.error.message, /pas autorisé/);
+  const r = await call('/api/account/register', { acceptRules: true, name: 'Connard', password: PASS });
+  assert.equal(r.status, 400); assert.equal(r.data.error.code, 'invalid_name'); assert.match(r.data.error.message, /mot interdit/);
   assert.equal(await store.findAccountByName('connard'), null);
-  const g = await call('/api/account/guest');
+  const g = await call('/api/account/guest', { acceptRules: true });
   const c = await call('/api/account/claim', { name: 'c0nnard', password: PASS }, g.cookie);
   assert.equal(c.status, 400);
-  assert.equal((await call('/api/account/register', { name: 'Basile', password: PASS })).status, 201);
+  assert.equal((await call('/api/account/register', { acceptRules: true, name: 'Basile', password: PASS })).status, 201);
 });
 
 test('compte existant : signalé, actions bloquées, lire reste permis, il choisit un pseudo valable et garde son ID', async () => {

@@ -239,7 +239,7 @@ test('routes HTTP : connecté seulement, entrer, voir, sortir, réclamer', async
   try {
     assert.equal((await client()('GET', '/api/giant')).status, 401);
     const zoe = client();
-    await zoe('POST', '/api/account/register', { name:'Zoe', password:'motdepasse-zoe' });
+    await zoe('POST', '/api/account/register', { acceptRules: true, name:'Zoe', password:'motdepasse-zoe' });
     let r = await zoe('GET', '/api/giant');
     assert.equal(r.status, 200); assert.equal(r.data.present, 0);
     r = await zoe('POST', '/api/giant/enter');

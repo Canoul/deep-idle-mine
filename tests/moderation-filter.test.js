@@ -39,3 +39,22 @@ test('mot coupé sur deux messages, du même joueur ou de deux joueurs : le nouv
   assert.equal(findJoined([{ text: 'je vais au niveau', account: 'A' }], 'suivant').length, 0, 'rien de coupé');
   assert.equal(findJoined([{ text: 'nigger', account: 'A' }], 'salut').length, 0, 'déjà dans le message d\'avant, pas dans le nouveau');
 });
+
+/* Exigence des stores (01/11/2026) : termes sexuels, contournements simples, mots qui étaient pris dans un commentaire */
+test('contournements simples : casse, accents, lettres répétées, chiffres à la place des lettres', () => {
+  for(const t of ['CONNARD', 'cônnärd', 'connnnaaaard', 'c0nn4rd', 'S4L0P3', 'sal0pe', '3ncul3', 'ENCULÉ', 'b4t@rd', 'put3', 'c0nn@sse', 'whor3', '5lut'])
+    assert.ok(findBanned(t).length > 0, t);
+});
+test('termes sexuels et haineux, français et anglais, déguisés ou non', () => {
+  for(const t of ['suce ma bite', 'partouze', 'sodomie', 'p0rn0', 'porn', 'blowjob', 'pussy', 'dick', 'pedophile', 'heil hitler', 'white power',
+                  'va te faire foutre', 'fuck you', 'je vais te violer'])
+    assert.ok(findBanned(t).length > 0, t);
+});
+test('« mongol » et « triso » sont bien filtrés (ils étaient pris dans un commentaire de la liste)', () => {
+  assert.ok(findBanned('espèce de mongol').length > 0);
+  assert.ok(findBanned('t\'es triso').length > 0);
+});
+test('faux positifs des termes sexuels : les mots du jeu et du français courant passent', () => {
+  for(const t of ['ma chatte dort', 'une râpe à fromage', 'une pipe en bois', 'le cul de sac', 'cocktail', 'dictionnaire', 'sexe', 'fuck ce boss', 'analyse'])
+    assert.equal(findBanned(t).length, 0, t);
+});

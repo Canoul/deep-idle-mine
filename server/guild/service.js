@@ -216,6 +216,15 @@ export function createGuildService({ store, accounts, statusOf, inviteCheck = as
     /* nom de la guilde d'un joueur, null sans guilde (sous son pseudo) */
     async nameOf(id){ await load(); return guildOf(id)?.name ?? null; },
     /* comptes de la guilde d'un joueur, [] sans guilde (canal Guilde du chat, server/social/service.js) */
+    /* compte supprimé : il sort de sa guilde (le suivant devient chef, guilde vide : dissoute), de ses invitations et demandes */
+    eraseAccount: id => serial(async () => {
+      await load();
+      dropPending(id);
+      for(const g of all()) g.invites = g.invites.filter(i => i.by !== id);
+      const g = guildOf(id);
+      if(g) exit(g, id);
+      await save();
+    }),
     async membersOf(id){ await load(); return guildOf(id)?.members.map(m => m.id) ?? []; },
     /* invitations reçues par un joueur (pop-up, server/social/service.js) */
     async invitesOf(id){ await load(); return invitesFor(id).map(g => ({ guildId:g.id, name:g.name })); },

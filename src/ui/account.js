@@ -4,10 +4,11 @@
 import { ADMIN_VIEW } from '../config.js';
 import { renderPrisonDashboard } from '../meta/prison-dashboard.js';
 const isTeam = a => !!a && !a.guest && ADMIN_VIEW.names.some(n => n.toLowerCase() === String(a.name ?? a.displayName ?? '').toLowerCase());
-import { ACCOUNT } from '../config.js';
+import { ACCOUNT, RULES, ACCOUNT_DELETE_WORD } from '../config.js';
 import { checkName, checkPassword, parseRecoveryCode } from '../shared/account.js';
-import { accountApi, ApiError, OfflineError } from '../net/api.js';
-import { tell } from './dialog.js';
+import { accountApi, request, ApiError, OfflineError } from '../net/api.js';
+import { inLocalApp } from '../net/base.js';
+import { ask, askFields, tell } from './dialog.js';
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
 
@@ -17,7 +18,8 @@ export function checkForm(mode, v){
   if(mode === 'rename') return checkName(v.name);
   if(mode === 'register' || mode === 'claim'){
     return checkName(v.name) ?? checkPassword(v.password, v.name)
-        ?? (v.password !== v.confirm ? 'Les deux mots de passe ne sont pas identiques.' : null);
+        ?? (v.password !== v.confirm ? 'Les deux mots de passe ne sont pas identiques.' : null)
+        ?? (mode === 'register' && !v.acceptRules ? "Accepte les conditions d'utilisation et la politique de confidentialité pour continuer." : null);
   }
   if(mode === 'recover'){
     if(!v.name?.trim()) return 'Pseudo requis.';
@@ -41,6 +43,21 @@ const newPassFields = () =>
   field('password', 'Mot de passe', 'password', `autocomplete="new-password" placeholder="${ACCOUNT.passMin} caractères minimum"`) +
   field('confirm', 'Confirmation', 'password', 'autocomplete="new-password"');
 
+/* case des règles (01/11/2026) : sans elle, pas de compte, invité compris ; le serveur la revérifie */
+const rulesCheck = () => `<label class="chk rulesChk"><input type="checkbox" name="acceptRules" data-rules> <span>J'accepte les
+  <a href="${RULES.terms}" target="_blank" rel="noopener">conditions d'utilisation</a> et la
+  <a href="${RULES.privacy}" target="_blank" rel="noopener">politique de confidentialité</a></span></label>`;
+
+/* pages légales (01/11/2026) : Mon compte, création de compte, bas de l'écran d'accueil */
+export const legalLinks = () => `<p class="legalLinks">${[[RULES.privacy, 'Confidentialité'], [RULES.notice, 'Mentions légales'], [RULES.terms, 'Conditions'], [RULES.deletion, 'Supprimer son compte']]
+  .map(([u, t]) => `<a href="${u}" target="_blank" rel="noopener">${t}</a>`).join(' · ')}</p>`;
+
+/* supprimer son compte (01/11/2026) : textes et champs de la fenêtre ; le serveur revérifie tout */
+export const deleteWarning = account => `Supprimer ton compte ?\nTu perdras pour toujours ta progression, ton inventaire, ton stuff, tes amis et tes records. Cette action est irréversible.${account.guest ? '' : '\nTes messages du chat seront effacés.'}`;
+export const deleteFields = account => account.guest ? [{ name: 'confirm', label: `Tape ${ACCOUNT_DELETE_WORD}` }]
+  : [{ name: 'name', label: 'Ton pseudo' }, { name: 'password', label: 'Ton mot de passe', type: 'password' }];
+export const profileDanger = () => `<div class="dangerZone"><button class="danger" data-act="deleteAccount">Supprimer mon compte</button></div>`;
+
 /* options du joueur dans « Mon compte » : une case à cocher par option (rien s'il n'y en a pas) */
 export const optionsHtml = (options = []) => options.length ? `<h4>Options</h4>` + options.map(o =>
   `<label class="chk" title="${esc(o.title ?? '')}"><input type="checkbox" data-opt="${esc(o.key)}"${o.on ? ' checked' : ''}> ${esc(o.label)}</label>`).join('') : '';
@@ -57,17 +74,20 @@ const VIEWS = {
     </form>
     <p class="links"><a href="#" data-go="recover">Mot de passe oublié ?</a></p>
     <div class="sep"><span>pas encore de compte ?</span></div>
+    ${rulesCheck()}
     <div class="acts">
       <button data-go="register">Créer un compte</button>
-      <button data-act="guest" title="Sans pseudo ni mot de passe. Tu pourras sécuriser ton compte plus tard.">Jouer en invité</button>
-    </div>`,
+      <button data-act="guest" disabled title="Sans pseudo ni mot de passe. Tu pourras sécuriser ton compte plus tard.">Jouer en invité</button>
+    </div>
+    ${legalLinks()}`,
 
   register: () => `
     <h3>Créer un compte</h3>
     <p class="mut">Pas besoin d'e-mail : un pseudo et un mot de passe suffisent.</p>
-    <form data-mode="register">${pseudoField('username')}${newPassFields()}
+    <form data-mode="register">${pseudoField('username')}${newPassFields()}${rulesCheck()}
       <p class="err" hidden></p><button class="main" type="submit">Créer mon compte</button></form>
-    <p class="links"><a href="#" data-go="login">← J'ai déjà un compte</a></p>`,
+    <p class="links"><a href="#" data-go="login">← J'ai déjà un compte</a></p>
+    ${legalLinks()}`,
 
   recover: () => `
     <h3>Mot de passe oublié</h3>
@@ -102,9 +122,11 @@ const VIEWS = {
          il est perdu. Sécurise-le avec un pseudo et un mot de passe pour le garder (ton ID ne change pas).</p>
       <div class="acts"><button class="main" data-go="claim">Sécuriser mon compte</button></div>` : `
       <div class="acts"><button data-go="password">Changer de mot de passe</button></div>`}
-    ${isTeam(account) ? `<div class="acts"><button data-act="prisonDash" title="Rendement de la prison de chaque joueur contre ses 10 dernières mines (compte de l'équipe)">📊 Rendement de la prison</button></div>` : ''}
+    ${isTeam(account) && !inLocalApp ? `<div class="acts"><button data-act="prisonDash" title="Rendement de la prison de chaque joueur contre ses 10 dernières mines (compte de l'équipe)">📊 Rendement de la prison</button></div>` : ''}
     ${optionsHtml(options)}
-    <div class="acts end"><button data-act="logout">Se déconnecter</button><button data-act="close">Fermer</button></div>`,
+    <div class="acts end"><button data-act="logout">Se déconnecter</button><button data-act="close">Fermer</button></div>
+    ${profileDanger()}
+    ${legalLinks()}`,
 
   claim: () => `
     <h3>Sécuriser mon compte</h3>
@@ -151,7 +173,10 @@ export function createAccountUI(root, state, handlers = {}){
   const hide = () => { root.hidden = true; };
 
   /* écran de connexion (au lancement : impossible de le fermer sans se connecter) */
-  function gate(){ closable = false; show('login'); }
+  function gate(message = ''){
+    closable = false; show('login');
+    if(message){ const e = box.querySelector('.err'); e.textContent = message; e.hidden = false; }   // compte suspendu : pourquoi
+  }
   /* compte déjà connecté dont le pseudo est interdit */
   function forceRename(account){ state.account = account; closable = false; show('rename'); }
   /* fenêtre « Mon compte » (depuis la barre) */
@@ -207,11 +232,19 @@ export function createAccountUI(root, state, handlers = {}){
     if(name === 'prisonDash'){
       const w = window.open('', '_blank');
       try {
-        const r = await fetch('/api/game/admin/prison', { credentials: 'same-origin' });
-        if(!r.ok) throw new Error('refusé (' + r.status + ')');
-        const html = renderPrisonDashboard((await r.json()).rows || []);
+        const html = renderPrisonDashboard((await request('GET', '/api/game/admin/prison')).rows || []);
         if(w){ w.document.open(); w.document.write(html); w.document.close(); }
       } catch(e){ w?.close(); tell('Tableau de bord indisponible : ' + e.message); }
+      return;
+    }
+    if(name === 'deleteAccount'){
+      if(!await ask(deleteWarning(state.account), { ok: 'Continuer', danger: true })) return;
+      const v = await askFields('Confirme la suppression de ton compte.', deleteFields(state.account), { ok: 'Supprimer définitivement', danger: true });
+      if(!v) return;
+      try { await accountApi.deleteAccount(v); }
+      catch(e){ return tell(e instanceof ApiError ? e.message : 'Serveur injoignable. Réessaie dans un instant.'); }
+      await tell('Ton compte a été supprimé.');
+      location.reload();     // écran d'accueil : rien du compte ne reste en mémoire
       return;
     }
     if(name === 'logout'){
@@ -230,6 +263,7 @@ export function createAccountUI(root, state, handlers = {}){
   });
   box.addEventListener('change', e => {
     if(e.target.matches('[data-ok]')) box.querySelector('[data-act="done"]').disabled = !e.target.checked;
+    if(e.target.matches('[data-rules]')){ const g = box.querySelector('[data-act="guest"]'); if(g) g.disabled = !e.target.checked; }
     if(e.target.matches('[data-opt]')) on.setOption(e.target.dataset.opt, e.target.checked);
   });
   root.addEventListener('click', e => { if(e.target === root && closable) hide(); });
@@ -256,7 +290,11 @@ export function renderNavAccount(el, { account, offline }){
    Sans serveur de jeu, on joue hors ligne (sans compte) comme avant. */
 export async function bootAccount(accountUI){
   try {
-    const account = await accountApi.me();
+    const { account, suspended } = await accountApi.whoAmI();
+    if(suspended) return new Promise(resolve => {     // compte suspendu (01/11) : l'écran de connexion dit pourquoi ; un autre compte reste possible
+      accountUI.on.onSignedIn = a => resolve({ account: a, offline: false });
+      accountUI.gate(suspended);
+    });
     if(account?.mustRename) return new Promise(resolve => {
       accountUI.on.onSignedIn = a => resolve({ account: a, offline: false });
       accountUI.forceRename(account);

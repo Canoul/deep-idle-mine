@@ -31,7 +31,20 @@ export async function openDatabase(url, { pool, retries = RETRIES, log = console
   let queue = Promise.resolve();
   const wait = ms => new Promise(r => setTimeout(r, ms));
 
+  /* lignes effacées ET écrites dans une même écriture (suppression d'un compte) : une transaction, tout ou rien */
+  async function transaction(rows){
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      for(const r of rows.filter(r => r.json === null)) await client.query(`DELETE FROM ${DB_TABLE} WHERE ns = $1 AND key = $2`, [r.ns, r.key]);
+      for(const r of rows.filter(r => r.json !== null))
+        await client.query(`INSERT INTO ${DB_TABLE} (ns, key, value) VALUES ($1, $2, $3::jsonb) ON CONFLICT (ns, key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()`, [r.ns, r.key, r.json]);
+      await client.query('COMMIT');
+    } catch(e){ await client.query('ROLLBACK').catch(() => {}); throw e; }
+    finally { client.release(); }
+  }
   async function apply(rows){
+    if(pool.connect && rows.length > 1 && rows.some(r => r.json === null)) return transaction(rows);
     for(const r of rows.filter(r => r.json === null))
       await pool.query(`DELETE FROM ${DB_TABLE} WHERE ns = $1 AND key = $2`, [r.ns, r.key]);
     /* toutes les lignes à écrire en une seule requête : PostgreSQL l'applique entièrement ou pas du tout */

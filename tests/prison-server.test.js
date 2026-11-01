@@ -708,7 +708,7 @@ test('stuff relu à chaque run (30/10) : une pièce équipée pendant la prison 
   const p = await prisonOf(store, A.id);
   const disc = q => buildPrisonRun(runRecord(q)).miners[0].carac.discoverMax;
   const before = disc(p);
-  await store.putInventoryAndStuff(A.id, JSON.parse(serialize(createInventory())), { worn: { casque: { item: 'Lunettes Gucci', uid: 1 } } });
+  await store.putInventoryAndStuff(A.id, JSON.parse(serialize(createInventory())), { worn: { casque: { item: 'Lunettes de luxe', uid: 1 } } });
   assert.equal(disc(await prisonOf(store, A.id)), before, 'run en cours : inchangé');
   t.now = Math.max(runEndAt(p), p.lastSeenAt + PRISON.batchMs);
   await game.pump();

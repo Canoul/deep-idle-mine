@@ -6,9 +6,13 @@ import fs from 'node:fs';
 
 export const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ? process.argv[i + 1] : d; };
 export const fail = msg => { console.error(msg); process.exit(1); };
+/* qui lance l'outil, pour le journal de modération */
+export const adminBy = () => process.env.SUDO_USER || process.env.USER || process.env.USERNAME || 'admin';
+/* date lisible, heure de Paris */
+export const parisTime = t => new Intl.DateTimeFormat('fr-FR', { timeZone: 'Europe/Paris', dateStyle: 'short', timeStyle: 'short' }).format(new Date(t));
 
 /* réglages au format systemd (KEY=valeur, # commentaires) ; l'environnement déjà défini l'emporte */
-function readEnv(file){
+export function readEnv(file){
   const out = {};
   if(!fs.existsSync(file)) return out;
   for(const line of fs.readFileSync(file, 'utf8').split(/\r?\n/)){
