@@ -93,13 +93,14 @@ export const instantApi = {
 };
 
 /* Bloc géant : panneau du lobby, la salle pendant une visite, entrer / sortir, réclamer les récompenses */
-export const giantApi = {
-  info:  () => request('GET', '/api/giant'),
-  view:  () => request('GET', '/api/giant/view'),
-  enter: () => request('POST', '/api/giant/enter', {}),
-  leave: () => request('POST', '/api/giant/leave', {}),
-  claim: () => request('POST', '/api/giant/claim', {}),
-};
+const roomApi = base => ({
+  info:  () => request('GET', base),
+  view:  () => request('GET', `${base}/view`),
+  enter: () => request('POST', `${base}/enter`, {}),
+  leave: () => request('POST', `${base}/leave`, {}),
+  claim: () => request('POST', `${base}/claim`, {}),
+});
+export const giantApi = roomApi('/api/giant'), hesComingApi = roomApi('/api/hescoming');
 
 /* Guilde : écritures, chacune renvoie l'état vu par le joueur */
 export const guildApi = {

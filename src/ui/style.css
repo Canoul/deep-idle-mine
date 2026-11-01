@@ -361,15 +361,16 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 #noSession{padding:16vh calc(6*var(--u)) 0}
 /* session et Bloc géant en même temps (27/10) : la barre #sessSwitch choisit ce qu'on voit, sans toucher aux hidden */
 .sessSwitch{position:fixed;top:var(--top-h);left:0;right:0;z-index:3;height:calc(19*var(--u));display:flex;justify-content:center;align-items:center;background:var(--panel);border-bottom:var(--u) solid var(--sep)}
-.view.both #run,.view.both #miRun,.view.both #twRun,.view.both #gtRun{top:calc(var(--top-h) + 19*var(--u))}
-.view.both.paneGiant #run,.view.both.paneGiant #miRun,.view.both.paneGiant #twRun,.view.both.paneGiant #end,
-.view.both.paneSession #gtRun,.view.both.paneSession #gtDone{display:none!important}
+.view.both #run,.view.both #miRun,.view.both #twRun,.view.both #gtRun,.view.both #hcRun{top:calc(var(--top-h) + 19*var(--u))}
+.view.both.paneGiant #run,.view.both.paneGiant #miRun,.view.both.paneGiant #twRun,.view.both.paneGiant #end,.view.both.paneGiant #hcRun,.view.both.paneGiant #hcDone,
+.view.both.paneHc #run,.view.both.paneHc #miRun,.view.both.paneHc #twRun,.view.both.paneHc #end,.view.both.paneHc #gtRun,.view.both.paneHc #gtDone,
+.view.both.paneSession #gtRun,.view.both.paneSession #gtDone,.view.both.paneSession #hcRun,.view.both.paneSession #hcDone{display:none!important}
 #noSession button{margin-top:calc(4*var(--u))}
-#run,#miRun,#twRun,#gtRun,#inRun{position:fixed;top:var(--top-h);bottom:0;left:0;right:0;z-index:2;display:flex;flex-direction:column}
+#run,#miRun,#twRun,#gtRun,#hcRun,#inRun{position:fixed;top:var(--top-h);bottom:0;left:0;right:0;z-index:2;display:flex;flex-direction:column}
 /* la mine et la jauge restent au-dessus de la barre d'action ; les colonnes aussi par défaut, mais descendent jusqu'en
    bas de l'écran quand la barre (centrée) ne passe pas dessous (src/ui/fit.js, clearDock) */
-#cvWrap,#cvMiWrap,#cvTwWrap,#cvGtWrap,#cvInWrap,.rail,.runL,.runR,.runGrid.mi>aside{margin-bottom:var(--dock-h)}
-#run>header,#miRun>header,#twRun>header,#gtRun>header,#inRun>header{display:flex;flex-wrap:wrap;gap:calc(4*var(--u)) calc(6*var(--u));align-items:center;padding:calc(3*var(--u)) calc(6*var(--u));
+#cvWrap,#cvMiWrap,#cvTwWrap,#cvGtWrap,#cvHcWrap,#cvInWrap,.rail,.runL,.runR,.runGrid.mi>aside{margin-bottom:var(--dock-h)}
+#run>header,#miRun>header,#twRun>header,#gtRun>header,#hcRun>header,#inRun>header{display:flex;flex-wrap:wrap;gap:calc(4*var(--u)) calc(6*var(--u));align-items:center;padding:calc(3*var(--u)) calc(6*var(--u));
   background:#120d0a;box-shadow:0 var(--u) 0 #000}
 .timer{font-size:var(--fs-xl);font-variant-numeric:tabular-nums}
 /* prison (29/10) : bandeau au-dessus de la mine ; ni chat, ni focus, ni vitesse (rien à choisir pendant un run) */
@@ -388,12 +389,12 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
   scrollbar-width:thin;scrollbar-color:var(--line) transparent}
 .runL .card,.runR .card,.runGrid.mi .card{font-size:var(--fs-s)}
 .runL .card>h2,.runR .card>h2,.runGrid.mi .card>h2{font-size:var(--fs)}
-#cvWrap,#cvMiWrap,#cvTwWrap,#cvGtWrap,#cvInWrap{position:relative;min-width:0;min-height:0;display:grid;place-items:center}
+#cvWrap,#cvMiWrap,#cvTwWrap,#cvGtWrap,#cvHcWrap,#cvInWrap{position:relative;min-width:0;min-height:0;display:grid;place-items:center}
 /* la mine remplit la largeur : plus haute que sa boîte, elle est centrée et rognée en haut et en bas */
 #cvWrap{overflow:hidden}
 /* les canvas sont hors du flux : la boîte a la taille que lui donne la page, jamais celle du canvas (sinon le calage de
    src/ui/fit.js se nourrit de sa propre taille et le canvas rétrécit / grandit en boucle) */
-#cv,#cvMi,#cvTw,#cvGt,#cvIn{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
+#cv,#cvMi,#cvTw,#cvGt,#cvHc,#cvIn{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
 #followBtn{z-index:1}
 #cv,#cvMi{display:block;background:#000;box-shadow:0 0 0 var(--u) #000,0 0 0 calc(3*var(--u)) var(--line),calc(4*var(--u)) calc(4*var(--u)) 0 calc(3*var(--u)) #000}
 #cv{touch-action:none;cursor:grab}
@@ -759,7 +760,7 @@ body.phone .chatDock .card{background:#0b0806}
   .runR{grid-column:1/-1;flex-direction:row;flex-wrap:wrap;overflow:visible}
   .runR .card{flex:1 1 calc(130*var(--u))}
   #run{position:static;min-height:calc(100dvh - var(--top-h) - var(--dock-h))}
-  #cvWrap,#cvMiWrap,#cvTwWrap,#cvGtWrap,#cvInWrap,.rail,.runL,.runR,.runGrid.mi>aside{margin-bottom:0!important}   /* la page défile : la marge du bas suffit */
+  #cvWrap,#cvMiWrap,#cvTwWrap,#cvGtWrap,#cvHcWrap,#cvInWrap,.rail,.runL,.runR,.runGrid.mi>aside{margin-bottom:0!important}   /* la page défile : la marge du bas suffit */
   .runGrid{min-height:calc(100dvh - var(--top-h) - var(--dock-h) - 30*var(--u))}
   #cvWrap{min-height:calc(260*var(--u))}
   .skTrees{grid-template-columns:1fr}
@@ -790,7 +791,7 @@ body.phone .chatDock .card{background:#0b0806}
   .runGrid.mi{display:flex}
   /* événements (MI, tours, instance, géant) : l'écran ne défile pas ; le canvas prend une part fixe de la hauteur,
      la colonne d'infos le reste (elle défile) */
-  #cvMiWrap,#cvTwWrap,#cvGtWrap,#cvInWrap{flex:0 0 60%}
+  #cvMiWrap,#cvTwWrap,#cvGtWrap,#cvHcWrap,#cvInWrap{flex:0 0 60%}
   .runGrid.mi>aside{flex:1 1 0;margin-bottom:var(--dock-h)!important}   /* au-dessus de la barre d'action */
   .stuffGrid{grid-template-columns:1fr;grid-auto-flow:row;grid-template-rows:none}
   .stuffSlot:nth-child(n){grid-column:1;grid-template-columns:calc(33*var(--u)) minmax(0,1fr);text-align:left}
@@ -1085,9 +1086,9 @@ button.danger{color:var(--bad)}
 @media (max-width:700px){ .lobbySets .setRow b{flex-basis:100%} }   /* téléphone : le nom sur sa ligne, les boutons dessous */
 
 /* Bloc géant (26/10/2026) : carte du lobby, visite, fin de visite */
-#cvGt{display:block;background:#000;box-shadow:0 0 0 var(--u) #000,0 0 0 calc(3*var(--u)) var(--line),calc(4*var(--u)) calc(4*var(--u)) 0 calc(3*var(--u)) #000}
-#gtDone{padding:12vh calc(6*var(--u)) 0}
-#gtDone button{margin-top:calc(4*var(--u))}
+#cvGt,#cvHc{display:block;background:#000;box-shadow:0 0 0 var(--u) #000,0 0 0 calc(3*var(--u)) var(--line),calc(4*var(--u)) calc(4*var(--u)) 0 calc(3*var(--u)) #000}
+#gtDone,#hcDone{padding:12vh calc(6*var(--u)) 0}
+#gtDone button,#hcDone button{margin-top:calc(4*var(--u))}
 .gtStats{display:grid;grid-template-columns:auto auto;gap:var(--u) calc(6*var(--u));justify-content:center;margin:calc(4*var(--u)) 0}
 .gtStats b{text-align:right;font-variant-numeric:tabular-nums}
 .gtTotal{font-size:var(--fs-xl);font-variant-numeric:tabular-nums}

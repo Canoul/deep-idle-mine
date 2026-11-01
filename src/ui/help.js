@@ -12,7 +12,7 @@ export const HELP = {
   where: `Activités
 Mine : la session normale, 1 h dans une mine qui descend d'area en area. Seul ou jusqu'à 3.
 Mine instantanée : quelques minutes, à heure fixe, sur inscription, chacun pour soi.
-Instances, Bloc géant, Jugement : des défis à part, chacun a ses règles (le « ? » de sa carte).`,
+Instances, Bloc géant, He's coming, Jugement : des défis à part, chacun a ses règles (le « ? » de sa carte).`,
   team: `Équipe
 Jusqu'à 3 joueurs, un mineur chacun.
 Seul, tu gardes tout le coffre ; à plusieurs, il est partagé à parts égales à la fin.

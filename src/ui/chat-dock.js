@@ -26,7 +26,7 @@ function centralLeft(){
   const seen = el => el.getClientRects().length > 0;
   const view = document.querySelector('.view:not([hidden])');
   if(!view) return Infinity;
-  const el = [...view.querySelectorAll('#cv, #cvMi, #cvTw, #cvGt, #cvIn')].find(seen) ?? view.querySelector('.lobbyWrap, .invWrap, .furnWrap');
+  const el = [...view.querySelectorAll('#cv, #cvMi, #cvTw, #cvGt, #cvHc, #cvIn')].find(seen) ?? view.querySelector('.lobbyWrap, .invWrap, .furnWrap');
   if(!el) return Infinity;
   const pad = el.matches('.lobbyWrap, .invWrap, .furnWrap') ? (parseFloat(getComputedStyle(el).paddingLeft) || 0) * 0.9 : 0;
   return el.getBoundingClientRect().left + pad;
@@ -48,7 +48,7 @@ export function setupChatDock({ dock, edges, fold, onChange = () => {} }){
   /* le bord de l'interface centrale bouge avec l'onglet, l'écran du Lobby et la taille de la fenêtre */
   if(typeof ResizeObserver !== 'undefined'){
     const ro = new ResizeObserver(fit);
-    for(const el of document.querySelectorAll('#views, #lobbyMenu, #lobbyStage, #run, #miRun, #twRun, #gtRun, #inRun, #cv, #cvMi, #cvTw, #cvGt, #cvIn')) ro.observe(el);
+    for(const el of document.querySelectorAll('#views, #lobbyMenu, #lobbyStage, #run, #miRun, #twRun, #gtRun, #hcRun, #inRun, #cv, #cvMi, #cvTw, #cvGt, #cvHc, #cvIn')) ro.observe(el);
   }
   addEventListener('resize', fit);
   function apply(){
