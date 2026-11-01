@@ -10,7 +10,7 @@ import { sacrificesFor, nextLevel, upgradeNeeds, ringDupes } from '../meta/upgra
 import { tipAttr } from './tooltip.js';
 import { helpLine } from './help.js';
 import { icon } from './craft.js';
-import { rcls, rname, pname, runeMark } from './rarity.js';
+import { rcls, rname, pname, runeMark, rframe } from './rarity.js';
 import { ask } from './dialog.js';
 
 const $ = id => document.getElementById(id);
@@ -29,7 +29,7 @@ export const identifyChoices = (list, t) => t
   : list.filter(p => !isIdentified(p));
 
 /* une case d'objet (vide : son libellé) */
-const box = (p, label, cls) => `<button class="slot upBox ${cls}${p ? rcls(p.item) : ' empty'}"${p ? tipAttr(p.item, p.item, p) : ''}>`+
+const box = (p, label, cls) => `<button class="slot upBox ${cls}${p ? rcls(p.item) : ' empty'}"${rframe(p)}${p ? tipAttr(p.item, p.item, p) : ''}>`+
   `${p ? icon(p.item) + runeMark(p) : ''}</button><div class="upLbl">${p ? pname(p) : `<span class="mut">${esc(label)}</span>`}</div>`;
 /* onOp({ action:'identify', uid, sacrifice } | { action:'upgrade', uid } | { action:'enchant', uid, rune }) → promesse { piece, success } (rejetée avec un message lisible) ;
    worn() : pièces portées { case: pièce } (onglet Stuff) */

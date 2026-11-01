@@ -2,12 +2,19 @@
    reprises de RARITY en config. */
 import { RARITY, RUNE } from '../config.js';
 import { rarityOf, rarityDef } from '../meta/rarity.js';
-import { pieceName, pieceColor, itemName, itemColor } from '../meta/piece.js';
+import { pieceName, pieceColor, itemName, itemColor, isRune, qualityDef } from '../meta/piece.js';
 
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
 
 /* classe à ajouter à la case d'un objet (avec l'espace devant) : ' r-commun', ' r-inhabituel'… */
 export const rcls = item => ` r-${rarityOf(item)}`;
+
+/* contour d'une rune ou d'un fragment : la couleur de sa qualité (01/11/2026, Geoffrey), à ajouter à la balise de la case ; le type seul ne dit
+   rien, toutes les runes sont épiques et tous les fragments rares. Rien pour le reste : les pièces gardent la rareté de leur type */
+export function rframe(p){
+  const c = isRune(p?.item) ? qualityDef(p.q)?.color : null;
+  return c ? ` style="--rc:${c}"` : '';
+}
 
 /* nom de l'objet dans la couleur de sa rareté (un trésor : dans la couleur de sa qualité) ; text : texte affiché (par
    défaut le nom affiché, src/meta/piece.js itemName) */
