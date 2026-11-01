@@ -1,0 +1,98 @@
+/* Contenu de la prison d'après les 10 dernières mines (29/10/2026, Geoffrey ; src/meta/prison-profile.js) */
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { prisonProfile, lastMines, sanitizeProfile, pickShare, capOres } from '../src/meta/prison-profile.js';
+import { profileComp } from '../src/sim/world.js';
+import { newPrisonRun, tickPrison } from '../src/sim/prison.js';
+import { PRISON, AREAS } from '../src/config.js';
+
+const A = 'AAAA1111';
+const mine = (i, { areas = 6, bag = {}, killsBy, left = false, mode = 'mine', dev = false } = {}) => ({
+  id: 's' + i, mode, dev, status: 'done', startedAt: i * 1000, endedAt: i * 1000 + 500, players: [{ account: A }],
+  result: { areasUnlocked: areas, shares: [{ account: A, left, bag }], miners: [{ account: A, stats: { killsBy } }] } });
+
+test('profil : 10 dernières mines classiques où le joueur était là ; area moyenne ; parts des minerais, treasures, mobs', () => {
+  const s = [
+    ...Array.from({ length: 12 }, (_, i) => mine(i, { areas: i < 2 ? 1 : 7, bag: { Fer: 60, Or: 40, Pierre: 500, 'Treasure T3': 1 }, killsBy: { gobelin: 3, golem: 1 } })),
+    mine(20, { mode: 'mi', areas: 0, bag: { Diamant: 999 } }), mine(21, { left: true, bag: { Diamant: 999 } }), mine(22, { dev: true, bag: { Diamant: 999 } }),
+  ];
+  assert.equal(lastMines(s, A).length, PRISON.profileSessions);
+  const p = prisonProfile(s, A);
+  assert.equal(p.n, 10); assert.equal(p.area, 7);                       // les 2 vieilles mines en area 1 sont hors des 10
+  assert.deepEqual(p.ores, { iron: 0.6, gold: 0.4 });                    // pierre ignorée ; ni MI, ni partie, ni dev
+  assert.deepEqual(p.treasures, { 'Treasure T3': 1 });
+  assert.deepEqual(p.mobs, { gobelin: 0.75, golem: 0.25 });
+  assert.equal(prisonProfile(s.slice(12), A).n, 0);
+  assert.equal(PRISON.fallbackArea, 2);
+  assert.equal(prisonProfile([mine(1, { areas: 0 })], A).area, 2, 'une mine en area 0 : pas plus bas que le départ d\'un nouveau joueur');
+  assert.equal(prisonProfile([mine(1, { areas: 3 })], A).area, 3);
+  assert.deepEqual(prisonProfile([], A), { n: 0, area: PRISON.fallbackArea, ores: null, treasures: null, mobs: null });
+  assert.equal(prisonProfile([mine(22, { dev: true, bag: { Fer: 1 } })], A, true).n, 1, 'serveur de dev : les mines dev comptent');
+});
+
+test('focus minerai (31/10) : les mines visées pèsent comme la référence, les nouvelles mines prennent le relais', () => {
+  const clean = i => mine(i, { areas: 7, bag: { Fer: 100 } });
+  const focused = (i, f, opts = {}) => ({ ...mine(i, { areas: 7, bag: { 'Cobalt ore': 100 }, ...opts }), focus: [{ account: 'ami', tick: 1, focus: f }] });
+  const ref = PRISON.focusRef.ores, tot = Object.values(ref).reduce((a, b) => a + b, 0);
+  const all = prisonProfile(Array.from({ length: 10 }, (_, i) => focused(i, { cobalt: 'only' })), A);
+  assert.ok(Math.abs(all.ores.mithril - ref.mithril / tot) < 1e-9, 'que des mines au focus (même celui d\'un ami du groupe) : la référence');
+  assert.equal(all.area, 7);
+  const half = prisonProfile([...Array.from({ length: 5 }, (_, i) => focused(i, { cobalt: 'target' })), ...Array.from({ length: 5 }, (_, i) => clean(i + 5))], A);
+  assert.ok(Math.abs(half.ores.iron - (0.5 + 0.5 * ref.iron / tot)) < 1e-9, 'moitié de ses vraies mines, moitié de référence');
+  assert.ok(Math.abs(Object.values(half.ores).reduce((a, b) => a + b, 0) - 1) < 1e-9);
+  assert.deepEqual(prisonProfile(Array.from({ length: 10 }, (_, i) => focused(i, { area: 3 })), A).ores, { cobalt: 1 }, 'focus d\'area : pas touché');
+  assert.deepEqual(prisonProfile([focused(1, { iron: 'only' }, { areas: 3 })], A).ores, { cobalt: 1 }, 'petites areas : pas de cobalt offert par la référence');
+});
+
+test('profil relu : parts revérifiées (clés inconnues, nombres invalides) ; tirage pondéré', () => {
+  const p = sanitizeProfile({ n: 3, area: 5, ores: { iron: 1, mud: 5, gold: -1 }, treasures: { 'Treasure T9': 1 }, mobs: { golem: Infinity } });
+  assert.deepEqual(p, { n: 3, area: 5, ores: { iron: 1 }, treasures: null, mobs: null });
+  assert.equal(sanitizeProfile(null), null);
+  assert.equal(pickShare({ a: 0.25, b: 0.75 }, 0.2), 'a'); assert.equal(pickShare({ a: 0.25, b: 0.75 }, 0.3), 'b');
+});
+
+test('plafond cobalt et thorium : le surplus va aux minerais sans plafond, le total ne bouge pas', () => {
+  const ores = { iron: 0.5, gold: 0.3, mithril: 0.18, cobalt: 0.01, thorium: 0.01 };
+  const out = capOres(ores);
+  assert.equal(out.cobalt, PRISON.oreCap.cobalt); assert.equal(out.thorium, PRISON.oreCap.thorium);
+  assert.ok(Math.abs(Object.values(out).reduce((a, b) => a + b, 0) - 1) < 1e-9);
+  assert.ok(Math.abs(out.iron / out.gold - ores.iron / ores.gold) < 1e-9, 'les autres gardent leurs proportions');
+  const low = { iron: 0.99, cobalt: 0.002, thorium: 0.008 };
+  assert.equal(capOres(low).cobalt, 0.002, 'sous le plafond : inchangé');
+  const under = { iron: 0.992, cobalt: 0.004, thorium: 0.004 };
+  assert.equal(capOres(under), under, 'rien à plafonner : même objet');
+  assert.equal(capOres(null), null);
+  const comp = { stone: 60, hardstone: 20, iron: 10, gold: 5, air: 5 };
+  assert.ok(Math.abs(profileComp(comp, ores).cobalt - 15 * PRISON.oreCap.cobalt) < 1e-9, 'plafond appliqué à la carte');
+  const G = newPrisonRun(7, { areaMax: 7, profile: { n: 10, area: 7, ores: { iron: 0.4, cobalt: 0.3, thorium: 0.3 } } });
+  assert.ok((G.areas[0].counts.cobalt || 0) <= 2 && (G.areas[0].counts.thorium || 0) <= 2, 'compo enregistrée riche : carte plafonnée');
+});
+
+test('carte de la prison : même part totale de minerais, répartie selon le profil ; un run se joue avec un profil', () => {
+  const comp = { stone: 60, hardstone: 20, iron: 10, gold: 5, air: 5 };
+  const out = profileComp(comp, { diamond: 0.5, iron: 0.5 });
+  assert.equal(out.iron, 7.5); assert.equal(out.diamond, 7.5); assert.equal(out.gold, undefined);
+  assert.equal(out.stone, 60); assert.equal(out.air, 5);
+  assert.equal(profileComp(comp, null), comp);
+  const profile = { n: 10, area: 6, ores: { iron: 0.7, mithril: 0.3 }, treasures: { 'Treasure T4': 1 }, mobs: { gobelin: 1 } };
+  const G = newPrisonRun(7, { areaMax: 6, profile });
+  assert.ok(G.areas[0].counts.mithril > 0 && !G.areas[0].counts.graphite, 'mithril du profil, pas de graphite de l\'area 6');
+  if(G.areas[0].treasure) assert.equal(G.areas[0].treasure.item, 'Treasure T4');
+  for(let i = 0; i < 6000 && !G.over; i++) tickPrison(G);
+  assert.ok(G.mobs.every(m => m.type === 'gobelin' || m.trap != null || m.type === 'chair'), 'mobs du profil (hors pièges)');
+  assert.ok(AREAS[6]);
+});
+
+test("prison : un mob donne la moitié de son XP ; en mine, toute son XP ; la part versée reste un entier", async () => {
+  const { killMob } = await import('../src/sim/actions.js');
+  const { XP } = await import('../src/config.js');
+  const G = newPrisonRun(7, { areaMax: 3 }), m = G.miners[0];
+  killMob(G, m, { type: 'bestiole', hp: 1, x: m.x, y: m.y });
+  assert.equal(G.stats.xp, XP.mob.bestiole * PRISON.mobXpMul);
+  assert.equal(PRISON.mobXpMul, 0.5);
+  const { endPrisonRun } = await import('../src/sim/prison.js');
+  assert.ok(Number.isSafeInteger(endPrisonRun(G).shares[0].xp), 'versement entier (2,5 → 2)');
+  const mine = { ...G, prison: null, stats: { xp: 0 } };
+  killMob(mine, m, { type: 'bestiole', hp: 1, x: m.x, y: m.y });
+  assert.equal(mine.stats.xp, XP.mob.bestiole, 'en mine : toute son XP');
+});

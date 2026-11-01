@@ -67,7 +67,8 @@ export function instantSpecs(record){
     const st = sanitizeSkills(record.skills?.[p.account]), skills = skillEffects(st);
     return { name: String(p.name || '').slice(0, 24) || 'Joueur ' + (i + 1), account: p.account, look,
              auras: aurasOf(sanitizeGear(record.gear?.[p.account])),
-             carac: withGlyphStats(withRings(withSkillStats(equippedStats(Object.values(look), slotMastery(skills)), skills), ringsOf(Object.values(look))), skills, false), skills, skillTree: st.tree };   // pas de Glyphe Mule ici
+             carac: withGlyphStats(withRings(withSkillStats(equippedStats(Object.values(look), slotMastery(skills)), skills), ringsOf(Object.values(look))), skills, false), skills, skillTree: st.tree,
+             rings: ringsOf(Object.values(look)) };   // pas de Glyphe Mule ici
   });
 }
 

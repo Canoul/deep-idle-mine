@@ -36,6 +36,7 @@ test('entrer : une visite, la salle en direct, puis la visite se ferme et ses po
   const r = await giant.enter(A);
   assert.ok(r.visit.endsAt > 0);
   assert.equal(r.view.miners.length, 1); assert.equal(r.view.me.id, r.visit.minerId);
+  assert.deepEqual(r.view.me.spells, []); assert.deepEqual(r.view.me.spellCd, {});   // barre des sorts (29/10)
   let i = await giant.info(A);
   assert.equal(i.present, 1); assert.deepEqual(i.mine, { points: 0, visits: 1 }); assert.ok(i.visit);
   await assert.rejects(giant.enter(A), { code: 'in_visit' });
@@ -285,4 +286,11 @@ test('fin de visite : deux visites dans la journée, lastVisit = la dernière se
   const i = await giant.info(A);
   assert.ok(i.lastVisit.points > 0 && i.lastVisit.points < i.mine.points, 'deuxième visite seule');
   assert.ok(Math.abs(i.mine.points - first - i.lastVisit.points) <= 1, 'jour = somme des visites');
+});
+
+test('vue du Bloc géant : les états de chaque mineur (barre d\'états, 29/10/2026)', async () => {
+  const { giant } = setup();
+  const r = await giant.enter(A);
+  const m = r.view.miners[0];
+  assert.ok(Array.isArray(m.effects)); assert.ok(Array.isArray(m.bonus));
 });

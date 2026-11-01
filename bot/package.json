@@ -1,0 +1,16 @@
+{
+  "name": "deep-mine-report-bot",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Bot Discord de l'équipe : reports @admin copiés dans #report, liste de tâches /todo. Service à part du jeu.",
+  "type": "module",
+  "scripts": {
+    "start": "node main.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "discord.js": "14.28.0"
+  }
+}

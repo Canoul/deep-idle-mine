@@ -56,3 +56,18 @@ test('rappel MI : se ferme au bout de noticeMs ; Rejoindre / Décliner jusqu\'à
   assert.equal(noticeTtl(5 * 60, false), NOTIFY.noticeMs);
   assert.equal(noticeTtl(MI.inviteAt, true), MI.inviteAt * 1000);
 });
+
+test('pop-up flash : texte échappé, sans bouton, fermée au bout de flashMs, même si sync passe entre-temps', async t => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const root = fakeDom();
+  const { setupNotify } = await import('../src/ui/notify.js');
+  const n = setupNotify(root);
+  n.flash('Set « <b>x</b> » bien équipé');
+  assert.match(root.children[0].innerHTML, /&lt;b&gt;x&lt;\/b&gt;/);
+  assert.doesNotMatch(root.children[0].innerHTML, /<button/);
+  n.sync([]);
+  assert.equal(root.children.length, 1, 'sync ne la retire pas');
+  t.mock.timers.tick(NOTIFY.flashMs);
+  assert.equal(root.children.length, 0);
+  delete globalThis.document;
+});

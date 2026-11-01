@@ -1,4 +1,4 @@
-/* Niveau du mineur (carte du lobby et stats de l'onglet Stuff) : niveau, barre d'XP (pourcentage et XP / XP requise),
+/* Niveau du mineur (stats de l'onglet Stuff ; bandeau du haut : renderNavLevel) : niveau, barre d'XP (pourcentage et XP / XP requise),
    points de skill. Lit l'état envoyé par le serveur. */
 const fmtN = n => Math.round(n).toLocaleString('fr-FR');
 
@@ -14,6 +14,16 @@ export function renderLevel(el, progress){
     `<div class="bar"><i style="width:${pct}%;background:var(--o2)"></i></div>`+
     `<div class="row small" style="margin-top:6px"><span class="mut">XP totale ${fmtN(xp)}</span>`+
     `<span>${talentPoints} point${talentPoints > 1 ? 's' : ''} de skill</span></div>`;
+}
+
+/* niveau du mineur dans le bandeau du haut (31/10/2026, Geoffrey) : niveau, barre d'XP, % et XP / XP requise */
+export function renderNavLevel(el, progress){
+  if(!el) return;
+  el.hidden = !progress;
+  if(!progress) return;
+  const { level, into, need } = progress, pct = need ? Math.min(100, into / need * 100) : 100;
+  el.innerHTML = `<b>Niv. ${level}</b><div class="bar"><i style="width:${pct}%"></i></div>`+
+    `<span>${need ? `<b>${Math.floor(pct)} %</b> <small>${fmtN(into)} / ${fmtN(need)} XP</small>` : 'Niveau max'}</span>`;
 }
 
 /* niveau de spécialisation d'un arbre (progress.spec[arbre] : { xp, level, into, need }) : ligne + barre d'XP, en HTML */

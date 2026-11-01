@@ -42,14 +42,28 @@ test('demandes invalides refusées sans rien changer', async () => {
   assert.ok(inv.slots.every(s => s?.q === undefined));
 });
 
-test('améliorer : matériaux consommés une fois ; une pièce portée ne s\'améliore pas', async () => {
+test('améliorer : matériaux consommés une fois ; une pièce portée s\'améliore dans sa case (28/10/2026)', async () => {
   const { game, uids:[a, b] } = await setup(() => 0);
   const op = { action:'upgrade', uid:a, opId:'op-upgrade-1' };
   await Promise.all([game.upgrade(ME, op), game.upgrade(ME, op)]);
   let inv = (await game.state(ME)).inventory;
   assert.equal(count(inv, FEATHER), 30 - 6); assert.equal(inv.slots.find(s => s?.uid === a).plus, 1);   // +1 = 6 plumes, payé une seule fois (26/10)
   await game.stuff(ME, { action:'equip', slot:'pioche', uid:b, opId:'op-equip-01' });
-  await assert.rejects(game.upgrade(ME, { action:'upgrade', uid:b, opId:'op-upgrade-2' }), { code:'not_owned' });
+  const r = await game.upgrade(ME, { action:'upgrade', uid:b, opId:'op-upgrade-2' });
+  assert.equal(r.stuff.pioche.plus, 1);
+  assert.equal((await game.state(ME)).stuff.pioche.plus, 1, 'enregistré');
+});
+
+test('pièce portée sacrifiée : sa case se vide, une seule fois ; plus rien à sacrifier ensuite', async () => {
+  const { game, uids:[a, b, c] } = await setup();
+  await game.stuff(ME, { action:'equip', slot:'pioche', uid:b, opId:'op-equip-sac' });
+  const op = { action:'identify', uid:a, sacrifice:b, opId:'op-identify-worn' };
+  const [r1, r2] = await Promise.all([game.upgrade(ME, op), game.upgrade(ME, { ...op, sacrifice:c })]);
+  assert.deepEqual(r1.piece, r2.piece);
+  const st = await game.state(ME);
+  assert.equal(st.stuff.pioche, null, 'la case se vide');
+  assert.equal(count(st.inventory, PICK), 2, 'a (identifiée) et c restent');
+  await assert.rejects(game.upgrade(ME, { action:'identify', uid:c, sacrifice:b, opId:'op-identify-gone' }), { code:'not_owned' });
 });
 
 test('session : les caractéristiques viennent de la pièce portée, revérifiée (lignes trafiquées ignorées)', async () => {

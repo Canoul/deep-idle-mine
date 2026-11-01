@@ -164,3 +164,30 @@ test('IA : un treasure découvert dans une area du dessus, à portée, est ouver
   for(let i = 0; i < 600 && !back; i++){ tick(G); back = aOf(m.y) === 1; }
   assert.ok(back, 'il retourne travailler dans l\'area 1');
 });
+
+/* 31/10/2026 (seed 134583339) : un mineur qui creuse vers son area de travail, plus bas, doit prendre le coffre découvert
+   sur la paroi de son puits. Avant : changeArea partait avant de regarder les cibles. */
+function shaft(prefs){
+  const rows=['', ...Array.from({length:AREA_H+8},(_,i)=>i===0?'d'.repeat(50):'#'.repeat(50))];
+  const G=worldFrom(rows), m=G.miners[0], y=6;
+  for(let r=1;r<y;r++) G.tiles[r][10]=0;              // son puits, creusé jusqu'à lui
+  G.tiles[y+1][11]=TREASURE_BLOCK;                    // le coffre, dans la paroi juste sous lui
+  G.treasures.set((y+1)*W+11, {k:0, x:11, y:y+1, item:'Treasure T1', opened:false});
+  m.x=10; m.y=y; m.mode='work'; G.unlockedAreas=2; G.areas[1] ??= G.areas[0];
+  G.torches.push({x:10,y}); updateLight(G);
+  Object.assign(m.prefs, prefs);
+  return { G, m, c:{ x:11, y:y+1 } };
+}
+for(const [name, prefs] of [['« Plus profond », le réglage de base', {}], ['focus sur l\'area du dessous', { focus:{ area:1 } }]])
+  test(`coffre sur la paroi du puits en descendant vers son area : il le vise (${name})`, () => {
+    const { G, m, c }=shaft(prefs);
+    decide(G,m);
+    assert.deepEqual(m.target, c, m.status);
+  });
+
+test('en descendant vers son area, un minerai sur la paroi ne le détourne pas (seuls treasures et résidus comptent)', () => {
+  const { G, m, c }=shaft({});
+  G.tiles[c.y][c.x]=IDS.coal; G.treasures.clear();
+  decide(G,m);
+  assert.equal(m.target, null, m.status);
+});

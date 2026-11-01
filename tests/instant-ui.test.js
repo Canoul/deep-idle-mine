@@ -72,3 +72,17 @@ test('MI inscription (navigateur) : bouton seulement dans les 30 dernières minu
   assert.equal(canSignup({ ...st, dev: true }, 0), true);
   assert.equal(clockText(st.signupAt), '11 h 30');                     // 9 h 30 UTC = 11 h 30 à Paris (heure d'été)
 });
+
+test('MI : les mineurs glissent entre deux envois, sur le temps réel entre eux (29/10/2026)', async () => {
+  const { shownPos, pace } = await import('../src/shared/view.js');
+  const base = { tick:0, t:0, over:false, w:3, h:2, tiles:['000','000','000'], seen:['111','111','111'], feathers:[], ladders:[], stats:{}, log:[] };
+  const a = applyInstantView({ ...base, miners:[{ id:1, x:0, y:0, action:null }] }, null, 0);
+  const b = applyInstantView({ ...base, miners:[{ id:1, x:2, y:0, action:null }] }, a, 700);   // envoi 700 ms plus tard
+  assert.ok(b._dur > 250 && b._dur < 700, `durée ${b._dur} : moyenne lissée du vrai rythme`);
+  const [x0] = shownPos(b, b.miners[0], 700), [xm] = shownPos(b, b.miners[0], 700 + b._dur / 2), [x1] = shownPos(b, b.miners[0], 700 + b._dur);
+  assert.equal(x0, 0); assert.equal(xm, 1); assert.equal(x1, 2);   // départ, milieu, arrivée : aucun saut
+  /* un rythme stable de 700 ms : la glissade finit par durer 700 ms (plus d'arrêt avant l'envoi suivant) */
+  let M = { _at:0, _dur:250 };
+  for(let i = 1; i <= 30; i++) M = pace({}, M, i * 700);
+  assert.ok(Math.abs(M._dur - 700) < 5, `${M._dur}`);
+});

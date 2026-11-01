@@ -15,7 +15,7 @@ const chips = obj => { const k = Object.keys(obj || {}); return k.length ? k.map
 export const instantRanking = list => [...list].sort((a, b) => (b.stats?.mined ?? 0) - (a.stats?.mined ?? 0) || (b.stats?.feathers ?? 0) - (a.stats?.feathers ?? 0));
 
 /* G : copie d'affichage ; me : ID du compte du joueur ; left : secondes réelles avant la fin (ou null) */
-export function updateInstantHUD(G, me, left){
+export function updateInstantHUD(G, me, left, focus = null){
   $('miTimer').textContent = fmt(G.t) + ' / ' + fmt(MI.duration);
   $('miTimeBar').style.width = Math.min(100, G.t / MI.duration * 100) + '%';
   $('miLeft').textContent = left == null ? '' : `fin dans ${fmt(left)}`;
@@ -27,7 +27,7 @@ export function updateInstantHUD(G, me, left){
       `<div style="margin-top:6px">${chips(m.inv)}</div>`
     : '<p class="mut">Tu as quitté la mine.</p>');
   setHtml($('miRank'), instantRanking(G.miners).map((t, i) =>
-    `<div class="row${t.account === me ? ' me' : ''}"><span>${i + 1}. ${esc(t.name)}${t.account === me ? ' (toi)' : ''}</span>`+
+    `<div class="row pick${t.account === me ? ' me' : ''}${t.id === focus && t.account !== me ? ' focus' : ''}" data-id="${t.id}" title="Voir ses états"><span>${i + 1}. ${esc(t.name)}${t.account === me ? ' (toi)' : ''}</span>`+
     `<span>${t.stats.mined} blocs${t.stats.feathers ? ` · ${FEATHER} ${t.stats.feathers}` : ''}</span></div>`).join(''));
   const heaps = G.heapsLeft ?? G.feathers.size;   // tous les tas restants (le navigateur ne reçoit que les tas découverts)
   $('miFeathersLeft').textContent = `${heaps} tas de plumes restant${heaps > 1 ? 's' : ''} dans la mine`;

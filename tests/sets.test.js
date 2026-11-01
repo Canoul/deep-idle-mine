@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { SETS } from '../src/config.js';
-import { createSets, setOp, applySet, snapshot, sanitizeSets, cleanName } from '../src/meta/sets.js';
+import { createSets, setOp, applySet, snapshot, sanitizeSets, cleanName, equippedSet } from '../src/meta/sets.js';
 import { createStuff, stuffOp } from '../src/meta/stuff.js';
 import { createSkills } from '../src/meta/skills.js';
 import { createSpells } from '../src/meta/spells.js';
@@ -107,7 +107,7 @@ async function server(){
 }
 const ME = { id:'AAAA1111', name:'Zoe' };
 
-test('serveur : un set enregistre et remet stuff, skills et sorts ; créer / enregistrer refusés pendant une session', async () => {
+test('serveur : un set enregistre et remet stuff, skills et sorts ; créer / enregistrer permis pendant une session', async () => {
   const { game, uid } = await server(), [p1] = uid(PICK);
   await game.stuff(ME, { action:'equip', slot:'pioche', uid:p1, opId:'op-set-w1' });
   await game.skills(ME, { action:'learn', node:'damage', opId:'op-set-k1' });
@@ -121,9 +121,15 @@ test('serveur : un set enregistre et remet stuff, skills et sorts ; créer / enr
   assert.deepEqual([r.skills.tree, r.skills.ranks, r.spells.slots], ['barbare', { damage:1 }, ['dash', null]]);
   assert.equal(r.missing, 0);
   assert.deepEqual((await game.state(ME)).sets.list.map(s => s.name), ['Set 1']);
+  /* 28/10/2026 (Geoffrey) : enregistrer et créer sont permis pendant une session (rien ne bouge : le set note l'équipement) */
   await game.start(ME, {});
-  for(const action of ['save', 'create'])
-    await assert.rejects(game.sets(ME, { action, id:1, opId:'op-set-s-' + action }), { code:'session_running' });
+  await game.stuff(ME, { action:'unequip', slot:'pioche', opId:'op-set-w3' });
+  r = await game.sets(ME, { action:'save', id:1, opId:'op-set-s-save' });
+  assert.equal(r.sets.list[0].stuff.pioche, undefined, 'enregistrer en session : le set prend l\'équipement actuel');
+  r = await game.sets(ME, { action:'create', opId:'op-set-s-create' });
+  assert.deepEqual(r.sets.list.map(s => s.name), ['Set 1', 'Set 2'], 'créer en session');
+  r = await game.sets(ME, { action:'create', opId:'op-set-s-create' });
+  assert.equal(r.sets.list.length, 2, 'demande rejouée : pas de 3e set');
   r = await game.sets(ME, { action:'rename', id:1, name:'Barbare', opId:'op-set-rn1' });
   assert.equal(r.sets.list[0].name, 'Barbare', 'renommer reste possible');
   await assert.rejects(game.sets(ME, { action:'bidule', opId:'op-set-bad1' }), { code:'bad_request' });
@@ -155,7 +161,7 @@ test('serveur : équiper un set pendant une session ; la session en cours ne cha
 
 /* ---------- affichage ---------- */
 
-test('panneau des sets : Équiper / Enregistrer par set, « + Nouveau set » jusqu\'au garde-fou, Équiper permis en session, le reste grisé', async () => {
+test('panneau des sets : Équiper / Enregistrer par set, « + Nouveau set » jusqu\'au garde-fou, tout permis en session, grisé pendant une demande', async () => {
   const { setsHtml } = await import('../src/ui/sets.js');
   const list = [{ id:1, name:'Set 1' }, { id:2, name:'<b>' }];
   const h = setsHtml({ list, max:20 });
@@ -165,7 +171,41 @@ test('panneau des sets : Équiper / Enregistrer par set, « + Nouveau set » jus
   assert.doesNotMatch(setsHtml({ list, max:2 }), /Nouveau set/);
   const inSession = setsHtml({ list, max:20 }, { locked:true });
   assert.doesNotMatch(inSession, /data-act="equip" disabled/, 'équiper reste possible en session (28/10)');
-  assert.match(inSession, /data-act="save" disabled/); assert.match(inSession, /data-act="create" disabled/);
+  assert.doesNotMatch(inSession, /data-act="(save|create)" disabled/, 'enregistrer et créer restent possibles en session (28/10)');
   assert.match(inSession, /prochaine session/);
-  assert.match(setsHtml({ list, max:20 }, { busy:true }), /data-act="equip" disabled/);
+  const busy = setsHtml({ list, max:20 }, { busy:true });
+  assert.match(busy, /data-act="equip" disabled/); assert.match(busy, /data-act="save" disabled/);
+});
+
+test('set équipé (29/10/2026) : celui qui correspond exactement à l\'équipement actuel, sinon aucun ; ligne dans la liste', async () => {
+  const k = kit(), sets = createSets();
+  const cur = () => snapshot(k.stuff, k.skills, k.spells);
+  const now = () => equippedSet(sets.list, k.stuff.worn, k.skills, k.spells.slots);
+  assert.equal(now(), null, 'aucun set');
+  setOp(sets, { action:'create', opId:'c1' }, cur());                 // Set 1 : rien de porté
+  assert.equal(now()?.name, 'Set 1');
+  wear(k, 'pioche', k.uid(PICK)[0], 'w1');
+  assert.equal(now(), null, 'pièce portée en plus : plus le set');
+  setOp(sets, { action:'create', opId:'c2' }, cur());                 // Set 2 : la pioche
+  assert.equal(now()?.name, 'Set 2');
+  wear(k, 'pioche', k.uid(PICK)[0], 'w2');                            // l'autre exemplaire (resté dans l'inventaire) : pas la même pièce
+  assert.equal(now(), null);
+  k.skills.ranks.x_inconnu = 0;                                       // un rang à 0 ne compte pas
+  applySet(sets, { id:2, opId:'e1' }, { ...k, points:0, spec:{} });
+  assert.equal(now()?.name, 'Set 2');
+  k.spells.slots[0] = 'dash';
+  assert.equal(now(), null, 'sort différent');
+  const { setsHtml } = await import('../src/ui/sets.js');
+  assert.match(setsHtml({ list:sets.list }, { current:sets.list[1] }), /Set équipé : <b>Set 2<\/b>[^]*setRow on" data-set="2"/);
+  assert.match(setsHtml({ list:sets.list }), /Set équipé : <span class="mut">aucun/);
+  assert.doesNotMatch(setsHtml({ list:[] }), /Set équipé/);
+});
+
+test('sets : textes de la pop-up de confirmation', async () => {
+  const { savedText, equippedText } = await import('../src/ui/sets.js');
+  assert.equal(savedText('Mine'), 'Stuff bien sauvegardé dans « Mine »');
+  assert.equal(equippedText('Mine'), 'Set « Mine » bien équipé');
+  assert.equal(equippedText('Mine', 1), 'Set « Mine » équipé : 1 pièce introuvable');
+  assert.equal(equippedText('Mine', 2), 'Set « Mine » équipé : 2 pièces introuvables');
+  assert.equal(equippedText('Mine', 0, true), 'Set « Mine » bien équipé. Il compte dès la prochaine session.');
 });

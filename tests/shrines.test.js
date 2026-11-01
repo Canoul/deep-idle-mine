@@ -82,7 +82,7 @@ test('lancement : chaque shrine actif perd une session, retiré à 0 ; relu et r
   assert.deepEqual(consume(st), []); assert.equal(hasShrines(st), false);
   assert.deepEqual(sanitizeShrines({ active: { abundance: 99 } }).active, { abundance: 5 }, 'jamais plus que la durée');
   assert.deepEqual(sanitizeShrines({ paid: { abundance: { [NUG]: 99, [RES]: -3, Fer: 4 } } }).paid, { abundance: { [NUG]: 10 } });
-  assert.deepEqual(publicShrines(createShrines())[0], { id: 'abundance', name: AB.name, desc: AB.desc, tex: AB.tex, sessions: 5, price: AB.price, paid: {}, left: 0 });
+  assert.deepEqual(publicShrines(createShrines())[0], { id: 'abundance', name: AB.name, desc: AB.desc, tex: AB.tex, sessions: 5, price: AB.price, tower: null, paid: {}, left: 0 });
 });
 
 /* ---------- serveur ---------- */
@@ -163,4 +163,14 @@ test('lobby : carte des shrines (prix, déjà donné, actif)', () => {
   assert.match(h, /Shrine d'abondance/); assert.match(h, /4 \/ 10/); assert.match(h, /0 \/ 20/); assert.match(h, /data-shrine-give="abundance\|Pépite d'argent"/);
   assert.match(shrinesHtml(list, { leaderName: 'Zoe' }), /Shrines de <b>Zoe<\/b>/);
   assert.match(shrinesHtml(publicShrines(sanitizeShrines({ active: { abundance: 3 } }))), /encore <b>3<\/b> sessions/);
+});
+
+test('carte : un shrine éteint le dit, la durée est une promesse ; actif, le chiffre descend', () => {
+  const off = publicShrines(createShrines()).find(s => s.id === 'abundance');
+  const html = shrinesHtml([off]);
+  assert.ok(html.includes('Inactif. Une fois payé : actif pour 5 mines.'));
+  assert.ok(!html.includes('Prix atteint'));
+  assert.ok(shrinesHtml([{ ...off, left:3 }]).includes('encore <b>3</b> sessions'));
+  const stele = publicShrines(createShrines()).find(s => s.id === 'exorcisme');
+  assert.ok(shrinesHtml([stele]).includes('Pas chargée. Une fois payée'));
 });

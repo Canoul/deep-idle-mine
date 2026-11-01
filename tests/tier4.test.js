@@ -30,7 +30,7 @@ test('four : 10 mithril, 5 cobalt, 5 thorium (+ 10 charbon) ; alliages cobalt et
   }
   for(const [ing, out] of [['Refined cobalt', 'Cobalt ingot'], ['Refined thorium', 'Thorium ingot']]){
     const a = FURNACE.alloys.find(r => r.out === out);
-    assert.deepEqual(a.in, { 'Mithril ingot':5, [ing]:5 });
+    assert.deepEqual(a.in, { 'Mithril ingot':5, [ing]:5, 'Tainted gold':3 });   // Tainted gold : 30/10
   }
 });
 
@@ -40,7 +40,7 @@ test('Treasure T4 : areas 7 et 8 ; toujours mithril, cobalt, thorium et BP parts
   const t = LOOT['Treasure T4'];
   assert.deepEqual(t.always.map(a => [a.item, a.min, a.max]), [['Mithril ore', 20, 40], ['Cobalt ore', 5, 10], ['Thorium ore', 5, 10], ['Blueprint parts', 12, 14]]);
   const first = t.oneOf[0].items;
-  assert.equal(Math.round(first.reduce((s, i) => s + i.chance, 0) * 1e4) / 1e4, 0.125);
+  assert.equal(Math.round(first.reduce((s, i) => s + i.chance, 0) * 1e4) / 1e4, 0.13);
   for(const p of PIECES){
     assert.equal(first.find(i => i.item === `${p} en mithril BP`).chance, 0.01);
     assert.equal(first.find(i => i.item === `${p} en thorium BP`).chance, 0.005);
@@ -116,4 +116,13 @@ test('recettes du T4 : clé d\'instance, gemmes, pièces spéciales (valeurs du 
   assert.deepEqual(RECIPES['Doc Martins'].cost, { 'Cuir de minotaure':50, 'Thorium ingot':4, 'Tissu sombre':100 });
   assert.deepEqual(RECIPES['Gants de boucher'].cost, { 'Rotten flesh':50, 'Mithril ingot':15, 'Peau de gobelin':500 });
   for(const [name, r] of Object.entries(RECIPES)) for(const k of Object.keys(r.cost)) assert.ok(ITEMS[k], `${name} : ${k}`);
+});
+
+test('Treasure T4 (30/10) : Clé d\'instance II, son propre tirage à 10 %', () => {
+  const fam = LOOT['Treasure T4'].oneOf.find(f => f.items.some(i => i.item === 'Clé d\'instance II'));
+  assert.ok(fam); assert.equal(fam.items.length, 1); assert.equal(fam.items[0].chance, 0.10);
+  let n = 0, k = 0; const rng = () => { k = (k * 1103515245 + 12345) % 2147483648; return k / 2147483648; };
+  for(let i = 0; i < 20000; i++) if(rollLoot(LOOT['Treasure T4'], rng)['Clé d\'instance II']) n++;
+  assert.ok(n / 20000 > 0.09 && n / 20000 < 0.11, `${n / 200} %`);
+  assert.equal(ITEMS['Clé d\'instance II'].cat, 'key');
 });

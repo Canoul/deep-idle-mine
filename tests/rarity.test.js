@@ -36,13 +36,17 @@ test('rareté : la liste du créateur est inhabituelle, tout le reste du catalog
   const GLYPH = Object.keys(ITEMS).filter(n => ITEMS[n].cat === 'glyph');
   for(const n of GLYPH) assert.equal(rarityOf(n), 'epique', n);
   /* butin rare des mobs (26/10, tests/mob-drops.test.js) */
-  const MOB_STUFF = { 'Lanières en cuir du gobelin':'inhabituel', 'Capuche sombre':'rare', 'Nuage magique':'rare', 'Ceinture du Géant':'epique' };
+  const MOB_STUFF = { 'Lanières en cuir du gobelin':'inhabituel', 'Capuche sombre':'rare', 'Nuage magique':'rare', 'Ceinture du Géant':'epique',
+                      'Piolet de gobelin':'inhabituel', 'Kilt ténébreux':'rare', 'Chapeau de naab':'inhabituel' };   // 31/10
   for(const [n, r] of Object.entries(MOB_STUFF)) assert.equal(rarityOf(n), r, n);
   /* coffre du Roi Gobelin (27/10, Geoffrey) ; ses coffres sont dans TOWER (chest), toujours Unique */
   const KING = { 'Couronne du Roi Gobelin':'legendaire', 'Masse du Roi Gobelin':'rare', 'Cape royale du Gobelin':'rare',
                  'Recette : Chitine':'inhabituel', 'Four en or':'rare', 'Four en or BP':'rare' };
   for(const [n, r] of Object.entries(KING)) assert.equal(rarityOf(n), r, n);
   KING['Clé d\'instance I'] = 'inhabituel';   // Instances (27/10) : la clé du roi gobelin
+  KING['Clé d\'instance II'] = 'inhabituel';  // Instance II, le Golbute (30/10)
+  Object.assign(KING, { 'Némésis du Golbute':'legendaire', 'Âme du Golbute':'epique', 'Torse de Gollex':'rare', 'Jambières du Golbute':'rare' });   // Coffre du Golbute (30/10)
+  KING['Arc de l\'Admin'] = 'legendaire';   // 01/11 (tests/bow.test.js)
   assert.equal(rarityOf('Clé d\'instance I'), 'inhabituel');
   /* minerais profonds (27/10, Geoffrey) : mithril commun, cobalt et thorium inhabituels */
   const DEEP = ['Cobalt ore', 'Thorium ore'];
@@ -51,7 +55,7 @@ test('rareté : la liste du créateur est inhabituelle, tout le reste du catalog
   const PIECES = ['Casque', 'Plastron', 'Jambes', 'Bottes'];
   const T4 = { 'Mithril ingot':'inhabituel', 'Refined cobalt':'inhabituel', 'Refined thorium':'inhabituel', 'Cobalt ingot':'rare', 'Thorium ingot':'rare',
     'Topaze':'rare', 'Saphir':'rare', 'Rubis':'rare', 'Jade':'rare', 'Saphir BP':'rare', 'Rubis BP':'rare', 'Jade BP':'rare',
-    'Clé d\'instance I BP':'inhabituel', 'Cuir de minotaure':'rare', 'Jambières titanesques':'epique', 'Jambières titanesques BP':'epique',
+    'Clé d\'instance I BP':'inhabituel', 'Cuir de minotaure':'rare', 'Poudre de rêve':'rare', 'Jambières titanesques':'epique', 'Jambières titanesques BP':'epique', 'Cape inclusive':'epique', 'Cape inclusive BP':'epique',
     ...Object.fromEntries(PIECES.flatMap(p => [[`${p} en mithril`, 'inhabituel'], [`${p} en mithril BP`, 'inhabituel'],
       [`${p} en thorium`, 'rare'], [`${p} en thorium BP`, 'rare'], [`${p} en cobalt`, 'rare'], [`${p} en cobalt BP`, 'rare']])),
     ...Object.fromEntries(['Lunettes Gucci', 'Doc Martins', 'Ceinture golémique', 'Gants de boucher'].flatMap(n => [[n, 'rare'], [`${n} BP`, 'rare']])) };

@@ -59,8 +59,8 @@ test('creditXp : une session n\'est comptée qu\'une fois ; quantités invalides
   for(const bad of [-1, 1.5, NaN, Infinity, '5', null]) assert.equal(creditXp(p, 's2', bad), false);
   assert.equal(creditXp(p, '', 5), false);
   assert.equal(p.xp, 500);
-  assert.deepEqual(sanitizeProgress({ xp:-3, credited:'x' }), { xp:0, spec:{}, credited:[] });
-  assert.deepEqual(sanitizeProgress({ xp:1.5 }), { xp:0, spec:{}, credited:[] });
+  assert.deepEqual(sanitizeProgress({ xp:-3, credited:'x' }), { xp:0, spec:{}, credited:[], areaMax:0 });
+  assert.deepEqual(sanitizeProgress({ xp:1.5 }), { xp:0, spec:{}, credited:[], areaMax:0 });
 });
 
 /* ---------- XP de spécialisation ---------- */
@@ -158,4 +158,16 @@ test('serveur : l\'XP est versée à la fin, une seule fois, et le niveau se lit
   assert.equal(p.xp, 1800);
   assert.equal(p.level, 2); assert.equal(p.into, 800); assert.equal(p.talentPoints, 1);
   assert.equal((await store.getProgress(ME.id)).credited.length, 2);
+});
+
+test('bandeau du haut : niveau, barre, % et XP sur XP requise ; rien sans progression ; niveau max', async () => {
+  const { renderNavLevel } = await import('../src/ui/level.js');
+  const el = { innerHTML:'', hidden:true };
+  renderNavLevel(el, { xp:2600, level:3, into:100, need:2250 });
+  assert.equal(el.hidden, false);
+  assert.match(el.innerHTML, /Niv\. 3/); assert.match(el.innerHTML, /4 %/); assert.match(el.innerHTML, /100 \/ 2.250 XP/);
+  renderNavLevel(el, { xp:1e9, level:72, into:0, need:0 });
+  assert.match(el.innerHTML, /Niveau max/);
+  renderNavLevel(el, null);
+  assert.equal(el.hidden, true);
 });

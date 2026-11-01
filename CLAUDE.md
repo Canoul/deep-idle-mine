@@ -39,6 +39,10 @@ expliquant en une phrase ce que tu fais.
 - Chaque message de commit finit par une ligne `Par : <prénom>` (les sessions Claude dans le cloud signent
   « Claude », on perdrait qui a demandé quoi).
 
+**Simple changement de valeur** (Geoffrey, 30/10) : quand on demande juste de changer la valeur d'une variable de
+réglage, **ni tests, ni simulation, ni anticheat** : on change la valeur, une ligne au journal, et on met en ligne
+directement si c'est demandé. Ça doit prendre quelques secondes.
+
 **Mettre en ligne** : seulement quand la personne le demande (« mets en ligne », « merge », « c'est bon »).
 1. Tests du sujet verts ; simulation 5 sessions si la simulation ou l'IA a bougé ; `npm run test:anticheat` si
    l'économie a bougé (coffre, inventaire, craft, échanges).
@@ -118,7 +122,10 @@ Tout ce qui existe aujourd'hui (systèmes, hébergement, équipe, chantiers en a
 - Données locales : `data/accounts.json` et `data/game.json` (ignorés par git ; supprimer `data/` = repartir de zéro).
 - Presets (`DEV_PRESETS`) : stuff acier, arbre rempli et ses glyphes, sorts. Panneau dev : un preset par mineur de test.
   `npm run dev:presets` (serveur arrêté) : comptes locaux Test_Mineur / Test_Logisticien / Test_Barbare (mot de passe
-  `preset1234`, niveau et spé 72, 10 Clés d'instance I). Relancer = remise à neuf.
+  `preset1234`, niveau et spé 72, 10 Clés d'instance I). Relancer = remise à neuf. `npm run dev:presets -- --from
+  data/presets/<fichier>.json` : copie de vrais joueurs (Test_Canoul, Test_Mus ; stuff, skills, sorts, niveau réels).
+- Copier un vrai joueur : panneau dev du lobby, une ligne par mineur, pseudo puis « Prendre » (lecture seule, réglage `DIM_DEV_COPY_URL` dans
+  `~/.dim-dev.env`, mise en place dans `docs/debug.md`, entrée du 31/10/2026). `DATABASE_URL` est refusé en mode dev.
 - Reproduire une partie : mode dev, seed au choix dans le lobby (même seed + mêmes réglages = même partie).
 - `node --test tests/<sujet>.test.js` : les tests d'un sujet (**c'est ce qu'on lance après une modification**).
   `npm test` : toute la suite, longue (plusieurs minutes), seulement sur demande.
@@ -165,6 +172,7 @@ mobile/               coque de l'appli mobile (Capacitor) : config, projet andro
 server/               serveur Node : app (routeur), http/, accounts/, game/ (sessions qui font foi, partie en
                       direct dans un fil d'exécution), party/ (groupes), social/ (amis), instant/ (mine
                       instantanée), db/ (PostgreSQL)
+bot/                  bot Discord de l'équipe (reports, /todo), service à part avec son package.json : docs/bot-discord.md
 tests/                un fichier de test par sujet + helpers (mines dessinées en texte) ; tests/anticheat/
 scripts/              simulate.js, weights.js, stat-values.js, gen_textures.py
 deploy/ovh/           installation et mise à jour du serveur OVH
@@ -177,7 +185,7 @@ prototype/            ancien prototype monolithique (référence seulement)
 ## 8. Stack et architecture
 
 HTML/JS vanilla, sans dépendance. Pas de framework ni de bundler sans demander. Serveur : Node ≥ 20, modules
-intégrés (http, crypto, fs) ; seule exception : `pg`, chargée à la demande. Le serveur importe les règles depuis
+intégrés (http, crypto, fs) ; seule exception : `pg`, chargée à la demande (`discord.js` : seulement dans `bot/`, jamais dans le jeu). Le serveur importe les règles depuis
 `src/shared/` et `src/config.js` : une seule source de vérité pour le jeu et le serveur.
 
 **Principes à ne pas casser**

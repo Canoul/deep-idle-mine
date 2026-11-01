@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 /* Lobby : places affichées et bouton Lancer, depuis l'état du groupe envoyé par le serveur (logique pure). */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -33,8 +34,16 @@ test('Lancer : seul ou chef → oui (« Lancer à 2 ») si les autres sont prêt
 
 test('lancer : un membre encore dans la session précédente → le chef attend la fin', () => {
   const account = { id:'AAAA1111' };
-  const party = { leader:'AAAA1111', members:[{ account:'AAAA1111', me:true }, { account:'BBBB2222', playing:true, ready:true }] };
-  assert.deepEqual(launchState({ account, party }), { can:false, label:'⏳ Le groupe finit sa session…' });
+  const party = { leader:'AAAA1111', members:[{ account:'AAAA1111', me:true }, { account:'BBBB2222', name:'Nunu', playing:true, playingLeftMs:360_000, ready:true }] };
+  assert.deepEqual(launchState({ account, party }), { can:false, label:'⏳ Attente de Nunu (reste 6 min)' });
+  party.members[1].playingLeftMs = 20_000;
+  assert.equal(launchState({ account, party }).label, '⏳ Attente de Nunu (reste < 1 min)');
+  party.members[1].playingLeftMs = null;
+  assert.equal(launchState({ account, party }).label, '⏳ Attente de Nunu', 'mode dev : pas de temps');
+  party.members.push({ account:'CCCC3333', name:'Lou', playing:true, playingLeftMs:120_000 });
+  party.members[1].playingLeftMs = 360_000;
+  assert.equal(launchState({ account, party }).label, '⏳ Attente de Nunu (reste 6 min), Lou (reste 2 min)');
+  party.members.pop();
   party.members[1].playing = false;
   assert.equal(launchState({ account, party }).can, true);
 });
@@ -70,8 +79,8 @@ test('pendant une session : Lancer impossible (« Session en cours »), même po
 test('« Où miner » : Mine choisie par défaut, Mine instantanée choisissable ; pendant une session, seuls la MI et le Bloc géant restent choisissables', async () => {
   const { mineModes } = await import('../src/ui/lobby.js');
   const m = mineModes('mine');
-  assert.deepEqual(m.map(x => [x.id, x.on, x.disabled, x.soon]), [['mine', true, false, false], ['mi', false, false, false], ['instance_1', false, false, false], ['giant', false, false, false]]);
-  assert.deepEqual(mineModes('mi').map(x => x.on), [false, true, false, false]);
+  assert.deepEqual(m.map(x => [x.id, x.on, x.disabled, x.soon]), [['prison', false, false, false], ['mine', true, false, false], ['mi', false, false, false], ['instance_1', false, false, false], ['giant', false, false, false], ['hescoming', false, false, false]]);
+  assert.deepEqual(mineModes('mi').map(x => x.on), [false, false, true, false, false, false]);
   const ins = mineModes('instance_1').find(x => x.id === 'instance_1');
   assert.equal(ins.label, '🗝 Instances', 'un seul bouton pour toutes les instances (27/10)'); assert.equal(ins.on, true);
   const locked = mineModes('mine', true);
@@ -79,14 +88,15 @@ test('« Où miner » : Mine choisie par défaut, Mine instantanée choisissable
   assert.equal(locked.find(x => x.id === 'mi').disabled, false, 'mais la mine instantanée reste choisissable (inscription en session, 22/10)');
   assert.equal(locked.find(x => x.id === 'giant').disabled, false, 'Bloc géant : on regarde sa carte en session (Entrer y est grisé, 26/10)');
   assert.equal(locked.find(x => x.id === 'instance_1').disabled, false, 'instances : on regarde la carte en session (27/10 ; Lancer reste grisé)');
+  assert.equal(locked.find(x => x.id === 'prison').disabled, true, 'prison : pas pendant une session');
 });
 
 test('« Où miner » : les tours du Jugement seulement quand elles sont ouvertes ; grisées si déjà faites', async () => {
   const { mineModes } = await import('../src/ui/lobby.js');
   const ids = j => mineModes('mine', false, j).map(m => m.id);
-  assert.deepEqual(ids(null), ['mine', 'mi', 'instance_1', 'giant'], 'fermées : absentes');
+  assert.deepEqual(ids(null), ['prison', 'mine', 'mi', 'instance_1', 'giant', 'hescoming'], 'fermées : absentes (prison en premier, 30/10)');
   const j = { sides: { angel: { open: true, done: false }, demon: { open: false, done: false } } };
-  assert.deepEqual(ids(j), ['mine', 'mi', 'instance_1', 'giant', 'tower_angel']);
+  assert.deepEqual(ids(j), ['prison', 'mine', 'mi', 'instance_1', 'giant', 'hescoming', 'tower_angel']);
   const done = mineModes('tower_angel', false, { sides: { angel: { open: true, done: true }, demon: { open: true, done: false } } });
   assert.equal(done.find(m => m.id === 'tower_angel').disabled, true);
   assert.equal(done.find(m => m.id === 'tower_demon').disabled, false);
@@ -111,35 +121,34 @@ test('recherche en cours : celui qui l\'a lancée peut annuler, le membre voit s
   assert.equal(lfgState({ account:{ id:'BBBB2222' }, party:two, mode:'mine', lfg:{ search:{ mine:false, auto:false } } }).cancel, false);
 });
 
-test('« Prêt tout le temps » : seulement pour un membre (pas le chef, pas seul), cochée selon le serveur, aussi en session', () => {
-  const p = party([M('AAAA1111', 'Zoe'), M('BBBB2222', 'Max', { ready:true, always:true })]);
-  assert.deepEqual(alwaysReadyState({ account:{ id:'BBBB2222' }, party:p }), { show:true, checked:true });
-  assert.deepEqual(alwaysReadyState({ account:{ id:'BBBB2222' }, party:p, session:{ id:'s1' } }), { show:true, checked:true });
-  assert.equal(alwaysReadyState({ account:me, party:p }).show, false, 'le chef');
-  assert.equal(alwaysReadyState({ account:me, party:null }).show, false, 'seul');
-  assert.equal(alwaysReadyState({ account:{ id:'BBBB2222' }, party:p, offline:true }).show, false);
-  const q = party([M('AAAA1111', 'Zoe'), M('BBBB2222', 'Max')]);
-  assert.deepEqual(alwaysReadyState({ account:{ id:'BBBB2222' }, party:q }), { show:true, checked:false });
+test('« Prêt tout le temps » (31/10) : visible partout pour un compte connecté, seul, chef ou en prison, cochée selon le serveur', () => {
+  assert.deepEqual(alwaysReadyState({ account:me, alwaysReady:true }), { show:true, checked:true });
+  assert.deepEqual(alwaysReadyState({ account:me, alwaysReady:false }), { show:true, checked:false });
+  assert.deepEqual(alwaysReadyState({ account:me }), { show:true, checked:false });
+  assert.equal(alwaysReadyState({ account:me, alwaysReady:true, offline:true }).show, false);
+  assert.equal(alwaysReadyState({ account:null, alwaysReady:true }).show, false);
 });
 
 test('prêt tout le temps (23/10) : le bouton principal ne permet pas de l\'annuler (seule la case)', () => {
   const p = { leader:'AAAA1111', members:[{ account:'AAAA1111', name:'Zoe' }, { account:'BBBB2222', name:'Max', ready:true, always:true }] };
-  assert.deepEqual(launchState({ account:{ id:'BBBB2222' }, party:p }), { can:false, label:'✔ Prêt tout le temps' });
+  assert.deepEqual(launchState({ account:{ id:'BBBB2222' }, party:p }), { can:true, label:'✔ Prêt (annuler)', action:'ready', ready:false });
 });
 
 
 test('Jugement (25/10) : jauges à gauche ET équipe à droite, comme pour la Mine ; sans Lancer ni préférences', async () => {
   const { lobbyCards } = await import('../src/ui/lobby.js');
   const j = lobbyCards({ view:'jugement', mode:'mine' });
-  assert.deepEqual(j, { judgment:true, mi:false, giant:false, inst:false, team:true, launch:false, prefs:false, dev:false });
+  assert.deepEqual(j, { judgment:true, mi:false, giant:false, inst:false, prison:false, team:true, launch:false, prefs:false, dev:false });
   const m = lobbyCards({ view:null, mode:'mine', dev:true });
-  assert.deepEqual(m, { judgment:false, mi:false, giant:false, inst:false, team:true, launch:true, prefs:true, dev:true });
+  assert.deepEqual(m, { judgment:false, mi:false, giant:false, inst:false, prison:false, team:true, launch:true, prefs:true, dev:true });
   const g = lobbyCards({ view:null, mode:'giant', dev:true });
-  assert.deepEqual(g, { judgment:false, mi:false, giant:true, inst:false, team:false, launch:false, prefs:false, dev:false }, 'Bloc géant : sa carte seule (26/10)');
+  assert.deepEqual(g, { judgment:false, mi:false, giant:true, inst:false, prison:false, team:false, launch:false, prefs:false, dev:false }, 'Bloc géant : sa carte seule (26/10)');
   const i = lobbyCards({ view:null, mode:'instance_1', dev:true });
-  assert.deepEqual(i, { judgment:false, mi:false, giant:false, inst:true, team:true, launch:true, prefs:false, dev:false }, 'instance : sa carte, l\'équipe et Lancer (27/10)');
+  assert.deepEqual(i, { judgment:false, mi:false, giant:false, inst:true, prison:false, team:true, launch:true, prefs:false, dev:true }, 'instance : sa carte, l\'équipe et Lancer (27/10)');
   const mi = lobbyCards({ view:null, mode:'mi' });
   assert.equal(mi.mi, true); assert.equal(mi.team, false);
+  const pr = lobbyCards({ view:null, mode:'prison', dev:true });
+  assert.deepEqual(pr, { judgment:false, mi:false, giant:false, inst:false, prison:true, team:true, launch:true, prefs:true, dev:false }, 'prison : soi, Lancer, préférences ; pas de réglages dev (29/10)');
 });
 
 test('chef (25/10) : il peut nommer un autre chef même pendant une session ; retirer, seulement hors session', async () => {
@@ -165,4 +174,55 @@ test('chef, tout le monde prêt (dont « prêt tout le temps » absent) : on peu
   const p = party([M(me.id, 'Zoe', { leader:true, me:true }), M('B', 'Max', { ready:true, always:true }), M('C', 'Lou', { ready:true, always:true, away:true })]);
   assert.deepEqual(launchState({ account:me, party:p }), { can:true, label:'▶ Lancer à 3' });
   assert.equal(launchState({ account:null, party:p }).can, false, 'sans compte dans le lobby : grisé (le bug)');
+});
+
+test("niveau d'instance (29/10) : choisi par celui qui lance (seul ou chef), niveaux 1 et 2 ouverts, niveau gardé", async () => {
+  const { instanceLevelState } = await import('../src/ui/lobby.js');
+  const me = { id: 'A' };
+  const solo = instanceLevelState({ instance: true, locked: false, party: null, account: me, cur: 2 });
+  assert.equal(solo.show, true); assert.deepEqual(solo.levels.map(l => [l.level, l.done]), [[1, false], [2, false]]); assert.equal(solo.level, 2);
+  assert.equal(instanceLevelState({ instance: true, locked: false, party: null, account: me, cur: 7 }).level, 1, 'niveau inconnu : 1');
+  const party = { leader: 'B', members: [{ account: 'A' }, { account: 'B' }] };
+  assert.equal(instanceLevelState({ instance: true, locked: false, party, account: me }).show, false, 'pas le chef : caché');
+  assert.equal(instanceLevelState({ instance: false, locked: false, party: null, account: me }).show, false);
+  assert.equal(instanceLevelState({ instance: true, locked: true, party: null, account: me }).show, false, 'session en cours');
+  const two = instanceLevelState({ instance: true, locked: false, party: null, account: me, cur: 2, mode: 'instance_2' });
+  assert.equal(two.show, false, 'Instance II (30/10) : un seul niveau, pas de rangée'); assert.equal(two.level, 1);
+});
+
+test('menu du Lobby : les 7 activités et Groupes en formation dans l\'ordre, une description chacune, sans les tours', async () => {
+  const { mineModes, activityMenu } = await import('../src/ui/lobby.js');
+  const j = { sides: { angel: { open: true }, demon: { open: false } } };
+  const menu = activityMenu(mineModes('mine', false, j), { towerOpen: true });
+  assert.deepEqual(menu.map(a => a.title), ['Prison', 'Mine', 'Mine instantanée', 'Bloc géant', 'He\'s coming', 'Jugement', 'Instances', 'Groupes en formation']);
+  assert.ok(menu.every(a => a.desc));
+  assert.equal(menu[5].kind, 'view'); assert.equal(menu[5].note, 'tour ouverte');
+  assert.equal(menu[6].mode, 'instance_1');
+  assert.equal(activityMenu(mineModes('instance_2'))[6].mode, 'instance_2', 'l\'instance choisie reste choisie');
+  const forming = activityMenu(mineModes('mine')).at(-1);
+  assert.deepEqual([forming.id, forming.kind, forming.disabled], ['forming', 'forming', false], 'Groupes en formation, dans le menu (31/10)');
+  assert.equal(activityMenu(mineModes('mine'), { noForming:true }).at(-1).disabled, true, 'pas en session ni hors ligne');
+});
+
+test('menu du Lobby : en session, la Mine reste ouverte pour voir son groupe ; prison grisée en groupe, repère si elle tourne', async () => {
+  const { mineModes, activityMenu } = await import('../src/ui/lobby.js');
+  const locked = activityMenu(mineModes('mine', true));
+  assert.equal(locked.find(a => a.id === 'mine').disabled, false);
+  assert.equal(locked.find(a => a.id === 'prison').disabled, true);
+  const group = activityMenu(mineModes('mine', false, null, false, 2), { prisonOn: true }).find(a => a.id === 'prison');
+  assert.equal(group.disabled, true); assert.ok(group.hint); assert.equal(group.note, 'en cours');
+});
+
+test('Instance et Jugement : leur carte en haut de la colonne de gauche, les sets juste dessous', () => {
+  const html = fs.readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const col = html.indexOf('class="lobbyCol"'), jug = html.indexOf('id="judgmentCard"'), inst = html.indexOf('id="instCard"'), sets = html.indexOf('lobbySets"');
+  assert.ok(col < jug && col < inst && jug < sets && inst < sets);
+});
+
+test('menu du Lobby : équipe toujours là ; bouton principal seulement pour un membre de groupe', async () => {
+  const { menuCards } = await import('../src/ui/lobby.js');
+  const account = { id:'a' };
+  assert.deepEqual(menuCards({ party:null, account }), { team:true, launch:false });
+  assert.deepEqual(menuCards({ party:{ leader:'a', members:[{}, {}] }, account }), { team:true, launch:false });
+  assert.deepEqual(menuCards({ party:{ leader:'b', members:[{}, {}] }, account }), { team:true, launch:true });
 });

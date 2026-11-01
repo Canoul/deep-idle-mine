@@ -34,6 +34,20 @@ export function snapshot(stuff, skills, spells){
            skills: skillRanks(skills), spells: [...spells.slots] };
 }
 
+/* set actuellement équipé (29/10/2026) : celui dont le stuff (uid par case), les skills (arbre et rangs) et les sorts sont
+   exactement l'équipement actuel ; null si aucun (rien d'enregistré, ou équipement changé depuis). worn : { case: pièce } ;
+   skills : { tree, ranks } ; spellSlots : [id | null]. Plusieurs sets identiques : le premier. */
+export function equippedSet(list, worn, skills, spellSlots){
+  if(!skills || !Array.isArray(spellSlots)) return null;
+  const ranks = r => Object.entries(r ?? {}).filter(([, v]) => v > 0).sort(([a], [b]) => a < b ? -1 : 1).join(';');
+  const mine = ranks(skills.ranks);
+  return (list ?? []).find(s =>
+    SLOT_IDS.every(k => (s.stuff?.[k] ?? null) === (worn?.[k]?.uid ?? null)) &&
+    (s.skills?.tree ?? null) === (skills.tree ?? null) && ranks(s.skills?.ranks) === mine &&
+    Array.from({ length:SPELLS.openSlots }, (_, i) => (s.spells?.[i] ?? null) === (spellSlots[i] ?? null)).every(Boolean)
+  ) ?? null;
+}
+
 /* op = { action:'create' } | { action:'save', id } | { action:'rename', id, name } | { action:'delete', id }, avec opId ;
    current : snapshot de l'équipement actuel (create, save). Renvoie { ok, repeated, id? } ou { error }. */
 export function setOp(sets, op, current){

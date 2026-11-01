@@ -9,11 +9,172 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
-## 27/10/2026 — Geoffrey — Correctif : « Lancer » grisé alors que tout le monde est prêt
-- **Pour le joueur** : si on avait ouvert (ou rechargé) la page pendant une session, le bouton **Lancer** et
-  « Inviter des joueurs » restaient grisés après la fin de la session, tant qu'on n'avait pas fermé le bilan avec le
-  bouton de retour. C'est corrigé : le lobby connaît le joueur dès l'ouverture de la page.
-- **État** : ✅ en ligne le 27/10
+## 01/11/2026 — Geoffrey — He's coming, nouveau mode de jeu
+- **Pour le joueur** : le Bloc géant version combat. On frappe Lucifer, 1 dégât = 1 point, mêmes visites et mêmes récompenses de minuit, avec des paliers × 8. Toutes les 30 s il rugit (Fear 15 s à 3 cases ou moins), toutes les 5 s il projette ceux à son contact. La ténacité résiste aux deux. Il a son propre délai et son propre score.
+- **État** : ✅ en ligne le 01/11
+
+## 01/11/2026 — Geoffrey — Guilde : une icône à elle
+- **Pour le joueur** : l'onglet Guilde a maintenant un bouclier, il ne ressemble plus à Social.
+- **État** : ✅ en ligne le 01/11
+
+## 01/11/2026 — Geoffrey — Raffle : 2 min pour rejoindre
+- **Pour le joueur** : on a maintenant 2 minutes pour taper `!join` au lieu de 40 secondes.
+- **État** : ✅ en ligne le 01/11
+
+## 01/11/2026 — Geoffrey — Recherche : pas de doublon immédiat
+- **Pour le joueur** : un plan sorti de la recherche ne peut pas ressortir pendant 2 min. S'il ne reste que des plans dans ce
+  cas, la recherche est refusée avec un message et les parts ne sont pas dépensées.
+- **État** : ✅ en ligne le 01/11
+
+## 01/11/2026 — Geoffrey — Plus de chat dans l'onglet Session
+- **Pour le joueur** : le panneau Chat de l'onglet Session disparaît. On discute dans le chat global, et le canal Groupe sert à parler à son équipe.
+- **État** : ✅ en ligne le 01/11
+
+## 01/11/2026 — Geoffrey — Bâtiments de guilde : Armurerie et Forge plus chères
+- **Pour le joueur** : le niveau 1 de l'Armurerie demande 500 000 Pierre et celui de la Forge 250 000 Pierre dure, au lieu de 100 000 chacun. Les dons déjà faits restent comptés.
+- **État** : ✅ en ligne le 01/11
+
+## 01/11/2026 — Geoffrey — Shrines : texte d'un shrine éteint
+- **Pour le joueur** : la carte d'un shrine éteint disait « Prix atteint : actif pour 5 mines », comme s'il tournait encore. Elle dit maintenant « Inactif. Une fois payé : actif pour 5 mines. » Le décompte, lui, était juste : 5 mines, puis plus de bonus.
+- **État** : ✅ en ligne le 01/11
+
+## 01/11/2026 — Geoffrey — Guilde : message après une invitation
+- **Pour le joueur** : inviter un joueur ouvre maintenant une petite fenêtre : « Invitation envoyée à X. », ou « Ce pseudo n'existe pas. » (ou tout autre refus du serveur).
+- **État** : ✅ en ligne le 01/11
+
+## 01/11/2026 — Geoffrey — Guilde : les bâtiments
+- **Pour le joueur** : à droite de l'onglet de sa guilde, trois bâtiments avec leur texture : Armurerie (+2 % de dégâts), Trésorerie (+2 % de fortune), Forge (+2 % de vitesse de minage). Chaque membre donne des matériaux ; quand tout est réuni, le chef ou un officier lance la construction. Le bonus vaut pour tous les membres, dans tous les modes. En dessous, un journal des dons sans limite, jamais effacé.
+- **Décisions** : « Poussière magique » = Poudre de rêve. Don définitif, ramené à ce qu'il manque. Bonus dès l'arrivée dans la guilde, figé au lancement. Bâtiments et journal publics (bouton Voir dans Rechercher). Niveau 1 seul pour l'instant, les suivants s'ajoutent en config.
+- **À suivre** : les coûts sont ceux donnés par Geoffrey, à juger une fois en jeu. Un joueur peut changer de guilde pour profiter des bonus d'une autre.
+- **État** : ✅ en ligne le 01/11
+
+## 01/11/2026 — Geoffrey — Sets : pop-up de confirmation
+- **Pour l'équipe** : sauvegarder un set ou en équiper un affiche une petite pop-up de 4 s en haut à gauche, avec le nom du
+  set. Elle remplace la petite ligne sous la liste des sets.
+- **État** : ✅ en ligne le 01/11
+
+## 01/11/2026 — Geoffrey — Arc de l'Admin
+- **Pour le joueur** : nouvelle arme légendaire, portée +8, dégâts +15, recul +2. Le mineur tire des flèches de loin, et continue quand le mob est au contact. On ne peut pas l'obtenir dans le jeu : seule l'administration le donne.
+- **État** : ✅ en ligne le 01/11
+
+## 01/11/2026 — Geoffrey — Guilde : voir les membres depuis la recherche
+- **Pour le joueur** : dans Guilde > Rechercher, un clic sur une guilde déplie ses membres (pseudo, grade, XP rapportée). Un autre clic la replie.
+- **État** : ✅ en ligne le 01/11
+
+## 01/11/2026 — Geoffrey — Prêt tout le temps : prêt d'office au retour de prison
+- **Pour l'équipe** : avec la case cochée, on est prêt sans clic en entrant dans un groupe et en sortant de prison. Avant,
+  la prison obligeait à quitter le groupe, ce qui effaçait « prêt » même si la case restait cochée.
+- **Décision** : tant que la prison tourne, le joueur n'est pas prêt d'office, pour que le chef ne puisse pas la lui terminer
+  sans son accord.
+- **État** : ✅ en ligne le 01/11
+
+
+## 01/11/2026 — Geoffrey — Trois nouveaux talents (étage 6)
+- **Pour le joueur** : un nouveau talent à 1 point au bout de chaque arbre. **Ivresse Minérale** (Mineur) : chaque minerai ajoute 1 dégât à la prochaine attaque. **Reconnaissance** (Logisticien) : chaque autre mineur dans le seau du treuil lui rend 1 d'oxygène toutes les 2 s. **Saccager** (Barbare) : après 2 critiques d'affilée, la prochaine attaque est double.
+- **Décisions** : Ivresse sans limite de stacks, Reconnaissance cumulable, Saccager remet son compteur à 0. Valeurs provisoires.
+- **À suivre** : Ivresse peut donner une très grosse première frappe après une longue phase de minage, à surveiller sur les boss de mine.
+- **État** : ✅ en ligne le 01/11
+## 01/11/2026 — Geoffrey — Canal Guilde dans le chat
+- **Pour le joueur** : nouveau canal **Guilde**, en violet, avec le raccourci `/g`. Seuls les membres de la guilde lisent ces messages, et ils ne font pas de bulle dans le Carreau. Le canal se masque par onglet, comme les autres.
+- **État** : ✅ en ligne le 01/11
+
+## 31/10/2026 — Geoffrey — Nom de guilde au-dessus de la tête
+- **Pour le joueur** : sous le pseudo, en plus petit, `< Nom de la guilde >`, centré au-dessus du personnage, dans la mine, en prison et dans le Carreau. En session, c'est la guilde du lancement : en changer se voit à la session suivante.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Guildes
+- **Pour le joueur** : nouvel onglet Guilde (touche G). Créer une guilde (gratuit), inviter un joueur par pseudo ou demander à rejoindre depuis Rechercher, grades Chef / Officier / Membre, promotion et exclusion, jusqu'à 30 membres. 1 % de l'XP de chaque membre va à la guilde, dont le niveau suit la même courbe que le mineur, et chaque membre voit l'XP qu'il a rapportée. Classement des guildes par niveau.
+- **Pas encore là** : les bonus et les bâtiments (emplacements prévus à l'écran, vides). Pas de bâtiment Guilde dans le Carreau.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Plus de blueprints dans les trésors dépassés
+- **Pour le joueur** : si tu as appris toutes les recettes du tier d'un trésor et du tier suivant, il ne donne plus de blueprint. Tiers 1 à 3 appris : plus rien dans les T1 et T2, encore dans le T3. Le reste du butin (parts, gemmes…) ne change pas.
+- **Décisions** : un plan gardé sans l'utiliser ne compte pas comme appris. Le T4 n'est pas touché, faute de tier suivant.
+- **À suivre** : moins de plans en double, donc un peu moins de Blueprint parts par recyclage pour les joueurs avancés.
+
+## 31/10/2026 — Geoffrey — Raffle plus fréquent
+- **Pour le joueur** : un raffle toutes les 30 à 60 min au lieu de 45 à 120 min. Les horaires (8 h à 2 h) et les lots ne changent pas. L'annonce du gagnant donne le nombre de participants (« toto a gagné 100 Chitine sur 12 participants »).
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Craft : plus d'onglet vide
+- **Pour le joueur** : dans le Craft, un onglet sans recette disponible n'est plus affiché. Il apparaît dès qu'une recette de sa catégorie est apprise.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Téléphone : le clavier ne s'ouvre plus tout seul au four
+- **Pour le joueur** : sur téléphone, ouvrir une case du four, ses recettes ou une case du concasseur n'ouvre plus le clavier chiffré : il faut toucher la case de quantité. Sur ordinateur, le curseur s'y place toujours.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Lien du Discord dans le bandeau
+- **Pour le joueur** : un lien « Discord du jeu » à côté du Wiki, dans le bandeau du haut. Il ouvre un nouvel onglet. Sur téléphone, seule son icône reste, comme pour le Wiki, et « Sortir de prison » devient « Sortir » pour que tout tienne dans l'écran.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Pièces runées : la texture de la rune
+- **Pour le joueur** : la gemme violette est remplacée par la vraie texture, en petit : la rune, ou le fragment si la pièce porte un fragment.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Le bouton Trier range les runes par qualité
+- **Pour le joueur** : dans l'inventaire, **Trier** met les runes de la R7 à la R1, puis les fragments de rune de la même façon. Les autres pièces ne changent pas d'ordre.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Plastron de l'équilibre : moins de pods
+- **Pour le joueur** : le Plastron de l'équilibre donne +112 pods au lieu de +188 ; ses 8 autres stats ne changent pas. Les plastrons déjà fabriqués suivent.
+- **Décisions** : il valait 2,92 fois le x de son tier ; il vaut maintenant 2 fois (1 003 x au lieu de 1 459 x). Valeur provisoire.
+- **À suivre** : il a moins de pods que le Plastron en acier (+137), mais reste plus fort que lui au total (1 003 x contre 822 x).
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Nouvelle pièce : Cape inclusive
+- **Pour le joueur** : une cape épique aux couleurs du drapeau LGBT, avec 4 lignes de stats tirées au hasard quand on la fabrique et montrées dans le pop-up. Son plan sort du Treasure T4 (0,5 %) et de la dernière étape de la recherche, avec les Jambières titanesques. Le wiki la cache tant que son plan n'est pas sorti.
+- **Décisions** : 1 500 x au total (2 fois le T4.5), 375 x par ligne ; doublons permis, Découverte possible (une au plus). Tirage définitif. Valeurs provisoires.
+- **Décision** : mêmes ratios pour la cape, les runes et les fragments : vitesse d'attaque ÷ 5, butin des mobs ÷ 4, stats de combat, ténacité et résistance au recul ÷ 3, coup unique ÷ 2. **Toutes les pièces déjà runées changent**. Le perçage des runes remonte (÷ 3 au lieu de ÷ 4).
+- **À suivre** : avec des doublons, une cape peut rester forte sur une seule stat (au pire +76 % de vitesse d'attaque). À surveiller dans les tours.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Téléphone : le chat a son propre onglet
+- **Pour le joueur** : sur téléphone, le chat ne recouvre plus les autres écrans. Il a un onglet **Chat**, juste après Session, et y prend tout l'écran. Sur ordinateur, rien ne change.
+- **Décisions** : « téléphone » = écran de 700 px de large ou moins, ou de 500 px de haut ou moins (téléphone tourné).
+- **À suivre** : pas de pastille de nouveau message sur l'onglet (le chat n'est pas relu quand il est fermé). À essayer sur un vrai téléphone, surtout le clavier.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Icône sur les pièces runées
+- **Pour le joueur** : une petite gemme violette en bas à gauche de la case d'une pièce runée (rune ou fragment) : inventaire, stuff porté, fiche d'un ami, onglet Amélioration, listes de choix.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Craft : recettes triées par catégorie
+- **Pour le joueur** : l'onglet Craft a les mêmes onglets que l'inventaire (Tout, Blocs, Minerais, Stuff, Butin des mobs, Matériaux, Runes, Divers). Un onglet sans recette est grisé.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Chat : des messages n'apparaissaient pas après en avoir envoyé un
+- **Pour le joueur** : envoyer un message juste après l'arrivée de ceux des autres les faisait sauter jusqu'au rechargement de la page : c'est comme ça qu'un compte a raté l'annonce du raffle en tapant `!join`. Corrigé pour le Chat global et le chat de session. Le gagnant d'un raffle voit maintenant son lot dans l'inventaire sans recharger.
+- **Vérifié** : raffle réel sur un serveur local, le lot arrive bien dans l'inventaire du gagnant.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Commande pour forcer un raffle
+- **Pour l'équipe** : sur le serveur, `sudo node /opt/deep-idle-mine/scripts/force-raffle.js` lance un raffle tout de suite, même la nuit. Le lot sort de la table habituelle, et la commande est refusée si un raffle est déjà en cours. Le prochain raffle automatique est reprogrammé après celui-ci.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Raffle : un tirage au sort dans le chat
+- **Pour le joueur** : toutes les 45 à 120 min, entre 8 h et 2 h, un lot est annoncé dans le chat global. On a 40 s pour taper `!join` : la commande n'apparaît pas dans le chat et une réponse visible par soi seul confirme l'inscription. À la fin, un inscrit gagne le lot, annoncé à tous.
+- **Décisions** : il faut un compte avec pseudo (pas les invités, à cause du multi-compte) ; la rune suit la table de l'identification ; sans inscrit, le lot est perdu et le chat le dit. Silver ingot = Barre d'argent, clés T1 / T2 = Clé d'instance I / II. Tombé la nuit, le raffle part entre 8 h et 9 h 15.
+- **À suivre** : à regarder en vrai. `!join` ne marche que dans le Chat global, pas dans le chat de l'onglet Session. Un joueur qui masque Général ne voit pas l'annonce.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Groupes en formation dans « Que veux-tu faire ? »
+- **Pour le joueur** : Groupes en formation est maintenant une ligne du menu des activités du lobby. Une fois dans une activité, le bouton reste dans la carte Équipe.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Lobby : Groupes en formation et cadenas
+- **Pour le joueur** : un bouton **Groupes en formation** montre les groupes de 1 ou 2 joueurs, leur activité et l'apparence de chacun. Un clic pour entrer. Un groupe plein sort de la liste tout seul, sans F5. Le chef peut poser un **cadenas** : seuls les invités entrent. Il n'est jamais posé par défaut et ne passe pas d'un groupe à un autre.
+- **Décisions** : un joueur sans groupe n'apparaît pas dans la liste, il clique sur « Proposer mon groupe » (sinon tous les joueurs seuls du lobby seraient listés, même ceux qui veulent jouer seuls). Le cadenas bloque aussi le code, les liens de lobby et « rejoindre un ami », et coupe la recherche de groupe.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Quatre nouvelles pièces lâchées par les mobs
+- **Pour le joueur** : le **Piolet de gobelin** (pioche, minage +0,3), 0,5 % sur un gobelin. Le **Kilt ténébreux** (jambes, vitesse de minage +6,4 %), 0,5 % sur un occultiste. Le **Chapeau de naab** (casque, oxygène +8, pods +6, marche +0,14), bonnet à hélice et yeux qui louchent, 1 % sur une bestiole. L'**Épée cassée en carton** (épée, 7 dégâts), 1 % sur une bestiole. Toutes se recyclent et ont leur apparence sur le mineur.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Nouvel objet : l'Orbe supérieur
+- **Pour le joueur** : un **Orbe supérieur** se fabrique dans l'onglet Craft, dès le départ : 20 Rotten flesh + 20 Chair de vers + 20 Peau de chien de magma.
+- **À suivre** : il ne sert à rien pour l'instant ; son usage reste à décider.
+- **État** : ✅ en ligne le 31/10
 
 ## JJ/MM/AAAA — Prénom — Titre court
 - **Pour le joueur** : ce qui change en jeu (ou « rien, c'est de l'organisation »).
@@ -22,7 +183,1072 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 31/10/2026 — Geoffrey — Lobby : on sait qui on attend
+- **Pour l'équipe** : quand un membre du groupe est encore en session, le bouton du chef affiche son nom et le temps
+  restant (« Attente de Nunu (reste 6 min) ») au lieu de « Le groupe finit sa session… ». Tout le groupe voit aussi le temps
+  restant sur la carte de ce joueur.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Deux nouveaux mobs en area 7 : Chien de magma et Vers de terre
+- **Pour le joueur** : à partir de l'area 7, le **Chien de magma** applique du **Bleed** toutes les 3 s de tacle (déplacement et minage −10 % par stack). Le **Vers de terre** traverse les blocs et charge toutes les 10 s : étourdi 3 s et un stack de Bleed. Il est intouchable, sauf quand il se coince (30 % par charge, 10 s), avec sa queue qui dépasse.
+- **Décisions** : ver 300 PV ; Bleed plafonné à 5 stacks (−50 %) ; la ténacité marche sur chaque stack ; le ver vise à 12 cases et le mineur frappe tout seul sa queue. 5 % chacun en area 7, 8 % en area 8+, le chien pris sur le mimic, le ver sur l'occultiste. Vitesses de charge et de rotation : valeurs provisoires.
+- **À suivre** : à regarder en vraie partie, surtout l'équilibre du stun et du Bleed en area 7. Les peaux et la chair n'ont pas encore d'usage. Textures provisoires.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Prison : XP des mobs divisée par 2
+- **Pour le joueur** : en prison, un mob tué donne moitié moins d'XP. L'XP des minerais et le butin ne changent pas.
+- **Décisions** : la prison donnait environ 70 % de l'XP d'une mine, surtout à cause des mobs (la moitié de son XP, contre environ 20 % en mine). Visée : environ 50 %, comme les minerais. Valeur provisoire, `PRISON.mobXpMul`.
+- **À suivre** : refaire la mesure dans quelques jours, surtout sur les débutants.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Stuff : les sets en bandeau, noms des pièces lisibles
+- **Pour le joueur** : dans l'onglet Stuff, les sets passent en bandeau au-dessus de la carte. Le nom des pièces a bien plus de place et ne s'écrit plus sur une colonne de quelques lettres. L'onglet garde la même largeur que les autres.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Runes : les stats offensives divisées comme sur les pièces
+- **Pour le joueur** : les lignes offensives des runes et des fragments rapportent moins : dégâts, vitesse d'attaque, double attaque, critique, portée et recul ÷ 2, dégâts % ÷ 3, perçage ÷ 4. Vaut aussi pour les runes déjà posées. Ex. : Doc Martins +2 avec une rune à +40,1 % de vitesse d'attaque → +20 %.
+- **Décisions** : les lignes d'identification ne changent pas, ni minage, ténacité et résistance au recul sur les runes.
+- **À suivre** : le Gear score des pièces runées baisse aussi, et les classements avec.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Bot Discord : croix pour ignorer un sujet
+- **Pour l'équipe** : le bot ajoute une troisième réaction ❌ dans #report. Cliquée en premier, elle ignore le sujet : il
+  quitte la base et le message affiche « Sujet ignoré ». Sur un sujet déjà attribué, elle ne fait rien.
+- **À suivre** : relancer le bot sur le serveur après la mise en ligne.
+- **État** : ✅ code en ligne le 31/10, bot à relancer sur le serveur
+
+## 31/10/2026 — Geoffrey — Bot Discord : reports et /todo
+- **Pour l'équipe** : un tag @admin sur Discord est copié dans #report avec un ID. Le premier emoji cliqué attribue le
+  sujet (1 Joe, 2 Djulo). Dans #todo, `/todo joe`, `/todo djulo`, `/todo done` et `/todo help` gèrent la liste. Rien ne
+  change pour les joueurs en jeu.
+- **Décisions** : service à part du jeu sur le serveur OVH, avec `discord.js` limité au dossier `bot/`. Un sujet terminé
+  garde son message dans #report, avec ✅.
+- **À suivre** : créer le bot sur Discord et l'installer sur le serveur (`docs/bot-discord.md`), puis le tester en vrai.
+- **État** : ✅ code en ligne le 31/10, bot à installer sur le serveur OVH
+
+## 31/10/2026 — Geoffrey — Téléphone : tout est recentré
+- **Pour le joueur** : sur téléphone, en portrait comme en paysage, la page reprend la largeur de l'écran et les onglets sont de nouveau centrés. Le bandeau du haut se compacte, la barre d'onglets défile, le chat replié tient sur une ligne, et le guide s'efface quand le chat est ouvert.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Stuff : les cases ne se décalent plus avec les noms longs
+- **Pour le joueur** : la case Torche sortait du cadre avec la Lampe à incandescence, et d'autres cases pouvaient faire pareil sur une fenêtre étroite. Toutes les cases restent alignées : un nom trop long passe à la ligne, coupé si besoin.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Chat : [Chef de groupe] dans le canal de groupe
+- **Pour le joueur** : un message du chef dans le canal Groupe (/gr) s'affiche avec **[Chef de groupe]** au lieu de [Groupe], un peu plus clair que le bleu du canal. Tout le groupe le voit, le chef compris.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Social : inviter un joueur en prison
+- **Pour le joueur** : un joueur en vert peut être invité, y compris en prison s'il a le jeu ouvert (Social et « Who ? »).
+  Son statut affiche alors « En ligne - Prison ».
+  Sa prison continue : elle ne se termine que si le chef lance avec lui, et « Je suis prêt » prévient avant.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Shrines : le bouton Activer / Désactiver répond tout de suite
+- **Pour le joueur** : après un clic, le bouton d'un shrine chargé gardait son ancien texte jusqu'au clic suivant ailleurs, alors que le changement était déjà pris en compte. Il change maintenant tout de suite.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Le Carreau : clic sur la statue
+- **Pour le joueur** : cliquer sur la statue du meilleur GS n'ouvre plus le Lobby : le mineur marche jusqu'à elle et sa
+  plaque s'affiche. Cliquer ailleurs sur la place mène toujours au Lobby.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Le bilan de fin de session était caché par la ville
+- **Pour le joueur** : le bilan de fin de session (ce que tu as loot) s'affiche de nouveau, en tour comme en mine. Depuis le 30/10, la promenade dans
+  le Carreau démarrait en même temps que le bilan et le cachait entièrement. Le butin était bien versé, seul l'affichage manquait.
+- **Décisions** : mis en ligne sans attendre, le jeu en ligne étant cassé (signalé 3 fois).
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Chat : lien vers son lobby
+- **Pour le joueur** : le bouton **Pub LFG** du lobby, ou **%lobby** dans un message (`/lfg %lobby on cherche un last`), met un lien
+  `[Instance I 2/3]` dans le chat. Au survol : un aperçu du groupe (portraits, places libres). Au clic : on rejoint le groupe.
+- **Décisions** : « rejoint » = rejoint le lobby, pas la session en cours. Tout membre peut publier, un joueur seul aussi. Le lien marche dans tous les canaux,
+  pas dans le chat de session. Le code du groupe n'apparaît jamais dans le chat.
+- **À suivre** : l'essayer à deux en vrai. Le joueur qui rejoint n'est pas amené sur l'activité annoncée (le lobby ne partage pas l'activité choisie).
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Pseudos : les mots interdits du chat ne passent plus
+- **Pour le joueur** : on ne peut plus créer un compte avec un pseudo interdit, un message d'erreur le dit. Un joueur qui en a déjà un doit le changer à sa prochaine connexion : une fenêtre impossible à fermer le lui demande, il garde son compte et son stuff.
+- **À suivre** : aucun des 31 pseudos lisibles n'est touché aujourd'hui. La liste de mots reste celle du chat.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Social : joueur en prison en vert
+- **Pour le joueur** : dans l'onglet Social, un joueur en prison qui a le jeu ouvert a une pastille verte. Si sa prison
+  tourne page fermée, la pastille reste orange. Le texte « En session · Prison » et les boutons ne changent pas.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Le mineur va chercher les résidus et minerais rares avant de creuser une galerie
+- **Pour le joueur** : au lieu de creuser une galerie à l'aveugle, le mineur va chercher ce qu'il a déjà découvert de valeur (résidu, treasure, mithril et mieux), même loin, tant qu'il peut y aller et remonter à temps. Avant, tout ce qui était à plus de 12 cases était ignoré (signalé sur la seed 1832289715).
+- **Décisions** : seuil au mithril (valeur 5), provisoire, `CFG.farVal`. Le charbon, le fer, l'or et le graphite ne valent pas l'aller-retour. Seules les galeries changent : quand il peut encore descendre, il descend.
+- **À suivre** : sur 5 sessions, les quantités rapportées ne bougent presque pas : ça corrige un comportement bizarre, pas le rendement. Le serveur calcule environ 15 % de plus dans les sessions profondes.
+
+## 31/10/2026 — Geoffrey — Fluidité : le jeu lit la partie avec un petit tampon
+- **Pour le joueur** : le mineur et les mobs bougent plus régulièrement, surtout quand le réseau a un coup de mou. Le jeu affiche la partie 0,4 s en arrière, comme le tampon d'une vidéo (il y avait déjà environ 0,35 s de retard). Après un retard, le mineur rattrape doucement au lieu de sauter. Mine, prison, tours, instances et mine instantanée.
+- **À suivre** : regarder en jeu si la sensation est meilleure, et surveiller la charge du serveur (envois plus nombreux, partie avancée toutes les 100 ms). Le Bloc géant n'est pas concerné.
+
+## 31/10/2026 — Geoffrey — Grimoire : sorts débloqués devant
+- **Pour le joueur** : dans l'onglet Sorts, le grimoire montre d'abord les sorts débloqués, puis les parchemins en poche, les sorts d'une autre spé, et enfin ceux pas encore débloqués.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Chat : canal Commerce retiré
+- **Pour le joueur** : plus de canal Commerce ni de raccourci /c dans le chat global : il n'y a pas d'échanges dans le
+  jeu. Les anciens messages de ce canal s'affichent en Général.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — « Prêt tout le temps » revu
+- **Pour le joueur** : la case est maintenant visible partout, même seul ou en prison, et elle ne se décoche plus
+  toute seule : elle est gardée sur le compte. Elle sert à rester prêt : on clique « Je suis prêt » une fois en entrant
+  dans un groupe, puis on le reste session après session.
+- **Décisions** : cocher ne rend plus prêt. En revenant de prison, le joueur clique donc une fois : un chef ne peut pas
+  lui terminer sa prison sans son accord. « Prêt (annuler) » remarche, sans toucher à la case.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Mode dev : copier un vrai joueur en tapant son pseudo
+- **Pour l'équipe** : dans le lobby du mode développeur, on tape un pseudo et le personnage du joueur (stuff, skills, sorts, niveau) arrive
+  dans les presets, sans console ni fichier. Un preset par mineur, en instance aussi, même avec un compte invité ou invité dans un groupe. Le serveur dev lit la base en ligne avec un compte qui ne peut rien modifier.
+- **À suivre** : Jules a besoin de son fichier `.dim-dev.env` pour s'en servir. `SET ROLE` ne marche pas dans Neon : voir `has_table_privilege`.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Chat : largeur débloquée en tour et en instance
+- **Pour le joueur** : en tour, en instance, en mine instantanée et au Bloc géant, le chat peut s'élargir jusqu'au bord de la mine ; il restait bloqué au minimum alors qu'il y avait de la place.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Menu du Lobby : l'équipe à droite
+- **Pour le joueur** : le choix des activités montre ton équipe à droite, seul ou en groupe : inviter, chercher un groupe, et « Je suis prêt » pour un membre. Le Lancer reste dans l'activité.
+- **Décisions** : cliquer sur l'onglet Lobby rouvre toujours le menu, même en groupe ; rejoindre un groupe n'ouvre plus la Mine.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Chat : le canal utilisé reste choisi
+- **Pour le joueur** : après un message en /gr, le suivant part en groupe sans rien préciser, et pareil pour /1, /2 et /c. Après un /w, le suivant repart au même joueur. On change de canal avec un autre raccourci ou le sélecteur, et le canal est gardé sur le compte.
+- **Décisions** : le canal ne change que si le message est bien parti (un /gr refusé sans groupe ne change rien).
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Chat global : canaux, MP, onglets
+- **Pour le joueur** : chaque message part dans un canal, avec sa couleur : Général (blanc), MP (rose), Groupe (bleu), Commerce (beige), LFG (vert). Raccourcis : /1, /2 (LFG), /c, /gr, /w "pseudo". Un seul onglet au départ ; l'écrou choisit ses canaux, le « + » crée un onglet. Ces réglages sont gardés sur le compte.
+- **Décisions** : sans raccourci, le message part dans le canal du petit sélecteur à côté du champ. Un MP envoyé s'affiche « à pseudo ». MP possible vers un joueur hors ligne. Même modération et même rythme (3 s) sur tous les canaux. Pas de bulle du Carreau pour les MP et le Groupe.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Nouveau Lobby : menu des activités, chat permanent, niveau dans le bandeau
+- **Pour le joueur** : le Lobby s'ouvre sur un grand menu (Prison, Mine, Mine instantanée, Bloc géant, Jugement, Instances), une ligne de description pour chacun. Un clic ouvre l'activité : les sets à gauche, l'équipe ou la carte de l'activité à droite, un bouton « ← Activités » pour revenir. Le niveau, la barre d'XP, le % et l'XP sont dans le bandeau du haut, à côté du pseudo ; la carte « Mineur » disparaît. Le chat global n'est plus dans le Lobby : il reste affiché en bas à gauche sur tous les onglets, à 40 % de la hauteur, réglable en tirant sa barre orange, et repliable.
+- **Décisions** : préférences et réglages dev sous les sets, à gauche. Tours choisies depuis le Jugement, « ← Activités » y ramène. Instance et Jugement : leur carte à gauche, les sets dessous, l'équipe à droite. Cliquer sur l'onglet Lobby rouvre le menu, sauf dans un groupe (on reste sur l'activité, pour « Je suis prêt »). Rejoindre un groupe depuis le menu ouvre la Mine. Le chat de session reste dans l'onglet Session. Petit écran (moins de 1170 px) : chat replié au départ.
+- **Largeur des onglets** : tous les onglets ont maintenant la même largeur, quel que soit leur contenu, et tout est réduit à 90 %. Session et téléphone gardent leur taille.
+- **À suivre** : en session, la mine garde sa largeur et la colonne Équipe / Mineur s'arrête au-dessus du chat, en défilant ; plus le chat est haut, moins elle a de place. Le chat flotte par-dessus : le changer de taille ne déplace rien et le reste reste centré. Sa largeur s'arrête au début de l'interface centrale de l'onglet ouvert ; En tour, instance, mine instantanée et Bloc géant en direct, il peut recouvrir le bas à gauche de la mine (minimum 160 px).
+- **Chat** : plus de barre orange. On règle la hauteur et la largeur en tirant la bordure du chat (haut, droite ou coin). Au départ, il est 2,5 fois plus large et 1,5 fois plus haut.
+
+## 31/10/2026 — Geoffrey — Golbute : avalanche et coup au sol retravaillés
+- **Pour le joueur** : les rochers de l'avalanche vont maintenant jusqu'au sol et s'y brisent dans la poussière. Pour son coup, le Golbute lève ses vrais bras et les écrase au sol de chaque côté, au lieu de deux rectangles gris.
+- **À suivre** : à regarder en jeu, en pierre et en cristal.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Énergie de chacun dans le panneau Équipe
+- **Pour le joueur** : pendant une session à plusieurs, le panneau **Équipe** montre l'énergie de chaque joueur (« ⚡ 42/100 », en rouge s'il ne peut plus lancer de mine classique), en mine, en tour et en instance. Le chiffre peut avoir jusqu'à 30 s de retard.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Tours : le Shrine héroïque remplace le niveau 2
+- **Pour le joueur** : plus de choix de niveau dans les tours. Un **Shrine héroïque** (30 Orbes, dans le lobby des deux tours) donne la difficulté de l'ancien niveau 2 et **25 % de chance d'une 2e boîte** pour chaque joueur. Il garde sa charge tant que la tour n'est pas gagnée, le chef peut le désactiver, et il se cumule avec le Pacte ou l'Exorcisme.
+- **Décisions** : une seule victoire par joueur et par ouverture, donc plus de 2e boîte garantie. Tirage par joueur ; la 2e boîte est la même que la 1re (bénie avec une stèle). Le classement « Tour céleste II » devient « Tour céleste héroïque », records gardés, avec ou sans stèle.
+- **À suivre** : Héroïque + stèle n'a pas été simulé ; la stèle seule n'était déjà pas gagnée en simulation (2e boss jamais tué). Un joueur qui a déjà gagné la tour pendant l'ouverture en cours, à n'importe quel niveau, ne peut plus la refaire à la mise en ligne.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Prison : les mines au focus minerai ne gonflent plus la compo
+- **Pour le joueur** : les mines jouées avec le focus minerai (retiré le 30/10) ne comptent plus pour leur butin dans la compo de la prison, à partir de 6 areas débloquées. Elles comptent pour une répartition de référence, celle des 10 dernières mines de Nbrick, LeTaz et Akake (mithril 1,28 %, cobalt 0,13 %, thorium 0,08 %). Les compos des joueurs concernés sont refaites une fois, et leur compo enregistrée est effacée.
+- **Décisions** : règle pour tous, pas de liste de pseudos ; si un joueur du groupe a mis le focus, toute la mine compte. Pour Croustiflex, Infernatiwar et Monsta : mithril ÷ 3 environ, cobalt ÷ 3, thorium ÷ 5 par rapport à aujourd'hui. Les 10 prochaines mines, sans focus possible, formeront leur palier suivant, sans correction.
+- **À suivre** : canoul, Sõnata ou Allaiks seraient corrigés aussi s'ils ont des mines au focus. Une prison déjà en cours garde sa compo jusqu'à sa sortie. Le tableau de rendement cumule toutes les prisons et baissera lentement.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Prison : cobalt et thorium plafonnés
+- **Pour le joueur** : dans la compo de la prison, le cobalt et le thorium ne dépassent plus 0,4 % chacun des minerais de la carte. La place libérée va aux autres minerais : la carte en contient autant qu'avant. Vaut pour toutes les compos (actuelle, ancienne, enregistrée) et le lobby affiche la valeur plafonnée.
+- **Décisions** : plafond commun à tous, pas de règle visant des pseudos. Seuls Croustiflex, Infernatiwar et Monsta sont vraiment touchés (0,9 à 1,1 % avant). Mesure sur la compo de Croustiflex (stuff acier, 20 h simulées) : cobalt 2,07 → 0,78 par heure, thorium 2,52 → 1,03. Valeur provisoire, `PRISON.oreCap`.
+- **À suivre** : leur prison n'était pas anormale (40 à 50 % de leurs mines, comme les autres) : ils rapportent 8 à 9 cobalt ou thorium par heure en mine, contre 1 à 3 pour les autres. Le plafond les met nettement sous la cible de 50 % sur ces deux minerais.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Le bilan de fin de session s'affiche à nouveau à tous les coups
+- **Pour le joueur** : après une tour (ou toute autre session), le bilan pouvait ne jamais s'afficher depuis les correctifs du 30/10. Deux cas : le jeu
+  ouvert dans un autre onglet ou sur un autre appareil, qui recevait le bilan à ta place ; une mine instantanée commencée pendant la session.
+  Le bilan fermé ne revient toujours pas quand on recharge la page.
+- **À suivre** : vérifier sur la prochaine tour.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Gobelins asservis : ils creusent quand il n'y a plus de minerai
+- **Pour le joueur** : un gobelin asservi vise toujours les minerais d'abord. S'il n'y en a pas à 6 cases, il creuse tout droit dans la roche
+  au lieu d'attendre, et reprend le premier minerai qu'il trouve. Il ne reste presque plus inactif (1 s sur 30, contre 12,5 s avant).
+- **Décisions** : Geoffrey : « il focus minerai, mais s'il n'y en a pas alors il mine ». La roche qu'il casse va au coffre commun, comme le reste.
+- **À suivre** : le rendement de la Couronne augmente (environ +80 % de blocs par gobelin, +35 % de minerais), à surveiller.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Le mineur prend les coffres sur la paroi de son puits
+- **Pour le joueur** : un mineur qui creuse ou descend pour rejoindre son area de travail ouvre maintenant les coffres découverts sur
+  son chemin. Avant, il passait à côté dès qu'il n'était pas encore dans son area : c'était le cas normal, avec le réglage de base « Plus profond ».
+  Sur la carte de la seed 134583339 : 1 coffre sur 5 était visé avant, 5 sur 5 maintenant.
+- **Décisions** : en route, seuls les coffres et les résidus le détournent, pas les minerais.
+- **À suivre** : vérifier en jeu sur la prochaine partie.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Nouveau craft de la Clé d'instance I
+- **Pour le joueur** : la clé se crafte maintenant avec 1 Barre d'argent et 5 Orbes (avant : 250 peaux de gobelin, 20 pierres glissantes,
+  50 tissus sombres et 1 Barre d'argent). L'Orbe a enfin un usage.
+- **Décisions** : valeur d'équilibrage de Geoffrey. 5 Orbes reviennent à 150 tissus sombres, 150 vésicules de gaz et 50 pierres glissantes.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Voir l'énergie des gens dans Social
+- **Pour le joueur** : dans Social, les listes Amis et En ligne montrent l'énergie de chacun (« ⚡ 42/100 »), en rouge s'il ne peut plus
+  lancer de mine classique. Pratique pour savoir avant d'inviter. Le chiffre peut avoir jusqu'à 30 s de retard.
+- **Décisions** : visible par tout le monde dans En ligne, pas seulement par les amis ; pas dans les classements.
+- **État** : ✅ en ligne le 31/10
+
+## 30/10/2026 — Geoffrey — Prison : un nouveau joueur démarre en area 2
+- **Pour le joueur** : sans mine classique derrière soi, la prison a le contenu de l'area 2 (avant : area 1), avec du fer pour
+  la première pioche. La moyenne des 10 dernières mines ne descend plus sous l'area 2.
+
+## 31/10/2026 — Geoffrey — Prison : le mineur en fond ne se téléporte plus
+- **Pour le joueur** : derrière les onglets Inventaire, Craft, etc., la prison en fond n'était mise à jour que toutes les 15 secondes : le
+  mineur restait figé, puis se téléportait. Elle bouge maintenant aussi bien que dans l'onglet Session.
+- **À suivre** : vérifier en jeu que le fond est fluide.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Prison : plus de bug quand le jeu est dans un autre onglet
+- **Pour le joueur** : après 5 minutes dans un autre onglet, le navigateur ne réveille le jeu qu'une fois par minute. Le serveur te
+  croyait parti et rejouait ton run depuis le début à chaque réveil. Il t'attend maintenant 90 s au lieu de 30, le run continue normalement.
+- **À suivre** : vérifier en jeu avec un onglet caché plus de 5 min.
+- **État** : ✅ en ligne le 31/10
+
+## 30/10/2026 — Geoffrey — Nouvel objet : l'Orbe
+- **Pour le joueur** : un **Orbe** se fabrique dans l'onglet Craft, dès le départ : 30 Tissu sombre + 30 Vésicule de gaz + 10 Pierre
+  glissante. Il n'a pas encore d'usage.
+- **À suivre** : son usage, et sa rareté (commune par défaut).
+- **État** : ✅ en ligne le 31/10
+
+## 30/10/2026 — Geoffrey — Four : fenêtre Recettes remise en ordre
+- **Pour le joueur** : avec 3 ingrédients, la fenêtre **Recettes** du four devenait illisible (icônes séparées de leur nom, durée seule
+  sur une ligne, bouton Fermer coupé). Elle est plus large, chaque ingrédient reste d'un bloc, la durée est en haut à droite.
+- **État** : ✅ en ligne le 31/10
+
+## 30/10/2026 — Geoffrey — Four : une 3e case d'ingrédient pour les alliages
+- **Pour le joueur** : en mode **Alliage**, chaque four a maintenant 3 cases d'ingrédients. Les autres alliages n'en utilisent
+  que 2 et marchent comme avant, la 3e reste vide. Le bouton **Recettes** sait remplir les 3 cases.
+- **Recettes** : **Cobalt ingot** et **Thorium ingot** demandent maintenant **3 Tainted gold** en plus (5 Mithril ingot + 5 Refined
+  cobalt ou thorium + 3 Tainted gold).
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — `?perf` fonctionne aussi en prison
+- **Pour le joueur** : rien. Pour l'équipe : dans la prison, `?perf` n'affichait que les images par seconde ; il mesure maintenant
+  aussi les envois du serveur, comme en session.
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Jules — Plus de virgules inutiles dans les chiffres (oxygène, pods, torches…)
+- **Pour le joueur** : l'oxygène et les pods n'affichent plus de virgule (« 174 / 374 » au lieu de « 174/373.89 »), dans les
+  bulles en bas, le panneau du mineur, la Visite du bloc géant et l'onglet Stuff. Les torches, l'oxygène rendu par l'Âme
+  du Golbute et les PV max des boss de tour sont des nombres entiers. Les torches s'affichent comme le jeu les compte
+  (30,9 → 30). Les autres bonus gardent une décimale au plus (25,75 % → 25,8 %).
+- **Décisions** : on garde les décimales **quand elles servent** : les vitesses (minage 1,77 ; boost de pioche +0,206 ;
+  marche, échelle), les dégâts (14,3) et les bonus en % (ténacité +16,3 %), qu'une amélioration +1 fait bouger de
+  quelques dixièmes. Réglage par stat : `STUFF.statDecimals` (config).
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Jules — Le Golbute et le golem redessinés (style Darkest Dungeon)
+- **Pour le joueur** : le Golbute de l'Instance II n'est plus un bloc gris plat. C'est un colosse de pierre voûté, tête
+  enfoncée sous une arcade lourde, yeux de braise et gueule pleine de crocs, épaules en rochers, bras de gorille dont
+  les poings touchent le sol, fers brisés aux poignets avec leurs chaînes. Un **cœur de cristal** brille dans sa poitrine
+  et des éclats de cristal lui percent le dos : on voit venir sa forme cristallisée. Cristallisé, il garde exactement la
+  même silhouette, en cristal bleu taillé qui s'illumine autour du cœur. Gros contour noir, lumière d'en haut, bas du
+  corps dans l'ombre. La sueur blanche du golem de la mine est gardée (plus discrète). Rien ne change dans le combat.
+  **Le golem** (celui des mines et les petits golems de la Division) passe au même style : une bête de pierre voûtée,
+  tête en avant, yeux de braise, crocs, éclats de cristal dans le dos, toujours couverte de sueur blanche.
+- **À suivre** : à regarder dans une vraie partie (vérifié sur des aperçus, sur le sol de l'arène et dans un tunnel).
+  Le golem des mines change aussi.
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Prison : 8 d'énergie par heure de jeu (avant 4)
+
+## 30/10/2026 — Geoffrey — Coffre du Golbute : son butin et 5 nouveaux objets
+- **Pour le joueur** : le Coffre du Golbute s'ouvre. Toujours des lingots de mithril, du thorium et du cobalt raffinés, des pierres glissantes ; parfois un objet du Golbute : Némésis du Golbute (pioche légendaire, 1 %), Torse de Gollex (3 %), Jambières du Golbute (3 %), Âme du Golbute (torche épique, 2 %), Anneau en pierre (2 %), un parchemin de sort, la Recette : Chitine ou une gemme.
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Jules — Une icône pour le site (favicon)
+- **Pour le joueur** : l'onglet du navigateur (jeu et wiki) affiche maintenant une petite **pioche d'acier avec un éclat
+  de diamant** sur une case sombre au cadre orange, aux couleurs de l'interface. La même icône sert si on ajoute le site
+  à l'écran d'accueil d'un téléphone.
+- **À suivre** : rien ; pour retoucher le dessin, modifier la grille dans `scripts/gen_favicon.py` et le relancer.
+
+## 30/10/2026 — Jules — Chercher un groupe depuis la ville (le Carreau)
+- **Pour le joueur** : plus besoin d'aller dans le Lobby pour chercher un groupe. Dans la promenade du Carreau :
+  - dans la **barre d'émotes**, un bouton groupe remplace l'émote « ⛏️ On mine ? » ; en recherche, il s'allume et affiche
+    le temps d'attente (« 0:46 ») ; un nouveau clic annule ;
+  - **devant le chevalement** (et la place), à côté de « Préparer une session », un bouton « Chercher un groupe (2 en
+    recherche) », puis « En recherche 0:46 · Annuler ».
+  C'est exactement la recherche du Lobby (mine classique) : le Lobby se met à jour, le « ? » doré apparaît au-dessus de
+  ton mineur (et chez les autres), et le « Groupe trouvé » arrive comme d'habitude.
+- **Décisions** : les deux emplacements (choix de Jules) ; l'émote « On mine ? » disparaît (même sens que le bouton).
+  Lancer la recherche depuis la ville passe le Lobby sur la mine classique.
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Chat : les messages disparaissent au bout de 18 h
+- **Pour le joueur** : le chat garde toujours ses 50 derniers messages, mais un message de **18 h ou plus disparaît**
+  tout seul : le serveur ne l'envoie plus et ne l'enregistre plus, et il s'efface de l'écran même si la page reste
+  ouverte (vérifié chaque minute). Valable pour le chat global et le chat de session. Réglage : `CHAT.maxAgeMs`.
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Modération du chat : mots interdits, avertissements, ban de 24 h
+- **Pour le joueur** : dans le chat global et le chat de session, les insultes et injures (racistes, homophobes,
+  sexistes, validistes, incitation au suicide ; français et anglais) sont **remplacées par des astérisques** pour tout le
+  monde. Celui qui écrit reçoit une fenêtre **« Avertissement 1/3 : Insulte »** (le motif change selon le mot). Le filtre
+  voit à travers les déguisements : « n1gg3r », « n i g g e r », « connnnard », lettres cyrilliques, et un mot coupé sur
+  plusieurs messages, même par deux joueurs (« ni » puis « gger » : c'est celui qui complète qui est averti). Les jurons
+  d'humeur (putain, merde, fuck) ne sont pas filtrés. Au **3e avertissement : ban de 24 h**. Le joueur banni peut
+  regarder le jeu mais ne peut plus rien faire (lancer, crafter, écrire…), un bandeau rouge dit jusqu'à quand, et sa
+  prison s'arrête. Wiki à jour.
+- **Pour l'équipe** : `sudo node /opt/deep-idle-mine/scripts/moderation.js --name PSEUDO` montre chaque avertissement
+  (date, salon, motif, mots repérés, le message tel qu'il l'a écrit et tel qu'il a été publié) ; `--recent` les derniers
+  de tout le monde ; `--unban` lève un ban ; `--forgive 2` (ou `all`) retire un avertissement. La liste des mots est dans
+  `server/moderation/words.js`, facile à compléter.
+- **Décisions** (Geoffrey) : 3 avertissements → 24 h. Choix de Claude à valider : seul celui qui complète un mot coupé
+  est averti ; jurons d'humeur non filtrés ; une session déjà lancée va au bout pendant le ban ; les avertissements ne
+  s'effacent pas avec le temps (seulement par un ban, qui remet le compteur à 0, ou à la main).
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Jules — Le minotaure se bat enfin : Charge, Rage, et deux minotaures différents dans l'Arène
+- **Pour le joueur** : le minotaure n'était qu'un sac de PV qui tacle. Maintenant :
+  - **Charge** : toutes les 8 s, il **gratte le sol** (il tremble, icône « ! » au-dessus de lui), puis **fonce**. Le
+    premier mineur touché est **projeté de 3 cases** et **étourdi 2 s**. La **ténacité** évite l'étourdissement, la
+    **résistance au recul** (Doc Martins, faites avec son cuir !) réduit la projection. S'il rate et percute le mur, c'est
+    **lui qui est sonné 3 s** et prend **+50 % de dégâts**. Le barbare peut couper la charge en l'étourdissant (Dash).
+  - **Rage** sous 33 % de ses PV : il frappe deux fois plus vite, repousse plus fort et charge toutes les 5 s.
+  - Le minotaure du donjon passe à **2 000 PV** (avant 1 000). Mesuré avec le **preset acier** (stuff acier, arbre au
+    max, sorts), comme demandé par Geoffrey : à 3 (barbare, mineur, logisticien), il tenait **11 s** ; maintenant
+    **environ 22 s**, avec 2 charges ; un barbare seul met environ 1 min 15.
+  - **Arène du k hole** : deux minotaures différents (1 000 PV chacun, la carte dure 2 min) : le **Minotaure brun** charge,
+    le **Minotaure noir** (nouveau sprite) ne charge pas mais **enrage dès 50 %** et frappe encore plus vite.
+- **Décisions** : Charge + Rage (Jules, sur demande de Geoffrey de « rajouter des effets ») ; un brun et un noir dans
+  l'Arène ; on garde le sprite actuel (1 case) ; Geoffrey valide la projection pendant la charge et demande de régler
+  PV et recharge au preset acier : charge toutes les 8 s ; 2 000 PV (Jules : c'est un « mob ++ », pas
+  un boss ; 4 000 PV, essayés, le mettaient au niveau des boss des tours). L'Arène garde 1 000 PV (un mineur seul en acier y
+  met déjà 1 min 40 sur 2 min). Valeurs provisoires dans `MINOTAUR` (config).
+- **À suivre** : les mineurs n'esquivent pas la charge (l'IA ne change pas) : elle touche presque toujours. Si on veut
+  qu'on puisse « la voir venir et l'éviter », il faudra apprendre aux mineurs à s'écarter de sa ligne. À regarder en jeu.
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Jules — Nouveaux sprites pour l'Ange, le Démon, le Séraphin et le Diablotin
+- **Pour le joueur** : les boss des tours du Jugement sont redessinés en « guerriers » :
+  - **Ange** : un archange en cuirasse d'or, auréole, cheveux d'or, grandes ailes déployées et épée de lumière ;
+  - **Démon** : un seigneur démon massif, peau rouge fissurée de lave, épaulières à pointes, grandes cornes, ailes de
+    chauve-souris, hache et queue, avec un contour de braise pour bien le voir sur le fond sombre de sa tour ;
+  - **Séraphin** : un petit soldat de l'Ange (casque et cuirasse d'or, lance de lumière) au lieu d'une copie en
+    miniature de l'Ange ; **Diablotin** : même idée qu'avant, en plus lisible.
+  Les boss sont maintenant en pleine résolution, aussi nets que le Roi gobelin (avant : chaque pixel était doublé, et le
+  Démon n'était que l'Ange recoloré). Rien ne change dans le combat.
+- **Décisions** : direction « guerriers » pour les deux camps (Jules), parmi 3 propositions (guerriers, biblique, style
+  actuel amélioré).
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Prison : compo par paliers de 10 mines, actuelle / ancienne / enregistrée
+- **Pour le joueur** : le contenu de la prison ne glisse plus à chaque mine, il change tous les 10 mines. En entrant, on choisit « Actuelle » (mines 1 à 10), « Ancienne » (mines 11 à 20) ou « Enregistrée » ; le bouton « 💾 Enregistrer » garde la compo affichée (une seule à la fois). Utile après avoir fait monter des amis plus faibles, ou été porté par plus fort.
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Fortune et butin en plus : 0 pod
+- **Pour nous** : les minerais en plus donnés par la Fortune et le butin en plus des mobs (Pillage, butin des mobs) vont dans le sac sans peser : ils ne remplissent plus les pods. La Fortune devient vraiment utile en mine (avant, elle remplissait juste le sac plus vite).
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Instance : la clé n'est prise qu'à la victoire
+- **Pour le joueur** : la Clé d'instance I est toujours **vérifiée** au lancement (une par joueur), mais elle n'est plus
+  prise tout de suite : elle n'est utilisée **que si le groupe gagne**, chez les joueurs encore là à la victoire (en même
+  temps que leur Coffre du Roi Gobelin). **Échec** ou **départ avant la fin** (un joueur, ou tout le groupe qui quitte) :
+  on **garde sa clé**. Avant, elle était prise au lancement et rendue seulement en cas d'échec : un joueur parti avant
+  une victoire la perdait. Textes du lobby, de l'écran de fin et du wiki mis à jour.
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Prison : plus de minerais (oreMul 0,24 → 0,27)
+- **Pour nous** : la prison contient 12,5 % de minerais en plus, pour viser 50 % du rendement d'une mine (on était vers 40 %).
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Prison : +10 % de mobs
+- **Pour nous** : en prison, les mobs apparaissent 10 % plus souvent (attente entre deux apparitions × 2,73 au lieu de × 3 par rapport à une mine).
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Tableau prison : « 4 h 60 » corrigé, force des spés en prison
+- **Pour nous** : le tableau affichait « 4 h 60 » au lieu de « 5 h 00 ». Comparaison des spés en prison (stuff acier, profil canoul area 7, 30 runs chacune) : logisticien 669 minerais (poids)/h, mineur 618 (−8 %), barbare 582 (−13 %).
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Tableau de la prison : spé, GS et temps par action
+- **Pour nous** : le tableau « Rendement de la prison » montre aussi la spé, le GS du stuff emporté, et le % du temps passé à miner / se déplacer / combattre / autre, en prison et dans ses mines (mines jouées à partir de maintenant : avant, ce n'était pas mesuré). Nouvelle colonne « Spé mines » : la spé la plus jouée sur ses 10 dernières mines (celle qui revient le plus souvent), à côté de la spé emportée en prison.
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Rendement de la prison dans le jeu (compte admin)
+- **Pour nous** : connecté avec le compte « admin », « Mon compte » (portrait en haut à gauche) a un bouton « 📊 Rendement de la prison » qui ouvre le tableau dans un nouvel onglet. Les autres comptes ne voient pas le bouton et le serveur leur refuse les données. Liste des comptes : `ADMIN_VIEW` en config.
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Tableau de bord de la prison
+- **Pour le joueur** : rien (outil de l'équipe).
+- **Pour nous** : `scripts/dashboard-prison.js` produit une page avec, pour chaque joueur, le rendement de sa prison comparé à ses 10 dernières mines, minerai par minerai (gain par heure de jeu), et la moyenne. Cible : 50 %.
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Énergie au repos
+- **Pour le joueur** : un joueur qui ne fait rien (ni session en cours, ni prison) regagne **3 d'énergie par heure de jeu** (6 par heure réelle), jusqu'à 100. La prison reste meilleure (4 par heure de jeu).
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Correctif téléphone : défiler jusqu'aux onglets dans l'onglet Session
+- **Pour le joueur** : sur téléphone, le journal de la session ne retient plus le doigt (il montre ses 8 dernières lignes) : la page défile jusqu'à la barre des onglets.
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Prison sans résidus
+- **Pour le joueur** : plus de résidus angéliques ou démoniaques dans les cartes de prison (les runs déjà commencés gardent les leurs jusqu'à leur fin).
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Correctif : l'onglet Session montre la prison
+- **Pour le joueur** : en prison, l'onglet Session affichait « Tu n'es pas en session » sur le jeu en ligne (ça ne marchait qu'en mode développeur). Il montre maintenant la prison.
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Correctif : la barre du haut montre la prison
+- **Pour le joueur** : en prison, l'indicateur de session en haut affiche « Prison · run N » et l'avancée du run (avant : « aucune »).
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Correctif : la prison compte comme une session dans Social
+- **Pour le joueur** : un joueur en prison s'affiche « En session · Prison » (amis et liste Online), et on ne peut plus l'inviter comme s'il était libre.
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Stèles des tours : retours de partie
+- **Pour le joueur** :
+  - une stèle a maintenant **une charge** (avant 3), consommée **seulement à la victoire** ; une défaite ne la consomme pas, et elle reste chargée tant qu'elle n'est pas utilisée ;
+  - une fois chargée, le chef peut l'**activer ou la désactiver** dans le lobby de la tour : plus de blocage si l'équipe n'arrive pas à passer la tour sous stèle ;
+  - elle n'apparaît que dans **sa** tour : le Pacte dans la Tour de l'Ange, l'Exorcisme dans la Tour du Démon (plus dans la Mine) ;
+  - la **ténacité** peut éviter la projection de l'arrivée du 2e boss ;
+  - le **logisticien** peut poser son treuil pendant le 2e boss s'il n'en avait pas ; un treuil déjà posé reste brisé ;
+  - le 2e boss suit les règles du 1er : il n'avance pas avant le premier coup, et ceux qui étaient en bas se regroupent avant de monter.
+- **À savoir** : les stèles déjà actives à 2 ou 3 tours passent à 1 charge.
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Stèles des tours : Exorcisme et Pacte (Geoffrey) ✅ en ligne le 30/10
+
+- Deux nouveaux « shrines » pour les tours du Jugement, payés dans le Lobby comme le Shrine d'abondance : **Stèle d'exorcisme** (Tour du Démon, 240 Stonebricks angéliques) et **Stèle du pacte** (Tour de l'Ange, 240 Stonebricks démoniaques). Actives 3 tours lancées par le chef (valeur provisoire, à confirmer).
+- Effet : quand le boss meurt, le boss de l'autre camp s'écrase sur le toit, projette tout le monde de 10 cases, casse le treuil, et 5 mobs de l'autre camp (150 % de PV) envahissent chaque étage. Le 2e boss a 150 % de PV. Même chrono de 10 min : il faut le tuer pour gagner.
+- Bonus : un **trésor béni**, deux fois plus de chances d'anneau. C'est un simple coefficient : on pourra en ajouter d'autres sans réécrire de liste de coffres.
+- ⚠️ Équilibrage : en simulation, une équipe 2,5 minage / 40 dégâts tue le 1er boss vers 8 min 17, puis n'a plus le temps (2e boss presque intact). À régler (plus de temps, moins de PV, moins de mobs…).
+
+## 30/10/2026 — Zoom sur la carte et bouton « Équiper » sur mobile (Geoffrey) ✅ en ligne le 30/10
+
+- **Carte de la session** : on peut zoomer en pinçant à deux doigts (sur ordinateur : Ctrl + molette), jusqu'à ×4. Zoomée, la caméra suit toujours ton mineur, aussi de gauche à droite ; un glissé la déplace dans tous les sens, « Suivre » la ramène. Double appui : retour à la vue entière.
+- **Inventaire sur mobile** : toucher une pièce la sélectionne du premier coup (le survol simulé de l'iPhone avalait l'appui) et la fiche avec le bouton « Équiper » vient à l'écran.
+
+## 30/10/2026 — Nerf du recyclage des blueprints (Geoffrey) ✅ en ligne le 30/10
+
+Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10 à 20 (avant 15 à 30), tier 2 : 15 à 30 (avant 30 à 45), tier 3 : 20 à 35 (avant 45 à 60), tier 4 : 25 à 40 (avant 60 à 75).
+
+
+## 30/10/2026 — Geoffrey — Instance II : le Golbute
+- **Pour le joueur** : nouvelle instance dans « Où miner » → Instances. Un golem de 5 × 5 au milieu d'une arène vide,
+  10 min. Il tape le sol et projette les mineurs proches (la chute étourdit), fait tomber une avalanche toutes les
+  minutes (« Sonné » : à 6 stacks, mort), se divise en 10 golems toutes les 3 min, se cristallise à 66 % et 33 % (il
+  faut le miner) puis enrage. **La ténacité est indispensable.** Clé d'instance II dans les Treasure T4 (10 %).
+  Victoire : un Coffre du Golbute par joueur (son butin arrive plus tard ; en attendant il ne s'ouvre pas).
+- **Équilibrage** (simulation, provisoire) : 10 700 PV, 720 coups de cristal. Équipe de référence (1 mineur, 2 barbares,
+  armure en mithril, outils en acier + 20 %) avec 25 % de ténacité : 1 victoire sur 4 ; sans ténacité : jamais.
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Prison : carte neuve si le mineur reste étourdi 1 minute
+- **Pour le joueur** : en prison, un mineur étourdi 60 s de suite (étourdissements enchaînés compris, ex. occultistes)
+  ne reste plus bloqué jusqu'au temps max du run (3 h) : le run s'arrête, le coffre est versé (pas son sac) et une carte
+  neuve commence.
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Prison : le stuff est relu à chaque run
+- **Pour le joueur** : avant, le stuff, les skills et les sorts étaient pris à l'entrée en prison et ne changeaient plus
+  (une pièce de Découverte équipée ensuite ne comptait jamais, signalé par Infernatiwar). Maintenant ils sont repris au
+  début de chaque run : ce qu'on équipe pendant la prison compte dès le run suivant.
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Focus minerai retiré du jeu (gardé dans le code)
+- **Pour le joueur** : le panneau « Focus minerai » n'apparaît plus pendant la session ; le Focus area reste. L'option
+  est gardée : un réglage (`FOCUS.ores` dans la config) la remet.
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Correctif (suite) : les anciens bilans de session ne reviennent plus un par un
+- **Pour le joueur** : les bilans quittés sans bouton avant le premier correctif s'étaient accumulés (jusqu'à 30 jours) ;
+  chaque rechargement en montrait un plus ancien. Maintenant, seul le bilan de ta dernière session peut s'afficher, une
+  fois. Les anciens restent dans l'onglet Historique.
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Lobby : la Prison en premier dans « Où miner »
+- **Pour le joueur** : le bouton Prison est le premier de « Où miner » (la Mine reste choisie par défaut). Quand on n'a
+  pas assez d'énergie pour lancer une mine, le message dit maintenant qu'elle se recharge en prison.
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Correctif : le bilan de session revenait à chaque rechargement
+- **Pour le joueur** : un bilan de session quitté sans ses boutons (autre onglet, Échap, nouvelle partie lancée depuis
+  le lobby) revenait à chaque actualisation de la page. Il est maintenant marqué vu dès qu'il s'affiche : on le voit
+  une fois, et les résultats restent dans l'onglet Historique.
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Prison : énergie, vue et équilibrage
+- **Pour le joueur** : la prison recharge **4 d'énergie par heure de jeu** (8 par heure réelle), et tout le monde part de **0**.
+  La vue de la prison est zoomée sur sa carte (bords comme la mine), elle a le même fond et les mêmes transitions d'onglet
+  que la mine, et le panneau « Butin de la prison (total) » compte tout depuis l'entrée, run en cours compris.
+  Correctifs : golem collé sous la surface (mineur bloqué 3 h), cobalt et thorium qui n'apparaissaient jamais ; minerais
+  de la carte réglés à 51 % d'une mine (vrai profil de canoul).
+- **État** : ✅ en ligne le 30/10
+
+## 29/10/2026 — Geoffrey — Prison : le butin récapitulé, la sortie dans l'Historique ; rendement recalé
+- **Pour le joueur** : un panneau **Butin de la prison** dans la vue de la prison additionne tout ce que les runs ont
+  rapporté depuis l'entrée (runs, XP, énergie, objets). En sortant, une fenêtre récapitule tout, et la prison apparaît
+  dans l'**Historique**. La prison rapporte de nouveau environ la moitié d'une mine à 3 (avec 3 fois moins de mobs,
+  elle en rapportait 87 % : moins de minerais sur la carte, 0,30 au lieu de 0,52).
+- **À suivre** : mesure bruitée (5 chaînes, acier seulement) : à refaire plus large avant la mise en ligne.
+- **État** : ✅ en ligne le 30/10
+
+## 29/10/2026 — Geoffrey — Prison : le contenu vient des 10 dernières mines
+- **Pour le joueur** : la prison ressemble à ce qu'on trouve vraiment en mine. À l'entrée, elle lit tes 10 dernières mines
+  classiques : leur **area moyenne** (pierre, mobs, pièges, donjon), la **répartition de tes minerais**, les **tiers de tes
+  treasures** et les **mobs que tu as tués**. Figé jusqu'à ta sortie. Sans mine derrière soi : l'area 1. Plus de liste
+  « Area » (même en dev) : le lobby affiche ce que la prison contiendra, en %. Pièges et k hole 2 fois plus rares qu'en mine (le k hole n'existait pas en prison).
+- **Décisions** : moins de 10 mines → celles qu'on a ; kills par type enregistrés à partir de maintenant (en attendant,
+  les mobs de l'area moyenne) ; total de minerais inchangé (× oreMul), seule la répartition suit l'historique.
+- **À suivre** : ni simulé ni testé (demande de Geoffrey) ; rendement à recaler (oreMul) ; tests de la prison à mettre à jour.
+- **État** : ✅ en ligne le 30/10
+
+## 29/10/2026 — Geoffrey — Prison : choisir son area ; vitesses du mode dev
+- **Pour le joueur** : avant d'entrer en prison, une liste **Area** (à côté du bouton) permet de choisir le contenu de la
+  carte, de l'area 0 jusqu'à sa plus profonde area débloquée (par défaut la plus profonde). Elle reste la même pour toute
+  la prison. **Mode dev** : toutes les areas au choix, et les boutons ×1 à ×300 accélèrent la prison en direct.
+  **Mobs** : 3 fois moins d'apparitions en prison (on y est seul : c'est le rythme d'un mineur dans une mine à 3).
+- **État** : ✅ en ligne le 30/10
+
+## 29/10/2026 — Geoffrey — Mode dev : copier le personnage d'un vrai joueur (Test_Canoul, Test_Mus)
+- **Pour le joueur** : rien, c'est un outil de test. `npm run dev:presets -- --from data/presets/<fichier>.json` crée
+  en local un compte « Test_<Pseudo> » avec le stuff porté exact (qualité, runes, +N), les skills, glyphes, sorts et le
+  niveau d'un vrai joueur. Premiers : Test_Canoul et Test_Mus (mot de passe preset1234). Les mêmes copies sont aussi au
+  choix pour les **mineurs de test** du panneau dev du lobby (« 👤 Test_Canoul (copie) »), à côté des 3 presets acier, et
+  pour **son propre mineur** (ligne « Ton preset » : on garde son nom, l'XP et le butin restent à son compte).
+- **À suivre** : la copie se récupère depuis le navigateur du joueur (console, voir docs/debug.md) ; les sorts d'un ami
+  ne sont pas visibles, on lui met ceux de sa spé.
+- **État** : ✅ en ligne le 30/10 (outil local seulement)
+
+## 29/10/2026 — Geoffrey — La Prison (farm AFK solo) et l'énergie
+- **Pour le joueur** : deux nouveautés liées.
+  - **Énergie** : une jauge de 0 à 100 dans la barre du haut. Lancer une mine classique coûte 6 à 12 (pour chaque joueur
+    du groupe). À partir de 6 on peut toujours lancer : si le coût tiré dépasse ce qui reste, on paie le reste et on tombe à 0.
+    En dessous de 6, lancement refusé (le groupe voit qui est à court). Rien d'autre ne coûte d'énergie. Pas de coût en mode dev.
+  - **Prison** : un mode solo sans fin (Lobby, « Où miner » → Prison). Petite mine de 25 × 50 entre deux rangées de barreaux, au
+    contenu de la plus profonde area débloquée, avec moins de minerais et deux fois moins de treasures et de butins rares.
+    Quand 80 % des minerais sont minés, le mineur remonte déposer, le coffre va dans l'inventaire et une carte neuve repart.
+    Elle recharge l'énergie (8 par heure de jeu). Elle tourne en direct quand le jeu est ouvert (le jeu redemande sa
+    prison toutes les 15 s), et **hors ligne** par paquets toutes les 10 min réelles, en pause après 24 h sans visite
+    (sans rejouer les heures d'attente). Au retour : un bilan « pendant ton absence ». « Sortir de prison », ou lancer une mine /
+    une tour / une instance, l'arrête (le coffre est versé, pas le sac du mineur).
+- **Décisions** : la taille de la carte ne bouge pas, on règle la part de minerais (`oreMul` 0,52 : acier ≈ 0,48 et fer ≈ 0,43
+  de la part d'un joueur dans une mine à 3, en poids de minerais ; c'est provisoire). Dans la prison, le donjon est à gauche du puits
+  (pas de place à droite). Un logisticien qui a le Treuil l'installe dès le début de chaque run : il remonte et redescend plus vite. Les résidus de prison vont dans l'inventaire sans remplir les jauges du Jugement
+  ni annonce Discord. Un lancement refusé faute d'énergie n'arrête pas la prison.
+- **À suivre** : mesurer le fer à 0,52 sur plus de chaînes (peut-être 0,55) ; trancher le Jugement et Discord pour la prison ;
+  coût serveur : une prison 24 h/24 ≈ 7 min de calcul par joueur et par jour à la vitesse ×2 de la beta, ≈ 10 min avec les
+  rejeux (jusqu'à ≈ ×9 pour un run très long) ; un seul paquet hors ligne calculé à la fois. À surveiller si beaucoup
+  de joueurs la laissent tourner.
+- **Relecture finale (29/10)** : dans un groupe, celui dont la prison tourne doit confirmer avant « Je suis prêt » ou
+  « Prêt tout le temps », et le chef voit le nom des membres dont la prison sera arrêtée ; « Sortir de prison » marche même
+  si le calcul de la prison plante ; le bilan d'absence compte l'énergie vraiment gagnée (pas « + 112 » quand on est à 100).
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Pièces en mithril : 2 fois plus de lingots de mithril
+- **Pour le joueur** : casque, plastron, jambes et bottes en mithril coûtent 2 fois plus de Mithril ingot : 30, 48, 42
+  et 32 (avant 15, 24, 21 et 16). Le reste de la recette ne change pas.
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Jules — Social : voir combien de joueurs il y a dans une session en cours
+- **Pour le joueur** : dans l'onglet Social (amis et liste **Online**) et dans le « Who ? » des tours, un joueur en session
+  affiche maintenant la taille de son groupe : « En session mine (1/3) · reste 23 min ». On repère d'un coup d'œil les
+  joueurs **seuls ou à deux**, pour leur écrire ou les attendre à la fin de leur session et monter un groupe de 3. Ceux
+  qui ont quitté la session ne comptent plus. Pas de chiffre pour le Bloc géant (salle commune, pas un groupe).
+- **État** : ✅ en ligne le 30/10
+
+## 29/10/2026 — Jules — Correctifs : torches à virgule, Lunettes Gucci invisibles
+- **Pour le joueur** : le compteur de torches affichait « 22.200000000000003 en réserve » quand un bonus en % (anneau,
+  maîtrise) donnait un nombre à virgule. Le stock est maintenant un nombre entier, arrondi à l'inférieur (22,2 → 22).
+  Les **Lunettes Gucci** se voient enfin sur le mineur (monture dorée, verre sombre) : elles n'avaient pas de dessin.
+- **À suivre** : les Doc Martins, la Ceinture golémique et les Jambières titanesques n'ont pas encore de dessin sur le
+  mineur non plus.
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — Administration : donner la place de chef d'un lobby
+- **Pour le joueur** : rien. Nouvelle commande sur le VPS : `set-leader.js --name X` fait de X le chef de son lobby (il doit
+  déjà y être) ; l'ancien chef reste comme simple membre.
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — Administration : forcer la fin de session d'un joueur, lancer un lobby
+- **Pour le joueur** : rien. Nouvelle commande sur le VPS : `end-session.js --name X` sort X de sa session en cours, comme
+  son bouton « Quitter » : il ne reçoit rien de cette session et redevient libre tout de suite. En groupe, les autres continuent.
+- **Décision** (Geoffrey) : sortie sans butin (plutôt qu'arrêter la session de tout le groupe, ou la finir avec le butin).
+- **Aussi** : `launch-lobby.js --name X` lance le lobby de X (n'importe quel membre) dans la mine, même si tout le monde
+  n'est pas prêt.
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — Administration : déplacer un joueur dans un lobby, le mettre prêt
+- **Pour le joueur** : rien. Deux nouvelles commandes sur le VPS, pour l'équipe (sans redémarrer le jeu) :
+  `move-to-lobby.js --name X --to Y` met X dans le lobby de Y ; `set-ready.js --name X` le met prêt, `--always on` le met
+  « prêt tout le temps » (comme sa case : il reste prêt d'une session à l'autre). Mode d'emploi dans `docs/deploiement-ovh.md`.
+- **Règles gardées** : refusé si l'un des deux est en session ou si le lobby est complet ; à l'arrivée, les autres repassent
+  « pas prêt », comme quand quelqu'un rejoint normalement.
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — Recycler les runes en Poudre de rêve, et fabriquer des runes
+- **Pour le joueur** : une rune dont on ne veut pas a maintenant un bouton **♻ Recycler** dans l'inventaire : elle
+  rend **8 à 12 Poudre de rêve**, quelle que soit sa qualité (un fragment de rune : 1 à 6). Avec **100 Poudre de rêve**,
+  la nouvelle recette **Rune** (onglet Craft, disponible dès le départ) fabrique une rune neuve de qualité tirée au
+  hasard : R1 15 %, R2 25 %, R3 30 %, R4 18 %, R5 6 %, R6 4,5 %, R7 1,5 %. La Poudre de rêve est rangée dans l'onglet
+  Runes de l'inventaire.
+- **Décisions** : un seul objet, la Poudre de rêve (rareté rare), sert au recyclage et à la recette. Chiffres provisoires.
+- **À suivre** : ~10 runes recyclées pour une neuve, R4 ou mieux 30 % du temps (22 % pour un trésor de tour) : à
+  surveiller, ça rend les tours un peu plus rentables pour qui accumule des petites runes.
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — La Dynamite part aussi en combat (tours, Instance I)
+- **Pour le joueur** : le mineur lance maintenant sa Dynamite pendant les combats : sur le roi gobelin à son contact, sur
+  un groupe d'au moins 2 gobelins (instance) ou 2 mobs (tours). 50 % de ses dégâts à tout le rayon. La règle de dureté des
+  briques ne change pas.
+- **Repère** (vraies parties rejouées) : Instance I de 20:48, 2 → 4 Dynamites, victoire 8:00 → 7:40 ; au niveau 2 elle
+  part 4 fois (jusqu'à 53 gobelins touchés) ; Tour du Démon niveau 2 : 2 → 4 Dynamites (3 sur les Diablotins, 1 sur le Démon).
+- **Valeur provisoire** : 2 mobs dans le rayon au moins (`SPELL.dynamite.fightFoes`).
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — Correctif : le Dash du barbare sur le boss de la tour
+- **Pour le joueur** : dans la tour, le barbare ne dashait sur le boss que s'il arrivait déjà du côté où il veut se placer
+  (à l'opposé de ses coéquipiers) : en pratique presque jamais. Il fonce maintenant sur le boss de quelque côté qu'il arrive.
+- **Repère** : la partie de 20:52 (Infernatiwar, Monsta, Croustiflex, Tour du Démon niveau 2, ratée avec le boss à 689 PV),
+  rejouée avec le correctif : 10 Dash pendant le combat au lieu de 4, et victoire à 9:30. Partie seed 2001827804 : 3 Dash
+  sur le boss (tous depuis la droite) → 6 avec le correctif.
+- **Décision** : pas de Dynamite en combat dans l'instance pour l'instant (Geoffrey).
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — Classements : les niveaux en sous-onglets
+- **Pour le joueur** : dans Social → Classements, plus de boutons « Tour céleste II » et « Roi gobelin II » : un bouton
+  **Tour céleste** et un bouton **Roi gobelin**, chacun avec ses sous-onglets **Niveau 1 / Niveau 2**, comme les
+  spécialisations.
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — Classement de la tour par niveau
+- **Pour le joueur** : dans Social → Classements, la tour a maintenant un classement par niveau, comme le roi gobelin :
+  **« Tour céleste »** (niveau 1) et **« Tour céleste II »** (niveau 2). Avant, les temps des deux niveaux étaient mélangés.
+  Les records déjà faits sont rangés au bon niveau.
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — Échap pour quitter un onglet
+- **Pour le joueur** : la touche **Échap** ferme l'onglet ouvert (Inventaire, Craft, Lobby…) et ramène à l'onglet
+  Session : la promenade dans le Carreau, ou la mine pendant une session. Si une fenêtre est ouverte (compte, objet
+  obtenu, question), Échap ferme d'abord la fenêtre, comme avant.
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — Instance I : le niveau 2 est jouable
+- **Pour le joueur** : dans le Lobby, l'Instance I propose **Niveau 1 / Niveau 2** (choisi par celui qui lance). Même clé.
+  Niveau 2 : spawners 200 coups et un gobelin toutes les 15 s, gobelins 350 PV, roi 6 000 PV qui frappe plus vite, enrage
+  sous 40 % et régénère 2 % dans les cages. Roi vaincu : un **Coffre du Roi Gobelin II** (× 1,5 de ressources, × 1,5 de
+  chances d'objets). Nouveau classement **« Roi gobelin II »** (onglet Social).
+- **Décisions** (Geoffrey) : même clé, ouvert à tous, un classement par niveau, valeurs gardées même si la simulation le dit
+  impossible avec le stuff d'aujourd'hui.
+- **À suivre** : vérifier à l'écran le choix du niveau dans le Lobby et le classement « Roi gobelin II ».
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — Correctif : le sort Dash sur les boss (tour, roi gobelin)
+- **Pour le joueur** : le Dash du barbare ne partait jamais sur le boss d'une tour ni sur le roi gobelin, et presque jamais
+  dans l'instance (0 ou 1 fois par partie). Maintenant, il fonce sur le boss quand il en est éloigné (après un recul ou une
+  projection) et frappe à 500 %, et dans l'instance il fonce sur les gobelins de sa ligne (≈ 14 Dash par partie).
+- **Décision** : le Dash n'étourdit pas les boss des tours ni le roi gobelin (Geoffrey). Les petits mobs, si.
+- **Repère** : tours simulées, combat du boss 5 à 50 s plus court ; Instance I (6 vraies parties) : toujours 3 victoires sur 6.
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — Instance I plus dure : gobelins plus solides, le roi se régénère dans les cages
+- **Pourquoi** : les 6 parties d'instance jouées le 29/10 étaient toutes des victoires (record 7:12). Le rejeu a montré
+  que tout se joue sur les dégâts pendant la phase des spawners ; l'armure ne sert à rien.
+- **Pour le joueur** : les gobelins ont **200 PV** (avant 150) et frappent toutes les **1,75 s** (avant 2 s). Quand le
+  roi enferme tout le monde, il **régénère 1 % de ses PV toutes les 2 s** tant que personne n'est redescendu au sol. S'il
+  remonte au-dessus d'un seuil, il ne réenferme pas en repassant dessous.
+- **Repère** : les 6 vraies parties rejouées avec ces règles : 3 victoires, en 9:10-9:59 (le roi reprend ≈ 350 PV par
+  cage). Les deux parties de canoul, Sõnata et Allaiks échouent, et une des trois de Nbrick, Akake et LeTaz.
+- **À suivre** : la simulation de l'instance (`npm run simulate:instance`) ne compte ni skills, ni sorts, ni améliorations :
+  à refaire avec de vrais profils. Rendre la défense utile dans l'instance (piste à discuter).
+- **Niveau 2 (préparé, pas encore jouable)** : ses valeurs sont dans la config et la simulation (spawners 200 / un gobelin
+  toutes les 15 s, gobelins 350 PV, roi 6 000 PV, etc.). Simulé avec le stuff d'aujourd'hui : impossible (aucun spawner
+  cassé) ; il faut environ 2 × les dégâts et 1,5 × le minage de la meilleure équipe. Valeurs gardées telles quelles
+  (Geoffrey). Reste à faire pour le jouer : choix du niveau dans le lobby, serveur, coffre (× 1,5 ressources et chances
+  d'objets), classement « Roi gobelin II ».
+- **État** : ✅ en ligne le 29/10 (niveau 1 ; niveau 2 pas encore proposé aux joueurs)
+
+## 29/10/2026 — Geoffrey — Correctif : le jeu à 1 image par seconde depuis le Carreau
+- **Pour le joueur** : depuis l'arrivée de la ville en fond d'écran, le jeu tournait à environ 1 image par seconde
+  sur Chrome (et les navigateurs de la même famille). C'est réparé : la ville a exactement le même aspect, mais
+  l'assombrissement du sol et la statue en pierre sont dessinés autrement, des centaines de fois plus vite.
+- **À suivre** (Jules) : dans le dessin de la ville, ne pas utiliser de filtre canvas (`ctx.filter`) à chaque image.
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — Correctif : l'inventaire tout petit depuis les onglets
+- **Pour le joueur** : depuis l'arrivée des onglets, la grille de l'inventaire était rétrécie et poussée sur la
+  droite. Elle reprend sa taille d'avant, avec les onglets juste au-dessus et la fiche de l'objet à droite.
+- **État** : ✅ en ligne le 29/10
+
 ---
+
+## 29/10/2026 — Jules — Correctif : le Carreau sur téléphone
+- **Pour le joueur** : sur téléphone, toucher l'écran pour marcher ouvrait l'onglet du premier bâtiment touché : on ne
+  pouvait pas se promener. Maintenant, au doigt, on marche là où on touche et on n'entre jamais tout seul ; devant une
+  porte, un bouton **« Entrer : Fonderie »** (ou « Préparer une session » devant le chevalement et la place) apparaît.
+  Sur téléphone en hauteur, la ville se cale sur la largeur de l'écran (la rue juste au-dessus du chat et de la barre,
+  le ciel en haut), le chat global est replié (le champ pour écrire ; toucher « Chat global » déplie les messages) et
+  le bouton se place sous le bandeau, dans le ciel. Sur ordinateur, rien ne change (clic sur un bâtiment = y aller
+  puis entrer, touche E), le bouton s'ajoute en bas au milieu.
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — Inventaire : onglets par type d'objet
+- **Pour le joueur** : au-dessus de la grille, une rangée d'icônes filtre l'inventaire : tout, blocs, minerais, stuff,
+  butin des mobs, matériaux (gemmes, lingots, alliages, shiny, plumes, cristaux, argent), runes, divers (coffres, clés,
+  plans, parchemins, glyphes). Le nom de chaque onglet s'affiche au survol ; un onglet vide est grisé. Glisser un objet
+  sur un autre marche dans tous les onglets ; pour le poser sur une case vide, c'est dans « Tout ».
+- **Décisions** : résidus avec les minerais, stonebricks avec les blocs, glyphes dans divers (rangement de Claude, à changer
+  dans `INVENTORY.tabs`).
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Jules — Le Carreau : noms des bâtiments en jaune doré
+- **Pour le joueur** : les noms des bâtiments (et les textes de la statue et des bannières) ne sont plus blancs mais
+  jaune doré, comme les titres de l'interface ; « E : entrer » passe en orange. Demande de Geoffrey (« le blanc dénote »).
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Jules — Correctif : le chat global repartait tout en haut
+- **Pour le joueur** : en revenant au Lobby ou en passant en promenade dans le Carreau, la liste du chat global
+  repartait sur les plus vieux messages. Elle reste maintenant sur les derniers ; si tu remontes pour relire, elle ne
+  bouge plus toute seule.
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Jules — Le Carreau : la ville du spawn
+- **Pour le joueur** : hors session, le fond de l'écran n'est plus un mur : c'est **le Carreau**, une petite ville
+  minière vue de côté, avec **un bâtiment par onglet** (Taverne = Social, Archives = Historique, Bibliothèque =
+  Recherche, Salle d'entraînement = Skills, Tour du mage = Sorts, Armurerie = Stuff, Entrepôt = Inventaire, Place du
+  Carreau = Lobby, Chevalement au-dessus du puits = Session, Fonderie = Four, Concasseur, Atelier = Craft, Joaillier =
+  Amélioration). Quand tu changes d'onglet, **ton mineur marche jusqu'au bâtiment**. Les **autres joueurs en ligne qui
+  ne sont pas en session** sont là aussi, devant le bâtiment de l'onglet qu'ils regardent, avec leur stuff, et leurs
+  messages du **chat global** s'affichent en **bulle** au-dessus de leur tête.
+  Dans l'onglet **Session** sans session en cours : la ville en **plein écran, sans les panneaux**, et tu t'y promènes
+  (← → ou Q / D, clic sur la rue pour y aller, clic sur un bâtiment ou **E** devant sa porte pour ouvrir son onglet ;
+  le chevalement et la place mènent au Lobby, d'où on lance). Pendant une session, rien ne change : la mine reste en
+  fond. Case « Le Carreau (la ville) en fond d'écran » dans Mon compte pour revenir au mur.
+- **Décisions** (choix de Claude, à valider) : le nom « le Carreau » (les installations en surface d'une mine) ; l'ordre
+  des bâtiments ; l'onglet Session sans session devient la promenade (l'ancien écran « Tu n'es pas en session » ne se
+  voit plus qu'avec l'option décochée) ; pas d'interaction entre joueurs dans la ville pour l'instant (pas de clic sur
+  un joueur, pas d'émotes).
+- **Ajouts de l'après-midi** (validés par Jules) : un peu plus zoomé ; **clic sur un joueur** (en promenade) : sa fiche
+  (niveau, spé, GS, groupe) avec « Ajouter en ami » et « Inviter dans mon groupe » ; **groupes visibles** : sur la place,
+  les membres d'un même groupe se tiennent ensemble avec une marque « 2/3 » à la couleur du groupe, et un joueur qui
+  **cherche un groupe** porte un « ? » doré au-dessus de la tête ; **émotes** (👋 ⛏️ 🎉 😂 ❤️ 💤) dans le bandeau de la
+  promenade, vues par les autres ; la place s'est agrandie : **statue en pierre du n°1 du classement GS** sur un socle, et
+  deux **bannières** qui se remplissent avec les jauges Ange / Démon (elles pulsent quand la tour est ouverte). Les textes
+  de la statue et des bannières s'affichent quand on se tient devant.
+- **Nouvelle direction artistique** (fin d'après-midi, choisie par Jules parmi trois maquettes inspirées de Darkest
+  Dungeon : « Crépuscule de forge ») : ciel de crépuscule en dégradé rouge sombre → ambre, soleil bas, nuages rougis,
+  falaises au loin, brume orangée au ras du sol, rue sombre. **Chaque bâtiment a sa silhouette** en pixel art avec un
+  contour noir : Taverne penchée à colombages, Archives à horloge, Bibliothèque-chapelle à rosace, Salle d'entraînement
+  (palissade, mannequin, cabane de chaume), Tour du mage tordue aux fenêtres vertes, Armurerie (forge ouverte, enclume),
+  Entrepôt (grange, grandes portes), Chevalement en potence, Fonderie à cheminée géante, Concasseur (machine à vapeur,
+  volant), Atelier (auvent rayé, établi), Joaillier (vitrine de gemmes qui scintillent). Fenêtres, fours et lanternes
+  rayonnent, les cheminées fument. Statue du classement GS validée par Jules.
+- **Retouches après les retours de Jules** : toit de la Tour du mage recentré (plus de fenêtre derrière la porte) ;
+  Salle d'entraînement refaite en caserne (boucliers et épées croisées, grande porte, torches, mannequin, cible) ;
+  enclume de l'Armurerie redessinée (bigorne, table, pied, marteau) ; Concasseur refait (atelier en briques, toit de
+  tôle, cheminée qui sort du toit, volant sur son bâti avec courroie) ; vitrine du Joaillier rangée sur deux étagères.
+  **Bords de la ville fermés** : falaise avec l'ancienne entrée de mine condamnée à gauche, porte de palissade à droite ;
+  on ne marche plus dans le vide.
+- **Encore des retouches** : la **Taverne déménage à côté de la place** (l'un des premiers bâtiments qu'on voit),
+  l'Entrepôt prend sa place au bout gauche ; la porte de droite est maintenant **adossée à une falaise** comme à gauche ;
+  plus de barre verte sur la Tour du mage ; l'enclume est bien sur son billot. **Chat global en promenade** : en bas à
+  gauche de l'écran, pour écrire aux gens de la ville (le message s'affiche aussi en bulle) ; il revient dans le Lobby
+  quand on quitte la promenade. Puis : chat **tout en bas à gauche** (à côté de la barre d'action ; sur un écran trop
+  étroit, au-dessus d'elle) ; bord droit remplacé par un **terril** qui couve encore (braises), avec sa passerelle sur
+  pilotis et un wagonnet en haut (ancien : palissade adossée à la roche, « pas ouf » pour Jules).
+- **À suivre** : vérifier sur téléphone ; à beaucoup de joueurs, ils se serrent devant le même bâtiment (± 2 cases).
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Jules — Correctif : bouton « ½ » du four renommé « Moitié »
+- **Pour le joueur** : dans le four (choix de la recette et pose d'un minerai), le bouton « ½ » était illisible avec la
+  nouvelle police. Il s'appelle maintenant **Moitié** ; il fait toujours la même chose (la moitié du maximum).
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — Instance : le mineur ne tremble plus au centre de la salle
+- **Pour le joueur** : en combat dans l'instance, les mineurs faisaient des allers-retours d'une demi-case. Ce n'était pas
+  l'affichage (il glisse déjà comme dans la mine) : chaque coup d'un gobelin ou du roi repousse vers le centre de la
+  salle, et un mineur au centre était envoyé de l'autre côté, puis renvoyé par le coup suivant. Le recul s'arrête
+  maintenant au centre. Le coup boosté du roi (la grande projection) ne change pas.
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — États (buffs / debuffs) d'un autre joueur, dans tous les modes
+- **Pour le joueur** : la rangée d'états en haut à droite de la mine montre maintenant les états du joueur qu'on regarde,
+  avec son nom devant les icônes quand ce n'est pas soi. Mine classique : le mineur suivi (clic dans l'équipe). Tours,
+  Instance et Mine instantanée : un clic sur un joueur de l'équipe (ou du classement) montre ses états, un clic sur soi
+  ou à nouveau sur lui revient aux siens. **Bloc géant** : la rangée d'états existe maintenant aussi (Inspiration, Fast
+  learner, anneaux…), avec le même choix dans « Devant le bloc ».
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — Sets : ligne « Set équipé »
+- **Pour le joueur** : en haut de la liste des sets (onglets Stuff, Skills, Sorts et Lobby), une ligne dit quel set est
+  équipé, et ce set est marqué ✔ dans la liste. C'est le set dont le stuff porté, les skills et les sorts sont exactement
+  ceux du moment ; si on change une pièce, un skill ou un sort, la ligne passe à « aucun ».
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — Tours niveau 2 : stonebricks 2 fois plus dures et 2 fois plus lourdes
+- **Pour le joueur** : au niveau 2 des tours, les stonebricks sont **2 fois plus dures** (avant 1,75) et pèsent **2 fois
+  plus** dans le sac (avant 1,5). Le reste du niveau 2 ne change pas. Le niveau 1 non plus.
+- **À suivre** : en simulation, les équipes de base montent l'étage 4 environ une minute plus tard qu'avant et n'arrivent
+  plus à l'étage 5 dans les 10 min. Le repère noté le 28/10 (équipe à 2,5 de minage et 40 de dégâts) perdait déjà le
+  niveau 2 (0/4) : aucune équipe mesurée ne le gagne encore.
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Jules — Correctif : police du texte plus lisible (VT323 à la place de Jersey 10)
+- **Pour le joueur** : les petits textes et surtout les chiffres se lisent enfin : avant, « 89 % XP » ressemblait à
+  « 99 % XP » et « 3 615 GS » à « 3 616 GS » (orbe d'XP, barre de niveau, gear score…). Le texte courant passe en
+  **VT323**, une police pixel art nette à toutes les tailles. Les titres gardent leur police (Jersey 15).
+- **Décisions** : Jersey 10 n'est nette qu'à 20 px ou plus, et le jeu l'affichait à 15-17 px. Pixelify Sans (son 5
+  ressemble à un S) et Tiny5 (son 8 ressemble à un e) ont été écartées après comparaison.
+- **À suivre** : VT323 est un peu plus large : les boutons « Où miner » du lobby passent sur 3 lignes au lieu de 2.
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — Classement « Roi gobelin » dans Social → Classements
+- **Pour le joueur** : un nouveau classement, à côté de « Tour céleste » : le **meilleur temps pour vaincre le roi
+  gobelin** (Instance I), de l'entrée dans l'instance à la mort du roi. Chaque joueur encore là à la victoire garde son
+  meilleur temps ; sous son nom, le **temps du combat contre le roi** (de son réveil à sa mort) et ses coéquipiers. Un
+  joueur parti avant la fin n'est pas classé, un échec ne compte pas. Les victoires des 30 derniers jours sont reprises.
+- **Décisions** : classé sur le temps total (comme la tour) ; le temps du combat seul est affiché à côté (choix de
+  Claude, facile à inverser).
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — Mouvements fluides au Bloc géant et dans la Mine instantanée
+- **Pour le joueur** : au **Bloc géant**, les mineurs marchaient par à-coups (« marche, arrêt, marche ») : leur glissade
+  durait 0,5 s pile alors qu'une nouvelle position arrive toutes les 0,6 à 0,8 s, donc ils s'arrêtaient avant chaque
+  réception. Dans la **Mine instantanée**, ils avançaient par petits bonds à chaque réception, sans glisser. Les deux
+  modes utilisent maintenant la glissade de la mine classique, qui se cale sur le vrai rythme des réceptions. Seul
+  l'affichage change, pas la partie.
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — Coffre du Roi Gobelin : lingots à la place du minerai de graphite
+- **Pour le joueur** : le coffre ne donne plus de minerai de graphite (20 à 40). À la place, toujours **5 à 15 lingots
+  de graphite** et **10 à 20 Tainted iron**, en plus des 50 à 100 peaux de gobelin. Les objets rares ne changent pas.
+- **Chances d'objet rare par coffre** (inchangées) : un objet du roi (couronne 1 %, plan du Four en or 2 %, masse 2 %,
+  cape 2 %) **7 %**, soit 1 coffre sur 14 ; la couronne seule 1 sur 100 (50 % de chances de l'avoir en 69 coffres). En
+  comptant aussi la recette de chitine (5 %), un parchemin (3,5 %) et une gemme (3 %) : **17,3 %** d'avoir au moins un
+  de tout ça (9,8 % une fois la recette et les sorts appris).
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — Couronne du Roi Gobelin : un buff du porteur
+- **Pour le joueur** : la couronne n'est plus rangée dans « Bonus de session ». C'est un **buff** (cadre vert) chez
+  **celui qui la porte**, seulement : un gobelin qui naît à 10 cases ou moins de lui est asservi. La bulle le rappelle ;
+  sous l'icône, le nombre de ses gobelins asservis au travail. Les autres mineurs n'ont rien, et ils ne frappent jamais
+  un gobelin asservi (c'était déjà le cas, c'est maintenant vérifié par un test sur une vraie partie).
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — Recharge des sorts visible dans tous les modes
+- **Pour le joueur** : la barre des sorts (icônes et secondes de recharge) n'existait que dans la mine classique. Elle
+  apparaît maintenant aussi en bas de l'écran dans les **tours du Jugement**, l'**Instance** et le **Bloc géant**, avec les
+  sorts de son propre mineur. La Mine instantanée n'en a pas : aucun sort n'y part.
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — Nerf : Gants tactique et Ceinture du Géant (≈ +10 % de DPS chacun)
+- **Pour le joueur** : les **Gants tactique** passent à vitesse d'attaque **+10 %** (avant +20 %) et la **Ceinture du
+  Géant** à dégâts **+1,5** (avant +5 ; ténacité +12,5 % inchangée). Chacune donne maintenant environ +10 % de DPS : les
+  gants +10 % quelle que soit l'arme, la ceinture +10,7 % avec une épée en fer ou la Masse du Roi Gobelin, +8,1 % avec
+  l'épée en acier (ses dégâts s'ajoutent à ceux de l'arme, avant les % de dégâts). Les pièces déjà fabriquées ou trouvées
+  changent aussi (stats relues dans le catalogue).
+- **À suivre** : les Gants de boucher (+4,05 dégâts) donnent maintenant nettement plus que les Gants tactique (+28,6 %
+  contre +10 % avec l'épée en fer).
+- **État** : ✅ en ligne le 29/10
+
+## 28/10/2026 — Geoffrey — Correctif : focus « Uniquement » sur un minerai trop profond (graphite)
+- **Pour le joueur** : avec « Uniquement » sur le graphite, le mineur creusait des galeries tout en haut de la mine sans
+  jamais descendre. La raison : à chaque départ, il ne descend que jusqu'où il pourra remonter à temps, et le graphite
+  (areas 5 et plus) était trop bas pour ce trajet. Le focus lui interdisait alors de descendre dans les areas sans
+  graphite comme de miner autre chose. Maintenant, dans ce cas, le focus se met en veille : il descend au plus profond
+  qu'il peut et mine normalement, un message le dit dans le panneau, et le focus reprend tout seul dès que le graphite
+  redevient atteignable.
+- **État** : ✅ en ligne le 28/10
+
+## 28/10/2026 — Geoffrey — Identification en deux temps
+- **Pour le joueur** : dans l'onglet Amélioration, rubrique Identification, on choisit d'abord la pièce à identifier :
+  la liste ne montre que les pièces **pas encore identifiées**. Ensuite seulement on choisit le sacrifice, et la liste
+  ne montre plus que les **autres exemplaires du même objet** (identifiés ou non : sacrifier un exemplaire identifié
+  reste permis, avec la fenêtre d'avertissement). Vider la case de la pièce revient au premier temps.
+- **État** : ✅ en ligne le 28/10.
+
+
+## 28/10/2026 — Geoffrey — Correctif : le mineur « se téléportait » dans l'ascenseur
+- **Pour le joueur** : en session, un mineur qui prenait l'ascenseur (Glyphe Treuil) sautait de plusieurs cases d'un
+  coup dans le puits au lieu de glisser. Il glisse maintenant tout du long, comme sur le treuil normal.
+- **Cause** : l'écran reçoit la partie environ 3 fois par seconde. Avec du bon stuff (vitesse de montée), l'Escalateur
+  et l'ascenseur, le mineur parcourt plus de 6 cases entre deux réceptions, et au-delà de 6 cases l'écran le faisait
+  apparaître directement (cette règle sert aux vraies téléportations). Le jeu lui-même n'était pas touché.
+- **État** : ✅ en ligne le 28/10
+
+## 28/10/2026 — Jules — Onglet Sorts refait (piste A « la barre de sorts »)
+- **Pour le joueur** : l'onglet Sorts a une nouvelle mise en page, les sorts eux-mêmes ne changent pas. En haut, **ta barre
+  de sorts en grand**, la même qu'en bas de la mine. Dessous, le **grimoire** : tous les sorts en tuiles, avec des filtres
+  Mineur / Logisticien / Barbare / Parchemins et l'état de chaque sort (dans la barre, disponible, parchemin à apprendre,
+  réservé à une autre spé, pas encore débloqué). À droite, la **fiche du sort** choisi : ce qu'il fait, ses chiffres, et
+  pour un sort pas encore débloqué, où on en est (« Mineur : niveau 7 / 10, encore 3 ») ou d'où vient son parchemin.
+  Des **icônes pixel** à la place des emojis, aussi dans la barre de sorts en session, et une couleur par spé.
+- **Décisions** : choix de la piste A parmi trois maquettes (barre de sorts / grimoire / trois voies).
+- **À suivre** : la règle d'ouverture des emplacements 3 et 4 n'existe toujours pas (affichés « Verrouillé »).
+- **État** : ✅ en ligne le 28/10
+
+## 28/10/2026 — Jules — Chat global dans le Lobby
+- **Pour le joueur** : une carte **Chat global** dans le Lobby (colonne de gauche, sous les préférences) : **tous les
+  joueurs du jeu** s'y écrivent, en session ou non, invités compris (ils apparaissent en « Invité XXXX »). Chaque message
+  a son heure. Un message toutes les **3 secondes** au plus, **200 caractères**, les **50 derniers** restent affichés, et
+  ils ne disparaissent plus quand le serveur redémarre (mise en ligne). Le chat de l'onglet Session ne change pas : il
+  reste entre les joueurs de la session.
+- **Décisions** (choix de Claude, à valider) : invités autorisés à écrire ; 3 s entre deux messages ; le chat n'est relu
+  que quand l'onglet Lobby est ouvert (pas de pastille « nouveau message » sur l'onglet).
+- **À suivre** : pas de modération (ni signalement, ni sourdine, ni suppression par l'équipe) : à prévoir si des abus
+  arrivent.
+- **État** : ✅ en ligne le 28/10
+
+## 28/10/2026 — Geoffrey — Correctif : mineur bloqué sur une échelle avec un focus minerai en fin de session
+- **Pour le joueur** : signalé par un joueur (focus graphite, couche 5). Près de la fin de la session, si le minerai visé
+  n'était plus que tout en bas, le mineur montait et descendait en boucle sur l'échelle (« Change d'area » / « Change de
+  galerie ») sans rien miner. Maintenant, le focus ne l'envoie plus plus bas que ce qu'il a encore le temps d'aller-retour :
+  il travaille au plus profond qu'il peut atteindre. Pareil avec un focus d'area trop profond.
+- **État** : ✅ en ligne le 28/10.
+
+## 28/10/2026 — Geoffrey — Sets : aussi dans le Lobby
+- **Pour le joueur** : la liste des **Sets** apparaît aussi dans le Lobby, juste sous « Équipe de la prochaine session » :
+  on peut équiper un set (stuff, skills et sorts d'un coup) au moment de lancer, sans passer par l'onglet Stuff. C'est la
+  même liste partout : un set créé, renommé ou supprimé dans le Lobby change aussi dans Stuff, Skills et Sorts.
+- **État** : ✅ en ligne le 28/10
+
+## 28/10/2026 — Geoffrey — Fenêtres de validation dans le thème du jeu
+- **Pour le joueur** : les demandes de confirmation (quitter une session, sacrifier une pièce, poser une rune, supprimer
+  un set, reset des skills, se déconnecter…), les messages d'erreur et le renommage d'un set s'ouvrent maintenant dans
+  une fenêtre du jeu (cadre pixel « Forge noire ») au lieu de la boîte grise du navigateur. Les boutons disent ce qu'ils
+  font (« Quitter », « Sacrifier », « Supprimer »…) ; Entrée valide, Échap ou un clic à côté annule.
+- **État** : ✅ en ligne le 28/10.
+
+## 28/10/2026 — Geoffrey — Fond d'écran : transition douce avec l'onglet Session
+- **Pour le joueur** : sur les autres onglets, la mine reste en plein écran, assombrie. En ouvrant l'onglet Session,
+  elle **rétrécit en douceur** (zoom régulier, ~0,5 s) jusqu'à sa place dans la session en s'éclaircissant, pendant que
+  les panneaux de gauche et de droite **glissent depuis les bords** et que le bandeau du haut descend. En quittant
+  l'onglet Session, c'est l'inverse : les panneaux repartent vers les bords en s'effaçant pendant que la mine s'agrandit
+  jusqu'au plein écran. Mine et panneaux vont au même rythme, du début à la fin. Plus de saut d'image.
+- **À savoir** : la transition apparaît dès qu'on a ouvert une fois l'onglet Session avec cette taille de fenêtre (le
+  jeu y note la place de la mine) ; avant, on passe directement. Désactivée si le système demande moins d'animations.
+
+## 28/10/2026 — Geoffrey — Fenêtres : elles ne sortent plus de l'écran
+- **Pour le joueur** : les fenêtres qui s'ouvrent dans un onglet (butin d'un trésor, choix d'une pièce dans le Stuff,
+  four, concasseur, fiche d'un ami) restent toujours entre la barre du haut et la barre d'action, même si on a fait
+  défiler la page. Leur taille est bornée : quand le contenu est trop long, c'est l'intérieur de la fenêtre qui défile
+  (barre de défilement fine et sombre), au lieu de déborder de l'écran. La pile de notifications en haut à gauche défile
+  aussi si elle devient trop haute.
+- **État** : ✅ en ligne le 28/10
+
+## 28/10/2026 — Geoffrey — Four : changer de recette sans vider le four
+- **Pour le joueur** : dans la fenêtre **Recettes**, on peut choisir une autre recette même si le four est plein :
+  ce qui ne sert plus (ingrédients de l'ancienne recette, produits d'une autre sorte) revient tout seul dans
+  l'inventaire. Rien n'est perdu ; le produit en cours de fonte est juste annulé. Un ingrédient commun (le Mithril
+  ingot entre Cobalt et Thorium ingot) et le charbon restent dans le four. La fenêtre annonce ce qui va revenir.
+- **État** : ✅ en ligne le 28/10
+
+## 28/10/2026 — Geoffrey — Stats du mineur : plus de liste « Skills en partie »
+- **Pour le joueur** : sous les stats du mineur (onglet Stuff et fiche d'un ami), la liste « Skills en partie »
+  (Navette, Échelle de 2, Treuil, Mule…) disparaît. Le bonus des skills sur les stats reste affiché en bleu ; le détail
+  de chaque skill est dans l'onglet Skills.
+- **État** : ✅ en ligne le 28/10.
+
+## 28/10/2026 — Geoffrey — La session en cours en fond d'écran
+- **Pour le joueur** : pendant une session, quand on est sur un autre onglet (lobby, inventaire, craft…), la mine en
+  cours s'affiche en fond, assombrie, à la place du mur de pierre : on voit son mineur travailler en arrière-plan. Sans
+  les panneaux d'infos (juste la mine). Hors session, le mur revient.
+- **Option** : clic sur son pseudo en haut à gauche → « Options » → « Session en cours en fond d'écran » (activée de
+  base). Le choix est gardé dans le navigateur.
+- **État** : ✅ en ligne le 28/10
+
+## 28/10/2026 — Geoffrey — Lobby : les Shrines sous « Ton groupe »
+- **Pour le joueur** : dans le lobby de la mine, le panneau **Shrines** passe dans la colonne de droite, juste sous
+  « Ton groupe » (il était en bas de la colonne de gauche, sous les préférences).
+- **État** : ✅ en ligne le 28/10.
+
+## 28/10/2026 — Geoffrey — Correctif : pseudos alignés à droite dans Social
+- **Pour le joueur** : depuis la mise en ligne du choix de recette au four, les pseudos de la liste d'amis (et des
+  demandes, du groupe, des classements) s'affichaient collés à droite. Ils sont revenus à gauche, comme avant.
+- **État** : ✅ en ligne le 28/10
+
+## 28/10/2026 — Geoffrey — Pop-up « Tu as obtenu »
+- **Pour le joueur** : quand on obtient ou améliore un objet hors session, une fenêtre s'ouvre au centre de l'écran :
+  « Tu as obtenu » (ou « Amélioration réussie », « Pièce identifiée », « Pièce enchantée »), la texture de l'objet en
+  grand, son nom dans la couleur de sa qualité et ses stats dessous (et son GS pour le stuff). Ça marche pour le
+  **craft**, le **blueprint** de la table de recherche (avec la recette qu'il débloque), l'**identification**,
+  l'**amélioration réussie**, l'**enchantement** et la rune retirée (fragment). Un clic, Entrée ou Échap la ferme.
+- **Décisions** : on tutoie (« Tu as obtenu »), comme partout dans le jeu. Les trésors gardent leur bilan habituel dans
+  l'inventaire, sans pop-up.
+- **État** : ✅ en ligne le 28/10
+
+## 28/10/2026 — Geoffrey — Amélioration : choisir directement une pièce équipée
+- **Pour le joueur** : dans l'onglet Amélioration (identifier, améliorer, enchanter, retirer une rune), les pièces que
+  le mineur porte apparaissent dans les listes, marquées « équipée » : plus besoin de les retirer puis de les remettre.
+  Elles restent dans leur case. Si on **sacrifie** une pièce portée pour en identifier une autre, sa case du stuff se
+  vide (une confirmation prévient).
+- **Décisions** : pour améliorer un anneau, le doublon sacrifié est toujours pris dans l'**inventaire**, jamais un anneau
+  porté (le jeu le choisit tout seul : il ne doit pas détruire un anneau équipé sans qu'on l'ait choisi).
+- **État** : ✅ en ligne le 28/10
+
+## 28/10/2026 — Geoffrey — Sets : enregistrer pendant une session
+- **Pour le joueur** : pendant une session, les boutons **Enregistrer** et **+ Nouveau set** ne sont plus grisés. On peut
+  donc préparer son prochain équipement et le sauvegarder dans un set sans attendre la fin de la session. La session en
+  cours ne change pas.
+- **État** : ✅ en ligne le 28/10.
+
+## 28/10/2026 — Geoffrey — Inventaire : fiche d'un objet rangée, sans le poids
+- **Pour le joueur** : la fiche d'un objet (onglet Inventaire) est rangée en trois parties : d'abord la description
+  (nom, quantité, type, rareté…), puis les stats, une par ligne, et enfin les boutons (Équiper, Recycler, Ouvrir,
+  Utiliser). Elle n'affiche plus « poids N » : info inutile hors session (le poids compte toujours pour les pods du
+  mineur en session).
+- **État** : ✅ en ligne le 28/10
+
+## 28/10/2026 — Geoffrey — Four : choisir une recette
+- **Pour le joueur** : le bouton **Recettes** d'un four ne fait plus seulement afficher les recettes : on y **choisit**
+  ce qu'on veut fabriquer (ex. Lingot de fer) et combien de fournées (nombre libre, ½ ou Max, avec le maximum possible
+  affiché pour chaque recette), puis **Lancer**. Le four se met tout seul en mode Fondre ou Alliage et prend dans
+  l'inventaire les ingrédients et le charbon, **en plus** de ce qu'il contient déjà. Une recette grisée dit pourquoi
+  (pas apprise, il en manque, ou le four contient autre chose : il faut le vider). Poser les objets case par case
+  marche toujours.
+- **Décisions** : le nombre choisi = des fournées (Chitine : 1 fournée = 5 chitine) ; le combustible posé est du
+  charbon ; si le four contient d'autres ingrédients, on refuse plutôt que de les retirer tout seul.
+- **État** : ✅ en ligne le 28/10
+
+## 28/10/2026 — Geoffrey — Onglet Stuff : les stats repassent à droite des cases
+- **Pour le joueur** : sur ordinateur, l'onglet Stuff se lit en trois colonnes : les **Sets** à gauche, les **cases
+  d'équipement** au milieu, les **stats du mineur** à droite (elles étaient passées sous les cases depuis l'ajout des
+  Sets). Sur écran moyen et téléphone, rien ne change : tout s'empile.
+- **État** : ✅ en ligne le 28/10.
+
+## 28/10/2026 — Geoffrey — Concasseur : le minerai de fer se concasse
+- **Pour le joueur** : on peut poser du **minerai de fer** dans le concasseur. Chaque lot de 100 donne toujours du
+  charbon (1 à 50), de l'or (1 à 20), **1 diamant** et du graphite (1 à 10), plus parfois une gemme inférieure (1 % chacune)
+  ou un treasure (T1 2 %, T2 1 %, T3 0,5 %). L'aide « ? » et le wiki montrent les fourchettes.
+- **À suivre** : 1 diamant par lot de 100 fers, soit 100 diamants pour 10 000 fers : à surveiller si le diamant doit rester rare.
+- **État** : ✅ en ligne le 28/10
+
+## 28/10/2026 — Geoffrey — Ceinture du Géant : 5 dégâts
+- **Pour le joueur** : la Ceinture du Géant donne **+5 dégâts** (avant +1,6) ; la ténacité ne change pas (+12,5 %). Les
+  ceintures déjà trouvées en profitent (stats relues dans le catalogue). GS : 127 → 263.
+- **État** : ✅ en ligne le 28/10
+
+## 28/10/2026 — Jules — Correctif : pourcentages à rallonge dans le panneau de l'area
+- **Pour le joueur** : avec un autel de minerais actif, le panneau de l'area en session affichait des pourcentages
+  comme « 9.3333333333 % » ou « 4.6666666667 % ». Ils sont maintenant arrondis à une décimale (« 9,3 % », « 4,7 % »,
+  « 56 % ») ; le nombre exact de blocs reste entre parenthèses. Rien ne change dans la mine elle-même.
+- **État** : ✅ en ligne le 28/10
+
+## 28/10/2026 — Geoffrey — États visibles : buffs, debuffs et bonus de session
+- **Pour le joueur** : en haut à droite de la mine (et des tours, de l'instance, de la mine instantanée), une rangée
+  d'icônes montre ce qui agit sur son propre mineur, avec le temps restant ou les stacks dessous : cadre rouge pour ce
+  qui le gêne (étourdi, taclé, enfermé, effroi, asphyxie, vol, mur de chair, ciblé par le boss, dans le noir), vert pour
+  ce qui l'aide (Cri de guerre, Inspiration, Ruée, Navette, Braum, Glyphe Pillage, Fast learner), et une seule icône
+  dorée « Bonus de session » (anneaux du groupe, shrines, Escalateur, gobelins asservis de la Couronne) dont la bulle
+  donne le détail. Sur les persos : étoiles qui tournent (étourdi), botte barrée (taclé), bulles (asphyxie), « ! »
+  (effroi), lueur (Cri de guerre), notes (Inspiration), traits de vitesse, et une onde quand un sort part. Les mobs et
+  les boss ont leurs icônes au-dessus de leur barre de vie (étourdi, provoqué, canalise, rage, en l'air).
+- **Décisions** (Geoffrey) : la liste en haut à droite, pour son propre mineur ; une seule icône pour les bonus de
+  session ; une animation pour les sorts ; les mobs tout de suite. Spec :
+  `docs/superpowers/specs/2026-10-28-buffs-debuffs-design.md`.
+- **À suivre** : regarder en vrai si « Dans le noir » n'apparaît pas trop souvent (bruit) ; les icônes viennent de la
+  planche Kenney, à remplacer si on veut un style à nous.
+- **État** : ✅ en ligne le 28/10
 
 ## 28/10/2026 — Jules — Appli mobile : première appli Android de test
 - **Pour le joueur** : rien sur le site. Une **première appli Android de test** existe : elle ouvre le vrai jeu
@@ -241,6 +1467,12 @@ Modèle d'entrée :
 - **Décisions** : valeurs de Geoffrey. Les plans du 2e jet du T4 (Clé d'instance I, gemmes) ne sortent pas de la
   recherche ; recyclés, ils rendent comme le tier 1 (15 à 30).
 - **État** : ✅ en ligne le 28/10
+
+## 27/10/2026 — Geoffrey — Correctif : « Lancer » grisé alors que tout le monde est prêt
+- **Pour le joueur** : si on avait ouvert (ou rechargé) la page pendant une session, le bouton **Lancer** et
+  « Inviter des joueurs » restaient grisés après la fin de la session, tant qu'on n'avait pas fermé le bilan avec le
+  bouton de retour. C'est corrigé : le lobby connaît le joueur dès l'ouverture de la page.
+- **État** : ✅ en ligne le 27/10
 
 ## 27/10/2026 — Geoffrey — Tier 4 : stats ajustées par Geoffrey ; plans secrets annoncés sur Discord
 - **Pour le joueur** : les stats offensives et de minage des nouvelles pièces sont divisées (choix de Geoffrey) :

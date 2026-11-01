@@ -226,12 +226,22 @@ test('arène : 15 × 3 vide, groupe au milieu, un minotaure à chaque bout ; min
   assert.ok(G.miners.every(m => m.x === Math.floor(M.w/2) && m.y === floor), 'regroupés au milieu');
   const bosses = G.mobs.filter(o => o.type === DUNGEON.boss.type);
   assert.deepEqual(bosses.map(o => o.x).sort((a, b) => a - b), [0, M.w-1]);
-  assert.ok(bosses.every(o => o.hp === DUNGEON.boss.hp && o.dungeon == null), 'à découvert, PV du minotaure');
+  assert.ok(bosses.every(o => o.hp === M.minoHp && o.maxhp === 1000 && o.dungeon == null), 'à découvert, 1 000 PV (le donjon : DUNGEON.boss.hp)');
   run(G, 1); assert.ok(G.khole, 'pas fini tant qu\'ils sont vivants');
   for(const o of bosses) o.hp = 0;
   run(G, DT);
   assert.equal(G.khole, null);
   assert.ok(G.miners.every(m => m.y === 0));
+});
+
+test('arène : un Minotaure brun à gauche (il charge), un Minotaure noir à droite (il enrage) ; 30/10/2026', () => {
+  const G = enterWith('arene');
+  const [left, right] = G.mobs.filter(o => o.type === DUNGEON.boss.type).sort((a, b) => a.x - b.x);
+  assert.equal(left.variant, 'brun'); assert.equal(left.name, 'Minotaure brun');
+  assert.equal(right.variant, 'noir'); assert.equal(right.name, 'Minotaure noir');
+  let windup = false;
+  for(let i=0; i<100 && !windup; i++){ run(G, DT); windup = left.charge?.phase === 'windup'; assert.equal(right.charge ?? null, null); }
+  assert.ok(windup, 'le brun charge le groupe');
 });
 
 test('arène : un minotaure vaincu à découvert laisse des Cristaux de pleine lune', () => {

@@ -13,14 +13,16 @@
      (src/ui/instant-lobby.js) ; à l'heure, le serveur l'ouvre et le navigateur bascule sur Session, où elle a son
      propre affichage (src/render/instant.js, src/ui/instant-hud.js). */
 import { applyRarityColors } from './ui/rarity.js';
-import { GAME, PARTY, SESSION_LEN, INSTANT_MINE, STATS, SOCIAL, CAMERA, JUDGMENT, TOWER, MINE_MODES, INSTANCE, GUIDE } from './config.js';
-import { emptyView, applyView } from './shared/view.js';
+import { GAME, HES_COMING, PARTY, SESSION_LEN, INSTANT_MINE, STATS, SOCIAL, CAMERA, JUDGMENT, TOWER, MINE_MODES, INSTANCE, GUIDE, PRISON, ENERGY, DT } from './config.js';
+import { emptyView, applyView, shownPos } from './shared/view.js';
 import { applyInstantView } from './shared/instant-view.js';
 import { createInstantRenderer, MI_TILE } from './render/instant.js';
 import { setupInstantLobby } from './ui/instant-lobby.js';
 import { setupGiant } from './ui/giant.js';
+import { createLuciferRenderer } from './render/hescoming.js';
 import { updateInstantHUD, showInstantEnd } from './ui/instant-hud.js';
 import { updateTowerHUD, showTowerEnd } from './ui/tower-hud.js';
+import { setTeamEnergies } from './ui/energy-tag.js';
 import { updateInstanceHUD, showInstanceEnd } from './ui/instance-hud.js';
 import { createInstanceRenderer } from './render/instance.js';
 import { applyInstanceView } from './shared/instances-view.js';
@@ -35,16 +37,22 @@ import { createRenderer, TILE } from './render/canvas.js';
 import { followedMiner } from './render/camera.js';
 import { drawPortrait, lookOf } from './render/portrait.js';
 import { aurasOf } from './meta/aura.js';
+import { displayName, formatAccountId } from './shared/account.js';
 import { setupOrbs } from './ui/orbs.js';
 import { fitCanvas, fitMine, fitInstant, clearDock } from './ui/fit.js';
 import { pxi } from './ui/pxicons.js';
-import { updateHUD, showEnd, showSettling, updateNavSession, fmt } from './ui/hud.js';
+import { updateHUD, showEnd, showSettling, updateNavSession, fmt, showSpellBar, placeSpellBar } from './ui/hud.js';
 import { setupRunControls, setupCamera, renderSpeeds } from './ui/controls.js';
 import { setupLobby } from './ui/lobby.js';
 import { gearScore } from './meta/gearscore.js';
-import { renderLevel, levelUpText } from './ui/level.js';
+import { renderLevel, renderNavLevel, levelUpText } from './ui/level.js';
 import { setupFocusPanel } from './ui/focus.js';
 import { setupChat } from './ui/chat.js';
+import { setupChatDock } from './ui/chat-dock.js';
+import { setupChatTabs, chatLine } from './ui/chat-tabs.js';
+import { setupChatLobby } from './ui/chat-lobby.js';
+import { setupForming } from './ui/forming.js';
+import { parseChatInput, LOBBY_TAG } from './shared/chat.js';
 import { renderInventory as drawInventory, showLoot, lootError } from './ui/inventory.js';
 import { setupNav } from './ui/nav.js';
 import { setupFurnace } from './ui/furnace.js';
@@ -57,14 +65,24 @@ import { setupHistory } from './ui/history.js';
 import { setupCraft } from './ui/craft.js';
 import { setupStuff } from './ui/stuff.js';
 import { setupUpgrade } from './ui/upgrade.js';
+import { createBackdrop, enterPanels, leavePanels } from './ui/backdrop.js';
+import { setupTown, townWalks } from './ui/town.js';
 import { setupTooltips } from './ui/tooltip.js';
+import { createEffectsBar, placeEffectsBar, focusedMiner } from './ui/effects.js';
 import { fillHelp } from './ui/help.js';
 import { setupGuide } from './ui/guide.js';
 import { setupSocial } from './ui/social.js';
+import { setupGuild } from './ui/guild.js';
 import { setupJudgment } from './ui/judgment.js';
 import { setupNotify } from './ui/notify.js';
+import { setupObtained } from './ui/obtained.js';
+import { recipeOf } from './meta/craft.js';
 import { createAccountUI, bootAccount, renderNavAccount } from './ui/account.js';
-import { gameApi, partyApi, instantApi, socialApi, giantApi, ApiError } from './net/api.js';
+import { gameApi, partyApi, instantApi, socialApi, guildApi, giantApi, hesComingApi, townApi, ApiError, moderationApi } from './net/api.js';
+import { ask, tell } from './ui/dialog.js';
+import { warningText, banBarText } from './shared/moderation-text.js';
+import { energyText, energyPct, prisonBanner, awayText, hasAway, prisonActive, launchPrisonText, prisonPollError, prisonOnScreen } from './ui/prison.js';
+import { prisonLootHtml, showPrisonRecap } from './ui/prison-loot.js';
 import { bootApp } from './app/boot.js';
 
 /* appli mobile (src/app/) : sur le site, ne fait rien */
@@ -79,6 +97,9 @@ let G = null;              // copie d'affichage de la partie du serveur (src/sha
 let clockOffset = 0;       // heure du serveur − heure locale (ms)
 let waiting = false;       // partie finie, résultat du serveur attendu
 let waitingFor = null;     // … celui de cette session (id)
+/* prison (29/10) : la sienne (publicPrison du serveur), la copie d'affichage du run regardé (même format que la mine),
+   heure de son dernier envoi */
+let prison = null, PG = null, prisonViewAt = 0;
 let pendingJoin = joinCodeFromHash(location.hash);   // lien d'invitation (#rejoindre=CODE), lu avant que la barre change l'adresse
 const serverNow = () => Date.now() + clockOffset;
 const renderer = createRenderer($('cv'));
@@ -86,6 +107,23 @@ const miRenderer = createInstantRenderer($('cvMi'));
 const isMi = () => rec?.mode === 'mi';
 const twRenderer = createTowerRenderer($('cvTw'));
 const inRenderer = createInstanceRenderer($('cvIn'));
+const SESSION_CV = { mine:'cv', mi:'cvMi', tower:'cvTw', instance:'cvIn' };
+const backdrop = createBackdrop($('bgSession'), { sessionCanvas: mode => $(SESSION_CV[mode]) });   // fond : la session en cours, hors onglet Session
+/* fond hors session : le Carreau, la ville du spawn (29/10) ; onglet Session sans session : on s'y promène */
+const town = setupTown($('bgTown'), {
+  ping: body => townApi.ping(body),
+  emote: id => townApi.emote(id),
+  me: () => acct.account && !acct.offline ? { id: acct.account.id, name: displayName(acct.account) || formatAccountId(acct.account.id),
+                                              look: lookOf(stuff.worn()), auras: aurasOf(stuff.worn()),
+                                              level: progress?.level ?? null, tree: ui.skills?.tree ?? null, gs: null } : null,
+  onEnter: id => nav.show(id),
+  /* fiche d'un joueur dans la ville : demande d'ami (par ID : un invité n'a pas de pseudo), invitation dans mon groupe */
+  friend: async id => setSocial(await socialApi.request(id)),
+  invite: async id => { await partyApi.invite(id); pollLobby(); },
+  /* recherche de groupe depuis la ville (30/10) : celle du Lobby (lobby est créé plus bas, appelé seulement ensuite) */
+  lfg: { view: () => lobby.lfgView(), toggle: () => lobby.toggleLfg() },
+});
+window.TOWN_UI = town;                               // débogage depuis la console (F12) : TOWN_UI.state()
 const isIn = () => isInstanceMode(rec?.mode);   // instance (27/10) : même principe d'affichage que les tours
 const isTw = () => isTowerMode(rec?.mode);   // tour de l'Ange ou du Démon : même principe d'affichage que la MI
 
@@ -156,17 +194,34 @@ async function equipFromInventory(slot, uid){
 }
 
 /* ---------- four : chaque action est faite par le serveur, qui renvoie fours et inventaire ---------- */
-/* amélioration : le serveur tire le hasard (identification, réussite) et renvoie la pièce et l'inventaire à jour */
+/* amélioration : le serveur tire le hasard (identification, réussite) et renvoie la pièce, l'inventaire et le stuff à
+   jour (une pièce portée peut être choisie ; sacrifiée, sa case se vide) */
+/* pop-up « Tu as obtenu » : objet crafté, blueprint, pièce identifiée, améliorée ou enchantée, fragment de rune */
+const obtained = setupObtained($('obtained'));
+const UPGRADE_TITLES = { identify:'Pièce identifiée', upgrade:'Amélioration réussie', enchant:'Pièce enchantée', unenchant:'Tu as obtenu' };
 const upgradeUI = setupUpgrade({
-  onOp: async op => { const r = await gameApi.upgrade({ ...op, opId: newOpId() }); setInventory(r.inventory); return r; },
+  onOp: async op => {
+    const r = await gameApi.upgrade({ ...op, opId: newOpId() });
+    if(r.stuff) stuff.set(r.stuff);
+    setInventory(r.inventory);
+    if(r.success !== false) obtained.show({ title: UPGRADE_TITLES[op.action] ?? 'Tu as obtenu', entry: r.fragment ?? r.piece });
+    return r;
+  },
+  worn: () => stuff.worn(),
 });
 
 /* craft et stuff : même principe, le serveur fait l'action et renvoie l'inventaire (et le stuff) à jour */
 const craft = setupCraft({
-  onCraft: async item => { setInventory((await gameApi.craft(item, newOpId())).inventory); },
+  onCraft: async item => {
+    const r = await gameApi.craft(item, newOpId());
+    setInventory(r.inventory);
+    obtained.show({ title:'Tu as obtenu', entry: r.piece ?? item, qty: recipeOf(item)?.qty ?? 1 });   // Rune : sa qualité
+  },
 });
+let setsUI = null;   // sets (créés plus bas) : les onglets Stuff, Skills et Sorts rafraîchissent la ligne « Set équipé »
 const stuff = setupStuff({
   onOp: async op => { const r = await gameApi.stuff({ ...op, opId: newOpId() }); setInventory(r.inventory); stuff.set(r.stuff); },
+  onWorn: () => { upgradeUI.refresh(); setsUI?.refresh(); },   // sets : la ligne « Set équipé » (29/10)
 });
 
 const furnace = setupFurnace({
@@ -186,7 +241,12 @@ const crusher = setupCrusher({
 
 /* table de recherche : le serveur tire le blueprint (ou les parts) et renvoie l'inventaire */
 const research = setupResearch({
-  onOp: async op => { const r = await gameApi.research({ ...op, opId: newOpId() }); setInventory(r.inventory); return r; },
+  onOp: async op => {
+    const r = await gameApi.research({ ...op, opId: newOpId() });
+    setInventory(r.inventory);
+    if(op.action === 'research') obtained.show({ title:'Tu as obtenu', entry: r.item });
+    return r;
+  },
 });
 
 /* skills : le serveur vérifie et enregistre ; reset refusé pendant une session */
@@ -194,20 +254,23 @@ const skills = setupSkills({
   onOp: op => gameApi.skills({ ...op, opId: newOpId() }),
   inSession: () => !!G && !G.over,
   inventory: () => ui.inv,                                   // glyphes possédés (case de glyphe)
-  onChange: (s, r) => { ui.skills = s; if(r?.inventory) setInventory(r.inventory); stuff.setSkills(s); lobby.update({ myTree: s?.tree ?? null }); spells.setContext({ tree: s?.tree ?? null }); },   // Stuff : bonus des skills ; lobby et Sorts : sa spécialisation
+  onChange: (s, r) => { ui.skills = s; if(r?.inventory) setInventory(r.inventory); stuff.setSkills(s); lobby.update({ myTree: s?.tree ?? null }); spells.setContext({ tree: s?.tree ?? null }); setsUI?.refresh(); },   // Stuff : bonus des skills ; lobby et Sorts : sa spécialisation
 });
 
 /* sorts : le serveur vérifie et enregistre ; un parchemin appris quitte l'inventaire */
 const spells = setupSpells({
   onOp: op => gameApi.spells({ ...op, opId: newOpId() }),
   onInventory: inv => setInventory(inv),
+  onChange: () => setsUI?.refresh(),   // ligne « Set équipé » (29/10)
 });
 
 /* sets (Stuff, Skills, Sorts) : équiper change l'inventaire, le stuff, les skills et les sorts d'un coup */
-const setsUI = setupSets({
+setsUI = setupSets({
   onOp: op => gameApi.sets({ ...op, opId: newOpId() }),
   onLoadout: r => { setInventory(r.inventory); stuff.set(r.stuff); skills.set(r.skills); spells.set(r.spells); },
   inSession: () => !!rec,
+  current: () => ui.skills ? { worn: stuff.worn(), skills: ui.skills, spells: spells.slots() } : null,
+  onDone: text => notify.flash(text),
 });
 
 applyRarityColors();   // couleurs des raretés (config)
@@ -216,17 +279,28 @@ fillHelp();        // « ? » d'aide des pages (src/ui/help.js)
 
 /* ---------- navigation ---------- */
 const historyTab = setupHistory({ load: () => gameApi.history() });
+let guildTab = null;   // créé plus bas ; l'onglet peut s'ouvrir dès setupNav
 let nav;   // l'onglet de départ est ouvert pendant setupNav, avant que nav soit assigné
-let giantUI = null;   // Bloc géant (créé plus bas) : sa visite occupe l'onglet Session
+let giantUI = null, hcUI = null;   // Bloc géant, He's coming (créés plus bas) : leur visite occupe l'onglet Session
+const inRoom = () => !!giantUI?.active() || !!hcUI?.active();
 let guide = null;     // guide « Premiers pas » (créé au démarrage, une fois l'état du joueur lu)
 let wantJudgment = /^#jugement$/i.test(location.hash);   // ancien onglet Jugement : ouvre le Lobby sur les jauges
 nav = setupNav($('nav'), $('views'), id => {
   if(ui.tab==='inventaire' && id!=='inventaire') ui.fresh.clear();   // les nouveautés ont été vues
+  const from = ui.tab;
   ui.tab = id;
+  /* transition avec l'onglet Session (src/ui/backdrop.js) : la mine du fond rétrécit ou s'agrandit, les panneaux glissent */
+  const sessView = document.querySelector('.view[data-view="session"]');
+  /* … et la prison comme la mine (30/10/2026) */
+  if(backdrop.switchTab(from, id, rec && G?.ready ? G : prisonBackdrop())) id==='session' ? enterPanels(sessView) : leavePanels(sessView, $('views'), () => ui.tab==='session');
   if(id==='inventaire'){ renderInventory(ui.inv, ui.fresh); nav?.badge('inventaire', false); }
   if(id==='skills') skills?.refresh();   // le bouton reset suit la session en cours
   if(id==='historique') historyTab?.refresh();
+  if(id==='guilde') guildTab?.open();
+  if(nav && (from==='chat' || id==='chat')) gchatDock.refresh();   // téléphone : le chat a son onglet (pas au tout début : il n'est pas encore créé, et il se règle tout seul)
+  if(id==='session' && prisonActive(prison)) kickPrison();   // on regarde la prison : envois rapprochés tout de suite
   guide?.refresh();                      // « Regarde ton butin » : l'inventaire vient d'être ouvert
+  if(id==='lobby') setTimeout(() => lobby.showMenu());   // cliquer sur Lobby rouvre le menu des activités (différé : le lobby n'est pas encore créé au tout début)
   if(id==='lobby' && wantJudgment){ wantJudgment = false; setTimeout(() => lobby.showJudgment()); }   // différé : le lobby n'est pas encore créé au tout début
 });
 
@@ -236,8 +310,8 @@ function updateOrbs(shown, mi, len = mi ? INSTANT_MINE.duration : SESSION_LEN){
   const m = shown && !mi && !shown.over ? followedMiner(shown.miners, ui.follow) : null;
   if(m){
     const oxMax = m.carac?.oxygenMax ?? STATS.oxygenMax, pods = m.carac?.pods ?? STATS.pods;
-    orbs.set(0, m.ox / oxMax * 100, 'o2', `${Math.round(m.ox)}/${oxMax}`, 'Oxygène');
-    orbs.set(1, m.load / pods * 100, m.load >= pods * 0.9 ? 'full' : 'pods', `${Math.round(m.load)}/${pods}`, 'Pods');
+    orbs.set(0, m.ox / oxMax * 100, 'o2', `${Math.round(m.ox)}/${Math.round(oxMax)}`, 'Oxygène');
+    orbs.set(1, m.load / pods * 100, m.load >= pods * 0.9 ? 'full' : 'pods', `${Math.round(m.load)}/${Math.round(pods)}`, 'Pods');
     return;
   }
   orbs.set(0, shown ? shown.t / len * 100 : 0, shown ? 'time' : 'off', shown ? fmt(shown.t) : '—', 'Session');
@@ -248,10 +322,13 @@ function updateOrbs(shown, mi, len = mi ? INSTANT_MINE.duration : SESSION_LEN){
 /* ---------- compte ---------- */
 const accountUI = createAccountUI($('account'), acct, {
   onChange: () => { renderNavAccount($('navAccount'), acct); lobby.update({ account:acct.account }); startInstant(); pollSocial(); pollJudgment(); },
-  confirmLeave: () => confirm([
+  confirmLeave: () => ask([
     acct.account?.guest && 'Compte invité : sans pseudo ni mot de passe, tu ne pourras plus jamais y revenir.',
     G && !G.over && 'Ta session continue sur le serveur : tu la retrouveras en te reconnectant.',
-    'Se déconnecter quand même ?'].filter(Boolean).join('\n')),
+    'Se déconnecter quand même ?'].filter(Boolean).join('\n'), { ok:'Se déconnecter' }),
+  options: () => [{ key:'bgSession', label:'Session en cours en fond d\'écran', title:'Pendant une session, la mine s\'affiche en fond, assombrie, derrière les autres onglets.', on: backdrop.on },
+                   { key:'bgTown', label:'Le Carreau (la ville) en fond d\'écran', title:'Hors session, la ville du spawn s\'affiche en fond, avec les autres joueurs en ligne ; l\'onglet Session sans session permet de s\'y promener.', on: town.on }],
+  setOption: (key, v) => { if(key === 'bgSession') backdrop.set(v); if(key === 'bgTown') town.set(v); },
 });
 
 /* ---------- lobby ---------- */
@@ -266,13 +343,27 @@ const lobby = setupLobby({
   towerWho: side => socialApi.towerWho(side),
   onPrefs: prefs => gameApi.prefs(prefs).catch(e => lobby.error(e.message)),
   onShowSession: () => nav.show('session'),
-  onMode: mode => { if(mode === 'mi') instantLobby.refresh(); if(mode === 'giant') giantUI?.shown(); },
+  onMode: mode => { if(mode === 'mi') instantLobby.refresh(); if(mode === 'giant') giantUI?.shown(); if(mode === 'hescoming') hcUI?.shown(); },
   onJudgment: () => pollJudgment(),
-  onLaunch: async opts => {
+  onPrisonStart: opts => startPrison(opts),
+  devCopy: name => gameApi.devCopy(name),   // mode dev : copier un joueur du jeu en ligne (31/10)
+  prisonSaveCompo: compo => gameApi.prisonSaveCompo(compo),   // enregistrer une compo (30/10)
+  prisonProfile: () => gameApi.prisonProfile(),   // { profile, previous } : compo actuelle et précédente (paliers de 10 mines, 30/10)   // contenu de la prison d'après les 10 dernières mines (29/10)
+  onPrisonStop: () => stopPrison(),
+  onPub: ctx => gchat.send({ channel: 'lfg', text: LOBBY_TAG, lobby: ctx }),   // « Pub LFG » (31/10)
+  onForming: () => forming.open(),                   // « Groupes en formation » (31/10)
+  onShowPrison: () => nav.show('session'),
+  onLaunch: async (opts, { party } = {}) => {
     lobby.error('');
+    /* lancer une mine, une tour ou une instance termine la prison de chaque joueur (29/10) : on prévient, en nommant les
+       membres dont la prison tourne (vue du groupe relue au serveur, qui fait foi) */
+    const team = party?.members?.length > 1 ? ((await partyApi.state().catch(() => null))?.party ?? party) : party;
+    const q = launchPrisonText({ mine: prisonActive(prison), party: team, meId: acct.account?.id });
+    if(q && !await ask(q, { ok:'Lancer quand même' })) return;
     try {
       enterSession((await gameApi.start(opts)).session); nav.show('session'); instantLobby.refresh();
-      if(isInstanceMode(opts.mode)) gameApi.state().then(st => setInventory(st.inventory)).catch(() => {});   // clé consommée au lancement
+      /* clé d'instance consommée, énergie débitée, prison terminée : relus au serveur */
+      gameApi.state().then(st => { setInventory(st.inventory); setEnergy(st.energy); setPrison(st.prison, { sync:false }); }).catch(() => {});
     }   // lancer désinscrit du MI
     catch(e){
       if(e instanceof ApiError && e.code === 'session_running') return refresh();
@@ -293,27 +384,34 @@ const instantLobby = setupInstantLobby({
   onState: st => { if(st.registered && !miModeShown){ miModeShown = true; lobby.update({ mode:'mi' }); } },
   onOpened: () => pollLobby(),                       // mode dev : la session est là, le lobby la voit et bascule
 });
-function startInstant(){ if(acct.account && !acct.offline){ instantLobby.start(); giantUI?.refresh(); } else instantLobby.stop(); }
+function startInstant(){ if(acct.account && !acct.offline){ instantLobby.start(); giantUI?.refresh(); hcUI?.refresh(); } else instantLobby.stop(); }
 
 /* Bloc géant : carte du lobby (« Où miner »), visite dans l'onglet Session, écran de fin (src/ui/giant.js) */
 giantUI = setupGiant({ api: giantApi, nav, onInventory: (inv, bag) => setInventory(inv, bag), session: () => !!rec, me: () => acct.account?.id });
+hcUI = setupGiant({ api: hesComingApi, nav, onInventory: (inv, bag) => setInventory(inv, bag), session: () => !!rec, me: () => acct.account?.id,
+                    prefix: 'hc', config: HES_COMING, renderer: createLuciferRenderer,
+                    words: { place: HES_COMING.bossName, front: HES_COMING.bossName, title: 'He\'s coming', rate: 'DPS',
+                             rules: `Ton mineur frappe ${HES_COMING.bossName} : 1 dégât = 1 point.\nToutes les ${HES_COMING.roar.every} s, il rugit : à ${HES_COMING.roar.radius} cases ou moins, Fear ${HES_COMING.roar.fear} s (ton mineur erre et ne frappe plus).\nToutes les ${HES_COMING.swing.every} s, il projette ceux à son contact.\nLa ténacité résiste aux deux.` } });
 
 /* Session et visite au Bloc géant en même temps (27/10/2026, Geoffrey) : l'onglet Session montre l'une OU l'autre, une
    barre permet de passer de l'une à l'autre. Ce qui vient de commencer passe devant. Chaque partie garde ses propres
    hidden (#run, #gtRun…) ; seules les classes de l'onglet décident de ce qui est caché quand il y a les deux. */
 const sessionView = document.querySelector('.view[data-view="session"]');
-let pane = 'session', hadSession = false, hadGiant = false;
+let pane = 'session', hadSession = false, hadGiant = false, hadHc = false;
 function updatePanes(){
-  const sess = !!rec || !$('end').hidden, gt = !!giantUI?.active();
+  const sess = !!rec || !$('end').hidden || prisonShown(), gt = !!giantUI?.active(), hc = !!hcUI?.active();
   if(sess && !hadSession) pane = 'session';
   if(gt && !hadGiant) pane = 'giant';
-  hadSession = sess; hadGiant = gt;
-  const both = sess && gt;
+  if(hc && !hadHc) pane = 'hc';
+  hadSession = sess; hadGiant = gt; hadHc = hc;
+  const open = { session: sess, giant: gt, hc }, both = sess + gt + hc > 1;
+  if(!open[pane]) pane = Object.keys(open).find(k => open[k]) ?? 'session';
   sessionView.classList.toggle('both', both);
   sessionView.classList.toggle('paneGiant', pane === 'giant');
-  sessionView.classList.toggle('paneSession', pane !== 'giant');
+  sessionView.classList.toggle('paneHc', pane === 'hc');
+  sessionView.classList.toggle('paneSession', pane === 'session');
   $('sessSwitch').hidden = !both;
-  for(const b of $('sessSwitch').querySelectorAll('button')) b.classList.toggle('on', b.dataset.pane === pane);
+  for(const b of $('sessSwitch').querySelectorAll('button')) { b.classList.toggle('on', b.dataset.pane === pane); b.hidden = !open[b.dataset.pane]; }
 }
 $('sessSwitch').onclick = e => { const b = e.target.closest('button'); if(b){ pane = b.dataset.pane; updatePanes(); } };
 setInterval(updatePanes, 300);
@@ -321,10 +419,11 @@ window.MI = instantLobby;                            // pour le débogage depuis
 
 /* plus de session : l'onglet Session affiche « Tu n'es pas en session », le lobby redevient utilisable */
 function showNoSession(){
-  rec = null; G = null; waiting = false; clearTimeout(viewTimer); chat.stop();
+  rec = null; G = null; waiting = false; clearTimeout(viewTimer);
   setsUI.refresh(); sessionFlag();   // sets de nouveau disponibles
-  $('run').hidden = true; $('miRun').hidden = true; $('twRun').hidden = true; $('inRun').hidden = true; $('noSession').hidden = !!giantUI?.active();   // une visite au Bloc géant garde l'onglet
+  $('run').hidden = true; $('miRun').hidden = true; $('twRun').hidden = true; $('inRun').hidden = true; $('noSession').hidden = inRoom();   // une visite au Bloc géant garde l'onglet
   lobby.update({ account:acct.account, offline:acct.offline, info, session:null });
+  updatePrisonUI();   // la prison reprend l'onglet Session
   pollLobby();
 }
 $('toLobbyBtn').onclick = () => nav.show('lobby');
@@ -332,7 +431,9 @@ $('miLeaveBtn').onclick = () => leave();
 $('twLeaveBtn').onclick = () => leave();
 $('inLeaveBtn').onclick = () => leave();
 const navSession = document.querySelector('.navSession');
-navSession.onclick = () => { if(rec || giantUI?.active()) nav.show('session'); };
+navSession.onclick = () => { if(rec || inRoom()) nav.show('session'); };
+$('navPrisonBtn').onclick = () => nav.show('session');
+$('navPrisonStop').onclick = () => stopPrison();
 
 /* lobby : groupe, invitations ; le chef a lancé → tout le groupe passe à l'onglet Session. Continue pendant la session
    (plus lentement) pour que le lobby, en lecture seule, montre le groupe ; sert aussi de signe de vie au groupe,
@@ -347,7 +448,7 @@ async function pollLobby(){
     if(st.session && st.session !== rec?.id){          // lancée par le chef (ou relancée pendant le bilan : il est lu)
       endAck?.(); await refresh(); return nav.show('session');
     }
-    lobby.update({ party:st.party, invites:st.invites, lfg:st.lfg, shrines:st.shrines ?? [] });
+    lobby.update({ party:st.party, invites:st.invites, lfg:st.lfg, shrines:st.shrines ?? [], alwaysReady:st.alwaysReady });
     setLfgFound(st.lfg?.found);
   } catch(e){ console.warn(e); }
   lobbyTimer = setTimeout(pollLobby, rec ? PARTY.pollInSession : PARTY.poll);
@@ -369,12 +470,13 @@ function setSocial(st){
   if(!st?.friends) return st;
   social.set(st);
   nav.badge('social', st.incoming.length > 0);
+  nav.badge('guilde', st.guildInvites?.length > 0);
   lastSocial = st;
   syncNotifs();
   return st;
 }
 function syncNotifs(){
-  const st = lastSocial ?? { partyInvites: [], incoming: [] };
+  const st = lastSocial ?? { partyInvites: [], incoming: [], guildInvites: [] };
   notify.sync([
     ...(lfgFound && !lfgFound.error && !G ? [{ key: 'lfg:' + lfgFound.at, icon: pxi('group'),
       text: `Groupe trouvé : <b>${esc(lfgFound.names.join(', '))}</b>`,
@@ -382,11 +484,16 @@ function syncNotifs(){
     ...st.partyInvites.map(i => ({ key: 'p:' + i.code + ':' + i.at, icon: pxi('group'), text: `<b>${esc(i.from)}</b> vous a invité dans son lobby${i.full ? ' <span class="mut">(complet)</span>' : ''}`,
       actions: [{ label: 'Rejoindre', primary: true, run: () => joinParty(() => partyApi.join(i.code)) },
                 { label: 'Décliner', run: async () => { await partyApi.decline(i.code); pollSocial(); } }] })),
+    ...(st.guildInvites ?? []).map(i => ({ key: 'g:' + i.guildId, icon: pxi('shield'), text: `<b>${esc(i.name)}</b> vous invite dans sa guilde`,
+      actions: [{ label: 'Accepter', primary: true, run: () => answerGuild(guildApi.acceptInvite(i.guildId)) },
+                { label: 'Refuser', run: () => answerGuild(guildApi.refuseInvite(i.guildId)) }] })),
     ...st.incoming.map(r => ({ key: 'f:' + r.id, icon: pxi('person'), text: `<b>${esc(r.name)}</b> vous a envoyé une demande d'ami`,
       actions: [{ label: 'Accepter', primary: true, run: async () => setSocial(await socialApi.accept(r.id)) },
                 { label: 'Refuser', run: async () => setSocial(await socialApi.refuse(r.id)) }] })),
   ]);
 }
+/* réponse à une invitation de guilde : pop-up et onglet à jour */
+async function answerGuild(done){ await done; pollSocial(); guildTab?.refresh(); }
 async function pollSocial(){
   clearTimeout(socialTimer);
   if(acct.offline || !acct.account){ lastSocial = null; lfgFound = null; notify.sync([]); return; }
@@ -401,6 +508,7 @@ async function joinParty(fn){
   nav.show('lobby'); pollLobby(); pollSocial();
   return r;
 }
+guildTab = setupGuild({ root: document.querySelector('.view[data-view="guilde"]'), onChange: () => pollSocial() });
 const social = setupSocial({
   request: async name => setSocial(await socialApi.request(name)),
   accept:  async id => setSocial(await socialApi.accept(id)),
@@ -420,7 +528,7 @@ let judgmentTimer = null;
 async function pollJudgment(){
   clearTimeout(judgmentTimer);
   if(acct.offline || !acct.account) return;
-  try { judgment.set(await gameApi.judgment()); nav.badge('lobby', judgment.pending()); lobby.update({ judgment: judgment.view(), judgmentPending: judgment.pending() }); }
+  try { const j = await gameApi.judgment(); judgment.set(j); town.setJudgment(j?.value?.sides ?? j?.sides); nav.badge('lobby', judgment.pending()); lobby.update({ judgment: judgment.view(), judgmentPending: judgment.pending() }); }
   catch(e){ console.warn(e); }
   judgmentTimer = setTimeout(pollJudgment, document.hidden ? JUDGMENT.poll * 4 : JUDGMENT.poll);
 }
@@ -429,28 +537,51 @@ async function pollJudgment(){
 addEventListener('hashchange', e => {
   const code = joinCodeFromHash(e.newURL);
   if(!code) return;
-  if(rec){ alert('Tu es dans une session : termine-la ou quitte-la pour rejoindre ce groupe.'); return; }
+  if(rec){ tell('Tu es dans une session : termine-la ou quitte-la pour rejoindre ce groupe.'); return; }
   pendingJoin = code; pollLobby();
 });
 
 /* ---------- session ---------- */
 setupRunControls(ui, { onLeave: leave, onClock: setClock, onFollow: id => { ui.follow = id; renderer.follow(); } });
-setupCamera($('cv'), renderer, () => !!G?.ready && ui.tab === 'session');
+setupCamera($('cv'), renderer, () => (!!G?.ready || prisonShown() && !!PG?.ready) && ui.tab === 'session');
 
 /* focus : le serveur l'applique tout de suite dans la partie (et l'enregistre avec son tick) */
 const focusPanel = setupFocusPanel({
   onChange: async focus => {
     try { return (await gameApi.focus(focus)).event; }
-    catch(e){ alert(e.message); throw e; }
+    catch(e){ tell(e.message); throw e; }
   },
 });
 
-/* chat des joueurs de la session (mine classique) : le serveur vérifie qui écrit, le texte et la cadence */
-const chat = setupChat({ get: after => gameApi.chat(after), post: text => gameApi.say(text), meId: () => acct.account?.id });
+/* modération du chat (30/10) : fenêtre d'avertissement, bandeau du joueur banni */
+const onWarning = w => { tell(warningText(w)); if(w.banned) showBan(); };
+async function showBan(){
+  try { const s = await moderationApi.me(); const t = banBarText(s); $('banBar').textContent = t; $('banBar').hidden = !t; }
+  catch(e){ console.warn(e); }
+}
+window.addEventListener('dim:banned', showBan);
+/* chat global (28/10 ; permanent depuis le 31/10, src/ui/chat-dock.js) : tous les joueurs, même en session ; pas relu quand il
+   est replié ou que la page est cachée */
+const gchatDock = setupChatDock({ dock: $('gchatDock'), edges: $('gchatDock').querySelectorAll('.chatEdge'), fold: $('gchatFold'), onChange: () => { gchat?.toEnd(); if(!gchatDock?.folded) gchat?.poke(); } });
+const gchatTabs = setupChatTabs({ bar: $('gchatTabs'), panel: $('gchatPanel'), select: $('gchatChan'),
+                                  save: p => socialApi.chatPrefsSave(p).catch(console.warn), onChange: () => gchat?.refresh() });
+const gchat = setupChat({ prefix:'gchat', get: after => socialApi.chat(after), post: msg => socialApi.say(msg), meId: () => acct.account?.id, onWarning,
+                          paused: () => document.hidden || gchatDock.folded, time: true,
+                          show: gchatTabs.show, line: chatLine, sent: gchatTabs.sent,
+                          /* gagnant d'un raffle : son lot est sur le serveur, à relire tout de suite */
+                          fresh: list => { if(list.some(m => m.winner && m.winner === acct.account?.id)) gameApi.state().then(st => { setInventory(st.inventory); setEnergy(st.energy); }).catch(() => {}); },
+                          parse: text => { const msg = parseChatInput(text, gchatTabs.channel(), gchatTabs.target()); return msg.lobby ? { ...msg, lobby: lobby.pubContext() } : msg; } });
+/* groupes en formation (31/10/2026) : la liste se relit toute seule tant que la fenêtre est ouverte */
+const forming = setupForming({ list: () => partyApi.forming(), team: () => lobby.team(),
+                               join: async code => { await partyApi.join(code); await pollLobby(); },
+                               create: async () => { await partyApi.create(); await pollLobby(); } });
+/* lien de lobby du chat (31/10/2026) : aperçu au survol, clic = rejoindre */
+setupChatLobby({ log: $('gchatLog'), peek: id => socialApi.chatLobby(id), onError: text => { $('gchatNote').textContent = text; },
+                 join: async id => { await socialApi.chatLobbyJoin(id); await pollLobby(); nav.show('lobby'); } });
 
 /* dev : vitesse et pause sont l'horloge de la session, sur le serveur */
 async function setClock(opts){
-  try { applyClock((await gameApi.clock(opts)).session.clock); } catch(e){ alert(e.message); }
+  try { applyClock((await gameApi.clock(opts)).session.clock); } catch(e){ tell(e.message); }
 }
 function applyClock(c){
   if(!c || !info.dev) return;
@@ -472,13 +603,13 @@ function enterSession(session){
   window.G = G;                             // pour le débogage depuis la console (F12)
   /* la caméra suit son propre mineur ; les mineurs portent le nom de leur joueur */
   ui.names = Object.fromEntries(session.players.map(p => [p.account, p.name]));
-  ui.follow = null; ui.followSet = false; renderer.follow();
+  ui.follow = null; ui.followSet = false; ui.focus = null; renderer.follow();
   ui.speed = info.dev ? session.clock?.speed ?? 1 : session.speed; ui.paused = !!session.clock?.paused;
   renderSpeeds(ui, info, s => setClock({ speed:s }));
   $('seedLbl').textContent = info.dev ? `seed ${session.seed}` : '';
   $('end').hidden = true; $('noSession').hidden = true; $('run').hidden = mi || tw || ins; $('miRun').hidden = !mi; $('twRun').hidden = !tw; $('inRun').hidden = !ins;
-  if(mi || tw || ins) chat.stop(); else chat.start();
   lobby.update({ session:{ id:session.id } });   // lobby en lecture seule
+  updatePrisonUI();                              // la session passe devant la prison (mine instantanée)
   pollView();
   pollLobby();                                   // le lobby continue de montrer le groupe
 }
@@ -489,41 +620,49 @@ let viewTimer = null, lastView = 0;
 /* mesures d'affichage, seulement avec ?perf dans l'adresse (src/ui/perf.js) */
 const perf = createPerf(), perfOn = new URLSearchParams(location.search).has('perf');
 for(const el of document.querySelectorAll('.perfBox')) el.hidden = !perfOn;
+/* envois à rythme fixe (31/10/2026) : l'attente déduit le temps de la réponse, sinon chaque variation du réseau décale la suite */
+const viewRate = () => info.dev ? ui.speed : rec.speed;   // vitesse de la partie affichée
+const nextView = (every, t0) => Math.max(0, every - (performance.now() - t0));
 async function pollView(){
   clearTimeout(viewTimer);
   if(!G || !rec || waiting) return;
-  const id = rec.id;
+  const id = rec.id, t0 = performance.now();
   try {
-    const t0 = performance.now();
     const r = await gameApi.view(G.ready ? G.ticks : null);
+    setTeamEnergies(r.energies);   // panneaux Équipe (31/10)
     if(perfOn) perf.view(t0, performance.now(), r.view?.tick);
     if(!G || rec?.id !== id || waiting) return;
     clockOffset = r.now - Date.now();
     applyClock(r.clock);
-    if(r.view?.mode === 'mi'){ G = applyInstantView(r.view); G.ready = true; window.G = G; lastView = performance.now(); }
-    else if(r.view?.mode === 'instance'){ G = applyInstanceView(r.view, G?.mode === 'instance' ? G : null); G.ready = true; window.G = G; lastView = performance.now(); }
-    else if(r.view?.mode === 'tower'){ G = applyTowerView(r.view, G?.mode === 'tower' ? G : null); G.ready = true; window.G = G; lastView = performance.now(); }
+    if(r.view?.mode === 'mi'){ G = applyInstantView(r.view, G?.mode === 'mi' ? G : null, performance.now(), viewRate()); G.ready = true; window.G = G; lastView = performance.now(); }
+    else if(r.view?.mode === 'instance'){ G = applyInstanceView(r.view, G?.mode === 'instance' ? G : null, performance.now(), viewRate()); G.ready = true; window.G = G; lastView = performance.now(); }
+    else if(r.view?.mode === 'tower'){ G = applyTowerView(r.view, G?.mode === 'tower' ? G : null, performance.now(), viewRate()); G.ready = true; window.G = G; lastView = performance.now(); }
     else if(r.view){
-      applyView(G, r.view); lastView = performance.now();
+      applyView(G, r.view, performance.now(), viewRate()); lastView = performance.now();
       if(!ui.followSet && G.miners.length){                  // une fois : suivre son propre mineur
         ui.follow = (G.miners.find(m => m.account === acct.account?.id) ?? G.miners[0]).id; ui.followSet = true;
       }
     }
     if(!r.view || G.over) return ended();
   } catch(e){
-    if(e instanceof ApiError && e.code === 'no_session') return refresh();   // quittée (autre onglet) ou déjà finie
+    if(e instanceof ApiError && e.code === 'no_session') return refresh(rec?.id);   // quittée (autre onglet) ou déjà finie
     console.warn(e);
   }
-  viewTimer = setTimeout(pollView, document.hidden ? VIEW_HIDDEN : VIEW_EVERY);
+  viewTimer = setTimeout(pollView, nextView(document.hidden ? VIEW_HIDDEN : VIEW_EVERY, t0));
 }
 document.addEventListener('visibilitychange', () => {
   if(document.visibilityState === 'visible' && G && !waiting) pollView();
+  if(document.visibilityState === 'visible' && prisonActive(prison)) kickPrison();
   if(document.visibilityState === 'visible' && !G) pollLobby();
   if(document.visibilityState === 'visible') pollSocial();
 });
 
 /* entre deux envois, les actions en cours avancent à l'écran (affichage seulement : le prochain envoi fait foi) */
 function smooth(dtr){
+  if(prisonShown() && PG?.ready && !PG.over && performance.now() - prisonViewAt < 3000){
+    const rate = prison?.speed ?? info.speed ?? GAME.speed;
+    for(const m of PG.miners){ const a = m.action; if(a) a.t = Math.min(a.dur, a.t + dtr * rate); }
+  }
   if(!G?.ready || G.over) return;
   const rate = info.dev ? (ui.paused ? 0 : ui.speed) : rec.speed;
   if(performance.now() - lastView > 3000) return;              // plus de nouvelles : on n'invente rien
@@ -531,12 +670,136 @@ function smooth(dtr){
 }
 
 async function leave(){
+  if(prisonShown()) return stopPrison();   // même bouton, pendant qu'on regarde la prison (29/10)
   if(!G || G.over) return;
-  if(!confirm(isIn() ? 'Quitter l\'instance ?\nTu ne recevras pas de coffre. Si le groupe gagne sans toi, ta clé est perdue (elle est rendue si le groupe perd).' : isTw() ? 'Quitter la tour ?\nTu ne recevras pas de trésor.' : isMi() ? 'Quitter la mine instantanée ?\nTu ne recevras rien de ce que tu as miné.'
-                     : 'Quitter la session ?\nTu ne recevras rien de cette session : le coffre ira aux joueurs restants.')) return;
+  if(!await ask(isIn() ? 'Quitter l\'instance ?\nTu ne recevras pas de coffre. Si le groupe gagne sans toi, ta clé est perdue (elle est rendue si le groupe perd).' : isTw() ? 'Quitter la tour ?\nTu ne recevras pas de trésor.' : isMi() ? 'Quitter la mine instantanée ?\nTu ne recevras rien de ce que tu as miné.'
+                     : 'Quitter la session ?\nTu ne recevras rien de cette session : le coffre ira aux joueurs restants.', { ok:'Quitter', danger:true })) return;
   try { await gameApi.leave(); }
-  catch(e){ if(!(e instanceof ApiError) || e.code !== 'no_session'){ alert(e.message); return; } }
+  catch(e){ if(!(e instanceof ApiError) || e.code !== 'no_session'){ tell(e.message); return; } }
   showNoSession(); nav.show('lobby');
+}
+
+/* ---------- prison (29/10/2026) et énergie ----------
+   La prison tourne sur le serveur, même page fermée. L'onglet Session la montre comme une mine (même rendu, mêmes
+   panneaux, son bandeau en haut) quand il n'y a pas de session en cours. Le jeu ouvert la redemande au moins toutes les
+   PRISON.uiPoll ms (le serveur sait ainsi que le joueur est là, et la fait tourner en direct), toutes les VIEW_EVERY ms
+   quand on la regarde (onglet Session, ou en fond derrière un autre onglet). Bilan d'absence : envoyé une seule fois par le serveur, montré par la réponse qui le porte. */
+const prisonShown = () => !rec && prisonActive(prison);
+/* la prison affichée en fond (et pour les transitions d'onglet), comme une session : sa copie d'affichage si elle est prête.
+   Fonction déclarée (pas une const) : l'onglet affiché au chargement l'appelle avant cette ligne */
+function prisonBackdrop(){ return !rec && prisonActive(prison) && PG?.ready ? PG : null; }
+function setEnergy(e){
+  if(!e) return;
+  $('navEnergy').hidden = false;
+  $('navEnergyTxt').textContent = energyText(e);
+  $('navEnergyBar').style.width = energyPct(e) + '%';
+  $('navEnergy').classList.toggle('low', e.value < ENERGY.cost.min);   // pas assez pour une mine
+  lobby.update({ energy: e });
+}
+let lastAway = null;
+function showAway(a){
+  const text = awayText(a), key = JSON.stringify(a);
+  if(!text || key === lastAway) return;   // deux réponses en même temps : un seul message
+  lastAway = key;
+  tell(text);
+}
+/* prison reçue du serveur (state, vue, lancement, arrêt) ; sync : un run vient d'être versé → inventaire, énergie, XP relus */
+function setPrison(p, { sync = true } = {}){
+  const was = prison;
+  /* state() ne connaît pas toujours l'avancement du run : on garde celui de la dernière vue (même run) */
+  if(p && was && p.run === was.run && p.goal == null) p = { ...p, goal: was.goal, mined: was.mined };
+  prison = p ?? null;
+  if(hasAway(prison)) showAway(prison.away);
+  if(!prisonActive(prison)) PG = null;
+  if(sync && was && prison && (was.run !== prison.run || was.energy !== prison.energy || prisonActive(was) !== prisonActive(prison))) syncAccount();
+  lobby.update({ prison });
+  updatePrisonUI();
+  if(prisonActive(prison) && !prisonActive(was)) kickPrison();
+}
+/* inventaire, énergie, niveau : relus au serveur après un versement de run (sans toucher à la session) */
+async function syncAccount(){
+  try {
+    const st = await gameApi.state();
+    setInventory(st.inventory); setEnergy(st.energy);
+    if(!st.ended || st.session) setProgress(st.progress);   // un bilan à montrer : showResult annonce la montée de niveau
+    skills.set(st.skills);
+    setPrison(st.prison, { sync:false });
+  } catch(e){ console.warn(e); }
+}
+let prisonTimer = null, prisonBusy = false, prisonErrors = 0;
+function kickPrison(delay = 0){ clearTimeout(prisonTimer); prisonTimer = setTimeout(pollPrison, delay); }
+async function pollPrison(){
+  clearTimeout(prisonTimer);
+  if(prisonBusy || acct.offline || !acct.account || !prisonActive(prison)) return;
+  prisonBusy = true;
+  let again = null;
+  const t0 = performance.now();
+  try {
+    const r = await gameApi.prisonView(PG?.ready ? PG.ticks : null);
+    if(perfOn) perf.view(t0, performance.now(), r.view?.tick);
+    prisonErrors = 0;
+    setPrison(r.prison);
+    if(r.view && prisonActive(prison)){
+      if(PG && PG.run !== prison.run && !r.view.full){ PG = null; again = 0; }   // run suivant : sa carte entière d'abord
+      else {
+        if(!PG || PG.run !== prison.run){ PG = emptyView(); PG.run = prison.run; if(!rec){ ui.follow = null; renderer.follow(); } }
+        applyView(PG, r.view, performance.now(), prison?.speed ?? info.speed ?? GAME.speed); prisonViewAt = performance.now();
+        if(!rec && ui.follow == null && PG.miners.length) ui.follow = (PG.miners.find(m => m.account === acct.account?.id) ?? PG.miners[0]).id;
+      }
+    }
+  } catch(e){
+    console.warn(e);
+    /* déconnecté : on s'arrête ; plus de prison ni de session côté serveur : état relu ; sinon recul (PRISON.uiRetry…) */
+    const next = prisonPollError(e, ++prisonErrors);
+    if(next.action === 'stop') return void setPrison(null, { sync:false });   // reconnecté : state() la renvoie et relance
+    if(next.action === 'refresh') return void refresh().catch(console.warn);
+    again = next.delay;
+  }
+  finally { prisonBusy = false; }
+  if(!prisonActive(prison)) return;
+  kickPrison(again ?? (prisonOnScreen({ shown: prisonShown(), tab: ui.tab, backdrop: backdrop.on, hidden: document.hidden }) ? nextView(VIEW_EVERY, t0) : PRISON.uiPoll));
+}
+async function startPrison(opts = {}){
+  lobby.error('');
+  /* mode dev : la prison part à la vitesse choisie dans la barre de la mine (29/10) */
+  try { setPrison((await gameApi.prisonStart({ ...opts, ...(info.dev && ui.speed ? { speed: ui.speed } : {}) })).prison); nav.show('session'); }
+  catch(e){ lobby.error(e.message); }
+}
+async function stopPrison(){
+  if(!prisonActive(prison)) return;
+  if(!await ask('Sortir de prison ?\nLe coffre du run en cours est versé dans ton inventaire, pas ce que le mineur porte sur lui.', { ok:'Sortir de prison' })) return;
+  let out;
+  try { out = (await gameApi.prisonStop()).prison; setPrison(out); }
+  catch(e){ tell(e.message); return; }
+  if(ui.tab === 'session' && !rec) nav.show('lobby');
+  showPrisonRecap(out);   // tout ce que la prison a rapporté (29/10 ; aussi dans l'Historique)
+}
+/* barre du haut, onglet Session : la prison montrée (pas de session) ou non */
+function updatePrisonUI(){
+  const on = prisonShown(), active = prisonActive(prison);
+  $('navPrison').hidden = !active;
+  sessionView.classList.toggle('prisonOn', on);
+  sessionView.classList.toggle('prisonDev', on && info.dev);   // mode dev : les boutons de vitesse restent visibles (29/10)
+  /* butin de la prison (29/10) : ce que les runs versés ont rapporté depuis l'entrée */
+  $('prisonLootCard').hidden = !on;
+  if(on){
+    const cur = PG?.ready && PG.run === prison.run, live = cur ? (PG.ticks | 0) * DT : 0;   // temps de jeu du run en cours
+    const html = prisonLootHtml(prison.totals, live, cur ? { chest: PG.chest, xp: PG.stats?.xp } : null);   // total, run en cours compris (30/10)
+    if($('prisonLootBody').innerHTML !== html) $('prisonLootBody').innerHTML = html;
+  }
+  $('prisonBanner').hidden = !on;
+  $('leaveBtn').innerHTML = pxi('door') + (on ? 'Sortir de prison' : 'Quitter la session');
+  $('leaveBtn').title = on ? 'Le coffre du run en cours est versé, pas ce que le mineur porte' : 'Tu ne recevras rien de cette session';
+  if(rec) return;                               // une session est affichée : on n'y touche pas
+  if(on){ $('run').hidden = !$('end').hidden; $('noSession').hidden = true; }   // un bilan affiché reste devant
+  /* mode dev (29/10) : les boutons de vitesse de la barre de la mine pilotent la prison (pas de pause en prison) */
+  if(on && info.dev){
+    renderSpeeds({ speed: prison.speed, paused: false }, info, async s => {
+      try { setPrison((await gameApi.prisonClock(s)).prison); kickPrison(); } catch(e){ tell(e.message); } });
+    for(const b of document.querySelectorAll('.pauseBtn')) b.hidden = true;
+  }
+  /* 30/10/2026 : seulement sans prison (avant : ce « sinon » suivait « prison ET mode dev », il cachait la prison hors dev) */
+  if(!on){ $('run').hidden = true; $('noSession').hidden = inRoom(); }
 }
 
 /* la partie du serveur est finie : on attend son résultat (partage et versement, quelques instants) */
@@ -549,7 +812,7 @@ function ended(){
 async function pollResult(){
   if(!waiting) return;
   try {
-    const st = await gameApi.state();
+    const st = await gameApi.state(waitingFor);
     const what = resultChoice(st.ended, waitingFor);
     if(what === 'show') return showResult(st);
     if(what === 'stale') gameApi.ack(st.ended.id).catch(() => {});   // ancien bilan jamais vu : pas celui de cette session
@@ -562,11 +825,15 @@ async function pollResult(){
 function showResult(st){
   const ended = st.ended;
   setInventory(st.inventory, ended.result.shares.find(p => p.account === acct.account?.id)?.bag);
-  rec = null; G = null; waiting = false; chat.stop();
+  rec = null; G = null; waiting = false;
   setsUI.refresh(); sessionFlag();
   lobby.update({ session:null });            // on peut relancer depuis le lobby pendant qu'on lit le bilan
+  setEnergy(st.energy); setPrison(st.prison, { sync:false });
   const up = setProgress(st.progress);       // XP versée par le serveur : nouveau niveau ?
   skills.set(st.skills);                     // … et donc peut-être de nouveaux points de skill
+  /* bilan vu dès qu'il s'affiche (30/10, Geoffrey) : avant, seuls ses boutons le marquaient « vu » ; le quitter autrement
+     (autre onglet, Échap, relancer depuis le lobby) le faisait revenir à chaque rechargement de la page */
+  gameApi.ack(ended.id).catch(() => {});
   const done = endAck = () => { endAck = null; gameApi.ack(ended.id).catch(() => {}); };
   const back = () => { done(); $('end').hidden = true; showNoSession(); nav.show('lobby'); };
   const toInv = () => { done(); $('end').hidden = true; showNoSession(); nav.show('inventaire'); };
@@ -593,14 +860,15 @@ function setInventory(inv, bag){
 let progress = null;
 function setProgress(p){
   const up = levelUpText(progress, p); progress = p ?? null;
-  renderLevel($('levelBody'), progress); renderLevel($('stuffLevelBody'), progress);   // lobby et onglet Stuff
+  renderNavLevel($('navLevel'), progress); renderLevel($('stuffLevelBody'), progress);   // bandeau du haut et onglet Stuff
   skills.setSpec(progress?.spec); lobby.update({ mySpec: progress?.spec ?? null });    // niveaux de spécialisation
   spells.setContext({ spec: Object.fromEntries(Object.entries(progress?.spec ?? {}).map(([t, s]) => [t, s.level])) });
   return up;
 }
 
-async function refresh(){
-  const st = await gameApi.state();
+async function refresh(waited){
+  const st = await gameApi.state(waited);
+  showBan();
   setInventory(st.inventory);
   if(!st.ended || st.session) setProgress(st.progress);
   furnace.set(st.furnaces);
@@ -610,6 +878,7 @@ async function refresh(){
   spells.set(st.spells);
   setsUI.set(st.sets);
   lobby.update({ prefs: st.prefs });
+  setEnergy(st.energy); setPrison(st.prison, { sync:false });
   if(st.session) enterSession(st.session);
   else showNoSession();
   if(st.ended && !st.session) showResult(st);
@@ -628,6 +897,7 @@ else {
 startInstant();
 pollSocial();
 pollJudgment();
+if(acct.account && !acct.offline){ gchatDock.show(true); gchat.start(); socialApi.chatPrefs().then(gchatTabs.set).catch(console.warn); }   // une déconnexion recharge la page : démarré une fois
 
 /* guide « Premiers pas » : relit l'état du joueur (déjà dans la page) et coche ses étapes toutes seules */
 guide = setupGuide($('guide'), {
@@ -640,19 +910,72 @@ guide = setupGuide($('guide'), {
 guide.refresh(); setInterval(guide.refresh, GUIDE.refreshMs);
 if(globalThis.DIM_BOOT) DIM_BOOT.started = true;   // démarrage réussi : src/boot-check.js n'affiche plus rien
 
+/* états du mineur du joueur en haut à droite de la mine (28/10, src/ui/effects.js) : un par mode de jeu */
+const fxBars = { mine: [createEffectsBar($('fxBar')), $('fxBar'), $('cv'), $('cvWrap'), $('followBtn')],
+                 mi: [createEffectsBar($('fxBarMi')), $('fxBarMi'), $('cvMi'), $('cvMiWrap')],
+                 tower: [createEffectsBar($('fxBarTw')), $('fxBarTw'), $('cvTw'), $('cvTwWrap')],
+                 instance: [createEffectsBar($('fxBarIn')), $('fxBarIn'), $('cvIn'), $('cvInWrap')] };
+/* tours, instance, MI : un clic sur un joueur de l'équipe (ou du classement) montre ses états ; sur soi, retour aux siens */
+for(const id of ['twTeam', 'inTeam', 'miRank']) $(id).addEventListener('pointerdown', e => {
+  const r = e.target.closest('[data-id]'); if(!r || e.button !== 0) return;
+  const m = G?.miners?.find(o => o.id === +r.dataset.id);
+  ui.focus = !m || m.account === acct.account?.id || ui.focus === m.id ? null : m.id;
+});
+function updateEffects(G){
+  const key = !G ? null : G.mode === 'mi' || G.mode === 'tower' || G.mode === 'instance' ? G.mode : 'mine';
+  for(const [k, [update, bar, cv, wrap, below]] of Object.entries(fxBars)){
+    if(k !== key){ if(!bar.hidden) update(null); continue; }
+    /* 29/10 : mine classique = le mineur suivi (clic dans l'équipe) ; tours, instance, MI = le joueur choisi dans l'équipe
+       ou le classement (ui.focus) ; par défaut son propre mineur (spec du 28/10) */
+    const f = focusedMiner(G.miners, acct.account?.id, key === 'mine' ? ui.follow : ui.focus);
+    update(f.m, f.name);
+    if(!bar.hidden) placeEffectsBar(bar, cv, wrap, below);
+  }
+}
+/* barre des sorts des tours et de l'instance (29/10) : celle de son propre mineur ; la mine classique a la sienne (src/ui/hud.js) */
+const spellBars = { tower: [$('spellBarTw'), $('cvTw'), $('cvTwWrap')], instance: [$('spellBarIn'), $('cvIn'), $('cvInWrap')] };
+function updateSpellBars(G){
+  for(const [k, [el, cv, wrap]] of Object.entries(spellBars)){
+    showSpellBar(el, G && G.mode === k ? G.miners.find(m => m.account === acct.account?.id) ?? null : null, G?.t ?? 0);
+    placeSpellBar(el, cv, wrap);
+  }
+}
+
 /* ---------- boucle d'affichage (la partie, elle, tourne sur le serveur) ---------- */
 let last = performance.now(), lastHud = 0;
 function frame(now){
   const dtr = Math.min(0.25, (now - last) / 1000); last = now;
   if(perfOn) perf.frame(now);
   smooth(dtr);
-  const shown = G?.ready ? G : null, mi = shown?.mode === 'mi', tw = shown?.mode === 'tower', ins = shown?.mode === 'instance';
+  if(perfOn){                                    // le mineur suivi à l'écran (mine, prison) : micro-arrêts
+    const M = G?.ready ? G : prisonShown() && PG?.ready ? PG : null, m = M?.miners?.find(x => x.id === ui.follow);
+    if(m?._to) perf.step(shownPos(M, m, now), now);
+  }
+  const pz = prisonShown() && !!PG?.ready;   // prison : affichée comme la mine classique (29/10)
+  const shown = G?.ready ? G : pz ? PG : null, mi = shown?.mode === 'mi', tw = shown?.mode === 'tower', ins = shown?.mode === 'instance';
+  ui.prison = pz && shown === PG;
+  ui.prisonArea = prison?.area ?? null;   // area du contenu de la prison (titre du panneau Area)
+  /* fond : la session en cours, ou la prison (30/10/2026 : même fond et mêmes transitions que la mine) */
+  const bgG = rec ? shown : prisonBackdrop();
+  backdrop.draw(bgG, ui.tab !== 'session', acct.account?.id, ui.follow);
+  /* le Carreau : fond quand il n'y a ni session ni prison en fond ; promenade quand l'onglet Session n'a rien d'autre à montrer */
+  town.frame(dtr, { show: !rec && !(ui.prison && ui.tab === 'session') && !(bgG && backdrop.on) && !!acct.account && !acct.offline, walk: townWalks(ui.tab, $('noSession').hidden, $('end').hidden), tab: ui.tab }, now);
   if(shown && ui.tab==='session') ins ? inRenderer.draw(shown, acct.account?.id) : tw ? twRenderer.draw(shown, acct.account?.id) : mi ? miRenderer.draw(shown, acct.account?.id) : renderer.draw(shown, ui.follow);
   if(now - lastHud > 120){
     if(perfOn){ const t = perfText(perf.stats()); for(const el of document.querySelectorAll('.perfBox')) el.textContent = t; }
-    if(ins && ui.tab==='session') updateInstanceHUD(shown, acct.account?.id, rec.finishAt ? Math.max(0, (rec.finishAt - serverNow()) / 1000) : null);
-    else if(tw && ui.tab==='session') updateTowerHUD(shown, acct.account?.id, rec.finishAt ? Math.max(0, (rec.finishAt - serverNow()) / 1000) : null);
-    else if(mi && ui.tab==='session') updateInstantHUD(shown, acct.account?.id, Math.max(0, (rec.finishAt - serverNow()) / 1000));
+    if(ins && ui.tab==='session') updateInstanceHUD(shown, acct.account?.id, rec.finishAt ? Math.max(0, (rec.finishAt - serverNow()) / 1000) : null, ui.focus);
+    else if(tw && ui.tab==='session') updateTowerHUD(shown, acct.account?.id, rec.finishAt ? Math.max(0, (rec.finishAt - serverNow()) / 1000) : null, ui.focus);
+    else if(mi && ui.tab==='session') updateInstantHUD(shown, acct.account?.id, Math.max(0, (rec.finishAt - serverNow()) / 1000), ui.focus);
+    else if(ui.prison && ui.tab==='session'){
+      updateHUD(shown, ui);
+      $('followBtn').hidden = !renderer.free;
+      /* en-tête : temps de jeu du run et avancement vers la fin du run ; bandeau : run, minerais, énergie, pause */
+      $('timer').textContent = `Run ${prison.run} · ${fmt(shown.t)}`;
+      $('timeBar').style.width = (prison.goal > 0 ? Math.min(100, prison.mined / prison.goal * 100) : 0) + '%';
+      $('realLeft').textContent = performance.now() - prisonViewAt > 5000 ? 'connexion…' : '';
+      $('prisonBannerTxt').textContent = prisonBanner(prison, serverNow());
+      $('prisonBanner').title = Number.isFinite(prison.goal) ? `${prison.mined} minerais minés sur ${prison.goal} pour finir le run` : '';
+    }
     else if(shown && ui.tab==='session'){
       updateHUD(shown, ui);
       focusPanel.update(shown, acct.account?.id);
@@ -660,15 +983,23 @@ function frame(now){
       const late = !info.dev && rec && G.ticks + 50 < tickAt(serverNow() - rec.startedAt, rec.speed);
       $('realLeft').textContent = late ? 'connexion…' : info.dev ? '' : `fin dans ${fmt(Math.max(0, (rec.finishAt - serverNow()) / 1000))}`;
     }
-    updateNavSession(shown, waiting, ins ? INSTANCE.duration : tw ? TOWER.duration : mi ? INSTANT_MINE.duration : SESSION_LEN);
+    updateEffects(ui.tab==='session' ? shown : null);
+    updateSpellBars(ui.tab==='session' ? shown : null);
+    updateNavSession(rec ? shown : null, waiting, ins ? INSTANCE.duration : tw ? TOWER.duration : mi ? INSTANT_MINE.duration : SESSION_LEN);
     updateOrbs(shown, mi || tw || ins, ins ? INSTANCE.duration : tw ? TOWER.duration : undefined);
     if(ui.tab==='session'){
       ins ? fitCanvas($('cvIn'), $('cvInWrap')) : tw ? fitCanvas($('cvTw'), $('cvTwWrap')) : mi ? fitInstant($('cvMi'), $('cvMiWrap'), miRenderer, MI_TILE) : fitMine($('cv'), $('cvWrap'), renderer, CAMERA, TILE);   // la mine remplit la place libre
+      if(shown) backdrop.measure(ins ? 'instance' : tw ? 'tower' : mi ? 'mi' : 'mine', $(SESSION_CV[ins ? 'instance' : tw ? 'tower' : mi ? 'mi' : 'mine']), mi ? miRenderer.rows : renderer.rows);   // le fond reprend cette place et cette échelle
       document.querySelectorAll('.runL, .runR, .runGrid.mi > aside').forEach(c => clearDock(c, $('nav')));   // colonnes jusqu'en bas si possible
     }
     const face = $('navAccount').querySelector('canvas');
     if(face) drawPortrait(face, lookOf(stuff.worn()), aurasOf(stuff.worn()));                  // portrait : le mineur avec son stuff
-    navSession.classList.toggle('live', !!rec);
+    navSession.classList.toggle('live', !!rec || prisonActive(prison));
+    /* prison (30/10/2026) : la barre du haut la montre comme une session (run, avancée vers la fin du run) */
+    if(!rec && !waiting && prisonActive(prison)){
+      $('navTimer').textContent = `Prison · run ${prison.run}`;
+      $('navBar').style.width = (prison.goal > 0 ? Math.min(100, prison.mined / prison.goal * 100) : 0) + '%';
+    }
     if(rec && ui.tab==='lobby')                                // bandeau du lobby : temps restant
       $('lobbySessLeft').textContent = waiting ? '· résultat…' : !shown ? '' : info.dev ? `· ${fmt(shown.t)} de jeu`
         : `· fin dans ${fmt(Math.max(0, (rec.finishAt - serverNow()) / 1000))}`;

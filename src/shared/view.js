@@ -6,9 +6,11 @@
    Ensuite : seulement les cases qui ont changé depuis le tick que le navigateur a déjà (since). Le reste (mineurs,
    mobs, coffre, areas…) est petit et envoyé à chaque fois. La lumière n'est pas envoyée : le navigateur la recalcule
    (même calcul, src/sim/light.js). Le navigateur ne calcule aucun résultat : il affiche. */
-import { W } from '../config.js';
+import { W, DT, FLUID } from '../config.js';
 import { updateLight } from '../sim/light.js';
 import { muleCap } from '../sim/mule.js';
+import { lit, travelling } from '../sim/mineur.js';
+import { minerEffects, sessionBonuses, mobEffects } from '../sim/effects.js';
 
 const HISTORY = 400;           // changements gardés (un navigateur plus en retard reçoit la carte entière)
 const row = (a, enc) => Array.from(a, enc).join('');
@@ -16,10 +18,10 @@ const enc36 = v => v.toString(36);
 const dec36 = c => parseInt(c, 36);
 
 /* ce que l'affichage lit d'un mineur (pas de références internes à la simulation) */
-function minerView(m){
+export function minerView(G, m){
   const a = m.action, d = a?.data || {};
   return {
-    id: m.id, name: m.name, color: m.color, account: m.account, x: m.x, y: m.y, kx: m.kx || 0, ky: m.ky || 0, face: m.face,
+    id: m.id, name: m.name, guild: m.guild, color: m.color, account: m.account, x: m.x, y: m.y, kx: m.kx || 0, ky: m.ky || 0, face: m.face,
     status: m.status, mode: m.mode, reason: m.reason, ox: m.ox, load: m.load, inv: m.inv,
     torches: m.torches, bridges: m.bridges, prefs: m.prefs, focusNotice: m.focusNotice ?? null, stats: m.stats,
     pings: (m.pings || []).map(({ x, y, t }) => ({ x, y, t })),     // minerais signalés par la boussole (cadres jaunes)
@@ -28,12 +30,16 @@ function minerView(m){
     carac: { oxygenMax: m.carac?.oxygenMax, pods: m.carac?.pods },   // jauges (oxygène, pods) avec le stuff
     flesh: m.fleshStacks || 0,                                       // stacks du mur de chair (−10 % de vitesse d'attaque chacun)
     spells: m.spells || [], spellCd: { ...(m.spellCd || {}) },          // sorts équipés et recharges (barre des sorts)
-    action: a ? { type: a.type, t: a.t, dur: a.dur, data: { x: d.x, y: d.y, fx: d.fx, fy: d.fy, down: d.down, fall: d.fall, winch: d.winch } } : null,
+    /* états (28/10, src/sim/effects.js) : contrôles, debuffs et buffs avec leur temps restant ; bonus de la session */
+    effects: minerEffects(G, m, { foes: G.mobs, robbable: true, dark: m.y > 0 && !lit(G, m),
+                                  warcry: m.warcry && G.t < m.warcry.until ? m.warcry : null, travelling: travelling(m) }),
+    bonus: sessionBonuses(G, m),
+    action: a ? { type: a.type, t: a.t, dur: a.dur, data: { x: d.x, y: d.y, fx: d.fx, fy: d.fy, down: d.down, fall: d.fall, winch: d.winch, cause: d.cause, aim: d.mob ? { x: d.mob.x, y: d.mob.y } : undefined } } : null,   // aim : case du mob visé (flèche de l'arc)
   };
 }
 /* channel : id du mineur sur lequel un occultiste canalise (rayon noir) ; grab : mineur taclé */
-const mobView = o => ({ id: o.id, type: o.type, x: o.x, y: o.y, kx: o.kx || 0, ky: o.ky || 0, hp: o.hp, maxhp: o.maxhp, h: o.h, revealed: o.revealed, ore: o.ore, name: o.name, hop: o.hop,
-  channel: o.channel ? o.channel.target : null, grab: o.grab ?? null, splash: o.splash ?? null });   // splash : dégâts de zone reçus
+const mobView = (G, o) => ({ id: o.id, type: o.type, x: o.x, y: o.y, kx: o.kx || 0, ky: o.ky || 0, hp: o.hp, maxhp: o.maxhp, h: o.h, revealed: o.revealed, ore: o.ore, name: o.name, hop: o.hop, variant: o.variant,
+  channel: o.channel ? o.channel.target : null, grab: o.grab ?? null, splash: o.splash ?? null, fx: mobEffects(G, o) });   // fx : états (étourdi, provoqué…)   // splash : dégâts de zone reçus
 
 /* ---------- serveur ---------- */
 
@@ -72,7 +78,8 @@ export function createViewer(G){
     record();
     const base = {
       tick: G.ticks, t: G.t, over: G.over, H: G.tiles.length,
-      miners: G.miners.map(minerView), mobs: G.mobs.map(mobView),
+      miners: G.miners.map(m => minerView(G, m)), mobs: G.mobs.map(o => mobView(G, o)),
+      worms: (G.worms || []).map(w => ({ id: w.id, x: w.x, y: w.y, trail: w.trail })),   // vers de terre qui naviguent (31/10)
       thralls: (G.thralls || []).map(o => ({ id: o.id, x: o.x, y: o.y, dig: o.dig ? { x: o.dig.x, y: o.dig.y } : null, left: Math.max(0, Math.round(o.until - G.t)) })),   // gobelins asservis (27/10)
       chest: G.chest, chestBy: G.chestBy, goblinChest: G.goblinChest || {}, shrines: G.shrines || [], stats: G.stats, areas: G.areas, unlockedAreas: G.unlockedAreas, winch: G.winch,
       mule: muleView(G),
@@ -108,15 +115,76 @@ const minerPos = m => {        // position exacte au moment de l'envoi (un pas e
 /* position affichée de o (mineur ou mob de la copie M) à l'instant now (ms, horloge de la page) */
 export function shownPos(M, o, now = performance.now()){
   if(!o._to) return [o.x, o.y];
+  if(o._track && M._play) return playedPos(M, o, now);
   const p = Math.max(0, Math.min(1, (now - M._at) / M._dur));
   return [o._from[0] + (o._to[0] - o._from[0]) * p, o._from[1] + (o._to[1] - o._from[1]) * p];
 }
+/* Lecture en différé (31/10/2026, Geoffrey) : la partie avance par paquets et les envois arrivent irrégulièrement. Chaque
+   mineur et chaque mob garde ses dernières positions avec leur tick (o._track). Une tête de lecture (M._play.head, en ticks)
+   avance à vitesse constante, FLUID.bufferMs derrière le dernier envoi, entre deux positions déjà reçues, comme le tampon
+   d'une vidéo : un envoi en retard ne se voit pas. Sans avance, elle s'arrête au dernier point reçu, sans jamais sauter,
+   puis rattrape doucement : elle accélère ou ralentit de 30 % au plus. M._play : { tickMs, head, at, newest, newestAt } */
+export function playClock(M, tick, speed, now){
+  const tickMs = DT * 1000 / speed, c = M._play;
+  if(!c){ M._play = { tickMs, head: tick - FLUID.bufferMs / tickMs, at: now, newest: tick, newestAt: now }; return; }
+  moveHead(c, now);
+  c.tickMs = tickMs; c.newest = Math.max(c.newest, tick); c.newestAt = now;
+}
+/* avance la tête jusqu'à l'heure now ; appelée pour chaque objet de chaque image : une fois par heure */
+function moveHead(c, now){
+  const dt = now - c.at;
+  if(dt <= 0) return;
+  c.at = now;
+  const behind = (c.newest - c.head) * c.tickMs + (now - c.newestAt);   // retard sur la partie, envoi en cours compris
+  if(behind > FLUID.bufferMs + FLUID.resetMs){ c.head = Math.max(c.head, c.newest - FLUID.bufferMs / c.tickMs); return; }   // reconnexion
+  const rate = Math.max(1 - FLUID.catchUp, Math.min(1 + FLUID.catchUp, 1 + (behind - FLUID.bufferMs) / FLUID.catchUpMs));
+  c.head = Math.min(c.newest, c.head + dt / c.tickMs * rate);
+}
+/* copie neuve à chaque envoi (tour, instance, mine instantanée) : reprend la tête de lecture de la précédente */
+export function playCopy(G, prev, tick, speed, now){
+  if(prev?._play) G._play = prev._play;
+  playClock(G, tick, speed, now);
+}
+export function playTrack(oldList, newList, target, tick){
+  const old = new Map(oldList.map(o => [o.id, o]));
+  for(const o of newList){
+    const to = target(o), track = old.get(o.id)?._track ?? [];
+    if(track.at(-1)?.tick === tick) track.pop();                  // même tick : la position la plus récente
+    track.push({ tick, x: to[0], y: to[1], ride: riding(o) });
+    if(track.length > FLUID.keep) track.shift();
+    o._track = track; o._to = to;
+  }
+}
+function playedPos(M, o, now){
+  moveHead(M._play, now);
+  const at = M._play.head, tr = o._track;
+  let i = tr.length - 1;
+  while(i > 0 && tr[i].tick > at) i--;
+  const a = tr[i], b = tr[i + 1];
+  if(!b || at <= a.tick) return [a.x, a.y];
+  /* téléportation : loin ET trop vite pour être une marche (après un trou d'envois, il a juste marché longtemps) */
+  const far = Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+  if(far > TELEPORT && far / (b.tick - a.tick) > FLUID.teleport && !a.ride && !b.ride) return [a.x, a.y];
+  const p = (at - a.tick) / (b.tick - a.tick);
+  return [a.x + (b.x - a.x) * p, a.y + (b.y - a.y) * p];
+}
+/* rythme des envois (29/10/2026 : partagé avec la Mine instantanée et le Bloc géant) : durée de glissade = moyenne lissée
+   du temps réel entre deux envois (attente + requête), pour que le mineur arrive juste quand le suivant arrive */
+export function pace(M, prev, now){
+  M._dur = prev?._at == null ? 250 : Math.max(80, Math.min(1500, 0.7 * (prev._dur ?? 250) + 0.3 * (now - prev._at)));
+  M._at = now;
+  return M;
+}
+/* dans le seau du treuil (ou la cabine de l'ascenseur) : il va vite et en ligne droite, plus de TELEPORT cases entre deux
+   envois n'est pas une téléportation (28/10/2026 : à ×2, l'ascenseur faisait « sauter » le mineur dans le puits) */
+const riding = o => !!o?.action?.data?.winch;
 export function glide(M, oldList, newList, target, now){
   const old = new Map(oldList.map(o => [o.id, o]));
   for(const o of newList){
     const to = target(o), was = old.get(o.id), from = was ? shownPos(M, was, now) : to;
     o._to = to;
-    o._from = Math.abs(from[0] - to[0]) + Math.abs(from[1] - to[1]) > TELEPORT ? to : from;
+    const far = Math.abs(from[0] - to[0]) + Math.abs(from[1] - to[1]) > TELEPORT;
+    o._from = far && !riding(o) && !riding(was) ? to : from;
   }
 }
 
@@ -125,12 +193,13 @@ const muleView = G => G.mule?.placed ? { x: G.mule.x, y: G.mule.y, load: Math.ro
 
 /* copie d'affichage vide (avant le premier envoi) */
 export function emptyView(){
-  return { tiles: [], ladder: [], seen: [], torches: [], light: new Map(), miners: [], mobs: [], thralls: [], chest: {}, chestBy: {}, goblinChest: {},
+  return { tiles: [], ladder: [], seen: [], torches: [], light: new Map(), miners: [], mobs: [], worms: [], thralls: [], chest: {}, chestBy: {}, goblinChest: {},
            stats: {}, areas: [], unlockedAreas: 0, winch: null, mule: null, khole: null, log: [], t: 0, ticks: -1, over: false, ready: false };
 }
 
 /* applique un envoi du serveur ; now : heure de la page (ms) à son arrivée. Renvoie M (modifié). */
-export function applyView(M, v, now = performance.now()){
+/* speed : vitesse de la partie ; donnée, la lecture est en différé (mine, prison), sinon glissade simple */
+export function applyView(M, v, now = performance.now(), speed = 0){
   let mapChanged = false;
   const dec = s => Uint8Array.from(s, dec36);
   if(!v.full){                                     // cases changées des lignes que le navigateur avait déjà
@@ -150,11 +219,17 @@ export function applyView(M, v, now = performance.now()){
   if(mapChanged) updateLight(M);
   if(v.log) M.log = v.log;
   /* glissades : depuis la position affichée maintenant (calculée avec l'envoi précédent), vers la nouvelle */
-  glide(M, M.miners, v.miners, minerPos, now);
-  glide(M, M.mobs, v.mobs, o => [o.x + (o.kx || 0), o.y + (o.ky || 0)], now);
-  M._dur = M._at == null ? 250 : Math.max(80, Math.min(1500, 0.7 * (M._dur ?? 250) + 0.3 * (now - M._at)));
-  M._at = now;
-  Object.assign(M, { ticks: v.tick, t: v.t, over: v.over, miners: v.miners, mobs: v.mobs, thralls: v.thralls ?? [], chest: v.chest, chestBy: v.chestBy, goblinChest: v.goblinChest ?? {}, shrines: v.shrines ?? [],
+  const mobPos = o => [o.x + (o.kx || 0), o.y + (o.ky || 0)];
+  if(speed > 0){
+    playClock(M, v.tick, speed, now);
+    playTrack(M.miners, v.miners, minerPos, v.tick);
+    playTrack(M.mobs, v.mobs, mobPos, v.tick);
+  } else {
+    glide(M, M.miners, v.miners, minerPos, now);
+    glide(M, M.mobs, v.mobs, mobPos, now);
+  }
+  pace(M, M, now);
+  Object.assign(M, { ticks: v.tick, t: v.t, over: v.over, miners: v.miners, mobs: v.mobs, worms: v.worms ?? [], thralls: v.thralls ?? [], chest: v.chest, chestBy: v.chestBy, goblinChest: v.goblinChest ?? {}, shrines: v.shrines ?? [],
                      stats: v.stats, areas: v.areas, unlockedAreas: v.unlockedAreas, winch: v.winch ?? null, mule: v.mule ?? null, khole: v.khole ?? null, ready: true });
   return M;
 }

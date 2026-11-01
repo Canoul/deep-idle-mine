@@ -4,6 +4,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createLiveGame } from '../server/game/live-game.js';
 import { createLiveRunner, createInlineRunner } from '../server/game/live.js';
+import './helpers.js';   // énergie pleine au départ des tests (ENERGY.start, 30/10/2026)
 
 const rec = (extra = {}) => ({ id:'S1', seed:1823878970, players:[{ account:'AAAA', name:'A' }, { account:'BBBB', name:'B' }],
   bots:0, prefs:{}, overrides:null, leaves:[], focus:[], ...extra });
@@ -82,4 +83,21 @@ test('service + vraie partie : focus en cours de route, fin libre (dev), le coff
   /* et la reconstruction depuis l'enregistrement redonne exactement ce coffre */
   const g = createLiveGame({ ...rec, focus: rec.focus }); g.finish();
   assert.deepEqual(g.summary.chest, rec.result.chest);
+});
+
+/* une demande en file derrière celle qui termine la partie (la partie est fermée entre-temps) : rejetée, jamais en
+   attente pour toujours (Worker arrêté) ; dans le fil principal aussi */
+test('demande en file après la fin de la partie : rejetée (fil d\'exécution et fil principal)', { timeout: 30000 }, async () => {
+  const { runRecord, newPrisonRecord } = await import('../src/shared/prison.js');
+  const p = newPrisonRecord({ id: 'q1', account: 'AAAA', seed: 7, specs: { name: 'A' }, now: 0 });
+  for(const run of [createInlineRunner(), createLiveRunner()]){
+    const r = runRecord(p);
+    run.open(r);
+    await run.advance(r.id, 50);
+    const end = run.finish(r.id), next = run.view(r.id, null);   // la vue part avant la fin de finish
+    await end;
+    await assert.rejects(next, /fermée/);
+    assert.equal(run.has(r.id), false);
+    run.closeAll();
+  }
 });

@@ -10,6 +10,7 @@
    Tout est de la simulation (côté serveur, une seule copie) : le navigateur ne fait que l'afficher. */
 import { W, MULE, ITEMS, BLOCKS, BARRIER } from '../config.js';
 import { tileAt, isAir } from './world.js';
+import { uncollect } from './mineur.js';
 import { log } from './log.js';
 
 /* poids d'un objet dans les pods (comme au ramassage : sans poids au catalogue, 1) */
@@ -71,14 +72,15 @@ export function depositToMule(G, m){
   const b = G.mule, cap = muleCap(G), by = (b.by[m.id] ??= {});
   let moved = 0;
   for(const k of Object.keys(m.inv)){
-    const have = m.inv[k], w = itemW(k);
-    const n = w > 0 ? Math.min(have, Math.floor((cap - b.load + 1e-9)/w)) : have;
+    /* les exemplaires gratuits (fortune, butin en plus : 0 pod, 30/10) passent aussi gratuitement dans le sac */
+    const have = m.inv[k], w = itemW(k), fr = Math.min(m.free?.[k] || 0, have), paid = have - fr;
+    const np = w > 0 ? Math.min(paid, Math.floor((cap - b.load + 1e-9)/w)) : paid;
+    const n = np + (np === paid ? fr : 0);
     if(!(n > 0)) continue;
     b.inv[k] = (b.inv[k] || 0) + n; by[k] = (by[k] || 0) + n;
-    b.load += w*n; m.load -= w*n; moved += w*n;
-    if(have === n) delete m.inv[k]; else m.inv[k] = have - n;
+    b.load += w*np; moved += w*np;
+    uncollect(m, k, w, n);
   }
-  if(!Object.keys(m.inv).length) m.load = 0;                       // pas de reste d'arrondi sur un sac vide
   if(moved > 0){ G.stats.muleDeposits = (G.stats.muleDeposits || 0) + 1; G.stats.mulePods = (G.stats.mulePods || 0) + moved; }
   if(moved > 0) log(G, `🎒 ${m.name} dépose ${fmtLoad(moved)} pods dans le sac (${fmtLoad(b.load)} / ${cap})`);
   return moved;

@@ -2,11 +2,11 @@
    qui y vont (et « Retirer » si la case est occupée). Ne modifie rien lui-même : chaque action est demandée au
    serveur (onOp), qui renvoie l'inventaire et le stuff à jour. */
 import { STUFF } from '../config.js';
-import { piecesFor, statsText, minerStats, rawDps } from '../meta/stuff.js';
-import { sanitizeSkills, skillEffects, behaviourSkills } from '../meta/skills.js';
+import { piecesFor, statsText, minerStats, rawDps, statNum } from '../meta/stuff.js';
+import { sanitizeSkills, skillEffects } from '../meta/skills.js';
 import { tipAttr } from './tooltip.js';
 import { icon } from './craft.js';
-import { rcls, pname } from './rarity.js';
+import { rcls, pname, runeMark } from './rarity.js';
 import { pxi } from './pxicons.js';
 import { drawPortrait, lookOf } from '../render/portrait.js';
 import { aurasOf } from '../meta/aura.js';
@@ -23,7 +23,7 @@ export function renderSlots(el, worn, tag = 'button'){
   el.innerHTML = STUFF.slots.map(s => {
     const p = worn[s.id];
     return `<${tag} class="stuffSlot${p ? ' full' : ''}" data-slot="${s.id}"${p ? tipAttr(p.item, p.item, p) : ` title="${esc(s.label)}"`}>`+
-           `<span class="slot${p ? rcls(p.item) : ''}">${p ? icon(p.item) : `<span class="sico">${SLOT_ICON[s.id] ? pxi(SLOT_ICON[s.id]) : ''}</span>`}</span>`+
+           `<span class="slot${p ? rcls(p.item) : ''}">${p ? icon(p.item) + runeMark(p) : `<span class="sico">${SLOT_ICON[s.id] ? pxi(SLOT_ICON[s.id]) : ''}</span>`}</span>`+
            `<span class="slbl">${esc(s.label)}</span>${p ? pname(p).replace('class="rn', 'class="sname rn') : '<span class="sname mut">vide</span>'}</${tag}>`;
   }).join('');
   el.insertAdjacentHTML('beforeend', '<div class="stuffHero"><canvas width="16" height="16"></canvas></div>');
@@ -36,27 +36,25 @@ export function renderSlots(el, worn, tag = 'button'){
 export function statsHTML(worn, effects){
   const fr = v => String(v).replace('.', ',');
   const list = minerStats(worn, effects);
-  const rows = list.map(s => { const u = STUFF.statUnits?.[s.key] ?? ''; return (
-    `<div class="row"><span>${esc(s.label)}</span><span><b>${fr(s.total)}${u}</b>`+
+  const rows = list.map(s => { const u = STUFF.statUnits?.[s.key] ?? '', n = v => statNum(s.key, v); return (
+    `<div class="row"><span>${esc(s.label)}</span><span><b>${n(s.total)}${u}</b>`+
     (s.bonus || s.mult !== 1 || s.skill ? ` <small class="mut">(`+
-      (s.bonus ? `${fr(s.base)} <span class="stuffStats" title="stuff">+${fr(s.bonus)}${u}</span>` : fr(s.base))+
-      (s.mult === 1 && s.skill ? ` <span class="skillStats" title="skills">+${fr(s.skill)}${u}</span>` : '')+
+      (s.bonus ? `${n(s.base)} <span class="stuffStats" title="stuff">+${n(s.bonus)}${u}</span>` : n(s.base))+
+      (s.mult === 1 && s.skill ? ` <span class="skillStats" title="skills">+${n(s.skill)}${u}</span>` : '')+
       (s.mult !== 1 ? `${s.bonus ? ')' : ''} <span class="skillStats" title="skills : multiplicateur">×${fr(s.mult)}</span>` : '')+
       `${s.bonus && s.mult !== 1 ? '' : ')'}</small>` : '')+
-    (s.ring ? ` <small class="ringStats" title="anneaux (pour tout le groupe)">+${fr(s.ring)}${u}</small>` : '')+
+    (s.ring ? ` <small class="ringStats" title="anneaux (pour tout le groupe)">+${n(s.ring)}${u}</small>` : '')+
     `</span></div>`); }).join('');
-  /* skills de comportement (pas des stats) : ce qu'ils font pendant la partie */
-  const extra = behaviourSkills(effects);
   const gs = `<div class="row" title="Gear score : ce que ton stuff porté ajoute aux stats de base, en x (stats, identification, rune, amélioration ; sans skills ni anneaux)"><span><b>Gear score</b></span><span><b>${gearScore(worn).toLocaleString('fr-FR')} GS</b></span></div>`;
   /* DPS brut (28/10) : stuff, skills et anneaux compris (les totaux affichés) ; sur cible immobile, sans recul */
   const dps = rawDps(Object.fromEntries(list.map(s => [s.key, s.total])));
   const dpsRow = `<div class="row" title="Dégâts par seconde en moyenne sur une cible immobile, sans recul ni obscurité : dégâts × critique × double attaque × vitesse d'attaque (stuff, skills et anneaux compris ; sans Cri de guerre ni Pillage)"><span><b>DPS</b> <small class="mut">(cible immobile)</small></span><span><b>${fr(dps.toFixed(1))}</b></span></div>`;
-  return gs + dpsRow + rows + (extra.length ? `<div class="row"><span class="skillStats">Skills en partie</span><span></span></div>`+
-    extra.map(k => `<div class="row"><span>${k.icon} ${esc(k.name)}</span><span><small class="skillStats">${esc(k.text)}</small></span></div>`).join('') : '');
+  /* les skills de comportement (Navette, Treuil…) ne sont plus listés ici (28/10/2026, Geoffrey) : voir l'onglet Skills */
+  return gs + dpsRow + rows;
 }
 
 /* onOp({ action:'equip'|'unequip', slot, uid }) → promesse (rejetée avec un message lisible) */
-export function setupStuff({ onOp }){
+export function setupStuff({ onOp, onWorn }){
   let inv = { slots:[] }, worn = {}, effects = {}, busy = false, open = null;
 
   function render(){
@@ -73,7 +71,7 @@ export function setupStuff({ onOp }){
       `<h3>${s.icon} ${esc(s.label)}</h3>`+
       (cur ? `<div class="fcur">${icon(cur.item)}<span>Équipé : ${pname(cur, 'b')}${statLine(cur)}</span><button id="spickOff">Retirer</button></div>` : '')+
       (list.length
-        ? `<div class="fopts">${list.map(p => `<button class="fopt" data-uid="${p.uid}">${icon(p.item)}<span>${pname(p)}${statLine(p)}</span><b>Équiper</b></button>`).join('')}</div>`
+        ? `<div class="fopts">${list.map(p => `<button class="fopt" data-uid="${p.uid}"><span class="runeIco">${icon(p.item)}${runeMark(p)}</span><span>${pname(p)}${statLine(p)}</span><b>Équiper</b></button>`).join('')}</div>`
         : `<p class="mut">Aucune pièce « ${esc(s.label.toLowerCase())} » dans ton inventaire.${open === 'pioche' ? ' Fabrique-en une dans l\'onglet Craft.' : ''}</p>`)+
       `<p class="err" id="spickErr" hidden></p><p style="text-align:right"><button id="spickClose">Fermer</button></p>`;
     $('spick').hidden = false;
@@ -97,7 +95,7 @@ export function setupStuff({ onOp }){
 
   return {
     setInventory(v){ inv = v; render(); },
-    set(w){ if(w){ worn = w; render(); } },
+    set(w){ if(w){ worn = w; render(); onWorn?.(); } },   // onWorn : l'onglet Amélioration propose aussi les pièces portées
     /* skills du joueur (onglet Skills) : leurs bonus de stats s'affichent aussi ici */
     setSkills(s){ effects = skillEffects(sanitizeSkills(s)); renderStats(); },
     worn: () => worn,                 // pièces portées (l'inventaire dit ce qu'une pièce remplacerait)

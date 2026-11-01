@@ -1,5 +1,5 @@
 /* Wiki du joueur : remplit les tableaux de wiki.html avec les valeurs du jeu (src/wiki/data.js lit la config). */
-import { RARITY, ITEMS, STATS, FURNACE, CRUSHER, AREAS, DUCK, XP, BLOCKS } from '../config.js';
+import { RARITY, ITEMS, STATS, FURNACE, CRUSHER, AREAS, DUCK, XP, BLOCKS, ENERGY, PRISON, AREA_H } from '../config.js';
 import { rarityOf } from '../meta/rarity.js';
 import { itemName, itemColor } from '../meta/piece.js';
 import * as D from './data.js';
@@ -94,7 +94,9 @@ function dungeon(){
   <p>${intro} : un carré de ${g.size} × ${g.size} en <b>briques violettes</b> qu'aucune pioche ne peut casser, avec <b>une seule entrée</b> sur un côté. Dedans, un monstre l'attend.</p>
   <div class="mobs">
     <div class="mob"><h3><img src="textures/${esc(g.boss.tex)}.png" alt="">${esc(g.boss.name)}</h3>
-      <p>Mi-homme mi-taureau, debout sur ses pattes arrière. Il ne sort jamais de sa salle et ne fait rien de spécial : il <b>tacle</b> qui s'approche.</p>
+      <p>Mi-homme mi-taureau, debout sur ses pattes arrière. Il ne sort jamais de sa salle ; il <b>tacle</b> qui s'approche et le repousse à chaque coup.</p>
+      <p>🐂 <b>Charge</b> : toutes les ${g.charge.every} s, il <b>gratte le sol</b> ${f(g.charge.windup)} s (il tremble), puis fonce tout droit. Le premier mineur touché est <b>projeté de ${g.charge.knock} cases</b> et <b>étourdi ${g.charge.stun} s</b> (la ténacité évite l'étourdissement, la résistance au recul réduit la projection). S'il ne touche personne et percute le mur, c'est lui qui est <b>sonné ${g.charge.missStun} s</b> et prend <b>+${Math.round(g.charge.missVuln * 100)} % de dégâts</b>. Un barbare peut couper sa charge en l'étourdissant pendant qu'il gratte le sol (Dash, Main de la justice).</p>
+      <p>🔥 <b>Rage</b> : sous ${Math.round(g.rage.below * 100)} % de ses PV, il frappe deux fois plus vite, repousse plus fort et charge toutes les ${g.rage.chargeEvery} s.</p>
       <p><b>PV :</b> ${f(g.boss.hp)} (${f(g.hits)} coups avec les dégâts de base, environ ${Math.round(g.fightSec / 60)} min seul) · <b>${g.bossXp} XP</b></p>
       <p><b>Butin :</b> ${g.loot.min} à ${g.loot.max} ${item(g.loot.item)}. Il n'est <b>pas partagé</b> : comme un treasure, <b>chaque joueur en reçoit autant</b> (s'il est encore là à la fin).</p></div>
     <div class="mob"><h3>🏰 Quand un mineur le découvre</h3>
@@ -149,6 +151,7 @@ function upgrade(){
     tr([`<b>R${r.q}</b> <b style="color:${esc(r.color)};text-shadow:0 0 2px #000,0 0 2px #000">${esc(r.label)}</b>`, num(r.lines),
         num(`${f(r.min)} à ${f(r.max)} %`), num(`${f(r.total)} %`)]))) +
     `<p class="small mut">En % de la valeur du tier de la pièce enchantée. En R6 et R7, une ligne peut être « +1 Découverte » à la place.</p>` +
+    `<p>Les <b>stats de combat</b> d'une rune comptent moins : dégâts, vitesse d'attaque, double attaque, critique, portée et recul <b>÷ 2</b>, dégâts % <b>÷ 3</b>, perçage <b>÷ 4</b>.</p>`+
     `<p>On peut <b>retirer une rune</b> d'une pièce (onglet Amélioration, gratuit) : elle revient dans l'inventaire en <b>Fragment de rune</b>, même qualité et mêmes lignes, mais <b>chaque % est divisé par 2</b> (la ligne +1 Découverte ne change pas). Un fragment se pose comme une rune ; une fois posé, il ne se retire plus.</p>`;
   const total = D.upgradeTotal();
   $('w-upgrade').innerHTML = table(['Niveau', '#Bonus sur toutes les stats', '#Réussite', 'Coût d\'un essai'], D.upgradeRows().map(r =>
@@ -199,7 +202,7 @@ function craft(){
   const FAMILY = { gem:'Une gemme (au hasard parmi les 3)', treasure:'Un treasure' };
   $('w-crusher').innerHTML = table(['Lot', 'Butin', '#Chance par lot'], D.crusherRows().flatMap(r =>
     r.families.map((fam, k) => tr([k ? '' : item(r.block, CRUSHER.batch),
-      fam.items.length === 1 ? item(fam.items[0].item) : `<b>${esc(FAMILY[fam.family] ?? fam.family)}</b><div class="small mut">${fam.items.map(i => `${esc(i.item)} ${cpct(i.chance)}`).join(' · ')}</div>`,
+      fam.min != null ? `${item(fam.items[0].item)} <b>${fam.min === fam.max ? fam.min : `${fam.min} à ${fam.max}`}</b>` : fam.items.length === 1 ? item(fam.items[0].item) : `<b>${esc(FAMILY[fam.family] ?? fam.family)}</b><div class="small mut">${fam.items.map(i => `${esc(i.item)} ${cpct(i.chance)}`).join(' · ')}</div>`,
       num(`<b>${cpct(fam.chance)}</b>`)]))));
   $('w-recipes').innerHTML = table(['Objet', 'Ingrédients', 'Effet', 'Recette'], D.recipeRows().map(r =>
     tr([item(r.name), ings(r.cost), r.stats.length ? pills(r.stats, 'stat') : r.uses.map(esc).join('<br>') || none,
@@ -219,6 +222,14 @@ function stats(){
 
 /* ---------- treasures ---------- */
 function treasures(){
+  $('w-energy-max').textContent = ENERGY.max;
+  $('w-energy-cost').textContent = `${ENERGY.cost.min} à ${ENERGY.cost.max}`;
+  $('w-energy-min').textContent = ENERGY.cost.min;
+  $('w-energy-regen').textContent = ENERGY.prisonPerHour;
+  $('w-prison-size').textContent = `${PRISON.width} × ${AREA_H} cases`;
+  $('w-prison-reset').textContent = `${Math.round(PRISON.resetAt * 100)} %`;
+  $('w-prison-max').textContent = PRISON.runMax / 3600;
+  $('w-prison-offline').textContent = PRISON.offlineMax / 3600e3;
   $('w-treasure-chance').textContent = D.treasureChanceText();
   $('w-mob-drops').innerHTML = table(['Pièce', 'Obtention', 'Recyclage'], D.mobDropRows().map(r => tr([item(r.item), esc(r.chance), ings(r.recycle)])));
   $('w-treasure-tiers').innerHTML = table(['Objet obtenu', 'Treasure enfoui dans les areas'], D.treasureTierRows().map(t => tr([item(t.item), t.areas])));

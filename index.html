@@ -4,22 +4,43 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Deep Mine Idle</title>
+<link rel="icon" type="image/png" sizes="32x32" href="textures/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="textures/favicon-16.png">
+<link rel="apple-touch-icon" href="textures/favicon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Jersey+10&family=Jersey+15&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Jersey+15&family=VT323&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="src/ui/style.css">
 </head>
 <body>
+<!-- joueur banni (modération du chat, 30/10) : bandeau en haut de l'écran -->
+<div id="banBar" class="banBar" hidden></div>
+<!-- fond : la session en cours, assombrie (src/ui/backdrop.js, option dans « Mon compte ») -->
+<div id="bgSession" class="bgSession" hidden></div>
+<!-- fond hors session : le Carreau, la ville du spawn ; promenade depuis l'onglet Session (src/ui/town.js) -->
+<div id="bgTown" class="bgTown" hidden></div>
 <div class="app">
 <!-- barre du haut : compte, nom du jeu, session en cours (visible depuis tous les onglets), wiki -->
 <header class="topbar">
   <button class="navAccount" id="navAccount" hidden></button>
+  <!-- niveau du mineur, à côté du pseudo (src/ui/level.js) -->
+  <div class="navLevel" id="navLevel" hidden></div>
   <div class="brand"><i data-pxi="pickaxe"></i>Deep Mine Idle</div>
   <div class="navSession" title="La session continue de tourner quand tu changes d'onglet">
     <i data-pxi="hourglass"></i><span id="navTimer">—</span>
     <div class="bar"><i id="navBar"></i></div>
   </div>
+  <!-- énergie (29/10) : coûte au lancement d'une mine classique, se recharge en prison (src/ui/prison.js) -->
+  <div class="navEnergy" id="navEnergy" hidden title="Énergie : une mine classique coûte de 6 à 12 au lancement. Elle se recharge en prison.">
+    <span class="bolt">⚡</span><span id="navEnergyTxt">—</span><div class="bar"><i id="navEnergyBar"></i></div>
+  </div>
+  <!-- prison en cours (29/10) : la voir, en sortir -->
+  <div class="navPrison" id="navPrison" hidden>
+    <button class="small" id="navPrisonBtn" title="Voir ta prison">⛓ Prison</button>
+    <button class="small" id="navPrisonStop" title="Arrêter la prison : le coffre du run en cours est versé, pas ce que le mineur porte"><span class="navLong">Sortir de prison</span><span class="navShort">Sortir</span></button>
+  </div>
   <a class="navWiki" href="wiki.html" target="_blank" rel="noopener" title="Règles, objets, recettes, mobs… (nouvel onglet)"><i data-pxi="book"></i><span>Wiki</span></a>
+  <a class="navWiki" href="https://discord.gg/waGJg9RJDy" target="_blank" rel="noopener" title="Rejoindre le Discord du jeu (nouvel onglet)"><i data-pxi="bubbles"></i><span>Discord du jeu</span></a>
 </header>
 <div class="views" id="views">
 <section class="view" data-view="lobby">
@@ -30,68 +51,38 @@
     <span><i data-pxi="pickaxe"></i><b>En session dans la mine</b> <span class="mut" id="lobbySessLeft"></span></span>
     <button class="on" id="lobbyToSession">Voir la session</button>
   </div>
+  <p class="err" id="lobbyErr" hidden></p>
+  <div class="card invitesCard" id="invitesCard" hidden>
+    <h2>Invitations</h2>
+    <div id="invitesList"></div>
+  </div>
+  <div class="actHead" id="lobbyStage" hidden><button id="lobbyBack">← Activités</button><h2 id="actTitle"></h2></div>
   <div class="lobbyCols">
   <div class="lobbyCol">
-  <div class="card"><h2>Mineur</h2><div id="levelBody"></div></div>
-  <div class="card">
-    <h2>Où miner <i data-qhelp="where"></i></h2>
-    <div class="seg mineModes" id="mineModes"></div>
+  <!-- choix de l'activité (31/10) : ce qu'on voit en ouvrant le Lobby ; l'équipe reste à droite, une activité ouverte remplace ce menu (src/ui/lobby.js) -->
+  <div class="card actMenu" id="lobbyMenu">
+    <h2>Que veux-tu faire ? <i data-qhelp="where"></i></h2>
+    <div class="actList" id="mineModes"></div>
   </div>
   <!-- Jugement (Ange contre Démon) : jauges communes et tours, choix « Jugement » de « Où miner » (src/ui/judgment.js) -->
   <div class="card" id="judgmentCard" hidden>
     <h2><i data-pxi="radiance"></i>Ange contre Démon <i data-qhelp="judgment"></i></h2>
     <div id="judgmentBody"><p class="mut small">Chargement…</p></div>
-  </div>
-  <!-- mine instantanée : compte à rebours et inscription (src/ui/instant-lobby.js) -->
-  <div class="card miCard" id="miCard" hidden>
-    <h2>Mine instantanée</h2>
-    <div id="miCardBody"></div>
-  </div>
-  <div class="card" id="prefsCard">
-    <h2>Critères / préférences <i data-qhelp="prefs"></i></h2>
-    <div class="prefs" id="prefsBox"></div>
-  </div>
-  <div class="card shrinesCard" id="shrinesCard" hidden>
-    <h2>Shrines <i data-qhelp="shrines"></i></h2>
-    <div id="shrinesBody"></div>
-  </div>
-  </div>
-  <div class="lobbyCol">
-  <div class="card invitesCard" id="invitesCard" hidden>
-    <h2>Invitations</h2>
-    <div id="invitesList"></div>
+    <div class="seg" id="towerModes" hidden></div>
   </div>
   <!-- Instances (27/10) : liste des instances, clés (src/ui/lobby.js) -->
   <div class="card instCard" id="instCard" hidden>
     <h2>🗝 Instances</h2>
     <div id="instBody"></div>
   </div>
-  <!-- Bloc géant : session du jour, entrée, scores, classement, récompenses (src/ui/giant.js) -->
-  <div class="card giantCard" id="giantCard" hidden>
-    <h2>🌈 Bloc géant</h2>
-    <div id="giantBody"><p class="mut small">Chargement…</p></div>
+  <!-- sets (src/ui/sets.js) : la même liste que dans Stuff, Skills et Sorts, pour équiper un set avant de lancer -->
+  <div class="card setsCard lobbySets" id="lobbySetsCard">
+    <h2>Sets</h2>
+    <div id="setsLobby" class="setsBody"></div>
   </div>
-  <div class="card" id="teamCard">
-    <h2><span id="teamTitle">Équipe de la prochaine session</span> <i data-qhelp="team"></i></h2>
-    <div class="pslots" id="lobbySlots"></div>
-    <div class="lobbyActions">
-      <button class="on big" id="launchBtn"><i data-pxi="arrow"></i>Lancer la session</button>
-      <button id="inviteBtn"><i data-pxi="group"></i>Inviter des joueurs</button>
-      <button id="partyLeaveBtn" hidden>Quitter le groupe</button>
-      <button id="lfgBtn" hidden><i data-pxi="group"></i>Chercher un groupe</button>
-      <span class="lfgCount small" id="lfgCount" hidden title="Joueurs qui cherchent un groupe en ce moment (mine classique)"></span>
-      <label class="chk" id="lfgAutoRow" hidden><input type="checkbox" id="lfgAuto"> Lancer dès que plein</label>
-      <label class="chk" id="alwaysReadyRow" hidden title="Tu restes prêt d'une session à l'autre : le chef peut relancer sans attendre ton clic."><input type="checkbox" id="alwaysReady"> Prêt tout le temps</label>
-      <div class="towerLevels" id="towerLevelRow" hidden></div>
-      <label class="chk" id="modulationRow" hidden><input type="checkbox" id="modulation"> <span id="modulationText">Modulation</span></label>
-    </div>
-    <p class="lfgStatus" id="lfgStatus" hidden></p>
-    <div class="invite" id="inviteBox" hidden></div>
-    <form class="joinRow" id="joinForm"><div class="irow" id="joinRow"><span>Tu as un code de groupe ?</span>
-      <input id="joinCode" placeholder="K7Q4P2" autocomplete="off" spellcheck="false" maxlength="10"><button>Rejoindre</button></div></form>
-    <p class="mut" id="lobbyInfo"></p>
-    <div class="towerWho" id="towerWho" hidden></div>
-    <p class="err" id="lobbyErr" hidden></p>
+  <div class="card" id="prefsCard">
+    <h2>Critères / préférences <i data-qhelp="prefs"></i></h2>
+    <div class="prefs" id="prefsBox"></div>
   </div>
   <div class="card devCard" id="devCard" hidden>
     <h2>Mode développeur</h2>
@@ -100,8 +91,65 @@
       <span>Mineurs de test (sans compte)</span><select id="devBots"><option value="0">0</option><option value="1">1</option><option value="2" selected>2</option></select>
     </div>
     <div class="dev" id="devPresets"></div>
+    <p class="mut small devNote" id="devCopyMsg" hidden></p>
     <div class="dev" id="devSpecs"></div>
     <div class="dev" id="devStats"></div>
+  </div>
+  </div>
+  <div class="lobbyCol">
+  <!-- mine instantanée : compte à rebours et inscription (src/ui/instant-lobby.js) -->
+  <div class="card miCard" id="miCard" hidden>
+    <h2>Mine instantanée</h2>
+    <div id="miCardBody"></div>
+  </div>
+  <!-- Bloc géant : session du jour, entrée, scores, classement, récompenses (src/ui/giant.js) -->
+  <div class="card giantCard" id="giantCard" hidden>
+    <h2>🌈 Bloc géant</h2>
+    <div id="giantBody"><p class="mut small">Chargement…</p></div>
+  </div>
+  <!-- He's coming (01/11) : la même carte, sa journée à lui (src/ui/giant.js) -->
+  <div class="card giantCard" id="hcCard" hidden>
+    <h2>😈 He's coming</h2>
+    <div id="hcBody"><p class="mut small">Chargement…</p></div>
+  </div>
+  <div class="card" id="teamCard">
+    <h2><span id="teamTitle">Équipe de la prochaine session</span> <i data-qhelp="team"></i></h2>
+    <div class="pslots" id="lobbySlots"></div>
+    <div class="lobbyActions">
+      <button class="on big" id="launchBtn"><i data-pxi="arrow"></i>Lancer la session</button>
+      <span class="launchCost small" id="launchCost" hidden title="Débitée au lancement, pour chaque joueur. Elle se recharge en prison."></span>
+      <button id="prisonStopLobby" hidden title="Le coffre du run en cours est versé, pas ce que le mineur porte">Sortir de prison</button>
+      <button id="inviteBtn"><i data-pxi="group"></i>Inviter des joueurs</button>
+      <button id="partyLeaveBtn" hidden>Quitter le groupe</button>
+      <button id="formingBtn" hidden title="Voir les groupes qui cherchent des joueurs, et en rejoindre un"><i data-pxi="group"></i>Groupes en formation</button>
+      <button id="partyLockBtn" hidden title="Verrouillé : seuls les joueurs invités peuvent entrer, et le groupe n'apparaît plus dans Groupes en formation"></button>
+      <button id="lfgBtn" hidden><i data-pxi="group"></i>Chercher un groupe</button>
+      <button id="lobbyPubBtn" hidden title="Annoncer ton lobby dans le canal LFG du chat : un clic sur le lien le rejoint"><i data-pxi="group"></i>Pub LFG</button>
+      <span class="lfgCount small" id="lfgCount" hidden title="Joueurs qui cherchent un groupe en ce moment (mine classique)"></span>
+      <label class="chk" id="lfgAutoRow" hidden><input type="checkbox" id="lfgAuto"> Lancer dès que plein</label>
+      <label class="chk" id="alwaysReadyRow" hidden title="Tu es prêt d'office en entrant dans un groupe et en sortant de prison, et tu le restes d'une session à l'autre : le chef peut relancer sans attendre ton clic."><input type="checkbox" id="alwaysReady"> Prêt tout le temps</label>
+      <div class="towerLevels" id="towerLevelRow" hidden></div>
+      <p class="mut small" id="prisonProfileRow" hidden title="Calculé quand tu entres en prison, puis figé jusqu'à ta sortie"></p>
+      <p class="small" id="prisonCompoRow" hidden title="La compo change par paliers de 10 mines. Tu as joué avec des amis d'un autre niveau ? Reprends l'ancienne, ou enregistre une compo pour la garder.">Compo :
+        <button type="button" class="btn small" data-compo="current" title="Moyenne de tes mines 1 à 10 (change tous les 10 mines)">Actuelle</button>
+        <button type="button" class="btn small" data-compo="previous" title="Moyenne de tes mines 11 à 20">Ancienne</button>
+        <button type="button" class="btn small" data-compo="saved" title="La compo que tu as enregistrée">Enregistrée</button>
+        <button type="button" class="btn small" id="prisonCompoSave" title="Garder cette compo : elle remplace l'enregistrée">💾 Enregistrer</button></p>
+      <label class="chk" id="modulationRow" hidden><input type="checkbox" id="modulation"> <span id="modulationText">Modulation</span></label>
+      <label class="chk" id="devSteleRow" hidden><input type="checkbox" id="devStele"> <span>Stèle du camp (mode dev, sans la payer)</span></label>
+      <label class="chk" id="devHeroicRow" hidden><input type="checkbox" id="devHeroic"> <span>Shrine héroïque (mode dev, sans le payer)</span></label>
+    </div>
+    <p class="lfgStatus" id="lfgStatus" hidden></p>
+    <div class="invite" id="inviteBox" hidden></div>
+    <form class="joinRow" id="joinForm"><div class="irow" id="joinRow"><span>Tu as un code de groupe ?</span>
+      <input id="joinCode" placeholder="K7Q4P2" autocomplete="off" spellcheck="false" maxlength="10"><button>Rejoindre</button></div></form>
+    <p class="mut" id="lobbyInfo"></p>
+    <div class="towerWho" id="towerWho" hidden></div>
+  </div>
+  <!-- shrines : sous « Ton groupe », mine classique seulement (src/ui/lobby.js) -->
+  <div class="card shrinesCard" id="shrinesCard" hidden>
+    <h2>Shrines <i data-qhelp="shrines"></i></h2>
+    <div id="shrinesBody"></div>
   </div>
   </div>
   </div>
@@ -109,15 +157,16 @@
 </section>
 <section class="view" data-view="session" hidden>
 <!-- session ET visite au Bloc géant en même temps (27/10) : passer de l'une à l'autre (src/main.js, updatePanes) -->
-<div class="seg sessSwitch" id="sessSwitch" hidden><button data-pane="session">⛏ Ma session</button><button data-pane="giant">🌈 Bloc géant</button></div>
+<div class="seg sessSwitch" id="sessSwitch" hidden><button data-pane="session">⛏ Ma session</button><button data-pane="giant">🌈 Bloc géant</button><button data-pane="hc">😈 He's coming</button></div>
 <!-- pas de session en cours -->
 <div id="noSession" class="soon">
   <div class="big"><i data-pxi="pickaxe"></i></div><h2>Tu n'es pas en session</h2>
   <p class="mut">Les sessions se lancent depuis le lobby.</p>
   <button class="on" id="toLobbyBtn"><i data-pxi="house"></i>Aller au lobby</button>
 </div>
-<!-- session en cours -->
+<!-- session en cours (ou prison : même affichage, avec son bandeau, 29/10) -->
 <div id="run" hidden>
+<div class="prisonBanner" id="prisonBanner" hidden><span>⛓</span><span id="prisonBannerTxt"></span></div>
 <header>
   <div class="timer" id="timer">00:00 / 60:00</div>
   <div class="grow"><div class="bar"><i id="timeBar"></i></div></div>
@@ -150,6 +199,8 @@
     <button id="followBtn" hidden><i data-pxi="target"></i>Suivre</button>
     <!-- sorts équipés du mineur suivi, avec leur recharge en secondes (src/ui/hud.js spellBarHtml) -->
     <div id="spellBar" class="spellBar" hidden></div>
+    <!-- états du mineur du joueur (étourdi, taclé, buffs, bonus de session), src/ui/effects.js -->
+    <div id="fxBar" class="fxBar" hidden></div>
   </div>
   <!-- jauge de profondeur : surface en haut, fond de la mine ouverte en bas, un repère par mineur (src/ui/hud.js) -->
   <div class="rail" id="depthRail">
@@ -158,6 +209,7 @@
     <span class="railEnd hot"><small>Fond</small><i data-pxi="skull"></i></span>
   </div>
   <aside class="runR">
+    <div class="card" id="prisonLootCard" hidden><h2>Butin de la prison (total)</h2><div id="prisonLootBody"></div></div>
     <div class="card" id="areaCard"><h2>Area</h2><div id="areaBody"></div></div>
     <div class="card">
       <h2>Coffre commun <i data-qhelp="chest"></i></h2>
@@ -166,9 +218,6 @@
       <div class="row" style="margin-top:6px"><span>XP de la session</span><span id="xpBox">0</span></div>
     </div>
     <!-- chat des joueurs de la session (src/ui/chat.js) -->
-    <div class="card" id="chatCard"><h2>Chat</h2><div id="chatLog" aria-live="polite"></div>
-      <form id="chatForm" class="chatForm"><input id="chatInput" autocomplete="off" placeholder="Message…" title="Écrire aux joueurs de la session"><button>Envoyer</button></form>
-      <div id="chatNote" class="mut small"></div></div>
     <div class="card"><h2>Journal</h2><div id="log"></div></div>
   </aside>
 </main>
@@ -182,7 +231,7 @@
   <button id="miLeaveBtn" title="Tu ne recevras rien de cette mine"><i data-pxi="door"></i>Quitter la mine</button>
 </header>
 <main class="runGrid mi">
-  <div id="cvMiWrap"><canvas id="cvMi"></canvas></div>
+  <div id="cvMiWrap"><canvas id="cvMi"></canvas><div id="fxBarMi" class="fxBar" hidden></div></div>
   <aside>
     <div class="card"><h2>Ton butin <i data-qhelp="mi_loot"></i></h2><div id="miMine"></div></div>
     <div class="card"><h2>Classement</h2><div id="miRank"></div><p class="mut small" id="miFeathersLeft"></p></div>
@@ -202,7 +251,7 @@
   <button id="twLeaveBtn" title="Tu ne recevras pas de trésor"><i data-pxi="door"></i>Quitter la tour</button>
 </header>
 <main class="runGrid mi tw">
-  <div id="cvTwWrap"><canvas id="cvTw"></canvas></div>
+  <div id="cvTwWrap"><canvas id="cvTw"></canvas><div id="spellBarTw" class="spellBar" hidden></div><div id="fxBarTw" class="fxBar" hidden></div></div>
   <aside>
     <div class="card"><h2>Boss</h2><div id="twBoss"></div></div>
     <div class="card"><h2>Équipe</h2><div id="twTeam"></div></div>
@@ -223,9 +272,9 @@
   <button id="inLeaveBtn" title="La clé est perdue"><i data-pxi="door"></i>Quitter l'instance</button>
 </header>
 <main class="runGrid mi tw">
-  <div id="cvInWrap"><canvas id="cvIn"></canvas></div>
+  <div id="cvInWrap"><canvas id="cvIn"></canvas><div id="spellBarIn" class="spellBar" hidden></div><div id="fxBarIn" class="fxBar" hidden></div></div>
   <aside>
-    <div class="card"><h2>Le roi gobelin</h2><div id="inBoss"></div></div>
+    <div class="card"><h2 id="inBossTitle">Le roi gobelin</h2><div id="inBoss"></div></div>
     <div class="card"><h2>Équipe</h2><div id="inTeam"></div></div>
     <div class="card"><h2>Journal</h2><div id="inLog" class="miLog"></div></div>
   </aside>
@@ -241,7 +290,7 @@
   <button id="gtLeaveBtn" title="Tes points comptent, mais ton entrée est utilisée"><i data-pxi="door"></i>Quitter</button>
 </header>
 <main class="runGrid mi tw">
-  <div id="cvGtWrap"><canvas id="cvGt"></canvas></div>
+  <div id="cvGtWrap"><canvas id="cvGt"></canvas><div id="spellBarGt" class="spellBar" hidden></div><div id="fxBarGt" class="fxBar" hidden></div></div>
   <aside>
     <div class="card"><h2>Ma visite</h2><div id="gtMe"></div></div>
     <div class="card"><h2>Devant le bloc</h2><div id="gtPresent"></div></div>
@@ -255,12 +304,38 @@
   <div id="gtDoneBody"></div>
   <button class="on" id="gtDoneBtn"><i data-pxi="house"></i>Retour au lobby</button>
 </div>
+<!-- He's coming : la visite en cours (src/ui/giant.js, rendu src/render/hescoming.js) -->
+<div id="hcRun" hidden>
+<header>
+  <div class="twTitle">😈 He's coming</div>
+  <div class="timer" id="hcTimer">0:00</div>
+  <div class="grow"><div class="bar"><i id="hcTimeBar"></i></div></div>
+  <span class="mut" id="hcPoints"></span>
+  <button id="hcLeaveBtn" title="Tes points comptent, mais ton entrée est utilisée"><i data-pxi="door"></i>Quitter</button>
+</header>
+<main class="runGrid mi tw">
+  <div id="cvHcWrap"><canvas id="cvHc"></canvas><div id="spellBarHc" class="spellBar" hidden></div><div id="fxBarHc" class="fxBar" hidden></div></div>
+  <aside>
+    <div class="card"><h2>Ma visite</h2><div id="hcMe"></div></div>
+    <div class="card"><h2>Devant Lucifer</h2><div id="hcPresent"></div></div>
+    <div class="card"><h2>Session du jour</h2><div id="hcDay"></div></div>
+  </aside>
+</main>
+</div>
+<!-- He's coming : fin de visite -->
+<div id="hcDone" class="soon" hidden>
+  <div class="big">😈</div><h2>Visite terminée</h2>
+  <div id="hcDoneBody"></div>
+  <button class="on" id="hcDoneBtn"><i data-pxi="house"></i>Retour au lobby</button>
+</div>
 <!-- bilan de fin de session : ne couvre que l'onglet Session (les autres onglets et la navigation restent utilisables) -->
 <div id="end" hidden><div class="box" id="endBox"></div></div>
 </section>
 <section class="view" data-view="inventaire" hidden>
   <div class="invWrap">
     <div class="invHead"><h1><i data-pxi="bag"></i>Inventaire<i data-qhelp="inventory"></i></h1><span id="invCount" class="mut"></span><button id="invSort" title="Range par type (blocs, minerais, matériaux, stuff), puis du plus rare au plus commun. Tu peux aussi glisser un objet dans un autre slot.">Trier</button></div>
+    <!-- onglets de l'inventaire (filtre, 29/10/2026) : icônes, nom en bulle (src/ui/inventory.js, INVENTORY.tabs) -->
+    <div id="invTabs" class="invTabs" role="tablist" aria-label="Filtrer l'inventaire"></div>
     <div id="invGrid" class="invGrid"></div>
     <div id="invInfo" class="invInfo"></div>
   </div>
@@ -271,7 +346,7 @@
   <div class="furnWrap setWrap">
     <div class="invHead"><h1><i data-pxi="helmet"></i>Stuff<i data-qhelp="stuff"></i></h1></div>
     <p class="nextNote">⏳ Session en cours : ce que tu équipes maintenant comptera à la prochaine session.</p>
-    <div class="setLay"><aside class="card setsCard"><h2>Sets</h2><div id="setsStuff" class="setsBody"></div></aside><div>
+    <div class="setLay"><aside class="card setsCard"><h2>Sets</h2><div id="setsStuff" class="setsBody"></div></aside><div class="stuffMain">
     <div id="stuffGrid" class="stuffGrid"></div>
     <div class="card stuffStatsCard"><h2>Stats du mineur</h2>
       <div id="stuffLevelBody" class="stuffLevel"></div><div id="stuffStatsBody"></div>
@@ -284,6 +359,7 @@
 <section class="view" data-view="craft" hidden>
   <div class="furnWrap">
     <div class="invHead"><h1><i data-pxi="hammer"></i>Craft<i data-qhelp="craft"></i></h1></div>
+    <div id="craftTabs" class="invTabs" role="tablist"></div>
     <div id="craftList" class="craftList"></div>
     <div id="craftInfo" class="craftInfo"></div>
   </div>
@@ -312,11 +388,23 @@
 </section>
 <section class="view" data-view="sorts" hidden>
   <div class="furnWrap spWrap">
-    <div class="invHead"><h1><i data-pxi="radiance"></i>Sorts<i data-qhelp="spells"></i></h1></div>
+    <div class="invHead"><h1><i data-pxi="radiance"></i>Sorts<i data-qhelp="spells"></i></h1><div id="spellSpec"></div></div>
     <p class="nextNote">⏳ Session en cours : les sorts équipés maintenant compteront à la prochaine session.</p>
+    <!-- src/ui/spells.js : la barre de sorts en haut, le grimoire et la fiche du sort choisi dessous -->
     <div class="spGrid"><aside class="card setsCard"><h2>Sets</h2><div id="setsSpells" class="setsBody"></div></aside>
-      <div class="card"><h3>Emplacements</h3><div id="spellSlots" class="spSlots"></div></div>
-      <div class="card"><h3>Sorts</h3><div id="spellList" class="spList"></div></div>
+      <div class="spMain">
+        <section class="card spBarCard"><h2>Ta barre de sorts</h2>
+          <div class="spBarRow"><div id="spellSlots" class="spSlots"></div>
+            <div class="spBarNote"><p><b>En session, les sorts partent tout seuls</b> dès que leur recharge est finie.</p>
+              <p class="mut">C'est cette barre qui s'affiche en bas de la mine. Clique un sort de la barre pour le retirer.</p></div></div>
+        </section>
+        <div class="spLow">
+          <section class="card spGrim"><h2>Grimoire</h2><div id="spellTabs" class="spTabs"></div><div id="spellList" class="spList"></div>
+            <div class="spLegend"><span><i class="eq"></i>Dans la barre</span><span><i class="ok"></i>Disponible</span>
+              <span><i class="nw"></i>Parchemin à apprendre</span><span><i class="lk"></i>Pas encore débloqué</span></div></section>
+          <section class="card spInfo" id="spellInfo"></section>
+        </div>
+      </div>
     </div>
     <p id="spellMsg" class="err" hidden></p>
   </div>
@@ -337,7 +425,7 @@
       <div class="card"><h2>Joueurs en ligne <span class="mut" id="socialOnlineCount"></span> <i data-qhelp="online"></i></h2><div id="socialOnline"><p class="mut small">Chargement…</p></div></div>
     </div>
     <div id="socialBoardTab" hidden>
-      <div class="seg" id="boardPick"><button data-board="gs" class="on">Gear score</button><button data-board="xp">Niveau</button><button data-board="spec">Spécialisation</button><button data-board="tower">Tour céleste</button></div>
+      <div class="seg" id="boardPick"><button data-board="gs" class="on">Gear score</button><button data-board="xp">Niveau</button><button data-board="spec">Spécialisation</button><button data-board="tower">Tour céleste</button><button data-board="instance">Roi gobelin</button></div>
       <div class="seg" id="boardTrees" hidden></div>
       <div class="card"><h2><span id="boardTitle"></span> <span id="boardHelp"></span></h2><div id="boardList"><p class="mut small">Chargement…</p></div></div>
     </div>
@@ -345,6 +433,23 @@
   <!-- fiche d'un ami : son stuff, ses stats et son niveau (lecture seule) -->
   <div id="fview" hidden><div class="box"></div></div>
 </section>
+<section class="view" data-view="guilde" hidden>
+  <div class="furnWrap" id="guildBody">
+    <div class="invHead"><h1><i data-pxi="shield"></i>Guilde</h1></div>
+    <div class="seg rsTabs" id="guildTabs"></div>
+    <p id="guildMsg" class="err small" hidden></p>
+    <div id="guildMineTab" hidden><div id="guildMine"></div></div>
+    <div id="guildSearchTab" hidden>
+      <div class="card" id="guildInvitesCard" hidden><h2>Invitations reçues</h2><div id="guildInvites"></div></div>
+      <form class="card sadd" id="guildCreate" hidden><span>Créer ma guilde</span><input id="guildName" placeholder="Nom de la guilde" autocomplete="off" spellcheck="false" maxlength="24">
+        <button class="on">Créer</button></form>
+      <div class="card"><h2>Toutes les guildes</h2><input id="guildQuery" placeholder="Chercher une guilde" autocomplete="off" spellcheck="false" maxlength="48"><div id="guildList"></div></div>
+      <div id="guildPeek" class="gpeek" hidden></div>
+    </div>
+    <div id="guildBoardTab" hidden><div class="card"><h2>Leaderboard</h2><div id="guildBoard"></div></div></div>
+  </div>
+</section>
+<section class="view" data-view="chat" hidden><div class="invWrap"><p class="mut">Connecte-toi pour discuter.</p></div></section>
 <section class="view" data-view="historique" hidden>
   <div class="furnWrap">
     <div class="invHead"><h1><i data-pxi="hourglass"></i>Historique<i data-qhelp="history"></i></h1></div>
@@ -369,6 +474,14 @@
   <div id="fpick" hidden><div class="box"></div></div>
 </section>
 </div>
+<!-- chat global (31/10) : toujours là, à gauche et en bas, quel que soit l'onglet ; hauteur réglable (src/ui/chat-dock.js) -->
+<aside id="gchatDock" class="chatDock" hidden>
+  <div class="chatEdge top" data-edge="h"></div><div class="chatEdge right" data-edge="w"></div><div class="chatEdge corner" data-edge="hw"></div>
+  <div class="card" id="gchatCard"><div class="chatHead"><div class="chatTabs" id="gchatTabs"></div><i data-qhelp="gchat"></i><button class="chatFold" id="gchatFold" title="Replier ou déplier le chat">–</button></div>
+    <div class="chatPanel" id="gchatPanel" hidden></div><div id="gchatLog" class="chatLog" aria-live="polite"></div>
+    <form id="gchatForm" class="chatForm"><select id="gchatChan" title="Canal du message"></select><input id="gchatInput" autocomplete="off" placeholder="Message…" title="Raccourcis : /1 général · /2 LFG · /gr groupe · /g guilde · /w &quot;pseudo&quot; message privé"><button>Envoyer</button></form>
+    <div id="gchatNote" class="mut small"></div></div>
+</aside>
 <!-- barre d'action (onglets avec leur nom, touches 1 à 9, 0, - et =) entre deux orbes : temps de session et XP, ou oxygène et pods du
      mineur suivi pendant une session (src/ui/orbs.js) -->
 <nav id="nav" class="dock">
@@ -378,6 +491,12 @@
 </nav>
 </div>
 <div id="notifs" aria-live="polite"></div>
+<!-- pop-up « Tu as obtenu » : objet crafté, blueprint, pièce identifiée ou améliorée (src/ui/obtained.js) -->
+<div id="obtained" hidden></div>
+<!-- fenêtres de validation (confirmer, message, saisie) : remplacent celles du navigateur (src/ui/dialog.js) -->
+<div id="dialog" hidden></div>
+<!-- groupes en formation (src/ui/forming.js) -->
+<div id="forming" hidden></div>
 <!-- guide « Premiers pas » des nouveaux joueurs (src/ui/guide.js) -->
 <aside id="guide" class="guide" aria-label="Premiers pas" hidden></aside>
 <div id="account" hidden><div class="box"></div></div>

@@ -1,10 +1,10 @@
 /* Session : création de la partie et boucle de simulation à pas fixe (DT).
    Ne touche ni au DOM ni au canvas : tourne aussi bien dans le navigateur que dans Node (tests, simulate). */
 import { shrineOf, shrineEffects } from '../meta/shrines.js';
-import { W, DT, SESSION_LEN, TOP_DIRT_ROWS, STATS, CFG, IDS, CHEST_X, CHEST_BASE, MOBS, SPAWN_X, TEAM, SHINY, FORTUNE, GEAR_RNG, GLYPHS } from '../config.js';
+import { W, DT, SESSION_LEN, TOP_DIRT_ROWS, STATS, CFG, IDS, CHEST_X, CHEST_BASE, MOBS, SPAWN_X, TEAM, SHINY, FORTUNE, GEAR_RNG, GLYPHS, PRISON, SKILLS } from '../config.js';
 import { inReach, reachOf, stopAction } from './knock.js';
 import { mulberry32 } from '../core/rng.js';
-import { genArea, maxRow } from './world.js';
+import { genArea, maxRow, prisonBox } from './world.js';
 import { createMiner, curLum } from './mineur.js';
 import { finishAction } from './actions.js';
 import { decide } from './ai.js';
@@ -15,12 +15,15 @@ import { updateTraps, veiled, inTrapRoom } from './trap.js';
 import { log } from './log.js';
 import { muleOnLeave } from './mule.js';
 import { updateKhole, exitKhole, inMine } from './khole.js';
+import { sanitizeProfile } from '../meta/prison-profile.js';
 import { afterDecide, updateSpells } from './spells.js';
 import { shareChest } from '../meta/share.js';
 import { xpShare, specXpOf } from '../meta/level.js';
 
 /* opts.miners : nombre de mineurs (1 = mineur seul ; 2-3 = l'équipe TEAM) ou liste de {name, color, prefs, x}
-   opts.accounts : ID de compte de chaque mineur, dans l'ordre (un joueur = un mineur) ; sert au partage du coffre */
+   opts.accounts : ID de compte de chaque mineur, dans l'ordre (un joueur = un mineur) ; sert au partage du coffre
+   opts.prison : { areaMax } = run de prison (src/sim/prison.js) : une area au contenu de areaMax, entre deux rangées de
+   barreaux ; pas de fin à l'heure (G.endAt Infinity, posé par la prison à la fin du run), ni shrine, ni Gallianix */
 export function newSession(seed, opts={}){
   seed = seed ?? ((Math.random()*2**31)|0);
   const n = opts.miners ?? 1;
@@ -28,7 +31,7 @@ export function newSession(seed, opts={}){
   const G = {
     seed, t:0, ticks:0, over:false, rng:mulberry32(seed^0x51ed270b), shinyRng:mulberry32(seed^SHINY.salt), fortuneRng:mulberry32(seed^FORTUNE.salt), gearRng:mulberry32(seed^GEAR_RNG.salt), glyphRng:mulberry32(seed^GLYPHS.dropSalt),
     tiles:[new Uint8Array(W)], ladder:[new Uint8Array(W)], seen:[new Uint8Array(W).fill(1)],
-    areas:[], unlockedAreas:0, winch:null, treasures:new Map(), dungeons:[], traps:[], veil:new Set(), mobs:[], thralls:[], chest:{}, chestBy:{}, goblinChest:{}, mobId:1, log:[], torches:[], light:new Map(),
+    areas:[], unlockedAreas:0, winch:null, treasures:new Map(), dungeons:[], traps:[], veil:new Set(), mobs:[], worms:[], thralls:[], chest:{}, chestBy:{}, goblinChest:{}, mobId:1, log:[], torches:[], light:new Map(),
     spawnTimer:MOBS.firstSpawn, spawnTurn:0, mimicCells:new Set(), combat:false,
     stats:{mined:0, kills:0, maxDepth:0, trips:0, falls:0, treasures:0, stolen:0, xp:0, stuns:0, shiny:0},
     miners: specs.map((s,i)=>createMiner(i, {x:SPAWN_X, ...s, account:opts.accounts?.[i] ?? s.account ?? null})),
@@ -37,8 +40,9 @@ export function newSession(seed, opts={}){
     noResidues: !!opts.noResidues,
     /* shrines actifs au lancement (28/10/2026, SHRINES ; enregistrés dans la session) : décor près du coffre, et leurs
        effets sur la génération (oreBonus : points de terrain changés en minerais, src/meta/shrines.js) */
-    shrines: Array.isArray(opts.shrines) ? opts.shrines.filter(id => shrineOf(id)) : [],
+    shrines: Array.isArray(opts.shrines) && !opts.prison ? opts.shrines.filter(id => shrineOf(id)) : [],
   };
+  if(opts.prison){ G.prison = { areaMax: Math.max(0, opts.prison.areaMax | 0), profile: sanitizeProfile(opts.prison.profile) }; G.endAt = Infinity; }
   G.oreBonus = shrineEffects(G.shrines).orePoints;
   /* Escalateur (skill Logisticien) : le seau du treuil va plus vite pour tout le groupe ; le meilleur rang des mineurs
      présents au lancement compte, sans cumul (figé, comme le stuff) */
@@ -54,8 +58,10 @@ export function newSession(seed, opts={}){
     G.tiles.push(new Uint8Array(W).fill(IDS.dirt)); G.ladder.push(new Uint8Array(W)); G.seen.push(new Uint8Array(W).fill(1));
   }
   G.tiles[1][CHEST_X] = CHEST_BASE;   // socle incassable sous le coffre (23/10)
+  const box = prisonBox(G);   // prison : barreaux aussi dans les couches de terre (la surface reste libre)
+  if(box) for(let y=1;y<=TOP_DIRT_ROWS;y++) for(let x=0;x<W;x++) if(x<box.x0 || x>=box.x0+box.w) G.tiles[y][x] = PRISON.bars;
   genArea(G,0); G.unlockedAreas = 1;
-  G.duckBase = G.unlockedAreas; G.ducks = 0;   // Gallianix : un canard par area débloquée ensuite (src/sim/duck.js)
+  G.duckBase = G.prison ? Infinity : G.unlockedAreas; G.ducks = 0;   // Gallianix : un canard par area débloquée ensuite (src/sim/duck.js) ; jamais en prison
   log(G, `Session démarrée (seed ${seed}, ${G.miners.length} mineur${G.miners.length>1?'s':''})`);
   return G;
 }
@@ -103,22 +109,49 @@ function braumGlyph(G){
   }
 }
 
+/* temps par action (30/10/2026, tableau de bord de la prison) : mine, move (pas, échelles, chutes, passerelles), fight,
+   other (dépôts, attente, étourdi, torches…) */
+export const TIME_CLASSES = ['mine', 'move', 'fight', 'other'];
+export function timeClass(a){
+  const t = a?.type;
+  if(t === 'mine') return 'mine';
+  if(t === 'attack') return 'fight';
+  if(t === 'move' || t === 'ladder' || t === 'bridge' || t === 'dash') return 'move';
+  return 'other';
+}
+
+/* Reconnaissance (logisticien) : chaque autre mineur dans le seau du treuil fait avancer le compteur ; SKILLS.reconEvery s par
+   mineur donnent 1 d'oxygène. Pas dans les tours : on n'y respire pas. */
+export function reconnaissance(G){
+  for(const m of G.miners){
+    if(!m.skill.recon) continue;
+    const n=G.miners.filter(o => o!==m && o.action?.type==='move' && o.action.data.winch).length;
+    if(!n) continue;
+    m.reconT=(m.reconT||0)+n*DT;
+    for(; m.reconT>=SKILLS.reconEvery; m.reconT-=SKILLS.reconEvery) m.ox=Math.min(m.carac.oxygenMax, m.ox+m.skill.recon);
+  }
+}
+
 export function tick(G){
   if(G.over) return;
   G.ticks++; G.t=G.ticks*DT;   // temps recalculé depuis le compteur : aucune dérive d'arrondi
   for(const m of G.miners){
     if(m.action?.type==='attack') m.stats.hitTime=(m.stats.hitTime||0)+DT;   // temps à frapper (tableau de bord)
+    { const k=timeClass(m.action), tt=(m.stats.time??={}); tt[k]=(tt[k]||0)+DT; }   // temps par action (30/10, tableau de la prison)
     stepMiner(G,m);
   }
   braumGlyph(G);   // Glyphe Braum : oxygène en entrant dans un piège ou un donjon
+  reconnaissance(G);
   updateSpells(G);  // sorts : Illumination, Inspiration, Ulti shen
   updateTraps(G);   // un bloc de paroi de piège a disparu : le piège s'ouvre
   updateMobs(G);
   updateThralls(G);   // gobelins asservis (Couronne du Roi Gobelin) : ils minent pour le coffre commun
   /* arrêt net (25/10/2026) : en marche vers le mob qu'il combat, il s'arrête dès que celui-ci entre dans sa portée, pour
      frapper le premier (sa portée peut dépasser celle du mob : stat reach, Lance en fer) */
+  /* … seulement sous terre (30/10/2026) : à la surface l'IA ne combat pas (decide : combat si m.y > 0) ; un golem resté
+     dans le puits juste sous lui coupait chaque pas de descente, sans coup ni pas : bloqué jusqu'à la fin (prison : 3 h) */
   for(const m of G.miners){
-    const a=m.action, o=m.foe!=null && a?.type==='move' && !a.data.fall ? G.mobs.find(q=>q.id===m.foe && q.hp>0) : null;
+    const a=m.action, o=m.y>0 && m.foe!=null && a?.type==='move' && !a.data.fall ? G.mobs.find(q=>q.id===m.foe && q.hp>0) : null;
     if(o && inReach(G,m,o,reachOf(m))) stopAction(m);
   }
   for(const m of G.miners){
@@ -130,13 +163,15 @@ export function tick(G){
     if(m.action && m.action.type!=='stun' && !m.action.data.fall && channeler(G,m)) stopAction(m);
     // ébranlé par un golem : tout s'arrête aussi (sauf une chute), il est étourdi (src/sim/golem.js)
     if(m.action && m.action.type!=='stun' && !m.action.data.fall && m.quakeUntil>G.t+1e-9) stopAction(m);
+    // encorné par un minotaure : pareil (src/sim/minotaur.js)
+    if(m.action && m.action.type!=='stun' && !m.action.data.fall && m.goredUntil>G.t+1e-9) stopAction(m);
     // canalisation arrêtée avant la fin (occultiste provoqué ou tué) : il est libéré tout de suite
     if(m.action?.data.hex && !channeler(G,m)) m.action=null;
     revealAround(G,m);
   }
   updateDungeons(G);   // découverte d'un donjon, barbare entré, effroi, boss vaincu
   updateKhole(G);      // k hole découvert : le groupe part dans la dimension ; au bout du temps, il revient
-  if(G.ticks>=SESSION_TICKS) endSession(G);
+  if(!G.prison && G.ticks>=SESSION_TICKS) endSession(G);   // prison : la fin du run est jugée par tickPrison
 }
 
 /* Un joueur quitte la session : son mineur disparaît de la mine, ce qu'il portait est perdu, et il ne recevra

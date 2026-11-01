@@ -2,10 +2,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { TABS, pickTab } from '../src/ui/nav.js';
+import { TABS, pickTab, escapeTab, OVERLAYS } from '../src/ui/nav.js';
 
 test('les onglets sont dans l\'ordre voulu, Lobby puis Session en premier', () => {
-  assert.deepEqual(TABS.map(t => t.label), ['Lobby','Session','Inventaire','Stuff','Craft','Four','Concasseur','Amélioration','Recherche','Skills','Sorts','Historique','Social']);
+  assert.deepEqual(TABS.map(t => t.label), ['Lobby','Session','Inventaire','Stuff','Craft','Four','Concasseur','Amélioration','Recherche','Skills','Sorts','Historique','Social','Guilde']);
   assert.equal(new Set(TABS.map(t => t.id)).size, TABS.length, 'identifiants uniques');
 });
 
@@ -71,4 +71,25 @@ test('Jugement : plus un onglet de la barre, mais dans le Lobby (#jugement → L
   assert.equal(pickTab('#jugement', 'four'), 'lobby');
   assert.equal(pickTab('', 'jugement'), 'lobby', 'ancien onglet mémorisé');
   assert.ok(TABS.filter(t => t.ready).length <= TAB_KEYS.length, 'chaque onglet a sa touche');
+});
+
+test('Échap quitte l\'onglet ouvert pour l\'onglet Session, sauf si une fenêtre est ouverte ou qu\'on y est déjà', () => {
+  assert.equal(escapeTab('inventaire'), 'session');
+  assert.equal(escapeTab('lobby'), 'session');
+  assert.equal(escapeTab('session'), null);
+  assert.equal(escapeTab('craft', true), null);       // fenêtre ouverte : c'est elle qu'Échap ferme
+  assert.equal(escapeTab(null), null);
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  for(const id of OVERLAYS) assert.match(html, new RegExp(`id="${id}"`), `fenêtre #${id} absente de index.html`);
+});
+
+test('onglet Chat : téléphone seulement, sans touche ; ailleurs il redonne le Lobby', async () => {
+  const { CHAT_TAB, TAB_KEYS, tabFor } = await import('../src/ui/nav.js');
+  assert.equal(CHAT_TAB.phone, true);
+  assert.ok(!TABS.some(t => t.id === CHAT_TAB.id), 'pas dans les onglets communs (touches, bâtiments)');
+  assert.equal(TABS.length, TAB_KEYS.length);
+  assert.equal(pickTab('#chat', null), 'chat');
+  assert.equal(tabFor('chat', true), 'chat');
+  assert.equal(tabFor('chat', false), 'lobby');
+  assert.equal(tabFor('stuff', false), 'stuff');
 });

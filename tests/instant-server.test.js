@@ -10,6 +10,7 @@ import { createInlineRunner } from '../server/game/live.js';
 import { createPartyService } from '../server/party/service.js';
 import { createInstantService } from '../server/instant/service.js';
 import { deserialize, countOf } from '../src/meta/inventory.js';
+import './helpers.js';   // énergie pleine au départ des tests (ENERGY.start, 30/10/2026)
 
 const T0 = Date.parse('2026-10-21T13:59:00Z');          // 15:59 à Paris : ouverture à 16:00
 const SLOT = Date.parse('2026-10-21T14:00:00Z');

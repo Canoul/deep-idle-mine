@@ -16,7 +16,7 @@
    la grille, entourées de barrière. Dans la dimension (G.khole), l'oxygène ne baisse pas, les pods n'ont pas de limite
    et l'IA ne remonte jamais (src/sim/session.js, src/sim/ai.js), rien ne se débloque (tryUnlock), pas d'apparition de
    mobs normale, pas de focus d'area, la profondeur ne compte pas. */
-import { W, IDS, BARRIER, SPAWN_X, SESSION_LEN, KHOLE, KHOLE_BLOCK, DUNGEON, TREASURE, TREASURE_BLOCK, MOBS, STATS, mobHp } from '../config.js';
+import { W, IDS, BARRIER, SPAWN_X, SESSION_LEN, KHOLE, KHOLE_BLOCK, DUNGEON, MINOTAUR, TREASURE, TREASURE_BLOCK, MOBS, STATS, mobHp } from '../config.js';
 import { mulberry32, hash } from '../core/rng.js';
 import { fillComp, typeOf, isResidue, isOre, oreKey, areaTop, areaOf, treasureItem } from './world.js';
 import { carve, registerDungeon } from './dungeon.js';
@@ -26,7 +26,7 @@ import { updateLight } from './light.js';
 import { log } from './log.js';
 
 /* ce qui appartient à la carte : mis de côté pendant le k hole */
-const WORLD = ['tiles', 'ladder', 'seen', 'areas', 'unlockedAreas', 'winch', 'treasures', 'dungeons', 'traps', 'veil', 'mobs', 'thralls',
+const WORLD = ['tiles', 'ladder', 'seen', 'areas', 'unlockedAreas', 'winch', 'treasures', 'dungeons', 'traps', 'veil', 'mobs', 'worms', 'thralls',
   'torches', 'light', 'mimicCells', 'mule', 'ducks', 'duckBase', 'spawnTimer', 'spawnTurn', 'combat'];
 /* ce qui, chez un mineur, dépend de sa place sur la carte (position, cibles, chantiers, action en cours) */
 const SPOT = ['x', 'y', 'kx', 'ky', 'face', 'dir', 'action', 'mode', 'status', 'reason', 'target', 'foe', 'foeHit', 'exploring',
@@ -42,10 +42,10 @@ const inBox = (b, x, ry, gap = 1) => x >= b.x0-gap && x < b.x0+b.w+gap && ry >= 
 
 /* tirage de l'area k (à part de la seed : le reste de l'area ne change pas) ; s'il sort, le k hole remplace un bloc de
    terrain (pas un résidu), hors des boîtes avoid ({x0, ry0, w, h} : donjon, pièges). Renvoie { x, ry } ou null. */
-export function placeKhole(seed, k, grid, counts, avoid = []){
+export function placeKhole(seed, k, grid, counts, avoid = [], chanceMul = 1){
   if(k < KHOLE.fromArea) return null;
   const r = mulberry32(hash(seed ^ KHOLE.salt, k+1));
-  if(!(r() < KHOLE.chance)) return null;
+  if(!(r() < KHOLE.chance * chanceMul)) return null;   // prison : × PRISON.kholeMul (29/10)
   const spots = [];
   for(let i=0; i<grid.length; i++){
     const x = i%W, ry = (i/W)|0;
@@ -56,6 +56,10 @@ export function placeKhole(seed, k, grid, counts, avoid = []){
   counts[key]--; grid[c] = KHOLE_BLOCK;
   return { x: c%W, ry: (c/W)|0 };
 }
+
+/* fin de la partie pour le k hole : la session (1 h) ; en prison (29/10), la fin du run (G.endAt : infinie tant que le run
+   n'est pas rappelé, puis le temps de la remontée), car un run peut durer plus d'une heure */
+const endOf = G => G.prison ? G.endAt : SESSION_LEN;
 
 /* G.kholes : [{ k, x, y, opensAt (découvert : heure d'aspiration), used }] */
 export function registerKhole(G, k, p){
@@ -158,7 +162,11 @@ function buildRoom(G, r, map, k, top){
   }
   if(map.minotaurs){
     const xs = map.minotaurs === 1 ? [map.w-1] : Array.from({ length: map.minotaurs }, (_, i) => Math.round(i*(map.w-1)/(map.minotaurs-1)));
-    for(const x of xs) addMob(G, DUNGEON.boss.type, x, floor, k, { name: DUNGEON.boss.name });
+    xs.forEach((x, i) => {   // variantes de gauche à droite (map.minoVariants : un brun, un noir ; 30/10/2026)
+      const variant = map.minoVariants?.[i % map.minoVariants.length];
+      const hp = map.minoHp ? { hp: map.minoHp, maxhp: map.minoHp } : {};   // PV de l'Arène (sinon ceux du donjon)
+      addMob(G, DUNGEON.boss.type, x, floor, k, { ...hp, ...(variant ? { name: MINOTAUR.variants[variant].name, variant } : { name: DUNGEON.boss.name }) });
+    });
   }
   for(let i=0; i<(map.treasures || 0); i++){
     const x = map.w-1-i, item = TREASURE.tiers[Math.floor(r()*TREASURE.tiers.length)].item;   // tier tiré au hasard
@@ -176,7 +184,7 @@ export function buildDimension(G, n, k, map = pickMap(G.seed, n)){
   Object.assign(G, {
     tiles: Array.from({ length: rows }, () => row(BARRIER)), ladder: Array.from({ length: rows }, () => row(0)),
     seen: Array.from({ length: rows }, () => row(0)), areas: Array.from({ length: k+1 }, (_, i) => emptyArea(i)),
-    unlockedAreas: k+1, winch: null, treasures: new Map(), dungeons: [], traps: [], veil: new Set(), mobs: [], thralls: [], torches: [],
+    unlockedAreas: k+1, winch: null, treasures: new Map(), dungeons: [], traps: [], veil: new Set(), mobs: [], worms: [], thralls: [], torches: [],
     light: new Map(), mimicCells: new Set(), mule: null, ducks: 0, duckBase: k+1, spawnTimer: Infinity, spawnTurn: 0, combat: false,
   });
   if(map.comp) buildVeins(G, r, map, k, top); else buildRoom(G, r, map, k, top);
@@ -217,7 +225,7 @@ export function enterKhole(G, h){
   h.used = true;
   const n = G.kholes.indexOf(h), map = KHOLE.maps[h.map - 1] ?? pickMap(G.seed, n);   // h.map : carte imposée (admin)
   /* retour au bout de la durée de la carte, ou quand il ne reste que endMargin s de session (le temps de déposer) */
-  const until = Math.min(G.t + map.duration, SESSION_LEN - KHOLE.endMargin);
+  const until = Math.min(G.t + map.duration, endOf(G) - KHOLE.endMargin);
   G.khole = { n, k: h.k, x: h.x, y: h.y, map, until, world: take(G, WORLD) };
   const spawn = buildDimension(G, n, h.k, map);
   G.miners.forEach((m, i) => { const p = spawn(i); placeMiner(m, p.x, p.y, 'Aspiré par le k hole'); });
@@ -246,7 +254,7 @@ export function exitKhole(G){
    va s'ouvrir), vide, ou trop près de la fin (KHOLE.endMargin). Rejoué au même tick, il donne la même partie. */
 export function forceKhole(G, map = 0){
   const m = G.miners[0];
-  if(G.over || G.khole || !m || G.t >= SESSION_LEN - KHOLE.endMargin - KHOLE.warn) return false;
+  if(G.over || G.khole || G.prison || !m || G.t >= SESSION_LEN - KHOLE.endMargin - KHOLE.warn) return false;   // pas de k hole en prison
   if((G.kholes || []).some(h => !h.used && h.opensAt != null)) return false;
   (G.kholes ??= []).push({ k: Math.max(0, areaOf(m.y)), x: m.x, y: m.y, opensAt: G.t + KHOLE.warn, used: false,
     map: Number.isSafeInteger(map) && map >= 1 && map <= KHOLE.maps.length ? map : 0 });
@@ -270,7 +278,7 @@ export function updateKhole(G){
     if(G.khole.map.wave) updateWaves(G);
     return;
   }
-  if(G.t >= SESSION_LEN - KHOLE.endMargin - 1e-9) return;   // fin de session proche : il ne s'ouvre plus
+  if(G.t >= endOf(G) - KHOLE.endMargin - 1e-9) return;   // fin de session proche : il ne s'ouvre plus
   for(const h of G.kholes || []){
     if(h.used) continue;
     if(h.opensAt == null){

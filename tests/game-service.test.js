@@ -259,7 +259,8 @@ test('chacun ne voit et ne touche que ses propres sessions', async () => {
 
 /* ---------- focus minerai (changé pendant la session) ---------- */
 
-test('focus : appliqué tout de suite, au tick de la partie du serveur, nettoyé, visible dans la session', async () => {
+test('focus : appliqué tout de suite, au tick de la partie du serveur, nettoyé, visible dans la session', async t => {
+  const was = FOCUS.ores; FOCUS.ores = true; t.after(() => { FOCUS.ores = was; });   // focus minerai rendu accessible
   const { game, advance } = setup();
   const { session } = await game.start(ME, {});
   advance(10_000);
@@ -270,6 +271,14 @@ test('focus : appliqué tout de suite, au tick de la partie du serveur, nettoyé
   const st = await game.state(ME);
   assert.deepEqual(st.session.focus, [{ account:ME.id, tick:event.tick, focus:{ coal:'only' } }]);
   assert.equal(st.session.id, session.id);
+});
+
+test('focus minerai retiré du jeu (30/10, FOCUS.ores false) : le serveur ne garde que l\'area', async () => {
+  assert.equal(FOCUS.ores, false);
+  const { game } = setup();
+  await game.start(ME, {});
+  const { event } = await game.focus(ME, { focus:{ coal:'only', iron:'target', area:1 } });
+  assert.deepEqual(event.focus, { area:1 });
 });
 
 test('mode dev : vitesse et pause sur le serveur ; la partie suit cette horloge', async () => {
@@ -328,6 +337,19 @@ test('four : poser, fondre en temps réel (page fermée), récupérer — le ser
   assert.equal(r.furnaces.list[0].ore.qty, 10);
 });
 
+test('four : choisir une recette par le serveur (28/10) : ingrédients et charbon posés en une fois, rejeu sans effet', async () => {
+  const { game, store, advance } = setup();
+  await store.putInventory(ME.id, { slots:[{ item:'Fer', qty:30 }, { item:'Charbon', qty:50 }], nextUid:1, credited:[] });
+  const op = { action:'recipe', furnace:0, out:'Lingot de fer', count:2, opId:'op-recipe-1' };
+  let r = await game.furnace(ME, op);
+  r = await game.furnace(ME, op);                                  // double clic
+  assert.deepEqual(r.inventory.slots.filter(Boolean), [{ item:'Fer', qty:10 }, { item:'Charbon', qty:30 }]);
+  await assert.rejects(game.furnace(ME, { ...op, count:5, opId:'op-recipe-2' }), { code:'not_enough' });
+  advance(120_000);
+  r = await game.furnace(ME, { action:'collect', furnace:0, opId:'op-recipe-3' });
+  assert.ok(r.inventory.slots.some(s => s?.item === 'Lingot de fer' && s.qty === 2));
+});
+
 test('four : mode Alliage par le serveur (Tainted iron en 3 min), changement refusé si des ingrédients restent', async () => {
   const { game, store, advance } = setup();
   await store.putInventory(ME.id, { slots:[{ item:'Lingot de fer', qty:5 }, { item:'Chitine', qty:20 }, { item:'Charbon', qty:50 }, { item:'Fer', qty:10 }], nextUid:1, credited:[] });
@@ -364,7 +386,7 @@ test('blueprint par le serveur : consommé une fois, recette débloquée et renv
   assert.ok(!st.inventory.slots.some(s => s?.item === 'Épée en fer BP' || s?.item === 'Tainted iron'));
 });
 
-test('table de recherche par le serveur : 100 parts → un blueprint ; recycler → 15 à 30 parts ; demandes rejouées', async () => {
+test('table de recherche par le serveur : 100 parts → un blueprint ; recycler → 10 à 20 parts ; demandes rejouées', async () => {
   const { game, store } = setup();
   await store.putInventory(ME.id, { slots:[{ item:'Blueprint parts', qty:150 }], nextUid:1, credited:[] });
   const o = { action:'research', tier:1, opId:'op-research-1' };
@@ -376,7 +398,7 @@ test('table de recherche par le serveur : 100 parts → un blueprint ; recycler 
   await assert.rejects(game.research(ME, { action:'research', tier:7, opId:'op-research-3' }), { code:'bad_tier' });
   await assert.rejects(game.research(ME, { action:'voler', opId:'op-research-4' }), { code:'bad_request' });
   const c = await game.research(ME, { action:'recycle', item:a.item, opId:'op-recycle-1' });
-  assert.ok(c.parts >= 15 && c.parts <= 30);
+  assert.ok(c.parts >= 10 && c.parts <= 20);
   assert.equal(has(c, 'Blueprint parts'), 50 + c.parts); assert.equal(has(c, a.item), 0);
   await assert.rejects(game.research(ME, { action:'recycle', item:a.item, opId:'op-recycle-2' }), { code:'not_owned' });
   const st = await game.state(ME);
@@ -605,20 +627,12 @@ test('Tour : fermée = refusée ; ouverte : réussite → un trésor de la tour 
   assert.equal(qty((await game.state(ME)).inventory, 'Fer'), 0, 'objet étranger au butin de la tour : ignoré');
   assert.equal(qty((await game.state(OTHER)).inventory, BRICK), 0, 'parti : rien');
   assert.ok(!(await game.state(OTHER)).inventory.slots.some(s => /^Trésor/.test(s?.item ?? '')));
-  /* niveaux (28/10) : le niveau 1 est fait, le niveau 2 reste ; « done » = tous les niveaux faits */
+  /* une seule victoire par ouverture (31/10), même en demandant le niveau 2 */
   assert.deepEqual((await game.judgment(ME)).sides.angel.doneLevels, [1]);
-  assert.equal((await game.judgment(ME)).sides.angel.done, false); assert.deepEqual((await game.judgment(OTHER)).sides.angel.doneLevels, []);
+  assert.equal((await game.judgment(ME)).sides.angel.done, true); assert.deepEqual((await game.judgment(OTHER)).sides.angel.doneLevels, []);
   await assert.rejects(game.start(ME, { mode: 'tower_angel' }), { code: 'tower_done' });
   await assert.rejects(game.start(ME, { mode: 'tower_angel', level: 1 }), { code: 'tower_done' });
   await assert.rejects(game.start(OTHER, { mode: 'tower_angel' }, [{ account: OTHER.id, name: 'B' }, { account: ME.id, name: 'Zoe' }]), { code: 'tower_done' }, 'un membre qui l\'a faite bloque le groupe');
-  for(const level of [0, 3, '2', 1.5]) await assert.rejects(game.start(ME, { mode: 'tower_angel', level }), { code: 'bad_request' }, `niveau ${level}`);
-  /* niveau 2 : lancé et enregistré avec son niveau ; gagné → un trésor de plus, puis plus rien à faire */
-  const lv2 = (await game.start(ME, { mode: 'tower_angel', level: 2 })).session;
-  assert.equal(lv2.level, 2);
-  advance(TOWER.duration / GAME.speed * 1000); await game.pump();
-  assert.equal((await game.state(ME)).inventory.slots.filter(s => /^Trésor angélique R[1-7]$/.test(s?.item ?? '')).reduce((n, s) => n + s.qty, 0), 2);
-  assert.deepEqual((await game.judgment(ME)).sides.angel.doneLevels, [1, 2]);
-  assert.equal((await game.judgment(ME)).sides.angel.done, true);
   await assert.rejects(game.start(ME, { mode: 'tower_angel', level: 2 }), { code: 'tower_done' });
   /* la tour fermée (6 h plus tard) : refusée */
   advance(JUDGMENT.openHours * 3600e3);
@@ -703,4 +717,43 @@ test('drop des glyphes : au lancement, les glyphes possédés (inventaire + pos�
   await store.putInventory(ME.id, { slots:[{ item:'Glyphe Pillage', qty:1 }, { item:'Charbon', qty:5 }], nextUid:1, credited:[] });
   const { session } = await game.start(ME, {});
   assert.deepEqual((await store.getGameSession(session.id)).skills[ME.id].owned.sort(), ['Glyphe Force brute', 'Glyphe Pillage']);
+});
+
+test('vue d\'une session en file derrière l\'avance qui la termine (partie fermée entre-temps) : settling, pas d\'erreur', async () => {
+  const me = { id: 'VVVV1111', name: 'Vue' };
+  const fake = fakeLive(() => ({ shares: [] }));
+  /* la partie se termine juste avant que la vue passe : le moteur la ferme et rejette la vue en file */
+  const liveRunner = opts => { const l = fake(opts); l.view = async id => { l.close(id); throw new Error(`partie ${id} fermée`); }; return l; };
+  const game = createGameService({ store: createMemoryGameStore(), liveRunner, randomSeed: () => 99 });
+  await game.start(me, {});
+  const v = await game.view(me, null);
+  assert.equal(v.view, null); assert.equal(v.status, 'settling');
+});
+
+test('bilans jamais vus (30/10) : seul le dernier est montré ; une fois vu, les plus anciens ne reviennent pas', async () => {
+  const { game, advance } = setup();
+  const ids = [];
+  for(let i = 0; i < 3; i++){   // trois sessions finies, bilans jamais vus (quittés sans bouton avant le correctif)
+    ids.push((await game.start(ME, {})).session.id);
+    advance(realDurationMs()); await game.pump(); advance(1000);
+  }
+  assert.equal((await game.state(ME)).ended.id, ids[2], 'le plus récent');
+  await game.ack(ME, ids[2]);
+  assert.equal((await game.state(ME)).ended, null, 'les anciens non vus ne reviennent pas un par un');
+});
+
+test('table de recherche par le serveur : un plan sorti ne ressort pas avant 2 min, refus sans dépense', async () => {
+  const { tierBlueprints } = await import('../src/meta/research.js');
+  const { recipeOfBlueprint } = await import('../src/meta/craft.js');
+  const { game, store, advance } = setup();
+  const [last, ...others] = tierBlueprints(1).filter(recipeOfBlueprint);
+  await store.putInventory(ME.id, { slots:[{ item:'Blueprint parts', qty:300 }], nextUid:1, credited:[], unlocked: others.map(recipeOfBlueprint) });
+  const go = n => game.research(ME, { action:'research', tier:1, opId:'op-recent-' + n });
+  assert.equal((await go(1)).item, last);
+  advance(119_000);
+  await assert.rejects(go(2), e => e.code === 'too_recent' && e.status === 409 && /viennent de sortir.*2 min/.test(e.message));
+  advance(1000);
+  const r = await go(3);
+  assert.equal(r.item, last);
+  assert.equal(r.inventory.slots.find(s => s?.item === 'Blueprint parts').qty, 100, 'seules les 2 recherches réussies ont coûté');
 });

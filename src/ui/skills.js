@@ -9,6 +9,7 @@ import { pxi } from './pxicons.js';
 import { blockedReason, rankOf, nodeText, parentsOf } from '../meta/skills.js';
 import { specLevelHtml } from './level.js';
 import { glyphOf } from '../meta/glyphs.js';
+import { ask } from './dialog.js';
 
 /* état de la case de glyphe d'un skill (st : skills du serveur, inv : inventaire { slots }) : 'none' (pas de glyphe pour ce
    skill), 'posed' / 'inactive' (posé ; inactif si le skill n'est plus au max), 'can_pose' (skill au max et glyphe
@@ -27,7 +28,8 @@ const GLYPH_TIP = { empty:'Case de glyphe : pose le glyphe de ce skill quand le 
 const TREE_PX = { mineur:'pickaxe', logisticien:'ladder', barbare:'sword' };
 const NODE_PX = { mine_speed:'pickaxe', ore_oxygen:'bubbles', ore_rush:'feather', tall_ladder:'ladder', winch:'key',
                   travel_rush:'arrow', winch_speed:'hourglass', mule:'bag', damage:'sword', taunt:'skull', loot:'chest', braum:'shield', lazy_legend:'sparkle',
-                  pick_mastery:'hammer', sword_mastery:'trophy', bench_mastery:'heart' };   // maîtrises (28/10)
+                  pick_mastery:'hammer', sword_mastery:'trophy', bench_mastery:'heart',   // maîtrises (28/10)
+                  ore_drunk:'gem', recon:'target', ravage:'shout' };   // étage 6 (01/11)
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -104,9 +106,9 @@ export function setupSkills({ onOp, inSession, onChange = () => {}, inventory = 
     const b = e.target.closest('[data-node]'); if(b) send({ action:'learn', node:b.dataset.node });
   };
   $('skillTrees').onkeydown = e => { const b = e.target.closest('[data-node]'); if(b && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); send({ action:'learn', node:b.dataset.node }); } };
-  $('skillHead').onclick = e => {
+  $('skillHead').onclick = async e => {
     if(!e.target.closest('#skillReset')) return;
-    if(confirm('Reset des skills : tous les points sont rendus et les trois arbres redeviennent libres. Continuer ?')) send({ action:'reset' });
+    if(await ask('Reset des skills : tous les points sont rendus et les trois arbres redeviennent libres. Continuer ?', { ok:'Reset' })) send({ action:'reset' });
   };
 
   render();

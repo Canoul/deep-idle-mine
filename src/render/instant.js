@@ -3,21 +3,16 @@
    de lignes que la place le permet (setRows) ; elle ne sort pas de la mine. Tout est éclairé, mais une case pas
    encore découverte (G.seen) est noire, comme dans la mine normale. */
 import { BLOCKS, INSTANT_MINE as MI } from '../config.js';
+import { instantPos } from '../shared/instant-view.js';
+import { shownPos } from '../shared/view.js';
 import { loadTextures } from './textures.js';
 import { createMinerSprite } from './miner-sprite.js';
 
 export const MI_TILE = 16;
 const DARK = '#060608';
 
-/* position affichée d'un mineur : en marche, entre sa case et la suivante selon l'avancée de l'action */
-export function instantPos(m){
-  const a = m.action;
-  if(a?.type === 'move' && a.data && Number.isFinite(a.data.x)){
-    const p = Math.min(1, a.dur > 0 ? a.t / a.dur : 1), x0 = m.x + (m.kx || 0), y0 = m.y + (m.ky || 0);
-    return [x0 + (a.data.x - x0) * p, y0 + (a.data.y - y0) * p];
-  }
-  return [m.x + (m.kx || 0), m.y + (m.ky || 0)];   // recul (tours) : décalage dans sa case
-}
+/* position exacte au moment de l'envoi (src/shared/instant-view.js) ; à l'écran : shownPos, qui glisse entre deux envois */
+export { instantPos };
 
 /* Cadrage (logique pure, testée) : coin haut-gauche (en cases) d'une vue de cols × rows centrée sur (fx, fy), sans
    sortir de la carte (colonnes 0 à w-1 ; lignes -1 = bande de ciel à h). Carte plus petite que la vue : centrée. */
@@ -43,7 +38,7 @@ export function createInstantRenderer(cv){
   function draw(G, me){
     const now = performance.now();
     const mine = G.miners.find(m => m.account === me), follow = mine ?? G.miners[0];
-    const [fx, fy] = follow ? instantPos(follow) : [G.w / 2, 0];
+    const [fx, fy] = follow ? shownPos(G, follow, now) : [G.w / 2, 0];
     const tgt = miFrame(fx, fy, cols, rows, G.w, G.h);
     if(!cam) cam = { ...tgt };
     cam.x += (tgt.x - cam.x) * MI.camEase; cam.y += (tgt.y - cam.y) * MI.camEase;
@@ -73,7 +68,7 @@ export function createInstantRenderer(cv){
       ctx.fillRect(px + T * (1 - p) / 2, py + T * (1 - p) / 2, T * p, T * p);
     }
     for(const m of [...G.miners.filter(x => x !== mine), ...(mine ? [mine] : [])]){
-      const [x, y] = instantPos(m);
+      const [x, y] = shownPos(G, m, now);
       if(x < cam.x - 2 || x > cam.x + cols + 1 || y < cam.y - 2 || y > cam.y + rows + 1) continue;
       sprite(m, x * T, y * T, m === mine, now);
     }

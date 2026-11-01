@@ -11,7 +11,7 @@ import { STUFF, ITEMS, STATS, RINGS, CFG } from '../config.js';
 import { takePiece, putPiece } from './inventory.js';
 import { withSkillStats, slotMastery, SKILL_STATS, SKILL_ADD } from './skills.js';
 import { withGlyphStats } from './glyphs.js';
-import { pieceBonus, pieceName, sanitizePiece, lineValue, plusMult, roundStat, runeFactor, isRing } from './piece.js';
+import { pieceBonus, pieceName, sanitizePiece, rolledSpec, rolledValue, lineValue, runeLineValue, runeLineFactor, plusMult, roundStat, runeFactor, isRing } from './piece.js';
 import { pieceGS } from './gearscore.js';
 
 export const SLOT_IDS = STUFF.slots.map(s => s.id);
@@ -51,6 +51,13 @@ export function sanitizeGear(gear){
 export const gearOf = st => sanitizeGear(st.worn);
 
 const num = v => String(v).replace('.', ',');
+/* une valeur de stat telle qu'on l'affiche : arrondie à STUFF.statDecimals (1 décimale par défaut), virgule française,
+   sans zéro inutile (373,89 d'oxygène → 374 ; Vitesse de minage +0,206 reste +0,206) ; STUFF.statFloor : à l'inférieur,
+   comme le jeu les compte (30,9 torches → 30) */
+export const statNum = (k, v) => {
+  const p = 10 ** (STUFF.statDecimals?.[k] ?? 1), round = STUFF.statFloor?.includes(k) ? Math.floor : Math.round;
+  return num(round(v * p + 1e-9) / p);
+};
 const unitOf = k => STUFF.statUnits?.[k] ?? '';
 /* effets d'une pièce (un nom d'objet, ou une pièce avec sa qualité et son niveau), un par ligne :
    ['Oxygène +30', 'Pods +25'] ; une valeur qui remplace la base (set, ex. l'épée) : 'Dégâts 11'.
@@ -64,12 +71,14 @@ export function statLines(entry){
   const b = pieceBonus({ item: p.item, plus: p.plus }), m = plusMult(p.plus | 0);
   const label = k => STUFF.statLabels[k] ?? k;
   return [
-    ...Object.entries(b.set).map(([k, v]) => `${label(k)} ${num(v)}${unitOf(k)}`),
-    ...Object.entries(b.stats).map(([k, v]) => `${label(k)} ${v < 0 ? '−' + num(-v) : '+' + num(v)}${unitOf(k)}`),
+    ...Object.entries(b.set).map(([k, v]) => `${label(k)} ${statNum(k, v)}${unitOf(k)}`),
+    ...Object.entries(b.stats).map(([k, v]) => `${label(k)} ${v < 0 ? '−' + statNum(k, -v) : '+' + statNum(k, v)}${unitOf(k)}`),
+    ...(!rolledSpec(p.item) ? [] : Array.isArray(p.rolled) ? p.rolled.map(k => `${label(k)} +${statNum(k, roundStat(k, rolledValue(p.item, k) * m))}${unitOf(k)}`)
+      : [`${rolledSpec(p.item).lines} lignes de stats aléatoires, tirées au craft`]),
     ...(Array.isArray(p.lines) ? p.lines : []).map(l =>
-      `${label(l.stat)} +${num(roundStat(l.stat, lineValue(p.item, l) * m))}${unitOf(l.stat)}`),
+      `${label(l.stat)} +${statNum(l.stat, roundStat(l.stat, lineValue(p.item, l) * m))}${unitOf(l.stat)}`),
     ...(Array.isArray(p.rune?.lines) ? p.rune.lines : []).map(l =>
-      `${p.rune.frag ? 'Fragment' : 'Rune'} · ${label(l.stat)} +${num(roundStat(l.stat, lineValue(p.item, l, runeFactor(p.rune)) * m))}${unitOf(l.stat)}`),
+      `${p.rune.frag ? 'Fragment' : 'Rune'} · ${label(l.stat)} +${statNum(l.stat, roundStat(l.stat, runeLineValue(p.item, l, runeFactor(p.rune)) * m))}${unitOf(l.stat)}`),
   ];
 }
 /* une rune seule n'a pas de valeur : ses lignes valent un % de la valeur du tier de la pièce qu'elle enchantera */
@@ -77,7 +86,7 @@ export function runeLines(p){
   const label = k => STUFF.statLabels[k] ?? k;
   const f = runeFactor(p);
   return (Array.isArray(p?.lines) ? p.lines : []).map(l => l.stat === 'discoverMax' ? `${label(l.stat)} +1`
-    : `${label(l.stat)} : ${num(Math.round(l.pct * f * 100) / 100)} % du tier de la pièce`);
+    : `${label(l.stat)} : ${num(Math.round(l.pct * runeLineFactor(l, f) * 100) / 100)} % du tier de la pièce`);
 }
 /* valeur d'un effet d'anneau à ce niveau : + RINGS.upgrade point(s) par rang (27/10/2026 : +3 % → +7,5 % au +9) */
 const ringVal = (v, plus) => r2(v + RINGS.upgrade * (plus | 0));

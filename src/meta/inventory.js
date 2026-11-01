@@ -8,7 +8,7 @@
      améliorée porte aussi q, lines, plus (src/meta/piece.js) ;
    - capacité illimitée pour l'instant.
    Un slot vidé (objet consommé) devient null : le trou est réutilisé par le prochain nouvel objet. */
-import { ITEMS, INVENTORY, RESEARCH, UPGRADE, FURNACE } from '../config.js';
+import { ITEMS, INVENTORY, RESEARCH, UPGRADE, FURNACE, RUNE } from '../config.js';
 import { RECIPES } from '../recipes.js';
 import { sanitizePiece } from './piece.js';
 import { rarityDef } from './rarity.js';
@@ -123,10 +123,12 @@ export function gridSize(inv, cols, minSlots){
 
 const CATALOG = new Map(Object.keys(ITEMS).map((n, i) => [n, i]));
 const GROUP = new Map(INVENTORY.sortGroups.flatMap((g, i) => g.cats.map(c => [c, i])));
-/* clé de tri : type (INVENTORY.sortGroups, les autres après), rareté du catalogue (la plus rare d'abord), ordre du catalogue */
-const sortKey = s => [GROUP.get(ITEMS[s.item]?.cat) ?? INVENTORY.sortGroups.length, -rarityDef(s.item).rank, CATALOG.get(s.item) ?? Infinity];
+/* clé de tri : type (INVENTORY.sortGroups, les autres après), rareté du catalogue (la plus rare d'abord), ordre du catalogue,
+   puis qualité pour les runes et les fragments (31/10/2026, Geoffrey : R7 d'abord) ; celle des autres pièces ne compte pas */
+const runeQuality = s => s.item === RUNE.item || s.item === RUNE.fragment.item ? s.q ?? 0 : 0;
+const sortKey = s => [GROUP.get(ITEMS[s.item]?.cat) ?? INVENTORY.sortGroups.length, -rarityDef(s.item).rank, CATALOG.get(s.item) ?? Infinity, -runeQuality(s)];
 
-/* trie l'inventaire et le tasse au début (plus de trous) ; à égalité (deux pièces du même objet), l'ordre actuel est
+/* trie l'inventaire et le tasse au début (plus de trous) ; à égalité (deux pièces du même objet, deux runes de même qualité), l'ordre actuel est
    gardé. Rejouer le tri ne change rien. */
 export function sortInventory(inv){
   const keyed = inv.slots.filter(Boolean).map((s, i) => ({ s, k:[...sortKey(s), i] }));
@@ -193,7 +195,7 @@ export function deserialize(json){
     ? [...new Set(d.unlocked.filter(n => typeof n === 'string' && ((Object.hasOwn(RECIPES, n) && RECIPES[n].unlock) || FURNACE_UNLOCKS.has(n))))] : [];   // + recettes du four (« Four : Chitine », 27/10)
   inv.research = Array.isArray(d.research) ? d.research.filter(e => e && typeof e.id === 'string' && typeof e.kind === 'string'
       && e.result && typeof e.result.item === 'string' && (e.result.parts === undefined || Number.isSafeInteger(e.result.parts)))
-    .map(e => ({ id:e.id, kind:e.kind, result:{ ...e.result, ok:true } })).slice(-RESEARCH.opMemory) : [];
+    .map(e => ({ id:e.id, kind:e.kind, result:{ ...e.result, ok:true }, ...(Number.isFinite(e.at) ? { at:e.at } : {}) })).slice(-RESEARCH.opMemory) : [];
   inv.upgrades = Array.isArray(d.upgrades) ? d.upgrades.filter(e => e && typeof e.id === 'string' && typeof e.kind === 'string' && Number.isSafeInteger(e.uid))
     .map(e => ({ id:e.id, kind:e.kind, uid:e.uid, ...(typeof e.success === 'boolean' ? { success:e.success } : {}),
                  ...(Number.isSafeInteger(e.fragment) ? { fragment:e.fragment } : {}) })).slice(-UPGRADE.opMemory) : [];

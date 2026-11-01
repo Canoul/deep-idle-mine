@@ -6,7 +6,7 @@
   --u:2px;
   --void:#0b0806; --panel:#191310; --txt:#efe3cf; --mut:#a8957f; --acc:#ff7a2e; --acc-lt:#ffc27a; --acc-dk:#8f2f0c;
   --ok:#58d26a; --bad:#ff5a4a; --o2:#7cc6f2; --shadow:#2a1206; --sep:#2a231e; --chip:#1d1612; --sel:#24160d; --line:#3a302a;
-  --f-body:'Jersey 10',system-ui,sans-serif; --f-title:'Jersey 15','Jersey 10',system-ui,sans-serif;
+  --f-body:'VT323',system-ui,sans-serif; --f-title:'Jersey 15','VT323',system-ui,sans-serif;
   --fs:17px; --fs-s:15px; --fs-l:21px; --fs-xl:27px; --fs-h1:42px;
   --top-h:calc(30*var(--u)); --dock-h:calc(58*var(--u));
 }
@@ -16,11 +16,64 @@
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html{background:var(--void) url(../../textures/ui/wall.png) 0 0/calc(96*var(--u)) repeat;image-rendering:pixelated}
+html{scrollbar-gutter:stable}
 body{margin:0;min-height:100dvh;color:var(--txt);font:400 var(--fs)/1.3 var(--f-body);overflow-x:clip}
 /* assombrit le mur par paliers (vignette sans flou) */
 body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
   background:radial-gradient(ellipse 75% 70% at 50% 45%,rgba(8,5,4,.35) 0 45%,rgba(8,5,4,.55) 45% 70%,rgba(8,5,4,.75) 70%)}
 img,canvas{image-rendering:pixelated}
+/* fond : la session en cours (src/ui/backdrop.js), sous la vignette, tamisée pour rester un décor */
+.bgSession{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}   /* au-dessus de la vignette (body::before), sous .app */
+/* place, taille et luminosité posées par backdrop.js : plein écran assombri, ou en transition vers la place de la session */
+.bgSession canvas{position:absolute}
+/* le Carreau, la ville du spawn (src/ui/town.js) : fond hors session, au même étage que la mine du fond ; en promenade
+   (onglet Session sans session), plein écran sans la barre du haut ni les panneaux : seule la barre d'action reste */
+.bgTown{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.bgTown canvas{position:absolute}
+.bgTown.walk{pointer-events:auto;cursor:pointer;touch-action:none}
+.townHint{display:none}
+.bgTown.walk .townHint{display:flex;flex-direction:column;align-items:center;gap:var(--u);position:absolute;top:calc(4*var(--u));left:50%;transform:translateX(-50%);
+  padding:calc(2*var(--u)) calc(6*var(--u));background:rgba(11,8,6,.75);border:var(--u) solid var(--line);color:var(--mut);font-size:var(--fs-s);pointer-events:none;text-align:center;max-width:calc(100vw - 32px)}
+.townHint b{color:var(--acc-lt);font:400 var(--fs-l)/1 var(--f-title)}
+.townHint kbd{color:var(--txt);font:inherit;border:var(--u) solid var(--line);padding:0 var(--u)}
+.townEmotes{display:flex;gap:var(--u);margin-top:var(--u);pointer-events:auto}
+.townEmotes button{min-width:calc(16*var(--u));padding:var(--u);font-size:var(--fs-l);line-height:1}
+/* fiche d'un joueur cliqué dans la ville (src/ui/town.js) */
+.townCard{position:absolute;z-index:3;display:flex;flex-direction:column;gap:var(--u);min-width:calc(110*var(--u));max-width:calc(100vw - 16px);
+  padding:calc(3*var(--u)) calc(5*var(--u));background:rgba(11,8,6,.92);border:var(--u) solid var(--line);font-size:var(--fs-s);pointer-events:auto;cursor:default}
+.townCard b{color:var(--acc-lt);font:400 var(--fs-l)/1 var(--f-title)}
+.townCard .tcStatus{color:var(--ok)}
+.tcBtns{display:flex;flex-wrap:wrap;gap:calc(2*var(--u));margin-top:var(--u)}
+.tcMsg:empty{display:none}
+body.townWalk .topbar,body.townWalk .views,body.townWalk .guide{visibility:hidden}
+/* bouton « Entrer » devant une porte (src/ui/town.js) : au milieu, au-dessus de la barre d'action ; « Chercher un
+   groupe » à côté devant le chevalement et la place (30/10) */
+.townDoor{position:absolute;left:50%;bottom:calc(var(--dock-h) + 12px);transform:translateX(-50%);z-index:3;pointer-events:auto;   /* téléphone : sous le bandeau (town.js size) */
+  display:flex;flex-wrap:wrap;justify-content:center;gap:calc(3*var(--u));width:max-content;max-width:calc(100vw - 16px)}
+.townDoor button{font-size:var(--fs-l);padding:calc(2*var(--u)) calc(8*var(--u));white-space:nowrap}
+/* recherche de groupe dans la barre d'émotes (à la place de « On mine ? ») : icône, puis le temps de recherche */
+.townEmotes .townLfg{display:inline-flex;align-items:center;justify-content:center;gap:var(--u)}
+.townEmotes .townLfg:not(.on){color:var(--acc-lt)}
+.townEmotes .townLfg .pi{width:1em;height:1em}
+.townEmotes .townLfg span{font-size:var(--fs-s)}
+.townEmotes .townLfg span:empty{display:none}
+.townLfgMsg{color:var(--bad)}
+.townLfgMsg:empty{display:none}
+body.townWalk .app{pointer-events:none}   /* les clics passent à la ville… */
+body.townWalk .dock,body.townWalk .chatDock,body.townWalk #notifs{pointer-events:auto}   /* … sauf la barre d'action et les pop-ups */
+/* transition avec l'onglet Session (backdrop.js) : les panneaux glissent depuis les bords (.bgEnter) ou y repartent
+   (.bgLeave, l'onglet reste affiché par-dessus le nouveau le temps de la sortie), linéaire comme le zoom de la mine */
+@keyframes bgFromL{from{transform:translateX(-110%);opacity:0}}
+@keyframes bgFromR{from{transform:translateX(110%);opacity:0}}
+@keyframes bgFromT{from{transform:translateY(-100%);opacity:0}}
+.view.bgLeave{z-index:5;pointer-events:none}
+.bgEnter .runL,.bgEnter .runGrid.mi>aside:first-child{animation:bgFromL var(--bgAnim,450ms) linear both}
+.bgEnter .runR,.bgEnter .rail,.bgEnter .runGrid.mi>aside:last-child{animation:bgFromR var(--bgAnim,450ms) linear both}
+.bgEnter #run>header,.bgEnter .sessSwitch{animation:bgFromT var(--bgAnim,450ms) linear both}
+.bgLeave .runL,.bgLeave .runGrid.mi>aside:first-child{animation:bgFromL var(--bgAnim,450ms) linear reverse both}
+.bgLeave .runR,.bgLeave .rail,.bgLeave .runGrid.mi>aside:last-child{animation:bgFromR var(--bgAnim,450ms) linear reverse both}
+.bgLeave #run>header,.bgLeave .sessSwitch{animation:bgFromT var(--bgAnim,450ms) linear reverse both}
+@media (prefers-reduced-motion:reduce){.bgEnter *,.bgLeave *{animation:none!important}}
 .pi{width:calc(16*var(--u));height:calc(16*var(--u));flex:none;display:inline-block;vertical-align:middle}
 h1,h2,h3{font-weight:400;font-family:var(--f-title);letter-spacing:.03em}
 a{color:var(--acc-lt)}
@@ -77,6 +130,12 @@ select option{background:var(--panel)}
 .slot .noicon{color:var(--mut);text-transform:uppercase}
 .slot .q{position:absolute;right:var(--u);bottom:0;font-size:var(--fs-s);font-variant-numeric:tabular-nums;pointer-events:none;
   text-shadow:var(--u) 0 0 #000,calc(-1*var(--u)) 0 0 #000,0 var(--u) 0 #000,0 calc(-1*var(--u)) 0 #000}
+/* pièce runée (src/ui/rarity.js runeMark) : la texture de sa rune, en petit dans le coin */
+.runeMark{position:absolute;left:calc(-1*var(--u));bottom:calc(-1*var(--u));width:calc(11*var(--u));height:calc(11*var(--u));background:center/100% 100% no-repeat;
+  image-rendering:pixelated;pointer-events:none;
+  filter:drop-shadow(var(--u) 0 0 #000) drop-shadow(calc(-1*var(--u)) 0 0 #000) drop-shadow(0 var(--u) 0 #000) drop-shadow(0 calc(-1*var(--u)) 0 #000)}
+.runeIco{position:relative;display:block}
+.runeIco img{display:block;width:calc(16*var(--u));height:calc(16*var(--u))}
 .slot.fresh{outline:var(--u) solid #fff1dc;outline-offset:calc(-4*var(--u))}
 .sw{display:inline-block;width:calc(5*var(--u));height:calc(5*var(--u));margin-right:calc(2*var(--u));vertical-align:0;box-shadow:0 0 0 var(--u) #000}
 /* bulle d'info (src/ui/tooltip.js) : titre, puis un effet par ligne */
@@ -156,6 +215,21 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .navSession .bar{width:calc(48*var(--u))}
 .navSession.live{cursor:pointer}
 .navSession.live:hover{color:var(--acc-lt)}
+/* énergie et prison (29/10, src/ui/prison.js) : jauge et boutons de la barre du haut */
+.navLevel{display:flex;align-items:center;gap:calc(3*var(--u));font-variant-numeric:tabular-nums;white-space:nowrap}
+.navLevel>b{font:400 var(--fs-l)/1 var(--f-title);color:#ffcf8a}
+.navLevel .bar{width:calc(50*var(--u))}
+.navLevel .bar i{background:var(--o2)}
+.navLevel small{color:var(--mut);font-size:var(--fs-s)}
+.navEnergy{display:flex;align-items:center;gap:calc(2*var(--u));font-size:var(--fs-l);font-variant-numeric:tabular-nums;white-space:nowrap}
+.navEnergy .bolt{color:#ffd23f;text-shadow:var(--u) var(--u) 0 #000}
+.navEnergy .bar{width:calc(36*var(--u))}
+.navEnergy .bar i{background:#ffd23f}
+.navEnergy.low #navEnergyTxt{color:var(--bad)}
+.navPrison{display:flex;gap:var(--u)}
+.navPrison button{min-height:0;padding:var(--u) calc(3*var(--u))}
+.navPrison button.on{color:var(--acc-lt)}
+.navShort{display:none}
 .navWiki{display:inline-flex;align-items:center;gap:calc(2*var(--u));color:var(--mut);text-decoration:none}
 .navWiki:hover{color:var(--acc-lt)}
 .navWiki .pi{width:calc(12*var(--u));height:calc(12*var(--u))}
@@ -188,7 +262,10 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .soon{text-align:center}
 .soon .big .pi{width:calc(48*var(--u));height:calc(48*var(--u));color:var(--mut)}
 .soon h2{margin:calc(3*var(--u)) 0 var(--u);font-size:var(--fs-xl)}
-.invWrap,.furnWrap,.lobbyWrap{position:relative;max-width:calc(450*var(--u));margin:0 auto;padding:calc(12*var(--u)) calc(9*var(--u)) calc(18*var(--u))}
+/* tous les onglets ont la même largeur, quel que soit leur contenu, et sont réduits à 90 % (31/10/2026, Geoffrey ; téléphone :
+   taille normale, le texte deviendrait illisible ; Session : son affichage suit la mine) */
+@media (min-width:701px){ .view:not([data-view="session"]){zoom:.9} }
+.invWrap,.furnWrap,.lobbyWrap{position:relative;width:100%;max-width:calc(560*var(--u));margin:0 auto;padding:calc(12*var(--u)) calc(9*var(--u)) calc(18*var(--u))}
 .invHead{display:flex;align-items:flex-end;justify-content:space-between;gap:calc(6*var(--u));margin-bottom:calc(15*var(--u));flex-wrap:wrap}
 .invHead h1,.lobbyWrap h1{display:flex;align-items:center;gap:calc(6*var(--u));margin:0;font-size:var(--fs-h1);line-height:.85;color:#ffe6c4;
   text-shadow:var(--u) var(--u) 0 var(--shadow),calc(2*var(--u)) calc(2*var(--u)) 0 #000}
@@ -201,11 +278,18 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .ringStats{color:#c79bff}   /* effet des anneaux (groupe) */
 
 /* ---------- lobby (lecture seule pendant une session) ---------- */
-.lobbyWrap{max-width:calc(560*var(--u))}
 .lobbyWrap>h1{margin-bottom:calc(15*var(--u))}
 .inSession{display:flex;align-items:center;justify-content:space-between;gap:calc(4*var(--u));flex-wrap:wrap;margin-bottom:calc(15*var(--u));
   padding:calc(3*var(--u)) calc(6*var(--u));background:var(--sel);box-shadow:0 0 0 var(--u) var(--acc),calc(2*var(--u)) calc(2*var(--u)) 0 #000}
 .inSession .pi{color:var(--acc);margin-right:calc(2*var(--u))}
+.actList{display:flex;flex-direction:column;gap:calc(3*var(--u))}
+.actBtn{width:100%;justify-content:flex-start;gap:calc(6*var(--u));min-height:calc(30*var(--u));padding:calc(3*var(--u)) calc(8*var(--u));text-align:left}
+.actIcon{flex:none;width:calc(16*var(--u));text-align:center;font-size:var(--fs-xl)}
+.actText{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.1}
+.actText b{font:400 var(--fs-xl)/1.1 var(--f-title);color:#ffe6c4}
+.actText small{color:var(--mut);font-size:var(--fs)}
+.actHead{display:flex;align-items:center;gap:calc(6*var(--u));margin-bottom:calc(9*var(--u))}
+.actHead h2{margin:0}
 .lobbyCols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:calc(18*var(--u)) calc(12*var(--u));align-items:start}
 .lobbyCol{display:flex;flex-direction:column;gap:calc(18*var(--u))}
 .lobbyWrap.locked .lockable{opacity:.55}
@@ -254,12 +338,21 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .dev input,.dev select{width:100%}
 .devSpec{display:grid;grid-template-columns:1fr calc(14*var(--u));gap:calc(2*var(--u))}
 .devNote{grid-column:1/-1;margin:0}
+.devCard button,.devCard input,.devCard select{min-height:calc(18*var(--u));font-size:var(--fs)}
+.devCard.devMember>.dev:not(#devPresets){display:none}
+#devPresets{grid-template-columns:1fr;gap:calc(4*var(--u))}
+.devMiner{display:grid;grid-template-columns:calc(62*var(--u)) minmax(0,1fr) minmax(0,1.2fr);gap:calc(3*var(--u));align-items:center}
+.devMiner b{font-weight:400;font-size:var(--fs);overflow-wrap:anywhere}
+.devPick{display:flex;gap:calc(2*var(--u))}
+.devPick input{flex:1;min-width:0}
+.devPick button{flex:none;padding:0 calc(6*var(--u))}
+@media (max-width:700px){ .devMiner{grid-template-columns:1fr} }
 
 /* ---------- onglet Session : panneaux à gauche, mine au centre, jauge, panneaux à droite ; collé à la fenêtre ---------- */
 /* le bilan ne couvre que l'onglet Session (pas toute la fenêtre) : calque limité à cette section */
 .view[data-view="session"]{position:relative;min-height:calc(100dvh - var(--top-h) - var(--dock-h))}
 #end{position:absolute;inset:0;background:rgba(8,5,4,.8);display:flex;align-items:flex-start;justify-content:center;padding:6vh calc(6*var(--u)) 0;z-index:9}
-#end .box{position:sticky;top:6vh;max-width:calc(240*var(--u));width:96%;max-height:calc(100dvh - var(--top-h) - var(--dock-h) - 8vh);overflow:auto}
+#end .box{position:sticky;top:6vh;max-width:calc(240*var(--u));width:96%;max-height:calc(100dvh - var(--top-h) - var(--dock-h) - 8vh);overflow:auto;overscroll-behavior:contain}
 #end h3{margin:0 0 calc(4*var(--u));color:var(--acc-lt);font-size:var(--fs-xl)}
 #end .share{align-items:flex-start;padding:var(--u) calc(2*var(--u))}
 #end .share>span:first-child{white-space:nowrap}
@@ -268,17 +361,25 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 #noSession{padding:16vh calc(6*var(--u)) 0}
 /* session et Bloc géant en même temps (27/10) : la barre #sessSwitch choisit ce qu'on voit, sans toucher aux hidden */
 .sessSwitch{position:fixed;top:var(--top-h);left:0;right:0;z-index:3;height:calc(19*var(--u));display:flex;justify-content:center;align-items:center;background:var(--panel);border-bottom:var(--u) solid var(--sep)}
-.view.both #run,.view.both #miRun,.view.both #twRun,.view.both #gtRun{top:calc(var(--top-h) + 19*var(--u))}
-.view.both.paneGiant #run,.view.both.paneGiant #miRun,.view.both.paneGiant #twRun,.view.both.paneGiant #end,
-.view.both.paneSession #gtRun,.view.both.paneSession #gtDone{display:none!important}
+.view.both #run,.view.both #miRun,.view.both #twRun,.view.both #gtRun,.view.both #hcRun{top:calc(var(--top-h) + 19*var(--u))}
+.view.both.paneGiant #run,.view.both.paneGiant #miRun,.view.both.paneGiant #twRun,.view.both.paneGiant #end,.view.both.paneGiant #hcRun,.view.both.paneGiant #hcDone,
+.view.both.paneHc #run,.view.both.paneHc #miRun,.view.both.paneHc #twRun,.view.both.paneHc #end,.view.both.paneHc #gtRun,.view.both.paneHc #gtDone,
+.view.both.paneSession #gtRun,.view.both.paneSession #gtDone,.view.both.paneSession #hcRun,.view.both.paneSession #hcDone{display:none!important}
 #noSession button{margin-top:calc(4*var(--u))}
-#run,#miRun,#twRun,#gtRun,#inRun{position:fixed;top:var(--top-h);bottom:0;left:0;right:0;z-index:2;display:flex;flex-direction:column}
+#run,#miRun,#twRun,#gtRun,#hcRun,#inRun{position:fixed;top:var(--top-h);bottom:0;left:0;right:0;z-index:2;display:flex;flex-direction:column}
 /* la mine et la jauge restent au-dessus de la barre d'action ; les colonnes aussi par défaut, mais descendent jusqu'en
    bas de l'écran quand la barre (centrée) ne passe pas dessous (src/ui/fit.js, clearDock) */
-#cvWrap,#cvMiWrap,#cvTwWrap,#cvGtWrap,#cvInWrap,.rail,.runL,.runR,.runGrid.mi>aside{margin-bottom:var(--dock-h)}
-#run>header,#miRun>header,#twRun>header,#gtRun>header,#inRun>header{display:flex;flex-wrap:wrap;gap:calc(4*var(--u)) calc(6*var(--u));align-items:center;padding:calc(3*var(--u)) calc(6*var(--u));
+#cvWrap,#cvMiWrap,#cvTwWrap,#cvGtWrap,#cvHcWrap,#cvInWrap,.rail,.runL,.runR,.runGrid.mi>aside{margin-bottom:var(--dock-h)}
+#run>header,#miRun>header,#twRun>header,#gtRun>header,#hcRun>header,#inRun>header{display:flex;flex-wrap:wrap;gap:calc(4*var(--u)) calc(6*var(--u));align-items:center;padding:calc(3*var(--u)) calc(6*var(--u));
   background:#120d0a;box-shadow:0 var(--u) 0 #000}
 .timer{font-size:var(--fs-xl);font-variant-numeric:tabular-nums}
+/* prison (29/10) : bandeau au-dessus de la mine ; ni chat, ni focus, ni vitesse (rien à choisir pendant un run) */
+.prisonBanner{display:flex;align-items:center;justify-content:center;gap:calc(3*var(--u));padding:calc(2*var(--u)) calc(6*var(--u));
+  background:var(--sel);box-shadow:inset 0 calc(-1*var(--u)) 0 var(--acc-dk);font-size:var(--fs-l);font-variant-numeric:tabular-nums;text-align:center}
+.prisonBanner>span:first-child{color:var(--acc)}
+.prisonOn #focusCard,.prisonOn #focusAreaCard,.prisonOn:not(.prisonDev) #speedBtns,.prisonOn #pauseBtn,.prisonOn #seedLbl{display:none!important}   /* vitesses : en mode dev seulement (29/10) */
+.lobbyActions .launchCost{align-self:center;color:var(--mut)}
+.lobbyActions .launchCost.err{color:var(--bad)}
 .grow{flex:1;min-width:calc(60*var(--u))}
 .speedBtns{display:flex;gap:var(--u)}
 .runGrid{flex:1;min-height:0;display:grid;grid-template-columns:calc(125*var(--u)) minmax(0,1fr) calc(24*var(--u)) calc(125*var(--u));
@@ -288,12 +389,12 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
   scrollbar-width:thin;scrollbar-color:var(--line) transparent}
 .runL .card,.runR .card,.runGrid.mi .card{font-size:var(--fs-s)}
 .runL .card>h2,.runR .card>h2,.runGrid.mi .card>h2{font-size:var(--fs)}
-#cvWrap,#cvMiWrap,#cvTwWrap,#cvGtWrap,#cvInWrap{position:relative;min-width:0;min-height:0;display:grid;place-items:center}
+#cvWrap,#cvMiWrap,#cvTwWrap,#cvGtWrap,#cvHcWrap,#cvInWrap{position:relative;min-width:0;min-height:0;display:grid;place-items:center}
 /* la mine remplit la largeur : plus haute que sa boîte, elle est centrée et rognée en haut et en bas */
 #cvWrap{overflow:hidden}
 /* les canvas sont hors du flux : la boîte a la taille que lui donne la page, jamais celle du canvas (sinon le calage de
    src/ui/fit.js se nourrit de sa propre taille et le canvas rétrécit / grandit en boucle) */
-#cv,#cvMi,#cvTw,#cvGt,#cvIn{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
+#cv,#cvMi,#cvTw,#cvGt,#cvHc,#cvIn{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
 #followBtn{z-index:1}
 #cv,#cvMi{display:block;background:#000;box-shadow:0 0 0 var(--u) #000,0 0 0 calc(3*var(--u)) var(--line),calc(4*var(--u)) calc(4*var(--u)) 0 calc(3*var(--u)) #000}
 #cv{touch-action:none;cursor:grab}
@@ -310,11 +411,84 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 #log,.miLog{max-height:calc(110*var(--u));overflow:auto;color:var(--mut)}
 #log div,.miLog div{padding:var(--u) 0;box-shadow:0 var(--u) 0 var(--sep)}
 #log b{color:var(--txt);font-weight:400}
-/* chat de session (src/ui/chat.js) */
-#chatLog{max-height:calc(90*var(--u));overflow:auto;overflow-wrap:anywhere}
-#chatLog div{padding:var(--u) 0}
-#chatLog b{color:var(--txt);font-weight:400}
-#chatLog .mine b{color:var(--ok)}
+/* téléphone (30/10/2026) : pas de défilement interne du journal (le doigt y restait coincé, sans pouvoir descendre
+   jusqu'aux onglets) ; il montre ses 8 dernières lignes et la page défile */
+@media (max-width:700px){#log,.miLog{max-height:none;overflow:visible} #log div:nth-child(n+9),.miLog div:nth-child(n+9){display:none}}
+/* chat de session et chat global du lobby (src/ui/chat.js) */
+.chatDock{position:fixed;left:0;bottom:0;z-index:35;width:var(--chat-w);height:var(--chat-h,60dvh);display:flex;flex-direction:column}
+.chatDock.folded{height:auto}
+/* bordures à tirer, invisibles, à cheval sur le bord de la boîte (src/ui/chat-dock.js) */
+.chatEdge{position:absolute;z-index:2;touch-action:none}
+.chatEdge.top{left:0;right:0;top:-6px;height:12px;cursor:ns-resize}
+.chatEdge.right{top:0;bottom:0;right:-6px;width:12px;cursor:ew-resize}
+.chatEdge.corner{top:-6px;right:-6px;width:16px;height:16px;cursor:nesw-resize}
+.chatDock.folded .chatPanel,.chatDock.folded .chatEdge,.chatDock.folded .chatLog,.chatDock.folded .chatForm,.chatDock.folded #gchatNote{display:none}
+.chatDock .card{flex:1;min-height:0;margin:0;display:flex;flex-direction:column;background:rgba(11,8,6,.92)}
+.chatHead{display:flex;align-items:center;gap:calc(2*var(--u));margin-bottom:calc(3*var(--u))}
+.chatTabs{flex:1;min-width:0;display:flex;flex-wrap:wrap;align-items:center;gap:var(--u)}
+.chatTabs button,.chatPanel button{min-height:0;height:calc(11*var(--u));padding:0 calc(3*var(--u));font-size:var(--fs-s)}
+.chatTabs .chatGear,.chatTabs .chatPlus{padding:0 calc(2*var(--u))}
+.chatPanel{display:flex;flex-wrap:wrap;gap:calc(2*var(--u)) calc(4*var(--u));align-items:center;margin-bottom:calc(3*var(--u));padding-bottom:calc(3*var(--u));border-bottom:var(--u) solid var(--line);font-size:var(--fs-s)}
+.chatPanel input:not([type]){width:100%}
+#gchatForm{flex-wrap:wrap}   /* chat étroit : le champ sur sa ligne, le canal et Envoyer dessous */
+#gchatInput{flex:1 1 100%;order:-1}
+#gchatChan{flex:1;min-width:0;font-size:var(--fs-s)}
+.ch-general{color:#fff}
+.chSystem{color:#ffd24a}
+.ch-mp{color:#ff9ad5}
+.ch-group{color:#6db3ff}
+.chLead{color:#b5dcff}   /* [Chef de groupe] : un peu plus clair que son canal */
+.ch-guild{color:#c084ff}
+.ch-lfg{color:#7be07b}
+.chatFold{flex:none;min-height:0;min-width:calc(12*var(--u));height:calc(10*var(--u));padding:0}
+#gchatLog{flex:1;min-height:0;max-height:none}
+body{--chat-w:calc(287.5*var(--u))}
+/* le chat flotte par-dessus : sa taille ne décale rien (31/10). overNav : plus large que le début de la barre d'action, son
+   champ reste au-dessus d'elle */
+.chatDock.overNav .card{padding-bottom:calc(var(--dock-h) + 6*var(--u))}
+@media (min-width:1171px){ body.chatOn #run .runL{margin-bottom:var(--chat-h,60dvh)!important} }   /* la colonne de gauche s'arrête au-dessus du chat */
+@media (max-width:1170px){
+  /* bandeau du haut et barre d'action (31/10/2026) : ils tiennent dans l'écran, y compris en paysage (le pseudo se raccourcit,
+     les onglets défilent) ; sinon le navigateur dézoome toute la page et plus rien n'est centré */
+  .topbar{overflow:hidden}
+  .topbar>*{flex:none}
+  .topbar>.navAccount{flex:0 1 auto;min-width:calc(24*var(--u))}
+  .brand,.navSession .bar{display:none}
+  .navPrison{margin-left:auto}
+  #navPrisonStop{white-space:nowrap}
+  .dock{left:calc(2*var(--u));right:calc(2*var(--u));transform:none;justify-content:flex-start}
+  .orb{display:none}
+  .dock ul{overflow-x:auto;max-width:100%}
+  .dock ul button{flex:none}
+  .chatDock{width:100%;bottom:calc(var(--dock-h) + 2*var(--u))}
+  .chatDock.overNav .card{padding-bottom:0}
+  .chatEdge.right,.chatEdge.corner{display:none}   /* toute la largeur de l'écran */
+  .chatDock.folded{width:max-content;max-width:100%}
+  .chatDock.folded .chatTabs{flex-wrap:nowrap}
+  body.chatOn .guide{display:none}   /* chat ouvert : le guide cacherait son champ, il revient quand on le replie */
+  .guide{bottom:calc(var(--dock-h) + 30*var(--u))}   /* au-dessus du chat replié */
+}
+/* téléphone (31/10/2026, CHAT.dock.phone) : le chat ne recouvre plus rien, il a son onglet, en plein écran entre le bandeau et la barre */
+.phoneOnly{display:none}
+body.phone .phoneOnly{display:block}
+body.phone .chatDock.folded{display:none}
+body.phone .chatDock{top:var(--top-h);bottom:calc(var(--dock-h) + 2*var(--u));left:0;width:100%;height:auto}
+body.phone .chatEdge,body.phone .chatFold{display:none}
+body.phone .chatDock .card{background:#0b0806}
+.chatLog{max-height:calc(90*var(--u));overflow:auto;overflow-wrap:anywhere}
+.chatLog div{padding:var(--u) 0}
+.chatLobby{all:unset;cursor:pointer;color:#ffd23f;text-decoration:underline}
+.chatLobby:hover,.chatLobby:focus-visible{color:#fff}
+.lobbyPeek{position:fixed;z-index:60;width:calc(190*var(--u));max-width:calc(100vw - 16px);padding:calc(4*var(--u));background:var(--panel,#1a1512);box-shadow:0 0 0 var(--u) #000,0 0 0 calc(2*var(--u)) var(--sep);pointer-events:none}
+.lobbyPeek b.tit,.formGroup b.tit{display:block;margin-bottom:calc(2*var(--u))}
+.lobbyPeek .peekSlots,.formGroup .peekSlots{display:grid;grid-template-columns:repeat(3,1fr);gap:calc(2*var(--u));margin-bottom:calc(2*var(--u))}
+.lobbyPeek .pslot,.formGroup .pslot{min-width:0;padding:calc(2*var(--u));font-size:var(--fs-s);overflow:hidden}
+.lobbyPeek .pslot .av,.formGroup .pslot .av{width:calc(24*var(--u));height:calc(24*var(--u))}
+.lobbyPeek .pslot b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lobbyPeek .pslot.free{opacity:.55}
+.chatLog b{color:var(--txt);font-weight:400}
+.chatLog .mine b{color:var(--ok)}
+.chatLog time{color:var(--mut);margin-right:calc(2*var(--u))}
 .chatForm{display:flex;gap:calc(3*var(--u));margin-top:calc(3*var(--u))}
 .chatForm input{flex:1;min-width:0}
 /* jauge de profondeur : surface en haut, fond de la mine ouverte en bas */
@@ -337,12 +511,19 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .focusNote{margin-top:calc(3*var(--u));padding:calc(2*var(--u)) calc(3*var(--u));box-shadow:inset 0 0 0 var(--u) var(--bad);display:flex;gap:calc(2*var(--u));align-items:flex-start}
 .focusNote button{margin-left:auto;min-height:0;padding:0 calc(2*var(--u))}
 
-/* ---------- fenêtres (treasure, stuff, four, concasseur) : ne couvrent que leur onglet ---------- */
-#loot,#spick,#fpick,#cpick,#fview{position:absolute;inset:0;background:rgba(8,5,4,.8);display:flex;align-items:flex-start;justify-content:center;padding:10vh calc(6*var(--u)) 0;z-index:9}
+/* ---------- fenêtres (treasure, stuff, four, concasseur) : visibles seulement avec leur onglet (elles sont dedans) ----------
+   Calées sur l'écran entre la barre du haut et la barre d'action, jamais plus grandes : au-delà, la fenêtre défile
+   (28/10/2026). */
+#loot,#spick,#fpick,#cpick,#fview{position:fixed;top:var(--top-h);bottom:var(--dock-h);left:0;right:0;background:rgba(8,5,4,.8);display:flex;
+  align-items:flex-start;justify-content:center;padding:6vh calc(6*var(--u)) calc(4*var(--u));z-index:9}
+#loot .box,#spick .box,#fpick .box,#cpick .box,#fview .box{max-height:100%;overflow:auto;overscroll-behavior:contain}
+/* barre de défilement fine et sombre (comme les colonnes de la session) pour toutes les fenêtres qui défilent */
+#loot .box,#spick .box,#fpick .box,#cpick .box,#fview .box,#account .box,#end .box,#obtained .box,#notifs,.guide .gBody,.frecs{
+  scrollbar-width:thin;scrollbar-color:var(--line) transparent}
 #loot .box,#spick .box,#fpick .box,#cpick .box{max-width:calc(220*var(--u));width:96%}
 #loot h3,#spick h3,#fpick h3,#cpick h3,#fview h3{margin:0 0 calc(4*var(--u));color:var(--acc-lt);font-size:var(--fs-xl);display:flex;align-items:center;gap:calc(3*var(--u))}
 /* fiche d'un ami (onglet Social) : les cases du stuff à gauche, les stats à droite, rien de cliquable */
-#fview{padding-top:4vh}
+#fview{padding-top:3vh}
 #fview .box{max-width:calc(580*var(--u));width:96%}
 #fview .fviewBody{display:grid;grid-template-columns:minmax(0,1fr) calc(150*var(--u));column-gap:calc(9*var(--u));align-items:start}
 #fview .stuffStatsCard{margin-top:0;max-width:none}
@@ -365,17 +546,22 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 /* ---------- onglet Inventaire ---------- */
 .invGrid{display:grid;grid-template-columns:repeat(var(--cols,8),minmax(0,1fr));gap:var(--u);padding:calc(2*var(--u))}
 .invInfo{min-height:calc(12*var(--u));margin-top:calc(6*var(--u))}
+/* fiche d'objet : description, stats (une par ligne), boutons (28/10/2026) */
+.iiStats{margin:calc(3*var(--u)) 0 0;padding:0;list-style:none}
+.iiActs{display:flex;flex-wrap:wrap;align-items:center;gap:calc(2*var(--u));margin-top:calc(4*var(--u))}
 /* sur ordinateur : le détail de l'objet à droite de la grille (sinon caché sous la barre d'action) */
-.invWrap{max-width:calc(560*var(--u));display:grid;grid-template-columns:minmax(0,1fr) calc(150*var(--u));column-gap:calc(9*var(--u));align-items:start}
+.invWrap{display:grid;grid-template-columns:minmax(0,1fr) calc(150*var(--u));grid-template-rows:auto auto 1fr;column-gap:calc(9*var(--u));align-items:start}
 .invWrap>.invHead{grid-column:1/-1}
-.invWrap>.invInfo{margin-top:0;position:sticky;top:calc(var(--top-h) + 6*var(--u))}
+.invWrap>.invTabs,.invWrap>.invGrid{grid-column:1}   /* onglets au-dessus de la grille, colonne de gauche */
+.invWrap>.invInfo{grid-column:2;grid-row:2/span 2;margin-top:0;position:sticky;top:calc(var(--top-h) + 6*var(--u))}
 .invOpen{margin-left:calc(4*var(--u))}
 
 /* ---------- compte : bouton de la barre du haut, et fenêtre (connexion, création, mon compte) ---------- */
 #account{position:fixed;inset:0;background:rgba(8,5,4,.85);display:flex;align-items:center;justify-content:center;z-index:60;padding:calc(6*var(--u))}
 #account.gate{background:rgba(8,5,4,.55)}
-#account .box{max-width:calc(210*var(--u));width:100%;max-height:100%;overflow:auto}
+#account .box{max-width:calc(210*var(--u));width:100%;max-height:100%;overflow:auto;overscroll-behavior:contain}
 #account h3{margin:0 0 calc(2*var(--u));color:var(--acc-lt);font-size:var(--fs-xl)}
+#account h4{margin:calc(5*var(--u)) 0 calc(1*var(--u));color:var(--acc-lt);font-family:var(--f-title);font-weight:400}
 #account p{margin:calc(2*var(--u)) 0 calc(4*var(--u))}
 #account form{display:flex;flex-direction:column;gap:calc(4*var(--u))}
 #account .fld{display:flex;flex-direction:column;gap:var(--u);color:var(--mut)}
@@ -396,7 +582,6 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 #account .chk input{min-height:0;width:calc(8*var(--u));height:calc(8*var(--u))}
 
 /* ---------- onglets Four et Concasseur ---------- */
-.furnWrap{max-width:calc(400*var(--u))}
 .furnList{display:flex;flex-direction:column;gap:calc(15*var(--u))}
 .furn h3,.crush h3{margin:0 0 calc(3*var(--u));font-size:var(--fs-l)}
 .fhead{display:flex;align-items:center;gap:calc(3*var(--u));flex-wrap:wrap;margin-bottom:calc(3*var(--u))}
@@ -411,6 +596,16 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .fodds .mut{flex-basis:100%;margin-top:calc(-1*var(--u))}
 .fodds img{width:calc(9*var(--u))!important;height:calc(9*var(--u))!important}
 .fparts img{width:calc(9*var(--u))!important;height:calc(9*var(--u))!important}
+/* fenêtre « Recettes » du four (28/10) ; 30/10 : plus large, chaque ingrédient d'un bloc (icône et nom jamais séparés), la liste
+   prend la place libre et le reste de la fenêtre (quantité, Fermer) reste visible */
+#fpick .box.frecBox{max-width:calc(310*var(--u));display:flex;flex-direction:column;overflow:hidden}
+.frecBox>*{flex-shrink:0}
+.frecBox .frecs{flex:1 1 auto;min-height:calc(70*var(--u));overflow-y:auto}
+.frecHead{display:flex;align-items:baseline;justify-content:space-between;gap:calc(4*var(--u))}
+.fpart{display:inline-flex;align-items:center;gap:var(--u);white-space:nowrap}
+.frecs>*{flex-shrink:0}
+.frecs p{margin:var(--u) 0 0}
+.frecRow b{text-align:right}
 .furn.locked{opacity:.55}
 .furn.locked h3{margin:0}
 .fgrid{display:grid;grid-template-columns:calc(36*var(--u)) 1fr calc(36*var(--u));align-items:center;gap:calc(6*var(--u));max-width:calc(260*var(--u))}
@@ -472,7 +667,8 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .stuffGrid{display:grid;grid-template-columns:minmax(0,1fr) calc(100*var(--u)) minmax(0,1fr);grid-auto-flow:column;grid-template-rows:repeat(7,auto);gap:calc(4*var(--u)) calc(6*var(--u));
   align-items:center;padding:calc(6*var(--u)) calc(6*var(--u)) calc(9*var(--u));
   border:calc(6*var(--u)) solid transparent;border-image:url(../../textures/ui/panel.png) 6 fill / calc(6*var(--u)) stretch}
-.stuffSlot{display:grid;grid-template-columns:calc(33*var(--u)) 1fr;grid-template-rows:auto auto;column-gap:calc(4*var(--u));align-items:center;justify-content:stretch;
+/* minmax(0,1fr), jamais 1fr seul : un mot plus large que la colonne (« incandescence ») pousserait la case hors de la grille ; le nom se coupe à la place (31/10) */
+.stuffSlot{display:grid;min-width:0;grid-template-columns:calc(33*var(--u)) minmax(0,1fr);grid-template-rows:auto auto;column-gap:calc(4*var(--u));align-items:center;justify-content:stretch;
   text-align:left;white-space:normal;min-height:0;padding:0;border:0;border-image:none;text-shadow:none}
 .stuffSlot:hover{border-image:none}
 .stuffSlot:hover .slot{border-image-source:url(../../textures/ui/slot_sel.png)}
@@ -480,9 +676,10 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .stuffSlot .sico{opacity:.35}
 .stuffSlot .sico .pi{width:calc(12*var(--u));height:calc(12*var(--u))}
 .stuffSlot .slbl{align-self:end;color:var(--mut);font-size:var(--fs-s);text-transform:uppercase;letter-spacing:.08em}
+.stuffSlot .slbl,.stuffSlot .sname{min-width:0;overflow-wrap:anywhere;hyphens:auto}
 .stuffSlot .sname{align-self:start;font-size:var(--fs)}
 /* colonne de droite : en miroir */
-.stuffSlot:nth-child(n+7){grid-column:3;grid-template-columns:1fr calc(33*var(--u));text-align:right}
+.stuffSlot:nth-child(n+7){grid-column:3;grid-template-columns:minmax(0,1fr) calc(33*var(--u));text-align:right}
 .stuffSlot:nth-child(n+7) .slot{grid-column:2}
 .stuffSlot:nth-child(n+7) .slbl,.stuffSlot:nth-child(n+7) .sname{grid-column:1}
 .stuffSlot:nth-child(-n+6){grid-column:1}
@@ -491,15 +688,13 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .stuffHero::after{content:"";width:calc(60*var(--u));height:calc(6*var(--u));margin-top:calc(-8*var(--u));
   background:radial-gradient(ellipse at 50% 50%,#ff7a2e55 0 30%,#ff7a2e22 30% 60%,transparent 60%)}
 .stuffStatsCard{margin-top:calc(18*var(--u));max-width:calc(220*var(--u))}
-/* sur ordinateur : les stats à droite des cases */
-.view[data-view="stuff"] .furnWrap{max-width:calc(580*var(--u));display:grid;grid-template-columns:minmax(0,1fr) calc(150*var(--u));column-gap:calc(9*var(--u));align-items:start}
-.view[data-view="stuff"] .furnWrap>.invHead,.view[data-view="stuff"] .furnWrap>.nextNote{grid-column:1/-1}
+/* sur ordinateur : Sets | cases | stats (les stats à droite des cases) */
+.stuffMain{display:grid;grid-template-columns:minmax(0,1fr) calc(150*var(--u));column-gap:calc(9*var(--u));align-items:start}
 .view[data-view="stuff"] .stuffStatsCard{margin-top:0;max-width:none}
 .stuffLevel{padding-bottom:calc(4*var(--u));margin-bottom:calc(3*var(--u));box-shadow:0 var(--u) 0 var(--sep)}
 .view[data-view="stuff"]{position:relative}
 
 /* ---------- onglet Skills ---------- */
-.skWrap{max-width:calc(520*var(--u))}
 .skHead{display:flex;align-items:center;gap:calc(4*var(--u));flex-wrap:wrap;margin-bottom:calc(15*var(--u))}
 .skTrees{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:calc(9*var(--u))}
 .skTree h3{margin:0 0 calc(4*var(--u));font-size:var(--fs-l);text-align:center}
@@ -565,26 +760,26 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
   .runR{grid-column:1/-1;flex-direction:row;flex-wrap:wrap;overflow:visible}
   .runR .card{flex:1 1 calc(130*var(--u))}
   #run{position:static;min-height:calc(100dvh - var(--top-h) - var(--dock-h))}
-  #cvWrap,#cvMiWrap,#cvTwWrap,#cvGtWrap,#cvInWrap,.rail,.runL,.runR,.runGrid.mi>aside{margin-bottom:0!important}   /* la page défile : la marge du bas suffit */
+  #cvWrap,#cvMiWrap,#cvTwWrap,#cvGtWrap,#cvHcWrap,#cvInWrap,.rail,.runL,.runR,.runGrid.mi>aside{margin-bottom:0!important}   /* la page défile : la marge du bas suffit */
   .runGrid{min-height:calc(100dvh - var(--top-h) - var(--dock-h) - 30*var(--u))}
   #cvWrap{min-height:calc(260*var(--u))}
   .skTrees{grid-template-columns:1fr}
-  .lobbyCols{grid-template-columns:1fr}
-  .lobbyCols>.lobbyCol:last-child{order:-1}   /* l'équipe et Lancer d'abord */
-  .invWrap,.view[data-view="stuff"] .furnWrap{grid-template-columns:1fr}
-  .invWrap>.invInfo{position:static;margin-top:calc(6*var(--u))}
+  .lobbyCols{grid-template-columns:minmax(0,1fr)}
+  #lobby:not(.atMenu) .lobbyCols>.lobbyCol:last-child{order:-1}   /* l'équipe et Lancer d'abord ; au menu, les activités d'abord */
+  .invWrap,.stuffMain{grid-template-columns:1fr}
+  .invWrap>.invInfo{grid-column:1;grid-row:auto;position:static;margin-top:calc(6*var(--u))}
   .view[data-view="stuff"] .stuffStatsCard{margin-top:calc(18*var(--u))}
 }
 /* ---------- téléphone ---------- */
 @media (max-width:700px){
   :root{--fs:16px;--fs-s:14px;--fs-l:19px;--fs-xl:24px;--fs-h1:36px}
   .topbar{gap:calc(3*var(--u));padding:0 calc(3*var(--u))}
-  .brand,.navWiki span,.navAccount .who small{display:none}
-  .navSession .bar{width:calc(30*var(--u))}
-  .dock{left:calc(2*var(--u));right:calc(2*var(--u));transform:none;justify-content:center}
-  .orb{display:none}
-  .dock ul{overflow-x:auto;max-width:100%}
-  .dock ul button{flex:none}
+  .navWiki span,.navAccount .who small,.navSession:not(.live){display:none}   /* sans session, le pseudo a sa place */
+  .navSession>.pi{display:none}
+  .topbar{gap:calc(2*var(--u))}
+  .navSession,.navEnergy{font-size:var(--fs-s)}
+  .navEnergy .bar,#navPrisonBtn,.navLevel .bar,.navLevel small,.navLong{display:none}
+  .navShort{display:inline}                                     /* « Sortir » : laisse la place aux liens Wiki et Discord */
   .dock ul button kbd{display:none}
   .guide{right:8px;bottom:calc(var(--dock-h) + 6*var(--u))}
   .invWrap,.furnWrap,.lobbyWrap{padding:calc(9*var(--u)) calc(4*var(--u)) calc(15*var(--u))}
@@ -596,10 +791,10 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
   .runGrid.mi{display:flex}
   /* événements (MI, tours, instance, géant) : l'écran ne défile pas ; le canvas prend une part fixe de la hauteur,
      la colonne d'infos le reste (elle défile) */
-  #cvMiWrap,#cvTwWrap,#cvGtWrap,#cvInWrap{flex:0 0 60%}
+  #cvMiWrap,#cvTwWrap,#cvGtWrap,#cvHcWrap,#cvInWrap{flex:0 0 60%}
   .runGrid.mi>aside{flex:1 1 0;margin-bottom:var(--dock-h)!important}   /* au-dessus de la barre d'action */
   .stuffGrid{grid-template-columns:1fr;grid-auto-flow:row;grid-template-rows:none}
-  .stuffSlot:nth-child(n){grid-column:1;grid-template-columns:calc(33*var(--u)) 1fr;text-align:left}
+  .stuffSlot:nth-child(n){grid-column:1;grid-template-columns:calc(33*var(--u)) minmax(0,1fr);text-align:left}
   .stuffSlot:nth-child(n) .slot{grid-column:1}
   .stuffSlot:nth-child(n) .slbl,.stuffSlot:nth-child(n) .sname{grid-column:2}
   .stuffHero{grid-column:1;grid-row:auto;order:-1}
@@ -610,6 +805,28 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 /* ---------- onglet Social (src/ui/social.js) ---------- */
 #socialBody{display:flex;flex-direction:column;gap:calc(15*var(--u))}
 #socialBody .invHead{margin-bottom:0}
+.gcols{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:calc(4*var(--u))}
+.gcols>div{display:flex;flex-direction:column;gap:calc(4*var(--u))}
+.gxp{font-size:var(--fs-s);white-space:nowrap}
+/* bâtiments de guilde (01/11/2026) */
+.gbList{display:flex;flex-direction:column;gap:calc(4*var(--u))}
+.gpeek{display:flex;flex-direction:column;gap:calc(4*var(--u))}
+.gbuilding+.gbuilding{border-top:var(--u) solid var(--sep);padding-top:calc(4*var(--u))}
+.gbHead{display:flex;align-items:center;gap:calc(3*var(--u))}
+.gbHead img{width:calc(32*var(--u));height:calc(32*var(--u));flex:none}
+.gmat{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:var(--u) calc(3*var(--u));margin-top:calc(2*var(--u))}
+.gmat .bar{grid-column:1/-1}
+.gmatName{display:flex;align-items:center;gap:calc(2*var(--u));min-width:0;overflow-wrap:anywhere}
+.gmatName img{width:calc(12*var(--u));height:calc(12*var(--u));flex:none}
+.glog{max-height:calc(120*var(--u));overflow-y:auto;font-size:var(--fs-s)}
+.glogRow{padding:var(--u) 0;border-bottom:var(--u) solid var(--sep);overflow-wrap:anywhere}
+.gact{max-width:calc(60*var(--u))}
+button.gopen{align-items:stretch;gap:0;min-height:0;padding:0;border:0;border-image:none;text-align:left}
+button.gopen:active:not(:disabled){transform:none}
+.gopen:hover b{color:var(--acc)}
+.gfold{margin:0 0 calc(3*var(--u)) calc(5*var(--u));padding-left:calc(3*var(--u));border-left:var(--u) solid var(--sep)}
+#guildQuery{width:100%;margin-bottom:calc(3*var(--u))}
+@media (max-width:700px){.gcols{grid-template-columns:minmax(0,1fr)}}
 .sadd{display:flex;align-items:center;gap:calc(3*var(--u));flex-wrap:wrap}
 .sadd input{flex:1;min-width:calc(70*var(--u))}
 .frow{display:flex;align-items:center;gap:calc(4*var(--u));padding:calc(3*var(--u)) var(--u);box-shadow:0 calc(-1*var(--u)) 0 var(--sep)}
@@ -618,6 +835,8 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .towerWho .frow .fname{flex:1}
 .fname{flex:1;display:flex;flex-direction:column;min-width:0}
 .fname b{font:400 var(--fs-l)/1.1 var(--f-title);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fenergy{color:#ffd23f;font-variant-numeric:tabular-nums;white-space:nowrap}
+.fenergy.low{color:var(--bad)}
 .fbtns{display:flex;gap:calc(2*var(--u));flex-wrap:wrap;justify-content:flex-end}
 .fbtns button{min-height:calc(15*var(--u));font-size:var(--fs-s)}
 .fbtns .x{min-width:calc(15*var(--u));padding:0}
@@ -634,7 +853,7 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 
 /* ---------- notifications en pop-up (demande d'ami, invitation de groupe), sous la barre du haut ---------- */
 #notifs{position:fixed;top:calc(var(--top-h) + 6*var(--u));left:calc(6*var(--u));z-index:55;display:flex;flex-direction:column;gap:calc(4*var(--u));
-  max-width:min(calc(180*var(--u)),calc(100vw - 12*var(--u)));pointer-events:none}
+  max-width:min(calc(180*var(--u)),calc(100vw - 12*var(--u)));max-height:calc(100dvh - var(--top-h) - var(--dock-h) - 12*var(--u));overflow-y:auto;pointer-events:none}
 .notif{pointer-events:auto;border:calc(6*var(--u)) solid transparent;padding:calc(2*var(--u)) calc(3*var(--u));
   border-image:url(../../textures/ui/panel_hi.png) 6 fill / calc(6*var(--u)) stretch;animation:nin .3s steps(3)}
 .notif.busy{opacity:.6}
@@ -644,6 +863,37 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .nbtns{display:flex;gap:calc(2*var(--u));justify-content:flex-end;margin-top:calc(3*var(--u))}
 .nbtns button{min-height:calc(15*var(--u));font-size:var(--fs-s)}
 .notif .err{margin:calc(2*var(--u)) 0 0}
+/* ---------- pop-up « Tu as obtenu » (src/ui/obtained.js) : au centre, au-dessus de tout ---------- */
+#obtained{position:fixed;inset:0;background:rgba(8,5,4,.6);display:flex;align-items:center;justify-content:center;z-index:65;padding:calc(6*var(--u));cursor:pointer}
+#obtained[hidden]{display:none}
+#obtained .box{max-width:min(calc(150*var(--u)),100%);width:100%;max-height:100%;overflow:auto;text-align:center;border:calc(6*var(--u)) solid transparent;
+  padding:calc(4*var(--u)) calc(6*var(--u));border-image:url(../../textures/ui/panel_hi.png) 6 fill / calc(6*var(--u)) stretch;animation:obin .25s steps(3)}
+.obTitle{margin:0 0 calc(4*var(--u));color:var(--acc-lt);font-size:var(--fs-l)}
+.obIcon{width:calc(40*var(--u));margin:0 auto;cursor:inherit}
+.obName{margin:calc(4*var(--u)) 0 calc(3*var(--u));font-size:var(--fs-l)}
+.obLine{color:var(--o2)}
+.obHint{margin:calc(4*var(--u)) 0 0}
+/* ---------- groupes en formation (src/ui/forming.js) ---------- */
+#forming{position:fixed;inset:0;background:rgba(8,5,4,.7);display:flex;align-items:center;justify-content:center;z-index:70;padding:16px}
+#forming[hidden]{display:none}
+#forming .box{box-sizing:border-box;width:100%;max-width:calc(380*var(--u));max-height:100%;overflow:auto;padding:calc(6*var(--u));background:var(--panel,#1a1512);box-shadow:inset 0 0 0 var(--u) var(--line)}
+#forming .boxHead{display:flex;align-items:center;justify-content:space-between;gap:calc(4*var(--u));margin-bottom:calc(4*var(--u))}
+#forming .boxHead h2{margin:0}
+.formList{display:grid;grid-template-columns:repeat(auto-fill,minmax(calc(170*var(--u)),1fr));gap:calc(4*var(--u))}
+.formGroup{padding:calc(3*var(--u));cursor:pointer;box-shadow:inset 0 0 0 var(--u) var(--line)}
+.formGroup:hover,.formGroup:focus-visible{box-shadow:inset 0 0 0 var(--u) var(--acc-lt);outline:none}
+#forming .boxFoot{margin:calc(4*var(--u)) 0 0}
+
+/* ---------- fenêtres de validation (src/ui/dialog.js) : au-dessus de tout, même au-dessus de « Tu as obtenu » ---------- */
+#dialog{position:fixed;inset:0;background:rgba(8,5,4,.7);display:flex;align-items:center;justify-content:center;z-index:70;padding:calc(6*var(--u))}
+#dialog[hidden]{display:none}
+#dialog .box{box-sizing:border-box;max-width:min(calc(190*var(--u)),100%);width:100%;max-height:100%;overflow:auto;border:calc(6*var(--u)) solid transparent;
+  padding:calc(4*var(--u)) calc(6*var(--u));border-image:url(../../textures/ui/panel_hi.png) 6 fill / calc(6*var(--u)) stretch;animation:obin .2s steps(3)}
+.dlgText{margin:0 0 calc(4*var(--u));line-height:1.35}
+.dlgInput{width:100%;box-sizing:border-box;margin-bottom:calc(4*var(--u))}
+.dlgBtns{display:flex;justify-content:flex-end;gap:calc(3*var(--u));margin:0}
+button.danger{color:var(--bad)}
+@keyframes obin{from{transform:scale(.8);opacity:0}to{transform:none;opacity:1}}
 @keyframes nin{from{transform:translateX(calc(-12*var(--u)));opacity:0}to{transform:none;opacity:1}}
 @media (max-width:700px){.frow{flex-wrap:wrap}.fbtns{width:100%}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
@@ -692,50 +942,153 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 #cvTw{display:block;background:#000;box-shadow:0 0 0 var(--u) #000,0 0 0 calc(3*var(--u)) var(--line),calc(4*var(--u)) calc(4*var(--u)) 0 calc(3*var(--u)) #000}
 .jnew{color:var(--gold, #ffd23f)}
 
-/* ---------- onglet Sorts (src/ui/spells.js) ---------- */
-.spGrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:calc(9*var(--u))}
-@media (max-width:700px){ .spGrid{grid-template-columns:1fr} }
-.spSlots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:calc(6*var(--u));margin-bottom:calc(6*var(--u))}
-.spSlot{min-height:calc(40*var(--u));display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--u);text-align:center;cursor:pointer;
+/* ---------- onglet Sorts (src/ui/spells.js) : la barre en haut, le grimoire et la fiche du sort dessous ---------- */
+/* couleur d'une famille de sorts : --c (icône, texte), --cdk (fond de l'icône) */
+.tr-mineur{--c:#ffb347;--cdk:#4a2c0e} .tr-logisticien{--c:#7cc6f2;--cdk:#143247}
+.tr-barbare{--c:#ff6a5a;--cdk:#4d1510} .tr-scroll{--c:#c79bff;--cdk:#33205a}
+.spSpec{display:flex;align-items:center;gap:calc(4*var(--u));min-height:calc(20*var(--u));padding:0 calc(6*var(--u));
   border:calc(3*var(--u)) solid transparent;border-image:url(../../textures/ui/slot_n.png) 3 fill / calc(3*var(--u)) stretch}
-.spSlot.sel{border-image-source:url(../../textures/ui/slot_sel.png)}
-.spSlot.locked{cursor:default;opacity:.5}
-.spSlot.bad .spName{color:var(--err,#ff6a5a)}
-.spSlot .pi{width:calc(12*var(--u));height:calc(12*var(--u))}
-.spIcon{font-size:var(--fs-l);line-height:1;display:grid;place-items:center;min-width:calc(14*var(--u))}
-.spIcon .pi{width:calc(12*var(--u));height:calc(12*var(--u))}
-.spName{font-size:var(--fs-s)}
-.spList{display:grid;grid-template-columns:repeat(auto-fill,minmax(calc(110*var(--u)),1fr));gap:calc(4*var(--u))}
-.spCard{display:flex;align-items:center;gap:calc(4*var(--u));padding:calc(3*var(--u)) calc(4*var(--u));cursor:grab;
+.spSpec .pi{width:calc(12*var(--u));height:calc(12*var(--u));color:var(--c)}
+.spSpec b{font-weight:400;color:var(--c)}
+.spMain{display:flex;flex-direction:column;gap:calc(11*var(--u));min-width:0}
+.spBarCard{padding:calc(5*var(--u)) calc(8*var(--u)) calc(7*var(--u))}
+.spBarRow{display:flex;align-items:center;gap:calc(14*var(--u))}
+.spSlots{display:flex;gap:calc(9*var(--u))}
+.spSock{width:calc(64*var(--u));display:flex;flex-direction:column;align-items:center;gap:calc(2*var(--u));text-align:center;cursor:pointer}
+.spSock.locked{cursor:default}
+.spNum{font:400 var(--fs-s)/1 var(--f-title);color:var(--mut);letter-spacing:.15em}
+.spSockBtn{width:calc(52*var(--u));height:calc(52*var(--u));display:grid;place-items:center;
   border:calc(3*var(--u)) solid transparent;border-image:url(../../textures/ui/slot_n.png) 3 fill / calc(3*var(--u)) stretch}
-.spCard.on{border-image-source:url(../../textures/ui/slot_sel.png)}
-.spCard.off{cursor:default;filter:grayscale(1) brightness(.75)}
-.spCard .spText{display:flex;flex-direction:column;flex:1;min-width:0}
-.spCard button{flex:none}
+.spSockBtn .pi{width:calc(32*var(--u));height:calc(32*var(--u));color:var(--c)}
+.spSock.filled .spSockBtn{border-image-source:url(../../textures/ui/slot_sel.png);box-shadow:0 0 0 var(--u) #000,0 0 0 calc(3*var(--u)) var(--cdk)}
+.spSock.filled .spSockBtn .pi{animation:spGlow 1.6s steps(2) infinite}
+.spSock.filled:hover .spSockBtn{filter:brightness(.8)}
+.spSock.next .spSockBtn{border-image-source:url(../../textures/ui/btn_h.png)}
+.spSock.locked .spSockBtn{opacity:.6}
+.spSock.locked .spSockBtn .pi{width:calc(16*var(--u));height:calc(16*var(--u));color:#8a7a6a}
+.spSock.bad .spSockBtn .pi{filter:grayscale(1);animation:none}
+.spSock.bad .spSockName,.spSock.bad .spCd{color:var(--bad)}
+@keyframes spGlow{50%{filter:brightness(1.3)}}
+.spSockName{font-size:var(--fs);line-height:1.1;color:#fff1dc}
+.spCd{display:flex;align-items:center;gap:calc(2*var(--u));font-size:var(--fs-s);color:var(--mut)}
+.spCd .pi{width:calc(8*var(--u));height:calc(8*var(--u))}
+.spBarNote{flex:1;display:flex;flex-direction:column;gap:calc(4*var(--u));font-size:var(--fs-l);line-height:1.25}
+.spBarNote p{margin:0}
+.spBarNote b{font-weight:400;color:var(--acc-lt)}
+.spLow{display:grid;grid-template-columns:minmax(0,1fr) calc(215*var(--u));gap:calc(9*var(--u));align-items:start}
+.spGrim{display:flex;flex-direction:column;gap:calc(6*var(--u))}
+.spTabs{display:flex;flex-wrap:wrap;gap:calc(3*var(--u))}
+.spTabs .pi{color:var(--c,var(--txt))}
+.spTabs button.on .pi{color:#2a1206}
+.spCnt{font-size:var(--fs-s);color:var(--mut)}
+.spTabs button.on .spCnt{color:#4a1e08}
+.spList{display:grid;grid-template-columns:repeat(auto-fill,minmax(calc(64*var(--u)),1fr));gap:calc(5*var(--u))}
+.spTile{position:relative;display:flex;flex-direction:column;align-items:center;gap:calc(2*var(--u));padding:calc(5*var(--u)) calc(2*var(--u)) calc(3*var(--u));
+  text-align:center;cursor:pointer;border:calc(3*var(--u)) solid transparent;border-image:url(../../textures/ui/slot_n.png) 3 fill / calc(3*var(--u)) stretch}
+.spTile:hover{border-image-source:url(../../textures/ui/btn_h.png)}
+.spTile.sel{border-image-source:url(../../textures/ui/slot_sel.png)}
+.spTile[draggable="true"]{cursor:grab}
+.spTIco{position:relative;width:calc(32*var(--u));height:calc(32*var(--u));display:grid;place-items:center;background:var(--cdk);box-shadow:inset 0 0 0 var(--u) #000}
+.spTIco .pi{width:calc(20*var(--u));height:calc(20*var(--u));color:var(--c)}
+.spTName{font-size:var(--fs);line-height:1.05;color:#fff1dc}
+.spTSub{font-size:var(--fs-s);line-height:1.1;color:var(--mut);min-height:calc(17*var(--u))}
+.spTile.st-equipped .spTName{color:var(--acc-lt)} .spTile.st-equipped .spTSub{color:#ff9a52}
+.spTile.st-ready .spTSub{color:var(--ok)} .spTile.st-learn .spTSub{color:#ffd23f}
+.spTile.bad .spTSub{color:var(--bad)}
+.spTile.st-locked .spTIco,.spTile.st-other .spTIco{background:#16100c}
+.spTile.st-locked .spTIco .pi{color:#4a3f37}
+.spTile.st-other .spTIco .pi{opacity:.45}
+.spTile.st-locked .spTName,.spTile.st-other .spTName{color:var(--mut)}
+.spBadge{position:absolute;right:calc(-5*var(--u));top:calc(-5*var(--u));width:calc(12*var(--u));height:calc(12*var(--u));display:grid;place-items:center;
+  font:400 var(--fs)/1 var(--f-title);color:#2a1206;box-shadow:0 0 0 var(--u) #000}
+.spTIco .spBadge .pi{width:calc(8*var(--u));height:calc(8*var(--u));color:var(--mut);opacity:1}
+.spBadge.lk{background:var(--sep)}
+.spBadge.nw{background:#ffd23f;animation:spBlink 1s steps(2) infinite}
+.spBadge.eq{background:var(--acc)}
+@keyframes spBlink{50%{background:var(--acc)}}
+.spLegend{display:flex;flex-wrap:wrap;gap:calc(3*var(--u)) calc(9*var(--u));font-size:var(--fs-s);color:var(--mut)}
+.spLegend span{display:flex;align-items:center;gap:calc(3*var(--u))}
+.spLegend i{width:calc(6*var(--u));height:calc(6*var(--u));box-shadow:0 0 0 var(--u) #000}
+.spLegend .eq{background:var(--acc)} .spLegend .ok{background:var(--ok)} .spLegend .nw{background:#ffd23f} .spLegend .lk{background:#4a3f37}
+.spInfo{display:flex;flex-direction:column;gap:calc(5*var(--u))}
+.spInfo p{margin:0}
+.spFHead{display:flex;align-items:center;gap:calc(7*var(--u))}
+.spFIco{width:calc(44*var(--u));height:calc(44*var(--u));flex:none;margin:calc(4*var(--u));display:grid;place-items:center;background:var(--cdk);
+  box-shadow:0 0 0 var(--u) #000,0 0 0 calc(3*var(--u)) var(--c),0 0 0 calc(4*var(--u)) #000}
+.spFIco .pi{width:calc(28*var(--u));height:calc(28*var(--u));color:var(--c)}
+.spFHead.st-locked .spFIco,.spFHead.st-other .spFIco{background:#16100c;box-shadow:0 0 0 var(--u) #000,0 0 0 calc(3*var(--u)) var(--line),0 0 0 calc(4*var(--u)) #000}
+.spFHead.st-locked .spFIco .pi{color:#6b5e52}
+.spFTitle{display:flex;flex-direction:column;align-items:flex-start;gap:calc(3*var(--u));min-width:0}
+.spFTitle h3{margin:0;font:400 var(--fs-xl)/1 var(--f-title);color:#fff1dc}
+.spChip{display:inline-flex;align-items:center;gap:calc(3*var(--u));padding:var(--u) calc(4*var(--u));background:var(--chip);box-shadow:0 0 0 var(--u) #000;color:var(--c);font-size:var(--fs-s)}
+.spChip .pi{width:calc(8*var(--u));height:calc(8*var(--u))}
+.spShort{font-size:var(--fs-l);line-height:1.15;color:var(--c)}
+.spDesc{line-height:1.25}
+.spStats{margin:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:calc(2*var(--u))}
+.spStats div{display:flex;justify-content:space-between;align-items:baseline;gap:calc(3*var(--u));padding:var(--u) calc(4*var(--u));background:var(--chip);box-shadow:0 0 0 var(--u) #000;font-size:var(--fs-s)}
+.spStats dt{color:var(--mut)}
+.spStats dd{margin:0;color:var(--acc-lt);text-align:right}
+.spAct{display:flex;flex-direction:column;gap:calc(4*var(--u))}
+.spProg{display:flex;flex-direction:column;gap:calc(2*var(--u));font-size:var(--fs-s)}
+.spProg .bar>i{background:var(--c,var(--acc))}
+.spWhy{display:flex;align-items:center;gap:calc(4*var(--u));min-height:calc(24*var(--u));padding:calc(2*var(--u)) calc(6*var(--u));color:var(--mut);
+  background:#120c09;box-shadow:inset 0 0 0 var(--u) var(--sep)}
+.spWhy .pi{flex:none;width:calc(10*var(--u));height:calc(10*var(--u))}
+.spWhy.bad{color:var(--bad)}
+@media (max-width:1100px){ .spLow{grid-template-columns:1fr} .spBarRow{flex-wrap:wrap} }
+@media (max-width:700px){
+  .spSlots{gap:calc(3*var(--u));width:100%;justify-content:space-between}
+  .spSock{width:auto;flex:1;min-width:0}
+  .spSockBtn{width:calc(36*var(--u));height:calc(36*var(--u))}
+  .spSockBtn .pi{width:calc(22*var(--u));height:calc(22*var(--u))}
+  .spSockName{font-size:var(--fs-s)}
+  .spBarNote{font-size:var(--fs)}
+  .spList{grid-template-columns:repeat(auto-fill,minmax(calc(46*var(--u)),1fr));gap:calc(3*var(--u))}
+  .spTIco{width:calc(24*var(--u));height:calc(24*var(--u))}
+  .spTIco .pi{width:calc(16*var(--u));height:calc(16*var(--u))}
+  .spStats{grid-template-columns:1fr}
+}
 /* barre des sorts en session (src/ui/hud.js spellBarHtml), en bas de la mine */
 .spellBar{position:absolute;z-index:1;left:50%;bottom:calc(4*var(--u));transform:translateX(-50%);display:flex;gap:calc(3*var(--u));pointer-events:auto}
 .spB{position:relative;width:calc(22*var(--u));height:calc(22*var(--u));display:grid;place-items:center;
   border:calc(3*var(--u)) solid transparent;border-image:url(../../textures/ui/slot_sel.png) 3 fill / calc(3*var(--u)) stretch}
 .spB.cd{border-image-source:url(../../textures/ui/slot_n.png)}
+.spB .spIcon{display:grid;place-items:center;color:var(--c,var(--txt))}
+.spB .spIcon .pi{width:calc(12*var(--u));height:calc(12*var(--u))}
 .spB.cd .spIcon{filter:grayscale(1) brightness(.5)}
 .spB .spLeft{position:absolute;inset:0;display:grid;place-items:center;font-size:var(--fs-l);color:#fff;text-shadow:0 0 3px #000,0 0 3px #000}
 
+/* états du mineur en haut à droite de la mine (src/ui/effects.js) : rouge = contrôle / debuff, vert = buff, or = bonus */
+.fxBar{position:absolute;z-index:1;top:calc(4*var(--u));right:calc(4*var(--u));display:flex;flex-wrap:wrap;justify-content:flex-end;
+  gap:calc(2*var(--u));max-width:calc(150*var(--u));pointer-events:auto}
+.fxB{position:relative;width:calc(18*var(--u));height:calc(18*var(--u));display:grid;place-items:center;background:rgba(10,6,4,.78);
+  box-shadow:0 0 0 var(--u) #000,inset 0 0 0 var(--u) var(--fx,#6fc24a);cursor:help}
+.fxB.control,.fxB.debuff{--fx:#e5534b}
+.fxB.control{animation:fxPulse 1s steps(2) infinite}
+.fxB.session{--fx:#ffd23f}
+.fxB .fxI .pi{width:calc(12*var(--u));height:calc(12*var(--u))}
+.fxB .fxL{position:absolute;left:0;right:0;bottom:calc(-1*var(--u));text-align:center;font-size:var(--fs-s);line-height:1;color:#fff;
+  text-shadow:0 0 2px #000,0 0 2px #000,0 0 2px #000;pointer-events:none}
+@keyframes fxPulse{50%{box-shadow:0 0 0 var(--u) #000,inset 0 0 0 calc(2*var(--u)) var(--fx)}}
+
 /* ---------- sets (src/ui/sets.js) : à gauche dans Stuff, Skills et Sorts ---------- */
-.setWrap{max-width:calc(520*var(--u))}
-.skWrap{max-width:calc(640*var(--u))}
 .setLay{display:grid;grid-template-columns:calc(120*var(--u)) minmax(0,1fr);gap:calc(9*var(--u));align-items:start}
-.spGrid{grid-template-columns:calc(120*var(--u)) minmax(0,1fr) minmax(0,2fr)}
+.spGrid{display:grid;grid-template-columns:calc(120*var(--u)) minmax(0,1fr);gap:calc(9*var(--u));align-items:start}
 .setsCard h2{font-size:var(--fs)}
 .setRow{display:flex;flex-wrap:wrap;align-items:center;gap:calc(2*var(--u));padding:calc(2*var(--u)) 0;border-bottom:var(--u) solid var(--line)}
 .setRow b{flex:1 1 100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .setRow button{padding:0 calc(3*var(--u))}
 .setsBody>.setNew{margin-top:calc(4*var(--u));width:100%}
 @media (max-width:700px){ .setLay,.spGrid{grid-template-columns:1fr} }
+/* lobby : carte plus large, le nom tient sur la même ligne que les boutons */
+.lobbySets h2{font-size:var(--fs-l)}
+.lobbySets .setRow b{flex:1 1 auto;min-width:calc(40*var(--u))}
+@media (max-width:700px){ .lobbySets .setRow b{flex-basis:100%} }   /* téléphone : le nom sur sa ligne, les boutons dessous */
 
 /* Bloc géant (26/10/2026) : carte du lobby, visite, fin de visite */
-#cvGt{display:block;background:#000;box-shadow:0 0 0 var(--u) #000,0 0 0 calc(3*var(--u)) var(--line),calc(4*var(--u)) calc(4*var(--u)) 0 calc(3*var(--u)) #000}
-#gtDone{padding:12vh calc(6*var(--u)) 0}
-#gtDone button{margin-top:calc(4*var(--u))}
+#cvGt,#cvHc{display:block;background:#000;box-shadow:0 0 0 var(--u) #000,0 0 0 calc(3*var(--u)) var(--line),calc(4*var(--u)) calc(4*var(--u)) 0 calc(3*var(--u)) #000}
+#gtDone,#hcDone{padding:12vh calc(6*var(--u)) 0}
+#gtDone button,#hcDone button{margin-top:calc(4*var(--u))}
 .gtStats{display:grid;grid-template-columns:auto auto;gap:var(--u) calc(6*var(--u));justify-content:center;margin:calc(4*var(--u)) 0}
 .gtStats b{text-align:right;font-variant-numeric:tabular-nums}
 .gtTotal{font-size:var(--fs-xl);font-variant-numeric:tabular-nums}
@@ -766,3 +1119,31 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .shrine .shrineHead img{image-rendering:pixelated}
 .shrine .shrineRow{display:flex;gap:calc(2*var(--u));align-items:center;flex-wrap:wrap;margin-top:calc(1*var(--u))}
 .shrine .shrineRow input{width:4.5em}
+/* états d'un autre joueur (29/10/2026) : son nom devant ses icônes ; lignes d'équipe cliquables, joueur choisi marqué */
+.fxWho{align-self:center;padding:0 calc(2*var(--u));font-size:.8em;color:var(--txt,#eee);background:rgba(0,0,0,.55);border:var(--u) solid var(--line)}
+.pick{cursor:pointer}
+.pick.focus{outline:var(--u) solid var(--acc);outline-offset:calc(-1*var(--u))}
+
+/* sets : ligne « Set équipé » et set équipé marqué (29/10/2026) */
+.setCur{margin:0 0 calc(2*var(--u))}
+.setRow.on b{color:var(--ok)}
+/* onglet Stuff (31/10/2026, Geoffrey) : les sets en bandeau au-dessus, la largeur va aux noms des pièces */
+@media (min-width:701px){
+  .view[data-view="stuff"] .setLay{grid-template-columns:minmax(0,1fr);gap:calc(14*var(--u))}
+  .view[data-view="stuff"] .setsBody{display:flex;flex-wrap:wrap;align-items:center;gap:calc(2*var(--u)) calc(6*var(--u))}
+  .view[data-view="stuff"] .setsBody>p{flex:1 1 100%;margin:0}
+  .view[data-view="stuff"] .setRow{flex:1 1 0;min-width:calc(95*var(--u));gap:var(--u);border-bottom:0}
+  .view[data-view="stuff"] .setRow button{min-height:calc(12*var(--u));padding:0 calc(2*var(--u));font-size:var(--fs-s)}
+  .view[data-view="stuff"] .setsBody>.setNew{width:auto;margin:0}
+}
+/* onglets de l'inventaire (29/10/2026) : une icône par catégorie, grisée si vide */
+.invTabs{display:flex;flex-wrap:wrap;gap:calc(3*var(--u));margin:0 0 calc(6*var(--u))}
+.invTab{display:grid;place-items:center;width:calc(26*var(--u));height:calc(26*var(--u));padding:0}
+.invTab img,.invTab .pi{width:calc(16*var(--u));height:calc(16*var(--u));image-rendering:pixelated}
+.invTab.on{outline:calc(2*var(--u)) solid var(--acc);outline-offset:calc(-1*var(--u));background:var(--sel)}
+.invTab.none:not(.on){opacity:.4}
+.invNone{grid-column:1/-1}
+
+/* modération du chat (30/10) : bandeau du joueur banni, au-dessus de tout */
+.banBar{position:fixed;top:0;left:0;right:0;z-index:9999;padding:calc(3*var(--u)) calc(6*var(--u));background:#5a0f0f;color:#ffd9d9;
+  text-align:center;font-size:calc(9*var(--u));box-shadow:0 calc(var(--u)) 0 #2a0505}

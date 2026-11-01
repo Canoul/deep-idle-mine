@@ -1,0 +1,26 @@
+# Bot Discord de l'équipe, à part du jeu (docs/bot-discord.md) : la mise à jour automatique ne le redémarre pas.
+# Journal : sudo journalctl -u deep-mine-bot -f    ·    Après un changement de bot/ : sudo systemctl restart deep-mine-bot
+[Unit]
+Description=Deep Idle Mine (bot Discord de l'équipe)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=dim
+Group=dim
+WorkingDirectory=/opt/deep-idle-mine/bot
+EnvironmentFile=/etc/deep-mine-bot.env
+ExecStart=/usr/bin/node main.js
+Restart=always
+RestartSec=5
+
+# le bot ne peut écrire que dans le dossier de données
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/deep-idle-mine
+PrivateTmp=true
+PrivateDevices=true
+
+[Install]
+WantedBy=multi-user.target

@@ -3,12 +3,13 @@
    ce qu'il mine va directement au coffre commun (et à la part « gobelins »), puis il disparaît. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { GOBLIN_KING, STATS, BLOCKS, IDS, DT } from '../src/config.js';
+import { GOBLIN_KING, STATS, BLOCKS, IDS, DT, TREASURE_BLOCK } from '../src/config.js';
 import { thrallOwner, enslave, updateThralls } from '../src/sim/thrall.js';
 import { worldFrom, run } from './helpers.js';
 
 const busy = m => { m.action = { type: 'wait', dur: 1e9, t: 0, data: {} }; m.ox = 1e6; };
 const crown = m => { m.carac.goblinThrall = GOBLIN_KING.thrall.radius; };
+const BRICK = 11;   // Brique de donjon : incassable
 
 test('config : rayon 10, 30 s, minerais à 6 cases ; stat goblinThrall à 0 sans couronne', () => {
   assert.deepEqual(GOBLIN_KING.thrall, { radius:10, life:30, reach:6 });
@@ -63,7 +64,7 @@ test('il creuse droit vers un minerai : la pierre cassée en chemin va aussi au 
   enslave(G, 99, 4, 2, m);
   run(G, Math.round(15 / DT));
   assert.equal(G.tiles[2][7], 0, 'charbon atteint');
-  assert.equal(G.chest.Charbon, 1); assert.equal(G.chest.Pierre, 2);
+  assert.equal(G.chest.Charbon, 1); assert.ok(G.chest.Pierre >= 2, 'les 2 pierres du chemin');
 });
 
 test('il ne prend pas le minerai qu\'un mineur vise', () => {
@@ -74,22 +75,58 @@ test('il ne prend pas le minerai qu\'un mineur vise', () => {
   assert.equal(G.tiles[2][5], IDS.coal);
 });
 
-test('au bout de 30 s il disparaît (journal) ; sans minerai autour, il attend', () => {
+test('au bout de 30 s il disparaît (journal) ; sans rien à casser autour, il attend', () => {
   const G = worldFrom(['', 'd'.repeat(50), '#@' + ' '.repeat(30) + '#', '#'.repeat(50)]), m = G.miners[0]; busy(m); crown(m);
+  for(const row of G.tiles.slice(1)) row.forEach((v, x) => { if(v) row[x] = BRICK; });
   enslave(G, 99, 20, 2, m);
   run(G, Math.round(29.5 / DT));
-  assert.equal(G.thralls.length, 1); assert.deepEqual(G.chest, {}, 'rien à miner');
+  assert.equal(G.thralls.length, 1); assert.deepEqual(G.chest, {}, 'rien à casser');
   run(G, Math.round(1 / DT));
   assert.equal(G.thralls.length, 0);
   assert.ok(G.log.some(l => /asservi a fini/.test(l.msg)));
   assert.equal(G.stats.thralls, 1);
 });
 
+/* 31/10/2026 (Geoffrey) : « il focus minerai, mais s'il n'y en a pas alors il mine » */
+const rock = () => worldFrom(['', 'd'.repeat(50), ...Array.from({ length: 12 }, () => '#'.repeat(50))]);
+
+test('sans minerai à portée, il mine la roche pendant ses 30 s, tout droit, et ça va au coffre', () => {
+  const G = rock(), m = G.miners[0]; busy(m); crown(m);
+  G.tiles[6][5] = 0; enslave(G, 99, 5, 6, m);
+  run(G, Math.round(10 / DT));
+  assert.ok(G.chest.Pierre >= 5, `${G.chest.Pierre} pierres`);
+  assert.equal(G.goblinChest.Pierre, G.chest.Pierre);
+  assert.equal(G.thralls[0].y, 6, 'même ligne');
+  assert.ok(G.thralls[0].x >= 9, `colonne ${G.thralls[0].x}`);
+});
+
+test('un minerai qui entre dans sa portée pendant qu\'il creuse passe avant la roche', () => {
+  const G = rock(), m = G.miners[0]; busy(m); crown(m);
+  G.tiles[6][5] = 0; G.tiles[6][17] = IDS.coal; enslave(G, 99, 5, 6, m);
+  assert.equal(G.tiles[6][17], IDS.coal);
+  run(G, Math.round(29 / DT));
+  assert.equal(G.chest.Charbon, 1);
+});
+
+test('avec un minerai à portée, il y va sans s\'arrêter à la roche d\'à côté', () => {
+  const G = rock(), m = G.miners[0]; busy(m); crown(m);
+  G.tiles[6][5] = 0; G.tiles[6][9] = IDS.coal; enslave(G, 99, 5, 6, m);
+  run(G, Math.round(1 / DT));
+  assert.deepEqual(G.thralls[0].target, { x: 9, y: 6 });
+});
+
+test('il ne casse ni un treasure ni une brique incassable', () => {
+  const G = rock(), m = G.miners[0]; busy(m); crown(m);
+  G.tiles[6][5] = 0; G.tiles[6][6] = TREASURE_BLOCK; G.tiles[5][5] = BRICK; enslave(G, 99, 5, 6, m);
+  run(G, Math.round(29 / DT));
+  assert.equal(G.tiles[6][6], TREASURE_BLOCK); assert.equal(G.tiles[5][5], BRICK);
+});
+
 test('sans prise, il tombe ; il ne monte pas dans le vide', () => {
   const G = worldFrom(['', 'd'.repeat(50), '#@' + ' '.repeat(30) + '#', '#' + ' '.repeat(30) + ' #', '#'.repeat(50)]), m = G.miners[0]; busy(m); crown(m);
   G.thralls = []; enslave(G, 99, 15, 2, m);
   run(G, 20);
-  assert.equal(G.thralls[0].y, 3, 'tombé sur le sol');
+  assert.ok(G.thralls[0].y >= 3, 'tombé sur le sol');
   updateThralls(G);
 });
 

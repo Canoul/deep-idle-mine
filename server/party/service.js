@@ -9,7 +9,8 @@
      Si le chef part, le membre suivant devient chef ; un groupe vide disparaît. Le chef peut aussi donner sa place.
    - « Prêt » (21/10/2026) : chaque membre (sauf le chef : lancer = prêt) se déclare prêt ; le chef ne lance que si tous
      les autres le sont. Au lancement, et quand quelqu'un rejoint, tout le monde repasse « pas prêt » : à la fin d'une
-     session, le chef ne peut pas relancer tant que les autres n'ont pas redit qu'ils sont prêts.
+     session, le chef ne peut pas relancer tant que les autres n'ont pas redit qu'ils sont prêts. Sauf ceux qui ont coché
+     « Prêt tout le temps » et sont prêts : ils le restent.
    - Un membre qui n'a plus donné signe de vie (onglet fermé) depuis PARTY_SERVER.memberTimeout est retiré, sauf s'il
      est dans une session (pendant la partie, son navigateur ne parle plus au groupe) : le délai repart de la fin.
      Le CHEF n'est jamais retiré ainsi (27/10/2026, Geoffrey) : s'il est absent, ce sont les autres qui quittent.
@@ -21,11 +22,13 @@
    demandé « lancer dès que plein » : la session Mine démarre alors aussitôt. La file vit en mémoire seulement (perdue
    au redémarrage : le navigateur s'en aperçoit grâce à `boot` et relance sa recherche).
    Testable seul : on lui passe le service de jeu, la recherche de compte et une horloge. */
+import { sanitizeBotPresets } from '../../src/shared/dev-presets.js';
 import crypto from 'node:crypto';
 import { GAME, PARTY, MINE_MODES } from '../../src/config.js';
 import { CODE_ALPHABET, displayName, parseAccountId, formatAccountId } from '../../src/shared/account.js';
 import { parsePartyCode } from '../../src/shared/party.js';
 import { matchLfg } from '../../src/shared/lfg.js';
+import { lobbyLink } from '../../src/shared/chat.js';
 import { createLimiter } from '../accounts/ratelimit.js';
 import { PARTY_SERVER } from '../config.js';
 
@@ -35,13 +38,28 @@ export class PartyError extends Error {
 const fail = (code, status, message, extra) => { throw new PartyError(code, status, message, extra); };
 
 /* game : service des sessions ; getAccount(id) : compte ou null (pour inviter par ID) */
-export function createPartyService({ game, getAccount, store = null, clock = Date.now, config = PARTY_SERVER,
+export function createPartyService({ game, getAccount, store = null, clock = Date.now, config = PARTY_SERVER, dev = false,
                                      newCode = () => Array.from({ length: PARTY.codeLength }, () => CODE_ALPHABET[crypto.randomInt(32)]).join('') }){
   const parties = new Map();                 // code → groupe
-  /* « Prêt tout le temps » (23/10/2026) : réglage du JOUEUR, pas du groupe. Seule la case le change ; il le garde en
-     changeant de groupe (nouveau groupe, invitation, LFG). Retrouvé au redémarrage depuis les groupes enregistrés. */
+  /* « Prêt tout le temps » (23/10/2026) : réglage du JOUEUR, pas du groupe, enregistré sur son compte (31/10, Geoffrey :
+     il survit à la prison et aux redémarrages même sans groupe). Seule la case le change. Il ne rend pas prêt (31/10) :
+     il garde prêt celui qui l'est ; en entrant dans un groupe, on clique une fois « Je suis prêt ». */
   const alwaysOn = new Set();
-  const newMember = (account, name) => ({ account, name, seenAt: clock(), ready: alwaysOn.has(account), always: alwaysOn.has(account) });
+  const newMember = (account, name) => ({ account, name, seenAt: clock(), ready: false, always: alwaysOn.has(account) });
+  /* un joueur entre dans un groupe : case « Prêt tout le temps » cochée = prêt d'office (01/11), mais pas tant que sa prison
+     tourne : un lancement la terminerait sans qu'il l'ait voulu. Il devient prêt quand elle finit (afterPrison, voir sweep). */
+  async function addMember(p, account, name){
+    const m = newMember(account, name);
+    p.members.push(m);                                 // tout de suite : la place est prise avant la moindre attente
+    if(m.always && !await waitPrison(m)) m.ready = true;
+  }
+  async function waitPrison(m){
+    return m.afterPrison = !!await game.prisonActiveOf?.(m.account);
+  }
+  async function setAlways(accountId, value){
+    if(value) alwaysOn.add(accountId); else alwaysOn.delete(accountId);
+    await store?.setAlwaysReady(accountId, value);
+  }
   const limit = {
     invite: createLimiter(config.invitesPerHour, clock),
     join:   createLimiter(config.joinFailures, clock),
@@ -54,27 +72,46 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
   const invitesFor = accountId => [...parties.values()].filter(p => p.invites.has(accountId));
 
   /* ce que les membres voient de leur groupe (les ID de compte sont publics) */
-  function publicParty(p, meId, playing = new Set(), trees = new Map(), looks = new Map(), specLv = new Map(), auras = new Map(), gs = new Map()){
+  function publicParty(p, meId, playing = new Map(), trees = new Map(), looks = new Map(), specLv = new Map(), auras = new Map(), gs = new Map(), prisons = new Set()){
     const now = clock();
-    return { code: p.code, leader: p.leader, max: GAME.maxPlayers, launching: !!p.launching,
+    return { code: p.code, leader: p.leader, max: GAME.maxPlayers, launching: !!p.launching, devPresets: p.devPresets ?? null, locked: !!p.locked,
              members: p.members.map(m => ({ account: m.account, displayId: formatAccountId(m.account), name: m.name,
-                                            leader: m.account === p.leader, me: m.account === meId, ready: !!m.ready || !!m.always,
+                                            leader: m.account === p.leader, me: m.account === meId, ready: !!m.ready,
                                             always: !!m.always,
-                                            playing: playing.has(m.account), tree: trees.get(m.account) ?? null,
+                                            playing: playing.has(m.account), playingLeftMs: playing.get(m.account) ?? null,   // temps restant (null en mode dev)
+                                            tree: trees.get(m.account) ?? null,
                                             specLevel: specLv.get(m.account) ?? null,
                                             look: looks.get(m.account) ?? {},
                                             auras: auras.get(m.account) ?? {},          // aura des pièces visibles (src/meta/aura.js)
                                             gs: gs.get(m.account) ?? null,              // gear score du stuff porté (src/meta/gearscore.js)
+                                            prison: prisons.has(m.account),             // sa prison tourne : un lancement la terminera (29/10)
                                             away: !playing.has(m.account) && now - m.seenAt > config.awayAfter })),
              invited: [...p.invites.values()].map(i => ({ account: i.account, displayId: formatAccountId(i.account), name: i.name })) };
   }
 
+  /* portrait d'un membre, tel que le montrent un lien de lobby et la liste des groupes en formation */
+  async function memberCard(m, p){
+    const tree = await game.skillTreeOf?.(m.account) ?? null;
+    return { name: m.name, leader: m.account === p.leader, tree, specLevel: await game.specLevelOf?.(m.account, tree) ?? null,
+             look: await game.lookFor?.(m.account) ?? {}, auras: await game.aurasFor?.(m.account) ?? {} };
+  }
+  /* même portrait, gardé un moment : la liste est relue souvent, et l'apparence d'un joueur change rarement */
+  const formingCards = new Map();            // compte → { at, card }
+  async function formingCard(m, p){
+    const c = formingCards.get(m.account);
+    if(c && clock() - c.at < config.formingCardMs) return { ...c.card, name: m.name, leader: m.account === p.leader };
+    if(formingCards.size >= config.formingCardsMax) formingCards.clear();
+    const card = await memberCard(m, p);
+    formingCards.set(m.account, { at: clock(), card });
+    return card;
+  }
+
   /* ---------- ménage ---------- */
 
-  /* « Prêt tout le temps » (m.always) : le membre reste prêt, rien ne le remet à « pas prêt » */
-  const unready = p => { for(const m of p.members) m.ready = !!m.always; };
+  /* « Prêt tout le temps » (m.always) : qui est prêt le reste */
+  const unready = p => { for(const m of p.members) m.ready = !!m.always && !!m.ready; };
   /* membres (hors chef) qui ne sont pas prêts */
-  const notReady = p => p.members.filter(m => m.account !== p.leader && !m.ready && !m.always);
+  const notReady = p => p.members.filter(m => m.account !== p.leader && !m.ready);
 
   function removeMember(p, accountId){
     p.members = p.members.filter(m => m.account !== accountId);
@@ -89,12 +126,13 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
     for(const p of [...parties.values()]){
       if(p.launching) continue;
       for(const m of [...p.members]){
+        if(m.afterPrison && !await waitPrison(m)) m.ready = m.always && m.account !== p.leader;   // sorti de prison : prêt d'office
         /* le chef n'est jamais retiré pour absence (27/10, Geoffrey ; ancien : retiré au bout de memberTimeout, le
            suivant devenait chef). Il est affiché « absent » ; les autres quittent s'ils ne veulent pas l'attendre. */
         if(m.account === p.leader) continue;
-        /* membre prêt (ou « prêt tout le temps ») : gardé même onglet fermé (26/10, Geoffrey). Il est affiché « absent »
-           mais le chef peut toujours le lancer avec le groupe. Pour l'enlever : le chef le retire. */
-        if(m.ready || m.always) continue;
+        /* membre prêt : gardé même onglet fermé (26/10, Geoffrey). Il est affiché « absent » mais le chef peut toujours
+           le lancer avec le groupe. Pour l'enlever : le chef le retire. */
+        if(m.ready) continue;
         if(now - Math.max(m.seenAt, m.graceUntil ?? 0) <= config.memberTimeout) continue;   // grâce : fin prévue de la session
         /* … ou fin RÉELLE de sa dernière session (en retard sur l'heure prévue, ou fin libre en dev) */
         if(now - (await game.lastEndedAt?.(m.account) ?? 0) <= config.memberTimeout) continue;
@@ -132,6 +170,8 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
   async function notInSession(me){
     if(await game.activeSessionId(me.id)) fail('session_running', 409, 'Tu es déjà dans une session.');
   }
+  /* groupe verrouillé (31/10/2026, Geoffrey) : seul un invité y entre, par n'importe quel chemin (code, lien, ami) */
+  const noStranger = (p, accountId) => { if(p.locked && !p.invites.has(accountId)) fail('party_locked', 403, 'Ce groupe est verrouillé : il faut y être invité.'); };
   const noChange = p => { if(p.launching) fail('launching', 409, 'La session est en train d\'être lancée.'); };
 
   /* ---------- recherche de groupe (LFG) ---------- */
@@ -144,7 +184,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
   /* une entrée vaut tant que l'équipe n'a pas bougé depuis son entrée dans la file (quelqu'un entre ou part : annulée) */
   function lfgValid(e){
     const p = partyOf(e.account);
-    if(p && (p.launching || (p.members.length > 1 && p.leader !== e.account))) return false;
+    if(p && (p.launching || p.locked || (p.members.length > 1 && p.leader !== e.account))) return false;
     return teamOf(e.account).join() === e.members.join();
   }
   /* sortent de la file : sans nouvelles depuis lfgTimeout (onglet fermé), équipe changée, quelqu'un en session */
@@ -165,7 +205,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
     for(const g of guests){
       const old = partyOf(g.account);
       if(old) removeMember(old, g.account);
-      p.members.push(newMember(g.account, g.name));
+      await addMember(p, g.account, g.name);
       p.invites.delete(g.account);
     }
     for(const e of [host, ...guests]) queue.delete(e.account);
@@ -211,8 +251,8 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
 
   /* ce qu'on garde d'un groupe (pas les signes de vie, ni « en cours de lancement ») */
   const saved = p => ({ code: p.code, leader: p.leader, createdAt: p.createdAt,
-                        members: p.members.map(m => ({ account: m.account, name: m.name, graceUntil: m.graceUntil ?? null, ready: !!m.ready, always: !!m.always })),
-                        invites: [...p.invites.values()] });
+                        members: p.members.map(m => ({ account: m.account, name: m.name, graceUntil: m.graceUntil ?? null, ready: !!m.ready, always: !!m.always, afterPrison: !!m.afterPrison })),
+                        invites: [...p.invites.values()], ...(p.locked ? { locked: true } : {}), ...(p.activity ? { activity: p.activity } : {}) });
   const written = new Map();                 // code → JSON déjà enregistré
   /* enregistre les groupes qui ont vraiment changé, efface ceux qui ont disparu */
   async function save(){
@@ -226,12 +266,13 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
   /* démarrage du serveur : on retrouve les groupes enregistrés (chacun repart avec un délai d'absence neuf) */
   async function load(){
     if(!store) return;
+    for(const id of await store.getAlwaysReady()) alwaysOn.add(id);
     for(const s of await store.getParties()){
       if(!s?.code || !Array.isArray(s.members) || !s.members.length) continue;
       const p = { code: s.code, leader: s.leader, createdAt: s.createdAt ?? clock(), launching: false,
-                  members: s.members.map(m => ({ account: m.account, name: m.name, seenAt: clock(), graceUntil: m.graceUntil ?? undefined, ready: m.ready === true, always: m.always === true })),
-                  invites: new Map((s.invites || []).map(i => [i.account, i])) };
-      for(const m of p.members) if(m.always) alwaysOn.add(m.account);
+                  members: s.members.map(m => ({ account: m.account, name: m.name, seenAt: clock(), graceUntil: m.graceUntil ?? undefined, ready: m.ready === true, always: m.always === true, afterPrison: m.afterPrison === true })),
+                  invites: new Map((s.invites || []).map(i => [i.account, i])), locked: s.locked === true, activity: s.activity ?? null };
+      for(const m of p.members) if(m.always && !alwaysOn.has(m.account)) await setAlways(m.account, true);   // groupes d'avant le 31/10
       if(!p.members.some(m => m.account === p.leader)) p.leader = p.members[0].account;
       parties.set(p.code, p);
       written.set(p.code, JSON.stringify(saved(p)));
@@ -249,9 +290,10 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       if(queue.has(me.id)) queue.get(me.id).seenAt = clock();
       await runLfg();
       const p = partyOf(me.id);
-      /* membres encore dans une session (la précédente, pas finie pour eux) : affichés « en session » */
-      const playing = new Set();
-      if(p) for(const m of p.members) if(m.account !== me.id && await game.activeSessionId(m.account)) playing.add(m.account);
+      /* membres encore dans une session (la précédente, pas finie pour eux) : affichés « en session », avec le temps restant */
+      const playing = new Map();
+      if(p) for(const m of p.members) if(m.account !== me.id && await game.activeSessionId(m.account))
+        playing.set(m.account, (await game.activeSessionInfo?.(m.account))?.leftMs ?? null);
       /* spécialisation de chacun (arbre de skills choisi) */
       const trees = new Map();
       if(p) for(const m of p.members) trees.set(m.account, await game.skillTreeOf?.(m.account) ?? null);
@@ -267,12 +309,16 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       /* et son gear score (modulation des tours) */
       const gs = new Map();
       if(p) for(const m of p.members) gs.set(m.account, await game.gsFor?.(m.account) ?? null);
+      /* et sa prison en cours (29/10) : le chef et le membre sont prévenus qu'un lancement la termine */
+      const prisons = new Set();
+      if(p) for(const m of p.members) if(await game.prisonActiveOf?.(m.account)) prisons.add(m.account);
       return {
-        party: p ? publicParty(p, me.id, playing, trees, looks, specLv, auras, gs) : null,
+        party: p ? publicParty(p, me.id, playing, trees, looks, specLv, auras, gs, prisons) : null,
         /* invitations reçues : qui invite, qui est déjà là */
         invites: invitesFor(me.id).map(q => ({ code: q.code, from: q.invites.get(me.id).from,
                                                members: q.members.map(m => m.name), full: q.members.length >= GAME.maxPlayers })),
         session: await game.activeSessionId(me.id),       // le chef a lancé : le navigateur passe à la session
+        alwaysReady: alwaysOn.has(me.id),
         lfg: lfgView(me),
         /* shrines du chef du groupe (ou les siens, seul) : 28/10/2026 */
         shrines: await game.shrinesOf?.(p?.leader ?? me.id) ?? [],
@@ -287,6 +333,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       const p = partyOf(me.id);
       if(p){
         noChange(p);
+        if(p.locked) fail('party_locked', 409, 'Ton groupe est verrouillé : ouvre-le pour chercher des joueurs.');
         if(p.members.length >= GAME.maxPlayers) fail('party_full', 409, 'Ton groupe est déjà complet.');
         if(p.members.length > 1 && p.leader !== me.id) fail('not_leader', 403, 'C\'est le chef du groupe qui lance la recherche.');
       }
@@ -324,11 +371,12 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       await notInSession(me);
       if(memberOf(p, me.id)) return { party: publicParty(p, me.id) };
       noChange(p);
+      noStranger(p, me.id);
       if(p.members.length >= GAME.maxPlayers) fail('party_full', 409, 'Ce groupe est complet.');
       const old = partyOf(me.id);
       if(old){ noChange(old); removeMember(old, me.id); }
       unready(p);                                      // un nouveau venu : tout le monde redit qu'il est prêt
-      p.members.push(newMember(me.id, displayName(me)));
+      await addMember(p, me.id, displayName(me));
       p.invites.delete(me.id);
       return { party: publicParty(p, me.id) };
     },
@@ -366,10 +414,11 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       const p = partyOf(friend.id) ?? await create(friend);
       if(memberOf(p, me.id)) return { party: publicParty(p, me.id) };
       noChange(p);
+      noStranger(p, me.id);
       if(p.members.length >= GAME.maxPlayers) fail('party_full', 409, 'Ce groupe est complet.');
       const old = partyOf(me.id);
       if(old){ noChange(old); removeMember(old, me.id); }
-      p.members.push(newMember(me.id, displayName(me)));
+      await addMember(p, me.id, displayName(me));
       p.invites.delete(me.id);
       return { party: publicParty(p, me.id) };
     },
@@ -410,23 +459,44 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       noChange(p);
       await notInSession(me);
       const m = memberOf(p, me.id);
-      m.ready = value || !!m.always;                   // « prêt tout le temps » : seule la case le retire (23/10)
+      m.ready = value; m.afterPrison = false;
       return { party: publicParty(p, me.id) };
     },
 
-    /* « Prêt tout le temps » : le membre reste prêt d'une session à l'autre (et quand quelqu'un arrive), le chef peut
-       enchaîner sans attendre son clic. Possible pendant une session (on le coche pour la suivante). value : true / false. */
+    /* pseudo changé (31/10/2026) : le groupe affiche le nouveau */
+    async rename(accountId, name){
+      const p = partyOf(accountId), m = p && memberOf(p, accountId);
+      if(m){ m.name = name; await save(); }
+    },
+
+    /* mode dev : preset de chaque mineur (31/10/2026), choisi par n'importe quel membre, appliqué quand le chef lance ;
+       mêmes places que le lancement : le chef, les autres membres, puis les mineurs de test. Gardé en mémoire seulement. */
+    async setDevPresets(me, presets){
+      if(!dev) fail('forbidden', 403, 'Réservé au mode développeur.');
+      touch(me);
+      const p = partyOf(me.id);
+      if(!p) fail('no_party', 404, "Tu n'es dans aucun groupe.");
+      p.devPresets = sanitizeBotPresets(presets);
+      return { party: publicParty(p, me.id) };
+    },
+
+    /* « Prêt tout le temps » : qui est prêt le reste d'une session à l'autre (et quand quelqu'un arrive), le chef peut
+       enchaîner sans attendre son clic. Se coche partout : seul, chef, en prison, en session. Cochée, elle rend prêt en
+       entrant dans un groupe et en sortant de prison (01/11, addMember). Dans un groupe, la cocher ne change pas « prêt »,
+       sauf pendant une session : il était prêt pour celle-ci, il le reste. value : true / false. */
     async alwaysReady(me, value){
       touch(me);
       if(typeof value !== 'boolean') fail('bad_request', 400, 'Valeur invalide.');
       const p = partyOf(me.id);
-      if(!p) fail('no_party', 404, "Tu n'es dans aucun groupe.");
-      noChange(p);
-      const m = memberOf(p, me.id);
-      m.always = value;
-      m.ready = value;
-      if(value) alwaysOn.add(me.id); else alwaysOn.delete(me.id);
-      return { party: publicParty(p, me.id) };
+      if(p) noChange(p);
+      await setAlways(me.id, value);
+      if(p){
+        const m = memberOf(p, me.id);
+        m.always = value;
+        if(value && await game.activeSessionId(me.id)) m.ready = true;
+        if(value && !m.ready) await waitPrison(m);
+      }
+      return { party: p ? publicParty(p, me.id) : null, alwaysReady: value };
     },
 
     /* le chef donne sa place de chef à un autre membre */
@@ -455,6 +525,21 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       return { ...r, party: p ? publicParty(p, me.id) : null };
     },
 
+    /* activer ou désactiver une stèle chargée : le chef du groupe, ou soi-même seul ; body = { shrine, on } (30/10/2026) */
+    async steleSet(me, body = {}){
+      touch(me);
+      const p = partyOf(me.id);
+      if(p && p.leader !== me.id) fail('not_leader', 403, 'Seul le chef du groupe peut le faire.');
+      return game.steleSet(me.id, body);
+    },
+
+    /* lancer la prison (29/10) : solo seulement ; le service de jeu refuse si le groupe compte plusieurs joueurs */
+    async prisonLaunch(me, body = {}){
+      touch(me);
+      const p = partyOf(me.id);
+      return game.prisonStart(me, p ? p.members.map(m => ({ account: m.account, name: m.name })) : null, body);   // { area, speed (dev) }
+    },
+
     async launch(me, body = {}){
       touch(me); await sweep();
       const p = partyOf(me.id);
@@ -471,7 +556,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       p.launching = true;                              // plus d'entrée ni de sortie pendant la création
       try {
         const members = [memberOf(p, me.id), ...p.members.filter(m => m.account !== me.id)];
-        const r = await game.start(me, body, members.map(m => ({ account: m.account, name: m.name })));
+        const r = await game.start(me, p.devPresets ? { ...body, presets: p.devPresets } : body, members.map(m => ({ account: m.account, name: m.name })));
         grace(p, r);
         unready(p);                                    // la session finie, chacun redira qu'il est prêt
         return r;
@@ -479,17 +564,166 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
     },
 
   };
+
+  /* ---------- administration (29/10/2026, Geoffrey ; server/admin/routes.js) ---------- */
+
+  /* état d'un groupe pour le journal et le script : chef, membres, prêts */
+  const adminView = p => ({ code: p.code, leader: memberOf(p, p.leader)?.name,
+                            members: p.members.map(m => ({ name: m.name, leader: m.account === p.leader, ready: !!m.ready, always: !!m.always })) });
+  const admin = {
+    /* met player (compte) dans le lobby de host (compte), comme « Rejoindre » depuis l'onglet Social, sans amitié ni
+       code. host sans groupe : on lui en crée un, dont il est le chef. Mêmes refus que pour un joueur (en session,
+       groupe complet ou en cours de lancement). Comme pour toute arrivée, les autres repassent « pas prêt ». */
+    /* comptes du groupe de ce joueur, lui compris ; [] sans groupe (chat de groupe, 31/10) */
+    membersOf: id => partyOf(id)?.members.map(m => m.account) ?? [],
+    isLeader: id => partyOf(id)?.leader === id,
+    /* lien de lobby pour le chat (31/10/2026) : son groupe (créé s'il est seul), avec une place libre et hors session */
+    async chatLink(me, ctx){
+      touch(me); await sweep();
+      await notInSession(me);
+      const p = partyOf(me.id) ?? await create(me);
+      if(p.locked) fail('party_locked', 409, 'Ton groupe est verrouillé : ouvre-le pour l\'annoncer.');
+      if(p.members.length >= GAME.maxPlayers) fail('party_full', 409, 'Ton groupe est déjà complet.');
+      return { code: p.code, ...lobbyLink(ctx?.mode, ctx?.level), size: p.members.length, max: GAME.maxPlayers };
+    },
+    /* aperçu d'un groupe au survol d'un lien, ou null s'il n'existe plus. Le code reste au serveur : voir le service social */
+    async peek(code){
+      const p = parties.get(code);
+      if(!p) return null;
+      const members = [];
+      let playing = false;
+      for(const m of p.members){
+        if(await game.activeSessionId(m.account)) playing = true;
+        members.push(await memberCard(m, p));
+      }
+      return { members, size: members.length, max: GAME.maxPlayers, playing, locked: !!p.locked };
+    },
+    /* verrouiller son groupe (31/10/2026, Geoffrey) : le chef seul. Une recherche de groupe en cours s'arrête */
+    async lock(me, value){
+      touch(me);
+      const p = partyOf(me.id);
+      if(!p) fail('no_party', 404, 'Tu n\'as pas de groupe.');
+      if(p.leader !== me.id) fail('not_leader', 403, 'Seul le chef peut verrouiller le groupe.');
+      if(typeof value !== 'boolean') fail('bad_request', 400, 'Demande invalide.');
+      p.locked = value;
+      if(value) queue.delete(me.id);
+      return { party: publicParty(p, me.id), lfg: lfgView(me) };
+    },
+    /* activité que le chef a ouverte dans son lobby ; null : aucune. Le navigateur la donne, elle ne sert qu'à l'affichage */
+    async activity(me, body = {}){
+      const p = partyOf(me.id);
+      if(!p || p.leader !== me.id) return { ok: false };
+      p.activity = body.mode == null ? null : lobbyLink(body.mode, body.level);
+      return { ok: true };
+    },
+    /* groupes en formation (31/10/2026, Geoffrey) : ouverts, avec une place, chef présent, personne en session ni en
+       prison. Ceux qui ont le plus de joueurs d'abord. Relue en boucle tant que la fenêtre est ouverte */
+    async forming(me){
+      await sweep();
+      const now = clock(), mine = partyOf(me.id)?.code, list = [];
+      for(const p of parties.values()){
+        if(list.length >= config.formingMax) break;
+        if(p.code === mine || p.locked || p.launching || p.members.length >= GAME.maxPlayers) continue;
+        if(now - memberOf(p, p.leader).seenAt > config.awayAfter) continue;
+        let busy = false;
+        for(const m of p.members) busy ||= !!await game.activeSessionId(m.account) || !!await game.prisonActiveOf?.(m.account);
+        if(busy) continue;
+        const members = [];
+        for(const m of p.members) members.push(await formingCard(m, p));
+        list.push({ code: p.code, mode: p.activity?.mode ?? null, level: p.activity?.level ?? 1, open: true,
+                    size: members.length, max: GAME.maxPlayers, members });
+      }
+      return { groups: list.sort((a, b) => b.size - a.size) };
+    },
+    async adminMove(player, host){
+      await sweep();
+      if(player.id === host.id) fail('invalid_id', 400, 'Les deux pseudos désignent le même joueur.');
+      if(await game.activeSessionId(player.id)) fail('session_running', 409, `${displayName(player)} est en session : réessaie à la fin.`);
+      if(await game.activeSessionId(host.id)) fail('friend_in_session', 409, `${displayName(host)} est en session : réessaie à la fin.`);
+      const p = partyOf(host.id) ?? await create(host);
+      if(memberOf(p, player.id)) return { moved: false, party: adminView(p) };
+      noChange(p);
+      if(p.members.length >= GAME.maxPlayers) fail('party_full', 409, `Le groupe de ${displayName(host)} est complet.`);
+      const old = partyOf(player.id);
+      if(old){ noChange(old); removeMember(old, player.id); }
+      queue.delete(player.id);
+      unready(p);
+      await addMember(p, player.id, displayName(player));
+      p.invites.delete(player.id);
+      return { moved: true, party: adminView(p) };
+    },
+    /* met player prêt / pas prêt (ready) et coche / décoche « prêt tout le temps » (always), comme ses propres cases.
+       Chacun facultatif (au moins un). Possible pendant une session : vaut pour la suivante. */
+    async adminReady(player, { ready, always } = {}){
+      if(ready !== undefined && typeof ready !== 'boolean') fail('bad_request', 400, 'ready : true ou false.');
+      if(always !== undefined && typeof always !== 'boolean') fail('bad_request', 400, 'always : true ou false.');
+      if(ready === undefined && always === undefined) fail('bad_request', 400, 'Rien à changer : ready et/ou always.');
+      const p = partyOf(player.id);
+      if(!p) fail('no_party', 404, `${displayName(player)} n'est dans aucun groupe.`);
+      noChange(p);
+      const m = memberOf(p, player.id);
+      if(always !== undefined){
+        m.always = always;
+        await setAlways(player.id, always);
+      }
+      m.ready = ready ?? always ?? m.ready;            // --always on/off met aussi prêt / pas prêt : c'est le but de l'outil
+      return { party: adminView(p) };
+    },
+    /* lance le lobby de player (compte, n'importe quel membre) dans la mine classique, comme si le chef cliquait
+       « Lancer », SANS attendre que tout le monde soit prêt. Seul (sans groupe ou groupe d'un joueur) : sa session solo.
+       Refus du service de jeu inchangés (un membre encore en session, places du serveur…). */
+    async adminLaunch(player){
+      await sweep();
+      const p = partyOf(player.id);
+      const body = { mode: MINE_MODES[0].id };
+      if(!p || p.members.length === 1){
+        if(p) noChange(p);
+        const r = await game.start(player, body);
+        if(p) grace(p, r);
+        return { ...r, leader: displayName(player), members: [displayName(player)] };
+      }
+      noChange(p);
+      const leader = await getAccount(p.leader);
+      if(!leader) fail('account_not_found', 404, 'Le chef du groupe est introuvable.');
+      p.launching = true;                              // plus d'entrée ni de sortie pendant la création
+      try {
+        const members = [memberOf(p, p.leader), ...p.members.filter(m => m.account !== p.leader)];
+        const r = await game.start(leader, body, members.map(m => ({ account: m.account, name: m.name })));
+        grace(p, r);
+        unready(p);
+        return { ...r, leader: memberOf(p, p.leader).name, members: members.map(m => m.name) };
+      } finally { p.launching = false; }
+    },
+    /* donne la place de chef à player (compte), comme « Nommer chef » du chef actuel. Le nouveau chef n'a plus d'état
+       « prêt » ; l'ancien redevient membre, pas prêt (sauf « prêt tout le temps »). */
+    async adminPromote(player){
+      const p = partyOf(player.id);
+      if(!p) fail('no_party', 404, `${displayName(player)} n'est dans aucun groupe.`);
+      noChange(p);
+      const old = p.leader;
+      if(old !== player.id){
+        p.leader = player.id;
+        memberOf(p, player.id).ready = false;
+        const was = memberOf(p, old);
+        if(was) was.ready = !!was.always;
+      }
+      return { changed: old !== player.id, party: adminView(p) };
+    },
+  };
+  Object.assign(actions, admin);
   for(const k of Object.keys(actions)) actions[k] = saving(actions[k]);
   return {
     ...actions,
     load,
     /* pour l'onglet Social : groupe d'un joueur (taille, places) et invitations qu'il a reçues, sans ménage ni signe de vie */
-    groupOf: accountId => { const p = partyOf(accountId); return p ? { code: p.code, size: p.members.length, max: GAME.maxPlayers } : null; },
+    groupOf: accountId => { const p = partyOf(accountId); return p ? { code: p.code, size: p.members.length, max: GAME.maxPlayers, locked: !!p.locked } : null; },
     invitesOf: accountId => invitesFor(accountId).map(q => ({ code: q.code, from: q.invites.get(accountId).from, at: q.invites.get(accountId).at,
                                                               members: q.members.map(m => m.name), full: q.members.length >= GAME.maxPlayers })),
     /* pour les tests et le journal */
     count: () => parties.size,
     lfgCount: () => queue.size,
+    /* pour le Carreau (ville du spawn, 29/10) : ce joueur cherche-t-il un groupe (seul, ou chef d'un groupe en recherche) ? */
+    searching: accountId => [...queue.values()].some(e => e.members.includes(accountId) && lfgValid(e)),
     _sweep: saving(sweep),
   };
 }

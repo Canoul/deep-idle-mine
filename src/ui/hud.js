@@ -3,6 +3,9 @@ import { SESSION_LEN, STATS, BLOCKS, IDS, SKILLS, SPELLS } from '../config.js';
 import { areaOf, unlockNeed, maxRow } from '../sim/world.js';
 import { rname } from './rarity.js';
 import { followedMiner } from '../render/camera.js';
+import { pxi } from './pxicons.js';
+import { treeOf } from './spells.js';
+import { teamEnergyHTML } from './energy-tag.js';
 
 const $ = id => document.getElementById(id);
 export const fmt = s => { s=Math.floor(s); return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); };
@@ -15,6 +18,12 @@ const sw = c => c ? `<i class="sw" style="background:${c}"></i>` : '';
 /* couleur et nom de chaque entrée de composition (les noms viennent des blocs ; « air » = poches de vide) */
 const COLORS={dirt:'#7a5230',stone:'#7d828c',hardstone:'#575c66',coal:'#2e2e33',iron:'#d9a67f',gold:'#ffd23f',diamond:'#4de8f0',graphite:'#2f3b4d',mithril:'#b8d4f0',cobalt:'#2f5fe0',thorium:'#7ee04a',air:'#1a1410'};
 const compName = n => n==='air' ? 'Vide' : BLOCKS[IDS[n]].name;
+/* pourcentage arrondi à 1 décimale, virgule française : un autel de minerais donne 9,333… % (oreBonusComp) → « 9,3 » */
+const pct = v => String(Math.round(v*10)/10).replace('.', ',');
+
+/* barres de composition d'une area : % arrondi, nombre exact de blocs entre parenthèses */
+export const areaCompHtml = a => Object.keys(a.comp).map(n =>
+  `<div class="comp"><span class="n">${sw(COLORS[n])}${compName(n)}</span><div class="bar b"><i style="width:${a.comp[n]}%;background:${COLORS[n]}"></i></div><span class="v">${pct(a.comp[n])}% (${a.counts[n]})</span></div>`).join('');
 
 function depthText(m){ const a=areaOf(m.y); return m.y+' blocs'+(a>=0?' (area '+a+')':(m.y===0?' (surface)':' (couche de terre)')); }
 
@@ -30,7 +39,7 @@ export function updateHUD(G, ui){
     <div class="mrow${t===m?' on':''}" data-id="${t.id}" title="Suivre ${esc(t.name)}">
       <span class="mname">${esc(t.name)}</span>
       <span class="mst">${esc(t.status)}</span>
-      <span class="mmeta">prof ${t.y} · O₂ ${Math.round(t.ox)} · pods ${Math.round(t.load)}</span>
+      <span class="mmeta">prof ${t.y} · O₂ ${Math.round(t.ox)} · pods ${Math.round(t.load)}${teamEnergyHTML(t.account) ? ' · ' + teamEnergyHTML(t.account) : ''}</span>
     </div>`).join(''));
 
   // mineur suivi
@@ -38,15 +47,15 @@ export function updateHUD(G, ui){
   $('mStatus').textContent=m.status;
   $('mDepth').textContent=depthText(m);
   const oxMax=m.carac?.oxygenMax ?? STATS.oxygenMax, pods=m.carac?.pods ?? STATS.pods;   // avec le stuff du mineur
-  $('mO2').textContent=Math.round(m.ox)+' / '+oxMax;
+  $('mO2').textContent=Math.round(m.ox)+' / '+Math.round(oxMax);   // maximum avec les % du stuff : 373,89 → 374
   $('o2Bar').style.width=(m.ox/oxMax*100)+'%';
-  $('mPods').textContent=Math.round(m.load)+' / '+pods;
+  $('mPods').textContent=Math.round(m.load)+' / '+Math.round(pods);
   $('podBar').style.width=Math.min(100,m.load/pods*100)+'%';
   $('podBar').style.background=m.load>=pods*0.9?'var(--bad)':'var(--ok)';
   $('mTorch').textContent=m.torches+' en réserve · '+(Number.isFinite(m.bridges) ? m.bridges+' passerelles' : 'passerelles illimitées');   // Infinity arrive en null (JSON)
   $('mInv').innerHTML=chips(m.inv);
   // sorts équipés du mineur suivi : recharge restante sur chaque sort
-  { const html=spellBarHtml(m, G.t); $('spellBar').hidden=!html; if(html) setHtml($('spellBar'), html); }
+  showSpellBar($('spellBar'), m, G.t);
 
   // coffre commun + contributions
   $('chestBox').innerHTML=chips(G.chest);
@@ -57,7 +66,7 @@ export function updateHUD(G, ui){
     ? G.miners.map(t=>`<div class="row"><span>${sw(t.color)}${esc(t.name)}</span><span>${chips(G.chestBy[t.id])}</span></div>`).join('')
     : '') + gob;
   // XP de la session : pot commun, partagé à parts égales à la fin
-  { const xp=G.stats.xp||0, n=G.miners.length;
+  { const xp=Math.floor(G.stats.xp||0), n=G.miners.length;   // prison : demi-XP possible (PRISON.mobXpMul)
     $('xpBox').textContent = n>1 ? `${xp} (≈ ${Math.floor(xp/n)} chacun)` : String(xp); }
   renderLog(G.log);
   updateRail(G, m);
@@ -66,13 +75,12 @@ export function updateHUD(G, ui){
   const ai=areaOf(m.y), box=$('areaBody');
   if(ai<0){ box.innerHTML='<div class="mut">Surface. Le mineur creuse vers l\'area 0…</div>'; return; }
   const a=G.areas[ai];
-  let h=`<div class="row"><b>Area ${ai}</b></div>`;
-  for(const n in a.comp)
-    h+=`<div class="comp"><span class="n">${sw(COLORS[n])}${compName(n)}</span><div class="bar b"><i style="width:${a.comp[n]}%;background:${COLORS[n]}"></i></div><span class="v">${a.comp[n]}% (${a.counts[n]})</span></div>`;
+  /* prison (29/10) : sa carte est l'area 0, mais son contenu est celui d'une autre area (profil des 10 dernières mines) */
+  let h=`<div class="row"><b>Area ${ui.prison && Number.isSafeInteger(ui.prisonArea) ? ui.prisonArea : ai}</b></div>`+areaCompHtml(a);
   // treasure : on n'affiche que la probabilité (sa présence reste une surprise), et s'il a été trouvé
   if(a.chestChance>0)
     h+=`<div class="row" style="margin-top:6px"><span>💰 Treasure ${a.treasure&&a.treasure.opened?esc(a.treasure.item.replace('Treasure ','')):''}</span><span>${a.treasure&&a.treasure.opened?'✔ trouvé':Math.round(a.chestChance*100)+' % de chances'}</span></div>`;
-  h+=objectiveHtml(G);
+  if(!ui.prison) h+=objectiveHtml(G);   // prison (29/10) : une seule area, rien à débloquer
   box.innerHTML=h;
 }
 
@@ -176,13 +184,28 @@ export function objectiveHtml(G){
 }
 
 /* barre des sorts d'un mineur (m.spells, m.spellCd : heure où chaque sort est de nouveau prêt) au temps t de la partie :
-   un carré par sort, grisé avec les secondes restantes pendant la recharge ; '' sans sort */
+   un carré par sort (icône pixel, couleur de sa famille comme dans l'onglet Sorts), grisé avec les secondes restantes
+   pendant la recharge ; '' sans sort */
+/* remplit une barre des sorts (élément .spellBar) : cachée sans sort ; m null = cachée. Sert à tous les modes (29/10/2026 :
+   avant, seule la mine classique l'affichait) */
+export function showSpellBar(el, m, t){
+  if(!el) return;
+  const html = spellBarHtml(m, t);
+  if(el.hidden !== !html) el.hidden = !html;
+  if(html) setHtml(el, html);
+}
+/* place la barre en bas du canvas quand il est plus petit que sa zone (tours, instance, Bloc géant : canvas centré) */
+export function placeSpellBar(el, cv, wrap){
+  if(!el || el.hidden || !cv || !wrap) return;
+  const b = `${Math.round(Math.max(0, (wrap.clientHeight - cv.offsetHeight) / 2) + 6)}px`;
+  if(el.style.bottom !== b) el.style.bottom = b;
+}
 export function spellBarHtml(m, t){
   if(!m?.spells?.length) return '';
   return m.spells.map(id => {
     const s = SPELLS.list.find(x => x.id === id); if(!s) return '';
     const left = Math.ceil((m.spellCd?.[id] ?? 0) - t - 1e-9);
-    return `<div class="spB${left > 0 ? ' cd' : ''}" title="${esc(s.name)}${left > 0 ? ` : prêt dans ${left} s` : ' : prêt'}">`+
-           `<span class="spIcon">${s.icon}</span>${left > 0 ? `<b class="spLeft">${left}</b>` : ''}</div>`;
+    return `<div class="spB tr-${treeOf(s)}${left > 0 ? ' cd' : ''}" title="${esc(s.name)}${left > 0 ? ` : prêt dans ${left} s` : ' : prêt'}">`+
+           `<span class="spIcon">${pxi(s.px) || s.icon}</span>${left > 0 ? `<b class="spLeft">${left}</b>` : ''}</div>`;
   }).join('');
 }

@@ -4,19 +4,21 @@
    - pages fixes (index.html) : <i data-qhelp="clé"></i>, rempli au chargement par fillHelp() avec HELP[clé] ;
    - écrans construits par le code : qhelp(texte) ou helpLine(texte) renvoient le HTML de la bulle.
    À ne pas confondre avec les boutons « Recettes » / « Butin » du Four et du Concasseur, qui ouvrent un tableau. */
-import { FURNACE, CRUSHER } from '../config.js';
+import { FURNACE, CRUSHER, CHAT } from '../config.js';
 
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
 
 export const HELP = {
-  where: `Où miner
+  where: `Activités
 Mine : la session normale, 1 h dans une mine qui descend d'area en area. Seul ou jusqu'à 3.
 Mine instantanée : quelques minutes, à heure fixe, sur inscription, chacun pour soi.
-Instances, Bloc géant, Jugement : des défis à part, chacun a ses règles (le « ? » de sa carte).`,
+Instances, Bloc géant, He's coming, Jugement : des défis à part, chacun a ses règles (le « ? » de sa carte).`,
   team: `Équipe
 Jusqu'à 3 joueurs, un mineur chacun.
 Seul, tu gardes tout le coffre ; à plusieurs, il est partagé à parts égales à la fin.
-Invite un ami avec le bouton, ou rejoins un groupe avec son code.`,
+Invite un ami avec le bouton, ou rejoins un groupe avec son code.
+Groupes en formation : les groupes qui ont encore de la place ; un clic pour entrer.
+Le cadenas (chef du groupe) : seuls les invités peuvent entrer.`,
   prefs: `Critères / préférences
 Ton mineur joue tout seul : tu ne le diriges pas, tu le règles.
 Priorité : Minerais = il va d'abord chercher les minerais qu'il voit ; Descendre = il va d'abord en profondeur.
@@ -26,7 +28,14 @@ Figées au lancement : elles comptent pour toute la session.`,
   shrines: `Shrines
 Un shrine se paie en objets ; une fois le prix atteint, il donne son bonus pendant plusieurs mines.
 Ils agissent dans les mines que tu lances, seul ou en chef de groupe.
+Les stèles (Exorcisme, Pacte) se paient dans le lobby de leur tour : une charge, consommée à la victoire, gardée sinon. Le chef peut les activer ou les désactiver.
 Ton groupe peut t'aider à payer.`,
+  gchat: `Chat global
+Tous les joueurs du jeu le lisent, en session ou non, depuis n'importe quel onglet (sur téléphone, dans l'onglet Chat).
+Canaux : Général, MP, Groupe, Guilde, LFG. Raccourcis : /1 général, /2 ou /lfg LFG, /gr groupe, /g guilde, /w "pseudo" message privé. Le canal utilisé reste choisi pour tes messages suivants.
+Lien de lobby : le bouton « Pub LFG » du lobby, ou %lobby dans un message (ex. /lfg %lobby on cherche un last). Survole le lien pour voir le groupe, clique pour le rejoindre.
+L'écrou choisit les canaux de l'onglet, le + en crée un autre ; tes réglages sont gardés sur ton compte.
+Un message toutes les ${CHAT.globalGapMs / 1000} secondes au plus ; les ${CHAT.keep} derniers restent affichés.`,
   judgment: `Ange contre Démon
 L'effort de tous les joueurs : chaque résidu angélique ou démoniaque rapporté au coffre remplit la jauge de son camp.
 Ces résidus se trouvent dans la roche à partir de l'area 4.
@@ -53,13 +62,15 @@ Quitter avant la fin = tu ne reçois rien.`,
   inventory: `Inventaire
 Tout ce que tu as rapporté des sessions.
 Sélectionne un objet pour voir ce qu'on peut en faire : ouvrir un treasure, utiliser un blueprint, équiper ou recycler une pièce.
-Glisse un objet sur une autre case pour le déplacer.`,
+Glisse un objet sur une autre case pour le déplacer.
+Les icônes au-dessus de la grille filtrent par type (blocs, minerais, stuff, butin des mobs, matériaux, runes, divers) ; la première montre tout.`,
   stuff: `Stuff
 Clique une case pour y équiper une pièce de ton inventaire.
 Les stats du mineur à droite : en vert, ce que donne le stuff ; en bleu, ce que donnent les skills.
 Sets : enregistre un équipement complet pour le remettre en un clic.`,
   craft: `Craft
 Une icône par recette connue ; ✔ = tu as tout ce qu'il faut. Clique une recette pour voir ses ingrédients.
+Les onglets du haut trient les recettes par catégorie, comme dans l'inventaire.
 D'autres recettes se débloquent avec des blueprints (treasures, onglet Recherche) : sélectionne le blueprint dans l'Inventaire, puis « Utiliser ».`,
   upgrade: `Amélioration
 Identification : donne une qualité (R1 à R7) à une pièce, en sacrifiant un 2e exemplaire du même objet.
@@ -81,7 +92,8 @@ Niveau de spécialisation (SP lvl) : monte en jouant avec cet arbre et débloque
 Glyphes : la petite case sous un skill, où l'on pose son glyphe quand le skill est au rang max.`,
   spells: `Sorts
 Ils partent tout seuls en session, dès que leur recharge est finie et qu'ils peuvent servir.
-Clic sur un sort pour l'équiper ; clic sur un sort équipé pour le retirer.
+Clic sur un sort du grimoire pour voir sa fiche, puis « Mettre dans la barre » (ou double clic, ou glisse-le sur un emplacement).
+Clic sur un sort de la barre pour le retirer.
 Sorts de classe : débloqués par le niveau de spécialisation (onglet Skills). Les autres s'apprennent avec un parchemin.`,
   friends: `Amis
 Un ami invité reçoit une notification ; « Rejoindre » t'emmène dans son lobby.

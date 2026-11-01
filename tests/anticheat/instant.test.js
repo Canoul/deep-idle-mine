@@ -10,6 +10,7 @@ import { createInlineRunner } from '../../server/game/live.js';
 import { createInstantService } from '../../server/instant/service.js';
 import { deserialize, countOf } from '../../src/meta/inventory.js';
 import { runInstant } from '../../src/sim/instant/session.js';
+import '../helpers.js';   // énergie pleine au départ des tests (ENERGY.start, 30/10/2026)
 
 const SLOT = Date.parse('2026-10-21T14:00:00Z');
 const A = { id:'AAAA1111', name:'Zoe', guest:false }, B = { id:'BBBB2222', name:'Max', guest:false };

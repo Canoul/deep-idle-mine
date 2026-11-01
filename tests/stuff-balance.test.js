@@ -13,6 +13,8 @@ const ARMOR = ['Casque en', 'Jambes en', 'Bottes en'];   // pas le plastron : to
 const MATERIALS = { chitine: 1, fer: 2, acier: 3 };
 const TOL = 0.025;   // arrondi au pas de la stat (un pod = 6 x, un point d'oxygène = 4 x)
 const price = designPrice;   // prix mesurés × ajustements de Geoffrey (UPGRADE.priceAdjust, 27/10/2026) : valeur de dessin, pas le GS (28/10)
+/* hors règle, voulu : Ceinture du Géant à 1,5 dégâts (29/10/2026, Geoffrey ; 28/10 : 5 ; avant 1,6) */
+const OFF_RULE = new Set(['Ceinture du Géant', 'Piolet de gobelin', 'Chapeau de naab', 'Épée cassée en carton']);   // 31/10 : valeurs de Geoffrey, voir tests/mob-drops.test.js
 const near = (v, want) => Math.abs(v - want) <= TOL * want;
 
 test('casques, jambes et bottes en chitine, fer et acier : GS = valeur du tier (100 / 250 / 500 x)', () => {
@@ -26,6 +28,7 @@ test('casques, jambes et bottes en chitine, fer et acier : GS = valeur du tier (
 test('butin des mobs : tier 2, parts égales entre les stats (prix ajustés, valeur pleine depuis le 27/10)', () => {
   assert.equal(STUFF.combatOnStuff, 1, 'plus de demi-valeur : remplacée par UPGRADE.priceAdjust (27/10, Geoffrey)');
   for(const { item } of MOB_DROPS.items){
+    if(OFF_RULE.has(item)) continue;
     const stats = Object.entries(STUFF.items[item].stats), share = UPGRADE.tiers[tierOf(item)].x / stats.length;
     assert.equal(tierOf(item), 2, item);
     for(const [k, v] of stats){
@@ -44,4 +47,10 @@ test('stats de combat : toutes connues et avec un prix mesuré', () => {
 test('plastrons : hors règle, au-dessus de la valeur de leur tier (torse volontairement plus fort)', () => {
   for(const [mat, tier] of Object.entries(MATERIALS))
     assert.ok(pieceGS(`Plastron en ${mat}`) > UPGRADE.tiers[tier].x, `Plastron en ${mat} : ${pieceGS(`Plastron en ${mat}`)} x`);
+});
+
+test('Plastron de l\'équilibre : 2 fois le x de son tier (31/10/2026, Geoffrey)', () => {
+  assert.equal(tierOf('Plastron de l\'équilibre'), 3);
+  assert.equal(pieceGS('Plastron de l\'équilibre'), 1003);
+  assert.ok(Math.abs(pieceGS('Plastron de l\'équilibre') / UPGRADE.tiers[3].x - 2) < 0.01);
 });

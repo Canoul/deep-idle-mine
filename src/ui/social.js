@@ -5,16 +5,19 @@
    Online : compteur et liste de tous les joueurs en ligne (pas en session d'abord, puis en session), « Ajouter » pour
    un non-ami ; demandée au serveur seulement quand ce sous-onglet est à l'écran (SOCIAL.onlinePoll).
    Classements : Gear score, Niveau (XP), Spécialisation (un classement par arbre), Tour céleste (meilleur temps, Ange et
-   Démon confondus, avec l'équipe) ; top LEADERBOARD.size et sa propre place, redemandé toutes les LEADERBOARD.refresh ms
+   Démon confondus, avec l'équipe), Roi gobelin (29/10 : meilleur temps pour vaincre le roi de l'Instance I, avec
+   l'équipe et le temps du combat contre le roi) ; top LEADERBOARD.size et sa propre place, redemandé toutes les LEADERBOARD.refresh ms
    quand il est à l'écran.
    Affiche ce que renvoie le serveur ; chaque action passe par h (promesses rejetées avec un message lisible). */
-import { SKILLS, MINE_MODES, SOCIAL, LEADERBOARD, JUDGMENT } from '../config.js';
-import { towerTime } from '../meta/leaderboard.js';
+import { SKILLS, MINE_MODES, SOCIAL, LEADERBOARD, JUDGMENT, ENERGY } from '../config.js';
+import { towerTime, isBoard } from '../meta/leaderboard.js';
 import { sanitizeSkills, skillEffects } from '../meta/skills.js';
 import { pxi } from './pxicons.js';
+import { energyHTML } from './energy-tag.js';
 import { qhelp } from './help.js';
 import { renderSlots, statsHTML } from './stuff.js';
 import { renderLevel } from './level.js';
+import { ask } from './dialog.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -27,15 +30,21 @@ export const STATUS = {
 };
 /* temps restant d'une session, arrondi à la minute du dessus : « reste 23 min », « reste < 1 min » ; null si inconnu */
 export const leftText = ms => !Number.isFinite(ms) ? null : ms < 60_000 ? 'reste < 1 min' : `reste ${Math.ceil(ms / 60_000)} min`;
+/* pastille d'un joueur ; en prison et jeu ouvert : vert (31/10/2026, Geoffrey), sa prison tourne mais il est là */
+export const statusDot = f => f.mode === 'prison' && f.online ? STATUS.online.cls : STATUS[f.status]?.cls ?? STATUS.online.cls;
 export function statusText(f){
+  if(f.mode === 'prison' && f.online) return `${STATUS.online.label} - Prison`;
   if(f.status === 'lobby') return `${STATUS.lobby.label} (${f.size}/${f.max})`;
   if(f.status === 'session'){
     const mode = MINE_MODES.find(m => m.id === f.mode);
     const label = !f.mode || f.mode === 'mine' || !mode ? STATUS.session.label : `En session · ${mode.label}`;
-    return [label, leftText(f.leftMs)].filter(Boolean).join(' · ');   // 23/10 : on voit quand il aura fini
+    const size = f.size ? ` (${f.size}/${f.max})` : '';               // 30/10 : solo, duo… (pas pour le Bloc géant)
+    return [label + size, leftText(f.leftMs)].filter(Boolean).join(' · ');   // 23/10 : on voit quand il aura fini
   }
   return STATUS[f.status]?.label ?? '';
 }
+
+export { energyHTML };   // src/ui/energy-tag.js (31/10)
 
 /* spécialisation d'une fiche : « ⛏ Mineur », ou null sans arbre choisi */
 export const treeText = skills => { const t = SKILLS.trees.find(x => x.id === skills?.tree); return t ? `${t.icon} ${t.label}` : null; };
@@ -53,7 +62,26 @@ export const BOARD_INFO = {
            value: r => `Niv. ${r.level} · ${fr(r.value)} XP` },
   tower: { title: 'Tour céleste', help: 'Le meilleur temps pour vaincre le boss d\'une tour, Ange et Démon confondus (temps de jeu). Chaque joueur de l\'équipe garde son meilleur temps.',
            value: r => towerTime(r.value) },
+  tower2: { title: 'Tour céleste héroïque', help: 'Comme « Tour céleste », avec le Shrine héroïque.', value: r => towerTime(r.value) },
+  instance: { title: 'Roi gobelin', help: 'Le meilleur temps pour vaincre le roi gobelin de l\'Instance I, de l\'entrée dans l\'instance à sa mort (temps de jeu). Sous le nom : le temps du combat contre le roi, de son réveil à sa mort. Chaque joueur présent à la victoire garde son meilleur temps.',
+              value: r => towerTime(r.value) },
+  instance2: { title: 'Roi gobelin II', help: "Comme « Roi gobelin », au niveau 2 de l'Instance I.", value: r => towerTime(r.value) },
 };
+/* sous-onglets d'un bouton de classement (29/10, Geoffrey : « comme pour les spés ») : [{ id (classement), label }],
+   ou null sans sous-onglet. Spécialisation : un par arbre ; Tour céleste, Roi gobelin : un par niveau (tower, tower2…) */
+export function boardSubs(group){
+  if(group === 'spec') return SKILLS.trees.map(t => ({ id: 'spec:' + t.id, label: `${t.icon} ${t.label}` }));
+  if(group !== 'tower' && group !== 'instance') return null;
+  const subs = [];
+  for(let n = 1; isBoard(n > 1 ? group + n : group); n++) subs.push({ id: n > 1 ? group + n : group, label: group === 'tower' ? (n > 1 ? 'Héroïque' : 'Normal') : `Niveau ${n}` });
+  return subs;
+}
+
+/* « combat 2:10.4 · avec Zoe, Max » : temps du combat contre le roi et coéquipiers d'un record d'instance */
+export function instanceDetail(r){
+  const mates = (r.team || []).filter(n => n !== r.name).join(', ');
+  return [r.fight != null ? `combat ${towerTime(r.fight)}` : '', mates ? `avec ${mates}` : ''].filter(Boolean).join(' · ');
+}
 /* « Ange · avec Zoe, Max » : camp et coéquipiers d'un record de tour (sans le joueur lui-même) */
 export const towerDetail = r => [JUDGMENT.sides[r.side]?.label, r.team?.filter(n => n !== r.name).join(', ')]
   .filter(Boolean).map((t, i) => i ? `avec ${t}` : t).join(' · ');
@@ -63,26 +91,28 @@ export const rankText = (rank, total) => `${rank}${rank === 1 ? 'er' : 'e'} sur 
 /* h : { request(name), accept(id), refuse(id), remove(id), invite(id), join(id), profile(id), online(), leaderboard(board) } */
 export function setupSocial(h){
   let st = null, busy = false, tab = 'friends', online = null, onlineAt = 0, onlineBusy = false;
-  let board = 'gs', tree = SKILLS.trees[0].id, boards = {}, boardAt = 0, boardBusy = false;
+  /* board : bouton choisi (gs, xp, spec, tower, instance) ; sub : sous-onglet choisi de chaque bouton (id de classement) */
+  let board = 'gs', boards = {}, boardAt = 0, boardBusy = false;
+  const sub = Object.fromEntries(['spec', 'tower', 'instance'].map(g => [g, boardSubs(g)[0].id]));
 
   function friendRow(f){
     const why = f.together ? 'Déjà dans ton groupe' : f.status === 'session' ? 'En session' : f.status === 'offline' ? 'Hors ligne' : '';
-    return `<div class="frow"><span class="fdot ${STATUS[f.status].cls}"></span>`+
-      `<span class="fname"><b>${esc(f.name)}</b><small class="mut">${esc(statusText(f))}${f.together ? ' · avec toi' : ''}</small></span>`+
+    return `<div class="frow"><span class="fdot ${statusDot(f)}"></span>`+
+      `<span class="fname"><b>${esc(f.name)}</b><small class="mut">${energyHTML(f.energy)}${esc(statusText(f))}${f.together ? ' · avec toi' : ''}</small></span>`+
       `<span class="fbtns"><button data-profile="${esc(f.id)}" title="Voir son équipement, ses stats et son niveau">${pxi('helmet')}Stuff</button>`+
       `<button data-invite="${esc(f.id)}"${f.canInvite ? '' : ` disabled title="${esc(why || 'Indisponible')}"`}>${pxi('group')}Inviter</button>`+
       `<button data-join="${esc(f.id)}"${f.canJoin ? '' : ` disabled title="${esc(why || (f.status === 'lobby' ? 'Groupe complet' : 'Indisponible'))}"`}>${pxi('arrow')}Rejoindre</button>`+
       `<button class="x" data-remove="${esc(f.id)}" data-name="${esc(f.name)}" title="Retirer des amis">×</button></span></div>`;
   }
 
-  /* une ligne de la liste Online : p = { id, name, status…, me, friend } */
+  /* une ligne de la liste Online : p = { id, name, status…, energy, me, friend } */
   function onlineRow(p){
     const sent = st?.outgoing.some(r => r.id === p.id);
     const tag = p.me ? ' · toi' : p.friend ? ' · ami' : '';
     const btn = p.me || p.friend ? '' : sent ? '<button disabled title="Demande déjà envoyée">Demande envoyée</button>'
       : `<button data-add="${esc(p.id)}" title="Envoyer une demande d'ami">${pxi('person')}Ajouter</button>`;
-    return `<div class="frow"><span class="fdot ${STATUS[p.status]?.cls ?? 'on'}"></span>`+
-      `<span class="fname"><b>${esc(p.name)}</b><small class="mut">${esc(statusText(p))}${tag}</small></span>`+
+    return `<div class="frow"><span class="fdot ${statusDot(p)}"></span>`+
+      `<span class="fname"><b>${esc(p.name)}</b><small class="mut">${energyHTML(p.energy)}${esc(statusText(p))}${tag}</small></span>`+
       `<span class="fbtns">${btn}</span></div>`;
   }
   function renderOnline(){
@@ -93,19 +123,19 @@ export function setupSocial(h){
       (more > 0 ? `<p class="mut small">… et ${more} autre${more > 1 ? 's' : ''}.</p>` : '');
   }
   /* ---------- classements ---------- */
-  const boardId = () => board === 'spec' ? 'spec:' + tree : board;
+  const boardId = () => sub[board] ?? board;
   function boardRow(r){
-    const detail = board === 'tower' ? towerDetail(r) : '';
+    const detail = board === 'tower' ? towerDetail(r) : board === 'instance' ? instanceDetail(r) : '';
     return `<div class="frow lrow${r.me ? ' mine' : ''}"><span class="lrank">${r.rank}</span>`+
       `<span class="fname"><b>${esc(r.name)}</b>${detail ? `<small class="mut">${esc(detail)}</small>` : ''}</span>`+
-      `<span class="lval">${esc(BOARD_INFO[board].value(r))}</span></div>`;
+      `<span class="lval">${esc(BOARD_INFO[board === 'spec' ? 'spec' : boardId()].value(r))}</span></div>`;
   }
   function renderBoard(){
-    const info = BOARD_INFO[board], t = SKILLS.trees.find(x => x.id === tree);
+    const info = BOARD_INFO[board === 'spec' ? 'spec' : boardId()], subs = boardSubs(board), cur = subs?.find(s => s.id === boardId());
     $('boardPick').querySelectorAll('[data-board]').forEach(b => b.classList.toggle('on', b.dataset.board === board));
-    $('boardTrees').hidden = board !== 'spec';
-    $('boardTrees').innerHTML = SKILLS.trees.map(x => `<button data-tree="${x.id}"${x.id === tree ? ' class="on"' : ''}>${x.icon} ${esc(x.label)}</button>`).join('');
-    $('boardTitle').textContent = board === 'spec' ? `${info.title} · ${t.icon} ${t.label}` : info.title;
+    $('boardTrees').hidden = !subs;
+    $('boardTrees').innerHTML = (subs ?? []).map(s => `<button data-sub="${s.id}"${s === cur ? ' class="on"' : ''}>${esc(s.label)}</button>`).join('');
+    $('boardTitle').textContent = cur ? `${BOARD_INFO[board].title} · ${cur.label}` : info.title;
     $('boardHelp').innerHTML = qhelp(`${info.title}\n${info.help}\nLes ${LEADERBOARD.size} premiers, et ta place si tu n'y es pas.`);
     const b = boards[boardId()];
     if(!b) return;
@@ -123,8 +153,8 @@ export function setupSocial(h){
   }
   setInterval(() => { if(boardShown() && Date.now() - boardAt >= LEADERBOARD.refresh) loadBoard(); }, 1000);
   $('socialBoardTab').onclick = e => {
-    const b = e.target.closest('[data-board], [data-tree]'); if(!b) return;
-    if(b.dataset.board) board = b.dataset.board; else tree = b.dataset.tree;
+    const b = e.target.closest('[data-board], [data-sub]'); if(!b) return;
+    if(b.dataset.board) board = b.dataset.board; else sub[board] = b.dataset.sub;
     renderBoard();
     if(!boards[boardId()]) $('boardList').innerHTML = '<p class="mut small">Chargement…</p>';
     boardBusy = false; loadBoard();
@@ -196,7 +226,8 @@ export function setupSocial(h){
     else if(d.join) act(() => h.join(d.join));
     else if(d.profile) act(async () => showProfile(await h.profile(d.profile)));
     else if(d.add) act(() => h.request(d.add), r => r.friend ? `✔ ${r.friend} et toi êtes maintenant amis.` : `✔ Demande envoyée à ${r.sent}.`);
-    else if(d.remove && (!d.name || confirm(`Retirer ${d.name} de tes amis ?`))) act(() => h.remove(d.remove));
+    else if(d.remove) (d.name ? ask(`Retirer ${d.name} de tes amis ?`, { ok:'Retirer', danger:true }) : Promise.resolve(true))
+      .then(yes => { if(yes) act(() => h.remove(d.remove)); });
   };
 
   /* fiche d'un ami : p = { name, stuff, progress, skills } (server/social/service.js) */

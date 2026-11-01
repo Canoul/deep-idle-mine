@@ -3,20 +3,24 @@
    échelles, les torches, les mobs, le boss, les mineurs et le journal. Le navigateur affiche ; seule la lumière des
    torches est recalculée de son côté pour l'affichage (même calcul, src/sim/tower/world.js). */
 import { towerLight } from '../sim/tower/world.js';
-import { reached } from '../sim/tower/session.js';
-import { glide } from './view.js';
+import { reached, towerDark, warcryOf } from '../sim/tower/session.js';
+import { minerEffects, sessionBonuses, mobEffects } from '../sim/effects.js';
+import { glide, playCopy, playTrack } from './view.js';
 
 const enc36 = v => v.toString(36);
 const ladderList = G => { const out = []; G.ladder.forEach((r, y) => r.forEach((v, x) => { if(v) out.push(y * G.w + x); })); return out; };
 
-function minerView(m){
+function minerView(G, m){
   const a = m.action, d = a?.data || {};
   return {
     id: m.id, name: m.name, color: m.color, account: m.account, x: m.x, y: m.y, kx: m.kx || 0, ky: m.ky || 0, face: m.face, status: m.status,
     stats: m.stats, look: m.look || {}, auras: m.auras || {}, skillTree: m.skillTree,
-    action: a ? { type: a.type, t: a.t, dur: a.dur, data: { x: d.x, y: d.y, winch: d.winch } } : null,
+    action: a ? { type: a.type, t: a.t, dur: a.dur, data: { x: d.x, y: d.y, winch: d.winch, cause: d.cause, aim: d.aim } } : null,
     hop: m.hop ?? null,                                              // petit arc quand le boss le repousse (affichage)
     load: m.load || 0, pods: m.carac?.pods ?? null,                  // sac (pods : TOWER.chest)
+    spells: m.spells || [], spellCd: { ...(m.spellCd || {}) },       // sorts (animation au lancement, src/render/miner-sprite.js)
+    effects: minerEffects(G, m, { foes: G.mobs, dark: towerDark(G, m), warcry: warcryOf(G, m) }),   // états (28/10, src/sim/effects.js)
+    bonus: sessionBonuses(G, m),
   };
 }
 /* position d'un mineur au moment de l'envoi (un pas en cours compte pour sa part faite ; recul : kx, ky) */
@@ -39,12 +43,13 @@ export function createTowerViewer(G){
       winch: G.winch ?? null,                                          // treuil du logisticien
       chestAt: G.chestAt ?? null, chest: G.chest ?? {},                // coffre commun (pods : TOWER.chest)
       seen: G.seen.map(r => r.join('')),
-      boss: { name: G.boss.name, hp: Math.ceil(G.boss.hp), maxhp: G.boss.maxhp, target: G.boss.target, x: G.boss.x, kx: G.boss.kx || 0, y: G.boss.y, lift: G.boss.lift || 0, air: !!G.boss.air },
+      boss: { name: G.boss.name, side: G.boss.side ?? G.side, hp: Math.ceil(G.boss.hp), maxhp: Math.ceil(G.boss.maxhp), target: G.boss.target, x: G.boss.x, kx: G.boss.kx || 0, y: G.boss.y, lift: G.boss.lift || 0, air: !!G.boss.air,
+              rage: G.boss.hp > 0 && G.boss.hp < G.boss.maxhp * (G.lv?.rageBelow ?? 0), taunt: G.boss.taunt != null },
       torches: G.torches.map(t => t.y * G.w + t.x), torchR: G.torches.map(t => t.r ?? null),   // rayon de chaque torche
       ...(G.torches.some(t => t.item) ? { torchItem: G.torches.map(t => t.item ?? null) } : {}),   // pièce de la case torche (apparence)
-      mobs: G.mobs.filter(o => o.hp > 0 && G.seen[o.y]?.[o.x]).map(o => ({ id: o.id, x: o.x, y: o.y, kx: o.kx || 0, hp: Math.ceil(o.hp), maxhp: o.maxhp, awake: o.awake, grab: o.grab, splash: o.splash ?? null })),
+      mobs: G.mobs.filter(o => o.hp > 0 && G.seen[o.y]?.[o.x]).map(o => ({ id: o.id, ...(o.side ? { side: o.side } : {}), x: o.x, y: o.y, kx: o.kx || 0, hp: Math.ceil(o.hp), maxhp: Math.ceil(o.maxhp), awake: o.awake, grab: o.grab, splash: o.splash ?? null, fx: mobEffects(G, o) })),
       reached: reached(G), mobsLeft: G.mobs.filter(o => o.hp > 0 && o.awake).length,
-      miners: G.miners.map(minerView), stats: G.stats, log: G.log.slice(0, 50),
+      miners: G.miners.map(m => minerView(G, m)), stats: G.stats, log: G.log.slice(0, 50),
     };
   };
 }
@@ -52,7 +57,7 @@ export function createTowerViewer(G){
 /* navigateur : une copie d'affichage de la partie. prev : la copie précédente (mouvement fluide : chaque mineur, mob et
    le boss glissent de leur position affichée vers la nouvelle, comme dans la mine, src/shared/view.js) ; now : heure de
    la page (ms) à l'arrivée de l'envoi. */
-export function applyTowerView(v, prev = null, now = performance.now()){
+export function applyTowerView(v, prev = null, now = performance.now(), speed = 0){
   const ladder = Array.from({ length: v.h + 1 }, () => new Uint8Array(v.w));
   for(const k of v.ladders || []){ const x = k % v.w, y = (k - x) / v.w; if(ladder[y]) ladder[y][x] = 1; }
   const G = {
@@ -67,10 +72,18 @@ export function applyTowerView(v, prev = null, now = performance.now()){
   };
   G.light = towerLight(G);
   if(G.boss) G.boss.id = 'boss';
+  if(speed > 0){                                      // lecture en différé (src/shared/view.js)
+    playCopy(G, prev, v.tick, speed, now);
+    playTrack(prev?.miners ?? [], G.miners, minerPos, v.tick);
+    playTrack(prev?.mobs ?? [], G.mobs, o => [o.x + (o.kx || 0), o.y], v.tick);
+    if(G.boss) playTrack(prev?.boss ? [prev.boss] : [], [G.boss], b => [b.x + (b.kx || 0), b.y - (b.lift || 0)], v.tick);
+  }
   if(prev?._at != null){
-    glide(prev, prev.miners, G.miners, minerPos, now);
-    glide(prev, prev.mobs, G.mobs, o => [o.x + (o.kx || 0), o.y], now);
-    if(G.boss && prev.boss) glide(prev, [prev.boss], [G.boss], b => [b.x + (b.kx || 0), b.y - (b.lift || 0)], now);
+    if(!(speed > 0)){
+      glide(prev, prev.miners, G.miners, minerPos, now);
+      glide(prev, prev.mobs, G.mobs, o => [o.x + (o.kx || 0), o.y], now);
+      if(G.boss && prev.boss) glide(prev, [prev.boss], [G.boss], b => [b.x + (b.kx || 0), b.y - (b.lift || 0)], now);
+    }
     /* arc du recul : heure de la page où il a commencé (un nouvel arc = une nouvelle valeur de hop) */
     const was = new Map(prev.miners.map(m => [m.id, m]));
     for(const m of G.miners){ const p = was.get(m.id); m._hopAt = m.hop == null ? null : p?.hop === m.hop ? p._hopAt : now; }

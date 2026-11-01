@@ -20,6 +20,11 @@ export function proxyHops(env = process.env){
   return env.RENDER ? 1 : 0;
 }
 
+/* nom du cookie de connexion. Mode dev : un par port (31/10/2026) : les cookies de localhost ignorent le port, et deux
+   serveurs dev ouverts en même temps se déconnectaient l'un l'autre */
+export const cookieName = (env = process.env, argv = process.argv) =>
+  env.DIM_DEV ? `dim_session_${argv[2] || env.PORT || 8000}` : 'dim_session';
+
 export const SERVER = {
   port: +(process.env.PORT || 8000),
   /* adresse d'écoute. Sur un serveur loué (VPS), DIM_HOST=127.0.0.1 : seul le proxy https (Caddy), sur la même
@@ -30,7 +35,7 @@ export const SERVER = {
   dataDir: process.env.DIM_DATA_DIR || path.join(ROOT, 'data'),
   /* cookie de connexion. secure=true dès que le jeu est servi en https (en ligne ; automatique sur Render,
      DIM_SECURE_COOKIE=0 pour l'enlever, =1 pour le forcer ailleurs) */
-  cookie: { name: 'dim_session', secure: process.env.DIM_SECURE_COOKIE ? process.env.DIM_SECURE_COOKIE === '1' : ON_RENDER },
+  cookie: { name: cookieName(), secure: process.env.DIM_SECURE_COOKIE ? process.env.DIM_SECURE_COOKIE === '1' : ON_RENDER },
   /* derrière un hébergeur / proxy, l'adresse du joueur est dans X-Forwarded-For (voir proxyHops) */
   trustProxy: proxyHops(),
   /* au premier appel à l'API, on écrit dans le journal l'adresse retenue et l'en-tête reçu : pour vérifier en
@@ -85,9 +90,10 @@ export const LIMITS = {
    gratuite de Render (0,1 CPU), ~37 % du processeur par session. maxLive : sessions en même temps (au-delà, on
    refuse d'en lancer une nouvelle) ; DIM_MAX_LIVE pour changer. pumpEvery : rythme auquel les parties avancent. */
 export const GAME_SERVER = {
+  teamEnergyFor: 30e3,              // énergie des joueurs dans le panneau Équipe de la session : relue au plus tous ces ms (31/10/2026)
   dev: process.env.DIM_DEV === '1',
   maxLive: Math.max(1, +(process.env.DIM_MAX_LIVE || (ON_RENDER ? 5 : 12))),
-  pumpEvery: 200,                   // ms
+  pumpEvery: 100,                   // ms (31/10/2026 : 200 → 100, la partie arrive au navigateur par plus petits paquets)
   maxStep: 200,                     // ticks calculés d'un bloc : entre deux blocs, les demandes d'affichage passent
   /* budget de calcul : ticks par seconde, toutes sessions confondues (sans limite en local). Sur Render gratuit,
      ~54 ticks/s occupent tout le processeur (3 mineurs) ; une session à l'heure en demande 20 (x2). 45 laisse au
@@ -112,11 +118,21 @@ export const SOCIAL_SERVER = {
   maxOutgoing: 20,                  // demandes d'ami envoyées en attente
   maxIncoming: 50,                  // demandes reçues gardées (les plus anciennes tombent)
   onlineListMax: 200,               // joueurs montrés dans l'onglet Online (le compteur, lui, compte tout le monde)
-  whoRecentFor: 24 * HOUR,          // « Who ? » des tours : montre aussi les joueurs hors ligne venus depuis ce temps (26/10/2026)
+  energyFor: 30e3,                  // énergie d'un joueur montrée dans Social : relue au plus tous ces ms (31/10/2026)
+  whoRecentFor: 24 * HOUR,        // « Who ? » des tours : montre aussi les joueurs hors ligne venus depuis ce temps (26/10/2026)
   requestsPerHour: { max: 30, window: HOUR },       // demandes d'ami envoyées par compte (anti spam)
 };
 
+/* Le Carreau, la ville du spawn (server/town/service.js, 29/10/2026) : un joueur sans nouvelles depuis presentFor quitte
+   la ville ; son pseudo et son apparence sont relus au plus toutes les lookFor ms ; la liste des joueurs en session au
+   plus toutes les sessionsFor ms ; au plus maxPlayers autres joueurs renvoyés (les plus récents) ; la statue (n°1 du
+   classement) relue au plus toutes les statueFor ms. */
+export const TOWN_SERVER = { presentFor: 40e3, lookFor: 20e3, sessionsFor: 3e3, maxPlayers: 80, statueFor: 60e3 };
+
 export const PARTY_SERVER = {
+  formingMax: 30,                   // groupes montrés au plus dans « Groupes en formation »
+  formingCardMs: 5e3,               // portrait d'un joueur gardé ce temps pour cette liste, relue en boucle
+  formingCardsMax: 500,
   awayAfter: 10e3,                  // membre affiché « absent » sans nouvelles depuis ce temps (onglet fermé, réseau)
   memberTimeout: 5 * MIN,           // … et retiré du groupe au-delà
   inviteTtl: HOUR,                  // invitation par ID valable ce temps

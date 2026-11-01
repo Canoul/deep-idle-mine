@@ -90,7 +90,7 @@ test('Treasure T2 : s\'ouvre depuis l\'inventaire, comme le T1 (une fois par dem
 /* ---------- objets, recettes, blueprints ---------- */
 
 test('3 objets de stuff : cases, stats et recettes demandées', () => {
-  assert.deepEqual(ITEMS['Gants tactique'].stats, { attackSpeed:20 });   assert.equal(ITEMS['Gants tactique'].slot, 'gants');
+  assert.deepEqual(ITEMS['Gants tactique'].stats, { attackSpeed:10 });   assert.equal(ITEMS['Gants tactique'].slot, 'gants');
   assert.deepEqual(ITEMS['Gants d\'ouvrier'].stats, { fortune:5 });     assert.equal(ITEMS['Gants d\'ouvrier'].slot, 'gants');
   assert.deepEqual(ITEMS['Cape de Naingui'].stats, { discoverMax:1 });    assert.equal(ITEMS['Cape de Naingui'].slot, 'cape');
   assert.deepEqual(RECIPES['Gants tactique'].cost, { 'Shiny iron':20, 'Tainted iron':20, 'Jade inférieur':1 });
@@ -134,23 +134,23 @@ test('Tissu sombre : nouvel objet du catalogue (icône qui existe, empilable) ; 
   }
 });
 
-test('valeur en x : Gants tactique ≈ 39 x (attaque : 196 s de combat / 100 % = 1,96 x par %), Gants d\'ouvrier 180 x (fortune : 36 x par %)', () => {
+test('valeur en x : Gants tactique ≈ 20 x (attaque : 196 s de combat / 100 % = 1,96 x par %), Gants d\'ouvrier 180 x (fortune : 36 x par %)', () => {
   const ATTACK_PER_PCT = 196 / STATS.attackSpeed, FORTUNE_PER_PCT = 3600 / 100;
   const tactical = ITEMS['Gants tactique'].stats.attackSpeed * ATTACK_PER_PCT;
   const worker = ITEMS['Gants d\'ouvrier'].stats.fortune * FORTUNE_PER_PCT;
-  assert.ok(Math.abs(tactical - 39.2) < 0.01, `tactique ${tactical}`);
+  assert.ok(Math.abs(tactical - 19.6) < 0.01, `tactique ${tactical}`);
   assert.equal(worker, 180);
 });
 
 test('stats du mineur : vitesse d\'attaque et fortune, affichées avec leur unité', () => {
   assert.equal(STATS.attackSpeed, 100); assert.equal(STATS.fortune, 0);
-  assert.deepEqual(statLines('Gants tactique'), ['Vitesse d\'attaque +20 %']);
+  assert.deepEqual(statLines('Gants tactique'), ['Vitesse d\'attaque +10 %']);
   assert.deepEqual(statLines('Gants d\'ouvrier'), ['Fortune +5 %']);
   assert.deepEqual(statLines('Cape de Naingui'), ['Découverte +1']);
   for(const [item, tier] of [['Gants tactique','inhabituel'], ['Gants tactique BP','inhabituel'], ['Gants d\'ouvrier','inhabituel'], ['Gants d\'ouvrier BP','inhabituel'], ['Cape de Naingui','rare'], ['Cape de Naingui BP','rare']])
     assert.equal(rarityOf(item), tier, item);
   const s = statsOf(['Gants tactique', 'Cape de Naingui']);
-  assert.equal(s.attackSpeed.total, 120); assert.equal(s.discoverMax.total, STATS.discoverMax + 1); assert.equal(s.fortune.total, 0);
+  assert.equal(s.attackSpeed.total, 110); assert.equal(s.discoverMax.total, STATS.discoverMax + 1); assert.equal(s.fortune.total, 0);
   assert.equal(statsOf(['Gants d\'ouvrier']).fortune.total, 5);
   assert.ok(STUFF.shownStats.includes('attackSpeed') && STUFF.shownStats.includes('fortune'));
 });

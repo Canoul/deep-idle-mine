@@ -1,4 +1,4 @@
-/* Bloc géant (navigateur) : la carte du Lobby (« Où miner » → Bloc géant), la visite dans l'onglet Session et l'écran
+/* Bloc géant et He's coming (navigateur, un appel par mode) : la carte du Lobby (« Où miner » → Bloc géant), la visite dans l'onglet Session et l'écran
    de fin de visite. Affiche ce que renvoie le serveur (server/giant/service.js) ; rien n'est calculé ici.
    - Carte : fin de la session du jour, Entrer ou temps avant la prochaine entrée, mon score, score collectif et ses
      paliers, classement (top 10 + ma place), récompenses à réclamer.
@@ -8,8 +8,10 @@ import { GIANT } from '../config.js';
 import { helpLine } from './help.js';
 import { createGiantRenderer } from '../render/giant.js';
 import { fitCanvas } from './fit.js';
+import { createEffectsBar, placeEffectsBar, focusedMiner } from './effects.js';
+import { showSpellBar, placeSpellBar } from './hud.js';
+import { ask } from './dialog.js';
 
-const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
 const nf = n => Math.floor(n).toLocaleString('fr-FR');
 
@@ -33,17 +35,21 @@ export function visitsText(info){
 }
 
 /* ce que montre le bouton d'entrée : info = réponse de GET /api/giant, now = heure du navigateur, skew = décalage serveur */
-export function entryState(info, now){
+export function entryState(info, now, place = 'le bloc géant'){
   if(!info) return { can: false, label: 'Chargement…' };
-  if(info.visit) return { can: false, inVisit: true, label: 'Tu es devant le bloc géant' };
+  if(info.visit) return { can: false, inVisit: true, label: `Tu es devant ${place}` };
   if(info.present >= info.max) return { can: false, label: `Plein (${info.max} mineurs) : réessaie dans un moment` };
   const wait = info.nextEntry - now;
   return wait > 0 ? { can: false, label: `Prochaine entrée dans ${durText(wait)}` } : { can: true, label: 'Entrer' };
 }
 
 /* h : { api: giantApi, nav, onInventory(inv, reçus) (inventaire renvoyé par la réclamation), session: () => bool (une session de jeu en cours : la visite peut se faire en même temps, 27/10) } */
+/* He's coming (01/11/2026) : h.prefix 'hc' (ses éléments de la page : hcCard, hcRun, cvHc…), h.config, h.renderer, h.words */
 export function setupGiant(h){
-  const renderer = createGiantRenderer($('cvGt'));
+  const $ = id => document.getElementById(h.prefix ? id.replace(/giant|gt/i, m => m[0] === 'G' ? 'Hc' : 'hc') : id);
+  const C = h.config ?? GIANT, W = { place:'le bloc géant', front:'le bloc', title:'Bloc géant', rate:'Vitesse',
+    rules:'Ton mineur frappe le bloc : chaque seconde rapporte sa vitesse de minage en points.', ...h.words };
+  const renderer = (h.renderer ?? createGiantRenderer)($('cvGt'));
   let info = null, skew = 0, infoTimer = null, viewTimer = null, raf = null, busy = false, msg = '', ok = false;
   let view = null, lastMe = null, lastHtml = '';
   const now = () => Date.now() + skew;
@@ -54,17 +60,17 @@ export function setupGiant(h){
 
   function renderCard(){
     if(!info){ $('giantBody').innerHTML = lastHtml = '<p class="mut small">Chargement…</p>'; return; }
-    const e = entryState(info, now());
+    const e = entryState(info, now(), W.place);
     const tiers = info.tiers.map(t => `<div class="gtTier${t.reached ? ' ok' : ''}"><span>${t.reached ? '✔' : '○'} ${nf(t.min)}</span><span>${esc(itemsText(t.items))}</span></div>`).join('');
     const row = r => `<tr class="${r.account === h.me?.() ? 'me' : ''}"><td>${r.rank}</td><td>${esc(r.name)}</td><td>${nf(r.points)}</td></tr>`;
     const rank = info.ranking.list.length
       ? `<table class="gtRank">${info.ranking.list.map(row).join('')}${info.ranking.me ? `<tr><td colspan="3">…</td></tr>${row(info.ranking.me)}` : ''}</table>`
-      : '<p class="mut small">Personne n\'a encore frappé le bloc aujourd\'hui.</p>';
+      : `<p class="mut small">Personne n'a encore frappé ${W.front} aujourd'hui.</p>`;
     const rewards = info.rewards.length
       ? `<div class="gtReward"><span>🎁 ${info.rewards.map(r => `<b>${esc(r.day.split('-').reverse().slice(0, 2).join('/'))}</b> (${nf(r.total)} points) : ${esc(itemsText(r.items))}`).join('<br>')}</span>`+
         `<button class="on" id="giantClaim"${busy ? ' disabled' : ''}>${busy ? 'Réclamation…' : 'Réclamer'}</button></div>` : '';
     const html =
-      `<p class="mut small">Session du jour : se termine dans <b>${durText(info.endsAt - now())}</b> (minuit). ${info.present} / ${info.max} mineur${info.present > 1 ? 's' : ''} devant le bloc.</p>`+
+      `<p class="mut small">Session du jour : se termine dans <b>${durText(info.endsAt - now())}</b> (minuit). ${info.present} / ${info.max} mineur${info.present > 1 ? 's' : ''} devant ${W.front}.</p>`+
       `<div class="lobbyActions"><button class="on big" id="giantEnter"${e.can && !busy ? '' : ' disabled'}>${esc(e.label)}</button>`+   // aussi pendant une session (27/10)
       `${e.inVisit ? '<button id="giantSee">Voir la visite</button>' : ''}</div>`+
       (msg ? `<p class="${ok ? 'okmsg' : 'err'} small">${esc(msg)}</p>` : '')+
@@ -75,7 +81,7 @@ export function setupGiant(h){
       (info.nugget ? `<p class="small">+ 1 ${esc(info.nugget.item)} par ${nf(info.nugget.per)} de tes points : <b>${nf(info.nugget.n)}</b> pour l'instant.</p>` : '')+
       rewards+
       `<h3>Classement du jour</h3>${rank}`+
-      helpLine(`Bloc géant\nUne visite : ${GIANT.visit / 60} min de jeu, seul, une fois toutes les ${GIANT.cooldownMs / 3600e3} h.\nTon mineur frappe le bloc : chaque seconde rapporte sa vitesse de minage en points.\n`+
+      helpLine(`${W.title}\nUne visite : ${C.visit / 60} min de jeu, seul, une fois toutes les ${C.cooldownMs / 3600e3} h.\n${W.rules}\n`+
         `À minuit, chaque joueur venu au moins ${info.minVisits ?? 1} fois dans la journée reçoit les récompenses de tous les paliers atteints.`, 'Règles');
     /* rien n'a changé : on ne reconstruit pas la carte (un bouton remplacé entre l'appui et le relâchement perd son clic) */
     if(html !== lastHtml){ $('giantBody').innerHTML = html; lastHtml = html; }
@@ -90,7 +96,7 @@ export function setupGiant(h){
       if(info.visit && !visiting() && $('gtDone').hidden) showRun();
     } catch(e){ console.warn(e); }
     renderCard();
-    if(cardShown() || visiting()) infoTimer = setTimeout(refresh, GIANT.poll);
+    if(cardShown() || visiting()) infoTimer = setTimeout(refresh, C.poll);
   }
 
   async function act(fn, okText){
@@ -114,9 +120,23 @@ export function setupGiant(h){
 
   /* ---------- la visite ---------- */
 
+  /* états (29/10/2026) : ceux de son mineur, ou d'un autre choisi dans « Devant le bloc » (clic ; sur soi : retour) */
+  const fx = createEffectsBar($('fxBarGt'));
+  let focus = null;
+  function showEffects(){
+    const f = focusedMiner(view?.miners, null, focus);
+    fx(f.m, f.name);
+    if(!$('fxBarGt').hidden) placeEffectsBar($('fxBarGt'), $('cvGt'), $('cvGtWrap'));
+  }
+  $('gtPresent').addEventListener('pointerdown', e => {
+    const r = e.target.closest('[data-id]'); if(!r || e.button !== 0) return;
+    const m = view?.miners?.find(o => o.id === +r.dataset.id);
+    focus = !m || m.me || focus === m.id ? null : m.id;
+  });
+
   function showRun(){
     $('gtDone').hidden = true; $('gtRun').hidden = false; $('noSession').hidden = true;
-    lastMe = null;
+    lastMe = null; focus = null;
     pollView();
     if(!raf) raf = requestAnimationFrame(frame);
   }
@@ -124,7 +144,10 @@ export function setupGiant(h){
     raf = null;
     if(!visiting()) return;
     renderer.draw(view);
+    showEffects();
+    showSpellBar($('spellBarGt'), view?.me, view?.t ?? 0);   // sorts et recharges (29/10)
     fitCanvas($('cvGt'), $('cvGtWrap'));
+    placeSpellBar($('spellBarGt'), $('cvGt'), $('cvGtWrap'));
     raf = requestAnimationFrame(frame);
   }
   async function pollView(){
@@ -141,17 +164,17 @@ export function setupGiant(h){
         if(!info?.visit) return endVisit();
       }
     } catch(e){ console.warn(e); }
-    viewTimer = setTimeout(pollView, document.hidden ? GIANT.viewPoll * 4 : GIANT.viewPoll);
+    viewTimer = setTimeout(pollView, document.hidden ? C.viewPoll * 4 : C.viewPoll);
   }
   function renderSide(){
     const m = view.me, len = info?.visitMs || m.leftMs || 1;
     $('gtTimer').textContent = `${clockText(m.leftMs)} restantes`;
     $('gtTimeBar').style.width = Math.max(0, Math.min(100, 100 - m.leftMs / len * 100)) + '%';
     $('gtPoints').textContent = `${nf(m.points)} points`;
-    $('gtMe').innerHTML = `<div class="gtStats"><span>Points</span><b>${nf(m.points)}</b><span>Vitesse</span><b>${m.rate.toLocaleString('fr-FR')} / s</b></div>`+
+    $('gtMe').innerHTML = `<div class="gtStats"><span>Points</span><b>${nf(m.points)}</b><span>${W.rate}</span><b>${m.rate.toLocaleString('fr-FR')} / s</b></div>`+
       `<p class="small">${esc(m.status)}${view.inspire ? ` · 🎺 Inspiration (${view.inspire} s)` : ''}</p>`+
       `<p class="small mut">Oxygène ${m.ox} / ${m.oxMax}</p><div class="gtOx"><i style="width:${Math.max(0, Math.min(100, m.ox / m.oxMax * 100))}%"></i></div>`;
-    $('gtPresent').innerHTML = view.miners.map(o => `<div class="small">${o.me ? '<b>' : ''}${esc(o.name)}${o.me ? '</b>' : ''} <span class="mut">· ${esc(o.status)}</span></div>`).join('');
+    $('gtPresent').innerHTML = view.miners.map(o => `<div class="small pick${o.id === focus && !o.me ? ' focus' : ''}" data-id="${o.id}" title="Voir ses états">${o.me ? '<b>' : ''}${esc(o.name)}${o.me ? '</b>' : ''} <span class="mut">· ${esc(o.status)}</span></div>`).join('');
     $('gtDay').innerHTML = info ? `<p>Score collectif : <b>${nf(info.total)}</b></p><p class="small mut">Mon score du jour : ${nf(info.mine.points)}</p>` : '';
   }
   async function endVisit(){
@@ -166,7 +189,7 @@ export function setupGiant(h){
     lastMe = null;
   }
   $('gtLeaveBtn').onclick = async () => {
-    if(!confirm('Quitter le bloc géant ? Tes points comptent, mais ton entrée est utilisée.')) return;
+    if(!await ask(`Quitter ${W.place} ? Tes points comptent, mais ton entrée est utilisée.`, { ok:'Quitter' })) return;
     try { await h.api.leave(); } catch(e){ console.warn(e); }
     endVisit();
   };

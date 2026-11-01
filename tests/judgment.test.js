@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { JUDGMENT, IDS, BLOCKS, TREASURE_BLOCK } from '../src/config.js';
 import { isTarget } from '../src/sim/world.js';
 import { targetVal, setFocus } from '../src/sim/focus.js';
+const G1 = { unlockedAreas:1, areas:[{ ores:{ iron:{ total:1, left:1 } } }] };   // une area qui a encore du fer
 import { decide } from '../src/sim/ai.js';
 import { updateLight } from '../src/sim/light.js';
 import { worldFrom } from './helpers.js';
@@ -122,7 +123,7 @@ test('vue publique : compte, cap, ouvert, temps restant, déjà fait pour ce jou
   addResidues(j, { [A]: CAP, [D]: 7 }, 0); markDone(j, 'angel', 'K1');
   const v = publicJudgment(j, 1000, 'K1');
   /* niveaux (28/10) : done = tous les niveaux faits ; ici seulement le niveau 1 */
-  assert.deepEqual(v.sides.angel, { count: 0, cap: CAP, open: true, openUntil: OPEN, done: false, doneLevels: [1], paused: false });
+  assert.deepEqual(v.sides.angel, { count: 0, cap: CAP, open: true, openUntil: OPEN, done: true, doneLevels: [1], paused: false });
   assert.deepEqual(v.sides.demon, { count: 7, cap: CAP, open: false, openUntil: 0, done: false, doneLevels: [], paused: true });
   assert.equal(v.residues, false, 'une tour ouverte : pas de résidus dans les mines');
   assert.equal(v.now, 1000);
@@ -143,10 +144,10 @@ test('résidus : cibles de l\'IA, au même poids que le treasure (même en focus
   const m = { prefs:{ focus:{} } };
   for(const t of RES){
     assert.ok(isTarget(t));
-    assert.equal(targetVal(m, t), BLOCKS[TREASURE_BLOCK].val);
+    assert.equal(targetVal(G1, m, t), BLOCKS[TREASURE_BLOCK].val);
   }
   m.prefs.focus = { iron:'only' };
-  for(const t of RES) assert.equal(targetVal(m, t), BLOCKS[TREASURE_BLOCK].val, 'pas un minerai : jamais ignoré');
+  for(const t of RES) assert.equal(targetVal(G1, m, t), BLOCKS[TREASURE_BLOCK].val, 'pas un minerai : jamais ignoré');
 });
 
 test('IA : un résidu découvert est visé, même face à un charbon plus proche', () => {

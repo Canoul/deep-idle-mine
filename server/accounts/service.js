@@ -1,6 +1,7 @@
 /* Logique des comptes, sans HTTP : création (invité ou avec pseudo), connexion, sécurisation d'un invité,
    récupération par code de secours, changement de mot de passe, connexions (sessions) qui expirent.
    Testable seul : on lui passe un stockage et une horloge. */
+import { nameBanned } from '../moderation/filter.js';
 import { ACCOUNT } from '../../src/config.js';
 import { cleanName, nameKey, checkName, checkPassword, parseRecoveryCode, formatCode, formatAccountId,
          displayName } from '../../src/shared/account.js';
@@ -17,7 +18,7 @@ const fail = (code, status, message, extra) => { throw new AccountError(code, st
 /* Ce que le jeu (et plus tard les autres joueurs) a le droit de voir d'un compte. Jamais d'empreinte. */
 export function publicAccount(a){
   return { id: a.id, displayId: formatAccountId(a.id), name: a.name, displayName: displayName(a),
-           guest: a.guest, createdAt: a.createdAt };
+           guest: a.guest, createdAt: a.createdAt, ...(nameBanned(a.name) ? { mustRename: true } : {}) };   // pseudo interdit : à changer (31/10)
 }
 
 export function createAccountService({ store, clock = Date.now, scrypt = SCRYPT, sessions = SESSIONS, limits = LIMITS }){
@@ -34,7 +35,11 @@ export function createAccountService({ store, clock = Date.now, scrypt = SCRYPT,
       fail('rate_limited', 429, `Trop de tentatives. Réessaie dans ${min} min.`, { retryAfter: c.retryAfter });
     }
   }
-  function validName(name){ const e = checkName(name); if(e) fail('invalid_name', 400, e); return cleanName(name); }
+  function validName(name){
+    const e = checkName(name) ?? (nameBanned(cleanName(name)) ? "Ce pseudo n'est pas autorisé." : null);
+    if(e) fail('invalid_name', 400, e);
+    return cleanName(name);
+  }
   function validPassword(pw, name){
     if(typeof pw !== 'string') fail('invalid_password', 400, 'Mot de passe manquant.');
     const e = checkPassword(pw, name); if(e) fail('invalid_password', 400, e);
@@ -137,6 +142,18 @@ export function createAccountService({ store, clock = Date.now, scrypt = SCRYPT,
       catch(e){ if(e instanceof ConflictError) fail('name_taken', 409, 'Ce pseudo est déjà pris.'); throw e; }
       await store.deleteSessionsOf(acc.id);
       return { account: publicAccount(acc), recoveryCode: rec.display, ...await openSession(acc) };
+    },
+
+    /* Pseudo interdit (31/10/2026, Geoffrey) : seul un joueur dont le pseudo est interdit peut le changer. Il garde son ID. */
+    async rename(accountId, { name } = {}){
+      const acc = await store.getAccount(accountId);
+      if(!acc) fail('not_authenticated', 401, 'Connexion expirée.');
+      if(!nameBanned(acc.name)) fail('rename_refused', 409, 'Ton pseudo ne peut pas être changé.');
+      const n = validName(name);
+      Object.assign(acc, { name: n, nameKey: nameKey(n) });
+      try { await store.updateAccount(acc); }
+      catch(e){ if(e instanceof ConflictError) fail('name_taken', 409, 'Ce pseudo est déjà pris.'); throw e; }
+      return { account: publicAccount(acc) };
     },
 
     /* Mot de passe oublié (pas d'e-mail) : pseudo + code de secours → nouveau mot de passe.

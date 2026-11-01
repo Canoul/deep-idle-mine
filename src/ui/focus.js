@@ -66,7 +66,7 @@ export function setupFocusPanel(h){
     }
     html += '</div>';
     const where = Math.max(0, areaOf(m.y));
-    const deep = activeOres(focus).length ? 'Focus minerai : l\'area la plus proche qui en a encore.'
+    const deep = FOCUS.ores && activeOres(focus).length ? 'Focus minerai : l\'area la plus proche qui en a encore.'
       : 'Rejoint l\'area la plus profonde et la suit à chaque déblocage.';
     html += `<div class="mut small">${cur === null ? deep
       : cur === where ? `Reste dans l'area ${cur}.` : `Rejoint l'area ${cur}.`}</div>`;
@@ -80,7 +80,7 @@ export function setupFocusPanel(h){
       if(st.pending && st.until !== null && G.ticks > st.until){ st.pending = null; st.until = null; }
       const m = G.miners.find(x => x.account !== null && x.account === meId) ?? null;
       st.mine = m;
-      $('focusCard').hidden = !m;
+      $('focusCard').hidden = !m || !FOCUS.ores;   // focus minerai retiré du jeu pour l'instant (30/10, FOCUS.ores)
       $('focusAreaCard').hidden = !m;
       if(!m) return;
       const focus = st.pending ?? m.prefs.focus;

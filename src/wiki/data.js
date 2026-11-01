@@ -1,7 +1,7 @@
 /* Données du wiki du joueur, tirées de la config du jeu (logique pure, sans DOM : testable dans Node).
    Le wiki affiche toujours les valeurs actuelles : rien n'est recopié à la main. */
 import { STATS, CFG, BLOCKS, IDS, AREAS, AREA_H, W, TREASURE, LOOT, RESEARCH, MOBS, XP, SKILLS, FURNACE, CRUSHER, SHINY,
-         STUFF, ITEMS, RARITY, DUCK, mobHp, MOB_INFO as MOB_LOOK, HELP, DUNGEON, TRAP, UPGRADE, INSTANT_MINE, JUDGMENT, TOWER, RUNE, RINGS, SPELLS, COMBAT, GLYPHS, MOB_DROPS, GOBLIN_KING , WIKI, GIANT } from '../config.js';
+         STUFF, ITEMS, RARITY, DUCK, mobHp, MOB_INFO as MOB_LOOK, HELP, DUNGEON, TRAP, UPGRADE, INSTANT_MINE, JUDGMENT, TOWER, RUNE, RINGS, SPELLS, COMBAT, GLYPHS, MOB_DROPS, GOBLIN_KING , WIKI, GIANT, MINOTAUR } from '../config.js';
 import { RECIPES } from '../recipes.js';
 import { rarityOf } from '../meta/rarity.js';
 import { xpForLevel } from '../meta/level.js';
@@ -130,13 +130,18 @@ export function sourcesOf(item){
   if(res) out.push(`Miné à partir de l'area ${JUDGMENT.fromArea} (${fmt(JUDGMENT.pct)} % des blocs de chaque area pour les deux résidus ensemble, à la place de la pierre)`);
   const chest = ITEMS[item]?.chest;
   if(chest?.side === 'goblin') out.push(`Instance I : un coffre pour chaque joueur encore là quand le roi gobelin tombe (qualité R${chest.q} : ${fmt(pct(UPGRADE.qualities.find(q => q.q === chest.q)?.chance ?? 0))} % de chance)`);
+  else if(chest?.side === 'golbute') out.push(`Instance II : un coffre pour chaque joueur encore là quand le Golbute tombe (qualité R${chest.q} : ${fmt(pct(UPGRADE.qualities.find(q => q.q === chest.q)?.chance ?? 0))} % de chance)`);
   else if(chest) out.push(`${TOWER.sides[chest.side].tower} : un trésor pour chaque joueur présent quand le boss tombe (qualité R${chest.q} : ${fmt(pct(UPGRADE.qualities.find(q => q.q === chest.q)?.chance ?? 0))} % de chance)`);
   /* coffre du Roi Gobelin (GOBLIN_KING, 27/10) */
   { const l = GOBLIN_KING.loot, a = l.always.find(x => x.item === item);
     if(a) out.push(`Coffre du Roi Gobelin : ${a.min} à ${a.max}, toujours`);
     for(const f of l.oneOf){ const i = f.items.find(x => x.item === item);
       if(i) out.push(`Coffre du Roi Gobelin : ${fmt(pct(i.chance))} % de chance${i.learnOnce ? ' (seulement si la recette n\'est pas encore apprise)' : i.spellOnce ? ' (seulement si le sort n\'est pas encore appris)' : ''}${isStuffItem(item) ? ', déjà identifiée à la qualité du coffre' : ''}`); } }
-  if(item === RUNE.item) out.push('En ouvrant un trésor angélique ou démoniaque (rune de la même qualité que le trésor)');
+  if(item === RUNE.item) out.push('En ouvrant un trésor angélique ou démoniaque (rune de la même qualité que le trésor)',
+    `Craft : ${RECIPES[RUNE.item].cost[RUNE.dust.item]} ${RUNE.dust.item}, qualité tirée à la fabrication (${Object.entries(RUNE.craftChances).map(([q, c]) => `R${q} ${fmt(pct(c))} %`).join(', ')})`);
+  if(item === RUNE.fragment.item) out.push('En retirant une rune d\'une pièce (onglet Amélioration, gratuit) : ses % comptent pour moitié');
+  if(item === RUNE.dust.item){ const r = RUNE.dust.recycle;
+    out.push(`En recyclant une rune (${r.rune.min} à ${r.rune.max}, quelle que soit sa qualité) ou un fragment de rune (${r.fragment.min} à ${r.fragment.max}), depuis l'inventaire`); }
   for(const [side, list] of Object.entries(RINGS.drops)) for(const r of list) if(r.item === item)
     out.push(`En ouvrant un ${RUNE.treasures[side].name.toLowerCase()} : ${fmt(pct(r.chance))} % de chance (en plus de la rune, un anneau au plus)`);
   if(item === INSTANT_MINE.featherItem) out.push(`Mine instantanée : tas de plumes (${fmt(INSTANT_MINE.feather)} % de la mine), ${INSTANT_MINE.featherMin} à ${INSTANT_MINE.featherMax} par tas, au premier qui passe dessus`);
@@ -151,7 +156,7 @@ export function sourcesOf(item){
   }
   for(const [b, l] of Object.entries(CRUSHER.loot)) for(const f of l.oneOf){ const i = f.items.find(x => x.item === item); if(i) out.push(`Concasseur : ${String(Math.round(i.chance * 1e6) / 1e4).replace(".", ",")} % par lot de ${CRUSHER.batch} ${b.toLowerCase()}`); }
   for(const t of RESEARCH.tiers) if(blueprintsOfTier(t.tier).includes(item)) out.push(`Table de recherche, tier ${t.tier}`);
-  if(Object.hasOwn(RECIPES, item)) out.push(RECIPES[item].unlock ? `Craft (recette débloquée par « ${RECIPES[item].unlock} »)` : 'Craft (recette de base)');
+  if(Object.hasOwn(RECIPES, item) && item !== RUNE.item) out.push(RECIPES[item].unlock ? `Craft (recette débloquée par « ${RECIPES[item].unlock} »)` : 'Craft (recette de base)');
   /* glyphes (drop, GLYPHS.drop) : trouvés par un mineur de la bonne spécialisation */
   if(ITEMS[item]?.cat === 'glyph'){
     const tree = skillNode(ITEMS[item].glyph)?.tree, d = tree && GLYPHS.drop[tree.id];
@@ -173,11 +178,14 @@ export function usesOf(item){
   else if(d?.cat === 'stuff') out.push(`S'équipe (case ${SLOT_LABEL[d.slot]?.toLowerCase() ?? d.slot})`, 'S\'identifie et s\'améliore (onglet Amélioration)');
   if(UPGRADE.levels.some(l => Object.hasOwn(l.cost, item)))
     out.push(`Amélioration : ${UPGRADE.levels.map((l, i) => `${l.cost[item]} pour +${i + 1}`).join(', ')}`);
-  if(d?.cat === 'treasure') out.push(d.chest?.side === 'goblin' ? `S'ouvre dans l'inventaire : graphite, peaux de gobelin, et une chance de couronne, masse, cape ou plan du four en or (une pièce de stuff arrive identifiée R${d.chest.q})`
+  if(d?.cat === 'treasure') out.push(d.chest?.side === 'golbute' ? 'Son butin arrive bientôt : il ne s\'ouvre pas encore (garde-le)'
+    : d.chest?.side === 'goblin' ? `S'ouvre dans l'inventaire : graphite, peaux de gobelin, et une chance de couronne, masse, cape ou plan du four en or (une pièce de stuff arrive identifiée R${d.chest.q})`
     : d.chest ? `S'ouvre dans l'inventaire : donne une Rune R${d.chest.q}` : 'S\'ouvre dans l\'inventaire (bouton « Ouvrir »)');
   const side = Object.values(JUDGMENT.sides).find(s => s.item === item);
   if(side) out.push(`Rapporté au coffre : remplit la jauge ${side.label === 'Ange' ? 'de l\'Ange' : 'du Démon'} du Jugement, commune à tous (${JUDGMENT.cap} pour ouvrir la tour)`);
   if(item === RUNE.item) out.push('Enchantement (onglet Amélioration) : se pose sur une pièce de stuff, une rune par pièce, définitif');
+  if(item === RUNE.item || item === RUNE.fragment.item){ const r = RUNE.dust.recycle[item === RUNE.item ? 'rune' : 'fragment'];
+    out.push(`Se recycle (inventaire) en ${r.min} à ${r.max} ${RUNE.dust.item}`); }
   if(d?.cat === 'combustible') out.push('Combustible du four');
   if(Object.hasOwn(FURNACE.recipes, item)) out.push(`Se fond au four → ${FURNACE.recipes[item].qty ?? 1} ${FURNACE.recipes[item].out}${FURNACE.recipes[item].unlock ? ` (recette à débloquer : « ${FURNACE.recipes[item].unlock} »)` : ''}`);
   const fr = Object.entries(FURNACE.recipes).find(([, r]) => r.unlock === item);
@@ -250,7 +258,9 @@ const STAT_HELP = {
   compassRows:'Lignes en plus que voit la boussole, au-dessus ET en dessous de la sienne.',
   torches:    'Torches qu\'il emporte. À 0, il remonte en chercher.',
   torchRadius:"Distance éclairée par les torches qu'il pose (le long des galeries creusées). Chaque torche garde le rayon de celui qui l'a posée.",
-  goblinThrall:"Couronne du Roi Gobelin : un gobelin qui apparaît à cette distance ou moins du porteur est asservi. Il ne se bat pas, mine les minerais autour de lui pendant 30 s (vitesse d'un mineur de base, même priorité que le porteur) et ce qu'il mine va directement au coffre commun, puis il disparaît.",
+  blockMinePct:"Némésis du Golbute : vitesse de minage en plus sur les blocs de terrain (terre, pierre, pierre dure, résidus), pas sur les minerais.",
+  golemOxygen:"Âme du Golbute : un golem qui meurt à 8 cases ou moins de toi te rend cet oxygène (sans dépasser ton maximum).",
+  goblinThrall:"Couronne du Roi Gobelin : un gobelin qui apparaît à cette distance ou moins du porteur est asservi. Il ne se bat pas, mine les minerais autour de lui (la roche s'il n'y en a pas) pendant 30 s (vitesse d'un mineur de base, même priorité que le porteur) et ce qu'il mine va directement au coffre commun, puis il disparaît.",
   torchTime:  "Temps qu'il met à poser une torche.",
   bridges:    'Passerelles pour traverser les trous (illimitées).',
   tenacity:   "Chance d'ignorer un sort de mob : le vol du gobelin, la canalisation de l'occultiste, l'asphyxie du méphite (un tirage à chaque sort).",
@@ -310,7 +320,7 @@ export function fmt(n){
 
 /* ---------- donjon ---------- */
 export const dungeonInfo = () => ({ areas: DUNGEON.areas, chance: DUNGEON.chance, size: DUNGEON.size, boss: DUNGEON.boss,
-  bossXp: XP.mob[DUNGEON.boss.type] ?? 0, loot: DUNGEON.loot, scared: DUNGEON.scaredTime,
+  bossXp: XP.mob[DUNGEON.boss.type] ?? 0, loot: DUNGEON.loot, scared: DUNGEON.scaredTime, charge: MINOTAUR.charge, rage: MINOTAUR.rage,
   hits: Math.ceil(DUNGEON.boss.hp / STATS.damage), fightSec: Math.round(Math.ceil(DUNGEON.boss.hp / STATS.damage) * CFG.attackInterval) });
 
 /* ---------- piège ---------- */

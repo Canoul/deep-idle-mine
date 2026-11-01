@@ -1,7 +1,7 @@
 /* Concasseur (onglet Concasseur) : logique pure, partagée par le jeu (affichage) et le serveur (qui fait foi).
 
-   8 cases d'entrée (CRUSHER.inSlots, 2 rangées de 4) pour les objets de type Bloc (Terre, Pierre, Pierre dure : ceux
-   qui ont une table dans CRUSHER.loot), 8 cases de sortie pour le butin. Chaque case contient null ou { item, qty }.
+   8 cases d'entrée (CRUSHER.inSlots, 2 rangées de 4) pour les objets qui ont une table dans CRUSHER.loot (Terre, Pierre,
+   Pierre dure ; minerai de fer depuis le 28/10/2026), 8 cases de sortie pour le butin. Chaque case contient null ou { item, qty }.
 
    Toutes les CRUSHER.time secondes, il concasse CRUSHER.batch blocs d'UNE case d'entrée : la première qui en a assez,
    de haut en bas puis de gauche à droite (index 0 → 7). Les blocs sont consommés à la fin du cycle (retirer une case
@@ -22,8 +22,8 @@ const validQty = q => Number.isSafeInteger(q) && q > 0;
 const validIdx = (i, n) => Number.isSafeInteger(i) && i >= 0 && i < n;
 export const FINDS_MEMORY = 10;
 
-/* seuls les blocs qui ont une table de butin vont dans le concasseur */
-export const crushable = item => typeof item === 'string' && ITEMS[item]?.cat === 'bloc' && Object.hasOwn(CRUSHER.loot, item);
+/* seuls les objets qui ont une table de butin vont dans le concasseur (blocs, minerai de fer) */
+export const crushable = item => typeof item === 'string' && !!ITEMS[item] && Object.hasOwn(CRUSHER.loot, item);
 /* objets que le concasseur peut sortir (pour relire le stockage) */
 const OUT_ITEMS = new Set(Object.values(CRUSHER.loot).flatMap(t => [...t.always.map(a => a.item), ...t.oneOf.flatMap(f => f.items.map(i => i.item))]));
 
@@ -165,7 +165,9 @@ export const publicCrusher = (c, now) => ({ in:c.in, out:c.out, since:c.since, c
 export function dropOdds(block){
   const t = CRUSHER.loot[block];
   if(!t) return [];
-  return t.oneOf.map(f => ({ family: f.family, chance: f.items.reduce((s, i) => s + i.chance, 0),
-                             items: f.items.map(i => ({ item: i.item, chance: i.chance })) }));
+  /* butin garanti (always, minerai de fer) : une « famille » par objet, à 100 %, avec sa fourchette (min, max) */
+  return [...(t.always || []).map(a => ({ family: 'fixed', chance: 1, min: a.min, max: a.max, items: [{ item: a.item, chance: 1 }] })),
+          ...t.oneOf.map(f => ({ family: f.family, chance: f.items.reduce((s, i) => s + i.chance, 0),
+                                 items: f.items.map(i => ({ item: i.item, chance: i.chance })) }))];
 }
 

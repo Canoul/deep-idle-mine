@@ -6,8 +6,10 @@
 import { INSTANCE } from '../config.js';
 import { loadTextures } from './textures.js';
 import { createMinerSprite } from './miner-sprite.js';
+import { drawMobFx } from './effects.js';
 import { shownPos } from '../shared/view.js';
 import { ROCK, CAGE, SPAWNER } from '../sim/instance/world.js';
+import { armPose, trackRocks, SLAM_MS } from './golbute-fx.js';
 
 export const IN_TILE = 16;
 const ARC_MS = 350;
@@ -53,6 +55,7 @@ export function createInstanceRenderer(cv){
     if(!cam || Math.abs(cam.x - want.x) + Math.abs(cam.y - want.y) > 12) cam = { ...want };   // départ, projection : on saute
     else { cam.x += (want.x - cam.x) * 0.15; cam.y += (want.y - cam.y) * 0.15; }
     ctx.setTransform(1, 0, 0, 1, Math.round(-cam.x * T), Math.round(-cam.y * T));
+    if(G.instance === 'instance_2') return drawGolbute(G, me, now);
     for(let y = 0; y <= G.h; y++) for(let x = 0; x < G.w; x++){
       const t = G.tiles[y][x], px = x * T, py = y * T;
       blit('tunnel', px, py, '#2a1f18');
@@ -78,6 +81,7 @@ export function createInstanceRenderer(cv){
       blit('goblin_king', px, py, '#3f7a3a', b.w * T, b.h * T);
       ctx.restore();
       if(b.state !== 'sleep') bar(px - 2, py - 7, b.w * T + 4, b.hp / b.maxhp, b.rage ? '#ff3b3b' : '#7fd35a');
+      if(b.state !== 'sleep') drawMobFx(ctx, [b.rage && 'rage', b.taunt && 'taunt'].filter(Boolean), px + b.w * T / 2, py - 7, b.w * T, now, T);   // états du roi (28/10)
       if(b.state === 'sleep'){ ctx.font = 'bold 8px sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#d8c9a8'; ctx.fillText('zZ', px + b.w * T - 2, py - 1); }
     }
     /* gobelins */
@@ -87,14 +91,89 @@ export function createInstanceRenderer(cv){
       if((o.face || 1) < 0){ ctx.translate(px + T, 0); ctx.scale(-1, 1); blit('goblin', 0, py, '#5f8a3a'); } else blit('goblin', px, py, '#5f8a3a');
       ctx.restore();
       if(o.hp < o.maxhp) bar(px + 1, py - 5, T - 2, o.hp / o.maxhp, '#ff5a3b');
-      if(o.stun) blit('stun', px, py - 6);
+      drawMobFx(ctx, [o.stun && 'stun', o.taunt && 'taunt'].filter(Boolean), px + T / 2, py - 5, T, now, T);   // états (28/10)
     }
     /* mineurs : le sien par-dessus */
     const mine = G.miners.find(m => m.account === me);
     for(const m of [...G.miners.filter(x => x !== mine), ...(mine ? [mine] : [])]){
       const [x, y0] = posOf(G, m, now), y = y0 - arcOf(m, now);
-      const a = m.action?.type === 'drill' || m.action?.type === 'mine' ? { type: 'mine' } : m.action?.type === 'attack' ? { type: 'attack' } : m.action;
+      const a = m.action?.type === 'drill' || m.action?.type === 'mine' ? { type: 'mine' } : m.action?.type === 'attack' ? { type: 'attack', data: m.action.data } : m.action;
       sprite({ ...m, action: a }, x * T, y * T, m === mine, now);
+    }
+  }
+
+  /* Instance II, le Golbute (30/10/2026) : arène vide (sol de briques), le Golbute 5 × 5 (cristal : texture de cristal ;
+     coup au sol : il lève les bras et frappe de chaque côté, poussière sur 3 cases, src/render/golbute-fx.js), ses golems,
+     les rochers de l'avalanche qui tombent sur chaque mineur, les mineurs (un mort est couché, grisé) */
+  const seen = { slam: null, slamAt: -Infinity, rocks: new Map() };
+  /* bras du Golbute : texture du bras gauche (34 × 80 px), pivot à l'épaule ; le droit en miroir */
+  function drawArm(b, px, py, side, pose, name, fallback){
+    const k = T / 16, pivX = 18 * k, pivY = 24 * k;
+    ctx.save();
+    ctx.translate(side < 0 ? px + pivX : px + b.w * T - pivX, py + pivY);
+    if(side > 0) ctx.scale(-1, 1);
+    ctx.rotate(pose.angle);
+    ctx.scale(1, pose.stretch);
+    blit(name, -pivX, -pivY, fallback, 34 * k, b.h * T);
+    ctx.restore();
+  }
+  function drawGolbute(G, me, now){
+    for(let y = 0; y <= G.h; y++) for(let x = 0; x < G.w; x++){
+      const px = x * T, py = y * T;
+      blit('tunnel', px, py, '#2a1f18');
+      if(G.tiles[y][x]) blit('dungeon_brick', px, py, '#4a3a2e');
+    }
+    const b = G.boss;
+    if(b && b.slamAt != null && b.slamAt !== seen.slam){
+      seen.slam = b.slamAt;
+      if(now - seen.slamAt >= SLAM_MS) seen.slamAt = now;   // une animation commencée va au bout
+    }
+    const pose = armPose((now - seen.slamAt) / SLAM_MS);
+    if(b && b.hp > 0 && b.state !== 'split'){
+      const px = b.x * T, py = (b.y - b.h + 1) * T, crystal = b.state === 'crystal', end = crystal ? '_crystal' : '', stone = crystal ? '#7fd6ff' : '#6b6f78';
+      ctx.save();
+      if(b.rage){ ctx.shadowColor = '#ff3b3b'; ctx.shadowBlur = 10; }
+      if(crystal){ ctx.shadowColor = '#9fe8ff'; ctx.shadowBlur = 12; }
+      blit('golbute_body' + end, px, py + pose.dip, stone, b.w * T, b.h * T);
+      for(const side of [-1, 1]) drawArm(b, px, py + pose.dip, side, pose, 'golbute_arm' + end, stone);
+      ctx.restore();
+      if(pose.dust > 0){
+        ctx.fillStyle = `rgba(200,180,150,${pose.dust * 0.7})`;
+        const R = INSTANCE.golbute.slam.range * T, floor = (b.y + 1) * T, up = Math.round((1 - pose.dust) * 6);
+        ctx.fillRect(px - R, floor - 5 - up, R, 4 + up); ctx.fillRect(px + b.w * T, floor - 5 - up, R, 4 + up);
+      }
+      if(b.state === 'crystal' && b.crystal) bar(px - 2, py - 13, b.w * T + 4, b.crystal.hp / b.crystal.max, '#9fe8ff');
+      bar(px - 2, py - 7, b.w * T + 4, b.hp / b.maxhp, b.rage ? '#ff3b3b' : '#c9b48a');
+      drawMobFx(ctx, [b.rage && 'rage'].filter(Boolean), px + b.w * T / 2, py - 7, b.w * T, now, T);
+    }
+    for(const o of G.golems || []){
+      const [ox, oy] = posOf(G, o, now), px = ox * T, py = oy * T;
+      ctx.save();
+      if((o.face || 1) < 0){ ctx.translate(px + T, 0); ctx.scale(-1, 1); blit('golem', 0, py, '#80868f'); } else blit('golem', px, py, '#80868f');
+      ctx.restore();
+      if(o.hp < o.maxhp) bar(px + 1, py - 5, T - 2, o.hp / o.maxhp, '#ff5a3b');
+      drawMobFx(ctx, [o.stun && 'stun', o.taunt && 'taunt'].filter(Boolean), px + T / 2, py - 5, T, now, T);
+    }
+    const mine = G.miners.find(m => m.account === me);
+    for(const m of [...G.miners.filter(x => x !== mine), ...(mine ? [mine] : [])]){
+      const [x, y0] = posOf(G, m, now), y = y0 - arcOf(m, now);
+      if(m.dead){
+        ctx.save(); ctx.globalAlpha = 0.55; ctx.translate(x * T + T, y * T + T); ctx.rotate(Math.PI / 2);
+        sprite({ ...m, name: null, action: null }, -T, 0, m === mine, now); ctx.restore();
+        ctx.save(); ctx.globalAlpha = 0.55; sprite.label(m.name, x * T, y * T, m === mine, m.guild); ctx.restore();   // le corps est couché, pas son pseudo
+        continue;
+      }
+      const a = m.action?.type === 'drill' ? { type: 'mine' } : m.action?.type === 'attack' ? { type: 'attack', data: m.action.data } : m.action;
+      sprite({ ...m, action: a }, x * T, y * T, m === mine, now);
+    }
+    /* rochers de l'avalanche : chacun tombe du plafond sur sa colonne jusqu'au sol, s'y brise dans la poussière */
+    for(const r of trackRocks(seen.rocks, G.rocks, now)){
+      const px = r.x * T, py = Math.round(r.fall * G.floorY * T);
+      if(!r.dust){ blit('golbute_rock', px, py, '#8a7a66'); continue; }
+      ctx.save(); ctx.globalAlpha = r.dust; blit('golbute_rock', px, py, '#8a7a66'); ctx.restore();
+      ctx.fillStyle = `rgba(200,180,150,${r.dust * 0.7})`;
+      const w = Math.round(T * (2.2 - r.dust));
+      ctx.fillRect(px + T / 2 - w / 2, py + T - 4 - Math.round((1 - r.dust) * 5), w, 4);
     }
   }
   return { draw };

@@ -1,6 +1,6 @@
 /* Niveau du mineur : progression hors session, logique pure (partagée par le jeu et le serveur).
    Le compte ne stocke que son XP totale ; niveau, avancement et points de talent s'en déduisent. */
-import { XP, SKILLS } from '../config.js';
+import { XP, SKILLS, GUILD } from '../config.js';
 
 /* XP à gagner pour passer du niveau n au niveau n+1 (n ≥ 1) ; curve : XP.curve (mineur) ou XP.specCurve (spécialisation) */
 const toNext = (n, curve) => Math.round(curve.first * curve.factor ** (n - 1));
@@ -27,6 +27,10 @@ export const specLevels = progress => Object.fromEntries(SKILLS.trees.map(t => {
   return [t.id, { xp, ...specLevelOf(xp) }];
 }));
 
+/* guilde : rawXp = XP brute des membres ; GUILD.xpPct % sur le total, pour ne pas perdre les petits gains (un run de prison) */
+export const guildXpOf = rawXp => Number.isSafeInteger(rawXp) && rawXp > 0 ? Math.floor(rawXp * GUILD.xpPct / 100) : 0;
+export const guildLevelOf = rawXp => curveLevel(guildXpOf(rawXp), XP.curve);
+
 /* XP totale nécessaire pour atteindre le niveau n */
 export function xpForLevel(n){ let t = 0; for(let k = 1; k < n; k++) t += xpToNext(k); return t; }
 
@@ -37,13 +41,22 @@ export const xpShare = (pot, n) => n > 0 && Number.isSafeInteger(pot) && pot > 0
    idempotent : une session n'est comptée qu'une fois. Renvoie true si l'XP a été ajoutée. */
 const CREDIT_MEMORY = 200;
 const isTree = id => typeof id === 'string' && SKILLS.trees.some(t => t.id === id);
-export function createProgress(){ return { xp: 0, spec: {}, credited: [] }; }
+export function createProgress(){ return { xp: 0, spec: {}, credited: [], areaMax: 0 }; }
 export function sanitizeProgress(p){
   const out = createProgress();
   if(p && Number.isSafeInteger(p.xp) && p.xp >= 0) out.xp = p.xp;
   for(const t of SKILLS.trees){ const v = p?.spec?.[t.id]; if(Number.isSafeInteger(v) && v > 0) out.spec[t.id] = v; }
+  if(p && Number.isSafeInteger(p.areaMax) && p.areaMax > 0) out.areaMax = p.areaMax;
   if(Array.isArray(p?.credited)) out.credited = p.credited.filter(id => typeof id === 'string').slice(-CREDIT_MEMORY);
   return out;
+}
+/* areaMax : index de la plus profonde area débloquée en mine classique (0 = aucune, ou pas encore connue : le serveur
+   la rattrape alors depuis l'historique). On ne garde que le maximum : rejouer une fin de session ne change rien.
+   Renvoie true si la valeur a monté. */
+export function raiseAreaMax(progress, k){
+  if(!Number.isSafeInteger(k) || k <= progress.areaMax) return false;
+  progress.areaMax = k;
+  return true;
 }
 /* spec (facultatif) : { tree, xp } XP de spécialisation de la même session, versée dans le même geste (même
    idempotence) ; un arbre inconnu ou une quantité invalide ne versent pas d'XP de spécialisation */

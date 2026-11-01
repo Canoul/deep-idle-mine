@@ -1,15 +1,20 @@
 /* Comptes côté jeu : écran de connexion au lancement, bloc compte dans la barre de navigation,
    fenêtre « Mon compte » (sécuriser un invité, changer de mot de passe, se déconnecter).
    Les règles (pseudo, mot de passe) viennent de src/shared/account.js ; le serveur refait toujours les vérifications. */
+import { ADMIN_VIEW } from '../config.js';
+import { renderPrisonDashboard } from '../meta/prison-dashboard.js';
+const isTeam = a => !!a && !a.guest && ADMIN_VIEW.names.some(n => n.toLowerCase() === String(a.name ?? a.displayName ?? '').toLowerCase());
 import { ACCOUNT } from '../config.js';
 import { checkName, checkPassword, parseRecoveryCode } from '../shared/account.js';
 import { accountApi, ApiError, OfflineError } from '../net/api.js';
+import { tell } from './dialog.js';
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
 
 /* Vérification avant envoi (même messages que le serveur). Renvoie null ou le message à afficher. */
 export function checkForm(mode, v){
   if(mode === 'login') return v.name?.trim() && v.password ? null : 'Pseudo et mot de passe requis.';
+  if(mode === 'rename') return checkName(v.name);
   if(mode === 'register' || mode === 'claim'){
     return checkName(v.name) ?? checkPassword(v.password, v.name)
         ?? (v.password !== v.confirm ? 'Les deux mots de passe ne sont pas identiques.' : null);
@@ -35,6 +40,10 @@ const pseudoField = (auto = 'username') =>
 const newPassFields = () =>
   field('password', 'Mot de passe', 'password', `autocomplete="new-password" placeholder="${ACCOUNT.passMin} caractères minimum"`) +
   field('confirm', 'Confirmation', 'password', 'autocomplete="new-password"');
+
+/* options du joueur dans « Mon compte » : une case à cocher par option (rien s'il n'y en a pas) */
+export const optionsHtml = (options = []) => options.length ? `<h4>Options</h4>` + options.map(o =>
+  `<label class="chk" title="${esc(o.title ?? '')}"><input type="checkbox" data-opt="${esc(o.key)}"${o.on ? ' checked' : ''}> ${esc(o.label)}</label>`).join('') : '';
 
 const VIEWS = {
   login: () => `
@@ -78,7 +87,7 @@ const VIEWS = {
     <label class="chk"><input type="checkbox" data-ok> Je l'ai noté</label>
     <div class="acts"><button class="main" data-act="done" disabled>Continuer</button></div>`,
 
-  profile: ({ account, offline }) => offline ? `
+  profile: ({ account, offline, options = [] }) => offline ? `
     <h3>Hors ligne</h3>
     <p class="mut">Pas de serveur de jeu joignable : tu joues sans compte et ton inventaire reste dans ce navigateur.
        Lance le jeu avec <code>npm start</code> pour utiliser les comptes.</p>
@@ -93,6 +102,8 @@ const VIEWS = {
          il est perdu. Sécurise-le avec un pseudo et un mot de passe pour le garder (ton ID ne change pas).</p>
       <div class="acts"><button class="main" data-go="claim">Sécuriser mon compte</button></div>` : `
       <div class="acts"><button data-go="password">Changer de mot de passe</button></div>`}
+    ${isTeam(account) ? `<div class="acts"><button data-act="prisonDash" title="Rendement de la prison de chaque joueur contre ses 10 dernières mines (compte de l'équipe)">📊 Rendement de la prison</button></div>` : ''}
+    ${optionsHtml(options)}
     <div class="acts end"><button data-act="logout">Se déconnecter</button><button data-act="close">Fermer</button></div>`,
 
   claim: () => `
@@ -109,6 +120,12 @@ const VIEWS = {
       <p class="err" hidden></p><button class="main" type="submit">Changer</button></form>
     <p class="links"><a href="#" data-go="profile">← Retour</a></p>`,
 
+  rename: ({ account }) => `<h3>Change ton pseudo</h3>
+    <p>Le pseudo « ${esc(account?.name)} » n'est pas autorisé. Choisis-en un autre pour continuer : ton compte, ton stuff et ta progression ne changent pas.</p>
+    <form data-mode="rename">${pseudoField('off')}
+      <p class="err" hidden></p>
+      <button type="submit">Changer de pseudo</button></form>
+    <button data-act="logout">Se déconnecter</button>`,
   done: ({ text }) => `<h3>C'est fait</h3><p>${esc(text)}</p>
     <div class="acts"><button class="main" data-go="profile">OK</button></div>`,
 };
@@ -117,9 +134,10 @@ const VIEWS = {
 
 /* Gère la fenêtre de compte (#account). state = { account, offline } partagé avec le jeu.
    onSignedIn(account) : appelé quand quelqu'un vient de se connecter (au lancement).
-   onChange(account)   : le compte connecté a changé (sécurisé, mot de passe…). */
+   onChange(account)   : le compte connecté a changé (sécurisé, mot de passe…).
+   options() : cases à cocher de « Mon compte » [{ key, label, title?, on }] ; setOption(key, on) quand on en coche une. */
 export function createAccountUI(root, state, handlers = {}){
-  const on = { onSignedIn: () => {}, onChange: () => {}, confirmLeave: () => true, ...handlers };
+  const on = { onSignedIn: () => {}, onChange: () => {}, confirmLeave: () => true, options: () => [], setOption: () => {}, ...handlers };
   const box = root.querySelector('.box');
   let closable = false;
   let afterRecovery = null;
@@ -127,13 +145,15 @@ export function createAccountUI(root, state, handlers = {}){
   function show(view, data = {}){
     root.hidden = false;
     root.classList.toggle('gate', !closable);
-    box.innerHTML = VIEWS[view]({ ...state, ...data });
+    box.innerHTML = VIEWS[view]({ ...state, options: on.options(), ...data });
     box.querySelector('input')?.focus();
   }
   const hide = () => { root.hidden = true; };
 
   /* écran de connexion (au lancement : impossible de le fermer sans se connecter) */
   function gate(){ closable = false; show('login'); }
+  /* compte déjà connecté dont le pseudo est interdit */
+  function forceRename(account){ state.account = account; closable = false; show('rename'); }
   /* fenêtre « Mon compte » (depuis la barre) */
   function openProfile(){ closable = true; show('profile'); }
 
@@ -146,6 +166,7 @@ export function createAccountUI(root, state, handlers = {}){
     finish(msg);
   }
   function finish(msg){
+    if(state.account?.mustRename){ closable = false; return show('rename'); }   // pseudo interdit : rien d'autre tant qu'il n'est pas changé
     if(!closable){ hide(); on.onSignedIn(state.account); }
     else { on.onChange(state.account); msg ? show('done', { text: msg }) : show('profile'); }
   }
@@ -161,6 +182,7 @@ export function createAccountUI(root, state, handlers = {}){
     const btn = form.querySelector('button[type=submit]');
     btn.disabled = true;
     try {
+      if(mode === 'rename'){ state.account = (await accountApi.rename(v.name)).account; on.onChange(state.account); finish(); }
       if(mode === 'login')    signedIn(await accountApi.login(v.name, v.password));
       if(mode === 'register') signedIn(await accountApi.register(v.name, v.password));
       if(mode === 'recover')  signedIn(await accountApi.recover(v.name, v.code, v.password), 'Mot de passe changé.');
@@ -178,10 +200,22 @@ export function createAccountUI(root, state, handlers = {}){
     if(name === 'guest'){
       el.disabled = true;
       try { signedIn(await accountApi.guest()); }
-      catch(e){ el.disabled = false; alert(e instanceof ApiError ? e.message : 'Serveur injoignable. Réessaie dans un instant.'); }
+      catch(e){ el.disabled = false; tell(e instanceof ApiError ? e.message : 'Serveur injoignable. Réessaie dans un instant.'); }
+    }
+    /* compte de l'équipe (30/10/2026) : tableau de rendement de la prison dans un nouvel onglet (ouvert tout de suite, au clic,
+       pour ne pas être bloqué ; rempli quand le serveur répond) */
+    if(name === 'prisonDash'){
+      const w = window.open('', '_blank');
+      try {
+        const r = await fetch('/api/game/admin/prison', { credentials: 'same-origin' });
+        if(!r.ok) throw new Error('refusé (' + r.status + ')');
+        const html = renderPrisonDashboard((await r.json()).rows || []);
+        if(w){ w.document.open(); w.document.write(html); w.document.close(); }
+      } catch(e){ w?.close(); tell('Tableau de bord indisponible : ' + e.message); }
+      return;
     }
     if(name === 'logout'){
-      if(!on.confirmLeave()) return;
+      if(!await on.confirmLeave()) return;
       try { await accountApi.logout(); } catch(e){}
       location.reload();     // repartir d'une page propre : rien du compte précédent ne reste en mémoire
     }
@@ -196,11 +230,12 @@ export function createAccountUI(root, state, handlers = {}){
   });
   box.addEventListener('change', e => {
     if(e.target.matches('[data-ok]')) box.querySelector('[data-act="done"]').disabled = !e.target.checked;
+    if(e.target.matches('[data-opt]')) on.setOption(e.target.dataset.opt, e.target.checked);
   });
   root.addEventListener('click', e => { if(e.target === root && closable) hide(); });
   addEventListener('keydown', e => { if(e.key === 'Escape' && closable && !root.hidden) hide(); });
 
-  return { gate, openProfile, hide, on };
+  return { gate, forceRename, openProfile, hide, on };
 }
 
 /* Bloc compte en bas de la barre de navigation. */
@@ -222,6 +257,10 @@ export function renderNavAccount(el, { account, offline }){
 export async function bootAccount(accountUI){
   try {
     const account = await accountApi.me();
+    if(account?.mustRename) return new Promise(resolve => {
+      accountUI.on.onSignedIn = a => resolve({ account: a, offline: false });
+      accountUI.forceRename(account);
+    });
     if(account) return { account, offline: false };
   } catch(e){
     if(e instanceof OfflineError) return { account: null, offline: true };

@@ -26,6 +26,17 @@ test('trier : la qualité d\'identification ne compte pas ; deux pièces du mêm
   assert.deepEqual(inv.slots.map(s => s.uid ?? s.item), ['Pierre', a, b]);
 });
 
+test('trier : runes et fragments de la meilleure qualité à la moins bonne (R7 d\'abord) ; à qualité égale, ordre gardé', () => {
+  const inv = createInventory();
+  addItem(inv, 'Fragment de rune', 2); addItem(inv, 'Rune', 4);
+  [2, 6, 7, 2, 1, 5].forEach((q, i) => { inv.slots[i].q = q; });
+  const [low, high, r7, r2, r1, r5] = inv.slots.map(s => s.uid);
+  sortInventory(inv);
+  assert.deepEqual(inv.slots.map(s => s.uid), [r7, r5, r2, r1, high, low]);
+  const again = inv.slots.map(s => s.uid); sortInventory(inv);
+  assert.deepEqual(inv.slots.map(s => s.uid), again, 'rejouer le tri ne change rien');
+});
+
 test('trier : rien n\'est créé ni perdu', () => {
   const inv = createInventory();
   addItem(inv, 'Fer', 7); addItem(inv, 'Épée en fer', 3); addItem(inv, 'Terre', 2);

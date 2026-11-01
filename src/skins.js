@@ -28,18 +28,24 @@ export const SKIN = {
     'Plastron de l\'équilibre': 'skins/balance_chest',  // moitié blanc angélique, moitié rouge démoniaque
     'Ceinture en peau de gobelin': 'skins/goblin_belt', // bande verte, boucle dorée
     'Cape de Naingui':     'skins/naingui_cape_front', // devant : col violet et fermoir doré (le dos : back)
+    'Cape inclusive':      'skins/inclusive_cape_front', // devant : col aux couleurs du drapeau, fermoir doré
     /* butin rare des mobs (26/10/2026, MOB_DROPS) */
     'Lanières en cuir du gobelin': 'skins/goblin_straps', // torse nu, deux sangles de cuir des épaules le long des côtes
+    'Kilt ténébreux':      'skins/dark_kilt',          // kilt violet plissé, ceinture dorée
+    'Chapeau de naab':     'skins/naab_hat',           // bonnet à hélice, gros yeux qui louchent
     'Capuche sombre':      'skins/dark_hood',          // capuche violette de l'occultiste, visage sombre, yeux rouges
     'Nuage magique':       'skins/magic_cloud',        // les jambes deviennent un nuage jaune
     'Ceinture du Géant':   'skins/giant_belt',         // bande noire, cornes claires
     /* coffre du Roi Gobelin (27/10/2026, GOBLIN_KING) */
     'Couronne du Roi Gobelin': 'skins/goblin_crown',     // couronne dorée à trois pointes, gemmes rouges
     'Cape royale du Gobelin':  'skins/goblin_royal_cape_front', // devant : col laineux blanc, fermoir doré (le dos : back)
+    /* Treasure T4 (29/10/2026) */
+    'Lunettes Gucci':      'skins/gucci_glasses',      // monture dorée, verre sombre sur l'œil
   },
   /* calques dessinés DERRIÈRE le corps (même ordre de cases), ex. le dos d'une cape */
   back: {
     'Cape de Naingui':     'skins/naingui_cape',       // tissu sombre violet, jusqu'aux chevilles
+    'Cape inclusive':      'skins/inclusive_cape',     // six bandes du drapeau LGBT
     'Cape royale du Gobelin':  'skins/goblin_royal_cape', // velours rouge, bordure laineuse blanche (hermine)
   },
 
@@ -56,6 +62,7 @@ export const SKIN = {
     'Pioche en pierre': 'skins/pick_stone',            // pierre : grise
     'Pioche en fer':    'skins/pick_iron',             // fer : acier clair
     'Pioche en acier':  'skins/pick_steel',            // acier : gris bleuté
+    'Piolet de gobelin': 'skins/pick_goblin',          // manche d'os, tête verte
   },
   /* arme sortie pour frapper un mob : l'épée équipée, sinon la pioche (mains nues + pioche) */
   sword: {
@@ -63,12 +70,19 @@ export const SKIN = {
     'Épée en fer':      'skins/sword_iron',
     'Lance en fer':     'skins/spear_iron',
     'Épée en acier':    'skins/sword_steel',
+    'Épée cassée en carton': 'skins/sword_cardboard',   // lame brisée, morceau de scotch
     'Masse du Roi Gobelin': 'skins/mace_goblin_king',   // 27/10 : manche de bois, tête de fer
+    'Arc de l\'Admin':  'skins/bow_admin',              // 01/11 : arc doré, corde au repos, regard vers la droite
+  },
+  /* arme qui tire au lieu de frapper (01/11/2026, src/render/bow.js) : arc bandé et flèche en vol */
+  bow: {
+    'Arc de l\'Admin':  { drawn: 'skins/bow_admin_drawn', arrow: 'skins/arrow' },
   },
 };
 
 /* toutes les textures de skins, à charger avec les autres */
 export const SKIN_TEXTURES = [SKIN.body, ...Object.values(SKIN.armor), ...Object.values(SKIN.back), ...Object.values(SKIN.pickaxe), ...Object.values(SKIN.sword),
+                              ...Object.values(SKIN.bow).flatMap(b => [b.drawn, b.arrow]),
                               ...Object.values(SKIN.torch).filter(t => t !== SKIN.torch.base)];
 
 /* calques à dessiner pour un mineur d'après son équipement (look : { case: objet }) */
@@ -85,6 +99,8 @@ export const torchTexOf = t => SKIN.torch[t?.item] ?? SKIN.torch.base;
 export const pickaxeOf = look => SKIN.pickaxe[look?.pioche] ?? SKIN.pickaxe.base;
 /* outil en main : pour frapper, l'épée équipée s'il en a une ; sinon (et pour miner) la pioche */
 export const toolOf = (look, action) => (action === 'attack' && SKIN.sword[look?.epee]) || pickaxeOf(look);
+/* l'arc tenu, null pour une arme de contact */
+export const bowOf = look => SKIN.bow[look?.epee] ?? null;
 /* case de cet outil en main (pour son aura, src/meta/aura.js) : 'epee', 'pioche', ou null (pioche en bois de base) */
 export const toolSlotOf = (look, action) => action === 'attack' && SKIN.sword[look?.epee] ? 'epee'
   : look?.pioche !== 'base' && SKIN.pickaxe[look?.pioche] ? 'pioche' : null;

@@ -1,5 +1,5 @@
 /* Rendu canvas : LIT l'état de la simulation, ne le modifie jamais. */
-import { W, CFG, BLOCKS, BRIDGE, CHEST_X, DUCK, SHRINES } from '../config.js';
+import { W, CFG, BLOCKS, BRIDGE, CHEST_X, DUCK, SHRINES, PRISON, MINOTAUR } from '../config.js';
 import { maxRow } from '../sim/world.js';
 import { lightShown } from '../sim/light.js';
 import { lightR } from '../sim/mineur.js';
@@ -9,6 +9,7 @@ import { createMinerSprite } from './miner-sprite.js';
 import { torchTexOf } from '../skins.js';
 import { createCamera, followedMiner } from './camera.js';
 import { drawSplash } from './splash.js';
+import { drawMobFx } from './effects.js';
 
 export const TILE=16, VIEW_ROWS=34;
 
@@ -45,18 +46,24 @@ export function createRenderer(cv){
   function draw(G, followId){
     curG=G; frameNow=performance.now();
     const fm=followedMiner(G.miners, followId), mr=maxRow(G);
-    const [, fy]=drawPos(fm);
-    const camY=cam.update(fy, mr+1);
+    const [fx, fy]=drawPos(fm);
+    /* prison (30/10/2026, Geoffrey) : la carte est entre deux rangées de barreaux ; la caméra reste entre eux et son zoom
+       minimal fait remplir la largeur à ses colonnes (bords de la carte = bords de l'écran, comme la mine) */
+    cam.setBox(prisonCols(G));
+    const camY=cam.update(fy, mr+1, fx);
+    ctx.setTransform(1,0,0,1,0,0);
     ctx.fillStyle='#000'; ctx.fillRect(0,0,cv.width,cv.height);
+    const z=cam.zoom; ctx.setTransform(z,0,0,z,-cam.x*TILE*z,0);   // zoom (30/10) : le reste se dessine comme au zoom ×1
     const y0=Math.floor(camY), offY=-(camY-y0)*TILE;
-    for(let y=y0;y<=y0+rows+1;y++){
+    for(let y=y0;y<=y0+Math.ceil(rows/z)+1;y++){
       const py=(y-y0)*TILE+offY;
       for(let x=0;x<W;x++){
         const px=x*TILE;
         if(y<=0){ if(G.khole){ ctx.fillStyle='#1a0630'; ctx.fillRect(px,py,TILE,TILE); } else blit('sky',px,py,'#6cc3ee'); continue; }   // ciel de la dimension du k hole
         if(y===mr+1){ if(G.seen[mr][x]) blit('barrier',px,py,'#34344a'); continue; }
         if(y>mr) continue;
-        if(!G.seen[y][x]){ ctx.fillStyle='#060608'; ctx.fillRect(px,py,TILE,TILE); continue; }
+        /* barreaux de la prison (29/10) : toujours dessinés, même pas encore vus (ils ne cachent rien), assombris par la lumière */
+        if(!G.seen[y][x] && G.tiles[y][x]!==PRISON.bars){ ctx.fillStyle='#060608'; ctx.fillRect(px,py,TILE,TILE); continue; }
         const t=G.tiles[y][x];
         if(t===0) blit('tunnel',px,py,'#2a1f18');
         else{
@@ -94,6 +101,13 @@ export function createRenderer(cv){
     }
     /* gobelins asservis (Couronne du Roi Gobelin, 27/10) : gobelin doré, petite couronne, pas de barre de vie ; il
        frappe le bloc qu'il mine (petit éclat) */
+    /* vers de terre qui navigue : sa file de cases, par-dessus la roche, seulement à portée de vue d'un mineur */
+    for(const w of G.worms || []){
+      for(const [i, [x, y]] of [[w.x, w.y], ...(w.trail || [])].entries()){
+        if(!G.miners.some(m=>Math.hypot(x-m.x,y-m.y)<=lightR(G,m)+0.5)) continue;
+        blit(i ? 'worm_body' : 'worm_head',x*TILE,sy(y),'#b56a6a');
+      }
+    }
     for(const o of G.thralls || []){
       const seen=G.miners.some(m=>Math.hypot(o.x-m.x,o.y-m.y)<=lightR(G,m)+0.5);
       if(!seen && lightShown(G,o.x,o.y)<CFG.darkLum) continue;
@@ -127,6 +141,7 @@ export function createRenderer(cv){
         else { ctx.fillStyle='#8c1f2b'; ctx.fillRect(px,top,TILE,TILE*h); }
         if(o.hp<o.maxhp){ ctx.fillStyle='#400'; ctx.fillRect(px,top-4,TILE,2); ctx.fillStyle='#e5534b'; ctx.fillRect(px,top-4,TILE*o.hp/o.maxhp,2); }
         drawSplash(ctx,o,G.t,frameNow,px,top,TILE);
+        drawMobFx(ctx,o.fx,px+TILE/2,top-4,TILE,frameNow);
         continue;
       }
       if(o.type==='mimic'){
@@ -137,8 +152,13 @@ export function createRenderer(cv){
         const seen=G.miners.some(m=>Math.hypot(o.x-m.x,o.y-m.y)<=lightR(G,m)+0.5);
         if(!seen && lightShown(G,o.x,o.y)<CFG.darkLum) continue;
         if(o.type==='gobelin') blit('goblin',px,py,'#4f9d3a');
+        else if(o.type==='chien') blit('magma_dog',px,py,'#c8451b');
+        else if(o.type==='ver') blit('worm_tail',px,py,'#b56a6a');   // coincé : sa queue, par-dessus le bloc qui touche le vide
         else if(o.type==='occultiste') blit('occultist',px,py,'#3b2550');
-        else if(o.type==='minotaure') blit('minotaur',px,py,'#6b4226');   // boss du donjon
+        else if(o.type==='minotaure'){   // boss du donjon, minotaures de l'Arène (variante : texture) ; il tremble quand il gratte le sol
+          const tex=(MINOTAUR.variants[o.variant] ?? MINOTAUR.variants.donjon).tex, shake=o.fx?.includes('charge') ? Math.round(Math.sin(frameNow/30)) : 0;
+          blit(tex,px+shake,py,o.variant==='noir' ? '#1c1714' : '#6b4226');
+        }
         else if(o.type==='mephite') blit('mephite',px,py+Math.round(Math.sin(frameNow/250+o.id)),'#6f9a3a');   // il flotte (affichage seulement)
         else if(o.type==='golem'){
           /* golem : 2 × 2 cases, (x, y) = sa case du bas à gauche ; une goutte de sueur blanche tombe en boucle */
@@ -149,6 +169,7 @@ export function createRenderer(cv){
           ctx.fillStyle='#f4f1e8'; ctx.fillRect(px+TILE*0.62,gy+TILE*(0.8+k*1.1),1,2);
           if(o.hp<o.maxhp){ ctx.fillStyle='#400'; ctx.fillRect(px,gy-3,TILE*2,2); ctx.fillStyle='#e5534b'; ctx.fillRect(px,gy-3,TILE*2*o.hp/o.maxhp,2); }
           drawSplash(ctx,o,G.t,frameNow,px+TILE/2,gy,TILE);
+          drawMobFx(ctx,o.fx,px+TILE,gy-3,TILE*2,frameNow);
           continue;
         }
         else blit('bug',px,py,'#d14b4b');
@@ -162,6 +183,7 @@ export function createRenderer(cv){
       }
       if(o.hp<o.maxhp){ ctx.fillStyle='#400'; ctx.fillRect(px,py-3,TILE,2); ctx.fillStyle='#e5534b'; ctx.fillRect(px,py-3,TILE*o.hp/o.maxhp,2); }
       drawSplash(ctx,o,G.t,frameNow,px,py,TILE);   // dégâts de zone reçus (Force brute)
+      drawMobFx(ctx,o.fx,px+TILE/2,py-3,TILE,frameNow);   // états : étourdi, canalise, provoqué (28/10)
     }
     // mineurs : le suivi en dernier (au-dessus des autres)
     // plusieurs mineurs sur la même case (ils se traversent) : léger décalage pour les distinguer
@@ -173,7 +195,20 @@ export function createRenderer(cv){
     for(const m of order){ const [mx,my]=pos.get(m);
       if(m.action?.data?.winch) G.winch?.lift ? blit('lift_cabin', mx*TILE+shift.get(m), sy(my)) : blit('bucket', mx*TILE+shift.get(m), sy(my)+4);   // seau du treuil, ou cabine de l'ascenseur
       drawMiner(m, mx*TILE+shift.get(m), sy(my), G.miners.length>1 && m===fm); }
+    ctx.setTransform(1,0,0,1,0,0);   // la suite (voile du k hole) en coordonnées de l'écran
     if(G.khole) drawKhole(G);
+  }
+
+  /* colonnes jouables d'une carte de prison (entre les barreaux de la ligne 1), null en mine ; gardées par partie */
+  function prisonCols(G){
+    const row=G.tiles?.[1];
+    if(!row) return null;
+    if(G._cols !== undefined && G._colsRow === row) return G._cols;
+    let x0=0, x1=W-1;
+    while(x0<W && row[x0]===PRISON.bars) x0++;
+    while(x1>=0 && row[x1]===PRISON.bars) x1--;
+    G._colsRow=row;
+    return G._cols = (x0>0 || x1<W-1) && x1>=x0 ? { x0, x1 } : null;
   }
 
   /* dans la dimension du k hole : voile violet qui respire, et le temps avant le retour dans la mine */
@@ -187,13 +222,23 @@ export function createRenderer(cv){
   }
 
   /* défilement libre : rows lignes (négatif = vers le haut) ; pixels : distance glissée à l'écran (CSS) */
-  const pan = rows => { if(curG) cam.pan(rows, maxRow(curG)+1); };
-  const panPixels = px => pan(-px / (cv.clientHeight / rows || TILE));
+  const pan = (rows, cols = 0) => { if(curG) cam.pan(rows, maxRow(curG)+1, cols); };
+  /* glissé de dx, dy pixels à l'écran : la mine suit le doigt, au zoom actuel */
+  const panPixels = (dy, dx = 0) => {
+    const rowPx = (cv.clientHeight / rows || TILE) * cam.zoom, colPx = (cv.clientWidth / W || TILE) * cam.zoom;
+    pan(-dy / rowPx, -dx / colPx);
+  };
+  /* zoom autour d'un point de l'écran (clientX, clientY) */
+  const zoomAt = (f, clientX, clientY) => {
+    const r = cv.getBoundingClientRect();
+    const fx = r.width ? (clientX - r.left) / r.width : 0.5, fy = r.height ? (clientY - r.top) / r.height : 0.5;
+    cam.zoomBy(f, Math.max(0, Math.min(1, fx)), Math.max(0, Math.min(1, fy)));
+  };
   /* nombre de lignes visibles : le canvas change de hauteur, la caméra le sait (la surface reste visible en haut) */
   function setRows(n){
     if(n === rows || !Number.isInteger(n) || n < 1) return;
     rows = n; cv.height = rows*TILE; ctx.imageSmoothingEnabled = false; cam.setRows(n);
   }
 
-  return { draw, pan, panPixels, setRows, follow: () => cam.follow(), get free(){ return cam.free; }, get rows(){ return rows; } };
+  return { draw, pan, panPixels, zoomAt, setRows, follow: () => cam.follow(), get free(){ return cam.free; }, get rows(){ return rows; } };
 }

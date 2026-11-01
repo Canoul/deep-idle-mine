@@ -2,8 +2,8 @@
 
    Un four a un MODE, choisi par le joueur :
    - smelt (Fondre)  : cases ore (minerai), fuel (combustible), out (sortie). 10 minerais + 10 charbons = 1 lingot ;
-   - alloy (Alliage) : cases a et b (les deux ingrédients d'un alliage), fuel, out. Recettes dans FURNACE.alloys
-     (ex. Tainted iron = 5 lingots de fer + 15 chitine + 50 charbons, 3 min).
+   - alloy (Alliage) : cases a, b et c (les ingrédients d'un alliage, 2 ou 3 selon la recette ; c : 30/10/2026, Geoffrey),
+     fuel, out. Recettes dans FURNACE.alloys (ex. Tainted iron = 5 lingots de fer + 15 chitine + 50 charbons, 3 min).
    Chaque case contient null ou { item, qty }. since = heure (ms) où le produit en cours a commencé, null à l'arrêt.
    La fonte avance en temps réel : advance(f, now) calcule d'un coup tout ce qui a été produit depuis since, même page
    fermée. Un produit ne consomme ses ingrédients et son combustible qu'une fois fini : retirer une case pendant la
@@ -17,8 +17,8 @@ import { addItem, removeItem, countOf } from './inventory.js';
 
 export const MODES = ['smelt', 'alloy'];
 /* cases d'ingrédients de chaque mode (le combustible et la sortie sont communs) */
-export const INPUTS = { smelt:['ore'], alloy:['a', 'b'] };
-export const SLOTS = ['ore', 'a', 'b', 'fuel'];          // cases où l'on peut poser quelque chose
+export const INPUTS = { smelt:['ore'], alloy:['a', 'b', 'c'] };
+export const SLOTS = ['ore', 'a', 'b', 'c', 'fuel'];          // cases où l'on peut poser quelque chose
 const ALL = [...SLOTS, 'out'];
 const validQty = q => Number.isSafeInteger(q) && q > 0;
 const modeOf = f => MODES.includes(f.mode) ? f.mode : 'smelt';
@@ -38,19 +38,23 @@ export const isAlloyInput = item => FURNACE.alloys.some(r => Object.hasOwn(r.in,
 export function accepts(slot, item, mode = 'smelt', inv = null){
   if(slot === 'fuel') return isFuel(item);
   if(slot === 'ore') return mode === 'smelt' && recipeKnown(item, inv);   // recette fermée : seulement une fois apprise
-  if(slot === 'a' || slot === 'b') return mode === 'alloy' && isAlloyInput(item);
+  if(INPUTS.alloy.includes(slot)) return mode === 'alloy' && isAlloyInput(item);
   return false;
 }
-/* alliage qui utilise exactement ces deux ingrédients (dans n'importe quel ordre), ou null */
-export const alloyOf = (i1, i2) => i1 && i2 && i1 !== i2
-  ? FURNACE.alloys.find(r => Object.keys(r.in).length === 2 && Object.hasOwn(r.in, i1) && Object.hasOwn(r.in, i2)) ?? null : null;
-/* alliages possibles avec cet ingrédient (pour savoir quoi poser dans l'autre case) */
+/* tous différents, et chacun bien nommé (une case vide ou deux fois le même ingrédient : non) */
+const distinct = items => items.every(Boolean) && new Set(items).size === items.length;
+/* alliage qui utilise exactement ces ingrédients (2 ou 3, dans n'importe quel ordre), ou null */
+export const alloyOf = (...items) => items.length >= 2 && distinct(items)
+  ? FURNACE.alloys.find(r => Object.keys(r.in).length === items.length && items.every(i => Object.hasOwn(r.in, i))) ?? null : null;
+/* ces ingrédients peuvent-ils encore former un alliage ? (ils sont tous dans une même recette, il peut en manquer) */
+export const alloyFits = items => distinct(items) && FURNACE.alloys.some(r => items.every(i => Object.hasOwn(r.in, i)));
+/* alliages possibles avec cet ingrédient (pour savoir quoi poser dans les autres cases) */
 export const alloysWith = item => FURNACE.alloys.filter(r => Object.hasOwn(r.in, item));
 
 /* tout ce qu'un four peut produire (la sortie relue ne garde que ça) */
 const OUTPUTS = new Set([...Object.values(FURNACE.recipes), ...FURNACE.alloys].map(r => r.out));
 
-export const newFurnace = () => ({ tier:0, mode:'smelt', ore:null, a:null, b:null, fuel:null, out:null, since:null });
+export const newFurnace = () => ({ tier:0, mode:'smelt', ore:null, a:null, b:null, c:null, fuel:null, out:null, since:null });
 export function createFurnaces(){
   return { list: Array.from({ length: FURNACE.startOwned }, newFurnace), ops: [] };
 }
@@ -62,8 +66,8 @@ export function activeRecipe(f){
     const r = f.ore && recipeOf(f.ore.item);
     return r ? { out:r.out, qty:r.qty ?? 1, time:r.time, need:{ ore:oreFor(r), fuel:FURNACE.fuelPerIngot } } : null;
   }
-  const r = alloyOf(f.a?.item, f.b?.item);
-  return r ? { out:r.out, qty:1, time:r.time, need:{ a:r.in[f.a.item], b:r.in[f.b.item], fuel:r.fuel } } : null;
+  const used = INPUTS.alloy.filter(s => f[s]), r = alloyOf(...used.map(s => f[s].item));
+  return r ? { out:r.out, qty:1, time:r.time, need:{ ...Object.fromEntries(used.map(s => [s, r.in[f[s].item]])), fuel:r.fuel } } : null;
 }
 
 /* durée d'un produit (ms) dans ce four, ou null s'il n'a rien à fabriquer */
@@ -134,8 +138,108 @@ function unlockFurnace(state, inv, item){
   return { ok:true };
 }
 
+/* ---------- choisir une recette (28/10/2026, Geoffrey) ----------
+   Au lieu de poser les ingrédients un par un, le joueur choisit une recette (par son produit, ex. « Lingot de fer ») et
+   un nombre de fournées : le four passe dans le bon mode et chaque case (ingrédients, combustible) est complétée
+   jusqu'à ce qu'il faut pour (fournées déjà possibles + count) fournées. Le combustible déjà posé sert ; sinon, du
+   charbon. Refusé si la recette n'est pas apprise.
+   Changer de recette (28/10, Geoffrey) : sans vider le four soi-même. Les ingrédients qui ne servent pas à la nouvelle
+   recette et les produits d'une autre sorte (sortie) reviennent dans l'inventaire (le produit en cours est annulé, rien
+   n'est perdu) ; un ingrédient commun aux deux recettes reste en place, le combustible aussi. Inventaire plein : rien
+   ne bouge (inventory_full). */
+export const FUEL = 'Charbon';
+/* recette de ce produit : { mode, out, qty, time, in:{ ingrédient: quantité par fournée }, fuel } ou null */
+export function recipeByOut(out){
+  if(typeof out !== 'string') return null;
+  const s = Object.entries(FURNACE.recipes).find(([, r]) => r.out === out);
+  if(s){ const [ore, r] = s; return { mode:'smelt', out, qty:r.qty ?? 1, time:r.time, in:{ [ore]:oreFor(r) }, fuel:FURNACE.fuelPerIngot }; }
+  const a = FURNACE.alloys.find(r => r.out === out);
+  return a ? { mode:'alloy', out, qty:1, time:a.time, in:{ ...a.in }, fuel:a.fuel } : null;
+}
+/* toutes les recettes, dans l'ordre de la config (fontes puis alliages) */
+export const allRecipes = () => [...Object.values(FURNACE.recipes), ...FURNACE.alloys].map(r => recipeByOut(r.out));
+/* la recette est-elle utilisable par ce joueur ? (une fonte fermée doit être apprise) */
+export const recipeUsable = (rec, inv) => rec.mode === 'alloy' || recipeKnown(Object.keys(rec.in)[0], inv);
+
+/* copies du four et de l'inventaire où ce qui gêne la recette est déjà rendu : { f, inv, back:[{ item, qty }] } ou
+   { error:'inventory_full' } (rien n'est modifié : on travaille sur des copies) */
+function cleared(f, inv, rec){
+  const f2 = structuredClone(f), inv2 = structuredClone(inv), back = [];
+  const give = slot => { back.push({ ...f2[slot] }); return unload(f2, inv2, slot); };
+  const keep = new Set(modeOf(f2) === rec.mode ? Object.keys(rec.in) : []);
+  for(const s of INPUTS[modeOf(f2)]) if(f2[s] && !keep.has(f2[s].item) && give(s).error) return { error:'inventory_full' };
+  if(f2.out && f2.out.item !== rec.out && give('out').error) return { error:'inventory_full' };
+  f2.mode = rec.mode;
+  if(back.length) f2.since = null;                     // le produit en cours de l'ancienne recette est annulé
+  return { f:f2, inv:inv2, back };
+}
+/* où va chaque objet de la recette dans un four sans ingrédient gênant : { slots:{ case: objet }, need:{ case: quantité
+   par fournée } } (un ingrédient déjà posé garde sa case, les autres prennent les cases vides) */
+function placeRecipe(f, rec){
+  const slots = {}, need = {}, free = INPUTS[rec.mode].filter(s => !f[s]);
+  for(const s of INPUTS[rec.mode]) if(f[s]) slots[s] = f[s].item;
+  for(const it of Object.keys(rec.in)) if(!Object.values(slots).includes(it)) slots[free.shift()] = it;
+  slots.fuel = f.fuel?.item ?? FUEL;
+  for(const [s, it] of Object.entries(slots)) need[s] = s === 'fuel' ? rec.fuel : rec.in[it];
+  return { slots, need };
+}
+/* sur un four déjà débarrassé (cleared) : ce qu'il faut prendre pour count fournées de plus, { add } ou { error } */
+function planOn(f, inv, rec, count){
+  if(!validQty(count)) return { error:'bad_qty' };
+  const p = placeRecipe(f, rec), have = s => f[s]?.qty ?? 0;
+  const target = Math.min(...Object.entries(p.need).map(([s, n]) => Math.floor(have(s) / n))) + count;
+  const add = {};
+  for(const [s, n] of Object.entries(p.need)){
+    const want = target * n;
+    if(!Number.isSafeInteger(want)) return { error:'bad_qty' };
+    if(want > have(s)) add[s] = { item:p.slots[s], qty:want - have(s) };
+  }
+  for(const { item, qty } of Object.values(add)) if(countOf(inv, item) < qty) return { error:'not_enough' };
+  return { add };
+}
+function prepare(f, inv, out){
+  const rec = recipeByOut(out);
+  if(!rec || !recipeUsable(rec, inv)) return { error:'bad_item' };
+  const c = cleared(f, inv, rec);
+  return c.error ? c : { rec, ...c };
+}
+/* ce que fera la recette : { mode, add:{ case:{ item, qty } }, back:[ objets rendus à l'inventaire ] } ou { error } */
+export function recipePlan(f, inv, out, count){
+  const c = prepare(f, inv, out);
+  if(c.error) return c;
+  const p = planOn(c.f, c.inv, c.rec, count);
+  return p.error ? p : { mode:c.rec.mode, add:p.add, back:c.back };
+}
+/* le plus de fournées qu'on peut ajouter avec l'inventaire (ce qui est rendu compte ; 0 si aucune) */
+export function recipeMax(f, inv, out){
+  const c = prepare(f, inv, out);
+  if(c.error) return 0;
+  const ok = n => !planOn(c.f, c.inv, c.rec, n).error;
+  if(!ok(1)) return 0;
+  let lo = 1, hi = 2;
+  while(ok(hi)) { lo = hi; hi *= 2; }
+  while(hi - lo > 1){ const m = Math.floor((lo + hi) / 2); if(ok(m)) lo = m; else hi = m; }
+  return lo;
+}
+/* applique la recette : tout se fait sur les copies, recopiées dans f et inv seulement si tout a marché */
+function loadRecipe(f, inv, { out, count }){
+  const c = prepare(f, inv, out);
+  if(c.error) return c;
+  const p = planOn(c.f, c.inv, c.rec, count);
+  if(p.error) return p;
+  for(const [s, { item, qty }] of Object.entries(p.add)){
+    if(!removeItem(c.inv, item, qty)) return { error:'not_enough' };   // ne peut pas arriver (vérifié dans le plan)
+    c.f[s] = { item, qty:(c.f[s]?.qty || 0) + qty };
+  }
+  Object.assign(f, c.f);
+  for(const k of Object.keys(inv)) delete inv[k];
+  Object.assign(inv, c.inv);
+  return { ok:true };
+}
+
 /* ---------- actions du joueur ----------
-   op = { action:'load'|'unload'|'collect'|'mode'|'unlock', furnace, slot, item, qty, mode, opId }.
+   op = { action:'load'|'unload'|'collect'|'mode'|'unlock'|'recipe', furnace, slot, item, qty, mode, out, count, opId }.
+   recipe : choisir une recette (out = son produit) pour count fournées de plus (voir recipePlan).
    unlock : consomme un objet de four (item) et ouvre le four suivant (pas de numéro de four à donner).
    Modifie inv et state ensemble (tout ou rien). Renvoie { ok:true, repeated } ou { error } (code d'erreur). */
 export function furnaceOp(state, inv, op, now){
@@ -156,6 +260,7 @@ export function furnaceOp(state, inv, op, now){
     else if(op.action === 'collect') r = unload(f, inv, 'out');
     else if(op.action === 'empty') r = { ok:true, left:empty(f, inv) };
     else if(op.action === 'mode') r = setMode(f, op.mode);
+    else if(op.action === 'recipe') r = loadRecipe(f, inv, op);
     else r = { error:'bad_request' };
     if(r.error) return r;
     kick(f, now);
@@ -173,8 +278,8 @@ function empty(f, inv){
   return left;
 }
 
-/* poser qty exemplaires d'item dans une case : une seule sorte d'objet par case ; en alliage, les deux ingrédients
-   doivent former une recette */
+/* poser qty exemplaires d'item dans une case : une seule sorte d'objet par case ; en alliage, les ingrédients posés
+   doivent tenir ensemble dans une recette */
 function load(f, inv, { slot, item, qty }){
   if(!SLOTS.includes(slot)) return { error:'bad_slot' };
   const mode = modeOf(f);
@@ -182,17 +287,15 @@ function load(f, inv, { slot, item, qty }){
   if(typeof item !== 'string' || !accepts(slot, item, mode, inv)) return { error:'bad_item' };   // recette pas apprise : refusé aussi
   if(!validQty(qty)) return { error:'bad_qty' };
   if(f[slot] && f[slot].item !== item) return { error:'slot_busy' };
-  if(mode === 'alloy'){
-    const other = f[slot === 'a' ? 'b' : 'a'];
-    if(slot !== 'fuel' && other && !alloyOf(item, other.item)) return { error:'no_recipe' };
-  }
+  if(mode === 'alloy' && slot !== 'fuel' && !alloyFits([item, ...INPUTS.alloy.filter(s => s !== slot && f[s]).map(s => f[s].item)]))
+    return { error:'no_recipe' };
   if(f[slot] && !Number.isSafeInteger(f[slot].qty + qty)) return { error:'bad_qty' };
   if(countOf(inv, item) < qty || !removeItem(inv, item, qty)) return { error:'not_enough' };
   f[slot] = { item, qty: (f[slot]?.qty || 0) + qty };
   return { ok:true };
 }
 
-/* vider une case dans l'inventaire (ore, a, b, fuel, ou out pour récupérer les produits) ; case vide : rien à faire */
+/* vider une case dans l'inventaire (ore, a, b, c, fuel, ou out pour récupérer les produits) ; case vide : rien à faire */
 function unload(f, inv, slot){
   if(!ALL.includes(slot)) return { error:'bad_slot' };
   const c = f[slot];

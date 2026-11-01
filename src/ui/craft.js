@@ -6,19 +6,26 @@ import { craftable, needs, canCraft, recipeOf } from '../meta/craft.js';
 import { statsText } from '../meta/stuff.js';
 import { tipAttr } from './tooltip.js';
 import { rcls, rname } from './rarity.js';
+import { tabOf, tabsHtml } from './inventory.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const num = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 export const icon = item => { const d = itemDef(item); return d?.tex ? `<img src="textures/${d.tex}.png" alt="">` : `<span class="noicon">${esc(item.slice(0,2))}</span>`; };
 
+/* recettes de l'onglet tab (mêmes onglets que l'inventaire, 31/10/2026, Geoffrey) */
+export const recipesIn = (list, tab) => tab === 'all' ? list : list.filter(n => tabOf(n) === tab);
+
 /* onCraft(item) → promesse (rejetée avec un message lisible) */
 export function setupCraft({ onCraft }){
-  let inv = { slots:[] }, sel = null, busy = false, msg = '';
+  let inv = { slots:[] }, sel = null, busy = false, msg = '', tab = 'all';
 
   function render(){
     /* seulement les recettes débloquées : celles à blueprint restent secrètes tant qu'on ne l'a pas utilisé */
-    const list = craftable(inv);
+    const known = craftable(inv);
+    if(!recipesIn(known, tab).length) tab = 'all';
+    const list = recipesIn(known, tab);
+    $('craftTabs').innerHTML = tabsHtml(tab, known, 'recette', known.length, true);
     if(!sel || !list.includes(sel)) sel = list[0] ?? null;
     $('craftList').innerHTML = list.map(n =>
       `<button class="slot craftItem${rcls(n)}${n === sel ? ' sel' : ''}${canCraft(inv, n) ? ' ready' : ''}" data-item="${esc(n)}"${tipAttr(n)}>${icon(n)}</button>`).join('')
@@ -41,6 +48,7 @@ export function setupCraft({ onCraft }){
     };
   }
 
+  $('craftTabs').onclick = e => { const b = e.target.closest('[data-tab]'); if(b && b.dataset.tab !== tab){ tab = b.dataset.tab; msg = ''; render(); } };
   $('craftList').onclick = e => {
     const b = e.target.closest('.craftItem'); if(!b) return;
     sel = b.dataset.item; msg = ''; render();

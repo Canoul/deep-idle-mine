@@ -38,17 +38,21 @@ export const TRAP_BOX = { w:OW, h:OH };
 const near = (a,b,gap) => a.x0 < b.x0+b.w+gap && b.x0 < a.x0+a.w+gap && a.ry0 < b.ry0+b.h+gap && b.ry0 < a.ry0+a.h+gap;
 
 /* tirage des pièges de l'area k (hasard à part, tiré de la seed) : [{ x0, ry0, mobs:[type…] }] en lignes de l'area.
-   dungeon : le donjon de l'area (planDungeon) ou null, pour ne pas le toucher. */
-export function planTraps(seed, k, dungeon=null){
+   dungeon : le donjon de l'area (planDungeon) ou null, pour ne pas le toucher. box (facultatif) : { x0, w, chanceMul } =
+   colonnes [x0, x0 + w) où poser les pièges (prison : entre les barreaux) ; défaut : toute la largeur, chance × 1.
+   Boîte trop étroite : aucun piège. */
+export function planTraps(seed, k, dungeon=null, box=null){
   if(k < TRAP.fromArea) return [];
+  const bx = box?.x0 ?? 0, bw = box?.w ?? W, cm = box?.chanceMul ?? 1, span = bw - 2*TRAP.margin - OW + 1;
+  if(span <= 0) return [];
   const r = mulberry32(hash(seed, k+1) ^ TRAP.salt), table = trapTable(k), out = [];
   const taken = dungeon ? [{ x0:dungeon.x0, ry0:dungeon.ry0, w:DUNGEON.size, h:DUNGEON.size }] : [];
   const lo = WINCH.x-TRAP.winchGap, hi = WINCH.x+TRAP.winchGap;
   for(let i=0; i<TRAP.tries; i++){
-    if(!(r() < TRAP.chance)) continue;
+    if(!(r() < TRAP.chance*cm)) continue;
     const mobs = Array.from({ length:TRAP.mobs }, () => pick(table, r));
     for(let a=0; a<TRAP.attempts; a++){
-      const p = { x0: TRAP.margin + Math.floor(r()*(W - 2*TRAP.margin - OW + 1)),
+      const p = { x0: bx + TRAP.margin + Math.floor(r()*span),
                   ry0: TRAP.margin + Math.floor(r()*(AREA_H - 2*TRAP.margin - OH + 1)), w:OW, h:OH };
       if(!(p.x0+OW-1 < lo || p.x0 > hi) || taken.some(q => near(p,q,1))) continue;
       taken.push(p); out.push({ x0:p.x0, ry0:p.ry0, mobs });

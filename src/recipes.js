@@ -15,6 +15,9 @@ export const RECIPES = {
   'Plastron en chitine': { cost: { 'Lingot de fer': 8, 'Chitine': 30 },  qty: 1, unlock: null },
   'Jambes en chitine':   { cost: { 'Lingot de fer': 7, 'Chitine': 30 },  qty: 1, unlock: null },
   'Bottes en chitine':   { cost: { 'Lingot de fer': 4, 'Chitine': 70 },  qty: 1, unlock: null },
+  /* Rune (29/10/2026, Geoffrey) : qualité tirée à la fabrication (RUNE.craftChances), lignes comme une rune de tour.
+     La Poudre de rêve vient du recyclage des runes (RUNE.dust) */
+  'Rune':                { cost: { 'Poudre de rêve': 100 },              qty: 1, unlock: null },
 
   /* Lampe à incandescence (25/10/2026, Geoffrey) : blueprint du Treasure T2 depuis le 26/10 (avant : de base) */
   'Lampe à incandescence': { cost: { 'Vésicule de gaz': 200, 'Charbon': 2000, 'Fragment de cœur': 20 }, qty: 1, unlock: 'Lampe à incandescence BP' },
@@ -54,10 +57,11 @@ export const RECIPES = {
 
   /* Treasure T4 (27/10/2026, Geoffrey) : toutes débloquées par leur blueprint. Thorium et cobalt se fabriquent à partir de
      la pièce en mithril (consommée : l'exemplaire le plus simple d'abord, src/meta/craft.js) */
-  'Casque en mithril':   { cost: { 'Mithril ingot': 15, 'Steel ingot': 5, 'Shiny iron': 10 }, qty: 1, unlock: 'Casque en mithril BP' },
-  'Plastron en mithril': { cost: { 'Mithril ingot': 24, 'Steel ingot': 8, 'Shiny iron': 10 }, qty: 1, unlock: 'Plastron en mithril BP' },
-  'Jambes en mithril':   { cost: { 'Mithril ingot': 21, 'Steel ingot': 7, 'Shiny iron': 10 }, qty: 1, unlock: 'Jambes en mithril BP' },
-  'Bottes en mithril':   { cost: { 'Mithril ingot': 16, 'Steel ingot': 4, 'Shiny iron': 10 }, qty: 1, unlock: 'Bottes en mithril BP' },
+  /* 30/10/2026 (Geoffrey) : lingots de mithril × 2 sur les pièces en mithril (avant 15 / 24 / 21 / 16) */
+  'Casque en mithril':   { cost: { 'Mithril ingot': 30, 'Steel ingot': 5, 'Shiny iron': 10 }, qty: 1, unlock: 'Casque en mithril BP' },
+  'Plastron en mithril': { cost: { 'Mithril ingot': 48, 'Steel ingot': 8, 'Shiny iron': 10 }, qty: 1, unlock: 'Plastron en mithril BP' },
+  'Jambes en mithril':   { cost: { 'Mithril ingot': 42, 'Steel ingot': 7, 'Shiny iron': 10 }, qty: 1, unlock: 'Jambes en mithril BP' },
+  'Bottes en mithril':   { cost: { 'Mithril ingot': 32, 'Steel ingot': 4, 'Shiny iron': 10 }, qty: 1, unlock: 'Bottes en mithril BP' },
   'Casque en thorium':   { cost: { 'Casque en mithril': 1, 'Thorium ingot': 10, 'Rubis': 1, 'Diamant': 25 },   qty: 1, unlock: 'Casque en thorium BP' },
   'Plastron en thorium': { cost: { 'Plastron en mithril': 1, 'Thorium ingot': 16, 'Topaze': 1, 'Diamant': 25 }, qty: 1, unlock: 'Plastron en thorium BP' },
   'Jambes en thorium':   { cost: { 'Jambes en mithril': 1, 'Thorium ingot': 14, 'Saphir': 1, 'Diamant': 25 },  qty: 1, unlock: 'Jambes en thorium BP' },
@@ -70,10 +74,14 @@ export const RECIPES = {
   'Doc Martins':         { cost: { 'Cuir de minotaure': 50, 'Thorium ingot': 4, 'Tissu sombre': 100 },          qty: 1, unlock: 'Doc Martins BP' },
   'Ceinture golémique':  { cost: { 'Pierre glissante': 50, 'Thorium ingot': 5, 'Vésicule de gaz': 100 },         qty: 1, unlock: 'Ceinture golémique BP' },
   'Gants de boucher':    { cost: { 'Rotten flesh': 50, 'Mithril ingot': 15, 'Peau de gobelin': 500 },          qty: 1, unlock: 'Gants de boucher BP' },
+  'Cape inclusive':      { cost: { 'Tainted iron': 20, 'Tainted gold': 20, 'Diamant': 20, 'Graphite ingot': 20, 'Steel ingot': 20, 'Mithril ingot': 20,
+                           'Thorium ingot': 20, 'Cobalt ingot': 20, 'Orbe supérieur': 5 }, qty: 1, unlock: 'Cape inclusive BP' },   // 31/10 (Geoffrey)
   'Jambières titanesques': { cost: { 'Cobalt ingot': 25, 'Thorium ingot': 25, 'Topaze': 1, 'Jade': 1, 'Saphir': 1, 'Rubis': 1,
                            'Shiny gold': 50 }, qty: 1, unlock: 'Jambières titanesques BP' },
   'Saphir':              { cost: { 'Diamant': 50, 'Saphir inférieur': 3 }, qty: 1, unlock: 'Saphir BP' },
   'Rubis':               { cost: { 'Diamant': 50, 'Rubis inférieur': 3 },  qty: 1, unlock: 'Rubis BP' },
   'Jade':                { cost: { 'Diamant': 50, 'Jade inférieur': 3 },   qty: 1, unlock: 'Jade BP' },
-  'Clé d\'instance I':   { cost: { 'Peau de gobelin': 250, 'Pierre glissante': 20, 'Tissu sombre': 50, 'Barre d\'argent': 1 }, qty: 1, unlock: null },   // 28/10 (Geoffrey) : de base (avant : Clé d'instance I BP, Treasure T4)
+  'Orbe supérieur':      { cost: { 'Rotten flesh': 20, 'Chair de vers': 20, 'Peau de chien de magma': 20 }, qty: 1, unlock: null },   // 31/10 (Geoffrey) : de base
+  'Orbe':                { cost: { 'Tissu sombre': 30, 'Vésicule de gaz': 30, 'Pierre glissante': 10 }, qty: 1, unlock: null },   // 30/10 (Geoffrey) : de base
+  'Clé d\'instance I':   { cost: { 'Barre d\'argent': 1, 'Orbe': 5 }, qty: 1, unlock: null },   // 31/10 (Geoffrey) ; ancien : 250 Peau de gobelin, 20 Pierre glissante, 50 Tissu sombre, 1 Barre d'argent ; 28/10 : de base (avant : Clé d'instance I BP, Treasure T4)
 };

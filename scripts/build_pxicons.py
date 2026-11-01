@@ -22,6 +22,10 @@ KENNEY = {
     'door': (0, 9), 'sword': (32, 8), 'shield': (37, 3), 'bubbles': (35, 11), 'ladder': (0, 6), 'sun': (27, 11),
     'arrow': (29, 20), 'target': (38, 12), 'feather': (29, 11), 'trophy': (40, 16), 'heart': (39, 10),
     'radiance': (28, 12),
+    # états des mineurs et des mobs (28/10/2026, src/config.js EFFECTS)
+    'daze': (29, 12), 'grab': (41, 1), 'alert': (35, 13), 'coin': (35, 16), 'heartbreak': (41, 10), 'moon': (47, 12),
+    'horn': (37, 16), 'note': (39, 16), 'rocket': (34, 21), 'updown': (21, 21), 'ring': (45, 3), 'shrine': (21, 11),
+    'crown': (43, 2), 'shout': (36, 13),
 }
 
 
@@ -52,7 +56,9 @@ def main():
             'export const pxi = (name, cls = \'\') => P[name]\n'
             '  ? `<svg class="pi ${cls}" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="${P[name]}"/></svg>`\n'
             '  : \'\';\n'
-            'export const PXI_NAMES = Object.keys(P);\n')
+            'export const PXI_NAMES = Object.keys(P);\n'
+            '/* chemin SVG brut d\'une icône (canvas : new Path2D(pxPath(\'daze\'))) */\n'
+            'export const pxPath = name => P[name] ?? null;\n')
     with open(OUT, 'w', encoding='utf-8', newline='\n') as f:
         f.write(body)
     print(len(icons), 'icônes ->', os.path.relpath(OUT))

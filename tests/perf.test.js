@@ -25,3 +25,24 @@ test('la boîte de mesures est dans les barres de la mine et de la tour, cachée
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   assert.equal((html.match(/class="mut small perfBox" hidden/g) || []).length, 2);
 });
+
+test('?perf mesure aussi les envois de la prison (30/10/2026)', () => {
+  const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  const at = main.indexOf('await gameApi.prisonView(');
+  assert.ok(at > 0);
+  assert.ok(main.slice(at, at + 150).includes('perf.view(t0'));
+});
+
+test('régularité : écart entre les envois, images où le mineur suivi reste sur place', () => {
+  const p = createPerf();
+  [[0, 0], [200, 2], [600, 4], [800, 6]].forEach(([at, tick]) => p.view(at - 40, at, tick));
+  assert.ok(Math.abs(p.stats().jitter - 94.3) < 0.1);
+  /* 7 images de marche, 2 à l'arrêt, puis un long arrêt (il mine) qui ne compte pas */
+  const xs = [0, 1, 2, 3, 3, 3, 4, 5, 6, 7];
+  xs.forEach((x, i) => p.step([x, 0], i * 16));
+  for(let i = 10; i < 40; i++) p.step([7, 0], i * 16);
+  p.step([8, 0], 40 * 16);
+  assert.ok(Math.abs(p.stats().stops - 2 / 10 * 100) < 1e-9, String(p.stats().stops));
+  assert.match(perfText(p.stats()), /écart 94 ms · micro-arrêts 20 %/);
+});
+

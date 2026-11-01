@@ -2,7 +2,10 @@
    Légende : ' ' vide · '#' pierre · 'h' pierre dure · 'd' terre · 'c' charbon · 'T' coffre au trésor · 'H' échelle (case vide) · '=' passerelle · '@' mineur (case vide)
    La ligne 0 du dessin est la surface. Les lignes plus courtes que W sont complétées en pierre.
    Sous la dernière ligne : barrière (area suivante verrouillée). */
-import { W, IDS, BRIDGE, TREASURE_BLOCK } from '../src/config.js';
+import { W, IDS, BRIDGE, TREASURE_BLOCK, ENERGY } from '../src/config.js';
+/* Énergie : les tests qui lancent des mines (service de jeu, groupes, chat…) partent d'une jauge pleine. Le jeu, lui,
+   démarre à 0 depuis le 30/10/2026 (ENERGY.start) : tests/energy.test.js, qui n'importe pas ce fichier, vérifie ce départ. */
+ENERGY.start = 100;
 import { newSession } from '../src/sim/session.js';
 
 const CH = { ' ':0, '#':IDS.stone, 'd':IDS.dirt, 'h':IDS.hardstone, 'c':IDS.coal, 'T':TREASURE_BLOCK, 'H':0, '=':BRIDGE, '@':0 };
@@ -37,6 +40,7 @@ export const FAST_SCRYPT = { N: 1024, r: 8, p: 1, keyLen: 32, saltLen: 16 };
    joueurs sont partis, ou sur finish) avec le résumé summaryOf(enregistrement). ended : ids des parties terminées. */
 import { TOTAL_TICKS } from '../src/shared/game.js';
 import { isTowerMode, TOWER_TICKS } from '../src/shared/tower.js';
+import { isInstanceMode, INSTANCE_TICKS } from '../src/shared/instances.js';
 export function fakeLive(summaryOf){
   const ended = [];
   const factory = ({ onEnd }) => {
@@ -50,7 +54,7 @@ export function fakeLive(summaryOf){
       get size(){ return games.size; },
       close: id => { games.delete(id); },
       closeAll: () => games.clear(),
-      async advance(id, target){ const g = get(id), last = isTowerMode(g.rec.mode) ? TOWER_TICKS : TOTAL_TICKS;   // une tour finit plus tôt
+      async advance(id, target){ const g = get(id), last = isTowerMode(g.rec.mode) ? TOWER_TICKS : isInstanceMode(g.rec.mode) ? INSTANCE_TICKS : TOTAL_TICKS;   // une tour, une instance finissent plus tôt
         g.tick = Math.max(g.tick, Math.min(target, last)); if(g.tick >= last) end(id); },
       async leave(id, account){
         const g = get(id); g.rec.leaves.push({ account, tick:g.tick });

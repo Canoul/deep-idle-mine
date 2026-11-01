@@ -21,3 +21,12 @@ test('onglet Stuff : une ligne DPS sous le gear score, avec les totaux affichés
   const total = Object.fromEntries(minerStats(worn, {}).map(s => [s.key, s.total]));
   assert.equal(rawDps(total), 17.5);
 });
+
+/* 28/10/2026 (Geoffrey) : les skills de comportement (Navette, Treuil…) ne sont plus listés sous les stats */
+test('onglet Stuff : pas de bloc « Skills en partie » sous les stats', async () => {
+  const { skillEffects, sanitizeSkills } = await import('../src/meta/skills.js');
+  const log = skillEffects(sanitizeSkills({ tree:'logisticien', ranks:{ travel_rush:3, tall_ladder:1, winch:1, winch_speed:2 } }));
+  const html = statsHTML({}, log);
+  assert.doesNotMatch(html, /Skills en partie|Treuil|Navette/);
+  assert.match(html, /Gear score/);
+});

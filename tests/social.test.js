@@ -14,7 +14,8 @@ import { SERVER, SOCIAL_SERVER, ROOT } from '../server/config.js';
 import { nameKey } from '../src/shared/account.js';
 import { FAST_SCRYPT, fakeLive } from './helpers.js';
 import { realDurationMs } from '../src/shared/game.js';
-import { statusText, onlineCountText } from '../src/ui/social.js';
+import { GAME, ENERGY } from '../src/config.js';
+import { statusText, statusDot, onlineCountText, energyHTML } from '../src/ui/social.js';
 
 const A = { id:'AAAA1111', name:'Zoe', guest:false };
 const B = { id:'BBBB2222', name:null, guest:true };          // invité : pas de pseudo
@@ -172,6 +173,26 @@ test('ami en session : on voit le type de mine et le temps qui lui reste (23/10)
   assert.equal(statusText({ status:'lobby', size:2, max:3 }), 'Dans le lobby (2/3)');
 });
 
+test('joueur en session : on voit combien ils sont dans le groupe (30/10), pour repérer les solos et les duos', async () => {
+  const { social, party, game } = setup();
+  await friends(social, A, C); await friends(social, A, D); await friends(social, B, D);
+  await party.launch(C, {});                            // C seul
+  let f = friend(await social.state(A), C);
+  assert.equal(f.size, 1); assert.equal(f.max, GAME.maxPlayers);
+  await social.state(B); await social.join(D, B.id);   // B (chef) + D : un duo
+  await party.ready(D, true);
+  await party.launch(B, {});
+  f = friend(await social.state(A), D);
+  assert.equal(f.status, 'session'); assert.equal(f.size, 2);
+  const row = (await social.online(A)).players.find(p => p.id === D.id);
+  assert.equal(row.size, 2, 'la liste Online aussi');
+  await game.leave(B);                                  // B quitte : D reste seul dans la session
+  assert.equal(friend(await social.state(A), D).size, 1);
+  assert.equal(statusText({ status:'session', mode:'mine', size:1, max:3, leftMs: 23 * 60_000 - 1 }), 'En session mine (1/3) · reste 23 min');
+  assert.equal(statusText({ status:'session', mode:'tower_angel', size:2, max:3, leftMs:null }), 'En session · Tour de l\'Ange (2/3)');
+  assert.equal(statusText({ status:'session', mode:'giant', leftMs: 30_000 }).includes('/'), false, 'sans taille (Bloc géant) : rien');
+});
+
 test('limites : nombre d\'amis, demandes en attente', async () => {
   const { social } = setup({ ...SOCIAL_SERVER, maxFriends: 1, maxOutgoing: 1 });
   await social.request(A, 'Max');
@@ -276,6 +297,27 @@ test('HTTP : s\'inscrire, demander en ami par pseudo, accepter, voir l\'ami en l
   } finally { server.close(); }
 });
 
+test('HTTP : chat global, connecté seulement ; écrire puis relire après un numéro ; trop vite ou vide refusé', async () => {
+  const { server, client } = await serve();
+  try {
+    const zoe = client(), guest = client();
+    await zoe('POST', '/api/account/register', { name:'Zoe', password:'motdepasse-zoe' });
+    await guest('POST', '/api/account/guest', {});
+    assert.equal((await client()('GET', '/api/social/chat')).status, 401);
+    assert.equal((await client()('POST', '/api/social/chat', { text:'x' })).status, 401);
+    const sent = await zoe('POST', '/api/social/chat', { text:'  hello <b>mine</b> ' });
+    assert.equal(sent.status, 200); assert.equal(sent.data.message.name, 'Zoe');
+    const r = await guest('GET', '/api/social/chat');
+    assert.deepEqual(r.data.messages.map(m => m.text), ['hello <b>mine</b>']);
+    assert.deepEqual((await guest('GET', `/api/social/chat?after=${sent.data.message.id}`)).data.messages, []);
+    assert.equal((await guest('GET', '/api/social/chat?after=abc')).data.messages.length, 1, 'numéro invalide : tout');
+    assert.equal((await zoe('POST', '/api/social/chat', { text:'vite' })).status, 429);
+    assert.equal((await guest('POST', '/api/social/chat', { text:'' })).status, 400);
+    assert.equal((await guest('POST', '/api/social/chat', [1])).status, 400);
+    assert.match((await guest('POST', '/api/social/chat', { text:'moi' })).data.message.name, /^Invité /);
+  } finally { server.close(); }
+});
+
 test('Online : tous les joueurs en ligne (amis ou non), pas en session d\'abord, puis en session ; hors ligne absents', async () => {
   const { social, game, advance } = setup();
   await friends(social, A, C);
@@ -311,4 +353,78 @@ test('Online : un joueur en session compte même navigateur fermé (comme dans l
   const r = await social.online(A);
   assert.equal(r.count, 2);
   assert.deepEqual(r.players.map(p => [p.id, p.status]), [[A.id, 'online'], [D.id, 'session']]);
+});
+
+/* ---------- énergie dans Social (31/10/2026) ---------- */
+test('énergie : visible chez les amis (même hors ligne) et dans la liste Online, repos compris', async () => {
+  const { store, social, advance } = setup();
+  await friends(social, A, C);
+  await store.putEnergy(C.id, { value: 42, keys: [], at: 5_000_000 });
+  assert.deepEqual(friend(await social.state(A), C).energy, { value: 42, max: ENERGY.max });
+  const on = await social.online(A);
+  assert.deepEqual(on.players.find(p => p.id === C.id).energy, { value: 42, max: ENERGY.max });
+  advance(SOCIAL_SERVER.onlineFor + 1);                                  // C hors ligne : le repos continue de compter
+  advance(3600e3 / GAME.speed);
+  await social.state(A);
+  const f = friend(await social.state(A), C);
+  assert.equal(f.status, 'offline');
+  assert.equal(f.energy.value, Math.round(42 + ENERGY.idlePerHour));
+});
+
+test('énergie : regarder celle d\'un autre n\'écrit rien (ne peut pas écraser un débit en cours)', async () => {
+  const { store, game, social, advance } = setup();
+  await friends(social, A, C);
+  const e = { value: 20, keys: ['s1'], at: 5_000_000 };
+  await store.putEnergy(C.id, e);
+  advance(3600e3);
+  await game.energyOf(C.id);
+  await social.online(A);
+  assert.deepEqual(await store.getEnergy(C.id), e);
+  await store.putEnergy(D.id, null);                                     // compte sans énergie enregistrée
+  await game.energyOf(D.id);
+  assert.equal(await store.getEnergy(D.id), null);
+});
+
+test('énergie : relue au plus tous les energyFor, pas à chaque demande', async () => {
+  const { store, social, advance } = setup();
+  await friends(social, A, C);
+  await store.putEnergy(C.id, { value: 30, keys: [], at: 5_000_000 });
+  assert.equal(friend(await social.state(A), C).energy.value, 30);
+  await store.putEnergy(C.id, { value: 10, keys: [], at: 5_000_000 });
+  assert.equal(friend(await social.state(A), C).energy.value, 30);
+  advance(SOCIAL_SERVER.energyFor);
+  assert.equal(friend(await social.state(A), C).energy.value < 30, true);
+});
+
+test('énergie : affichage, en rouge sous le coût minimum, rien si inconnue', () => {
+  assert.match(energyHTML({ value: 42, max: 100 }), /⚡ 42\/100/);
+  assert.doesNotMatch(energyHTML({ value: ENERGY.cost.min, max: 100 }), /low/);
+  assert.match(energyHTML({ value: ENERGY.cost.min - 1, max: 100 }), /low/);
+  assert.equal(energyHTML(undefined), '');
+});
+
+test('pastille (31/10) : en prison, vert si le jeu est ouvert, orange sinon ; une session reste orange', () => {
+  assert.equal(statusDot({ status:'session', mode:'prison', online:true }), 'on');
+  assert.equal(statusDot({ status:'session', mode:'prison', online:false }), 'play');
+  assert.equal(statusDot({ status:'session', mode:'mine' }), 'play');
+  assert.equal(statusDot({ status:'online' }), 'on');
+});
+
+test('inviter un joueur en prison (31/10) : possible s\'il est en ligne (vert), pas page fermée ; le bouton Rejoindre reste fermé', async () => {
+  const { social, party, game, advance } = setup();
+  await friends(social, A, D);
+  game.prisonActiveOf = async id => id === D.id;
+  advance(SOCIAL_SERVER.onlineFor + 1);
+  let a = await social.state(A);
+  assert.deepEqual([friend(a, D).mode, friend(a, D).online, friend(a, D).canInvite], ['prison', false, false], 'page fermée');
+  await social.state(D);                                // D ouvre le jeu
+  a = await social.state(A);
+  assert.deepEqual([friend(a, D).mode, friend(a, D).online, friend(a, D).canInvite, friend(a, D).canJoin], ['prison', true, true, false]);
+  await party.invite(A, D.id);
+  assert.equal((await party.state(D)).invites.length, 1, 'il reçoit l\'invitation');
+});
+
+test('texte du statut (31/10) : « En ligne - Prison » le jeu ouvert, « En session · Prison » page fermée', () => {
+  assert.equal(statusText({ status:'session', mode:'prison', online:true }), 'En ligne - Prison');
+  assert.equal(statusText({ status:'session', mode:'prison', online:false }), 'En session · Prison');
 });

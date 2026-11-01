@@ -9,6 +9,11 @@ import random
 import struct
 import zlib
 
+from gen_town import town   # le Carreau, ville du spawn (scripts/gen_town.py, 29/10/2026)
+from gen_bosses import bosses, tower_mobs   # boss et mobs des tours du Jugement (scripts/gen_bosses.py, 30/10/2026)
+from gen_lucifer import lucifer_textures   # Lucifer et son portail, He's coming (scripts/gen_lucifer.py, 01/11/2026)
+from gen_golbute import golbute, golem   # le Golbute de l'Instance II (et sa forme cristallisée) et le golem (scripts/gen_golbute.py, 30/10/2026)
+
 S = 16
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'textures')
 
@@ -237,6 +242,14 @@ def main():
         rect(barrier, i, (i // 4) % 2 * 8, 2, 8, hexc('#4a4a66'))
     tex['barrier'] = barrier
 
+    # barreaux de prison (incassables) : barreaux verticaux gris foncé sur fond sombre, deux traverses
+    bars = noisy(hexc('#15151b'), 6, 0.05)
+    for bx in (1, 6, 11):
+        rect(bars, bx, 0, 3, 16, hexc('#4a4a56'))
+        rect(bars, bx, 0, 1, 16, hexc('#6a6a78'))   # reflet
+    rect(bars, 0, 3, 16, 2, hexc('#3a3a44')); rect(bars, 0, 11, 16, 2, hexc('#3a3a44'))
+    tex['prison_bars'] = bars
+
     # socle du coffre : dalle de pierre grise cerclée de fer, rivets aux coins (incassable)
     base = noisy(hexc('#5a5a62'), 18, 0.08)
     iron = hexc('#2e2e34')
@@ -359,6 +372,53 @@ def main():
     rect(meph, 10, 13, 1, 1, gas_d)
     tex['mephite'] = meph
 
+    # Chien de magma (31/10) : silhouette de chien noire, fissures de lave, oeil jaune
+    dog = blank()
+    rock_c, rock_d, lava, lava_l = hexc('#2a1f1c'), hexc('#171110'), hexc('#e8541a'), hexc('#ffc23f')
+    rect(dog, 3, 7, 9, 5, rock_c)          # corps
+    rect(dog, 10, 4, 5, 5, rock_c)         # tête
+    rect(dog, 14, 6, 2, 2, rock_d)         # museau
+    rect(dog, 11, 2, 2, 2, rock_c)         # oreille
+    rect(dog, 3, 12, 2, 3, rock_d); rect(dog, 6, 12, 2, 3, rock_d); rect(dog, 9, 12, 2, 3, rock_c); rect(dog, 11, 12, 2, 2, rock_d)   # pattes
+    rect(dog, 1, 5, 2, 3, lava)            # queue de flamme
+    rect(dog, 1, 4, 1, 1, lava_l)
+    rect(dog, 13, 5, 1, 1, lava_l)         # oeil
+    for x, y in [(4, 8), (5, 9), (6, 8), (7, 10), (8, 9), (9, 8), (10, 10), (11, 7)]:
+        rect(dog, x, y, 1, 1, lava)
+    rect(dog, 6, 9, 1, 1, lava_l); rect(dog, 9, 9, 1, 1, lava_l)
+    tex['magma_dog'] = dog
+
+    # Vers de terre (31/10) : anneaux roses, tête à gueule ronde, queue qui dépasse d'un bloc (fond transparent)
+    pink, pink_d, pink_l, maw = hexc('#c9787a'), hexc('#8f4c52'), hexc('#e8a8a4'), hexc('#3a1216')
+    wh = blank()
+    rect(wh, 2, 2, 12, 12, pink); rect(wh, 2, 2, 12, 2, pink_l); rect(wh, 2, 12, 12, 2, pink_d)
+    rect(wh, 5, 5, 6, 6, maw)
+    for x, y in [(5, 5), (10, 5), (5, 10), (10, 10), (7, 5), (8, 10)]:
+        rect(wh, x, y, 1, 1, hexc('#f4f1e8'))
+    tex['worm_head'] = wh
+    wb = blank()
+    rect(wb, 2, 1, 12, 14, pink)
+    for y in (3, 7, 11):
+        rect(wb, 2, y, 12, 1, pink_d); rect(wb, 2, y + 1, 12, 1, pink_l)
+    tex['worm_body'] = wb
+    wt = blank()
+    rect(wt, 5, 8, 6, 8, pink); rect(wt, 6, 4, 4, 4, pink); rect(wt, 7, 1, 2, 3, pink_l)
+    for y in (6, 10, 13):
+        rect(wt, 5, y, 6, 1, pink_d)
+    tex['worm_tail'] = wt
+
+    # butins : peau noire veinée de lave, morceau de chair rose
+    hide = blank()
+    rect(hide, 2, 4, 12, 9, rock_c); rect(hide, 2, 4, 12, 1, hexc('#4a3530')); rect(hide, 2, 12, 12, 1, rock_d)
+    for x, y in [(4, 6), (5, 7), (7, 8), (8, 7), (10, 9), (11, 8)]:
+        rect(hide, x, y, 1, 1, lava)
+    tex['magma_dog_hide'] = hide
+    wf = blank()
+    rect(wf, 3, 5, 10, 7, pink); rect(wf, 4, 4, 8, 1, pink_l); rect(wf, 4, 12, 8, 1, pink_d)
+    for x in (5, 8, 11):
+        rect(wf, x, 6, 1, 5, pink_d)
+    tex['worm_flesh'] = wf
+
     # brique de donjon : pierre taillée violet sombre, joints noirs, briques décalées une rangée sur deux
     brick = noisy(hexc('#3d2c50'), 77, 0.10)
     mortar = hexc('#1a1224')
@@ -439,6 +499,16 @@ def main():
         rect(frag, x, y, 1, 1, hexc('#6b7080'))
     tex['rune_fragment'] = frag
 
+    # poudre de rêve (29/10) : petit tas de poudre violet-bleu, paillettes claires (recyclage des runes)
+    dust = blank()
+    for i, (x0, w) in enumerate([(7, 2), (6, 4), (5, 6), (4, 8), (3, 10), (2, 12)]):
+        rect(dust, x0, 8 + i, w, 1, hexc('#6a4fb3'))
+        rect(dust, x0, 8 + i, 1, 1, hexc('#8f7ad9'))                      # flanc éclairé
+    rect(dust, 2, 13, 12, 1, hexc('#3f2d73'))                              # base dans l'ombre
+    for (x, y) in [(7, 9), (9, 11), (5, 12), (11, 12), (8, 4), (5, 6), (11, 5)]:
+        rect(dust, x, y, 1, 1, hexc('#e8dcff'))                            # paillettes (et grains qui flottent)
+    tex['dream_powder'] = dust
+
     # stonebrick des tours : briques claires (ange) / sombres (démon), joints, décalées ; l'indestructible a des ferrures
     def stonebrick(base, mortar, light, seed, hard=None):
         px = noisy(hexc(base), seed, 0.08)
@@ -463,26 +533,30 @@ def main():
     tex['residue_angel'] = residue(4141, hexc('#8fd8ff'), hexc('#3d5a78'), hexc('#ffffff'))
     tex['residue_demon'] = residue(6666, hexc('#ff3b3b'), hexc('#6b2228'), hexc('#ffd0a0'))
 
-    # minotaure : debout sur ses pattes arrière, torse humain musclé, tête de taureau, cornes claires, sabots
-    mino = blank()
-    fur, fur_d, skin, skin_d, horn = hexc('#6b4226'), hexc('#4a2c18'), hexc('#a8714a'), hexc('#7d4f31'), hexc('#efe3c4')
-    rect(mino, 2, 0, 2, 1, horn); rect(mino, 1, 1, 2, 2, horn)      # corne gauche
-    rect(mino, 12, 0, 2, 1, horn); rect(mino, 13, 1, 2, 2, horn)    # corne droite
-    rect(mino, 4, 1, 8, 5, fur)                                     # tête de taureau
-    rect(mino, 3, 2, 1, 2, fur_d); rect(mino, 12, 2, 1, 2, fur_d)   # oreilles
-    rect(mino, 5, 3, 1, 1, hexc('#ff3b2f')); rect(mino, 10, 3, 1, 1, hexc('#ff3b2f'))   # yeux rouges
-    rect(mino, 6, 4, 4, 2, hexc('#8a5a3a'))                         # museau
-    rect(mino, 6, 5, 1, 1, fur_d); rect(mino, 9, 5, 1, 1, fur_d)    # naseaux
-    rect(mino, 7, 6, 2, 1, hexc('#c9c9c9'))                         # anneau
-    rect(mino, 3, 6, 10, 4, skin)                                   # torse large
-    rect(mino, 4, 7, 3, 1, skin_d); rect(mino, 9, 7, 3, 1, skin_d)  # pectoraux
-    rect(mino, 7, 8, 2, 2, skin_d)                                  # abdos
-    rect(mino, 1, 6, 2, 5, skin); rect(mino, 13, 6, 2, 5, skin)     # bras
-    rect(mino, 1, 10, 2, 1, skin_d); rect(mino, 13, 10, 2, 1, skin_d)   # poings
-    rect(mino, 4, 10, 8, 2, hexc('#3b2b1e'))                        # pagne
-    rect(mino, 4, 12, 3, 3, fur); rect(mino, 9, 12, 3, 3, fur)      # pattes arrière poilues
-    rect(mino, 4, 15, 3, 1, hexc('#222222')); rect(mino, 9, 15, 3, 1, hexc('#222222'))   # sabots
-    tex['minotaur'] = mino
+    # minotaure : debout sur ses pattes arrière, torse humain musclé, tête de taureau, cornes claires, sabots.
+    # Deux pelages (30/10/2026) : brun (donjon, Minotaure brun de l'Arène) et noir (Minotaure noir de l'Arène, enragé)
+    def minotaur(fur, fur_d, skin, skin_d, horn, eye, muzzle, ring, loin):
+        fur, fur_d, skin, skin_d, horn = hexc(fur), hexc(fur_d), hexc(skin), hexc(skin_d), hexc(horn)
+        mino = blank()
+        rect(mino, 2, 0, 2, 1, horn); rect(mino, 1, 1, 2, 2, horn)      # corne gauche
+        rect(mino, 12, 0, 2, 1, horn); rect(mino, 13, 1, 2, 2, horn)    # corne droite
+        rect(mino, 4, 1, 8, 5, fur)                                     # tête de taureau
+        rect(mino, 3, 2, 1, 2, fur_d); rect(mino, 12, 2, 1, 2, fur_d)   # oreilles
+        rect(mino, 5, 3, 1, 1, hexc(eye)); rect(mino, 10, 3, 1, 1, hexc(eye))   # yeux
+        rect(mino, 6, 4, 4, 2, hexc(muzzle))                            # museau
+        rect(mino, 6, 5, 1, 1, fur_d); rect(mino, 9, 5, 1, 1, fur_d)    # naseaux
+        rect(mino, 7, 6, 2, 1, hexc(ring))                              # anneau
+        rect(mino, 3, 6, 10, 4, skin)                                   # torse large
+        rect(mino, 4, 7, 3, 1, skin_d); rect(mino, 9, 7, 3, 1, skin_d)  # pectoraux
+        rect(mino, 7, 8, 2, 2, skin_d)                                  # abdos
+        rect(mino, 1, 6, 2, 5, skin); rect(mino, 13, 6, 2, 5, skin)     # bras
+        rect(mino, 1, 10, 2, 1, skin_d); rect(mino, 13, 10, 2, 1, skin_d)   # poings
+        rect(mino, 4, 10, 8, 2, hexc(loin))                             # pagne
+        rect(mino, 4, 12, 3, 3, fur); rect(mino, 9, 12, 3, 3, fur)      # pattes arrière poilues
+        rect(mino, 4, 15, 3, 1, hexc('#222222')); rect(mino, 9, 15, 3, 1, hexc('#222222'))   # sabots
+        return mino
+    tex['minotaur'] = minotaur('#6b4226', '#4a2c18', '#a8714a', '#7d4f31', '#efe3c4', '#ff3b2f', '#8a5a3a', '#c9c9c9', '#3b2b1e')
+    tex['minotaur_black'] = minotaur('#2b2523', '#141010', '#4d4340', '#332b29', '#d9cfb8', '#ff7a1a', '#3d3431', '#d4a83a', '#5a1414')
 
     # cristal de pleine lune : cristal pâle bleu-blanc, croissant de lune argenté, halo
     cry = blank()
@@ -496,6 +570,30 @@ def main():
     rect(cry, 12, 12, 1, 1, pale); rect(cry, 13, 2, 1, 1, pale)     # éclats
     tex['moon_crystal'] = cry
 
+    # Orbe (30/10) : sphère sombre et violette, reflet clair
+    orb = blank()
+    od, om, ol, oh = hexc('#2a1a3e'), hexc('#5b3a8c'), hexc('#9a6fd0'), hexc('#efe3ff')
+    for yy, (x0, w) in enumerate([(6, 4), (4, 8), (3, 10), (3, 10), (2, 12), (2, 12), (2, 12), (2, 12), (3, 10), (3, 10), (4, 8), (6, 4)], start=2):
+        rect(orb, x0, yy, w, 1, om)
+        rect(orb, x0 + w - 2, yy, 2, 1, od)                         # côté dans l'ombre
+    rect(orb, 4, 11, 8, 2, od); rect(orb, 6, 13, 4, 1, od)          # dessous
+    rect(orb, 5, 4, 4, 1, ol); rect(orb, 4, 5, 3, 2, ol)            # lumière
+    rect(orb, 5, 5, 2, 1, oh)                                       # reflet
+    tex['orb'] = orb
+
+    # Orbe supérieur (31/10) : même sphère, rouge sang, cerclée d'or
+    orb2 = blank()
+    sd, sm, sl, sh, sg = hexc('#4a0d16'), hexc('#a31f2e'), hexc('#e0606a'), hexc('#ffe6e0'), hexc('#e8b84a')
+    for yy, (x0, w) in enumerate([(6, 4), (4, 8), (3, 10), (3, 10), (2, 12), (2, 12), (2, 12), (2, 12), (3, 10), (3, 10), (4, 8), (6, 4)], start=2):
+        rect(orb2, x0, yy, w, 1, sm)
+        rect(orb2, x0 + w - 2, yy, 2, 1, sd)
+        rect(orb2, x0, yy, 1, 1, sg); rect(orb2, x0 + w - 1, yy, 1, 1, sg)   # cercle d'or
+    rect(orb2, 4, 11, 8, 2, sd); rect(orb2, 6, 13, 4, 1, sd)
+    rect(orb2, 6, 2, 4, 1, sg); rect(orb2, 6, 13, 4, 1, sg)
+    rect(orb2, 5, 4, 4, 1, sl); rect(orb2, 4, 5, 3, 2, sl)
+    rect(orb2, 5, 5, 2, 1, sh)
+    tex['orb_superior'] = orb2
+
     # Clé d'instance I (27/10) : clé de fer vert-de-gris (gobelins), anneau, tige et panneton, « I » gravé
     key = blank()
     kc, kd, kl = hexc('#7fae6a'), hexc('#4a6e3e'), hexc('#c9e6b4')
@@ -506,6 +604,25 @@ def main():
     rect(key, 6, 10, 3, 1, kc); rect(key, 6, 12, 2, 1, kc); rect(key, 6, 13, 3, 1, kd)
     rect(key, 4, 4, 1, 1, hexc('#22301c'))
     tex['key_instance_1'] = key
+
+    # Clé d'instance II (30/10) : clé de pierre grise du Golbute, panneton cristallin bleu, « II » gravé
+    key2 = blank()
+    kc, kd, kl, cr = hexc('#9aa0a8'), hexc('#5d626a'), hexc('#d4d8de'), hexc('#7fd6ff')
+    for (x, y) in [(3, 2), (4, 2), (5, 2), (2, 3), (6, 3), (2, 4), (6, 4), (2, 5), (6, 5), (3, 6), (4, 6), (5, 6)]:
+        rect(key2, x, y, 1, 1, kc)
+    rect(key2, 3, 2, 3, 1, kl)
+    rect(key2, 4, 7, 1, 7, kc); rect(key2, 5, 7, 1, 7, kd)
+    rect(key2, 6, 10, 3, 1, cr); rect(key2, 6, 12, 2, 1, cr); rect(key2, 6, 13, 3, 1, hexc('#3f8fb8'))
+    rect(key2, 3, 4, 1, 1, hexc('#2a2d33')); rect(key2, 5, 4, 1, 1, hexc('#2a2d33'))
+    tex['key_instance_2'] = key2
+
+    # rocher de l'avalanche (30/10) : bloc de pierre arrondi, arêtes claires, ombre en bas
+    rk = blank()
+    for yy, (x0, w) in enumerate([(5, 6), (3, 10), (2, 12), (1, 14), (1, 14), (1, 14), (1, 14), (2, 12), (2, 12), (3, 10), (5, 6)], start=3):
+        rect(rk, x0, yy, w, 1, hexc('#8a8478'))
+    rect(rk, 4, 4, 5, 2, hexc('#b3ab9c')); rect(rk, 3, 6, 2, 3, hexc('#a39b8c'))
+    rect(rk, 3, 12, 10, 2, hexc('#5f594f')); rect(rk, 9, 7, 1, 3, hexc('#4a453d')); rect(rk, 10, 9, 2, 1, hexc('#4a453d'))
+    tex['golbute_rock'] = rk
 
     # plume d'ange (objet, mine instantanée) : plume blanche incurvée, rachis lavande, barbes fendues, tige dorée
     fea = blank()
@@ -878,6 +995,14 @@ def main():
     rect(cape, 6, 2, 4, 2, hexc('#6a3d92'))
     rect(cape, 7, 3, 2, 2, hexc('#ffd23f'))                # fermoir
     tex['cape_naingui'] = cape
+    # Cape inclusive (31/10/2026) : les six bandes du drapeau LGBT, col et fermoir comme la cape de Naingui
+    pride = [hexc(c) for c in ('#e40303', '#ff8c00', '#ffed00', '#008026', '#004dff', '#750787')]
+    cape_inc = blank()
+    for i in range(12):
+        rect(cape_inc, 5 - i // 3, 3 + i, 6 + 2 * (i // 3), 1, pride[i // 2])
+    rect(cape_inc, 6, 2, 4, 2, hexc('#f4f0e6'))
+    rect(cape_inc, 7, 3, 2, 2, hexc('#ffd23f'))
+    tex['cape_inclusive'] = cape_inc
 
     # ---- Roi Gobelin (27/10/2026, Geoffrey) : objets du coffre du Roi Gobelin ----
     gold, gold_hi, gold_lo = hexc('#ffd23f'), hexc('#fff1a8'), hexc('#b8860b')
@@ -933,7 +1058,68 @@ def main():
     rect(rec, 5, 10, 2, 1, hexc('#c0392b'))                                   # chitine
     tex['recipe_chitin'] = rec
     # coffre du Roi Gobelin : coffre de bois sombre, ferrures dorées, emblème vert (tête de gobelin)
+    # bâtiments de guilde (01/11/2026) : dessinés case par case, une lettre = une couleur de la palette
+    def art(rows, pal):
+        px = blank()
+        for y, row in enumerate(rows):
+            for x, c in enumerate(row):
+                if c != '.':
+                    px[y * S + x] = hexc(pal[c])
+        return px
+    tex['guild_armory'] = art([    # bouclier et épée
+        '.............ww.',
+        '............wlw.',
+        '...........wlw..',
+        '..bbbbbbbbwlwb..',
+        '..bBBBBBBwlwBb..',
+        '..bBBBYBwlwBBb..',
+        '..bBBYwwlwBBBb..',
+        '..bBBBwlwYBBBb..',
+        '..bBBwgwBBBBBb..',
+        '..bBgwggBBBBBb..',
+        '...bggBBBBBBb...',
+        '...gwgbBBBBb....',
+        '..g..g.bBBb.....',
+        '........bb......',
+        '................',
+        '................'], { 'w':'#dfe6ee', 'l':'#9aa7b5', 'b':'#3a2c20', 'B':'#7a2a26', 'Y':'#e8b93c', 'g':'#c99a2e' })
+    tex['guild_treasury'] = art([   # coffre plein de pièces
+        '................',
+        '.....Y.yY.......',
+        '...yYYyYYyYY....',
+        '..YYyYYYyYYyY...',
+        '..dddddddddddd..',
+        '..dWWWWggWWWWd..',
+        '..dWWWWggWWWWd..',
+        '..dddddggddddd..',
+        '..dWWWWkkWWWWd..',
+        '..dWWWWggWWWWd..',
+        '..dWWWWWWWWWWd..',
+        '..dWWWWWWWWWWd..',
+        '..dddddddddddd..',
+        '...D........D...',
+        '................',
+        '................'], { 'Y':'#f2cc4a', 'y':'#c2912a', 'd':'#c2912a', 'D':'#6b4a22', 'W':'#7a5230', 'g':'#e8b93c', 'k':'#2a1a10' })
+    tex['guild_forge'] = art([      # enclume et flammes
+        '.......o........',
+        '......oOo.......',
+        '.....oOyOo..o...',
+        '.....OyYyO.oOo..',
+        '......OyO..OyO..',
+        '................',
+        '.ssssssssssss...',
+        '..Lllllllllllss.',
+        '...DDlllllllDD..',
+        '......lllll.....',
+        '......DlllD.....',
+        '.....DDDDDDD....',
+        '....DDDDDDDDD...',
+        '....sssssssss...',
+        '................',
+        '................'], { 'o':'#a8340f', 'O':'#ff7a2e', 'y':'#ffc27a', 'Y':'#fff1dc', 's':'#2c2f36', 'L':'#c5ccd6', 'l':'#7c8590', 'D':'#4a4f58' })
     tex['chest_goblin_king'] = tower_chest(hexc('#6b4a22'), hexc('#3e2a12'), gold, hexc('#4f7d32'), [(6, 9), (9, 9), (7, 11), (8, 11)])
+    # coffre du Golbute (30/10) : coffre de pierre grise, ferrures sombres, cristal bleu au centre
+    tex['chest_golbute'] = tower_chest(hexc('#80868f'), hexc('#4d5259'), hexc('#2f3238'), hexc('#7fd6ff'), [(7, 9), (8, 9), (7, 10), (8, 10), (7, 11), (8, 11)])
 
     # butin rare des mobs (26/10/2026) : icônes d'inventaire
     # lanières en cuir du gobelin : deux sangles de cuir croisées, rivets dorés
@@ -1181,6 +1367,18 @@ def main():
     rect(sk_cape_f, 3, 7, 1, 2, hexc('#4a2a6b'))
     rect(sk_cape_f, 9, 7, 2, 1, hexc('#ffd23f'))                # fermoir
     tex['skins/naingui_cape_front'] = sk_cape_f
+    # Cape inclusive (31/10/2026) : même coupe, six bandes du drapeau
+    sk_inc = blank()
+    for y in range(7, 15):
+        x0 = 3 if y < 9 else 2
+        rect(sk_inc, x0, y, 11 - x0, 1, pride[(y - 7) * 6 // 8])
+    tex['skins/inclusive_cape'] = sk_inc
+    sk_inc_f = blank()
+    for x in range(3, 9):
+        rect(sk_inc_f, x, 7, 1, 1, pride[x - 3])
+    rect(sk_inc_f, 3, 8, 1, 1, pride[0])
+    rect(sk_inc_f, 9, 7, 2, 1, hexc('#ffd23f'))
+    tex['skins/inclusive_cape_front'] = sk_inc_f
     # butin rare des mobs (26/10/2026) : calques sur le corps
     skin_c, skin_d = hexc('#e0ac7d'), hexc('#c48e62')
     sk_straps = blank()                            # lanières du gobelin : torse nu, deux sangles des épaules le long des côtes
@@ -1211,6 +1409,14 @@ def main():
     rect(sk_gbelt, 7, 10, 2, 1, hexc('#5a3a22'))
     rect(sk_gbelt, 6, 9, 1, 1, hexc('#e8dcc0')); rect(sk_gbelt, 9, 9, 1, 1, hexc('#e8dcc0'))
     tex['skins/giant_belt'] = sk_gbelt
+    # lunettes Gucci (29/10/2026) : sur la ligne de l'œil (regard à droite), branche dorée vers les cheveux, verre sombre
+    sk_glasses = blank()
+    rect(sk_glasses, 5, 4, 3, 1, hexc('#d4a017'))   # branche
+    rect(sk_glasses, 8, 4, 3, 2, hexc('#1b1b1f'))   # verre
+    rect(sk_glasses, 8, 4, 1, 1, hexc('#6a707a'))   # reflet
+    rect(sk_glasses, 11, 4, 1, 2, hexc('#d4a017'))  # monture, devant
+    rect(sk_glasses, 8, 6, 3, 1, hexc('#b8860b'))   # bas de la monture
+    tex['skins/gucci_glasses'] = sk_glasses
     # Roi Gobelin (27/10/2026) : couronne dorée sur la tête, cape rouge à bordure laineuse blanche (dos + col), masse en main
     sk_crown = blank()
     rect(sk_crown, 4, 1, 8, 2, hexc('#ffd23f')); rect(sk_crown, 4, 2, 8, 1, hexc('#b8860b'))
@@ -1238,6 +1444,29 @@ def main():
     rect(sk_mace, 9, 3, 4, 4, hexc('#8d939c')); rect(sk_mace, 10, 2, 2, 6, hexc('#8d939c')); rect(sk_mace, 8, 4, 6, 2, hexc('#8d939c'))
     rect(sk_mace, 10, 3, 1, 1, hexc('#d4d8de'))
     tex['skins/mace_goblin_king'] = sk_mace
+    # Arc de l'Admin (01/11/2026) : bois sombre et or, regard vers la droite
+    wood, gold_l, cord, feather = hexc('#5a2d0c'), hexc('#ffd23f'), hexc('#f4f1ea'), hexc('#ff8c1a')
+    limb = [(6, 1), (8, 2), (9, 3), (10, 4), (11, 5), (11, 6), (12, 7), (12, 8), (11, 9), (11, 10), (10, 11), (9, 12), (8, 13), (6, 14)]
+    def bow(pull):
+        b = blank()
+        for x, y in limb:
+            rect(b, x, y, 1, 1, wood); rect(b, x + 1, y, 1, 1, gold_l)
+        for i in range(13):
+            y = 1 + i
+            d = 7 - abs(y - 7.5)                          # corde : tirée vers l'arrière au milieu
+            rect(b, 6 - int(d * pull / 6), y, 1, 1, cord)
+        return b
+    sk_bow = bow(0); tex['skins/bow_admin'] = sk_bow
+    tex['bow_admin'] = sk_bow
+    sk_bow_d = bow(5)
+    rect(sk_bow_d, 1, 7, 13, 1, hexc('#c9cdd4'))           # flèche encochée
+    rect(sk_bow_d, 14, 7, 1, 1, gold_l)
+    tex['skins/bow_admin_drawn'] = sk_bow_d
+    sk_arrow = blank()
+    rect(sk_arrow, 2, 7, 11, 1, hexc('#c9cdd4'))
+    rect(sk_arrow, 13, 7, 2, 1, gold_l); rect(sk_arrow, 13, 6, 1, 3, gold_l)
+    rect(sk_arrow, 1, 6, 2, 1, feather); rect(sk_arrow, 1, 8, 2, 1, feather)
+    tex['skins/arrow'] = sk_arrow
     # épée tenue en main (combat) : même repère que les pioches (poignée en bas à gauche)
     sk_sword = blank()
     for i in range(9):
@@ -1281,6 +1510,78 @@ def main():
         rect(pk, 13, 8, 2, 1, hexc(dark))
         tex[name] = pk
 
+    # butin des mobs du 31/10 (Geoffrey) : icônes et skins
+    pio = blank()                                  # piolet de gobelin : manche d'os, tête verte, pointe en dent
+    for i in range(10):
+        rect(pio, 2 + i, 13 - i, 2, 2, hexc('#d8cfae'))
+    for x, y in [(6, 3), (7, 2), (8, 2), (9, 2), (10, 3), (11, 4), (12, 5), (13, 6)]:
+        rect(pio, x, y, 2, 2, hexc('#5f8f3a'))
+    rect(pio, 7, 2, 3, 1, hexc('#9ccb5e'))
+    rect(pio, 14, 8, 1, 2, hexc('#f0ead2'))
+    tex['pick_goblin'] = pio
+    sk_pio = blank()
+    for i in range(9):
+        rect(sk_pio, 2 + i, 13 - i, 2, 2, hexc('#d8cfae'))
+    for x, y in [(5, 3), (6, 2), (7, 2), (8, 2), (9, 2), (10, 3), (11, 4), (12, 5), (12, 6), (13, 7)]:
+        rect(sk_pio, x, y, 2, 2, hexc('#5f8f3a'))
+    rect(sk_pio, 6, 2, 3, 1, hexc('#9ccb5e'))
+    rect(sk_pio, 13, 8, 2, 1, hexc('#f0ead2'))
+    tex['skins/pick_goblin'] = sk_pio
+
+    kilt = blank()                                 # kilt ténébreux : ceinture dorée, plis violets
+    rect(kilt, 3, 3, 10, 2, hexc('#1c1228'))
+    rect(kilt, 7, 3, 2, 2, hexc('#e8b84a'))
+    rect(kilt, 3, 5, 10, 7, hexc('#3a2257'))
+    rect(kilt, 2, 12, 12, 2, hexc('#3a2257'))
+    for x in (4, 7, 10, 12):
+        rect(kilt, x, 5, 1, 9, hexc('#1c1228'))
+    rect(kilt, 2, 13, 12, 1, hexc('#7a4fb0'))
+    tex['kilt_dark'] = kilt
+    sk_kilt = blank()
+    rect(sk_kilt, 4, 10, 8, 1, hexc('#1c1228'))
+    rect(sk_kilt, 4, 11, 8, 2, hexc('#3a2257'))
+    rect(sk_kilt, 3, 13, 10, 1, hexc('#3a2257'))
+    for x in (5, 8, 10):
+        rect(sk_kilt, x, 11, 1, 3, hexc('#1c1228'))
+    rect(sk_kilt, 3, 13, 10, 1, hexc('#7a4fb0'))
+    rect(sk_kilt, 7, 10, 2, 1, hexc('#e8b84a'))
+    tex['skins/dark_kilt'] = sk_kilt
+
+    hat = blank()                                  # chapeau de naab : bonnet à hélice, quartiers de couleurs vives
+    rect(hat, 7, 3, 2, 3, hexc('#c9cdd4'))
+    rect(hat, 2, 2, 5, 2, hexc('#ffd23f')); rect(hat, 9, 2, 5, 2, hexc('#ffd23f'))
+    rect(hat, 3, 6, 10, 2, hexc('#e63946')); rect(hat, 2, 8, 12, 4, hexc('#e63946'))
+    rect(hat, 6, 6, 4, 6, hexc('#3d8bff'))
+    rect(hat, 1, 12, 14, 2, hexc('#2fae5a'))
+    tex['hat_naab'] = hat
+    sk_hat = blank()                               # hélice jaune, bonnet tricolore, gros yeux qui louchent
+    rect(sk_hat, 4, 0, 3, 1, hexc('#ffd23f')); rect(sk_hat, 8, 0, 3, 1, hexc('#ffd23f'))
+    rect(sk_hat, 7, 0, 1, 2, hexc('#c9cdd4'))
+    rect(sk_hat, 5, 2, 6, 1, hexc('#e63946')); rect(sk_hat, 4, 3, 8, 1, hexc('#e63946'))
+    rect(sk_hat, 7, 2, 2, 2, hexc('#3d8bff'))
+    rect(sk_hat, 6, 4, 2, 2, hexc('#ffffff')); rect(sk_hat, 9, 4, 2, 2, hexc('#ffffff'))
+    rect(sk_hat, 7, 5, 1, 1, hexc('#120a1c')); rect(sk_hat, 9, 5, 1, 1, hexc('#120a1c'))
+    tex['skins/naab_hat'] = sk_hat
+
+    card = blank()                                 # épée cassée en carton : lame brisée, bord déchiré, scotch
+    for i in range(5):
+        rect(card, 5 + i, 9 - i, 2, 2, hexc('#b98a55'))
+    for i in range(4):
+        rect(card, 6 + i, 9 - i, 1, 1, hexc('#d8b483'))
+    rect(card, 10, 3, 2, 1, hexc('#8a6238')); rect(card, 11, 5, 1, 1, hexc('#8a6238'))
+    rect(card, 7, 7, 2, 2, hexc('#e8e2c8'))
+    rect(card, 3, 9, 5, 2, hexc('#8a6238'))
+    rect(card, 2, 12, 2, 2, hexc('#8a6238'))
+    tex['sword_cardboard'] = card
+    sk_card = blank()
+    for i in range(5):
+        rect(sk_card, 5 + i, 10 - i, 2, 2, hexc('#b98a55'))
+    rect(sk_card, 10, 4, 2, 1, hexc('#8a6238'))
+    rect(sk_card, 7, 8, 2, 2, hexc('#e8e2c8'))
+    rect(sk_card, 3, 10, 5, 2, hexc('#8a6238'))
+    rect(sk_card, 2, 12, 2, 3, hexc('#8a6238'))
+    tex['skins/sword_cardboard'] = sk_card
+
     # anneaux (23/10) : anneau vu de face (métal) et une pierre sur le dessus, couleur propre à chaque anneau
     def ring(metal, gem):
         px = blank()
@@ -1301,18 +1602,56 @@ def main():
                              ('ring_cuck', '#9aa1ab', '#7bd25a'), ('ring_nerd', '#9aa1ab', '#b77bff'),
                              ('ring_midas', '#ffd23f', '#fff2a8'), ('ring_jester', '#b06bff', '#ff4fb8')]:
         tex[name] = ring(metal, gem)
+    tex['ring_stone'] = ring('#7d828c', '#4fb3c9')                       # Anneau en pierre (Golbute, 30/10) : pierre grise, cristal cyan
+
+    # ---- Coffre du Golbute (30/10/2026, Geoffrey) : pierre grise du golem, cristal cyan ----
+    st, st_hi, st_lo, cy, cy_hi = hexc('#7d828c'), hexc('#b4bac4'), hexc('#4a4e55'), hexc('#4fb3c9'), hexc('#a8e6f2')
+    nem = blank()                                                         # Némésis : pioche à tête de roche, cristal au centre
+    for i in range(10):
+        rect(nem, 3 + i, 13 - i, 2, 2, hexc('#3b2a1a'))
+    for x, y in [(3, 4), (4, 3), (5, 2), (6, 2), (7, 2), (8, 2), (9, 2), (10, 3), (11, 4), (12, 5), (12, 6), (13, 7), (13, 8)]:
+        rect(nem, x, y, 2, 2, st)
+    rect(nem, 5, 2, 4, 1, st_hi); rect(nem, 2, 4, 2, 2, st_lo); rect(nem, 13, 9, 2, 2, st_lo)
+    rect(nem, 7, 3, 2, 2, cy); rect(nem, 7, 3, 1, 1, cy_hi)
+    tex['pickaxe_nemesis'] = nem
+    gol = blank()                                                         # Torse de Gollex : plastron massif en blocs de pierre
+    rect(gol, 2, 3, 12, 11, st); rect(gol, 2, 3, 12, 1, st_hi); rect(gol, 2, 13, 12, 1, st_lo)
+    rect(gol, 0, 3, 3, 4, st_lo); rect(gol, 13, 3, 3, 4, st_lo)            # épaulières
+    for y in (6, 9):
+        rect(gol, 3, y, 10, 1, st_lo)                                     # joints
+    rect(gol, 7, 7, 2, 2, cy); rect(gol, 7, 7, 1, 1, cy_hi)
+    tex['chest_gollex'] = gol
+    lg = blank()                                                          # Jambières du Golbute : jambes de pierre, genoux de cristal
+    rect(lg, 4, 2, 8, 3, st); rect(lg, 4, 2, 8, 1, st_hi)
+    rect(lg, 4, 5, 3, 9, st); rect(lg, 9, 5, 3, 9, st)
+    rect(lg, 4, 13, 3, 1, st_lo); rect(lg, 9, 13, 3, 1, st_lo)
+    rect(lg, 5, 8, 1, 2, cy); rect(lg, 10, 8, 1, 2, cy)
+    tex['legs_golbute'] = lg
+    soul = blank()                                                        # Âme du Golbute : cristal qui flotte dans une lueur
+    for (x, y, w, h) in [(5, 3, 6, 10), (4, 5, 8, 6), (3, 7, 10, 2)]:
+        rect(soul, x, y, w, h, hexc('#4fb3c9', 90))
+    for (x, y, w, h) in [(7, 3, 2, 10), (6, 5, 4, 6), (5, 7, 6, 2)]:
+        rect(soul, x, y, w, h, cy)
+    rect(soul, 7, 4, 1, 4, cy_hi); rect(soul, 8, 9, 1, 3, hexc('#2a7f92'))
+    tex['soul_golbute'] = soul
 
     for name, px in tex.items():
         os.makedirs(os.path.dirname(os.path.join(OUT, name + '.png')), exist_ok=True)
         png(os.path.join(OUT, name + '.png'), px)
-    # boss des tours : 24 × 40 pixels (3 × 5 cases)
+    # boss des tours : 48 × 80 pixels (3 × 5 cases en pleine résolution ; 30/10/2026, avant 24 × 40)
     for name, px in bosses().items():
-        png_wh(os.path.join(OUT, name + '.png'), 24, 40, px)
+        png_wh(os.path.join(OUT, name + '.png'), 48, 80, px)
     for name, px in tower_mobs().items():
         png_wh(os.path.join(OUT, name + '.png'), 16, 32, px)
     for name, (w, h, px) in giant().items():
         png_wh(os.path.join(OUT, name + '.png'), w, h, px)
     for name, (w, h, px) in instance().items():
+        png_wh(os.path.join(OUT, name + '.png'), w, h, px)
+    for name, (w, h, px) in lucifer_textures().items():
+        png_wh(os.path.join(OUT, name + '.png'), w, h, px)
+    for name, (w, h, px) in golbute().items():
+        png_wh(os.path.join(OUT, name + '.png'), w, h, px)
+    for name, (w, h, px) in town().items():
         png_wh(os.path.join(OUT, name + '.png'), w, h, px)
     # golem (mob 2 × 2 cases) : 32 × 32 pixels
     png_wh(os.path.join(OUT, 'golem.png'), 32, 32, golem())
@@ -1321,113 +1660,6 @@ def main():
     png_wh(os.path.join(OUT, 'flesh_wall.png'), 16, 96, fw)
     png_wh(os.path.join(OUT, 'flesh_icon.png'), 16, 16, fw[16 * 40:16 * 56])   # icône carrée (lobby, wiki) : le milieu du mur
     print('%d textures écrites dans %s' % (len(tex), os.path.normpath(OUT)))
-
-
-def bosses():
-    BW, BH = 24, 40
-
-    def blankb():
-        return [(0, 0, 0, 0)] * (BW * BH)
-
-    def r(px, x, y, w, h, c):
-        for yy in range(y, y + h):
-            for xx in range(x, x + w):
-                if 0 <= xx < BW and 0 <= yy < BH:
-                    px[yy * BW + xx] = c
-
-    def figure(skin, robe, robe_d, trim, wing, wing_d, eye, crown, horns):
-        px = blankb()
-        # ailes déployées derrière le corps
-        for i in range(12):
-            r(px, 0 + i // 3, 8 + i, 6 - i // 3, 1, wing if i % 3 else wing_d)
-            r(px, 18 + i // 3 - (i // 3), 8 + i, 6 - i // 3, 1, wing if i % 3 else wing_d)
-        r(px, 1, 7, 4, 1, wing_d); r(px, 19, 7, 4, 1, wing_d)
-        # tête
-        r(px, 9, 3, 6, 6, skin)
-        r(px, 10, 5, 1, 1, eye); r(px, 13, 5, 1, 1, eye)
-        r(px, 11, 7, 2, 1, shade(skin, 0.75))
-        if crown:  # auréole
-            r(px, 8, 0, 8, 1, crown); r(px, 7, 1, 1, 1, crown); r(px, 16, 1, 1, 1, crown); r(px, 8, 2, 8, 1, shade(crown, 0.8))
-        if horns:  # cornes
-            r(px, 8, 1, 1, 3, horns); r(px, 7, 0, 1, 2, horns); r(px, 15, 1, 1, 3, horns); r(px, 16, 0, 1, 2, horns)
-        r(px, 9, 3, 6, 1, shade(skin, 0.85))
-        # robe
-        r(px, 7, 9, 10, 4, robe)                       # épaules
-        for i in range(24):
-            w = 8 + i // 4
-            r(px, 12 - w // 2, 13 + i, w, 1, robe if (i % 6) else robe_d)
-        r(px, 11, 9, 2, 28, robe_d)                     # pli central
-        r(px, 7, 9, 10, 1, trim); r(px, 6, 36, 12, 1, trim)
-        # bras et arme (lance de lumière / trident)
-        r(px, 5, 11, 2, 9, robe); r(px, 17, 11, 2, 9, robe)
-        r(px, 5, 20, 2, 2, skin); r(px, 17, 20, 2, 2, skin)
-        r(px, 20, 4, 1, 34, trim); r(px, 19, 3, 3, 1, eye); r(px, 20, 2, 1, 1, eye)
-        return px
-
-    return {
-        'boss_angel': figure(hexc('#f3dcc4'), hexc('#f4f7ff'), hexc('#c9d6ee'), hexc('#ffd23f'),
-                             hexc('#ffffff'), hexc('#bfe3ff'), hexc('#3d8bff'), hexc('#ffe27a'), None),
-        'boss_demon': figure(hexc('#b0303a'), hexc('#3a1530'), hexc('#220a1c'), hexc('#ff3b3b'),
-                             hexc('#5a1f4a'), hexc('#2a0f22'), hexc('#ffd23f'), None, hexc('#e0d0c0')),
-    }
-
-
-def tower_mobs():
-    """mobs des étages des tours (23/10) : 1 case de large × 2 de haut (16 × 32 pixels).
-    Séraphin : petit gardien ailé en robe blanche, auréole, lance de lumière.
-    Diablotin : petit démon rouge sombre, cornes, ailes de chauve-souris, queue fourchue, fourche."""
-    MW, MH = 16, 32
-
-    def blankm():
-        return [(0, 0, 0, 0)] * (MW * MH)
-
-    def r(px, x, y, w, h, c):
-        for yy in range(y, y + h):
-            for xx in range(x, x + w):
-                if 0 <= xx < MW and 0 <= yy < MH:
-                    px[yy * MW + xx] = c
-
-    # Séraphin
-    sp = blankm()
-    wing, wing_d = hexc('#ffffff'), hexc('#bfe3ff')
-    for i in range(9):                                   # ailes repliées dans le dos
-        r(sp, 0 + i // 4, 9 + i, 3, 1, wing if i % 3 else wing_d)
-        r(sp, 13 - i // 4, 9 + i, 3, 1, wing if i % 3 else wing_d)
-    gold = hexc('#ffd23f')
-    r(sp, 5, 1, 6, 1, gold); r(sp, 4, 2, 1, 1, gold); r(sp, 11, 2, 1, 1, gold); r(sp, 5, 3, 6, 1, shade(gold, 0.8))   # auréole
-    skin = hexc('#f3dcc4')
-    r(sp, 5, 4, 6, 6, skin); r(sp, 5, 4, 6, 1, hexc('#ffe9a8'))          # tête, cheveux dorés
-    r(sp, 6, 6, 1, 1, hexc('#3d8bff')); r(sp, 9, 6, 1, 1, hexc('#3d8bff'))
-    robe, robe_d = hexc('#f4f7ff'), hexc('#c9d6ee')
-    r(sp, 4, 10, 8, 3, robe)
-    for i in range(17):
-        w = 8 + i // 5
-        r(sp, 8 - w // 2, 13 + i, w, 1, robe if i % 5 else robe_d)
-    r(sp, 7, 10, 2, 20, robe_d)
-    r(sp, 4, 10, 8, 1, gold); r(sp, 3, 29, 10, 1, gold)
-    r(sp, 13, 5, 1, 25, hexc('#e8d9a0')); r(sp, 12, 3, 3, 2, hexc('#8fd8ff')); r(sp, 13, 2, 1, 1, hexc('#ffffff'))   # lance
-    r(sp, 12, 15, 2, 2, skin)
-
-    # Diablotin
-    im = blankm()
-    bat, bat_d = hexc('#5a1f4a'), hexc('#2a0f22')
-    for i in range(8):                                   # ailes de chauve-souris
-        r(im, 0, 8 + i, 3 - i // 3, 1, bat if i % 2 else bat_d)
-        r(im, 13 + i // 3, 8 + i, 3 - i // 3, 1, bat if i % 2 else bat_d)
-    horn = hexc('#e0d0c0')
-    r(im, 4, 2, 1, 3, horn); r(im, 3, 1, 1, 2, horn); r(im, 11, 2, 1, 3, horn); r(im, 12, 1, 1, 2, horn)
-    red, red_d = hexc('#b0303a'), hexc('#7a1a24')
-    r(im, 5, 4, 6, 6, red); r(im, 5, 9, 6, 1, red_d)
-    r(im, 6, 6, 1, 1, hexc('#ffd23f')); r(im, 9, 6, 1, 1, hexc('#ffd23f'))
-    r(im, 7, 8, 2, 1, hexc('#220a1c'))
-    r(im, 5, 10, 6, 9, red); r(im, 7, 11, 2, 7, red_d)    # corps
-    r(im, 5, 18, 6, 2, hexc('#3a1530'))                   # pagne
-    r(im, 5, 20, 2, 9, red); r(im, 9, 20, 2, 9, red)      # jambes
-    r(im, 4, 29, 3, 2, hexc('#220a1c')); r(im, 9, 29, 3, 2, hexc('#220a1c'))
-    r(im, 11, 19, 1, 6, red_d); r(im, 12, 24, 2, 1, red_d); r(im, 13, 23, 1, 1, red_d)   # queue fourchue
-    r(im, 2, 6, 1, 22, hexc('#6b6b73')); r(im, 1, 4, 3, 1, hexc('#9a9aa5')); r(im, 1, 3, 1, 1, hexc('#9a9aa5')); r(im, 3, 3, 1, 1, hexc('#9a9aa5'))   # fourche
-    r(im, 3, 13, 2, 2, red)
-    return {'seraph': sp, 'imp': im}
 
 
 def flesh_wall():
@@ -1478,49 +1710,6 @@ def flesh_wall():
         put(cx, cy, pushi)
     # redressé : colonne de 16 × 96 (la ligne x du dessin couché devient la ligne y)
     return [px[(H - 1 - c) * W + r] for r in range(W) for c in range(H)]
-
-
-def golem():
-    """Golem (26/10) : mob de 2 × 2 cases (32 × 32 pixels), regard vers la droite. Un golem trapu en blocs de pierre
-    grise (fissures sombres, épaules massives, poings énormes), deux yeux de braise, qui sue un liquide blanc : gouttes
-    sur le front, coulures sur le torse et les bras, flaque au pied. Le jeu fait tomber une goutte de plus."""
-    S = 32
-    px = [(0, 0, 0, 0)] * (S * S)
-
-    def r(x, y, w, h, c):
-        for yy in range(y, y + h):
-            for xx in range(x, x + w):
-                if 0 <= xx < S and 0 <= yy < S:
-                    px[yy * S + xx] = c
-    st, hi, lo, dk = hexc('#80868f'), hexc('#a7adb5'), hexc('#5d626a'), hexc('#3d4148')
-    white, cream = hexc('#f4f1e8'), hexc('#d9d4c6')
-    r(9, 2, 14, 9, st)                  # tête
-    r(10, 2, 12, 2, hi)
-    r(9, 9, 14, 2, lo)
-    r(16, 5, 3, 2, hexc('#ff8a2a'))     # yeux de braise
-    r(20, 5, 2, 2, hexc('#ff8a2a'))
-    r(17, 5, 1, 1, hexc('#ffe08a'))
-    r(12, 7, 1, 1, dk); r(13, 8, 1, 1, dk)   # fissure du front
-    r(4, 11, 24, 11, st)                # torse et épaules
-    r(4, 11, 24, 2, hi)
-    r(4, 20, 24, 2, lo)
-    r(15, 13, 2, 7, lo)                 # jointure des blocs
-    r(8, 15, 3, 1, dk); r(10, 16, 1, 2, dk); r(21, 14, 1, 3, dk); r(22, 17, 2, 1, dk)   # fissures
-    r(0, 12, 5, 12, lo); r(27, 12, 5, 12, lo)   # bras
-    r(0, 22, 6, 5, st); r(26, 22, 6, 5, st)     # poings
-    r(0, 26, 6, 1, dk); r(26, 26, 6, 1, dk)
-    r(7, 22, 7, 8, st); r(18, 22, 7, 8, st)     # jambes
-    r(7, 28, 7, 2, lo); r(18, 28, 7, 2, lo)
-    r(14, 22, 4, 4, lo)
-    # sueur blanche : gouttes sur le front, coulures sur le torse et les bras, flaque au pied
-    r(11, 3, 1, 2, white); r(14, 2, 1, 1, white); r(21, 3, 1, 1, white)
-    r(9, 10, 2, 1, white); r(10, 11, 1, 4, white); r(10, 15, 1, 1, cream)
-    r(19, 11, 1, 6, white); r(19, 17, 1, 1, cream)
-    r(25, 12, 1, 3, white)
-    r(1, 14, 1, 5, white); r(1, 19, 1, 1, cream)
-    r(30, 13, 1, 4, white)
-    r(12, 30, 4, 1, cream); r(19, 30, 5, 1, cream); r(9, 31, 16, 1, white)
-    return px
 
 
 def giant():

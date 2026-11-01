@@ -21,8 +21,13 @@ export async function request(method, path, body){
   const isJson = (res.headers.get('content-type') ?? '').includes('application/json');
   if(!isJson) throw new OfflineError('Pas de serveur de jeu à cette adresse.');
   const data = await res.json();
-  if(!res.ok) throw new ApiError(res.status, data?.error?.code ?? 'error', data?.error?.message ?? 'Erreur inconnue.',
-                                 +res.headers.get('retry-after') || null);
+  if(!res.ok){
+    const err = new ApiError(res.status, data?.error?.code ?? 'error', data?.error?.message ?? 'Erreur inconnue.',
+                             +res.headers.get('retry-after') || null);
+    /* joueur banni (modération du chat, 30/10) : la page affiche le bandeau, quelle que soit l'action refusée */
+    if(err.code === 'banned' && typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('dim:banned'));
+    throw err;
+  }
   return data;
 }
 
@@ -34,6 +39,7 @@ export const accountApi = {
   login:    (name, password)         => request('POST', '/api/account/login', { name, password }),
   logout:   ()                       => request('POST', '/api/account/logout', {}),
   claim:    (name, password)         => request('POST', '/api/account/claim', { name, password }),
+  rename:   name                     => request('POST', '/api/account/rename', { name }),
   recover:  (name, recoveryCode, newPassword) => request('POST', '/api/account/recover', { name, recoveryCode, newPassword }),
   changePassword: (oldPassword, newPassword)  => request('POST', '/api/account/password', { oldPassword, newPassword }),
 };
@@ -41,7 +47,7 @@ export const accountApi = {
 /* Sessions de jeu : le serveur décide et vérifie tout ; le navigateur affiche et prévient. */
 export const gameApi = {
   info:   ()           => request('GET', '/api/game/info'),
-  state:  ()           => request('GET', '/api/game/state'),
+  state:  (ended)      => request('GET', '/api/game/state' + (ended ? `?ended=${encodeURIComponent(ended)}` : '')),   // ended : la session que cet écran vient de jouer
   history: ()          => request('GET', '/api/game/history'),
   judgment: ()         => request('GET', '/api/game/judgment'),  // jauges Ange / Démon (onglet Jugement)   // sessions terminées : seed et sa part
   prefs:  prefs        => request('POST', '/api/game/prefs', prefs),
@@ -49,8 +55,6 @@ export const gameApi = {
   leave:  (opts = {})  => request('POST', '/api/game/leave', opts),
   finish: ()           => request('POST', '/api/game/finish', {}),
   focus:  focus        => request('POST', '/api/game/focus', { focus }),
-  chat:   after        => request('GET', '/api/game/chat?after=' + (after | 0)),   // messages du chat de la session
-  say:    text         => request('POST', '/api/game/chat', { text }),
   ack:    id           => request('POST', '/api/game/ack', { id }),
   open:   (item, opId, all = false) => request('POST', '/api/game/open', { item, opId, ...(all ? { all:true } : {}) }),   // all : « Ouvrir tout »
   furnace: op          => request('POST', '/api/game/furnace', op),
@@ -68,6 +72,15 @@ export const gameApi = {
   upgrade: op          => request('POST', '/api/game/upgrade', op),           // { action:'identify', uid, sacrifice, opId } | { action:'upgrade', uid, opId }
   /* la partie du serveur (affichage) : depuis le tick since déjà reçu (null : tout) */
   view:   since        => request('GET', '/api/game/view' + (since == null ? '' : '?since=' + since)),
+  /* prison (29/10) : lancer (seul : refus not_solo dans un groupe de plusieurs), sortir, la regarder (vue de la mine du
+     run en cours depuis le tick since ; le serveur joue le retard avant de répondre) → { prison, view } */
+  prisonStart: (opts = {}) => request('POST', '/api/game/prison/start', opts),   // { area, speed (dev) }
+  prisonSaveCompo: compo => request('POST', '/api/game/prison/compo/save', { compo }),   // { profile, previous, saved }
+  devCopy: name        => request('POST', '/api/game/dev/copy', { name }),           // mode dev : { who, name, copies }
+  prisonProfile: ()    => request('GET', '/api/game/prison/profile'),            // { profile } : contenu d'après les 10 dernières mines
+  prisonClock: speed   => request('POST', '/api/game/prison/clock', { speed }),  // mode dev : vitesse de la prison
+  prisonStop:  ()      => request('POST', '/api/game/prison/stop', {}),
+  prisonView:  since   => request('GET', '/api/game/prison' + (since == null ? '' : '?since=' + since)),
   clock:  opts         => request('POST', '/api/game/clock', opts),      // dev : { speed, paused }        // { action:'equip'|'unequip', slot, uid, opId }   // { action, furnace, slot, item, qty, opId }
 };
 
@@ -80,15 +93,50 @@ export const instantApi = {
 };
 
 /* Bloc géant : panneau du lobby, la salle pendant une visite, entrer / sortir, réclamer les récompenses */
-export const giantApi = {
-  info:  () => request('GET', '/api/giant'),
-  view:  () => request('GET', '/api/giant/view'),
-  enter: () => request('POST', '/api/giant/enter', {}),
-  leave: () => request('POST', '/api/giant/leave', {}),
-  claim: () => request('POST', '/api/giant/claim', {}),
+const roomApi = base => ({
+  info:  () => request('GET', base),
+  view:  () => request('GET', `${base}/view`),
+  enter: () => request('POST', `${base}/enter`, {}),
+  leave: () => request('POST', `${base}/leave`, {}),
+  claim: () => request('POST', `${base}/claim`, {}),
+});
+export const giantApi = roomApi('/api/giant'), hesComingApi = roomApi('/api/hescoming');
+
+/* Guilde : écritures, chacune renvoie l'état vu par le joueur */
+export const guildApi = {
+  view:  () => request('GET', '/api/guild'),
+  board: () => request('GET', '/api/guild/board'),
+  list:  query => request('POST', '/api/guild/list', { query }),
+  members: id => request('POST', '/api/guild/members', { id }),
+  leave: () => request('POST', '/api/guild/leave', {}),
+  create: name => request('POST', '/api/guild/create', { name }),
+  invite: name => request('POST', '/api/guild/invite', { name }),
+  acceptInvite:  id => request('POST', '/api/guild/accept-invite', { id }),
+  refuseInvite:  id => request('POST', '/api/guild/refuse-invite', { id }),
+  request:       id => request('POST', '/api/guild/request', { id }),
+  cancelRequest: id => request('POST', '/api/guild/cancel-request', { id }),
+  acceptRequest: id => request('POST', '/api/guild/accept-request', { id }),
+  refuseRequest: id => request('POST', '/api/guild/refuse-request', { id }),
+  promote:  id => request('POST', '/api/guild/promote', { id }),
+  demote:   id => request('POST', '/api/guild/demote', { id }),
+  kick:     id => request('POST', '/api/guild/kick', { id }),
+  transfer: id => request('POST', '/api/guild/transfer', { id }),
+  peek:  id => request('POST', '/api/guild/peek', { id }),
+  log:   (id, before) => request('POST', '/api/guild/log', { id, before }),
+  give:  (building, item, qty, opId) => request('POST', '/api/guild/give', { building, item, qty, opId }),
+  build: id => request('POST', '/api/guild/build', { id }),
 };
 
 /* Amis (onglet Social) : liste, demandes, présence ; inviter / rejoindre un ami */
+/* Le Carreau, la ville du spawn (29/10) : ma place (onglet ouvert, ou x en promenade) → les autres joueurs de la ville */
+export const townApi = {
+  ping: body => request('POST', '/api/town', body),
+  emote: id  => request('POST', '/api/town/emote', { emote: id }),
+};
+
+/* modération du chat (30/10) : { warnings, max, bannedUntil, motif } */
+export const moderationApi = { me: () => request('GET', '/api/moderation/me') };
+
 export const socialApi = {
   state:   ()   => request('GET', '/api/social'),
   online:  ()   => request('GET', '/api/social/online'),                // tous les joueurs en ligne (onglet Online)
@@ -101,6 +149,12 @@ export const socialApi = {
   join:    id   => request('POST', '/api/social/join', { id }),
   profile: id   => request('POST', '/api/social/profile', { id }),   // stuff, niveau et skills d'un ami
   leaderboard: board => request('POST', '/api/social/leaderboard', { board }),   // un classement (gs, xp, spec:<arbre>, tower)
+  chat:    after => request('GET', '/api/social/chat?after=' + (after | 0)),   // chat global du lobby
+  say:     msg   => request('POST', '/api/social/chat', msg),                // { channel, text, to?, lobby? }
+  chatLobby:     id => request('POST', '/api/social/chat/lobby', { id }),        // aperçu d'un lien de lobby
+  chatLobbyJoin: id => request('POST', '/api/social/chat/lobby/join', { id }),   // rejoindre par ce lien
+  chatPrefs:     () => request('GET', '/api/social/chat-prefs'),
+  chatPrefsSave: p  => request('POST', '/api/social/chat-prefs', p),
 };
 
 /* Groupes : se réunir avant une session commune. Lancer reste gameApi.start (le serveur sait qui est dans le groupe). */
@@ -113,9 +167,14 @@ export const partyApi = {
   leave:   ()   => request('POST', '/api/party/leave', {}),
   kick:    id   => request('POST', '/api/party/kick', { id }),
   ready:   ready => request('POST', '/api/party/ready', { ready }),
+  devPresets: presets => request('POST', '/api/party/dev-presets', { presets }),   // mode dev : preset de chaque mineur
   alwaysReady: always => request('POST', '/api/party/always-ready', { always }),
   promote: id   => request('POST', '/api/party/promote', { id }),
+  forming: ()   => request('GET', '/api/party/forming'),                  // groupes en formation (31/10)
+  lock:    locked => request('POST', '/api/party/lock', { locked }),      // le chef verrouille son groupe (31/10)
+  activity: a   => request('POST', '/api/party/activity', a ?? {}),       // activité ouverte par le chef (31/10)
   lfg:     auto => request('POST', '/api/party/lfg', { auto: auto === true }),   // recherche de groupe (mine classique)
   lfgCancel: () => request('POST', '/api/party/lfg/cancel', {}),
   shrine:  body => request('POST', '/api/party/shrine', body),   // don à un shrine du chef (28/10)
+  stele:   body => request('POST', '/api/party/stele', body),    // activer / désactiver une stèle chargée (30/10)
 };

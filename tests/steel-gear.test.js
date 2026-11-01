@@ -47,14 +47,14 @@ test('pièces en acier : au-dessus du fer, même case, recette et blueprint, inh
 
 test('Plastron de l\'équilibre : torse, ses 9 stats, recette du créateur, épique', () => {
   assert.equal(ITEMS[BALANCE].slot, 'torse');
-  assert.deepEqual(ITEMS[BALANCE].stats, { pods:188, oxygenMax:30, mineSpeedPct:3, damagePct:3, attackSpeed:8,
+  assert.deepEqual(ITEMS[BALANCE].stats, { pods:112, oxygenMax:30, mineSpeedPct:3, damagePct:3, attackSpeed:8,
                                            tenacity:3, fortune:2, looting:3, torches:8 });
   assert.deepEqual(RECIPES[BALANCE].cost, { 'Steel ingot':50, 'Shiny gold':20, 'Rubis inférieur':1, 'Saphir inférieur':1,
                                             'Jade inférieur':1, 'Résidu angélique':50, 'Résidu démoniaque':50 });
   assert.equal(RECIPES[BALANCE].unlock, BALANCE + ' BP');
   assert.equal(rarityOf(BALANCE), 'epique'); assert.equal(rarityOf(BALANCE + ' BP'), 'epique');
   const s = equippedStats([BALANCE]), base = equippedStats([]);
-  assert.equal(s.pods - base.pods, 188); assert.equal(s.tenacity - base.tenacity, 3);
+  assert.equal(s.pods - base.pods, 112); assert.equal(s.tenacity - base.tenacity, 3);
   assert.equal(s.torches - base.torches, 8); assert.equal(s.mineSpeedPct, 3);
 });
 
@@ -124,7 +124,7 @@ test('pièces déjà fabriquées : elles ont les stats du catalogue actuel, lign
   /* la ligne suit la valeur du tier (25/10) : 20 % de 250 x (T2) = 10 pods ; avant, 20 % de la valeur de l'objet */
   assert.equal(lineValue('Plastron en fer', line), 10);
   const [b] = minerSpecs({ players:[{ account:'A', name:'Geo' }], gear:{ A:{ torse:{ item:BALANCE, uid:11 } } } });
-  assert.equal(b.carac.pods, STATS.pods + 188);
+  assert.equal(b.carac.pods, STATS.pods + 112);
   assert.equal(b.carac.torches, STATS.torches + 8);
 });
 

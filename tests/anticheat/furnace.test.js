@@ -47,20 +47,20 @@ test('four : sauvegarde trafiquée (quantités folles, objets interdits, fours e
   const st = sanitizeFurnaces({ list: Array.from({ length: 10 }, () => ({
     ore:{ item:'Charbon', qty:50 }, fuel:{ item:'Charbon', qty:-5 }, out:{ item:'Lingot de fer', qty:1.5 }, since:Infinity })) });
   assert.equal(st.list.length, FURNACE.max);
-  for(const f of st.list) assert.deepEqual(f, { tier:0, mode:'smelt', ore:null, a:null, b:null, fuel:null, out:null, since:null });
+  for(const f of st.list) assert.deepEqual(f, { tier:0, mode:'smelt', ore:null, a:null, b:null, c:null, fuel:null, out:null, since:null });
 });
 
 test('alliage : matière conservée sur 300 suites d\'actions au hasard (modes, ingrédients, quantités trafiquées)', () => {
   const r = mulberry32(77);
   const BAG = { 'Lingot de fer':60, Chitine:200, Charbon:600, Fer:50 };
-  const tot = (inv, st, name) => { let n = countOf(inv, name); for(const f of st.list) for(const s of ['ore','a','b','fuel','out']) if(f[s]?.item === name) n += f[s].qty; return n; };
+  const tot = (inv, st, name) => { let n = countOf(inv, name); for(const f of st.list) for(const s of ['ore','a','b','c','fuel','out']) if(f[s]?.item === name) n += f[s].qty; return n; };
   for(let t = 0; t < 300; t++){
     const inv = createInventory(); addAll(inv, BAG);
     const st = createFurnaces(); let now = 1e6; const ids = [];
     for(let k = 0; k < 30; k++){
       const pick = a => a[Math.floor(r() * a.length)];
       const opId = ids.length && r() < 0.2 ? pick(ids) : 'o' + t + '-' + k; ids.push(opId);
-      const o = { furnace:0, opId, action:pick(['load','load','unload','collect','mode','empty','emptyAll']), slot:pick(['ore','a','b','fuel','out']),
+      const o = { furnace:0, opId, action:pick(['load','load','unload','collect','mode','empty','emptyAll']), slot:pick(['ore','a','b','c','fuel','out']),
                   item:pick(Object.keys(BAG)), qty:r() < 0.2 ? pick(BAD_QTY) : 1 + Math.floor(r() * 40), mode:pick(['smelt','alloy','x']) };
       furnaceOp(st, inv, o, now);
       now += Math.floor(r() * 400_000);
@@ -91,5 +91,43 @@ test('four : débloquer avec un Four en fer — 300 suites trafiquées (rejouée
     }
     const back = sanitizeFurnaces(JSON.parse(JSON.stringify(st)));
     assert.equal(back.list.length, st.list.length);
+  }
+});
+
+test('four, recette choisie (28/10) : quantités trafiquées refusées, rejeu sans effet, matière conservée', () => {
+  const inv = createInventory(); addAll(inv, START);
+  const st = createFurnaces();
+  for(const count of BAD_QTY)
+    assert.equal(furnaceOp(st, inv, { action:'recipe', furnace:0, out:'Lingot de fer', count, opId:'bad-' + String(count) }, 1e6).error, 'bad_qty', String(count));
+  for(const out of [null, 42, 'Diamant', '__proto__', 'constructor', { out:'Lingot de fer' }])
+    assert.equal(furnaceOp(st, inv, { action:'recipe', furnace:0, out, count:1, opId:'out-' + String(out) }, 1e6).error, 'bad_item');
+  assert.equal(furnaceOp(st, inv, { action:'recipe', furnace:0, out:'Lingot de fer', count:1e12, opId:'huge' }, 1e6).error, 'not_enough');
+  assert.equal(furnaceOp(st, inv, { action:'recipe', furnace:0, out:'Lingot de fer', count:1e15, opId:'huge2' }, 1e6).error, 'bad_qty', 'quantité qui déborde');
+  assert.equal(countOf(inv, 'Fer'), START.Fer);
+  for(let k = 0; k < 3; k++) furnaceOp(st, inv, { action:'recipe', furnace:0, out:'Lingot de fer', count:5, opId:'same-op' }, 1e6);
+  assert.equal(st.list[0].ore.qty, 50, 'trois envois de la même demande : une seule fois');
+  advance(st.list[0], 1e12);
+  assert.equal(total(inv, st, 'Fer') + FURNACE.orePerIngot * total(inv, st, 'Lingot de fer'), START.Fer);
+  assert.equal(total(inv, st, 'Charbon') + FURNACE.fuelPerIngot * total(inv, st, 'Lingot de fer'), START.Charbon);
+});
+
+test('four, changer de recette (28/10) : 300 suites au hasard (changements en pleine fonte, rejeux), matière conservée', () => {
+  const r = mulberry32(2810);
+  for(let t = 0; t < 300; t++){
+    const inv = createInventory(); addAll(inv, START);
+    const st = createFurnaces();
+    let now = 1e6;
+    for(let k = 0; k < 25; k++){
+      now += Math.floor(r() * 150_000);
+      const out = ['Lingot de fer', 'Lingot d\'or', 'Tainted iron', 'Diamant'][Math.floor(r() * 4)];
+      const action = r() < 0.75 ? 'recipe' : ['collect', 'empty', 'unload'][Math.floor(r() * 3)];
+      const opId = r() < 0.15 && k ? `sw-${t}-${k - 1}` : `sw-${t}-${k}`;
+      furnaceOp(st, inv, { action, furnace:0, out, count:1 + Math.floor(r() * 12), slot:'ore', opId }, now);
+    }
+    advance(st.list[0], now + 1e12);
+    const ingots = total(inv, st, 'Lingot de fer') + total(inv, st, 'Lingot d\'or');
+    assert.equal(total(inv, st, 'Fer') + FURNACE.orePerIngot * total(inv, st, 'Lingot de fer'), START.Fer, `fer (essai ${t})`);
+    assert.equal(total(inv, st, 'Or') + FURNACE.orePerIngot * total(inv, st, 'Lingot d\'or'), START.Or, `or (essai ${t})`);
+    assert.equal(total(inv, st, 'Charbon') + FURNACE.fuelPerIngot * ingots, START.Charbon, `charbon (essai ${t})`);
   }
 });

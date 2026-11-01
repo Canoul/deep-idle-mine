@@ -5,7 +5,7 @@ import { publicAccount } from './service.js';
 const needMe = ctx => { if(!ctx.me) throw Object.assign(new Error('Tu n\'es pas connecté.'), { status: 401, code: 'not_authenticated' }); };
 const str = v => typeof v === 'string' ? v : undefined;
 
-export function accountRoutes(service){
+export function accountRoutes(service, { onRename = () => {} } = {}){
   return {
     /* qui suis-je ? { account } ou { account: null } si personne n'est connecté (pas une erreur) */
     'GET /api/account/me': async ctx => ({ account: ctx.me ? publicAccount(ctx.me) : null }),
@@ -34,6 +34,14 @@ export function accountRoutes(service){
       needMe(ctx);
       const r = await service.claim(ctx.me.id, { name: str(ctx.body.name), password: str(ctx.body.password) });
       ctx.login(r); return { account: r.account, recoveryCode: r.recoveryCode };
+    },
+
+    /* pseudo interdit : le remplacer : { name } */
+    'POST /api/account/rename': async ctx => {
+      needMe(ctx);
+      const r = await service.rename(ctx.me.id, { name: str(ctx.body.name) });
+      await onRename(r.account.id, r.account.name);
+      return r;
     },
 
     /* mot de passe oublié : { name, recoveryCode, newPassword } */

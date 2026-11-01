@@ -4,13 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Wiki · Deep Mine Idle</title>
+<link rel="icon" type="image/png" sizes="32x32" href="textures/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="textures/favicon-16.png">
+<link rel="apple-touch-icon" href="textures/favicon-192.png">
 <link rel="stylesheet" href="src/wiki/wiki.css">
 </head>
 <body>
 <header class="top">
   <a class="brand" href="index.html">⛏ Deep Mine Idle</a>
   <span class="sub">Wiki du joueur</span>
-  <span class="maj" title="Date de la dernière mise à jour des textes du wiki">🗓 Mis à jour le 28/10/2026</span>
+  <span class="maj" title="Date de la dernière mise à jour des textes du wiki">🗓 Mis à jour le 01/11/2026</span>
   <a class="play" href="index.html">▶ Jouer</a>
 </header>
 
@@ -27,8 +30,10 @@
   <a href="#khole">Le k hole</a>
   <a href="#mi">La mine instantanée</a>
   <a href="#bloc">Le Bloc géant</a>
+  <a href="#hescoming">He's coming</a>
   <a href="#instances">Les instances</a>
   <a href="#shrines">Les shrines</a>
+  <a href="#prison">La prison et l'énergie</a>
   <a href="#roigobelin">Le Roi Gobelin</a>
   <a href="#ange">Ange contre Démon</a>
   <a href="#objets">Les objets</a>
@@ -70,16 +75,31 @@
   <p>Tu ne le diriges pas : il décide tout seul où creuser, quand remonter et quand se battre. Tu peux quand même l'influencer :</p>
   <ul>
     <li><b>Avant la session</b> (lobby) : ses préférences, par exemple « priorité aux minerais » ou « descendre », « combattre », « ignorer » ou « fuir » les mobs, « aider » ou non ses coéquipiers.</li>
-    <li><b>Pendant la session</b> : le <b>Focus minerai</b> (viser un minerai en particulier) et le <b>Focus area</b> (rester dans une area précise).</li>
+    <li><b>Pendant la session</b> : le <b>Focus area</b> (rester dans une area précise).</li>
     <li><b>Entre deux sessions</b> : son équipement (onglet Stuff) et ses skills.</li>
   </ul>
+
+  <h2>Ses états</h2>
+  <p>En haut à droite de la mine, une rangée d'icônes montre ce qui agit sur <b>ton</b> mineur en ce moment, avec le temps
+    restant (ou le nombre de stacks) dessous. Passe la souris dessus (ou touche-la) pour le détail.</p>
+  <ul>
+    <li><b>Cadre rouge</b> : ce qui le gêne. Étourdi, taclé, enfermé par le roi gobelin, effroi, asphyxie du méphite,
+      vol du gobelin, stacks du mur de chair, Bleed (chien de magma et vers de terre : déplacement et minage −10 % par stack, 5 au plus, 60 s après le dernier), ciblé par le boss d'une tour, dans le noir.</li>
+    <li><b>Cadre vert</b> : ce qui l'aide. Cri de guerre, Inspiration, Ruée, Navette, Braum, Glyphe Pillage, Fast learner,
+      et la <b>Couronne du Roi Gobelin</b> s'il la porte : un gobelin qui naît à 10 cases ou moins de lui est asservi
+      (les autres mineurs ne le frappent pas).</li>
+    <li><b>Cadre doré</b> : les <b>bonus de la session</b>, dans une seule icône : anneaux du groupe, shrines, Escalateur.</li>
+  </ul>
+  <p>Ça se voit aussi sur les persos : étoiles qui tournent quand il est étourdi, botte barrée quand il est taclé, bulles
+    quand il s'asphyxie… et une onde quand il lance un sort. Les mobs ont leurs icônes au-dessus de leur barre de vie
+    (étourdi, provoqué, rage du boss…).</p>
 
   <h2>Pourquoi il remonte</h2>
   <p>Ton mineur fait des allers-retours entre le fond et le coffre à la surface. Il remonte quand :</p>
   <table class="simple">
     <tr><th>Raison</th><th>Ce qui se passe</th></tr>
     <tr><td>🫧 Plus d'oxygène</td><td>Il a <b>300 secondes</b> d'oxygène sous terre (5 minutes). À 0, il remonte respirer. Pas de panique : il ne meurt pas et ne ralentit pas.</td></tr>
-    <tr><td>🎒 Sac plein</td><td>Chaque bloc a un poids, son sac (les <b>pods</b>) en porte 200. Plein ? Il remonte vider dans le coffre.</td></tr>
+    <tr><td>🎒 Sac plein</td><td>Chaque bloc a un poids, son sac (les <b>pods</b>) en porte 200. Plein ? Il remonte vider dans le coffre. Les minerais en plus de la <b>Fortune</b> et le butin en plus des mobs (<b>Pillage</b>, butin des mobs) ne pèsent rien.</td></tr>
     <tr><td>🔥 Plus de torches</td><td>Il en porte 20. Sans torche, il ne voit plus rien : il remonte en chercher (gratuites à la surface).</td></tr>
     <tr><td>⏱ Fin de session</td><td>Il ne repart pas s'il n'a plus le temps de faire un aller-retour utile.</td></tr>
   </table>
@@ -114,26 +134,35 @@
     <li>Le groupe reste après la session : vous pouvez enchaîner sans vous réinviter. Si tu ne veux pas rejouer, quitte le groupe.</li>
     <li>Pendant la partie, tout le monde voit <b>la même mine</b> : elle tourne sur le serveur, même si tu fermes la page.</li>
     <li>⚠️ <b>Quitter une session avant la fin = tu ne gagnes rien</b>, ta part va aux autres.</li>
+    <li>🏘️ <b>Le Carreau</b> : hors session, le fond de l'écran est la ville du spawn, avec un bâtiment par onglet. Ton mineur marche jusqu'au bâtiment de l'onglet ouvert, et tu y croises <b>les autres joueurs en ligne qui ne sont pas en session</b>, avec leurs messages du Chat global en bulle. Dans l'onglet <b>Session</b>, sans session en cours, tu t'y promènes : <b>← →</b> ou un clic pour marcher, <b>E</b> ou un clic sur un bâtiment pour y entrer, un clic sur un joueur pour voir sa fiche, l'<b>ajouter en ami</b> ou l'<b>inviter dans ton groupe</b>, et des <b>émotes</b>. Le bouton <b>Chercher un groupe</b> (dans la barre d'émotes, et à côté de « Préparer une session » devant le chevalement) lance la même recherche que le Lobby, sans y aller ; un nouveau clic l'annule. Le <b>Chat global</b> s'affiche en bas à gauche pendant la promenade. Sur la place, les groupes se tiennent ensemble (« 2/3 »), un <b>?</b> doré signale quelqu'un qui cherche un groupe, la <b>statue</b> montre le n°1 du classement GS et les <b>bannières</b> se remplissent avec les jauges Ange / Démon. Option dans <b>Mon compte</b>.</li>
+    <li>💬 Le <b>Chat global</b>, toujours affiché en bas à gauche quel que soit l'onglet (tire sa barre orange pour régler sa hauteur ; sur téléphone, il a son propre onglet <b>Chat</b>), lu par <b>tous les joueurs du jeu</b> sur ses canaux Général et LFG, avec aussi tes messages de Groupe, de Guilde et tes MP (raccourcis : /1 général, /2 LFG, /gr groupe, /g guilde, /w "pseudo" message privé ; l'écrou d'un onglet choisit ses canaux, le + crée un onglet, réglages gardés sur ton compte) (un message toutes les 3 secondes, les 50 derniers restent, et un message disparaît au bout de 18 h)</li>
+    <li>👥 <b>Groupes en formation</b> : dans le menu « Que veux-tu faire ? » du lobby, liste les groupes qui ont encore de la place, leur activité et leurs joueurs ; un clic pour entrer. Seul, clique sur « Proposer mon groupe » pour y apparaître. Le chef peut poser un <b>cadenas</b> : seuls les invités entrent alors, et le groupe quitte la liste.</li>
+    <li>🛡 <b>Guilde</b> : crée ta guilde gratuitement ou rejoins-en une (invitation, ou demande depuis Rechercher, où un clic sur une guilde montre ses membres), 30 membres au plus. 1 % de l'XP de chaque membre fait monter le niveau de la guilde. Le nom de ta guilde s'affiche sous ton pseudo. <b>Bâtiments</b> : à droite de l'onglet de ta guilde, chacun donne des matériaux depuis son inventaire (un don est définitif), puis le chef ou un officier lance la construction. Armurerie (+2 % de dégâts), Trésorerie (+2 % de fortune), Forge (+2 % de vitesse de minage) : le bonus vaut pour tous les membres, dans tous les modes, dès le prochain lancement. Le journal des dons est public (bouton Voir dans Rechercher).</li>
+    <li>🎁 <b>Raffle</b> : toutes les 30 à 60 minutes, de 8 h à 2 h, un lot est annoncé dans le <b>Chat global</b>. Tape <code>!join</code> dans les 2 minutes pour participer (il faut un compte avec un pseudo) : personne d'autre ne le voit, et un message visible par toi seul te confirme ton inscription. Un seul participant gagne le lot, qui arrive directement dans ton inventaire.</li>
+    <li>🔗 <b>Lien de lobby</b> : le bouton <b>Pub LFG</b> du lobby, ou <b>%lobby</b> dans un message (ex. <code>/lfg %lobby on cherche un last</code>), met un lien vers ton groupe dans le chat. Survole un lien pour voir le groupe, clique pour le rejoindre.</li>
+    <li>🚫 <b>Respect dans le chat</b> : les insultes et les injures (racistes, homophobes, sexistes…) sont <b>remplacées par des astérisques</b> et te valent un <b>avertissement</b>, même si tu les déguises (lettres espacées, chiffres à la place des lettres, mot coupé sur plusieurs messages). Au bout de <b>3 avertissements</b>, tu es <b>banni du jeu pendant 24 h</b> : tu peux encore regarder, mais plus jouer, et ta prison s'arrête.</li>
   </ul>
 </section>
 
 <section id="onglets">
   <h1>Les onglets</h1>
-  <p>La <b>barre d'action en bas</b> de l'écran donne accès à tout (touches <b>1 à 9, 0, -, = et ²</b>). De chaque côté, deux <b>orbes</b> : le temps de session et ton XP, ou, pendant une session, l'oxygène et les pods de ton mineur. Changer d'onglet ne met pas la session en pause : la mine continue de tourner.</p>
+  <p>Le bandeau du haut donne aussi accès à ce wiki et au <a href="https://discord.gg/waGJg9RJDy" target="_blank" rel="noopener">Discord du jeu</a>.</p>
+  <p>La <b>barre d'action en bas</b> de l'écran donne accès à tout (touches <b>1 à 9, 0, -, = et ²</b> ; <b>Échap</b> quitte l'onglet ouvert et ramène à l'onglet Session : la mine en cours, ou la promenade dans le Carreau). De chaque côté, deux <b>orbes</b> : le temps de session et ton XP, ou, pendant une session, l'oxygène et les pods de ton mineur. Changer d'onglet ne met pas la session en pause : la mine continue de tourner.</p>
   <div class="tabs">
-    <div class="tabcard"><h3>🏠 Lobby</h3><p>Ton groupe, tes invitations, ta spécialisation, les préférences de ton mineur, <b>où miner</b> (la <b>Mine</b>, l'inscription à la <a href="#mi">Mine instantanée</a>, le <a href="#bloc">Bloc géant</a>, les <a href="#instances">instances</a>, les jauges du <a href="#ange">Jugement</a> et les tours quand elles sont ouvertes) et le bouton <b>Lancer</b>. Pendant une session, il reste visible mais en lecture seule (on peut quand même regarder la Mine instantanée et le Bloc géant).</p></div>
+    <div class="tabcard"><h3>🏠 Lobby</h3><p>Le Lobby s'ouvre sur le <b>menu des activités</b> : un clic en ouvre une, avec tes sets à gauche et son équipe ou sa carte à droite. On y trouve ton groupe, tes invitations, ta spécialisation, les préférences de ton mineur et les <b>activités</b> (la <b>Mine</b>, l'inscription à la <a href="#mi">Mine instantanée</a>, le <a href="#bloc">Bloc géant</a>, les <a href="#instances">instances</a>, la <a href="#prison">Prison</a>, les jauges du <a href="#ange">Jugement</a> et les tours quand elles sont ouvertes) et le bouton <b>Lancer</b>. Pendant une session, il reste visible mais en lecture seule (on peut quand même regarder la Mine instantanée et le Bloc géant).</p></div>
     <div class="tabcard"><h3>⛏ Session</h3><p>La mine en direct, en entier au centre, avec une <b>jauge de profondeur</b> (un repère par mineur) ; autour : ton équipe, le coffre, les panneaux Focus et le journal. Puis le bilan à la fin. Au lancement, tout le groupe y arrive automatiquement.</p></div>
-    <div class="tabcard"><h3>🎒 Inventaire</h3><p>Tout ce que tu possèdes. Clique un objet pour voir sa fiche : tu peux y <b>ouvrir</b> un treasure (ou <b>tous</b> d'un coup avec « Ouvrir tout »), <b>utiliser</b> un blueprint ou un Four en fer, ou <b>équiper</b> une pièce de stuff, ou <b>recycler</b> une pièce fabriquée (elle est détruite et rend 60 % de sa recette, arrondi vers le bas ; une pièce du <a href="#mobs">butin rare</a> rend des matériaux fixes ; pas une pièce portée ni enregistrée dans un set). Les nouveaux objets brillent d'un halo blanc. Le bouton <b>Trier</b> range tout par type (blocs, minerais, matériaux, stuff…) puis du plus rare au plus commun ; tu peux aussi <b>glisser</b> un objet dans un autre slot.</p></div>
+    <div class="tabcard"><h3>🎒 Inventaire</h3><p>Tout ce que tu possèdes. Clique un objet pour voir sa fiche : tu peux y <b>ouvrir</b> un treasure (ou <b>tous</b> d'un coup avec « Ouvrir tout »), <b>utiliser</b> un blueprint ou un Four en fer, ou <b>équiper</b> une pièce de stuff, ou <b>recycler</b> une pièce fabriquée (elle est détruite et rend 60 % de sa recette, arrondi vers le bas ; une pièce du <a href="#mobs">butin rare</a> rend des matériaux fixes ; une <b>rune</b> rend 8 à 12 Poudre de rêve, un fragment de rune 1 à 6 ; pas une pièce portée ni enregistrée dans un set). Les nouveaux objets brillent d'un halo blanc. Le bouton <b>Trier</b> range tout par type (blocs, minerais, matériaux, stuff…) puis du plus rare au plus commun, et les runes et fragments de la meilleure qualité à la moins bonne (R7 d'abord) ; tu peux aussi <b>glisser</b> un objet dans un autre slot.</p></div>
     <div class="tabcard"><h3>🛡 Stuff</h3><p>Les <b>12 cases d'équipement</b> de ton mineur (casque, torse, jambes, pieds, gants, ceinture, pioche, épée, cape, boussole et <b>2 <a href="#anneaux">anneaux</a></b>) et le détail de ses stats. Un changement compte pour la <b>prochaine</b> session. À gauche, tes <a href="#sets">sets</a>.</p></div>
     <div class="tabcard"><h3>🔨 Craft</h3><p>Fabriquer de l'équipement. Chaque ingrédient s'affiche en « ce que tu as / ce qu'il faut ». Une petite coche ✔ indique ce que tu peux fabriquer tout de suite. Certaines recettes sont secrètes : il faut d'abord utiliser leur <b>blueprint</b>.</p></div>
-    <div class="tabcard"><h3>🪨 Concasseur</h3><p>Pose tes blocs (terre, pierre, pierre dure) : chaque minute, il en concasse 100, <b>même page fermée</b>. La plupart du temps il ne sort rien, mais parfois une <b>gemme</b> ou même un <b>treasure</b>. Le bouton <b>?</b> donne les vraies chances (<a href="#concasseur">détail plus bas</a>).</p></div>
+    <div class="tabcard"><h3>🪨 Concasseur</h3><p>Pose tes blocs (terre, pierre, pierre dure) ou ton <b>minerai de fer</b> : chaque minute, il en concasse 100, <b>même page fermée</b>. Les blocs ne donnent le plus souvent rien, mais parfois une <b>gemme</b> ou même un <b>treasure</b> ; 100 fers donnent toujours du charbon, de l'or, un diamant et du graphite. Le bouton <b>?</b> donne les vraies chances (<a href="#concasseur">détail plus bas</a>).</p></div>
     <div class="tabcard"><h3>💎 Amélioration</h3><p><b>Identifier</b> une pièce de stuff (elle reçoit une qualité, de R1 à R7), l'<b>améliorer</b> de +1 à +9 avec des Plumes d'ange et des Cristaux de pleine lune, et l'<b>enchanter</b> avec une Rune. <a href="#amelioration">Détail plus bas</a>.</p></div>
-    <div class="tabcard"><h3>🔥 Four</h3><p>Fondre les minerais en lingots (mode <b>Fondre</b>) ou créer des alliages (mode <b>Alliage</b>). Ça avance <b>en temps réel, même page fermée</b>. Tu commences avec 1 four ; le Four en fer en ouvre un 2e, plus rapide, et le Four en or un 3e (×1,5).</p></div>
-    <div class="tabcard"><h3>🔬 Recherche</h3><p>Dépenser tes <b>Blueprint parts</b> pour obtenir un blueprint au hasard, ou <b>recycler</b> un blueprint dont tu n'as pas besoin pour récupérer des parts.</p></div>
+    <div class="tabcard"><h3>🔥 Four</h3><p>Fondre les minerais en lingots (mode <b>Fondre</b>) ou créer des alliages (mode <b>Alliage</b>). Ça avance <b>en temps réel, même page fermée</b>. Tu commences avec 1 four ; le Four en fer en ouvre un 2e, plus rapide, et le Four en or un 3e (×1,5). Le bouton <b>Recettes</b> d'un four : tu choisis ce que tu veux fabriquer et combien, le four pose lui-même les ingrédients et le charbon.</p></div>
+    <div class="tabcard"><h3>🔬 Recherche</h3><p>Dépenser tes <b>Blueprint parts</b> pour obtenir un blueprint au hasard, ou <b>recycler</b> un blueprint dont tu n'as pas besoin pour récupérer des parts. Un plan qui vient de sortir ne peut pas ressortir pendant 2 min.</p></div>
     <div class="tabcard"><h3>⭐ Skills</h3><p>À chaque niveau, tu gagnes <b>1 point de skill</b>. Choisis un arbre (Mineur, Logisticien ou Barbare) et dépense tes points. Le reset est gratuit (hors session). Chaque arbre affiche aussi ton <a href="#spe">niveau de spécialisation</a> (SP lvl).</p></div>
     <div class="tabcard"><h3>✨ Sorts</h3><p>Équipe tes <a href="#sorts">sorts</a> (clic ou glisser-déposer) : en session, ils partent tout seuls. Un parchemin s'apprend ici (« Apprendre »).</p></div>
     <div class="tabcard"><h3>📜 Historique</h3><p>Tes sessions terminées (gardées 30 jours) : date, joueurs, seed, profondeur atteinte, XP et <b>ta part du butin</b>.</p></div>
-    <div class="tabcard"><h3>👥 Social</h3><p>Tes <b>amis</b> : ajoute-les par leur pseudo (ou leur ID de compte pour un invité), puis vois s'ils sont hors ligne, en ligne, en session ou dans un lobby. <b>Inviter</b> ou <b>Rejoindre</b> en un clic. Le sous-onglet <b>Online</b> compte et liste <b>tous les joueurs en ligne</b> (ceux qui ne sont pas en session d'abord), avec un bouton <b>Ajouter</b>. Le sous-onglet <b>Classements</b> montre les 50 meilleurs joueurs (et ta place) en <b>gear score</b>, en <b>niveau</b>, dans chaque <b>spécialisation</b> et au <b>meilleur temps de la tour céleste</b> (Ange et Démon confondus, avec ton équipe). Demandes d'ami et invitations arrivent en <b>pop-up en haut à gauche</b>, sur n'importe quel onglet.</p></div>
+    <div class="tabcard"><h3>👥 Social</h3><p>Tu y vois aussi l'<b>énergie</b> de chaque joueur (⚡, en rouge s'il n'en a plus assez pour une mine classique). Tes <b>amis</b> : ajoute-les par leur pseudo (ou leur ID de compte pour un invité), puis vois s'ils sont hors ligne, en ligne, en session (avec la taille de leur groupe, « 1/3 » pour un solo) ou dans un lobby. <b>Inviter</b> ou <b>Rejoindre</b> en un clic. Le sous-onglet <b>Online</b> compte et liste <b>tous les joueurs en ligne</b> (ceux qui ne sont pas en session d'abord), avec un bouton <b>Ajouter</b>. Le sous-onglet <b>Classements</b> montre les 50 meilleurs joueurs (et ta place) en <b>gear score</b>, en <b>niveau</b>, dans chaque <b>spécialisation</b> au <b>meilleur temps de la tour céleste</b> (Ange et Démon confondus, avec ton équipe ; un classement Normal et un classement Héroïque, en sous-onglets) et au <b>meilleur temps contre le roi gobelin</b> (de l'entrée dans l'Instance I à sa mort, avec le temps du combat contre le roi et ton équipe ; un classement par niveau, en sous-onglets Niveau 1 / Niveau 2). Demandes d'ami et invitations arrivent en <b>pop-up en haut à gauche</b>, sur n'importe quel onglet.</p></div>
+    <div class="tabcard"><h3>👤 Mon compte</h3><p>Clique sur ton pseudo en haut à gauche : ton pseudo, ton ID, le mot de passe, et les <b>options</b>. Option <b>« Session en cours en fond d'écran »</b> (activée de base) : pendant une session, la mine s'affiche en fond, assombrie, derrière les autres onglets. Elle est gardée dans ce navigateur.</p></div>
   </div>
 </section>
 
@@ -181,7 +210,7 @@
   <table>
     <tr><th>Carte</th><th>Ce qu'on y trouve</th><th>Durée</th></tr>
     <tr><td><b>Filons</b></td><td>une petite mine très riche : fer, or, graphite, diamant, un donjon, 5 pièges et quelques treasures</td><td>5 min</td></tr>
-    <tr><td><b>Arène des minotaures</b></td><td>un couloir avec un minotaure à chaque bout ; vaincus, ils laissent des Cristaux de pleine lune. Fini quand les deux sont morts. Ici, tout le monde se bat, même réglé sur « Ignorer »</td><td>2 min</td></tr>
+    <tr><td><b>Arène des minotaures</b></td><td>un couloir avec un minotaure à chaque bout (1 000 PV chacun) : le <b>Minotaure brun</b> charge comme celui du donjon (sans rage), le <b>Minotaure noir</b> ne charge pas mais <b>enrage dès 50 %</b> de ses PV et frappe encore plus vite ; vaincus, ils laissent des Cristaux de pleine lune. Fini quand les deux sont morts. Ici, tout le monde se bat, même réglé sur « Ignorer »</td><td>2 min</td></tr>
     <tr><td><b>Salle au trésor</b></td><td>2 treasures d'un tier au hasard (T1 à T3). Fini dès qu'ils sont ouverts</td><td>2 min</td></tr>
     <tr><td><b>Vagues</b></td><td>des vagues de 5 mobs ; une vague vaincue, la suivante arrive</td><td>3 min</td></tr>
   </table>
@@ -198,7 +227,7 @@
   <div id="w-mi"></div>
   <h2>S'inscrire</h2>
   <ul>
-    <li>Onglet <b>Lobby</b>, « Où miner » → <b>Mine instantanée</b> : un compte à rebours, le nombre d'inscrits et le bouton <b>S'inscrire</b>. Les inscriptions n'ouvrent que <b>dans les 30 dernières minutes</b> (de 11 h 30 à midi pour la mine de midi), <b>même pendant une session</b>.</li>
+    <li>Onglet <b>Lobby</b>, menu des activités → <b>Mine instantanée</b> : un compte à rebours, le nombre d'inscrits et le bouton <b>S'inscrire</b>. Les inscriptions n'ouvrent que <b>dans les 30 dernières minutes</b> (de 11 h 30 à midi pour la mine de midi), <b>même pendant une session</b>.</li>
     <li>S'inscrire hors session <b>fait quitter ton groupe</b> (en session, tu le quittes en entrant dans la mine). Lancer une session ne te désinscrit pas, mais si tu es <b>encore en session à l'heure</b>, tu rates la mine (ta session continue).</li>
     <li>À l'heure dite, tous les inscrits partent ensemble ; personne ne peut rejoindre après le début.</li>
     <li id="w-mi-notify"></li>
@@ -214,12 +243,24 @@
   </ul>
 </section>
 
+<section id="hescoming">
+  <h1>He's coming</h1>
+  <p class="lead">Le Bloc géant version combat : Lucifer sort d'un portail de lave, et tout le serveur le frappe. Ici, c'est le <b>DPS</b> qui compte.</p>
+  <ul>
+    <li>Onglet <b>Lobby</b>, menu des activités → <b>😈 He's coming</b>. Mêmes règles que le Bloc géant : visites de 3 min, seul, une entrée toutes les 3 h, 2 visites au moins dans la journée pour la récompense de minuit. Il a son <b>propre délai et son propre score</b> : tu peux faire les deux.</li>
+    <li><b>1 dégât = 1 point.</b> Paliers du score collectif : 8 000, 40 000, 80 000, 120 000 et 160 000, avec les récompenses du Bloc géant. 1 Pépite d'argent par 800 de tes points.</li>
+    <li><b>Rugissement</b>, toutes les 30 s : à 3 cases ou moins de Lucifer, ton mineur est en <b>Fear</b> 15 s, il erre et ne frappe plus.</li>
+    <li><b>Autoattaque</b>, toutes les 5 s : ceux à son contact sont projetés de 4 cases.</li>
+    <li>La <b>ténacité</b> résiste aux deux, la <b>résistance au recul</b> réduit la projection, et la <b>portée</b> te laisse frapper de plus loin.</li>
+  </ul>
+</section>
+
 <section id="bloc">
   <h1>Le Bloc géant</h1>
   <p class="lead">Un effort commun à <b>tout le serveur</b> : chacun vient frapper, seul, un bloc géant indestructible ; à minuit, tous ceux qui sont venus reçoivent une récompense selon le score de tous.</p>
   <h2>Entrer</h2>
   <ul>
-    <li>Onglet <b>Lobby</b>, « Où miner » → <b>🌈 Bloc géant</b> : le temps avant la fin de la session (elle va de <b>minuit à minuit</b>), le bouton <b>Entrer</b>, ton score du jour, le <b>score collectif</b> avec ses paliers et le <b>classement du jour</b>.</li>
+    <li>Onglet <b>Lobby</b>, menu des activités → <b>🌈 Bloc géant</b> : le temps avant la fin de la session (elle va de <b>minuit à minuit</b>), le bouton <b>Entrer</b>, ton score du jour, le <b>score collectif</b> avec ses paliers et le <b>classement du jour</b>.</li>
     <li>On y entre <b>seul</b>, <b>une fois toutes les 3 h</b> (comptées depuis ta dernière entrée). <b>Possible pendant une session</b> : ta session continue, et le chef de ton groupe peut te lancer en session pendant ta visite. L'onglet <b>Session</b> montre alors une barre « ⛏ Ma session / 🌈 Bloc géant » pour passer de l'une à l'autre. 30 mineurs au plus en même temps.</li>
   </ul>
   <h2>Pendant la visite</h2>
@@ -238,29 +279,65 @@
 <section id="shrines">
   <h1>Les shrines</h1>
   <p class="lead">Des bâtiments à activer dans le <b>lobby de la mine</b> : ils aident ton groupe pendant plusieurs sessions.</p>
-  <p>Carte <b>Shrines</b> du lobby (« Où miner » → Mine). Les shrines sont ceux du <b>chef du groupe</b> (les tiens si tu joues seul) : <b>chacun dans le groupe peut donner</b> les ressources demandées, autant qu'il veut. Ce qui est donné reste acquis, même si le groupe se sépare. Prix atteint : le shrine est <b>actif</b> pour un nombre de <b>mines lancées par ce chef</b> (une session compte dès son lancement). Il apparaît alors à la surface, à côté du coffre. Tant que le chef a un shrine, son lobby garde <b>le même code</b>.</p>
+  <p>Carte <b>Shrines</b> du lobby (menu des activités → Mine). Les shrines sont ceux du <b>chef du groupe</b> (les tiens si tu joues seul) : <b>chacun dans le groupe peut donner</b> les ressources demandées, autant qu'il veut. Ce qui est donné reste acquis, même si le groupe se sépare. Prix atteint : le shrine est <b>actif</b> pour un nombre de <b>mines lancées par ce chef</b> (une session compte dès son lancement). Il apparaît alors à la surface, à côté du coffre. Tant que le chef a un shrine, son lobby garde <b>le même code</b>.</p>
   <ul>
     <li><b>Shrine d'abondance</b> : <b>5 % de minerais en plus</b> dans toutes les areas. Une partie de la pierre et de la terre devient du minerai, au prorata de chaque minerai de l'area (charbon compris). Prix : <b>10 Pépites d'argent</b> (Bloc géant) et <b>20 Résidus angéliques</b>. Actif <b>5 sessions</b>.</li>
+    <li><b>Stèle d'exorcisme</b> (Tour du Démon) et <b>Stèle du pacte</b> (Tour de l'Ange) : prix <b>240 Stonebricks</b> de l'autre camp (angéliques pour l'Exorcisme, démoniaques pour le Pacte). Elles se paient dans le lobby de <b>leur tour</b> et comptent quand le chef la lance. <b>Une charge</b>, consommée seulement à la <b>victoire</b> : une défaite ne la consomme pas, et elle reste chargée tant qu'elle n'est pas utilisée. Le chef peut l'<b>activer ou la désactiver</b> : désactivée, la tour se joue normalement. Quand le boss meurt, le boss de l'autre camp <b>s'écrase sur le toit</b> : tout le monde est projeté en bas (la <b>ténacité</b> peut l'éviter), le <b>treuil est brisé</b> s'il y en a un (sinon le logisticien peut encore le poser), et <b>5 mobs de l'autre camp</b> (150 % de PV) envahissent chaque étage. Le nouveau boss a <b>150 % de PV</b>. Même chrono : il faut le tuer pour gagner. Récompense : un <b>trésor béni</b>, avec <b>deux fois plus de chances d'anneau</b>.</li>
   </ul>
+</section>
+
+<section id="prison">
+  <h1>La prison et l'énergie</h1>
+  <p class="lead">Une mine solo sans fin qui tourne même quand tu n'es pas là, et la jauge d'énergie qui limite les mines classiques.</p>
+  <h2>L'énergie</h2>
+  <ul>
+    <li>Une jauge de <b>0 à <span id="w-energy-max"></span></b> par compte, pleine au départ, affichée dans la barre du haut.</li>
+    <li>Lancer une <b>mine classique</b> coûte <b><span id="w-energy-cost"></span> d'énergie</b> (tirée au hasard par le serveur, pour chaque joueur du groupe). Dès qu'il te reste au moins <span id="w-energy-min"></span>, tu peux lancer : si le coût tiré dépasse ce qui reste, tu paies le reste et tu tombes à 0. En dessous, le lancement est refusé (le groupe est prévenu de qui est à court) et rien n'est débité.</li>
+    <li>Rien d'autre ne coûte d'énergie (mine instantanée, tours, instances, Bloc géant). Quitter une session avant la fin ne rembourse pas.</li>
+    <li>L'énergie <b>se recharge seulement en prison</b> : <b><span id="w-energy-regen"></span> par heure de jeu</b> passée en prison (au maximum, le surplus est perdu).</li>
+  </ul>
+  <h2>La prison</h2>
+  <ul>
+    <li>Lobby, menu des activités → <b>Prison</b> (solo : impossible dans un groupe de plusieurs joueurs). Tu la lances une fois ; elle tourne jusqu'au bouton <b>Sortir de prison</b>.</li>
+    <li>Une petite mine de <b><span id="w-prison-size"></span></b> bordée de barreaux incassables, avec un contenu qui ressemble à <b>tes 10 dernières mines</b> : leur area moyenne (pierre, mobs, pièges, donjon), la même répartition de minerais que dans ta part du butin (cobalt et thorium plafonnés à 0,4 % chacun), les mêmes tiers de treasures, les mêmes mobs que ceux que tu as tués. Il est calculé quand tu entres en prison et reste le même jusqu'à ce que tu en sortes. Ce contenu change <b>par paliers de 10 mines</b> : en entrant, tu choisis la compo <b>actuelle</b> (tes mines 1 à 10), l'<b>ancienne</b> (tes mines 11 à 20) ou ta compo <b>enregistrée</b> : le bouton <b>💾 Enregistrer</b> garde celle affichée (une seule à la fois). Pratique si tu viens de jouer avec des amis d'un autre niveau. Sans mine classique derrière toi : le contenu de l'area 2 (jamais moins, même si ta moyenne est plus basse). Elle a <b>moins de minerais</b> que la mine et ses <b>treasures et butins rares sont deux fois moins fréquents</b>. Un panneau <b>Butin de la prison</b> additionne tout ce que tes runs ont rapporté ; en sortant, une fenêtre récapitule tout, et la prison reste dans ton <b>Historique</b>. Les mobs y apparaissent <b>3 fois moins souvent</b> (tu es seul), les pièges et le k hole sont <b>2 fois plus rares</b>. Pas de shrines. Un logisticien qui a le Treuil l'installe dès le début.</li>
+    <li>Quand <b><span id="w-prison-reset"></span> des minerais</b> sont minés (ou après <span id="w-prison-max"></span> h de jeu), ton mineur remonte tout déposer : le coffre va dans ton inventaire, tu gagnes l'XP et l'énergie du run, puis une carte neuve recommence. Sortir de prison verse le coffre du run en cours, <b>pas le sac</b> du mineur.</li>
+    <li>Ça rapporte environ <b>la moitié de la part d'un joueur dans une mine à 3</b>, en minerais. Les mobs y donnent <b>moitié moins d'XP</b>. Les résidus minés en prison vont dans ton inventaire mais ne remplissent pas les jauges du Jugement.</li>
+    <li><b>Hors ligne</b>, elle continue : le serveur joue les runs par paquets, environ toutes les 10 minutes réelles. Après <b><span id="w-prison-offline"></span> h</b> sans que tu ouvres le jeu, elle se met en pause ; à ton retour elle repart sans rejouer les heures d'attente, avec un petit bilan « pendant ton absence ».</li>
+    <li>Pendant la prison tu peux former un groupe, jouer à la mine instantanée et entrer au Bloc géant : elle continue. <b>Lancer une mine classique, une tour ou une instance l'arrête</b> (coffre versé, pas le sac).</li>
+  </ul>
+  <p class="tip">💡 La boucle : mine en groupe pour gagner le plus, prison entre deux sessions pour recharger l'énergie et remplir l'inventaire.</p>
 </section>
 
 <section id="instances">
   <h1>Les instances</h1>
-  <p class="lead">Des donjons de groupe à clé. Pour l'instant : <b>l'Instance I, le roi gobelin</b>.</p>
+  <p class="lead">Des donjons de groupe à clé : <b>l'Instance I, le roi gobelin</b>, et <b>l'Instance II, le Golbute</b>.</p>
   <h2>Entrer</h2>
   <ul>
-    <li>Onglet <b>Lobby</b>, « Où miner » → <b>🗝 Instances</b> : la liste des instances (les prochaines sont encore fermées) et tes clés. Un groupe de <b>1 à 3</b>, lancé par le chef.</li>
-    <li>Il faut <b>une Clé d'instance I par joueur</b>. Elle est <b>consommée au lancement</b>, mais <b>rendue à tous si le groupe perd</b> (temps écoulé). Si le groupe gagne, elle reste consommée, même pour celui qui est parti. On la trouve dans les <b>Treasure T3</b> (20 % de chance), et on peut la <b>crafter</b> dès le départ (onglet Craft).</li>
+    <li>Onglet <b>Lobby</b>, menu des activités → <b>🗝 Instances</b> : la liste des instances (les prochaines sont encore fermées) et tes clés. Un groupe de <b>1 à 3</b>, lancé par le chef.</li>
+    <li>Il faut <b>une Clé d'instance I par joueur</b>. Elle n'est <b>utilisée que si le groupe gagne</b>, et seulement chez les joueurs encore là à la victoire. En cas d'<b>échec</b> (temps écoulé), ou si tu <b>quittes avant la fin</b>, tu <b>gardes ta clé</b>. On la trouve dans les <b>Treasure T3</b> (20 % de chance), et on peut la <b>crafter</b> dès le départ (onglet Craft).</li>
   </ul>
   <h2>L'Instance I : le roi gobelin</h2>
   <ul>
     <li><b>10 min de jeu</b> dans une salle à rebords : 3 de chaque côté, chacun avec un <b>spawner à gobelins</b> collé au mur. Ton mineur pose des échelles pour y monter.</li>
-    <li>Un spawner se casse « au coup de pioche » : chaque seconde lui enlève ta <b>vitesse de minage</b> (125 coups ; la Dynamite en vaut 6). Tant qu'il vit, il lâche un gobelin toutes les 30 s.</li>
-    <li>Les <b>gobelins</b> foncent sur vous, surtout sur celui qui casse un spawner. Leur premier coup te <b>tacle</b> : il faut tuer ce gobelin avant de reprendre. Leurs coups repoussent <b>vers le centre</b> : gare au bord du rebord !</li>
-    <li>Les 6 spawners cassés, le <b>roi gobelin</b> descend de sa plateforme : 3 500 PV, rapide, et tous les 10 coups il t'envoie en l'air. À chaque fois qu'il perd 20 % de ses PV, il <b>enferme</b> tout le monde sur les rebords : creuse pour sortir ! Sous 33 % de PV, il enrage.</li>
+    <li>Un spawner se casse « au coup de pioche » : chaque seconde lui enlève ta <b>vitesse de minage</b> (125 coups ; la Dynamite en vaut 6). Tant qu'il vit, il lâche un gobelin toutes les 20 s.</li>
+    <li>Les <b>gobelins</b> (200 PV, un coup toutes les 1,75 s) foncent sur vous, surtout sur celui qui casse un spawner. Leur premier coup te <b>tacle</b> : il faut tuer ce gobelin avant de reprendre. Leurs coups repoussent <b>vers le centre</b> : gare au bord du rebord !</li>
+    <li>Les 6 spawners cassés, le <b>roi gobelin</b> descend de sa plateforme : 3 500 PV, rapide, et tous les 10 coups il t'envoie en l'air. À chaque fois qu'il perd 20 % de ses PV, il <b>enferme</b> tout le monde sur les rebords : creuse pour sortir ! Tant que personne n'est redescendu au sol, il <b>régénère 1 % de ses PV toutes les 2 s</b> : faites vite. Sous 33 % de PV, il enrage.</li>
     <li>Pas d'oxygène, pas de sac, tout est éclairé. <b>Récompense</b> : roi vaincu, chaque joueur encore là reçoit un <a href="#roigobelin">Coffre du Roi Gobelin</a> (qualité R1 à R7). Pas d'XP.</li>
+    <li><b>Niveau 2</b> (au choix dans le Lobby, même clé) : spawners plus solides (200 coups, un gobelin toutes les 15 s), gobelins à 350 PV, roi à 6 000 PV qui frappe plus vite, enrage sous 40 % et régénère 2 % toutes les 2 s dans les cages. Roi vaincu : un <b>Coffre du Roi Gobelin II</b>, avec <b>× 1,5 de ressources</b> et <b>× 1,5 de chances d'objets</b>. Il a son propre classement, « Roi gobelin II ». Pour les équipes très bien équipées !</li>
   </ul>
   <p class="tip">💡 Une bonne <b>pioche</b> et une bonne <b>épée</b> comptent bien plus que l'armure ici. Visez au moins le niveau fer + acier, à trois.</p>
+  <h2>L'Instance II : le Golbute</h2>
+  <ul>
+    <li>Il faut <b>une Clé d'instance II par joueur</b> (dans les <b>Treasure T4</b>, 10 % de chance), utilisée seulement si le groupe gagne. Un seul niveau.</li>
+    <li><b>10 min</b> dans une arène vide. Le <b>Golbute</b>, un golem de 5 × 5, vous attend au milieu, sans bouger.</li>
+    <li>Toutes les <b>2 s</b>, il tape le sol : à 3 cases ou moins, tu peux être <b>projeté</b> en l'air (50 % de chance, moins avec de la <b>résistance au recul</b> et de la <b>ténacité</b>). La chute t'étourdit 5 s.</li>
+    <li>Toutes les <b>60 s</b>, une <b>avalanche</b> tombe sur tout le monde : étourdi 5 s et un stack <b>« Sonné »</b> (90 s, relancé à chaque avalanche). À <b>6 stacks, ton mineur meurt</b> : il reste au sol jusqu'à la fin. La <b>ténacité</b> fait esquiver l'avalanche.</li>
+    <li>Toutes les <b>3 min</b>, il se <b>divise en 10 golems</b> : il revient quand ils sont tous morts (l'avalanche, elle, continue).</li>
+    <li>À <b>66 %</b> et <b>33 %</b> de ses PV, il se <b>cristallise</b> : les coups ne servent plus à rien, il faut le <b>miner</b> (720 coups ; ta vitesse de minage compte, la Dynamite vaut 20 coups).</li>
+    <li>Après le cristal des 33 %, il <b>enrage</b> : il frappe plus vite, projette plus souvent et les avalanches arrivent plus tôt.</li>
+    <li><b>Récompense</b> : Golbute vaincu, chaque joueur encore là reçoit un <b>Coffre du Golbute</b> (R1 à R7). À l'ouverture : toujours 2 à 4 Mithril ingot, 1 à 2 Refined thorium, 1 à 2 Refined cobalt et 5 à 10 Pierres glissantes ; puis au plus un objet du Golbute : <b>Némésis du Golbute</b> (1 %, légendaire, pioche : minage +0,8 et ×1,25 sur la terre, la pierre et la pierre dure), <b>Torse de Gollex</b> (3 %, rare : beaucoup de pods, un peu moins de vitesse de marche), <b>Jambières du Golbute</b> (3 %, rare : dégâts %, butin des mobs, double attaque), <b>Âme du Golbute</b> (2 %, épique, torche : rayon 10, pose 0,5 s, +10 torches ; un golem qui meurt à 8 cases de toi te rend 25 d'oxygène), <b>Anneau en pierre</b> (2 %, rare : ténacité +3 % pour tout le groupe) ; au plus un parchemin de sort (Ulti shen, Cleave, Hand of Justice 1 %, Fast learner 0,5 %, seulement si tu ne l'as pas), la Recette : Chitine (5 %, si pas apprise) et au plus une gemme inférieure (2 % chacune). Les pièces arrivent identifiées, à la qualité du coffre.</li>
+  </ul>
+  <p class="tip">💡 Sans <b>ténacité</b>, les avalanches finissent par tuer tout le monde vers la 6e minute. Avec 25 % chacun, une bonne équipe gagne environ une fois sur quatre ; avec 50 %, presque toujours.</p>
 </section>
 
 <section id="ange">
@@ -268,11 +345,11 @@
   <p class="lead">Un effort commun à <b>tous les joueurs du serveur</b> : on remplit ensemble deux jauges, et chaque jauge pleine ouvre une tour où un boss garde des trésors.</p>
   <div id="w-judgment"></div>
   <h2>Le Jugement</h2>
-  <p>Dans le <b>Lobby</b>, « Où miner » → <b>⚖ Jugement</b> : les deux jauges face à face (l'Ange en blanc, le Démon en violet) et l'état de chaque tour (fermée, ou ouverte avec le temps restant). Quand une tour est ouverte et que tu ne l'as pas encore faite, un point s'allume sur l'onglet Lobby, et « Choisir la tour » la sélectionne.</p>
+  <p>Dans le <b>Lobby</b>, menu des activités → <b>⚖ Jugement</b> : les deux jauges face à face (l'Ange en blanc, le Démon en violet) et l'état de chaque tour (fermée, ou ouverte avec le temps restant). Quand une tour est ouverte et que tu ne l'as pas encore faite, un point s'allume sur l'onglet Lobby, et « Choisir la tour » la sélectionne.</p>
   <h2>Les tours</h2>
   <div id="w-tower"></div>
   <h2>Niveaux</h2>
-  <p>Une tour choisie dans « Où miner », celui qui lance (seul ou chef du groupe) choisit son <b>niveau</b>. Chaque niveau se gagne <b>une fois par ouverture</b>, avec un trésor à la clé : tu peux donc gagner deux trésors par ouverture. Le <b>niveau 2</b> est plus dur : les Séraphins / Diablotins et le boss ont <b>2,5 fois plus de PV</b>, les stonebricks sont <b>1,75 fois plus dures</b> et pèsent <b>1,5 fois plus</b> dans le sac, les Séraphins / Diablotins repoussent <b>deux fois plus loin</b>, le boss <b>enrage dès 50 %</b> de ses PV (au lieu de 33 %) et <b>invoque 2 Séraphins / Diablotins</b> sur le toit à chaque envol.</p>
+  <p>Une tour se gagne <b>une fois par joueur et par ouverture</b>, avec un trésor à la clé. Le <b>Shrine héroïque</b> (<b>30 Orbes</b>, dans le lobby des deux tours) la rend bien plus dure et donne <b>25 % de chance d'une 2e boîte</b>, tirée pour chaque joueur. Comme une stèle, il a <b>une charge</b>, prise seulement à la <b>victoire</b>, le chef peut le désactiver, et il <b>se cumule</b> avec la Stèle du pacte ou d'exorcisme. En Héroïque : les Séraphins / Diablotins et le boss ont <b>2,5 fois plus de PV</b>, les stonebricks sont <b>2 fois plus dures</b> et pèsent <b>2 fois plus</b> dans le sac, les Séraphins / Diablotins repoussent <b>deux fois plus loin</b>, le boss <b>enrage dès 50 %</b> de ses PV (au lieu de 33 %) et <b>invoque 2 Séraphins / Diablotins</b> sur le toit à chaque envol.</p>
   <p>À tous les niveaux, un Séraphin / Diablotin qui n'a plus personne dans son étage <b>saute par la porte ouverte</b> pour poursuivre un mineur tombé plus bas.</p>
   <p class="tip">💡 À plusieurs, c'est bien plus facile : un mineur projeté en bas doit remonter toute la tour, pendant que les autres continuent de frapper.</p>
   <p class="tip">🔎 Besoin d'alliés ? Tour choisie dans le Lobby, bouton <b>Who ?</b> : la liste des joueurs qui n'ont pas encore fait cette tour pendant cette ouverture : d'abord ceux en ligne, avec un bouton <b>Inviter</b> pour ceux qui ne sont pas en session, puis ceux qui sont <b>hors ligne</b> mais venus dans les dernières <b>24 h</b> (« vu il y a 3 h »), pour savoir qui contacter.</p>
@@ -293,16 +370,16 @@
     <li>On en trouve seulement dans les <b>trésors des <a href="#ange">tours</a></b>, en plus de la rune.</li>
   </ul>
   <h2 id="sets">Les sets</h2>
-  <p>Un <b>set</b> enregistre ton équipement complet : le <b>stuff porté</b> (les pièces exactes), tes <b>skills</b> et tes <b>sorts</b>. La même liste est à gauche des onglets Stuff, Skills et Sorts : <b>+ Nouveau set</b>, <b>Enregistrer</b> (remplace par l'équipement actuel), <b>✎</b> renommer, <b>×</b> supprimer. <b>Équiper</b> remet tout d'un coup ; une pièce qui n'existe plus (sacrifiée, recyclée…) laisse sa case vide. <b>Pendant une session</b>, tu peux <b>équiper</b> un set : la session en cours ne change pas, il compte dès la <b>prochaine</b> session. Enregistrer et Nouveau set attendent la fin de la session.</p>
+  <p>Un <b>set</b> enregistre ton équipement complet : le <b>stuff porté</b> (les pièces exactes), tes <b>skills</b> et tes <b>sorts</b>. La même liste est à gauche des onglets Stuff, Skills et Sorts, et dans le Lobby (sous l'équipe, pour équiper un set juste avant de lancer) : <b>+ Nouveau set</b>, <b>Enregistrer</b> (remplace par l'équipement actuel), <b>✎</b> renommer, <b>×</b> supprimer. <b>Équiper</b> remet tout d'un coup ; une pièce qui n'existe plus (sacrifiée, recyclée…) laisse sa case vide. <b>Pendant une session</b>, tu peux tout faire : <b>équiper</b> un set (la session en cours ne change pas, il compte dès la <b>prochaine</b> session), <b>enregistrer</b> tes modifications ou créer un nouveau set. Une petite pop-up confirme chaque sauvegarde et chaque set équipé.</p>
 </section>
 
 <section id="roigobelin">
   <h1>Le Roi Gobelin</h1>
   <p class="lead">Le boss de l'<a href="#instances">Instance I</a>. Quand il tombe, chaque joueur encore là reçoit un <b>Coffre du Roi Gobelin</b>, de qualité R1 à R7 (tirée comme les trésors des tours).</p>
   <ul>
-    <li>Dans le coffre : toujours du <b>graphite</b> (20 à 40) et des <b>peaux de gobelin</b> (50 à 100) ; au plus <b>un</b> objet rare : <b>Couronne du Roi Gobelin</b> (1 %), <b>plan du Four en or</b> (2 %), <b>Masse du Roi Gobelin</b> (2 %) ou <b>Cape royale du Gobelin</b> (2 %) ; la <b>Recette : Chitine</b> (5 %, seulement si tu ne l'as pas encore apprise) ; au plus <b>un parchemin de sort</b> : <b>Ulti shen</b> (1 %), <b>Fast learner</b> (0,5 %), <b>Cleave</b> (1 %), <b>Hand of Justice</b> (1 %), jamais un sort que tu as déjà appris ; une gemme inférieure (1 % chacune).</li>
+    <li>Dans le coffre : toujours des <b>lingots de graphite</b> (5 à 15), du <b>fer souillé</b> (Tainted iron, 10 à 20) et des <b>peaux de gobelin</b> (50 à 100) ; au plus <b>un</b> objet rare : <b>Couronne du Roi Gobelin</b> (1 %), <b>plan du Four en or</b> (2 %), <b>Masse du Roi Gobelin</b> (2 %) ou <b>Cape royale du Gobelin</b> (2 %) ; la <b>Recette : Chitine</b> (5 %, seulement si tu ne l'as pas encore apprise) ; au plus <b>un parchemin de sort</b> : <b>Ulti shen</b> (1 %), <b>Fast learner</b> (0,5 %), <b>Cleave</b> (1 %), <b>Hand of Justice</b> (1 %), jamais un sort que tu as déjà appris ; une gemme inférieure (1 % chacune).</li>
     <li>La couronne, la masse et la cape arrivent <b>déjà identifiées</b>, à la qualité du coffre.</li>
-    <li data-secret="Couronne du Roi Gobelin"><b>Couronne du Roi Gobelin</b> (casque, légendaire) : Fortune +10 %. Un gobelin qui apparaît à <b>10 cases ou moins</b> de toi est <b>asservi</b> : il ne se bat pas, mine les minerais autour de lui pendant <b>30 s</b> (vitesse d'un mineur de base, même priorité que toi), et tout ce qu'il casse va <b>directement dans le coffre commun</b> (ligne « 👑 Gobelins asservis » du coffre). Puis il disparaît.</li>
+    <li data-secret="Couronne du Roi Gobelin"><b>Couronne du Roi Gobelin</b> (casque, légendaire) : Fortune +10 %. Un gobelin qui apparaît à <b>10 cases ou moins</b> de toi est <b>asservi</b> : il ne se bat pas, mine les minerais autour de lui (s'il n'y en a pas, il creuse la roche jusqu'à en trouver) pendant <b>30 s</b> (vitesse d'un mineur de base, même priorité que toi), et tout ce qu'il casse va <b>directement dans le coffre commun</b> (ligne « 👑 Gobelins asservis » du coffre). Puis il disparaît.</li>
     <li data-secret="Masse du Roi Gobelin"><b>Masse du Roi Gobelin</b> (arme, rare) : 14 dégâts, critique +15 %.</li>
     <li data-secret="Cape royale du Gobelin"><b>Cape royale du Gobelin</b> (cape, rare) : dégâts +5 %, vitesse de minage +5 %.</li>
     <li><b>Recette : Chitine</b> : « Utiliser » dans l'inventaire ; au four (mode Fondre), 10 peaux de gobelin + 10 charbon donnent <b>5 chitine</b> en 60 s.</li>
@@ -313,12 +390,13 @@
 <section id="craft">
   <h1>Craft et four</h1>
   <h2>Le four</h2>
-  <p>Mode <b>Fondre</b> : <span id="w-smelt-rule"></span> Mode <b>Alliage</b> : deux ingrédients + du charbon. Les ingrédients ne sont consommés qu'à la fin de chaque produit : si tu retires une case, tu récupères tout.</p>
+  <p>Mode <b>Fondre</b> : <span id="w-smelt-rule"></span> Mode <b>Alliage</b> : deux ou trois ingrédients selon la recette + du charbon. Les ingrédients ne sont consommés qu'à la fin de chaque produit : si tu retires une case, tu récupères tout.</p>
+  <p class="tip">💡 Pas besoin de poser les ingrédients un par un : le bouton <b>Recettes</b> d'un four liste tout ce qu'il sait faire, avec le maximum que permet ton inventaire. Choisis une recette et un nombre de fournées (ou <b>Max</b>), puis <b>Lancer</b> : le four se met dans le bon mode et prend ce qu'il faut dans ton inventaire, charbon compris. Une recette grisée n'est pas encore apprise, ou il te manque des ingrédients. Tu peux <b>changer de recette</b> à tout moment sans vider le four : ce qui ne sert plus revient dans ton inventaire (rien n'est perdu, le produit en cours est juste annulé).</p>
   <div id="w-furnace"></div>
   <div id="w-furnace-tiers"></div>
   <h2 id="concasseur">Le concasseur</h2>
   <p><span id="w-crusher-rule"></span> Les blocs ne sont consommés qu'à la fin du cycle (retirer une case en cours ne coûte rien).</p>
-  <p>À chaque lot, il y a <b>un seul tirage pour les gemmes</b> (au plus une, au hasard parmi les trois) et un pour le treasure : les chances des trois gemmes s'additionnent. Le tableau donne la chance par lot.</p>
+  <p>À chaque lot, il y a <b>un seul tirage pour les gemmes</b> (au plus une, au hasard parmi les trois) et un pour le treasure : les chances des trois gemmes s'additionnent. Le tableau donne la chance par lot ; pour le minerai de fer, le butin garanti est donné avec sa fourchette (quantité tirée au hasard à chaque lot).</p>
   <div id="w-crusher"></div>
   <h2>Les recettes de craft</h2>
   <p>Les recettes « de base » sont dispo dès le départ. Les autres sont <b>secrètes</b> : il faut <b>utiliser leur blueprint</b> (BP) depuis l'inventaire pour les débloquer, pour toujours.</p>
@@ -331,9 +409,9 @@
 
 <section id="amelioration">
   <h1>L'amélioration</h1>
-  <p>L'onglet <b>💎 Amélioration</b> a trois rubriques : Identification, Amélioration et Enchantement. Seulement pour les pièces de ton inventaire : une pièce portée se retire d'abord dans l'onglet Stuff. Le hasard est tiré par le serveur.</p>
+  <p>L'onglet <b>💎 Amélioration</b> a trois rubriques : Identification, Amélioration et Enchantement. Les pièces de ton inventaire et celles que tu portes (marquées « équipée ») : pas besoin de les retirer. Une pièce portée que tu sacrifies quitte sa case, qui se vide. Le doublon qui améliore un anneau vient toujours de l'inventaire. Le hasard est tiré par le serveur.</p>
   <h2>Identification</h2>
-  <p>Deux cases : à gauche la pièce à identifier, à droite <b>un autre exemplaire du même objet</b>, qui sera <b>sacrifié</b> (peu importe sa qualité ou son niveau). Clique une case, puis la pièce à y poser. Si ce ne sont pas les mêmes objets, le bouton reste grisé et dit pourquoi.</p>
+  <p>Deux cases : à gauche la pièce à identifier, à droite <b>un autre exemplaire du même objet</b>, qui sera <b>sacrifié</b> (peu importe sa qualité ou son niveau). En deux temps : choisis d'abord la pièce à identifier (seules les pièces <b>pas encore identifiées</b> sont proposées), puis le sacrifice (seuls les autres exemplaires du même objet sont proposés).</p>
   <p>La pièce reçoit une <b>qualité</b> : son nom prend le titre et la couleur de la qualité (« Excellent : Pioche en pierre »), la case garde la couleur de rareté de l'objet. <b>C'est définitif</b> : une pièce identifiée ne se ré-identifie pas.</p>
   <div id="w-qualities"></div>
   <p class="tip">💡 Depuis le 22/10, l'identification ne donne <b>que la qualité</b>, plus de stats en plus. Les pièces identifiées avant <b>gardent</b> leurs lignes de stats bonus (minage %, dégâts %, critique, coup unique, perçage, butin des mobs…).</p>
@@ -343,9 +421,10 @@
   <div id="w-upgrade"></div>
   <p class="tip">💡 Les <b>Plumes d'ange</b> se ramassent dans la <a href="#mi">mine instantanée</a> ; les <b>Cristaux de pleine lune</b> sont le butin du minotaure du <a href="#donjon">donjon</a>.</p>
   <h2>Enchantement</h2>
-  <p>Une pièce de stuff + une <b>Rune</b> (dans un trésor des <a href="#ange">tours</a>) : la rune disparaît et <b>ses lignes de stats s'ajoutent à la pièce</b>. <b>Une seule rune par pièce, c'est définitif.</b> L'écran montre ce que la rune donnera sur cette pièce avant de valider. <b>Une pièce n'accepte qu'une rune de qualité égale ou inférieure à la sienne</b> : une pièce R6 peut recevoir une rune R1 à R6, pas une R7. Une pièce non identifiée n'a pas de qualité : identifie-la d'abord.</p>
+  <p>Une pièce de stuff + une <b>Rune</b> (dans un trésor des <a href="#ange">tours</a>) : la rune disparaît et <b>ses lignes de stats s'ajoutent à la pièce</b>. Une pièce runée montre sa rune en petit, en bas à gauche de sa case. <b>Une seule rune par pièce, c'est définitif.</b> L'écran montre ce que la rune donnera sur cette pièce avant de valider. <b>Une pièce n'accepte qu'une rune de qualité égale ou inférieure à la sienne</b> : une pièce R6 peut recevoir une rune R1 à R6, pas une R7. Une pièce non identifiée n'a pas de qualité : identifie-la d'abord.</p>
   <p>Chaque ligne d'une rune est une stat tirée au hasard (minage, dégâts, vitesse d'attaque, critique, fortune, coup unique, perçage, butin des mobs, marche, montée, pods, oxygène…), qui vaut un <b>% de la valeur du tier de la pièce</b> enchantée : <b>T1</b> (pierre, chitine, plans du Treasure T1) = 100 x, <b>T2</b> (fer, plans du Treasure T2) = 250 x, <b>T3</b> (acier, plans du Treasure T3, masse et cape du Roi Gobelin) = 500 x, <b>T4</b> (mithril, pièces spéciales du Treasure T4, Couronne du Roi Gobelin) = 650 x, <b>T4.5</b> (thorium, cobalt, Jambières titanesques) = 750 x. Une rune donne donc plus sur une pièce d'un tier plus élevé, et autant sur toutes les pièces d'un même tier. Les runes déjà posées suivent cette règle.</p>
   <p><b>Aura</b> : une pièce visible sur le mineur (casque, torse, ceinture, jambes, bottes, et la pioche ou l'épée quand il s'en sert) identifiée <b>R4 ou plus</b> et enchantée avec une <b>rune R4 ou plus</b> s'entoure d'un halo de la couleur de la qualité la plus basse des deux (donc celle de la rune) : <b>faible</b> en R4 et R5, <b>moyen</b> en R6, <b>fort</b> en R7. Tout le monde le voit, en session comme dans le lobby. Un fragment de rune ne donne pas d'aura. C'est purement visuel.</p>
+  <p><b>Recycler et fabriquer des runes</b> : une rune dont tu ne veux pas se <b>recycle</b> depuis l'inventaire en <b>8 à 12 Poudre de rêve</b>, quelle que soit sa qualité (un fragment de rune : 1 à 6). Avec <b>100 Poudre de rêve</b>, la recette <b>Rune</b> (onglet Craft, disponible dès le départ) fabrique une rune neuve, de qualité tirée au hasard : R1 15 %, R2 25 %, R3 30 %, R4 18 %, R5 6 %, R6 4,5 %, R7 1,5 %. Ses lignes sont tirées comme celles d'une rune de tour.</p>
   <div id="w-runes"></div>
 </section>
 
@@ -359,8 +438,8 @@
   <h1>Les treasures</h1>
   <p>Un <b>treasure</b> est un coffre enfoui dans la roche. Il y a <b><span id="w-treasure-chance"></span> de chance</b> qu'une area en cache un. Ton mineur le vise dès qu'il le voit. En le cassant, il obtient un objet <b>Treasure TX</b> (X = son niveau), que tu ouvres ensuite dans l'inventaire (bouton « Ouvrir »).</p>
   <div id="w-treasure-tiers"></div>
-  <p>Contenu : certains objets sont <b>toujours</b> là (quantité au hasard entre le min et le max), d'autres sont des <b>bonus rares</b>. Il y a au plus <b>un</b> objet de chaque famille de bonus (un blueprint, une gemme, un Cristal de pleine lune) par treasure. Le <b>Treasure T4</b> (areas 7 et 8) a en plus trois tirages à part (BP du Saphir, du Rubis et du Jade, 5 % chacun) qui ne sortent que si tu n'as pas encore appris la recette.</p>
-  <p class="tip">💡 Avec le Treasure T4 arrivent le <b>mithril</b>, le <b>cobalt</b> et le <b>thorium</b> : au four, 10 Mithril ore donnent un Mithril ingot, 5 Cobalt ore ou 5 Thorium ore donnent un lingot raffiné ; en alliage avec 5 Mithril ingot, on obtient les Cobalt et Thorium ingots. Les armures en thorium et en cobalt se fabriquent à partir de la pièce en mithril (la plus simple de ton inventaire est utilisée). Le minotaure donne aussi du <b>Cuir de minotaure</b>, pour les Doc Martins.</p>
+  <p>Contenu : certains objets sont <b>toujours</b> là (quantité au hasard entre le min et le max), d'autres sont des <b>bonus rares</b>. Il y a au plus <b>un</b> objet de chaque famille de bonus (un blueprint, une gemme, un Cristal de pleine lune) par treasure. Quand tu as appris toutes les recettes du tier d'un treasure <b>et</b> du tier suivant, ce treasure ne donne plus de blueprint : avec les tiers 1 à 3 appris, les T1 et T2 n'en donnent plus, le T3 si. Le <b>Treasure T4</b> (areas 7 et 8) a en plus trois tirages à part (BP du Saphir, du Rubis et du Jade, 5 % chacun) qui ne sortent que si tu n'as pas encore appris la recette.</p>
+  <p class="tip">💡 Avec le Treasure T4 arrivent le <b>mithril</b>, le <b>cobalt</b> et le <b>thorium</b> : au four, 10 Mithril ore donnent un Mithril ingot, 5 Cobalt ore ou 5 Thorium ore donnent un lingot raffiné ; en alliage avec 5 Mithril ingot et 3 Tainted gold, on obtient les Cobalt et Thorium ingots. Les armures en thorium et en cobalt se fabriquent à partir de la pièce en mithril (la plus simple de ton inventaire est utilisée). Le minotaure donne aussi du <b>Cuir de minotaure</b>, pour les Doc Martins.</p>
   <div id="w-loot"></div>
 </section>
 
@@ -383,12 +462,12 @@
 
 <section id="sorts">
   <h1>Les sorts</h1>
-  <p>Onglet <b>✨ Sorts</b> : <span id="w-spells-rule"></span> Un sort s'équipe d'un clic ou en le glissant sur un emplacement ; un sort verrouillé est grisé, avec sa condition.</p>
+  <p>Onglet <b>✨ Sorts</b> : <span id="w-spells-rule"></span> En haut, ta <b>barre de sorts</b>, la même qu'en bas de la mine ; dessous, le <b>grimoire</b> (tous les sorts, triés par spécialisation et parchemins) et la <b>fiche</b> du sort choisi : ce qu'il fait, ses chiffres, et comment le débloquer s'il ne l'est pas encore. Un sort se met dans la barre depuis sa fiche, d'un double clic ou en le glissant sur un emplacement ; un clic sur un sort de la barre le retire.</p>
   <ul>
     <li><b>Débloquer</b> : soit un <a href="#spe">niveau de spécialisation</a> (sorts de classe), soit un <b>parchemin</b> appris dans l'onglet Sorts (le parchemin est consommé, le sort reste à toi pour toujours).</li>
     <li>Un sort de classe ne marche qu'avec <b>sa spécialisation</b> (l'arbre de skills choisi). Après un reset des skills, il reste dans son emplacement mais <b>n'agit pas</b> (affiché en rouge).</li>
     <li><b>En session</b>, tu ne fais rien : chaque sort part <b>tout seul</b> dès que sa recharge est finie, s'il peut servir. Tous sont prêts au début. Les sorts sont figés au lancement, comme le stuff et les skills.</li>
-    <li><b>Dans les tours</b> de l'Ange et du Démon aussi, tes sorts sont joués (sauf la Bonbonne de zipette : pas d'oxygène là-haut). La <b>Dynamite</b> y touche aussi le boss.</li>
+    <li><b>Dans les tours</b> de l'Ange et du Démon aussi, tes sorts sont joués (sauf la Bonbonne de zipette : pas d'oxygène là-haut). La <b>Dynamite</b> y touche aussi le boss, et part en combat dès que 2 mobs sont dans son rayon. Dans l'<a href="#instances">Instance I</a>, elle part aussi en combat : sur le roi, ou sur un groupe d'au moins 2 gobelins.</li>
   </ul>
   <div id="w-spells"></div>
 </section>

@@ -15,6 +15,9 @@
    - Classements (sous-onglet Classements, 27/10/2026) : GS, XP, XP de spécialisation (un par arbre), meilleur temps de
      tour céleste ; tous les comptes, le top LEADERBOARD.size et sa propre place (src/meta/leaderboard.js). Les valeurs
      viennent du service de jeu (game.leaderboardData) ; ici on classe et on met les pseudos.
+   - Chat global (carte du Lobby, 28/10/2026) : un seul salon pour tous les comptes (invités compris), nom donné par le
+     serveur, CHAT.globalGapMs entre deux messages d'un joueur ; les CHAT.keep derniers sont enregistrés (ns chat_global)
+     et repris au premier appel après un redémarrage.
    - Inviter : passe par le service des groupes (invitation par ID, refusée si l'ami est en session). Rejoindre : entre
      dans le groupe de l'ami (créé s'il n'en a pas), seulement s'il est en ligne et pas en session.
 
@@ -23,10 +26,18 @@
    de demande à moitié faite avec deux requêtes simultanées). Testable seul : comptes, groupes, jeu et horloge passés
    en paramètres. */
 import { displayName, formatAccountId, parseAccountId, nameKey } from '../../src/shared/account.js';
+import { canBeInvited } from '../../src/shared/party.js';
 import { createLimiter } from '../accounts/ratelimit.js';
 import { SOCIAL_SERVER } from '../config.js';
 import { isBoard, specTree, rankBoard } from '../../src/meta/leaderboard.js';
-import { LEADERBOARD } from '../../src/config.js';
+import { LEADERBOARD, CHAT } from '../../src/config.js';
+import { LOBBY_TAG } from '../../src/shared/chat.js';
+import crypto from 'node:crypto';
+import { createChat } from '../game/chat.js';
+import { createRaffle } from './raffle.js';
+import { isRaffleJoin } from '../../src/shared/raffle.js';
+import { RAFFLE } from '../../src/config.js';
+import { chatChannel, sanitizeChatPrefs } from '../../src/shared/chat.js';
 
 export class SocialError extends Error {
   constructor(code, status, message, extra = {}){ super(message); this.code = code; this.status = status; Object.assign(this, extra); }
@@ -49,9 +60,13 @@ export function sanitizeSocial(raw, cfg = SOCIAL_SERVER){
 }
 
 /* accounts : { getAccount(id), findAccountByName(clé) } ; party : service des groupes ; game : service de jeu */
-export function createSocialService({ store, accounts, party, game, clock = Date.now, config = SOCIAL_SERVER }){
+export function createSocialService({ store, accounts, party, game, clock = Date.now, config = SOCIAL_SERVER, moderation = null,
+                                      guildInvites = async () => [],   // invitations de guilde d'un joueur (server/guild/service.js)
+                                      guildMembers = async () => [],   // comptes de la guilde d'un joueur : lecteurs du canal Guilde
+                                      random = () => crypto.randomBytes(6).readUIntBE(0, 6) / 2**48 }){
   const seen = new Map();                    // compte → dernier signe de vie (ms)
   const lastSeen = new Map();                // compte → dernier signe de vie, gardé whoRecentFor (« Who ? » : hors ligne récents)
+  const energies = new Map();                // compte → { at, energy } : dernière énergie lue (energyField)
   const limit = createLimiter(config.requestsPerHour, clock);
   let chain = Promise.resolve();
   /* une écriture à la fois (une demande change deux comptes) */
@@ -60,7 +75,44 @@ export function createSocialService({ store, accounts, party, game, clock = Date
   const load = async id => sanitizeSocial(await store.getSocial(id), config);
   const save = entries => store.putSocial(entries);           // [[id, social]…] écrits ensemble
   const online = id => clock() - (seen.get(id) ?? -Infinity) <= config.onlineFor;
+  /* chat global : jamais oublié faute de message (ttl infini), relu en base une seule fois */
+  const GLOBAL = 'global';
+  const chat = createChat({ clock, gapMs: CHAT.globalGapMs, ttlMs: Infinity, keep: CHAT.globalKeep });
+  /* canaux (31/10) : un message avec des lecteurs (to : MP, groupe) ne part qu'à eux et à son auteur ; to n'est jamais envoyé */
+  const canRead = (m, id) => !m.to || m.account === id || m.to.includes(id);
+  /* le code du groupe d'un lien reste au serveur : survol et clic passent par le numéro du message, on ne peut pas essayer des codes */
+  const chatView = ({ to: _to, lobby, ...m }) => lobby ? { ...m, lobby: { mode: lobby.mode, level: lobby.level, size: lobby.size, max: lobby.max } } : m;
+  /* lecteurs d'un message : {} (public), ou { to, toName? } ; le serveur décide, le navigateur donne seulement un pseudo */
+  async function audience(me, channel, to){
+    if(channel === 'group'){
+      const members = await party?.membersOf?.(me.id) ?? [];
+      if(members.length < 2) fail('bad_request', 400, "Tu n'es pas dans un groupe.");
+      return { to: members, ...(await party.isLeader?.(me.id) ? { leader: true } : {}) };   // chef du groupe à l'envoi (31/10) : décidé ici, jamais par le navigateur
+    }
+    if(channel === 'guild'){
+      const members = await guildMembers(me.id);
+      if(!members.length) fail('bad_request', 400, "Tu n'es pas dans une guilde.");
+      return { to: members };
+    }
+    if(channel !== 'mp') return {};
+    const target = typeof to === 'string' ? await accounts.findAccountByName(nameKey(to)) : null;
+    if(!target) fail('not_found', 404, 'Ce joueur n\'existe pas.');
+    if(target.id === me.id) fail('bad_request', 400, 'Tu ne peux pas t\'écrire à toi-même.');
+    return { to: [target.id], toName: displayName(target) };
+  }
+  async function lobbyOfMessage(me, id){
+    await chatReady();
+    const m = Number.isSafeInteger(id) ? chat.since(GLOBAL, id - 1).find(x => x.id === id && canRead(x, me.id)) : null;
+    if(!m?.lobby) fail('not_found', 404, 'Ce lien n\'est plus valable.');
+    return m.lobby;
+  }
+  let chatLoad = null;
+  const chatReady = () => chatLoad ??= Promise.resolve().then(() => store.getGlobalChat?.())
+    .then(raw => chat.restore(GLOBAL, raw)).catch(console.error);
   const nameOf = async id => displayName(await accounts.getAccount(id)) || formatAccountId(id);
+  const saveChat = () => serial(() => store.putGlobalChat(chat.room(GLOBAL)));
+  const raffle = createRaffle({ store, clock, random, give: (id, key, lot) => game.raffleGive(id, key, lot),
+    announce: async (text, winner) => { await chatReady(); chat.system(GLOBAL, RAFFLE.name, text, CHAT.channels[0].id, winner ? { winner } : {}); await saveChat(); } });
 
   /* l'ami visé : par pseudo d'abord, sinon par ID (« 7K3Q-9XHP ») */
   async function findTarget(input){
@@ -77,10 +129,22 @@ export function createSocialService({ store, accounts, party, game, clock = Date
   /* ce que fait un ami */
   async function statusOf(id){
     const ses = await game.activeSessionInfo(id);
-    if(ses) return { status: 'session', mode: ses.mode, leftMs: ses.leftMs };
+    if(ses) return { status: 'session', mode: ses.mode, leftMs: ses.leftMs, ...(ses.size ? { size: ses.size, max: ses.max } : {}) };
+    if(await game.prisonActiveOf?.(id)) return { status: 'session', mode: 'prison', online: online(id) };   // prison (30/10/2026) : comptée comme une session ; online : jeu ouvert (pastille verte, 31/10)
     if(!online(id)) return { status: 'offline' };
     const g = party.groupOf(id);
     return g ? { status: 'lobby', size: g.size, max: g.max } : { status: 'online' };
+  }
+
+  /* son énergie (31/10/2026) : relue au plus tous les energyFor, la lecture parcourt ses sessions et chaque navigateur
+     redemande ses amis toutes les quelques secondes ; { energy } ou rien si le service de jeu ne la donne pas */
+  async function energyField(id){
+    let c = energies.get(id);
+    if(!c || clock() - c.at >= config.energyFor){
+      c = { at: clock(), energy: await game.energyOf?.(id) };
+      energies.set(id, c);
+    }
+    return c.energy ? { energy: c.energy } : {};
   }
 
   async function view(me){
@@ -92,9 +156,9 @@ export function createSocialService({ store, accounts, party, game, clock = Date
       const st = await statusOf(id);
       const g = party.groupOf(id);
       const together = !!(g && myGroup && g.code === myGroup.code);
-      friends.push({ id, displayId: formatAccountId(id), name: await nameOf(id), ...st, together,
-                     canInvite: !meBusy && st.status !== 'offline' && st.status !== 'session' && !together,
-                     canJoin: !meBusy && (st.status === 'online' || st.status === 'lobby') && !together && !(g && g.size >= g.max) });
+      friends.push({ id, displayId: formatAccountId(id), name: await nameOf(id), ...st, ...await energyField(id), together,
+                     canInvite: !meBusy && canBeInvited(st) && !together,
+                     canJoin: !meBusy && (st.status === 'online' || st.status === 'lobby') && !together && !(g && (g.size >= g.max || g.locked)) });
     }
     const order = { lobby: 0, online: 1, session: 2, offline: 3 };
     friends.sort((a, b) => order[a.status] - order[b.status] || a.name.localeCompare(b.name, 'fr'));
@@ -104,6 +168,8 @@ export function createSocialService({ store, accounts, party, game, clock = Date
       outgoing: await Promise.all(s.outgoing.map(async r => ({ id: r.to, displayId: formatAccountId(r.to), name: await nameOf(r.to), at: r.at }))),
       /* invitations de groupe reçues (pop-up « xxx vous a invité dans son lobby ») */
       partyInvites: party.invitesOf(me.id),
+      /* invitations de guilde reçues (pop-up, onglet Guilde) */
+      guildInvites: await guildInvites(me.id),
     };
   }
 
@@ -164,7 +230,7 @@ export function createSocialService({ store, accounts, party, game, clock = Date
       return view(me);
     }),
 
-    /* joueurs en ligne (tous, amis ou non) : { count, players:[{ id, displayId, name, status…, me, friend }] } */
+    /* joueurs en ligne (tous, amis ou non) : { count, players:[{ id, displayId, name, status…, energy, me, friend }] } */
     async online(me){
       const now = clock();
       for(const [id, t] of seen) if(now - t > config.onlineFor) seen.delete(id);     // oubliés : la Map ne grossit pas
@@ -176,7 +242,9 @@ export function createSocialService({ store, accounts, party, game, clock = Date
         players.push({ id, displayId: formatAccountId(id), name: await nameOf(id), ...await statusOf(id), me: id === me.id, friend: mine.has(id) });
       const busy = p => p.status === 'session' ? 1 : 0;                                 // pas en session au-dessus
       players.sort((a, b) => busy(a) - busy(b) || a.name.localeCompare(b.name, 'fr'));
-      return { count: players.length, players: players.slice(0, config.onlineListMax) };
+      const shown = players.slice(0, config.onlineListMax);
+      for(const p of shown) Object.assign(p, await energyField(p.id));
+      return { count: players.length, players: shown };
     },
 
     /* « Who ? » (lobby, tour ouverte) : joueurs qui n'ont pas encore fait la tour de ce camp pendant cette ouverture, pour
@@ -208,8 +276,9 @@ export function createSocialService({ store, accounts, party, game, clock = Date
       const data = await game.leaderboardData(), tree = specTree(board);
       const hidden = new Set((await Promise.all(LEADERBOARD.hidden.map(n => accounts.findAccountByName(nameKey(n))))).filter(Boolean).map(a => a.id));
       const r = rankBoard(board, (tree ? data.spec[tree] : data[board]).filter(e => !hidden.has(e.id)), me.id);
-      const row = async ({ id, rank, value, me: mine, level, side, team }) =>
-        ({ rank, name: await nameOf(id), value, me: mine, ...(level ? { level } : {}), ...(side ? { side, team } : {}) });
+      const row = async ({ id, rank, value, me: mine, level, side, team, fight }) =>
+        ({ rank, name: await nameOf(id), value, me: mine, ...(level ? { level } : {}), ...(side ? { side, team } : {}),
+           ...(board === 'instance' || board === 'instance2' ? { team: team ?? [], fight: fight ?? null } : {}) });   // roi gobelin (niveaux 1 et 2) : équipe, temps de combat (29/10)
       return { board, total: r.total, rows: await Promise.all(r.rows.map(row)), me: r.me && await row(r.me) };
     },
 
@@ -234,9 +303,55 @@ export function createSocialService({ store, accounts, party, game, clock = Date
       return { id: f.id, displayId: formatAccountId(f.id), name: displayName(f) || formatAccountId(f.id), ...await game.profile(f.id) };
     },
 
+    /* chat global : tout compte connecté écrit ; le nom affiché vient du compte (serveur), jamais du navigateur */
+    async chatPost(me, body = {}){
+      await chatReady();
+      const channel = chatChannel(body.channel).id;
+      /* !join (31/10) : jamais publié ; la réponse revient à ce joueur seul, dans le canal où il l'a tapé */
+      if(isRaffleJoin(body.text)){
+        const message = chat.notice(GLOBAL, RAFFLE.name, await raffle.join(me), channel);
+        await saveChat();
+        return { message };
+      }
+      const reach = await audience(me, channel, body.to);
+      const lobby = typeof body.text === 'string' && body.text.includes(LOBBY_TAG) ? { lobby: await party.chatLink(me, body.lobby) } : {};
+      const r = chat.post(GLOBAL, me.id, displayName(me) || formatAccountId(me.id), body.text, { channel, ...reach, ...lobby });
+      if(r.error === 'bad_text') fail('bad_request', 400, `Message vide ou trop long (${CHAT.maxLen} caractères au plus).`);
+      if(r.error === 'too_fast') fail('too_many', 429, `Doucement : un message toutes les ${CHAT.globalGapMs / 1000} secondes au plus.`);
+      await serial(() => store.putGlobalChat(chat.room(GLOBAL)));   // état le plus récent, écritures l'une après l'autre
+      /* mot interdit (30/10) : publié masqué, et un avertissement pour son auteur */
+      const warning = r.hits.length && moderation
+        ? await moderation.warn(me.id, { channel: 'global', text: r.original, masked: r.msg.text, hits: r.hits }) : null;
+      return { message: chatView(r.msg), ...(warning ? { warning } : {}) };
+    },
+    /* messages après le numéro after (absent ou invalide : tous ceux gardés), seulement ceux que ce joueur peut lire */
+    async chatGet(me, after){
+      await chatReady();
+      return { messages: chat.since(GLOBAL, Number.isSafeInteger(after) && after > 0 ? after : 0).filter(m => canRead(m, me.id)).slice(-CHAT.keep).map(chatView) };
+    },
+    /* lien de lobby d'un message (31/10/2026) : son aperçu, tel qu'il est maintenant ; { open:false } si le groupe n'existe plus */
+    async chatLobby(me, id){
+      const link = await lobbyOfMessage(me, id), peek = await party.peek(link.code);
+      return { mode: link.mode, level: link.level, open: !!peek, ...(peek ?? { size: 0, max: link.max, members: [] }) };
+    },
+    /* cliquer sur le lien : rejoindre ce groupe (mêmes règles qu'avec son code) */
+    async chatLobbyJoin(me, id){
+      const link = await lobbyOfMessage(me, id);
+      if(!await party.peek(link.code)) fail('party_not_found', 404, 'Ce groupe n\'existe plus.');
+      return party.join(me, link.code);
+    },
+    /* réglages du chat de ce joueur (onglets, canaux masqués) */
+    async chatPrefs(me){ return sanitizeChatPrefs(await store.getChatPrefs?.(me.id)); },
+    async chatPrefsSave(me, body = {}){ const p = sanitizeChatPrefs(body); await store.putChatPrefs(me.id, p); return p; },
+
   };
   /* toute demande d'un joueur est un signe de vie (state() en premier : le navigateur l'appelle sans arrêt) */
   for(const k of Object.keys(api)){ const fn = api[k]; api[k] = (me, ...rest) => { seen.set(me.id, clock()); lastSeen.set(me.id, clock()); return fn(me, ...rest); }; }
+  /* messages du chat global de moins de ms (bulles du Carreau, server/town/service.js) : pas un signe de vie */
+  api.statusOf = statusOf;   // présence d'un membre de guilde (server/guild/service.js) : pas un signe de vie
+  api.raffleForce = () => raffle.force();   // administration (server/admin/routes.js)
+  api.raffleTick = () => raffle.tick();   // boucle du serveur (server/main.js) : pas un signe de vie
+  api.recentChat = async ms => { await chatReady(); const now = clock(); return chat.since(GLOBAL, 0).filter(m => !m.to && now - m.at <= ms); };   // jamais un MP ni un message de groupe ou de guilde
   return api;
 
   /* devenir amis : on retire les demandes dans les deux sens */

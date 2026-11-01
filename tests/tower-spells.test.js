@@ -66,3 +66,42 @@ test('un mob étourdi ne tacle pas et ne bouge pas', () => {
   for(let i = 0; i < 20; i++) tickTower(G);
   assert.equal(o.grab, null); assert.equal(o.x, x0);
 });
+
+test('Dash sur le boss de la tour (29/10) : il fonce au contact et frappe ; le boss n\'est pas étourdi', () => {
+  let hits = 0;
+  for(const seed of [1, 2, 3, 4]){
+    const G = runTower(seed, { side: seed % 2 ? 'demon' : 'angel', miners: team() });
+    hits += logs(G, /💨 Barb : Dash sur (Ange|Démon)/).length;
+    assert.equal(G.boss.stunUntil, undefined);
+    assert.equal(G.stats.blocked, 0);
+  }
+  assert.ok(hits > 0, `${hits} Dash sur le boss en 4 tours`);
+});
+
+test("Dash sur le boss même du « mauvais » côté (29/10, partie 949593874) : le côté voulu par le barbare ne bloque plus le Dash", async () => {
+  const { wantedSide, contactCells } = await import('../src/sim/tower/session.js');
+  const G = newTower(5, { side: 'demon', miners: team() });
+  let i = 0; while(!G.boss.engaged && !G.over && i++ < 60000) tickTower(G);
+  assert.ok(G.boss.engaged, 'combat engagé');
+  G.boss.air = null; G.mobs.forEach(o => { o.hp = 0; });
+  const y = G.roof - 1, [L] = contactCells(G).filter(c => c[2] === 'L');
+  const barb = G.miners.find(m => m.name === 'Barb');
+  for(const m of G.miners){ m.y = y; m.x = L[0]; m.action = null; m.kx = 0; }   // les autres à gauche : le barbare veut la droite
+  barb.x = L[0] - 4; barb.spellCd.dash = 0;
+  assert.equal(wantedSide(G, barb), 'R');
+  const hp = G.boss.hp;
+  decide(G, barb);
+  assert.equal(barb.x, L[0], 'il fonce sur la case de contact de son côté');
+  assert.ok(G.boss.hp < hp, 'et frappe');
+  assert.ok(barb.spellCd.dash > G.t);
+});
+
+test('Dynamite en combat dans la tour (29/10) : sur un mob qui en a au moins fightFoes dans le rayon', () => {
+  let fights = 0;
+  for(const seed of [1, 2, 3, 4]){
+    const G = runTower(seed, { side: seed % 2 ? 'demon' : 'angel', level: 2, miners: team() });
+    fights += logs(G, /🧨 Min : dynamite, 0 bloc cassé, \d+ (Séraphin|Diablotin)s? touchés?/).length;
+    assert.equal(G.stats.blocked, 0);
+  }
+  assert.ok(fights > 0, `${fights} dynamites sur des mobs au niveau 2 (aucune brique cassable)`);
+});

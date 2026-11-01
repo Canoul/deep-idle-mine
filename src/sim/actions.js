@@ -1,7 +1,7 @@
 /* Effets des actions du mineur sur le monde, et choix de l'action pour un pas dans une direction. */
-import { W, STATS, CFG, BLOCKS, BRIDGE, MOBS, TREASURE, ITEMS, XP, SKILLS, SHINY, DUNGEON, DUCK, COMBAT, GLYPHS, MOB_DROPS } from '../config.js';
+import { W, STATS, CFG, BLOCKS, BRIDGE, MOBS, TREASURE, ITEMS, XP, SKILLS, SHINY, DUNGEON, DUCK, COMBAT, GLYPHS, MOB_DROPS, PRISON, GOLBUTE } from '../config.js';
 import { mulberry32 } from '../core/rng.js';
-import { areaOf, isOre, typeOf, treasureItem, isAir, tileAt, supported, tryUnlock, oreRemoved, oreKey, fallInfo, isWinch } from './world.js';
+import { areaOf, contentAt, isOre, typeOf, treasureItem, isAir, tileAt, supported, tryUnlock, oreRemoved, oreKey, fallInfo, isWinch } from './world.js';
 import { updateLight } from './light.js';
 import { startAction, collect, placedTorch, mineT, moveT, climbT, winchT, ladderTime, rushTime, warcryOf } from './mineur.js';
 import { provoke, revealMimic, mobCanEnter } from './mobs.js';
@@ -13,6 +13,7 @@ import { noEntry } from './dungeon.js';
 import { depositToMule, pickMule, placeMule, emptyMule, isCarrier } from './mule.js';
 import { finishDash, finishDynamite, learnOnMine } from './spells.js';
 import { fleshAt } from './flesh.js';
+import { exposedMul } from './minotaur.js';
 
 /* XP de la session : pot commun (partagé à parts égales en fin de session) ; m.stats.xp = ce que ce mineur y a apporté */
 function gainXp(G,m,n){ if(!n) return; G.stats.xp=(G.stats.xp||0)+n; m.stats.xp=(m.stats.xp||0)+n; }
@@ -24,6 +25,7 @@ function oreSkills(G,m){
   /* Glyphe Second souffle : une chance de rendre une torche, jamais au-delà du max */
   if(m.skill.glyph_ore_oxygen && m.torches<m.carac.torches && G.rng()<GLYPHS.torchChance) m.torches++;
   if(m.skill.ore_rush) m.rushUntil=G.t+rushTime(m);   // Glyphe Ruée : plus long
+  if(m.skill.ore_drunk) m.oreDrunk=(m.oreDrunk||0)+m.skill.ore_drunk;   // Ivresse Minérale : consommée par landHit
 }
 /* skill Barbare loot et stat looting (butin des mobs, en %) : b = loot + looting/100 est la CHANCE d'un butin en plus
    (pas un multiplicateur, décision du 22/10, Geoffrey) : 9 % → 9 % de chance d'avoir 1 de plus ; au-delà de 100 %,
@@ -34,13 +36,33 @@ function lootOf(G,m,n){
   const sure=Math.floor(b);
   return n + sure + (G.rng() < b-sure ? 1 : 0);
 }
+/* Âme du Golbute (30/10/2026, Geoffrey) : un golem qui meurt rend golemOxygen d'oxygène à chaque porteur à
+   GOLBUTE.golemOxygenRadius cases ou moins (cercle), sans dépasser son maximum ; bonus personnel */
+function golemOxygen(G,o){
+  const R=GOLBUTE.golemOxygenRadius;
+  for(const p of G.miners){
+    const g=p.carac?.golemOxygen||0;
+    if(g>0 && p.left==null && (p.x-o.x)**2+(p.y-o.y)**2 <= R*R && p.ox<p.carac.oxygenMax){
+      p.ox=Math.min(p.carac.oxygenMax, p.ox+g); log(G, `🫁 ${p.name} : +${g} oxygène (Âme du Golbute)`);
+    }
+  }
+}
+/* butin d'un mob : base payante, le supplément (Pillage / looting) à 0 pod (30/10/2026) ; renvoie le total */
+function lootCol(G,m,item,w,base){
+  const n=lootOf(G,m,base);
+  collect(m,item,w,Math.min(base,n)); if(n>base) collect(m,item,w,n-base,true);
+  return n;
+}
+
+/* prison : chaque chance de butin rare × PRISON.rareMul (glyphes, shiny, butin rare des mobs) */
+const rareMul = G => G.prison ? PRISON.rareMul : 1;
 
 function oreMinedIn(G,y,t){ const k=areaOf(y); G.areas[k].oreMined++; oreRemoved(G,k,t); tryUnlock(G); }
 
 /* shiny : un minerai qui a une recette de four tombe parfois déjà cuit (SHINY) ; renvoie le shiny ou null */
 export function shinyOf(G,t){
   const s=Object.hasOwn(SHINY.items, BLOCKS[t].name) ? SHINY.items[BLOCKS[t].name] : null;
-  return s && G.shinyRng() < SHINY.chance ? s.item : null;
+  return s && G.shinyRng() < SHINY.chance*rareMul(G) ? s.item : null;
 }
 
 /* fortune : combien d'exemplaires EN PLUS d'un minerai miné (m.carac.fortune, en %) ; 0 le plus souvent
@@ -56,8 +78,9 @@ export function fortuneExtra(G,m){
 const gearChance = (G,pct) => pct>0 && G.gearRng()*100 < pct;
 /* dégâts d'un coup : (base + bonus fixes) × (1 + bonus en %), doublés sur un coup critique */
 /* dégâts d'un coup (Glyphe Pillage : + m.pillage %, gagné en tuant des mobs) */
-export const hitDamage = (G,m) => m.carac.damage*(1+((m.carac.damagePct||0)+(m.pillage||0))/100)*(1+(warcryOf(G,m)?.dmg||0))
-                                 *(gearChance(G,m.carac.crit||0) ? 2 : 1);   // Cri de guerre : × (1 + 10 %)
+/* flat : dégâts fixes de ce coup seul (Ivresse Minérale) ; m.hitCrit : ce coup était-il critique (Saccager) */
+export const hitDamage = (G,m,flat=0) => { m.hitCrit=gearChance(G,m.carac.crit||0);
+  return (m.carac.damage+flat)*(1+((m.carac.damagePct||0)+(m.pillage||0))/100)*(1+(warcryOf(G,m)?.dmg||0))*(m.hitCrit ? 2 : 1); };   // Cri de guerre : × (1 + 10 %)
 /* coup unique : chance de casser le bloc instantanément (durée de minage minimale) */
 export const mineDuration = (G,m,t) => gearChance(G,m.carac.oneTap||0) ? 0 : mineT(G,m,t);
 
@@ -89,12 +112,12 @@ export function mineBlock(G,m,x,y){
 /* drop d'un glyphe (GLYPHS.drop) : à un événement de sa spécialisation ('block', 'ladder', 'kill'), d.chance de trouver UN
    glyphe de son arbre qu'il ne possède pas encore (ni au lancement, ni trouvé dans la session), tiré au hasard parmi
    eux. Hasard à part (glyphRng) : sans spécialisation ou sans glyphe à trouver, rien n'est tiré. */
-function glyphDrop(G,m,event){
+export function glyphDrop(G,m,event){
   const d=GLYPHS.drop[m?.skillTree];
   if(!d || d.event!==event || !G.glyphRng) return;
   m.glyphFound ??= [];
   const have=new Set([...(m.glyphsOwned||[]), ...m.glyphFound]), left=glyphsOfTree(m.skillTree).filter(n => !have.has(n));
-  if(!left.length || !(G.glyphRng() < d.chance)) return;
+  if(!left.length || !(G.glyphRng() < d.chance*rareMul(G))) return;
   const g=left[Math.floor(G.glyphRng()*left.length)];
   m.glyphFound.push(g); G.stats.glyphs=(G.stats.glyphs||0)+1;
   log(G, `✨ ${m.name} trouve un ${g} !`);
@@ -113,7 +136,8 @@ export function breakBlock(G,m,x,y){
   } else if(!BLOCKS[t].noDrop){ got=BLOCKS[t].name; collect(m, got, BLOCKS[t].w, 1); }
   if(got && isOre(t)){   // fortune : le minerai obtenu est dupliqué
     const extra=fortuneExtra(G,m);
-    if(extra){ collect(m, got, ITEMS[got].w, extra); m.stats.fortune=(m.stats.fortune||0)+extra; }
+    if(extra){ collect(m, got, ITEMS[got].w, extra, true);   // fortune : 0 pod (30/10)
+      m.stats.fortune=(m.stats.fortune||0)+extra; }
   }
   if(isOre(t)){ m.stats.ore++; oreMinedIn(G,y,t); gainXp(G,m,XP.ore[oreKey(t)]); oreSkills(G,m); }
   if(typeOf(t)==='treasure') openTreasure(G,m,x,y);
@@ -122,7 +146,7 @@ export function breakBlock(G,m,x,y){
 /* treasure : un objet Treasure TX (tier selon l'area du treasure) va dans l'inventaire du mineur.
    Aucun minerai : rien ne compte pour le déblocage de l'area. */
 function openTreasure(G,m,x,y){
-  const tr=G.treasures.get(y*W+x), item=tr ? tr.item : treasureItem(areaOf(y));
+  const tr=G.treasures.get(y*W+x), item=tr ? tr.item : treasureItem(contentAt(G,y));
   if(tr) tr.opened=true;
   collect(m, item, TREASURE.itemWeight, TREASURE.itemCount);
   G.stats.treasures++; m.stats.treasures++;
@@ -136,31 +160,28 @@ function rareDrop(G,m,o){
   for(const d of MOB_DROPS.items){
     if(d.mob!==o.type) continue;
     const r=(G.dropRng ??= mulberry32(G.seed ^ MOB_DROPS.salt));
-    const chance=(G.khole && d.kholeChance!=null ? d.kholeChance : d.chance)*(1+Math.max(0, lootBonus(m)));
-    if(r() < chance){ collect(m,d.item,ITEMS[d.item].w ?? 0,1); log(G, `✨ ${m.name} : ${d.item} !`); }
+    const chance=(G.khole && d.kholeChance!=null ? d.kholeChance : d.chance)*(1+Math.max(0, lootBonus(m)))*rareMul(G);
+    if(r() < chance){ collect(m,d.item,ITEMS[d.item].w ?? 0,1); log(G, `✨ ${m.name} : ${d.item} !`); return; }   // une pièce au plus par mob (31/10 : gobelin, occultiste et bestiole ont deux tirages)
   }
 }
 
 export function killMob(G,m,o){
-  o.hp=0; G.stats.kills++; m.stats.kills++; gainXp(G,m,XP.mob[o.type]);
+  o.hp=0; G.stats.kills++; m.stats.kills++; if(m.stats.killsBy) m.stats.killsBy[o.type]=(m.stats.killsBy[o.type]||0)+1; gainXp(G,m,XP.mob[o.type]*(G.prison?PRISON.mobXpMul:1));
   if(m.skill.glyph_loot) m.pillage=Math.min(GLYPHS.killDamageMax, (m.pillage||0)+GLYPHS.killDamagePct);   // Glyphe Pillage
   glyphDrop(G,m,'kill');   // Glyphe (spé Barbare)
   if(o.type==='mimic'){
-    G.tiles[o.y][o.x]=0; G.mimicCells.delete(o.y*W+o.x); updateLight(G); const b=BLOCKS[o.ore], n=lootOf(G,m,MOBS.mimicLoot);
-    collect(m, b.name, b.w, n); oreMinedIn(G,o.y,o.ore);
+    G.tiles[o.y][o.x]=0; G.mimicCells.delete(o.y*W+o.x); updateLight(G); const b=BLOCKS[o.ore], n=lootCol(G,m,b.name,b.w,MOBS.mimicLoot);
+    oreMinedIn(G,o.y,o.ore);
     log(G, `🗡 ${m.name} : mimic vaincu (+${n} ${b.name})`);
   } else if(o.type==='gobelin'){
-    const n=lootOf(G,m,MOBS.goblinLoot(G.rng)), c=lootOf(G,m,MOBS.goblinChitin);
-    collect(m,MOBS.goblinItem,ITEMS[MOBS.goblinItem].w,n); collect(m,MOBS.bugItem,ITEMS[MOBS.bugItem].w,c);
+    const n=lootCol(G,m,MOBS.goblinItem,ITEMS[MOBS.goblinItem].w,MOBS.goblinLoot(G.rng)), c=lootCol(G,m,MOBS.bugItem,ITEMS[MOBS.bugItem].w,MOBS.goblinChitin);
     log(G, `🗡 ${m.name} : gobelin vaincu (+${n} peau de gobelin, +${c} chitine)`);
   } else if(o.dungeon!=null || o.type===DUNGEON.boss.type){
     /* boss de donjon (et minotaure à découvert d'un k hole, src/sim/khole.js) : 1 à 3 Cristaux de pleine lune (Pillage
        compris) ; chaque joueur en recevra la quantité entière */
-    const L=DUNGEON.loot, n=lootOf(G,m,L.min+Math.floor(G.rng()*(L.max-L.min+1)));
-    collect(m,L.item,ITEMS[L.item].w ?? 1,n);
+    const L=DUNGEON.loot, n=lootCol(G,m,L.item,ITEMS[L.item].w ?? 1,L.min+Math.floor(G.rng()*(L.max-L.min+1)));
     /* Cuir de minotaure (27/10/2026) : 1 à 3 en plus, même partage (SHARE.copyToAll) */
-    const C=DUNGEON.leather, c=C ? lootOf(G,m,C.min+Math.floor(G.rng()*(C.max-C.min+1))) : 0;
-    if(c) collect(m,C.item,ITEMS[C.item].w ?? 1,c);
+    const C=DUNGEON.leather, c=C ? lootCol(G,m,C.item,ITEMS[C.item].w ?? 1,C.min+Math.floor(G.rng()*(C.max-C.min+1))) : 0;
     log(G, `🗡 ${m.name} : ${DUNGEON.boss.name.toLowerCase()} vaincu ! (+${n} ${L.item}${c ? `, +${c} ${C.item}` : ''})`);
   } else if(o.type===DUCK.type){
     /* Gallianix : un Fragment de cœur une fois sur 4 (hasard du canard, pas de Pillage), rapporté au coffre commun */
@@ -168,25 +189,25 @@ export function killMob(G,m,o){
     if(r() < h.chance){ collect(m,h.item,ITEMS[h.item].w ?? 1,1); log(G, `🗡 ${m.name} : Gallianix ${o.name} vaincu (+1 ${h.item.toLowerCase()})`); }
     else log(G, `🗡 ${m.name} : Gallianix ${o.name} vaincu`);
   } else if(o.type==='occultiste'){
-    const it=MOBS.occult.item, n=lootOf(G,m,MOBS.occult.loot(G.rng)), c=lootOf(G,m,MOBS.occult.chitin(G.rng));
-    collect(m,it,ITEMS[it].w ?? 1,n); collect(m,MOBS.bugItem,ITEMS[MOBS.bugItem].w,c);
+    const it=MOBS.occult.item, n=lootCol(G,m,it,ITEMS[it].w ?? 1,MOBS.occult.loot(G.rng)), c=lootCol(G,m,MOBS.bugItem,ITEMS[MOBS.bugItem].w,MOBS.occult.chitin(G.rng));
     log(G, `🗡 ${m.name} : occultiste vaincu (+${n} ${it.toLowerCase()}, +${c} chitine)`);
   } else if(o.type==='mephite'){
-    const it=MOBS.mephite.item, n=lootOf(G,m,MOBS.mephite.loot(G.rng));
-    collect(m,it,ITEMS[it].w ?? 1,n);
+    const it=MOBS.mephite.item, n=lootCol(G,m,it,ITEMS[it].w ?? 1,MOBS.mephite.loot(G.rng));
     log(G, `🗡 ${m.name} : méphite vaincu (+${n} ${it.toLowerCase()})`);
   } else if(o.type==='chair'){
     /* mur de chair (28/10/2026) : Rotten flesh et chitine */
     const C=MOBS.chair, r=(a)=>a.min+Math.floor(G.rng()*(a.max-a.min+1));
-    const n=lootOf(G,m,r(C.flesh)), c=lootOf(G,m,r(C.chitin));
-    collect(m,C.flesh.item,ITEMS[C.flesh.item].w ?? 1,n); collect(m,MOBS.bugItem,ITEMS[MOBS.bugItem].w,c);
+    const n=lootCol(G,m,C.flesh.item,ITEMS[C.flesh.item].w ?? 1,r(C.flesh)), c=lootCol(G,m,MOBS.bugItem,ITEMS[MOBS.bugItem].w,r(C.chitin));
     log(G, `🗡 ${m.name} : mur de chair vaincu (+${n} ${C.flesh.item.toLowerCase()}, +${c} chitine)`);
+  } else if(o.type==='chien' || o.type==='ver'){
+    const C=MOBS[o.type], n=lootCol(G,m,C.item,ITEMS[C.item].w ?? 1,C.loot(G.rng));
+    log(G, `🗡 ${m.name} : ${o.type==='ver' ? 'vers de terre' : 'chien de magma'} vaincu (+${n} ${C.item.toLowerCase()})`);
   } else if(o.type==='golem'){
-    const it=MOBS.golem.item, n=lootOf(G,m,MOBS.golem.loot(G.rng));
-    collect(m,it,ITEMS[it].w ?? 1,n);
+    golemOxygen(G,o);   // Âme du Golbute (30/10)
+    const it=MOBS.golem.item, n=lootCol(G,m,it,ITEMS[it].w ?? 1,MOBS.golem.loot(G.rng));
     log(G, `🗡 ${m.name} : golem vaincu (+${n} ${it.toLowerCase()})`);
   } else {
-    const n=lootOf(G,m,MOBS.bugLoot(G.rng)); collect(m,MOBS.bugItem,1,n);
+    const n=lootCol(G,m,MOBS.bugItem,1,MOBS.bugLoot(G.rng));
     log(G, `🗡 ${m.name} : bestiole vaincue (+${n} chitine)`);
   }
   rareDrop(G,m,o);
@@ -219,7 +240,7 @@ export function finishAction(G,m,a){
         parts.push(m.inv[k]+' '+k);
       }
       if(parts.length){ log(G, `📦 ${m.name} dépose : ${parts.join(', ')}`); G.stats.trips++; m.stats.trips++; }
-      m.inv={}; m.load=0;
+      m.inv={}; m.load=0; m.free={};
       if(isCarrier(G,m) && !G.mule.placed) emptyMule(G, m.name);   // Mule : le sac qu'il rapporte
       break; }
     /* Mule (src/sim/mule.js) : dépôt dans le sac, ramassage, pose (la case doit être restée vide) */
@@ -243,18 +264,24 @@ export function finishAction(G,m,a){
    - un mob repoussé hors de SA portée de tacle lâche son tacle : il doit revenir pour reprendre le mineur ;
    - verrou (o.knockLock) : un mob repoussé ne peut plus l'être tant qu'il n'est pas revenu à portée de tacle (levé dans
      src/sim/mobs.js). Le mineur ne peut donc jamais le repousser en boucle, quelle que soit sa vitesse d'attaque :
-     le mob revient au contact à chaque fois. Les coups suivants font leurs dégâts, sans recul. */
+     le mob revient au contact à chaque fois. Les coups suivants font leurs dégâts, sans recul.
+   Minotaure sonné après une charge ratée : dégâts × exposedMul (src/sim/minotaur.js, 30/10/2026). */
 export function landHit(G,m,o){
   if(!(o.hp>0) || !inReach(G,m,o,reachOf(m))) return;
   if(m.skill.taunt) provoke(G,o,m);   // provocation : il ne vise plus que ce mineur (tous les mobs)
-  const dmg=hitDamage(G,m);
+  const ravaged=m.ravage;   // Saccager : la série de critiques d'avant garantit le second coup de cette attaque
+  const dmg=hitDamage(G,m,m.oreDrunk||0)*exposedMul(G,o);
+  m.oreDrunk=0;
+  /* Saccager : seul le premier coup d'une attaque normale compte ; rien ne compte tant que le second coup est dû */
+  if(m.skill.ravage && !ravaged){ m.critRun=m.hitCrit ? (m.critRun||0)+1 : 0; if(m.critRun>=SKILLS.ravageCrits){ m.ravage=true; m.critRun=0; } }
   o.hp-=dmg; m.foeHit=G.t;
   if(o.grab===m.id) o.grabHit=G.t;   // tacle : il se bat, la soupape repart (COMBAT.tackleGiveUp)
   splash(G,m,o,dmg);
   if(o.hp<=0){ killMob(G,m,o); return; }
   /* double attaque (stat doubleAttack, %) : un second coup, avec son propre critique ; un seul recul */
-  if(gearChance(G,m.carac.doubleAttack||0)){
-    const d2=hitDamage(G,m);
+  if(gearChance(G,m.carac.doubleAttack||0) || ravaged){
+    m.ravage=false;
+    const d2=hitDamage(G,m)*exposedMul(G,o);
     o.hp-=d2; splash(G,m,o,d2);
     m.stats.doubleHits=(m.stats.doubleHits||0)+1;
     if(o.hp<=0){ killMob(G,m,o); return; }

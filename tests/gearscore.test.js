@@ -37,10 +37,10 @@ test('GS des stats offensives (28/10/2026, Geoffrey) : prix du tableau des ligne
   for(const k of UPGRADE.gsFromPrices) assert.equal(gsPrice(k), UPGRADE.prices[k], k);
   assert.equal(gsPrice('pods'), statPrice('pods')); assert.equal(gsPrice('knockRes'), statPrice('knockRes'), 'défensive : prix mesuré');
   assert.equal(designPrice('damagePct'), statPrice('damagePct') * UPGRADE.priceAdjust.damagePct, 'dessin : prix mesuré × ajustement');
-  /* exemple de Geoffrey : Casque en fer avec une rune Dégâts +9,2 % → 46 GS pour cette ligne */
+  /* exemple de Geoffrey : Casque en fer avec une rune de dégâts à 18,4 % du tier, 46 GS le 28/10 ; 31/10 : dégâts % ÷ 3 sur les runes, +3,1 % → 16 GS */
   const base = pieceGS('Casque en fer'), item = 'Casque en fer';
   const r = pieceGS({ item, q:7, rune:{ q:7, s:1, lines:[{ stat:'damagePct', pct:18.4 }] } });
-  assert.equal(r - base, 46);
+  assert.equal(r - base, 16);
 });
 
 test('ajustements de Geoffrey (27/10/2026) : servent à dessiner les pièces, pas au GS (28/10)', () => {
