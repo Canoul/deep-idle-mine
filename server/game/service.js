@@ -1287,7 +1287,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       const ok = rec.status === 'running' && ensureLive(rec);
       /* la partie peut se terminer (et le moteur la fermer) pendant que la vue attend son tour : « settling » */
       const view = ok ? await live.view(rec.id, s).catch(e => { if(live.has(rec.id)) throw e; return null; }) : null;
-      return { view, status: view ? 'running' : 'settling', clock: rec.dev ? rec.clock : null, now: clock(), ...await teamEnergies(rec) };
+      return { view, status: view ? 'running' : 'settling', clock: rec.dev ? rec.clock : null, now: clock(), speed: rec.speed, startedAt: rec.startedAt, finishAt: rec.finishAt, ...await teamEnergies(rec) };
     },
 
     /* la prison du joueur, pour l'afficher (GET /api/game/prison) : c'est une visite (présence, retour après une
@@ -1388,6 +1388,29 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     /* administration (29/10/2026, Geoffrey) : sort un joueur de sa session en cours, comme son bouton « Quitter » (il ne
        reçoit rien de cette session ; les autres continuent ; dernier joueur : la partie s'arrête, personne ne reçoit rien) */
     adminLeave: accountId => leaveSession(accountId),
+
+    /* administration (01/11/2026, Geoffrey) : change la vitesse de la session du joueur, donc de tout son groupe. Le temps déjà
+       écoulé et le temps restant sont remis à l'échelle : la partie reste au même tick et finit normalement, butin compris.
+       startedAt recule d'autant : l'Historique affiche une durée raccourcie. Pas en mode dev (ses boutons), ni en mine
+       instantanée (elle est commune à tous ses inscrits). */
+    async adminSpeed(accountId, speed){
+      if(!GAME.devSpeeds.includes(speed)) fail('bad_request', 400, `Vitesse : ${GAME.devSpeeds.join(', ')}.`);
+      const rec0 = await activeOf(accountId);
+      if(!rec0) fail('no_session', 404, 'Ce joueur n\'est pas en session.');
+      if(rec0.dev) fail('dev_session', 409, 'Session de développement : utilise ses boutons de vitesse.');
+      if(rec0.mode === 'mi') fail('instant_session', 409, 'La mine instantanée est commune à tous ses inscrits : vitesse non modifiable.');
+      return withLock('sess:' + rec0.id, async () => {
+        const rec = await store.getGameSession(rec0.id), now = clock(), was = rec.speed;
+        if(rec.status !== 'running' || settling.has(rec.id)) fail('no_session', 404, 'Cette session vient de se terminer.');
+        const scale = was / speed;
+        rec.speed = speed;
+        rec.startedAt = Math.round(now - (now - rec.startedAt) * scale);
+        rec.finishAt = Math.round(now + Math.max(0, rec.finishAt - now) * scale);
+        await store.putGameSession(rec);
+        return { session: rec.id, mode: rec.mode ?? 'mine', from: was, speed, leftMs: rec.finishAt - now,
+                 players: rec.players.filter(p => !hasLeft(rec, p.account)).map(p => p.name) };
+      });
+    },
 
     /* administration : retire qty exemplaires d'un objet à un compte (ex. un glyphe donné par erreur), sous les verrous
        de son inventaire et de ses skills (même ordre que glyph_pose). D'abord l'inventaire ; un glyphe posé sur son skill

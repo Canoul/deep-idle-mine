@@ -6258,3 +6258,9 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** : `tests/hescoming-sim.test.js`, `tests/hescoming-service.test.js`, `tests/anticheat/hescoming.test.js` ✅ ; ⚠️ pas vu dans un navigateur.
 - **Simulation** (dégâts 18, seul, 40 visites, points moyens) : sans sort 1 410, Dash 2 412, Cleave 1 526, Dynamite 1 428, Dash + Cleave + Dynamite + Cri 2 619.
 - ⚠️ **Équilibrage** : le Dash vaut +71 %, car 5 × ses dégâts toutes les 15 s, et les paliers ont été réglés sans lui. Valeur à revoir à l'usage.
+
+## 01/11/2026 — Administration : vitesse d'une session (Geoffrey) — branche `geoffrey/admin-vitesse`
+- **Quoi** : `adminSpeed` (`server/game/service.js`) remet `startedAt` et `finishAt` à l'échelle, sous le verrou `sess:` : le tick cible ne bouge pas.
+  Route `POST /api/admin/session-speed`, `scripts/session-speed.js`. `view` renvoie `speed`, `startedAt`, `finishAt`, repris par `pollView`.
+- **Tests** : `tests/admin-session-speed.test.js` ✅, script compris ; ⚠️ navigateur et vraie partie à ×300 pas essayés (faux moteur).
+- **Point fragile** : l'Historique affiche une durée raccourcie, car `startedAt` recule. ×300 demande 3 000 ticks par seconde, or une session d'1 h à 3 mineurs (36 000 ticks) se calcule en ~19 s sur le poste de Geoffrey, soit ~1 900 ticks/s : la session dépasse `finishAt`, passe par le rattrapage de `pump` (`overdue`, une session à la fois) et l'affichage peut dire « connexion… ».

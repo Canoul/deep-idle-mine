@@ -12,6 +12,7 @@
    POST /api/admin/party-move {"name":"crousti","to":"canoul"} : met crousti dans le lobby de canoul (scripts/move-to-lobby.js).
    POST /api/admin/end-session {"name":"crousti"} : le sort de sa session en cours, sans butin (scripts/end-session.js).
    POST /api/admin/prison {"name":"crousti"} : l'envoie en prison, hors de son groupe (scripts/send-to-prison.js).
+   POST /api/admin/session-speed {"name":"crousti","speed":300} : vitesse de sa session, donc de son lobby (scripts/session-speed.js).
    POST /api/admin/party-launch {"name":"crousti"} : lance le lobby de crousti dans la mine, prêts ou pas (scripts/launch-lobby.js).
    POST /api/admin/party-lead {"name":"crousti"} : crousti devient chef de son lobby (scripts/set-leader.js).
    POST /api/admin/party-ready {"name":"crousti","ready":true,"always":true} : prêt / prêt tout le temps (scripts/set-ready.js).
@@ -85,6 +86,14 @@ export function adminRoutes({ accounts, game, party = null, moderation = null, s
       const r = await party.adminPrison(acc);
       console.log(`Admin : ${acc.name} (${acc.id}) envoyé en prison${r.left ? ', retiré de son groupe' : ''}`);
       return { account: acc.name, left: r.left };
+    },
+    /* vitesse d'une session (01/11/2026, Geoffrey) : celle du joueur, donc de tout son lobby */
+    'POST /api/admin/session-speed': async ctx => {
+      guard(ctx);
+      const acc = await byName(ctx);
+      const r = await game.adminSpeed(acc.id, ctx.body?.speed ?? 300);
+      console.log(`Admin : session ${r.session} de ${acc.name} (${acc.id}) de ×${r.from} à ×${r.speed} : ${r.players.join(', ')}`);
+      return { account: acc.name, ...r };
     },
     /* lancement forcé (29/10/2026, Geoffrey) : le lobby d'un joueur part dans la mine classique */
     'POST /api/admin/party-launch': async ctx => {

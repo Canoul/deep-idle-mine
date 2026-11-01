@@ -631,6 +631,7 @@ async function pollView(){
     if(!G || rec?.id !== id || waiting) return;
     clockOffset = r.now - Date.now();
     applyClock(r.clock);
+    Object.assign(rec, { speed:r.speed, startedAt:r.startedAt, finishAt:r.finishAt });   // l'administration peut changer la vitesse en cours de session
     if(r.view?.mode === 'mi'){ G = applyInstantView(r.view, G?.mode === 'mi' ? G : null, performance.now(), viewRate()); G.ready = true; window.G = G; lastView = performance.now(); }
     else if(r.view?.mode === 'instance'){ G = applyInstanceView(r.view, G?.mode === 'instance' ? G : null, performance.now(), viewRate()); G.ready = true; window.G = G; lastView = performance.now(); }
     else if(r.view?.mode === 'tower'){ G = applyTowerView(r.view, G?.mode === 'tower' ? G : null, performance.now(), viewRate()); G.ready = true; window.G = G; lastView = performance.now(); }
