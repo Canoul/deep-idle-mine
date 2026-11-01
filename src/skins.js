@@ -72,11 +72,17 @@ export const SKIN = {
     'Épée en acier':    'skins/sword_steel',
     'Épée cassée en carton': 'skins/sword_cardboard',   // lame brisée, morceau de scotch
     'Masse du Roi Gobelin': 'skins/mace_goblin_king',   // 27/10 : manche de bois, tête de fer
+    'Arc de l\'Admin':  'skins/bow_admin',              // 01/11 : arc doré, corde au repos, regard vers la droite
+  },
+  /* arme qui tire au lieu de frapper (01/11/2026, src/render/bow.js) : arc bandé et flèche en vol */
+  bow: {
+    'Arc de l\'Admin':  { drawn: 'skins/bow_admin_drawn', arrow: 'skins/arrow' },
   },
 };
 
 /* toutes les textures de skins, à charger avec les autres */
 export const SKIN_TEXTURES = [SKIN.body, ...Object.values(SKIN.armor), ...Object.values(SKIN.back), ...Object.values(SKIN.pickaxe), ...Object.values(SKIN.sword),
+                              ...Object.values(SKIN.bow).flatMap(b => [b.drawn, b.arrow]),
                               ...Object.values(SKIN.torch).filter(t => t !== SKIN.torch.base)];
 
 /* calques à dessiner pour un mineur d'après son équipement (look : { case: objet }) */
@@ -93,6 +99,8 @@ export const torchTexOf = t => SKIN.torch[t?.item] ?? SKIN.torch.base;
 export const pickaxeOf = look => SKIN.pickaxe[look?.pioche] ?? SKIN.pickaxe.base;
 /* outil en main : pour frapper, l'épée équipée s'il en a une ; sinon (et pour miner) la pioche */
 export const toolOf = (look, action) => (action === 'attack' && SKIN.sword[look?.epee]) || pickaxeOf(look);
+/* l'arc tenu, null pour une arme de contact */
+export const bowOf = look => SKIN.bow[look?.epee] ?? null;
 /* case de cet outil en main (pour son aura, src/meta/aura.js) : 'epee', 'pioche', ou null (pioche en bois de base) */
 export const toolSlotOf = (look, action) => action === 'attack' && SKIN.sword[look?.epee] ? 'epee'
   : look?.pioche !== 'base' && SKIN.pickaxe[look?.pioche] ? 'pioche' : null;

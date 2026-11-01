@@ -34,7 +34,7 @@ export function minerView(G, m){
     effects: minerEffects(G, m, { foes: G.mobs, robbable: true, dark: m.y > 0 && !lit(G, m),
                                   warcry: m.warcry && G.t < m.warcry.until ? m.warcry : null, travelling: travelling(m) }),
     bonus: sessionBonuses(G, m),
-    action: a ? { type: a.type, t: a.t, dur: a.dur, data: { x: d.x, y: d.y, fx: d.fx, fy: d.fy, down: d.down, fall: d.fall, winch: d.winch, cause: d.cause } } : null,
+    action: a ? { type: a.type, t: a.t, dur: a.dur, data: { x: d.x, y: d.y, fx: d.fx, fy: d.fy, down: d.down, fall: d.fall, winch: d.winch, cause: d.cause, aim: d.mob ? { x: d.mob.x, y: d.mob.y } : undefined } } : null,   // aim : case du mob visé (flèche de l'arc)
   };
 }
 /* channel : id du mineur sur lequel un occultiste canalise (rayon noir) ; grab : mineur taclé */

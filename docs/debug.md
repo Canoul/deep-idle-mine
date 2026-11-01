@@ -6166,6 +6166,14 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** ✅ tests/chat-guild.test.js, chat, chat-ui, social, guild-service.
 - ⚠️ Violet pas vu dans un navigateur.
 
+## 01/11/2026 — Arc de l'Admin (Geoffrey)
+- **Quoi** : `STUFF.items['Arc de l'Admin']` (T4.5, secret au wiki), `SKIN.bow`, `bowOf`, `src/render/bow.js` (bowShot, pur), `shoot` dans miner-sprite.js, 4 textures. Le coup reste instantané (landHit, reachOf) : la flèche est un dessin, son cycle suit l'horloge de la page (BOW_SHOT), pas les vrais coups.
+- **Cible de la flèche** : `action.data.aim` ; mine : calculée dans minerView depuis `d.mob` ; tour, Instances I et II : posée par `strike`. Sans aim (boss) : une case devant lui.
+- **IA** : `nearestThreat` (ai.js) compte aussi un mob hors lumière s'il est dans `inReach(reachOf(m))`. Sans ça, la portée 8 ne servait qu'à 2-5 cases (rayon de lumière). Sans effet sur les armes actuelles tant que la portée reste sous le rayon de lumière.
+- **Limites** : ligne droite seulement (`gap` : Infinity en diagonale). Roi Gobelin et Golbute : `inContact`, pas de tir de loin. Un mineur Ignorer/Fuir ne tire pas.
+- **Tests** ✅ tests/bow.test.js, lance, combat, focus, gearscore, rarity, wiki-secret, rune, stuff, instance*, tower* ; simulation 5 sessions OK (3 areas, prof. 189,8, sans arc équipé).
+- ⚠️ Pas vu dans un navigateur : dessin de l'arc, de la flèche, tir vertical. Rendu en tour et Instances non testé (fonction pure seulement). Arc jamais simulé sur une session complète.
+
 ## 01/11/2026 — Prêt tout le temps : prêt d'office (Geoffrey) — branche `geoffrey/fix-toujours-pret`
 - **Cause** : la case restait cochée, mais `leave` retire le membre et `newMember` le recréait `ready:false`. La prison étant solo,
   le retour de prison passait toujours par là. C'était la règle posée le 31/10.
