@@ -1511,6 +1511,11 @@ export const ACCOUNT = {
    La partie tourne sur le serveur (une seule copie) : un départ ou un focus s'applique tout de suite. */
 export const GAME = { speed:2, devSpeeds:[1,2,5,20,60,300], maxPlayers:3 };
 
+/* Appli mobile, notifications programmées sur le téléphone (src/app/notifs.js).
+   miBefore : s avant l'ouverture de la mine instantanée ; quietFrom / quietTo : rien entre ces heures (téléphone) ;
+   miAhead : créneaux programmés d'avance (24 = 48 h, le temps de rouvrir l'appli). */
+export const APP_NOTIFS = { miBefore:300, quietFrom:23, quietTo:8, miAhead:24 };
+
 /* ---- Mine instantanée (MI, GAME_DESIGN §6 « Mine instantanée ») *(décisions du créateur, 21/10/2026 ; valeurs
    provisoires)* ----
    Toutes les everyHours heures pile, heure de Paris (0 h, 2 h, 4 h…), une mine commune s'ouvre aux inscrits du lobby
