@@ -9,6 +9,11 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 01/11/2026 — Geoffrey — Contrôle iPhone plus solide
+- **Pour le joueur** : rien, c'est un outil de l'équipe.
+- **Pour l'équipe** : le contrôle de l'appli iPhone échouait parfois sans raison : il photographiait l'écran à 40 s, alors que le simulateur met de 31 à 55 s à afficher le jeu. Il attend maintenant le bouton, 2 minutes au plus.
+- **État** : ✅ en ligne le 01/11
+
 ## 01/11/2026 — Geoffrey — Appli iPhone prête pour TestFlight, sans Mac
 - **Pour le joueur** : rien sur le site. L'appli iPhone « Deep Mine Idle MMO » est la même que sur Android : jeu dans l'appli, encoche gérée, clavier qui ne cache pas le chat, liens dans Safari, notifications sur le téléphone.
 - **Décisions** : projet repris de `jules/appli-ios`. iPhone seul, écran vertical (Jules visait aussi l'iPad). Signature par la clé d'API seule, sans certificat ni profil.
