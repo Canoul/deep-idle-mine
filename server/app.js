@@ -23,16 +23,16 @@ import { adminRoutes } from './admin/routes.js';
 /* game : service des sessions de jeu (server/game/service.js) ; sans lui, seules les routes de comptes existent.
    party : service des groupes (server/party/service.js) ; il prend en charge « Lancer la session ».
    instant : inscriptions à la mine instantanée (server/instant/service.js) ; social : amis (server/social/service.js) ;
-   giant : Bloc géant (server/giant/service.js) ; town : le Carreau, ville du spawn (server/town/service.js). */
+   giant : Bloc géant (server/giant/service.js) ; hescoming : He's coming, même service ; town : le Carreau, ville du spawn (server/town/service.js). */
 /* « 31/10 à 14:05 », heure de Paris */
 const banDate = t => new Intl.DateTimeFormat('fr-FR', { timeZone: 'Europe/Paris', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
   .format(new Date(t)).replace(' ', ' à ');
 
-export function createApp({ store, root, config = SERVER, service, game, party, instant, social, guild, giant, town, moderation } = {}){
+export function createApp({ store, root, config = SERVER, service, game, party, instant, social, guild, giant, hescoming, town, moderation } = {}){
   const accounts = service ?? createAccountService({ store });
   /* les futures routes (sauvegarde…) s'ajoutent ici, chacune dans son module */
   const routes = { ...accountRoutes(accounts, { onRename: (id, name) => party?.rename(id, name) }), ...(game ? gameRoutes(game) : {}), ...(party ? partyRoutes(party) : {}),
-                   ...(instant ? instantRoutes(instant) : {}), ...(social ? socialRoutes(social) : {}), ...(guild ? guildRoutes(guild) : {}), ...(giant ? giantRoutes(giant) : {}),
+                   ...(instant ? instantRoutes(instant) : {}), ...(social ? socialRoutes(social) : {}), ...(guild ? guildRoutes(guild) : {}), ...(giant ? giantRoutes(giant) : {}), ...(hescoming ? giantRoutes(hescoming, '/api/hescoming') : {}),
                    ...(town ? townRoutes(town) : {}),
                    /* administration : depuis le serveur lui-même, avec la clé DIM_ADMIN_TOKEN (server/admin/routes.js) */
                    ...(game && store ? adminRoutes({ accounts: store, game, party, moderation, social, token: config.adminToken }) : {}),

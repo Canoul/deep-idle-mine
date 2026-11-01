@@ -51,7 +51,7 @@ export function joinGiant(G, spec, opts = {}){
   };
   G.miners.push(m);
   G.stats.joined++;
-  log(G, `${m.name} arrive devant le bloc géant.`);
+  log(G, `${m.name} arrive devant ${G.place ?? 'le bloc géant'}.`);
   return m;
 }
 
@@ -62,7 +62,7 @@ export function leaveGiant(G, account, why = 'left'){
   const m = G.miners[i];
   G.miners.splice(i, 1);
   G.done.push({ account: m.account, name: m.name, points: m.points, why, tick: G.ticks, ...m.stats });
-  log(G, `${m.name} quitte le bloc géant (${Math.floor(m.points)} points).`);
+  log(G, `${m.name} quitte ${G.place ?? 'le bloc géant'} (${Math.floor(m.points)} points).`);
   return true;
 }
 
@@ -111,7 +111,7 @@ function stepMiner(G, m){
   mine(G, m);
 }
 
-function walk(G, m, x, status){
+export function walk(G, m, x, status){
   const step = m.carac.speed * DT, d = x - m.x;
   m.face = d >= 0 ? 1 : -1;
   m.x = Math.abs(d) <= step ? x : m.x + Math.sign(d) * step;
@@ -148,7 +148,7 @@ function knock(G, m){
   m.status = 'Repoussé';
 }
 
-function stepFly(G, m){
+export function stepFly(G, m){
   const f = m.fly;
   f.t += DT;
   const k = Math.min(1, f.t / f.dur);

@@ -1,4 +1,5 @@
-/* Bloc géant (serveur) : la salle commune, les visites, les scores du jour et les récompenses.
+/* Bloc géant (serveur) : la salle commune, les visites, les scores du jour et les récompenses. Sert aussi à He's coming (01/11/2026) :
+   sim, key, mode, place donnent sa partie, ses fiches, son nom ; une instance par mode, rien de commun entre elles.
    Règles : src/shared/giant.js et GIANT (src/config.js) ; partie : src/sim/giant/ via src/shared/giant-room.js ;
    spec : docs/superpowers/specs/2026-10-26-bloc-geant-design.md.
 
@@ -19,8 +20,8 @@
 import { minerEffects, sessionBonuses } from '../../src/sim/effects.js';
 import { GIANT, GAME, ITEMS } from '../../src/config.js';
 import { dayOf, dayEnd, nextEntry, canEnter, visitDurationMs, playerRewardFor, nuggetsFor, tiersReached, ranking, shownPoints, minVisitsFor, earnsReward } from '../../src/shared/giant.js';
-import { newRoom, enterRoom, exitRoom, takeDone } from '../../src/shared/giant-room.js';
-import { tickGiant, VISIT_TICKS, giantRate } from '../../src/sim/giant/session.js';
+import { newRoom, enterRoom, exitRoom, takeDone, giantSim } from '../../src/shared/giant-room.js';
+import { VISIT_TICKS } from '../../src/sim/giant/session.js';
 import { DT } from '../../src/config.js';
 import { displayName, formatAccountId } from '../../src/shared/account.js';
 import { addItem } from '../../src/meta/inventory.js';
@@ -34,8 +35,10 @@ const fail = (code, status, message) => { throw new GiantError(code, status, mes
 const emptyDay = day => ({ day, total: 0, scores: {} });
 const emptyPlayer = () => ({ lastEntry: null, visit: null, claimed: [] });
 
+/* sim : partie (src/shared/giant-room.js) ; key : fiches du stockage (get<key>Day…) ; mode : nom du mode ; place : ce devant quoi on se tient */
 export function createGiantService({ store, game, clock = Date.now, config = GIANT, server = GIANT_SERVER, speed = GAME.speed,
-                                    randomSeed = () => (Math.random() * 2**31) | 0, dev = false }){
+                                    randomSeed = () => (Math.random() * 2**31) | 0, dev = false,
+                                    sim = giantSim, key = 'Giant', mode = 'giant', place = 'le bloc géant' }){
   let room = null;                 // { G, startedAt }
   let restored = false, lastCheckpoint = 0;
   let chain = Promise.resolve();
@@ -44,19 +47,21 @@ export function createGiantService({ store, game, clock = Date.now, config = GIA
   const cooldown = dev ? 0 : config.cooldownMs;
   const visitMs = visitDurationMs(speed);
 
-  const loadDay = async day => (await store.getGiantDay(day)) ?? emptyDay(day);
-  const loadPlayer = async id => ({ ...emptyPlayer(), ...((await store.getGiantPlayer(id)) ?? {}) });
+  const getDay = day => store[`get${key}Day`](day), getPlayer = id => store[`get${key}Player`](id);
+  const putPlayer = (id, p) => store[`put${key}Player`](id, p), putDayAndPlayer = (d, id, p) => store[`put${key}DayAndPlayer`](d, id, p);
+  const loadDay = async day => (await getDay(day)) ?? emptyDay(day);
+  const loadPlayer = async id => ({ ...emptyPlayer(), ...((await getPlayer(id)) ?? {}) });
   const nameOf = me => displayName(me) || formatAccountId(me.id);
 
   /* ---------- la salle ---------- */
 
   const tickAt = now => room ? Math.floor((now - room.startedAt) * speed / 1000 / DT + 1e-9) : 0;
-  function openRoom(now){ if(!room) room = { G: newRoom(randomSeed(), { id: 'giant' }), startedAt: now }; return room; }
+  function openRoom(now){ if(!room) room = { G: newRoom(randomSeed(), { id: mode }, sim.make), startedAt: now }; return room; }
   /* avance la salle jusqu'à maintenant et clôt les visites finies */
   async function advance(now = clock()){
     if(!room) return;
     const target = tickAt(now);
-    while(room.G.ticks < target){ tickGiant(room.G); if(room.G.done.length) await closeVisits(takeDone(room.G), now); }
+    while(room.G.ticks < target){ sim.tick(room.G); if(room.G.done.length) await closeVisits(takeDone(room.G), now); }
     if(room.G.done.length) await closeVisits(takeDone(room.G), now);
     if(!room.G.miners.length) room = null;           // vide : la prochaine entrée repart d'une salle neuve
   }
@@ -75,7 +80,7 @@ export function createGiantService({ store, game, clock = Date.now, config = GIA
     day.total = round(day.total + add);
     p.last = { day: p.visit.day, points: round(add), at: p.visit.startedAt };   // l'écran de fin de visite lit ces points
     p.visit = null;
-    await store.putGiantDayAndPlayer(day, account, p);
+    await putDayAndPlayer(day, account, p);
   }
   const round = v => Math.round(v * 1e3) / 1e3;
 
@@ -83,13 +88,13 @@ export function createGiantService({ store, game, clock = Date.now, config = GIA
   async function restore(now){
     if(restored) return;
     restored = true;
-    for(const p of await store.listGiantPlayers()){
+    for(const p of await store[`list${key}Players`]()){
       if(!p.visit) continue;
       if(p.visit.endsAt <= now){ await closeVisit(p.account, p.visit.points); continue; }
       const entry = { account: p.account, name: p.visit.name, ...(p.visit.entry || {}) };
       openRoom(now);
       const left = Math.max(1, Math.round((p.visit.endsAt - now) * speed / 1000 / DT));
-      enterRoom(room.G, entry, { ticks: Math.min(VISIT_TICKS, left), points: p.visit.points || 0 });
+      enterRoom(room.G, entry, { ticks: Math.min(VISIT_TICKS, left), points: p.visit.points || 0 }, sim.join);
     }
   }
   /* toute demande commence ici : visites d'avant un redémarrage reprises, salle à l'heure (26/10 : la vue de la salle
@@ -104,7 +109,7 @@ export function createGiantService({ store, game, clock = Date.now, config = GIA
       const p = await loadPlayer(m.account);
       if(!p.visit) continue;
       p.visit.points = round(m.points);
-      await store.putGiantPlayer(m.account, p);
+      await putPlayer(m.account, p);
     }
   }
 
@@ -126,7 +131,7 @@ export function createGiantService({ store, game, clock = Date.now, config = GIA
   /* jours finis dont la récompense attend ce joueur */
   async function pendingRewards(account, p, now){
     const out = [];
-    for(const d of await store.listGiantDays()){
+    for(const d of await store[`list${key}Days`]()){
       if(!earnsReward(d.scores?.[account], d.day, config) || p.claimed.includes(d.day)) continue;   // 2 visites au moins (27/10)
       if(now < dayEnd(Date.parse(d.day + 'T12:00:00Z')) + visitMs) continue;   // pas fini (ou visites encore en cours)
       const items = playerRewardFor(d.total, d.scores[account].points, config);   // + pépites d'argent (27/10)
@@ -162,14 +167,14 @@ export function createGiantService({ store, game, clock = Date.now, config = GIA
                      : null;
     const mine = G?.miners.find(m => m.account === me.id) ?? null;
     return {
-      layout, t: G?.t ?? 0, inspire: G?.inspire && G.t < G.inspire.until ? Math.round(G.inspire.until - G.t) : 0,
+      layout, t: G?.t ?? 0, boss: G?.mode === 'hescoming' ? { roarAgo: G.roarAt === null ? null : G.t - G.roarAt, swingAgo: G.swingAt === null ? null : G.t - G.swingAt } : null, inspire: G?.inspire && G.t < G.inspire.until ? Math.round(G.inspire.until - G.t) : 0,
       me: mine ? { id: mine.id, points: shownPoints(mine.points), leftMs: Math.round(Math.max(0, (mine.endTick - G.ticks) * DT) / speed * 1000),
-                   ox: Math.round(mine.ox), oxMax: Math.round(mine.carac.oxygenMax), rate: Math.round(giantRate(G, mine) * 100) / 100,
+                   ox: Math.round(mine.ox), oxMax: Math.round(mine.carac.oxygenMax), rate: Math.round(sim.rate(G, mine) * 100) / 100,
                    status: mine.status, spells: mine.spells, spellCd: { ...mine.spellCd } } : null,   // sorts et recharges (barre des sorts, 29/10)
       miners: (G?.miners ?? []).map(m => ({ id: m.id, name: m.name, me: m.account === me.id, x: Math.round(m.x * 100) / 100, y: m.y,
         face: m.face, fly: m.fly ? { from: m.fly.from, to: m.fly.to, k: Math.min(1, m.fly.t / m.fly.dur) } : null,
         status: m.status, look: m.look, auras: m.auras, color: m.color,
-        mining: m.status === 'Frappe le bloc géant',
+        mining: m.status.startsWith('Frappe'),
         effects: minerEffects(G, m), bonus: sessionBonuses(G, m) })),   // états (barre d'états, 29/10)
     };
   }
@@ -181,22 +186,22 @@ export function createGiantService({ store, game, clock = Date.now, config = GIA
     enter: me => serial(async () => {
       const now = clock();
       await sync(now);
-      if(liveOf(me.id)) fail('in_visit', 409, 'Tu es déjà devant le bloc géant.');
+      if(liveOf(me.id)) fail('in_visit', 409, `Tu es déjà devant ${place}.`);
       return game.giantEnter(me.id, async snap => {
         const p = await loadPlayer(me.id);
-        if(p.visit && p.visit.endsAt > now) fail('in_visit', 409, 'Tu es déjà devant le bloc géant.');
+        if(p.visit && p.visit.endsAt > now) fail('in_visit', 409, `Tu es déjà devant ${place}.`);
         if(!canEnter(p.lastEntry, now, { cooldownMs: cooldown })) fail('cooldown', 409, 'Pas encore : une entrée toutes les 3 h.');
-        if((room?.G.miners.length ?? 0) >= config.maxPlayers) fail('full', 409, `Le bloc géant est plein (${config.maxPlayers} mineurs). Réessaie dans un moment.`);
+        if((room?.G.miners.length ?? 0) >= config.maxPlayers) fail('full', 409, `Trop de monde devant ${place} (${config.maxPlayers} mineurs). Réessaie dans un moment.`);
         const name = nameOf(me), day = dayOf(now);
         const entry = { account: me.id, name, ...snap };
         openRoom(now);                               // la salle a déjà avancé jusqu'à maintenant (plus haut)
-        const m = enterRoom(room.G, entry);
+        const m = enterRoom(room.G, entry, {}, sim.join);
         const d = await loadDay(day);
         const s = d.scores[me.id] ?? { points: 0, visits: 0, name };
         d.scores[me.id] = { ...s, visits: s.visits + 1, name };
         p.lastEntry = now;
         p.visit = { day, startedAt: now, endsAt: now + visitMs, points: 0, name, entry: snap };
-        await store.putGiantDayAndPlayer(d, me.id, p);
+        await putDayAndPlayer(d, me.id, p);
         return { visit: { endsAt: p.visit.endsAt, minerId: m.id }, view: viewOf(me) };
       });
     }),
@@ -206,7 +211,7 @@ export function createGiantService({ store, game, clock = Date.now, config = GIA
       const now = clock();
       await sync(now);
       const m = liveOf(me.id);
-      if(!m) fail('no_visit', 404, 'Tu n\'es pas devant le bloc géant.');
+      if(!m) fail('no_visit', 404, `Tu n'es pas devant ${place}.`);
       exitRoom(room.G, me.id);
       await closeVisits(takeDone(room.G), now);
       if(!room.G.miners.length) room = null;
@@ -230,7 +235,7 @@ export function createGiantService({ store, game, clock = Date.now, config = GIA
         }
         p.claimed = [...p.claimed, ...list.map(r => r.day)];
         return { player: p, given, days: list.map(r => r.day) };
-      });
+      }, key);
     }),
 
     /* appelé en continu par le serveur : la salle avance, les visites finies sont closes, les points enregistrés */
@@ -239,9 +244,9 @@ export function createGiantService({ store, game, clock = Date.now, config = GIA
     /* pour le service de jeu : une visite en cours compte comme une session */
     busy: async account => {
       const m = liveOf(account);
-      if(m) return { mode: 'giant', leftMs: Math.max(0, (m.endTick - room.G.ticks) * DT / speed * 1000) };
-      const p = await store.getGiantPlayer(account);
-      return p?.visit && p.visit.endsAt > clock() ? { mode: 'giant', leftMs: p.visit.endsAt - clock() } : null;
+      if(m) return { mode, leftMs: Math.max(0, (m.endTick - room.G.ticks) * DT / speed * 1000) };
+      const p = await getPlayer(account);
+      return p?.visit && p.visit.endsAt > clock() ? { mode, leftMs: p.visit.endsAt - clock() } : null;
     },
     players: async () => room ? room.G.miners.map(m => m.account) : [],
   };

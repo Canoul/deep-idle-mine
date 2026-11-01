@@ -8,6 +8,7 @@
                       leaves:[{account, tick, at}], status:'running'|'settling'|'done', result, seen:[compte], endedAt }
    Inscription à la mine instantanée (server/instant/) : { account, name, at }, par compte.
    Jugement (ns judgment, clé 'state') : jauges Ange / Démon communes à tous (src/meta/judgment.js).
+   He's coming (01/11/2026) : ns hc_day et hc_player, mêmes fiches que le Bloc géant, séparées.
    Bloc géant (server/giant/service.js) : ns giant_day, clé = jour (« 2026-10-26 ») : { day, total, scores:{ compte:
    { points, visits, name } } } ; ns giant_player, clé = compte : { lastEntry, visit:{ day, startedAt, endsAt, points,
    name } | null, claimed:[jour] }. Une entrée et une fin de visite écrivent le jour et le joueur ensemble ; une
@@ -49,6 +50,8 @@ export function createMemoryGameStore(initial = {}){
   const sessionStats = new Map(Object.entries(initial.sessionStats ?? {}));   // tableau de bord : 'session:compte' → ligne
   const giantDays = new Map(Object.entries(initial.giantDays ?? {}));       // Bloc géant : scores du jour, par jour
   const giantPlayers = new Map(Object.entries(initial.giantPlayers ?? {})); // Bloc géant : délai, visite en cours, récompenses prises
+  const hcDays = new Map(Object.entries(initial.hcDays ?? {}));             // He's coming : les mêmes
+  const hcPlayers = new Map(Object.entries(initial.hcPlayers ?? {}));
   const towerRecords = new Map(Object.entries(initial.towerRecords ?? {})); // classements : meilleur temps de tour, par compte
   const instanceRecords = new Map(Object.entries(initial.instanceRecords ?? {})); // classements : meilleur temps contre le roi gobelin, par compte
   const energies = new Map(Object.entries(initial.energies ?? {}));   // énergie du compte (src/meta/energy.js)
@@ -205,6 +208,19 @@ export function createMemoryGameStore(initial = {}){
     async allSessionStats(){ return [...sessionStats.values()].map(copy); },
 
     /* Bloc géant */
+    async getHcDay(day){ return copy(hcDays.get(day)) ?? null; },
+    async listHcDays(){ return [...hcDays.values()].map(copy); },
+    async getHcPlayer(accountId){ return copy(hcPlayers.get(accountId)) ?? null; },
+    async listHcPlayers(){ return [...hcPlayers.entries()].map(([account, p]) => ({ account, ...copy(p) })); },
+    async putHcPlayer(accountId, p){ hcPlayers.set(accountId, copy(p)); await store.changed([{ ns: 'hc_player', key: accountId, value: p }]); },
+    async putHcDayAndPlayer(d, accountId, p){
+      hcDays.set(d.day, copy(d)); hcPlayers.set(accountId, copy(p));
+      await store.changed([{ ns: 'hc_day', key: d.day, value: d }, { ns: 'hc_player', key: accountId, value: p }]);
+    },
+    async putInventoryAndHcPlayer(accountId, inv, p){
+      inventories.set(accountId, copy(inv)); hcPlayers.set(accountId, copy(p));
+      await store.changed([{ ns: 'inventory', key: accountId, value: inv }, { ns: 'hc_player', key: accountId, value: p }]);
+    },
     async getGiantDay(day){ return copy(giantDays.get(day)) ?? null; },
     async listGiantDays(){ return [...giantDays.values()].map(copy); },
     async getGiantPlayer(accountId){ return copy(giantPlayers.get(accountId)) ?? null; },
@@ -263,7 +279,7 @@ export function createMemoryGameStore(initial = {}){
                          sessions: Object.fromEntries(sessions), parties: Object.fromEntries(parties),
                          signups: Object.fromEntries(signups), socials: Object.fromEntries(socials),
                          judgments: Object.fromEntries(judgments), discovered: Object.fromEntries(discovered),
-                         giantDays: Object.fromEntries(giantDays), giantPlayers: Object.fromEntries(giantPlayers), sessionStats: Object.fromEntries(sessionStats),
+                         giantDays: Object.fromEntries(giantDays), giantPlayers: Object.fromEntries(giantPlayers), hcDays: Object.fromEntries(hcDays), hcPlayers: Object.fromEntries(hcPlayers), sessionStats: Object.fromEntries(sessionStats),
                          towerRecords: Object.fromEntries(towerRecords), instanceRecords: Object.fromEntries(instanceRecords), energies: Object.fromEntries(energies), alwaysReady: Object.fromEntries(alwaysReady), chatPrefs: Object.fromEntries(chatPrefs), prisons: Object.fromEntries(prisons), prisonCompos: Object.fromEntries(prisonCompos), chats: Object.fromEntries(chats), raffles: Object.fromEntries(raffles), guilds: Object.fromEntries(guilds), guildLogs: Object.fromEntries(guildLogs), moderations: Object.fromEntries(moderations) }; },
   };
   return store;
@@ -294,11 +310,11 @@ export async function createFileGameStore(dir){
 
 /* PostgreSQL (en ligne) : db ouverte par server/db/postgres.js, partagée avec les comptes */
 export async function createPgGameStore(db){
-  const rows = await db.load(['inventory', 'furnace', 'crusher', 'stuff', 'prefs', 'progress', 'skills', 'spells', 'sets', 'game_session', 'party', 'always_ready', 'mi_signup', 'social', 'judgment', 'giant_day', 'giant_player', 'discovered', 'session_stat', 'tower_record', 'instance_record', 'shrine', 'energy', 'prison', 'prison_compo', 'chat_global', 'chat_prefs', 'moderation', 'raffle', 'guilds', 'guild_log']);
+  const rows = await db.load(['inventory', 'furnace', 'crusher', 'stuff', 'prefs', 'progress', 'skills', 'spells', 'sets', 'game_session', 'party', 'always_ready', 'mi_signup', 'social', 'judgment', 'giant_day', 'giant_player', 'hc_day', 'hc_player', 'discovered', 'session_stat', 'tower_record', 'instance_record', 'shrine', 'energy', 'prison', 'prison_compo', 'chat_global', 'chat_prefs', 'moderation', 'raffle', 'guilds', 'guild_log']);
   const store = createMemoryGameStore({ guildLogs: rows.guild_log, inventories: rows.inventory, furnaces: rows.furnace, crushers: rows.crusher, stuff: rows.stuff, prefs: rows.prefs,
                                         progress: rows.progress, skills: rows.skills, spells: rows.spells, sets: rows.sets,
                                         sessions: rows.game_session, parties: rows.party, signups: rows.mi_signup, socials: rows.social,
-                                        judgments: rows.judgment, giantDays: rows.giant_day, giantPlayers: rows.giant_player, discovered: rows.discovered, sessionStats: rows.session_stat,
+                                        judgments: rows.judgment, giantDays: rows.giant_day, giantPlayers: rows.giant_player, hcDays: rows.hc_day, hcPlayers: rows.hc_player, discovered: rows.discovered, sessionStats: rows.session_stat,
                                         towerRecords: rows.tower_record, instanceRecords: rows.instance_record, shrines: rows.shrine, energies: rows.energy, alwaysReady: rows.always_ready, chatPrefs: rows.chat_prefs, prisons: rows.prison, prisonCompos: rows.prison_compo, chats: rows.chat_global, raffles: rows.raffle, guilds: rows.guilds, moderations: rows.moderation });
   store.changed = changes => db.write(changes);
   store.close = () => db.flush();

@@ -738,6 +738,7 @@ export const EFFECTS = {
   order: ['control', 'debuff', 'buff'],
   list: {
     stun:         { kind:'control', name:'Étourdi',             icon:'daze',      color:'#ffd23f' },
+    fear:         { kind:'control', name:'Fear',                icon:'alert',     color:'#b06bff' },   // He's coming : erre sans frapper
     tackled:      { kind:'control', name:'Taclé',               icon:'grab',      color:'#e5534b' },
     caged:        { kind:'control', name:'Enfermé',             icon:'lock',      color:'#c9a227' },
     scared:       { kind:'debuff',  name:'Effroi',              icon:'alert',     color:'#ff8c1a' },
@@ -1589,6 +1590,8 @@ export const MINE_MODES = [
   { id:'instance_2', label:'Instance II', icon:'🗝', ready:true, instance:true },   // Golbute (30/10/2026), même bouton « Instances »
   /* Bloc géant (26/10/2026) : on y entre seul depuis son panneau (GIANT), jamais par un lancement de groupe */
   { id:'giant', label:'Bloc géant', icon:'🌈', ready:true, giant:true },
+  /* He's coming (01/11/2026, HES_COMING) : comme le Bloc géant, sa propre carte et sa propre journée */
+  { id:'hescoming', label:'He\'s coming', icon:'😈', ready:true, giant:true },
   /* Prison (29/10/2026, PRISON) : solo, sans fin ; lancée et arrêtée par ses propres routes (/api/game/prison/…) */
   { id:'prison', label:'Prison', icon:'⛓', ready:true, prison:true, solo:true },
   /* tours du Jugement : proposées seulement quand elles sont ouvertes (JUDGMENT, TOWER) */
@@ -1764,6 +1767,13 @@ export const GIANT = {
   nugget: { item:'Pépite d\'argent', per:100 },
   top: 10, poll: 3000, viewPoll: 500,
 };
+/* He's coming (01/11/2026, Geoffrey ; src/sim/hescoming/session.js, valeurs provisoires) : le Bloc géant où l'on frappe Lucifer. Tout GIANT,
+   sauf : paliers × 25, pépites ÷ 25 ; 1 dégât = 1 point. roar : toutes les every s, Fear de fear s à radius cases ou moins (wander : s
+   avant de changer de sens) ; swing : toutes les every s, tous ceux au contact projetés de knock cases, en arc de high cases, en flight s. */
+export const HES_COMING = { ...GIANT, bossName:'Lucifer',
+  tiers: GIANT.tiers.map(t => ({ ...t, min:t.min * 25 })), nugget: { ...GIANT.nugget, per:2500 },
+  roar: { every:30, radius:3, fear:15, wander:1 }, swing: { every:5, knock:4, high:2, flight:0.6 } };
+
 /* onglet Social : le navigateur redemande la liste d'amis et les notifications toutes les `poll` ms (onglet visible),
    `hiddenPoll` ms quand l'onglet est caché (ça reste un signe de vie : l'ami apparaît en ligne) */
 export const SOCIAL = { poll:4000, hiddenPoll:20000, onlinePoll:5000 };   // onlinePoll : liste Online, onglet ouvert seulement

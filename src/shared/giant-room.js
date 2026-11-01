@@ -4,7 +4,8 @@
    Les anneaux comptent pour tous les joueurs présents (une fois par anneau différent, comme dans un groupe) : quand
    quelqu'un entre ou sort, les caractéristiques de tous les présents sont recalculées (refreshRoom). */
 import { minerSpecs, groupRings } from './game.js';
-import { newGiant, joinGiant, leaveGiant } from '../sim/giant/session.js';
+import { newGiant, joinGiant, leaveGiant, tickGiant, giantRate } from '../sim/giant/session.js';
+import { newLucifer, joinLucifer, tickLucifer, luciferDps } from '../sim/hescoming/session.js';
 
 /* entrée d'un joueur : { account, name, gear, look, skills, spells } (gear : pièces portées complètes ; skills : état
    des skills ; spells : état des sorts), lue par minerSpecs comme un joueur d'une session */
@@ -22,8 +23,8 @@ function specsOf(entries){
   return entries.map(e => minerSpecs({ ...asRecord([e]), rings })[0]);
 }
 
-export function newRoom(seed, opts = {}){
-  const G = newGiant(seed, opts);
+export function newRoom(seed, opts = {}, make = newGiant){
+  const G = make(seed, opts);
   G.entries = new Map();            // compte → entrée (joueurs présents)
   return G;
 }
@@ -40,15 +41,19 @@ export function refreshRoom(G){
 }
 
 /* un joueur entre ; opts.ticks / opts.points : visite reprise (redémarrage du serveur). Renvoie le mineur. */
-export function enterRoom(G, entry, opts = {}){
+export function enterRoom(G, entry, opts = {}, join = joinGiant){
   if(G.miners.some(m => m.account === entry.account)) return null;
   G.entries.set(entry.account, entry);
   const [spec] = specsOf([entry]);
-  const m = joinGiant(G, { ...spec, account: entry.account, name: entry.name }, opts);
+  const m = join(G, { ...spec, account: entry.account, name: entry.name }, opts);
   refreshRoom(G);
   m.ox = m.carac.oxygenMax;           // il entre le plein fait (anneau de la baleine compris)
   return m;
 }
+
+/* les deux parties que le service sait faire tourner : même contrat, la salle reste la même (server/giant/service.js) */
+export const giantSim = { make:newGiant, join:joinGiant, tick:tickGiant, rate:giantRate };
+export const luciferSim = { make:newLucifer, join:joinLucifer, tick:tickLucifer, rate:luciferDps };
 
 /* un joueur sort avant la fin de sa visite */
 export function exitRoom(G, account){
