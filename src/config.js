@@ -1513,8 +1513,8 @@ export const GAME = { speed:2, devSpeeds:[1,2,5,20,60,300], maxPlayers:3 };
 
 /* Appli mobile, notifications programmées sur le téléphone (src/app/notifs.js).
    miBefore : s avant l'ouverture de la mine instantanée ; quietFrom / quietTo : rien entre ces heures (téléphone) ;
-   miAhead : créneaux programmés d'avance (24 = 48 h, le temps de rouvrir l'appli). */
-export const APP_NOTIFS = { miBefore:300, quietFrom:23, quietTo:8, miAhead:24 };
+   miAhead : créneaux programmés d'avance (24 = 48 h, le temps de rouvrir l'appli) ; syncEvery : s entre deux recalculs. */
+export const APP_NOTIFS = { miBefore:300, quietFrom:23, quietTo:8, miAhead:24, syncEvery:30 };
 
 /* ---- Mine instantanée (MI, GAME_DESIGN §6 « Mine instantanée ») *(décisions du créateur, 21/10/2026 ; valeurs
    provisoires)* ----
