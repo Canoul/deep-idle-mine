@@ -91,3 +91,10 @@ test('appli : pas de transition entre les onglets', () => {
   const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
   assert.match(main, /if\(!appBoot\.app && backdrop\.switchTab\(/);
 });
+
+test('appli : Mon compte montre les réglages des notifications, transmis à la couche appli', () => {
+  const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  assert.match(main, /appLayer\?\.notifOptions\(\) \?\? \[\]/);
+  assert.match(main, /key\.startsWith\('notif_'\)\) appLayer\?\.setNotif\(key\.slice\(6\), v\)/);
+  assert.match(main, /notifData: \(\) =>/);
+});

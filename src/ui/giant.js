@@ -204,6 +204,8 @@ export function setupGiant(h){
 
   return {
     refresh,
+    /* heure de la prochaine entrée (heure du serveur), pour les notifications de l'appli */
+    nextEntry: () => info?.nextEntry ?? null,
     /* le lobby vient d'afficher (ou de cacher) la carte */
     shown(){ if(cardShown()) refresh(); },
     /* la visite ou son écran de fin occupent l'onglet Session (main.js n'y remet pas « Tu n'es pas en session ») */
