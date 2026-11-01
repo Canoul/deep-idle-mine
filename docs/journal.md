@@ -98,6 +98,10 @@ Modèle d'entrée :
 - **Pour le joueur** : nouvelle arme légendaire, portée +8, dégâts +15, recul +2. Le mineur tire des flèches de loin, et continue quand le mob est au contact. On ne peut pas l'obtenir dans le jeu : seule l'administration le donne.
 - **État** : ✅ en ligne le 01/11
 
+## 01/11/2026 — Geoffrey — Coup unique sur les boss qui se minent
+- **Pour le joueur** : sur le Bloc géant, les spawners et le cristal du Golbute, chaque seconde de minage a la chance du coup unique de compter double (1,5 de vitesse = 1,5 de plus au compteur). Ça ne coûte pas d'oxygène et ne fait pas reculer davantage.
+- **État** : ✅ en ligne le 01/11
+
 ## 01/11/2026 — Geoffrey — Guilde : voir les membres depuis la recherche
 - **Pour le joueur** : dans Guilde > Rechercher, un clic sur une guilde déplie ses membres (pseudo, grade, XP rapportée). Un autre clic la replie.
 - **État** : ✅ en ligne le 01/11

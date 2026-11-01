@@ -15,6 +15,7 @@ import { mulberry32 } from '../../core/rng.js';
 import { SPELL } from '../../meta/spells.js';
 import { log } from '../log.js';
 import { knockOf } from '../knock.js';
+import { oneTapBonus } from '../one-tap.js';
 
 export const VISIT_TICKS = Math.round(GIANT.visit / DT);
 
@@ -122,9 +123,10 @@ function mine(G, m){
   m.face = 1; m.status = 'Frappe le bloc géant';
   castSpells(G, m);
   const rate = giantRate(G, m);
-  m.points += rate * DT;
+  const gain = rate * DT + oneTapBonus(m, DT, rate, G.rng);
+  m.points += gain;
   m.stats.mining += DT;
-  G.stats.points += rate * DT;
+  G.stats.points += gain;
   /* coups : rate par seconde ; chacun peut le repousser */
   m.hitAcc += rate * DT;
   while(m.hitAcc >= 1 && !m.fly){

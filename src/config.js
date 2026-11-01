@@ -23,7 +23,7 @@ export const SPAWN_X = 25, CHEST_X = 22;
    (25/10/2026, Geoffrey : Lance en fer) ; 0 de base. Les mobs gardent COMBAT.reach pour tacler. */
 /* stats d'amélioration (onglet Amélioration, lignes tirées à l'identification ; 0 de base, en %) :
    mineSpeedPct / damagePct = bonus en % : vitesse de minage = mineSpeed × (1 + mineSpeedPct/100), pareil pour les dégâts ;
-   crit = chance qu'un coup fasse le double de dégâts ; oneTap = chance de casser un bloc instantanément ;
+   crit = chance qu'un coup fasse le double de dégâts ; oneTap = chance de casser un bloc instantanément (Bloc géant, spawners, cristal : ONE_TAP) ;
    piercing = chance de casser aussi le bloc juste derrière celui miné ; looting = butin des mobs en plus (comme Pillage) */
 export const STATS = { oxygenMax:300, speed:3, climbSpeed:2.25, mineSpeed:1, damage:5, attackSpeed:100, fortune:0, pods:200, light:6, compass:8,
   compassRows:0, torches:20, torchRadius:5, torchTime:1, discoverMax:2, tenacity:0, knockRes:0, reach:0, knockback:0,
@@ -1122,6 +1122,9 @@ export const FORTUNE = { salt: 0x0f07c0de };
 /* hasard « live » des stats d'amélioration (critique, coup unique, perçage) : G.gearRng, tiré de la seed, à part.
    Il n'est tiré que si la stat est au-dessus de 0 : sans ces stats, une partie est identique à avant. */
 export const GEAR_RNG = { salt: 0x6ea7c0de };
+/* coup unique sur ce qui se mine sans se casser d'un coup (Bloc géant, spawners, cristal du Golbute ; 01/11/2026, Geoffrey) :
+   toutes les every secondes de minage, chance oneTap d'ajouter au compteur ce que ces every secondes ont rapporté */
+export const ONE_TAP = { every: 1 };
 
 /* ---- Hors session : stuff (onglet Stuff) ----
    slots : les cases d'équipement du mineur, dans l'ordre d'affichage (id, libellé, icône d'une case vide).
