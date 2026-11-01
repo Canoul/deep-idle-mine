@@ -6160,3 +6160,12 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Conséquences** : un nouveau membre ne lit pas l'historique ; un ancien membre garde ce qu'il pouvait lire (jusqu'à l'expiration du message, 18 h) mais ne reçoit plus rien. Seul dans sa guilde : le message passe, lu par lui seul. Les 300 messages gardés (globalKeep) sont communs à tous les canaux.
 - **Tests** ✅ tests/chat-guild.test.js, chat, chat-ui, social, guild-service.
 - ⚠️ Violet pas vu dans un navigateur.
+
+## 01/11/2026 — Prêt tout le temps : prêt d'office (Geoffrey) — branche `geoffrey/fix-toujours-pret`
+- **Cause** : la case restait cochée, mais `leave` retire le membre et `newMember` le recréait `ready:false`. La prison étant solo,
+  le retour de prison passait toujours par là. C'était la règle posée le 31/10.
+- **Quoi** (`server/party/service.js`) : `addMember` remplace les 4 `push(newMember)` ; `m.afterPrison` (enregistré) attend la fin de
+  prison, résolu dans `sweep`. `ready()` l'efface. Texte d'aide de la case dans `index.html`.
+- **Tests** : `tests/party.test.js` ✅ (3 nouveaux) ; ⚠️ pas vu dans un navigateur.
+- **Point fragile** : la route `POST /api/game/prison/start` passe `members:null`, donc « solo seulement » n'est vérifié que par le
+  navigateur.

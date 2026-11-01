@@ -9,6 +9,13 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 01/11/2026 — Geoffrey — Prêt tout le temps : prêt d'office au retour de prison
+- **Pour l'équipe** : avec la case cochée, on est prêt sans clic en entrant dans un groupe et en sortant de prison. Avant,
+  la prison obligeait à quitter le groupe, ce qui effaçait « prêt » même si la case restait cochée.
+- **Décision** : tant que la prison tourne, le joueur n'est pas prêt d'office, pour que le chef ne puisse pas la lui terminer
+  sans son accord.
+- **État** : 🧪 sur la branche `geoffrey/fix-toujours-pret` (pas en ligne)
+
 ## 01/11/2026 — Geoffrey — Canal Guilde dans le chat
 - **Pour le joueur** : nouveau canal **Guilde**, en violet, avec le raccourci `/g`. Seuls les membres de la guilde lisent ces messages, et ils ne font pas de bulle dans le Carreau. Le canal se masque par onglet, comme les autres.
 - **État** : ✅ en ligne le 01/11
