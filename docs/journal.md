@@ -11,7 +11,7 @@ Modèle d'entrée :
 ```
 ## 01/11/2026 — Geoffrey — Lobby : contour doré quand le Bloc géant ou He's coming est disponible
 - **Pour le joueur** : dans le menu du Lobby, le bouton Bloc géant et le bouton He's coming s'entourent d'or dès qu'on peut y entrer (attente de 3 h finie, salle pas pleine, pas déjà en visite). Plus besoin d'ouvrir la carte pour vérifier.
-- **État** : pas encore en ligne
+- **État** : ✅ en ligne le 01/11
 
 ## 01/11/2026 — Geoffrey — He's coming et Bloc géant : changement d'onglet
 - **Pour le joueur** : quand une session ou une prison tournait aussi, la salle restait figée par-dessus le nouvel onglet pendant près d'une demi-seconde. Elle disparaît maintenant tout de suite.
