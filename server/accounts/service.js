@@ -36,7 +36,7 @@ export function createAccountService({ store, clock = Date.now, scrypt = SCRYPT,
     }
   }
   function validName(name){
-    const e = checkName(name) ?? (nameBanned(cleanName(name)) ? "Ce pseudo n'est pas autorisé." : null);
+    const e = checkName(name) ?? (nameBanned(cleanName(name)) ? 'Ce pseudo contient un mot interdit : choisis-en un autre.' : null);
     if(e) fail('invalid_name', 400, e);
     return cleanName(name);
   }
