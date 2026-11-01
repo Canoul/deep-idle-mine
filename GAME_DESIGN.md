@@ -938,19 +938,19 @@ Trois rubriques : **Identification**, **Amélioration**, **Enchantement** (22/10
 
 **Amélioration** : +1 à **+9** *(26/10/2026, Geoffrey ; avant +1 à +3)*. Le % est le **bonus total du palier** sur **toutes les stats de la pièce** (de base et identifiées) ; une pièce non identifiée peut être améliorée et garde son niveau quand on l'identifie. **Un échec ne coûte que les matériaux** : la pièce ne perd rien.
 
-Règle *(26/10/2026, Geoffrey)* : **+3 % de stats par rang**, **réussite −5 % par rang**. Coût : 3 cristaux et 6 plumes au +1, puis × 1,5 par rang (+2, +3), × 1,33 (+4 à +6), × 1,25 (+7 à +9), calculé sur la valeur exacte du rang précédent et arrondi à l'entier du dessus.
+Règle *(26/10/2026, Geoffrey)* : **+3 % de stats par rang**, **réussite −5 % par rang**. Coût : 6 plumes au +1, puis × 1,5 par rang (+2, +3), × 1,33 (+4 à +6), × 1,25 (+7 à +9), calculé sur la valeur exacte du rang précédent et arrondi à l'entier du dessus. Autant de cristaux que de plumes *(01/11/2026, Geoffrey ; avant : 3 / 5 / 7 / 9 / 12 / 16 / 20 / 25 / 32)*.
 
 | Niveau | Stats | Réussite | Plumes d'ange | Cristaux de pleine lune |
 |---|---|---|---|---|
-| +1 | +3 % | 100 % | 6 | 3 |
-| +2 | +6 % | 95 % | 9 | 5 |
-| +3 | +9 % | 90 % | 14 | 7 |
-| +4 | +12 % | 85 % | 18 | 9 |
-| +5 | +15 % | 80 % | 24 | 12 |
-| +6 | +18 % | 75 % | 32 | 16 |
-| +7 | +21 % | 70 % | 40 | 20 |
-| +8 | +24 % | 65 % | 50 | 25 |
-| +9 | +27 % | 60 % | 63 | 32 |
+| +1 | +3 % | 100 % | 6 | 6 |
+| +2 | +6 % | 95 % | 9 | 9 |
+| +3 | +9 % | 90 % | 14 | 14 |
+| +4 | +12 % | 85 % | 18 | 18 |
+| +5 | +15 % | 80 % | 24 | 24 |
+| +6 | +18 % | 75 % | 32 | 32 |
+| +7 | +21 % | 70 % | 40 | 40 |
+| +8 | +24 % | 65 % | 50 | 50 |
+| +9 | +27 % | 60 % | 63 | 63 |
 
 *(Ancien : +1 à +3 = +5 / +10 / +15 % (25/10 ; avant +3 / +5 / +7 %), 20 / 30 / 50 plumes (22/10 ; avant 3 / 5 / 7) et 3 / 5 / 7 cristaux. Les pièces déjà améliorées gardent leur niveau et prennent le nouveau bonus : une pièce +3 passe de +15 % à +9 %.)*
 

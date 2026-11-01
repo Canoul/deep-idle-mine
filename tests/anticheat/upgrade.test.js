@@ -12,7 +12,7 @@ const PICK = 'Pioche en pierre', FEATHER = 'Plume d\'ange', STONE = 'Cristal de 
 
 async function setup(random = () => 0.5){
   const store = createMemoryGameStore();
-  const inv = createInventory(); addItem(inv, PICK, 3); addAll(inv, { [FEATHER]:30, [STONE]:10 });
+  const inv = createInventory(); addItem(inv, PICK, 3); addAll(inv, { [FEATHER]:30, [STONE]:12 });
   await store.putInventory(ME.id, JSON.parse(serialize(inv)));
   const live = fakeLive(rec => ({ shares: rec.players.map(p => ({ account:p.account, left:false, bag:{} })) }));
   const game = createGameService({ store, liveRunner: live, clock: () => 1e6, dev:false, random,
