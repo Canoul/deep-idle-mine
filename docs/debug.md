@@ -6226,3 +6226,8 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** : `tests/research.test.js`, `tests/game-service.test.js`, `npm run test:anticheat` ✅ ; ⚠️ pas vu dans un navigateur. Test du recyclage de `game-service` remis à 10-20 parts (il échouait depuis le 30/10).
 - **Point fragile** : `opMemory` (50) peut évincer une entrée récente après 50 recherches ou recyclages en moins de 2 min : le plan
   redevient possible, sans autre effet.
+
+## 01/11/2026 — Raffle : 2 min pour rejoindre (Geoffrey) — branche `geoffrey/raffle-2min`
+- **Quoi** : `RAFFLE.joinMs` à 120 s ; l'annonce (`server/social/raffle.js`) affiche maintenant des minutes.
+- **Tests** : `tests/raffle.test.js`, `tests/admin-raffle.test.js` ✅.
+- **Point fragile** : l'annonce divise `joinMs` par 60 s : une durée qui n'est pas un nombre rond de minutes s'afficherait « 1.5 min ».
