@@ -6239,9 +6239,32 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** : `tests/raffle.test.js`, `tests/admin-raffle.test.js` ✅.
 - **Point fragile** : l'annonce divise `joinMs` par 60 s : une durée qui n'est pas un nombre rond de minutes s'afficherait « 1.5 min ».
 
+## 01/11/2026 — Administration : prison forcée (Geoffrey) — branche `geoffrey/admin-prison`
+- **Quoi** : `adminPrison` (`server/party/service.js`), route `POST /api/admin/prison`, `scripts/send-to-prison.js`. `state()` renvoie `inPrison` : le
+  navigateur (`pollLobby`) relit la prison lancée sans lui, sinon rien ne s'afficherait avant un rechargement.
+- **Tests** : `tests/admin-prison.test.js` ✅, `tests/party.test.js` ✅ ; ⚠️ script et affichage dans le navigateur pas essayés.
+- **Point fragile** : passe par `prisonStart`, donc sa limite de prisons par heure s'applique.
+
 ## 01/11/2026 — Récompenses de palier du Bloc géant et de He's coming (Geoffrey)
 - **Quoi** : `GIANT.tiers` (src/config.js), `HES_COMING.tiers` en dérive. Les pépites des paliers s'ajoutent à celles du score (`playerRewardFor`).
 - **Conséquence** : ces deux modes ne donnent plus de Treasure ni de Blueprint parts.
+- **Incident de mise en ligne** : fusion partie avec un test faux dans tests/giant-service (2 pépites attendues au lieu de 17, jeu non touché) ; corrigé juste après.
+
+## 01/11/2026 — He's coming : sorts de combat (Geoffrey) — branche `geoffrey/hc-sorts`
+- **Cause** : pas un bug, la spec du 01/11 disait « sans effet ». `castSpells` de `src/sim/hescoming/session.js` ne gérait qu'Inspiration
+  et Cri de guerre.
+- **Quoi** : `dash`, `ulti`, Cleave, Dynamite et zipette dans cette même simulation, qui n'utilise pas `src/sim/spells.js`. Déplacements
+  instantanés, comme dans les tours.
+- **Tests** : `tests/hescoming-sim.test.js`, `tests/hescoming-service.test.js`, `tests/anticheat/hescoming.test.js` ✅ ; ⚠️ pas vu dans un navigateur.
+- **Simulation** (dégâts 18, seul, 40 visites, points moyens) : sans sort 1 410, Dash 2 412, Cleave 1 526, Dynamite 1 428, Dash + Cleave + Dynamite + Cri 2 619.
+- ⚠️ **Équilibrage** : le Dash vaut +71 %, car 5 × ses dégâts toutes les 15 s, et les paliers ont été réglés sans lui. Valeur à revoir à l'usage.
+
+## 01/11/2026 — Administration : vitesse d'une session (Geoffrey) — branche `geoffrey/admin-vitesse`
+- **Quoi** : `adminSpeed` (`server/game/service.js`) remet `startedAt` et `finishAt` à l'échelle, sous le verrou `sess:` : le tick cible ne bouge pas.
+  Route `POST /api/admin/session-speed`, `scripts/session-speed.js`. `view` renvoie `speed`, `startedAt`, `finishAt`, repris par `pollView`.
+- **Tests** : `tests/admin-session-speed.test.js` ✅, script compris ; ⚠️ navigateur et vraie partie à ×300 pas essayés (faux moteur).
+- **Point fragile** : l'Historique affiche une durée raccourcie, car `startedAt` recule. ×300 demande 3 000 ticks par seconde, or une session d'1 h à 3 mineurs (36 000 ticks) se calcule en ~19 s sur le poste de Geoffrey, soit ~1 900 ticks/s : la session dépasse `finishAt`, passe par le rattrapage de `pump` (`overdue`, une session à la fois) et l'affichage peut dire « connexion… ».
+
 
 ## 28/10/2026 — Jules — Appli mobile : conception (pas de code)
 - **Quoi** : spec `docs/superpowers/specs/2026-10-28-appli-mobile-design.md` (Capacitor 8, jeu chargé depuis

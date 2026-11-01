@@ -149,7 +149,7 @@ test('récompense (26/10, ancienne règle : une visite suffit) : jour fini, pali
   assert.equal(countOf(a, 'Plume d\'ange'), 15); assert.equal(countOf(a, NUGGET), 17);
   assert.deepEqual((await giant.claim(A)).given, {}, 'une seule fois');
   assert.equal(countOf(await inv(store, A.id), 'Plume d\'ange'), 15);
-  assert.equal(countOf(await inv(store, A.id), NUGGET), 2, 'pépites données une seule fois');
+  assert.equal(countOf(await inv(store, A.id), NUGGET), 17, 'pépites données une seule fois');
   assert.deepEqual((await giant.info(A)).rewards, []);
   assert.deepEqual((await giant.claim(B)).given, {});
   assert.equal(await store.getInventory(B.id), null, 'rien écrit pour B');

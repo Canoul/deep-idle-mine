@@ -319,6 +319,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
                                                members: q.members.map(m => m.name), full: q.members.length >= GAME.maxPlayers })),
         session: await game.activeSessionId(me.id),       // le chef a lancé : le navigateur passe à la session
         alwaysReady: alwaysOn.has(me.id),
+        inPrison: !!await game.prisonActiveOf?.(me.id),   // lancée sans lui (administration) : son navigateur la relit
         lfg: lfgView(me),
         /* shrines du chef du groupe (ou les siens, seul) : 28/10/2026 */
         shrines: await game.shrinesOf?.(p?.leader ?? me.id) ?? [],
@@ -693,6 +694,19 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
         unready(p);
         return { ...r, leader: memberOf(p, p.leader).name, members: members.map(m => m.name) };
       } finally { p.launching = false; }
+    },
+    /* envoie player en prison (01/11/2026, Geoffrey). Elle se joue seul : il quitte son groupe et la recherche de groupe, une
+       fois la prison lancée (refus : rien ne change). En session : refusé, l'en sortir est un autre choix (end-session). */
+    async adminPrison(player){
+      const name = displayName(player), p = partyOf(player.id);
+      if(p) noChange(p);
+      if(await game.activeSessionId(player.id)) fail('in_session', 409, `${name} est en session : sors-le d'abord (scripts/end-session.js).`);
+      if(await game.prisonActiveOf(player.id)) fail('prison_running', 409, `${name} est déjà en prison.`);
+      const r = await game.prisonStart(player, null, {});
+      queue.delete(player.id);
+      const left = p?.members.length > 1;
+      if(left) removeMember(p, player.id);
+      return { ...r, left };
     },
     /* donne la place de chef à player (compte), comme « Nommer chef » du chef actuel. Le nouveau chef n'a plus d'état
        « prêt » ; l'ancien redevient membre, pas prêt (sauf « prêt tout le temps »). */

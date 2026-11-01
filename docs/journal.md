@@ -9,6 +9,22 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 01/11/2026 — Geoffrey — Administration : vitesse d'une session
+- **Pour l'équipe** : `sudo node scripts/session-speed.js --name PSEUDO` passe la session d'un joueur et de son lobby à ×300, sans
+  redémarrer le jeu. La partie finit normalement, butin compris. `--speed 2` revient à la vitesse normale.
+- **État** : ✅ en ligne le 01/11
+
+## 01/11/2026 — Geoffrey — He's coming : les sorts de combat servent enfin
+- **Pour le joueur** : le Dash, le Cleave, la Dynamite, la Bonbonne de zipette et l'Ulti shen sont maintenant utilisés contre
+  Lucifer. Illumination, Fast learner et Hand of Justice restent sans effet ici.
+- **Décision** : mêmes règles que contre un boss de tour. Ulti shen ne fait pas de dégâts, car Lucifer n'a pas de PV.
+- **État** : ✅ en ligne le 01/11
+
+## 01/11/2026 — Geoffrey — Administration : envoyer un joueur en prison
+- **Pour l'équipe** : `sudo node scripts/send-to-prison.js --name PSEUDO` envoie un joueur en prison, sans redémarrer le jeu. Il
+  quitte son groupe et peut en sortir quand il veut. C'est refusé s'il est en session ou déjà en prison.
+- **État** : ✅ en ligne le 01/11
+
 ## 01/11/2026 — Geoffrey — Bloc géant et He's coming : nouvelles récompenses de palier
 - **Pour le joueur** : les 5 paliers donnent 5 Plumes d'ange, 5 Pépites d'argent, 10 Plumes d'ange, 10 Pépites d'argent, 15 Plumes d'ange. Mêmes seuils de score, plus de Treasure ni de Blueprint parts.
 - **État** : ✅ en ligne le 01/11
