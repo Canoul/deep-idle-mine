@@ -3,6 +3,11 @@
 *Discussion de Jules avec Claude, 28/10/2026. Les choix marqués « (Claude) » sont des choix techniques de Claude, à
 contester si besoin. Rien ici ne change les règles du jeu.*
 
+*Repris par Geoffrey le 01/11/2026 (branche `geoffrey/appli-mobile`, partie de `jules/appli-mobile`) : interface téléphone
+confirmée, **Android seul pour l'instant**, iOS plus tard (même jeu ; il faut le compte Apple ou un Mac). Remis à jour
+sur `main` : Guilde et onglet Chat rangés dans les familles, plus de chat dans la session. « Jules » dans les étapes
+ci-dessous = la personne qui porte le chantier.*
+
 ## En une phrase
 
 Le jeu actuel, sans réécriture, emballé dans une appli native (Capacitor) pour iOS et Android, avec une interface
@@ -129,7 +134,7 @@ Barre du bas à 5 boutons, sous-onglets en haut du contenu quand la famille en a
 | **Session** | Session, Historique |
 | **Sac** | Inventaire, Four, Concasseur, Craft, Recherche |
 | **Perso** | Stuff, Amélioration, Skills, Sorts |
-| **Social** | Social (ses sous-onglets Amis / Online / Classements restent les siens) |
+| **Social** | Social (ses sous-onglets Amis / Online / Classements restent les siens), Guilde, Chat |
 
 - Les adresses `#inventaire`, `#craft`… continuent de marcher (elles ouvrent la bonne famille et le bon sous-onglet).
 - La famille retient son dernier sous-onglet ouvert. (Claude)
@@ -151,7 +156,8 @@ Le Lobby sur téléphone, dans cet ordre, sans défiler pour l'essentiel :
 - En haut, une ligne compacte : profondeur / area, oxygène, pods du mineur suivi.
 - **La mine prend une part fixe de la hauteur** et toute la largeur (même principe que la correction du 28/10 pour la
   MI, les tours, l'instance et le Bloc géant : canvas hors du flux, boîte à hauteur fixe).
-- En dessous, de petits onglets : **Équipe · Coffre · Area · Chat · Journal** (les cartes actuelles, une à la fois).
+- En dessous, de petits onglets : **Équipe · Coffre · Area · Journal** (les cartes actuelles, une à la fois ;
+  le chat de session a disparu le 01/11, le chat global est dans la famille Social).
 - Les 5 écrans de jeu (mine, MI, tours, instance, Bloc géant) suivent la même mise en page.
 - Écarté pour l'instant : mine plein écran avec tiroir (plus de travail, cache la mine).
 

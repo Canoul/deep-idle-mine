@@ -21,6 +21,15 @@ Modèle d'entrée :
 - **Pour le joueur** : on a maintenant 2 minutes pour taper `!join` au lieu de 40 secondes.
 - **État** : ✅ en ligne le 01/11
 
+## 01/11/2026 — Geoffrey — Appli mobile : reprise du chantier de Jules
+- **Pour le joueur** : rien pour l'instant. L'appli Android de test est remise à jour avec le jeu actuel.
+- **Décisions** (Geoffrey) : on garde le plan de Jules, avec une **interface pensée pour le téléphone**, dans l'appli
+  seulement ; **Android d'abord**, iOS plus tard (même jeu, mais il faut le compte Apple ou un Mac). Guilde et Chat
+  rejoignent la famille Social de l'appli.
+- **À suivre** : mettre la branche en ligne (le site ne change pas) ; essayer l'APK sur un vrai Android (liste dans
+  `docs/appli-mobile.md`) ; plan de l'étape 2, l'interface téléphone.
+- **État** : 🧪 sur la branche `geoffrey/appli-mobile` (pas en ligne)
+
 ## 01/11/2026 — Geoffrey — Recherche : pas de doublon immédiat
 - **Pour le joueur** : un plan sorti de la recherche ne peut pas ressortir pendant 2 min. S'il ne reste que des plans dans ce
   cas, la recherche est refusée avec un message et les parts ne sont pas dépensées.
