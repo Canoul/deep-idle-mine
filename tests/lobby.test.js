@@ -230,3 +230,13 @@ test('menu du Lobby : équipe toujours là ; bouton principal seulement pour un 
   assert.deepEqual(menuCards({ party:{ leader:'a', members:[{}, {}] }, account }), { team:true, launch:false });
   assert.deepEqual(menuCards({ party:{ leader:'b', members:[{}, {}] }, account }), { team:true, launch:true });
 });
+
+test('jauge d\'énergie de l\'équipe : barre, valeur, rouge sous le coût ; rien si elle est inconnue', async () => {
+  const { energyGauge } = await import('../src/ui/energy-tag.js');
+  const { ENERGY } = await import('../src/config.js');
+  const ok = energyGauge({ value: 42, max: 100 });
+  assert.match(ok, /width:42%/); assert.match(ok, /⚡ 42 \/ 100/); assert.doesNotMatch(ok, /low/);
+  assert.match(energyGauge({ value: ENERGY.cost.min - 1, max: 100 }), /pslotEnergy low/);
+  assert.match(energyGauge({ value: 250, max: 100 }), /width:100%/, 'la barre ne déborde pas');
+  assert.equal(energyGauge(null), ''); assert.equal(energyGauge({ value: NaN, max: 100 }), '');
+});

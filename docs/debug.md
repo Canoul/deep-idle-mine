@@ -6338,3 +6338,8 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Quoi** : `rframe(p)` (src/ui/rarity.js) pose `--rc` en style sur la case, ce qui l'emporte sur `.slot.r-…`. Seulement pour les objets `cat:'rune'` avec une qualité connue ; les pièces de stuff gardent la rareté de leur type. Utilisé dans src/ui/inventory.js, upgrade.js (`box`), obtained.js.
 - **Tests** ✅ tests/rune-mark.test.js. ⚠️ Pas vu dans un navigateur.
 - **Non touché** : la petite icône d'une rune posée sur une pièce (`runeMark`) et la liste de choix des runes (sans case, le nom est déjà coloré).
+
+## 01/11/2026 — Jauge d'énergie dans l'équipe du Lobby (Geoffrey)
+- **Quoi** : `energy` dans chaque membre de `publicParty` (server/party/service.js), `energyGauge` (src/ui/energy-tag.js), classe `.pslotEnergy`. Son propre mineur : `st.energy`, aussi sans groupe.
+- **Cache** : `PARTY_SERVER.energyFor` (30 s) par compte, comme Social et le panneau Équipe de la session : `energyOf` parcourt les sessions du joueur et le lobby interroge le groupe toutes les 2,5 s. Une énergie vue chez un coéquipier peut donc retarder de 30 s.
+- **Tests** : tests/party.test.js, tests/lobby.test.js.

@@ -133,6 +133,7 @@ export const PARTY_SERVER = {
   formingMax: 30,                   // groupes montrés au plus dans « Groupes en formation »
   formingCardMs: 5e3,               // portrait d'un joueur gardé ce temps pour cette liste, relue en boucle
   formingCardsMax: 500,
+  energyFor: 30e3,                  // énergie d'un membre montrée dans l'équipe du Lobby : relue au plus tous ces ms (01/11/2026)
   awayAfter: 10e3,                  // membre affiché « absent » sans nouvelles depuis ce temps (onglet fermé, réseau)
   memberTimeout: 5 * MIN,           // … et retiré du groupe au-delà
   inviteTtl: HOUR,                  // invitation par ID valable ce temps

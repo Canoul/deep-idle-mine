@@ -611,3 +611,20 @@ test('prêt tout le temps (01/11) : le chef sorti de prison n\'a pas d\'état pr
   inPrison.delete(B.id);
   assert.equal((await party.state(B)).party.members.find(m => m.account === B.id).ready, false, 'devenu chef pendant la prison');
 });
+
+/* ---------- énergie dans l'équipe du Lobby (01/11/2026) ---------- */
+
+test('énergie de l\'équipe : chaque membre voit celle des autres, relue au plus tous les energyFor', async () => {
+  let now = 5_000_000, reads = 0;
+  const game = { activeSessionId: async () => null, energyOf: async id => { reads++; return { value: id === A.id ? 72 : 3, max: 100 }; } };
+  const party = createPartyService({ game, clock: () => now, getAccount: async id => ACCOUNTS[id] ?? null, newCode: () => 'K7Q4P2', config: { ...PARTY_SERVER, energyFor: 30e3 } });
+  await party.create(A);
+  await party.join(B, (await party.state(A)).party.code);
+  const seen = async me => Object.fromEntries((await party.state(me)).party.members.map(m => [m.account, m.energy.value]));
+  assert.deepEqual(await seen(A), { [A.id]: 72, [B.id]: 3 });
+  const before = reads;
+  await seen(B); now += 29e3; await seen(A);
+  assert.equal(reads, before, 'pas de relecture pendant 30 s, malgré les rafraîchissements du lobby');
+  now += 1e3; await seen(A);
+  assert.equal(reads, before + 2, 'après 30 s : relue pour chacun');
+});

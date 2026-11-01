@@ -72,7 +72,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
   const invitesFor = accountId => [...parties.values()].filter(p => p.invites.has(accountId));
 
   /* ce que les membres voient de leur groupe (les ID de compte sont publics) */
-  function publicParty(p, meId, playing = new Map(), trees = new Map(), looks = new Map(), specLv = new Map(), auras = new Map(), gs = new Map(), prisons = new Set()){
+  function publicParty(p, meId, playing = new Map(), trees = new Map(), looks = new Map(), specLv = new Map(), auras = new Map(), gs = new Map(), prisons = new Set(), energies = new Map()){
     const now = clock();
     return { code: p.code, leader: p.leader, max: GAME.maxPlayers, launching: !!p.launching, devPresets: p.devPresets ?? null, locked: !!p.locked,
              members: p.members.map(m => ({ account: m.account, displayId: formatAccountId(m.account), name: m.name,
@@ -84,9 +84,22 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
                                             look: looks.get(m.account) ?? {},
                                             auras: auras.get(m.account) ?? {},          // aura des pièces visibles (src/meta/aura.js)
                                             gs: gs.get(m.account) ?? null,              // gear score du stuff porté (src/meta/gearscore.js)
+                                            energy: energies.get(m.account) ?? null,    // { value, max }, jauge de l'équipe (01/11)
                                             prison: prisons.has(m.account),             // sa prison tourne : un lancement la terminera (29/10)
                                             away: !playing.has(m.account) && now - m.seenAt > config.awayAfter })),
              invited: [...p.invites.values()].map(i => ({ account: i.account, displayId: formatAccountId(i.account), name: i.name })) };
+  }
+
+  /* énergie d'un membre (01/11/2026) : relue au plus tous les energyFor, la lecture parcourt ses sessions et chaque
+     lobby redemande son groupe toutes les quelques secondes */
+  const energyCache = new Map();             // compte → { at, energy }
+  async function energyOf(account){
+    let c = energyCache.get(account);
+    if(!c || clock() - c.at >= config.energyFor){
+      c = { at: clock(), energy: await game.energyOf?.(account) ?? null };
+      energyCache.set(account, c);
+    }
+    return c.energy;
   }
 
   /* portrait d'un membre, tel que le montrent un lien de lobby et la liste des groupes en formation */
@@ -312,8 +325,11 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       /* et sa prison en cours (29/10) : le chef et le membre sont prévenus qu'un lancement la termine */
       const prisons = new Set();
       if(p) for(const m of p.members) if(await game.prisonActiveOf?.(m.account)) prisons.add(m.account);
+      /* et son énergie, pour la jauge de l'équipe */
+      const energies = new Map();
+      if(p) for(const m of p.members) energies.set(m.account, await energyOf(m.account));
       return {
-        party: p ? publicParty(p, me.id, playing, trees, looks, specLv, auras, gs, prisons) : null,
+        party: p ? publicParty(p, me.id, playing, trees, looks, specLv, auras, gs, prisons, energies) : null,
         /* invitations reçues : qui invite, qui est déjà là */
         invites: invitesFor(me.id).map(q => ({ code: q.code, from: q.invites.get(me.id).from,
                                                members: q.members.map(m => m.name), full: q.members.length >= GAME.maxPlayers })),
