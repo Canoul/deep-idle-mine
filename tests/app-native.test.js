@@ -80,8 +80,15 @@ test('session quittée : notification annulée', async () => {
 
 test('heure changée : annulée puis reprogrammée', async () => {
   const p = fakePlugin();
-  await syncNotifs(p, [note(1, FUTURE + 1000)], new Map([[1, FUTURE]]));
+  await syncNotifs(p, [note(1, FUTURE + 60e3)], new Map([[1, FUTURE]]));
   assert.deepEqual(p.calls.map(c => c[0]), ['cancel', 'schedule']);
+});
+
+test("quelques millisecondes d'écart (latence du réseau) : aucun appel", async () => {
+  const p = fakePlugin(), prev = new Map([[1, FUTURE]]);
+  const out = await syncNotifs(p, [note(1, FUTURE + 7)], prev);
+  assert.deepEqual(p.calls, []);
+  assert.equal(out.get(1), FUTURE, "l'heure de référence ne glisse pas");
 });
 
 test('rien de changé : aucun appel', async () => {
@@ -106,7 +113,7 @@ test('erreur du plugin : pas de crash, l\'état précédent reste', async () => 
 
 test('annulée mais pas reprogrammée : la prochaine synchro la reprogramme', async () => {
   const p = fakePlugin(); p.fail = 'schedule';
-  const prev = await syncNotifs(p, [note(1, FUTURE + 1000)], new Map([[1, FUTURE]]));
+  const prev = await syncNotifs(p, [note(1, FUTURE + 60e3)], new Map([[1, FUTURE]]));
   assert.equal(prev.has(1), false);
 });
 
@@ -185,6 +192,14 @@ test('retour dans l\'appli : recalcul, sans deux calculs en même temps', async 
   d.sessionEnd += 60e3;
   win.visible(); win.visible(); await settle();
   assert.equal(p.named('schedule').length, 1);
+});
+
+test('session en cours, horloge remesurée à chaque envoi : aucune reprogrammation', async () => {
+  const p = fakePlugin(), { d, win, app } = run(p);
+  await app.refresh(); p.calls.length = 0;
+  d.offset = 7;
+  await win.tick(); await settle();
+  assert.equal(p.named('schedule').length + p.named('cancel').length, 0);
 });
 
 test('session lancée puis synchro à la minute : même programmation, aucun appel', async () => {

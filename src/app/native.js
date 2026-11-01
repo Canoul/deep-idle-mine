@@ -31,11 +31,13 @@ export async function clearPending(plugin){
 const toPlugin = n => ({ id:n.id, title:n.title, body:n.body, extra:{ tab:n.tab }, isExactNotification:false,
   schedule:{ at:new Date(n.at), allowWhileIdle:true } });
 
-/* applique la différence entre wanted et previous (Map id → heure) ; rend ce qui est réellement programmé */
+/* applique la différence entre wanted et previous (Map id → heure) ; rend ce qui est réellement programmé. Tolérance :
+   l'écart serveur − téléphone est remesuré sans cesse et bouge de quelques ms avec le réseau. */
 export async function syncNotifs(plugin, wanted, previous){
+  const same = (id, at) => previous.has(id) && Math.abs(previous.get(id) - at) < APP_NOTIFS.syncTolerance * 1000;
   const fresh = wanted.filter(n => n.at > Date.now()), keep = new Map(fresh.map(n => [n.id, n.at]));
-  const gone = [...previous.keys()].filter(id => keep.get(id) !== previous.get(id));
-  const add = fresh.filter(n => previous.get(n.id) !== n.at);
+  const gone = [...previous.keys()].filter(id => !keep.has(id) || !same(id, keep.get(id)));
+  const add = fresh.filter(n => !same(n.id, n.at));
   const done = new Map(previous);
   try {
     if(gone.length){

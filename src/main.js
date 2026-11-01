@@ -103,6 +103,8 @@ let waitingFor = null;     // … celui de cette session (id)
 let prison = null, PG = null, prisonViewAt = 0;
 let pendingJoin = joinCodeFromHash(location.hash);   // lien d'invitation (#rejoindre=CODE), lu avant que la barre change l'adresse
 const serverNow = () => Date.now() + clockOffset;
+/* hors session : l'heure du serveur reçue avec les fours (notifications de l'appli) */
+const setClock = t => { if(!rec && Number.isFinite(t)) clockOffset = t - Date.now(); };
 const renderer = createRenderer($('cv'));
 const miRenderer = createInstantRenderer($('cvMi'));
 const isMi = () => rec?.mode === 'mi';
@@ -229,7 +231,7 @@ const furnace = setupFurnace({
   onOp: async op => {
     const r = await gameApi.furnace({ ...op, opId: newOpId() });
     setInventory(r.inventory);
-    furnace.set(r.furnaces); appLayer?.refreshNotifs();
+    furnace.set(r.furnaces); setClock(r.furnaces?.now); appLayer?.refreshNotifs();
     return r;
   },
 });
@@ -881,7 +883,7 @@ async function refresh(waited){
   showBan();
   setInventory(st.inventory);
   if(!st.ended || st.session) setProgress(st.progress);
-  furnace.set(st.furnaces);
+  furnace.set(st.furnaces); setClock(st.furnaces?.now);
   appLayer?.refreshNotifs();
   crusher.set(st.crusher);
   stuff.set(st.stuff);

@@ -6457,3 +6457,4 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   chaque `schedule` (Android 12+) ; ne jamais appeler `schedule` sans autorisation, il la redemande tout seul. Alarmes
   donc inexactes (quelques minutes de retard possibles). Heures calmes testées sur l'heure de la notification : celle de
   la mine de 8 h (7 h 55) ne sonne pas. Identifiant de mine lié à l'heure du créneau.
+- **Relecture indépendante** : ✅ corrigés : tout était reprogrammé à chaque synchro en session (`clockOffset` bouge de quelques ms, tolérance `syncTolerance`) ; horloge non recalée hors session (`setClock`, avec l'heure des fours).

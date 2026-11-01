@@ -98,3 +98,10 @@ test('appli : Mon compte montre les réglages des notifications, transmis à la 
   assert.match(main, /key\.startsWith\('notif_'\)\) appLayer\?\.setNotif\(key\.slice\(6\), v\)/);
   assert.match(main, /notifData: \(\) =>/);
 });
+
+test("appli : hors session, l'horloge se cale sur l'heure du serveur reçue avec les fours", () => {
+  const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  assert.match(main, /const setClock = /);
+  assert.match(main, /setClock\(st\.furnaces\?\.now\)/);
+  assert.match(main, /setClock\(r\.furnaces\?\.now\)/);
+});

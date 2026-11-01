@@ -56,7 +56,7 @@ l'autorisation demandée par Android à la première ouverture. Essais à faire 
 5. Mon compte → Options : couper « Notifications sur ce téléphone » coupe tout ; chaque type se coupe aussi seul.
 
 Limites : tout est calculé sur le téléphone, donc une session lancée depuis le PC n'est connue qu'à la prochaine
-ouverture de l'appli ; sans ouvrir l'appli pendant 48 h, les rappels de mine instantanée s'arrêtent ; Android peut
+ouverture de l'appli, et une session quittée depuis le PC, appli fermée, sonne quand même à l'heure prévue ; sans ouvrir l'appli pendant 48 h, les rappels de mine instantanée s'arrêtent ; Android peut
 retarder une notification de quelques minutes pour économiser la batterie (surtout certaines marques). Après deux
 refus, Android ne redemande plus : il faut autoriser l'appli dans les réglages du téléphone.
 
