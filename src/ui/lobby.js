@@ -12,6 +12,7 @@ import { presetName, copyPresetId, copyName } from '../shared/dev-presets.js';
 import { queueTime } from '../shared/lfg.js';
 import { pxi } from './pxicons.js';
 import { qhelp } from './help.js';
+import { lootHelp } from './loot-tip.js';
 import { drawPortrait } from '../render/portrait.js';
 import { sanitizeLook } from '../meta/stuff.js';
 import { sanitizeAuras } from '../meta/aura.js';
@@ -404,7 +405,7 @@ export function setupLobby(h){
       : def?.instance ? `${esc(def.label)} : <b>${INSTANCE.duration / 60} min</b> de jeu pour casser les ${INSTANCE.ledges * 2} spawners et vaincre le ${esc(INSTANCE.boss.name)}. `+
                         `<b>Une clé par joueur</b>, utilisée seulement si le groupe gagne (échec ou départ : on la garde).`
       : tower ? `${esc(def.label)} : <b>${TOWER.duration / 60} min</b> de jeu pour traverser les ${TOWER.floors} étages (briques et mobs) et vaincre le boss sur le toit. `+
-                `Victoire : un trésor pour chaque joueur présent. Une seule victoire par ouverture. `+
+                `Victoire : un trésor pour chaque joueur présent ${lootHelp(`tower:${def.tower}`)}. Une seule victoire par ouverture. `+
                 `<button class="small${st.who?.side === def.tower ? ' on' : ''}" id="whoBtn" title="Joueurs en ligne qui n'ont pas encore fait cette tour">Who ?</button>`
       : (n > 1 ? `Session à <b>${n}</b> : même mine, coffre partagé à la fin. ` : '')+
         (dev ? 'Mode développeur : vitesse au choix pendant la session, fin libre.'
@@ -480,7 +481,7 @@ export function setupLobby(h){
   function renderPrefs(){
     const p = st.prefs ?? {};
     $('prefsBox').innerHTML = Object.entries(PREF_OPTIONS).map(([k, def]) =>
-      `<div class="pref"><span>${esc(def.label)}</span><div class="seg">${def.options.map(([v, label], i) =>
+      `<div class="pref"><span>${esc(def.label)}${k === 'fightMobs' ? ' ' + lootHelp('mobs', 'Butin des mobs') : ''}</span><div class="seg">${def.options.map(([v, label], i) =>
         `<button data-k="${k}" data-i="${i}" class="${p[k] === v ? 'on' : ''}"${st.session ? ' disabled' : ''}>${esc(label)}</button>`).join('')}</div></div>`).join('')
       + (p.helpAllies ? helpList(p.helpIgnore ?? []) : '');
   }
@@ -561,10 +562,10 @@ export function setupLobby(h){
       `<span><b>${esc(i.label)}</b>${i.sub ? `<br><small>${esc(i.sub)}</small>` : ''}</span>${i.ready ? '' : '<small>🔒 bientôt</small>'}</button>`).join('')}</div>`+
       (cur.key ? `<p class="instKeys"><span>🗝</span><span>Tes clés : <b class="${n ? 'ok' : 'err'}">${n} ${esc(cur.key)}</b></span> `+
         qhelp(`Clés d'instance\nChaque joueur du groupe doit avoir sa clé.\nElle n'est utilisée que si le groupe gagne : en cas d'échec, ou si tu quittes avant la fin, tu la gardes.\nOn la trouve dans les ${cur.keyFrom ?? 'Treasure T3 (20 %)'}.`)+`</p>`+
-        (cur.chest === 'goblin' ? `<p class="small">🎁 Roi vaincu : un <b>Coffre du Roi Gobelin</b> (qualité R1 à R7) pour chaque joueur encore là. `+
-          `<b>Niveau 2</b> : gobelins et roi bien plus solides ; un <b>Coffre du Roi Gobelin II</b> (× ${INSTANCE.levels[2].chest.res} ressources, × ${INSTANCE.levels[2].chest.drop} chances d'objets).</p>`
+        (cur.chest === 'goblin' ? `<p class="small">🎁 Roi vaincu : un <b>Coffre du Roi Gobelin</b> (qualité R1 à R7) pour chaque joueur encore là ${lootHelp(`instance:${cur.id}:1`)}. `+
+          `<b>Niveau 2</b> : gobelins et roi bien plus solides ; un <b>Coffre du Roi Gobelin II</b> (× ${INSTANCE.levels[2].chest.res} ressources, × ${INSTANCE.levels[2].chest.drop} chances d'objets) ${lootHelp(`instance:${cur.id}:2`, 'Butin niveau 2')}.</p>`
         : cur.chest === 'golbute' ? `<p class="small">🗿 Un golem de 5 × 5. Ses <b>avalanches</b> sonnent tout le monde : à ${INSTANCE.golbute.avalanche.deathStacks} stacks, mort. `+
-          `<b>Prends de la ténacité</b> (elle esquive l'avalanche et les coups qui propulsent). 🎁 Golbute vaincu : un <b>Coffre du Golbute</b> (R1 à R7) pour chaque joueur encore là (son butin arrive bientôt).</p>` : '') : '');
+          `<b>Prends de la ténacité</b> (elle esquive l'avalanche et les coups qui propulsent). 🎁 Golbute vaincu : un <b>Coffre du Golbute</b> (R1 à R7) pour chaque joueur encore là ${lootHelp(`instance:${cur.id}`)}.</p>` : '') : '');
   }
   $('instBody').onclick = e => { const b = e.target.closest('button[data-inst]'); if(b && !b.disabled) pick(b.dataset.inst); };
   $('lobbyToSession').onclick = () => h.onShowSession?.();

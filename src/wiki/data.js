@@ -2,6 +2,7 @@
    Le wiki affiche toujours les valeurs actuelles : rien n'est recopié à la main. */
 import { STATS, CFG, BLOCKS, IDS, AREAS, AREA_H, W, TREASURE, LOOT, RESEARCH, MOBS, XP, SKILLS, FURNACE, CRUSHER, SHINY,
          STUFF, ITEMS, RARITY, DUCK, mobHp, MOB_INFO as MOB_LOOK, HELP, DUNGEON, TRAP, UPGRADE, INSTANT_MINE, JUDGMENT, TOWER, RUNE, RINGS, SPELLS, COMBAT, GLYPHS, MOB_DROPS, GOBLIN_KING , WIKI, GIANT, MINOTAUR } from '../config.js';
+import { mobLoot } from '../meta/loot-table.js';
 import { RECIPES } from '../recipes.js';
 import { rarityOf } from '../meta/rarity.js';
 import { xpForLevel } from '../meta/level.js';
@@ -57,17 +58,8 @@ export const MOB_INFO = Object.fromEntries(MOB_TYPES.map(m => [m, {
   name: MOB_LOOK[m]?.name ?? m, tex: MOB_LOOK[m]?.tex, xp: XP.mob[m] ?? 0, minArea: MOBS.minArea[m],
   speed: m === 'mimic' ? 0 : (MOBS.speed[m] ?? 1) / CFG.mobStep,
   hp0: mobHp(m, MOBS.minArea[m]),
-  loot: {
-    bestiole:   [{ item: MOBS.bugItem, ...mm(range(r => MOBS.bugLoot(r))) }],
-    gobelin:    [{ item: MOBS.goblinItem, ...mm(range(r => MOBS.goblinLoot(r))) }, { item: MOBS.bugItem, min: MOBS.goblinChitin, max: MOBS.goblinChitin }],
-    occultiste: [{ item: MOBS.occult.item, ...mm(range(r => MOBS.occult.loot(r))) }, { item: MOBS.bugItem, ...mm(range(r => MOBS.occult.chitin(r))) }],
-    mephite:    [{ item: MOBS.mephite.item, ...mm(range(r => MOBS.mephite.loot(r))) }],
-    golem:      [{ item: MOBS.golem.item, ...mm(range(r => MOBS.golem.loot(r))) }],
-    chair:      [{ item: MOBS.chair.flesh.item, min: MOBS.chair.flesh.min, max: MOBS.chair.flesh.max }, { item: MOBS.bugItem, min: MOBS.chair.chitin.min, max: MOBS.chair.chitin.max }],
-    mimic:      [],
-  }[m] ?? [],
+  loot: m === 'mimic' ? [] : mobLoot(m),   // même calcul que la bulle « Butin des mobs » (src/meta/loot-table.js)
 }]));
-function mm([min, max]){ return { min, max }; }
 export const MOB_RULES = { first: MOBS.firstSpawn, dist: [MOBS.spawnMin, MOBS.spawnMax], chase: CFG.mobChaseRange,
   steal: MOBS.goblinStealEvery, growth: MOBS.hpGrowth, mimicLoot: MOBS.mimicLoot, reveal: MOBS.mimicRevealDist, occult: MOBS.occult, mephite: MOBS.mephite, help: HELP.range,
   golem: { ...MOBS.golem, knock: MOBS.knock.golem, hitEvery: MOBS.hitEveryBy.golem }, chair: MOBS.chair, duckSpeed: 1 / DUCK.step };

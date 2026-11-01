@@ -9,9 +9,31 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## JJ/MM/AAAA — Prénom — Titre court
+- **Pour le joueur** : ce qui change en jeu (ou « rien, c'est de l'organisation »).
+- **Décisions** : choix de design ou d'équilibrage tranchés (s'il y en a).
+- **À suivre** : ce qui reste à faire ou à vérifier.
+- **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
+```
+
 ## 01/11/2026 — Jules — K hole : le donjon des Filons n'est plus muré
 - **Pour le joueur** : dans la carte « Filons » du k hole, le donjon pouvait être collé au bord droit avec son entrée du côté du mur : impossible d'y entrer (vu sur la seed 176946784). Un donjon collé au bord ouvre maintenant toujours vers l'intérieur. Ça touchait environ 1 Filons sur 12.
-- **État** : 🧪 sur la branche `jules/fix-donjon-khole` (pas en ligne)
+- **État** : ✅ en ligne le 01/11
+
+## 01/11/2026 — Jules — Bulles « Butin » : le tableau de loot en survol
+- **Pour le joueur** : on voit ce que peut donner une chose avant de l'ouvrir ou de la tenter, dans la bulle habituelle
+  (survol à la souris, toucher sur téléphone) :
+  - **Inventaire** : survoler un Treasure T1 à T4, un trésor de tour (angélique, démoniaque, béni) ou un coffre
+    d'instance (Roi Gobelin, Roi Gobelin II, Golbute) montre son tableau : ce qui sort toujours (quantités), puis
+    chaque tirage (« un au plus », avec les % de chaque objet) ;
+  - **Lobby, Instances** : « ? Butin » à côté du coffre (et « ? Butin niveau 2 » pour l'Instance I), avec les
+    chances de qualité R1 à R7 ;
+  - **Lobby, Tours** : « ? Butin » à côté de « Victoire : un trésor… » (rune, anneaux, effet de la stèle) ;
+  - **Lobby, Critères** : « ? Butin des mobs » à côté de « Face aux mobs » : chaque mob, l'area où il apparaît, son butin
+    et ses objets rares, et le minotaure des donjons.
+  Les chiffres viennent de la config : un réglage changé met la bulle à jour tout seul. Le wiki montre maintenant aussi
+  le butin du Chien de magma et des Vers de terre (il les oubliait).
+- **État** : ✅ en ligne le 01/11
 
 ## 01/11/2026 — Geoffrey — Amélioration : autant de cristaux que de plumes
 - **Pour le joueur** : chaque niveau d'amélioration d'une pièce coûte maintenant autant de Cristaux de pleine lune que de Plumes d'ange (6 au +1, 63 au +9). De +0 à +9 sans échec : 256 cristaux au lieu de 129.
@@ -255,14 +277,6 @@ Modèle d'entrée :
 - **Pour le joueur** : un **Orbe supérieur** se fabrique dans l'onglet Craft, dès le départ : 20 Rotten flesh + 20 Chair de vers + 20 Peau de chien de magma.
 - **À suivre** : il ne sert à rien pour l'instant ; son usage reste à décider.
 - **État** : ✅ en ligne le 31/10
-
-## JJ/MM/AAAA — Prénom — Titre court
-- **Pour le joueur** : ce qui change en jeu (ou « rien, c'est de l'organisation »).
-- **Décisions** : choix de design ou d'équilibrage tranchés (s'il y en a).
-- **À suivre** : ce qui reste à faire ou à vérifier.
-- **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
-```
-
 ## 31/10/2026 — Geoffrey — Lobby : on sait qui on attend
 - **Pour l'équipe** : quand un membre du groupe est encore en session, le bouton du chef affiche son nom et le temps
   restant (« Attente de Nunu (reste 6 min) ») au lieu de « Le groupe finit sa session… ». Tout le groupe voit aussi le temps
