@@ -480,7 +480,7 @@ function syncNotifs(){
     ...st.partyInvites.map(i => ({ key: 'p:' + i.code + ':' + i.at, icon: pxi('group'), text: `<b>${esc(i.from)}</b> vous a invité dans son lobby${i.full ? ' <span class="mut">(complet)</span>' : ''}`,
       actions: [{ label: 'Rejoindre', primary: true, run: () => joinParty(() => partyApi.join(i.code)) },
                 { label: 'Décliner', run: async () => { await partyApi.decline(i.code); pollSocial(); } }] })),
-    ...(st.guildInvites ?? []).map(i => ({ key: 'g:' + i.guildId, icon: pxi('group'), text: `<b>${esc(i.name)}</b> vous invite dans sa guilde`,
+    ...(st.guildInvites ?? []).map(i => ({ key: 'g:' + i.guildId, icon: pxi('shield'), text: `<b>${esc(i.name)}</b> vous invite dans sa guilde`,
       actions: [{ label: 'Accepter', primary: true, run: () => answerGuild(guildApi.acceptInvite(i.guildId)) },
                 { label: 'Refuser', run: () => answerGuild(guildApi.refuseInvite(i.guildId)) }] })),
     ...st.incoming.map(r => ({ key: 'f:' + r.id, icon: pxi('person'), text: `<b>${esc(r.name)}</b> vous a envoyé une demande d'ami`,

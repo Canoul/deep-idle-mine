@@ -86,7 +86,7 @@ test('déroulé : annonce, !join privé, gagnant annoncé et payé une fois', as
   await open();
   const public1 = await texts(social, MAX);
   assert.equal(public1.length, 2);
-  assert.match(public1[0], /^\[Raffle\] 100 Chitine seront attribués aléatoirement à quelqu'un dans le chat dans 40 s$/);
+  assert.match(public1[0], /^\[Raffle\] 100 Chitine seront attribués aléatoirement à quelqu'un dans le chat dans 2 min$/);
   assert.equal(public1[1], '!join pour participer');
 
   assert.match((await social.chatPost(ZOE, { text:'!join', channel:'lfg' })).message.text, /Tu participes au raffle/);
@@ -96,7 +96,7 @@ test('déroulé : annonce, !join privé, gagnant annoncé et payé une fois', as
   assert.deepEqual(await texts(social, MAX), public1);        // ni le !join ni la réponse ne sont lus par les autres
   await social.chatPost(ZOE, { text:'salut' });               // !join ne consomme pas la cadence
 
-  advance(39_000); await social.raffleTick();
+  advance(RAFFLE.joinMs - 1_000); await social.raffleTick();
   assert.equal(await count(store, ZOE.id, 'Chitine'), 0);
   advance(1_000); await social.raffleTick(); await social.raffleTick();
   assert.equal(await count(store, ZOE.id, 'Chitine'), 100);
@@ -106,13 +106,13 @@ test('déroulé : annonce, !join privé, gagnant annoncé et payé une fois', as
   assert.equal((await store.getRaffle()).current, null);
 });
 
-test('invité refusé ; un seul ticket par compte ; !join après les 40 s refusé', async () => {
+test('invité refusé ; un seul ticket par compte ; !join après les 2 min refusé', async () => {
   const { social, store, open, advance } = setup();
   await open();
   assert.match((await social.chatPost(GUEST, { text:'!join' })).message.text, /pseudo/);
   await social.chatPost(ZOE, { text:'!join' }); await social.chatPost(ZOE, { text:'!join' });
   assert.equal((await store.getRaffle()).current.players.length, 1);
-  advance(40_000);
+  advance(RAFFLE.joinMs);
   assert.match((await social.chatPost(MAX, { text:'!join' })).message.text, /pas de raffle/);
 });
 
@@ -120,14 +120,14 @@ test('annonce du gagnant : nombre de participants au pluriel', async () => {
   const { social, open, advance } = setup();
   await open();
   await social.chatPost(ZOE, { text:'!join' }); await social.chatPost(MAX, { text:'!join' });
-  advance(40_000); await social.raffleTick();
+  advance(RAFFLE.joinMs); await social.raffleTick();
   assert.match((await texts(social, ZOE)).at(-1), / sur 2 participants$/);
 });
 
 test('personne : lot perdu et annoncé, le prochain est programmé', async () => {
   const { social, store, open, advance } = setup();
   await open();
-  advance(40_000); await social.raffleTick();
+  advance(RAFFLE.joinMs); await social.raffleTick();
   assert.equal((await texts(social, ZOE)).at(-1), "[Raffle] Personne n'a participé, le lot est perdu");
   assert.ok((await store.getRaffle()).nextAt > 0);
 });
