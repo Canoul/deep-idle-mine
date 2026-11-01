@@ -23,7 +23,7 @@ const needId = v => { if(!isId(v)) fail('bad_request', 400, 'Joueur inconnu.'); 
 const needGuildId = v => { if(typeof v !== 'string' || !v || v.length > 64) fail('bad_request', 400, 'Guilde inconnue.'); };
 const needName = me => { if(me.guest || !me.name) fail('guest', 403, 'Choisis un pseudo pour rejoindre une guilde.'); };
 
-export function createGuildService({ store, accounts, statusOf, spend = async () => false, counts = async () => ({}), clock = Date.now, makeId = () => crypto.randomUUID() }){
+export function createGuildService({ store, accounts, statusOf, inviteCheck = async () => () => false, spend = async () => false, counts = async () => ({}), clock = Date.now, makeId = () => crypto.randomUUID() }){
   let state = null, byAccount = new Map(), chain = Promise.resolve();
   const pending = new Map();       // 'guilde:bâtiment:objet' → quantité en cours de don
   const giving = new Set();        // opId des dons en cours : la même demande renvoyée pendant ce temps ne compte pas
@@ -66,10 +66,14 @@ export function createGuildService({ store, accounts, statusOf, spend = async ()
 
   async function mineView(me, g){
     const rank = g.members.find(m => m.id === me.id).rank;
-    const rows = await Promise.all(g.members.map(async m => ({ id:m.id, name:await nameOf(m.id), rank:m.rank, xp:guildXpOf(m.rawXp),
-      activity:activityOf((await statusOf(m.id))?.status),
-      actions:m.id === me.id ? { kick:false, promote:false, demote:false, transfer:false }
-        : { kick:canKick(rank, m.rank), promote:canPromote(rank, m.rank), demote:canDemote(rank, m.rank), transfer:canTransfer(rank, m.rank) } })));
+    const invitable = await inviteCheck(me);
+    const rows = await Promise.all(g.members.map(async m => {
+      const st = await statusOf(m.id) ?? { status:'offline' };
+      return { ...st, id:m.id, name:await nameOf(m.id), rank:m.rank, xp:guildXpOf(m.rawXp), activity:activityOf(st.status),
+        me:m.id === me.id, canInvite:m.id !== me.id && invitable(m.id, st),
+        actions:m.id === me.id ? { kick:false, promote:false, demote:false, transfer:false }
+          : { kick:canKick(rank, m.rank), promote:canPromote(rank, m.rank), demote:canDemote(rank, m.rank), transfer:canTransfer(rank, m.rank) } };
+    }));
     const requests = canRecruit(rank) ? await Promise.all(g.requests.map(async r => ({ id:r.id, name:await nameOf(r.id) }))) : [];
     const items = [...new Set(GUILD.buildings.flatMap(b => Object.keys(nextLevel(g, b)?.cost ?? {})))];
     return { id:g.id, name:g.name, ...guildLevelOf(g.rawXp), xp:guildXpOf(g.rawXp), rank, max:GUILD.maxMembers, members:sortMembers(rows), requests,

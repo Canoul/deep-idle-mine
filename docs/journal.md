@@ -9,6 +9,10 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 01/11/2026 — Geoffrey — Guilde : inviter un membre dans son lobby, voir ce qu'il fait
+- **Pour le joueur** : dans l'onglet de sa guilde, chaque membre a un bouton **Inviter** (dans son lobby, même sans être amis), et on voit ce qu'il fait comme dans Social : en ligne, dans le lobby, en session avec le temps restant, en prison, hors ligne.
+- **État** : ✅ en ligne le 01/11
+
 ## JJ/MM/AAAA — Prénom — Titre court
 - **Pour le joueur** : ce qui change en jeu (ou « rien, c'est de l'organisation »).
 - **Décisions** : choix de design ou d'équilibrage tranchés (s'il y en a).

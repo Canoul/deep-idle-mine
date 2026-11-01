@@ -111,6 +111,7 @@ export const guildApi = {
   leave: () => request('POST', '/api/guild/leave', {}),
   create: name => request('POST', '/api/guild/create', { name }),
   invite: name => request('POST', '/api/guild/invite', { name }),
+  lobbyInvite: id => request('POST', '/api/social/guild-invite', { id }),
   acceptInvite:  id => request('POST', '/api/guild/accept-invite', { id }),
   refuseInvite:  id => request('POST', '/api/guild/refuse-invite', { id }),
   request:       id => request('POST', '/api/guild/request', { id }),
