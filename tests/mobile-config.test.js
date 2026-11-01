@@ -127,11 +127,27 @@ test('appli : le serveur ne sert jamais mobile/', () => {
   assert.ok(SERVER.publicPaths.every(p => !p.startsWith('/mobile')));
 });
 
-test('appli iOS : le contrôle attend le bouton (délai maximal, plusieurs captures), sans seuil affaibli', () => {
+test('appli iOS : lancement vérifié, une seule relance, jamais sur un plantage', () => {
+  const c = read('mobile/scripts/ios-sim-check.sh');
+  assert.match(c, /bootstatus/); assert.match(c, /get_app_container/);
+  assert.match(c, /wait "\$LP"; code=\$\?/, 'code de retour de simctl launch');
+  assert.match(c, /DiagnosticReports/); assert.match(c, /sim\/plantages/);
+  assert.equal([...c.matchAll(/launch 2/g)].length, 1, 'une relance, pas plus');
+  assert.ok(c.indexOf('l\'appli a planté') < c.indexOf('launch 2'), 'un plantage arrête tout avant la relance');
+  assert.match(c, /rapport de plantage trouvé, même si l'appli tourne/);
+});
+
+test('appli iOS : le contrôle ne bloque pas TestFlight (simulateur en mode controle seulement)', () => {
   const w = read('.github/workflows/ios.yml');
-  assert.doesNotMatch(w, /sleep 40/);
-  assert.match(w, /MAX=120/); assert.match(w, /while :; do/);
-  assert.match(w, /"\$orange" -gt 2000/);
+  const step = w.slice(w.indexOf("- name: Essai dans un simulateur"));
+  assert.match(step.slice(0, 200), /if: env\.WANT == 'controle'/);
+});
+
+test('appli iOS : le contrôle attend le bouton (délai maximal, plusieurs captures), sans seuil affaibli', () => {
+  const w = read('.github/workflows/ios.yml'), c = read('mobile/scripts/ios-sim-check.sh');
+  assert.doesNotMatch(w + c, /sleep 40/);
+  assert.match(c, /MAX=120/); assert.match(c, /while :; do/);
+  assert.match(c, /"\$orange" -gt 2000/);
   assert.match(w, /if: always\(\) && env\.WANT == 'controle'/, 'la capture de l\'échec reste dans l\'artefact');
   const { measure, BUTTON_MIN } = createRequire(import.meta.url)('../mobile/scripts/ios-screen.cjs');
   assert.equal(BUTTON_MIN, 2000);

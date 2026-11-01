@@ -92,35 +92,7 @@ jobs:
               const all=Object.entries(JSON.parse(s).devices).filter(([r])=>r.includes('iOS')).flatMap(([,l])=>l);
               console.log(all.filter(d=>/^iPhone/.test(d.name)).at(-1).udid)})")
           xcrun simctl boot "$UDID"
-          xcrun simctl bootstatus "$UDID" -b > /dev/null
-          xcrun simctl install "$UDID" buildsim/Build/Products/Debug-iphonesimulator/App.app
-          mkdir -p sim
-          xcrun simctl launch --console "$UDID" fr.deepmineidle.app > sim/console.txt 2>&1 &
-          # la preuve est l'écran : le bouton orange « Se connecter » n'existe que si le jeu a démarré ET que le serveur a répondu à
-          # l'appli depuis capacitor://localhost. Un Mac de GitHub peut être lent : on attend le bouton, 120 s au plus, une capture
-          # toutes les 5 s ; toutes restent dans l'artefact.
-          MAX=120; START=$(date +%s); FOUND=""; TRACE=""
-          while :; do
-            t=$(( $(date +%s) - START ))
-            shot="sim/ecran-$(printf '%03d' "$t")s.png"
-            xcrun simctl io "$UDID" screenshot "$shot" > /dev/null 2>&1 || true
-            read -r orange colors light <<< "$(node ../../scripts/ios-screen.cjs "$shot")"
-            TRACE="$TRACE $t s=$orange/$colors/$light"
-            [ "$orange" -gt 2000 ] && { FOUND=$t; break; }
-            [ "$t" -ge "$MAX" ] && break
-            sleep 5
-          done
-          cp "$shot" sim/ecran.png
-          echo "::notice title=Ecran::temps=orange/couleurs/clarté :$TRACE"
-          echo "::notice title=Serveur::$(curl -s -m 20 -o /dev/null -w 'réponse %{http_code} en %{time_total} s' https://deepmineidle.fr/api/game/info)"
-          alive=$(xcrun simctl spawn "$UDID" launchctl list | grep -c 'fr.deepmineidle.app' || true)
-          errors=$(grep -c -E '\[error\]|Uncaught|SyntaxError|ReferenceError' sim/console.txt || true)
-          echo "::notice title=Simulateur::appli vivante : $alive · erreurs JavaScript : $errors · lignes de console : $(wc -l < sim/console.txt | tr -d ' ')"
-          grep -E '\[error\]|Uncaught|SyntaxError|ReferenceError' sim/console.txt | head -3 | cut -c1-200 | while read -r l; do echo "::notice title=Erreur::$l"; done
-          [ "$alive" -gt 0 ] || { echo "::error::l'appli s'est fermée dans le simulateur"; tail -30 sim/console.txt; exit 1; }
-          [ "$errors" = 0 ] || { echo "::error::erreurs JavaScript au démarrage"; exit 1; }
-          [ -n "$FOUND" ] || { echo "::error::le bouton Se connecter n'est pas apparu en $MAX s (captures dans l'artefact)"; exit 1; }
-          echo "::notice title=Demarrage::bouton Se connecter visible après $FOUND s"
+          bash ../../scripts/ios-sim-check.sh "$UDID" buildsim/Build/Products/Debug-iphonesimulator/App.app
 
       - uses: actions/upload-artifact@v4
         if: always() && env.WANT == 'controle'
