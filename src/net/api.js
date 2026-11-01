@@ -26,6 +26,8 @@ export async function request(method, path, body){
                              +res.headers.get('retry-after') || null);
     /* joueur banni (modération du chat, 30/10) : la page affiche le bandeau, quelle que soit l'action refusée */
     if(err.code === 'banned' && typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('dim:banned'));
+    /* compte suspendu en pleine partie (01/11) : la page repart sur l'écran de connexion, qui dit pourquoi */
+    if(err.code === 'suspended' && !path.startsWith('/api/account/') && typeof window !== 'undefined') window.location.reload();
     throw err;
   }
   return data;
@@ -34,8 +36,10 @@ export async function request(method, path, body){
 export const accountApi = {
   /* compte connecté, ou null si personne ne l'est (OfflineError si pas de serveur) */
   me: async () => (await request('GET', '/api/account/me')).account,
-  guest:    ()                       => request('POST', '/api/account/guest', {}),
-  register: (name, password)         => request('POST', '/api/account/register', { name, password }),
+  whoAmI: () => request('GET', '/api/account/me'),                     // { account, suspended? : texte, compte suspendu }
+  guest:    ()                       => request('POST', '/api/account/guest', { acceptRules: true }),    // la case du formulaire est cochée
+  register: (name, password)         => request('POST', '/api/account/register', { name, password, acceptRules: true }),
+  acceptRules: ()                    => request('POST', '/api/account/rules', { accept: true }),
   login:    (name, password)         => request('POST', '/api/account/login', { name, password }),
   logout:   ()                       => request('POST', '/api/account/logout', {}),
   claim:    (name, password)         => request('POST', '/api/account/claim', { name, password }),
@@ -135,7 +139,8 @@ export const townApi = {
 };
 
 /* modération du chat (30/10) : { warnings, max, bannedUntil, motif } */
-export const moderationApi = { me: () => request('GET', '/api/moderation/me') };
+export const moderationApi = { me: () => request('GET', '/api/moderation/me'),
+  report: body => request('POST', '/api/moderation/report', body) };   // { source, message | target, reason, comment? }
 
 export const socialApi = {
   state:   ()   => request('GET', '/api/social'),
@@ -145,6 +150,8 @@ export const socialApi = {
   accept:  id   => request('POST', '/api/social/accept', { id }),
   refuse:  id   => request('POST', '/api/social/refuse', { id }),
   remove:  id   => request('POST', '/api/social/remove', { id }),     // retirer un ami ou annuler une demande
+  block:   id   => request('POST', '/api/social/block', { id }),      // bloquer un joueur (01/11)
+  unblock: id   => request('POST', '/api/social/unblock', { id }),
   invite:  id   => request('POST', '/api/social/invite', { id }),
   join:    id   => request('POST', '/api/social/join', { id }),
   profile: id   => request('POST', '/api/social/profile', { id }),   // stuff, niveau et skills d'un ami

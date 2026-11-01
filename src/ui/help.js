@@ -102,7 +102,12 @@ Impossible d'inviter ou de rejoindre un ami en session.
 Un compte invité n'a pas de pseudo : il s'ajoute avec son ID (ex. 7K3Q-9XHP).`,
   online: `Joueurs en ligne
 Tous les joueurs connectés, amis ou non : ceux qui ne sont pas en session d'abord.
-« Ajouter » envoie une demande d'ami.`,
+« Ajouter » envoie une demande d'ami.
+« ⋮ » : signaler ou bloquer ce joueur.`,
+  blocked: `Joueurs bloqués
+Tu ne vois plus leurs messages ni leur bulle au Carreau.
+Leurs invitations de groupe et demandes d'ami ne t'arrivent plus.
+Ils n'en sont pas prévenus. « Débloquer » annule tout, sauf l'amitié retirée.`,
   crusher: `Concasseur
 Pose des blocs (terre, pierre, pierre dure…) dans les cases d'entrée : il en broie ${CRUSHER.batch} toutes les ${CRUSHER.time} s.
 À chaque lot, une chance de sortir une gemme ou un treasure.

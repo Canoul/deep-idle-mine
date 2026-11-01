@@ -85,7 +85,7 @@ export function cardHtml(p, me = false){
                  Number.isFinite(p.gs) ? `${Math.round(p.gs)} GS` : null].filter(Boolean).join(' · ');
   const status = p.group ? `Dans un groupe (${p.group.size}/${p.group.max})` : p.lfg ? 'Cherche un groupe' : '';
   return `<b>${esc(p.name)}</b><span class="mut">${esc(facts)}</span>${status ? `<span class="tcStatus">${esc(status)}</span>` : ''}`+
-    (me ? '' : `<div class="tcBtns"><button data-act="friend">Ajouter en ami</button><button data-act="invite" class="on">Inviter dans mon groupe</button></div>`)+
+    (me ? '' : `<div class="tcBtns"><button data-act="friend">Ajouter en ami</button><button data-act="invite" class="on">Inviter dans mon groupe</button><button data-act="report">Signaler</button><button data-act="block">Bloquer</button></div>`)+
     `<div class="tcMsg mut"></div>`;
 }
 
@@ -101,7 +101,7 @@ const $chat = () => document.getElementById('gchatDock');
    bilan est affiché, il vit dans cet onglet (31/10/2026 : le bilan de fin de session restait invisible derrière la ville) */
 export const townWalks = (tab, noSessionHidden, endHidden) => tab === 'session' && !noSessionHidden && endHidden;
 
-export function setupTown(root, { ping, emote, me, onEnter, friend, invite, onWalk = () => {}, lfg = null }){
+export function setupTown(root, { ping, emote, me, onEnter, friend, invite, report = () => {}, block = () => {}, onWalk = () => {}, lfg = null }){
   const cv = document.createElement('canvas');
   root.appendChild(cv);
   const hint = document.createElement('div');
@@ -184,6 +184,8 @@ export function setupTown(root, { ping, emote, me, onEnter, friend, invite, onWa
     const b = e.target.closest('[data-act]');
     if(!b || !cardFor) return;
     const msg = card.querySelector('.tcMsg'), id = cardFor, p = others.get(id);
+    /* Signaler, Bloquer (01/11/2026) : leurs fenêtres disent le résultat */
+    if(b.dataset.act === 'report' || b.dataset.act === 'block'){ (b.dataset.act === 'report' ? report : block)({ id, name: p?.name ?? 'ce joueur' }); return closeCard(); }
     b.disabled = true;
     try {
       if(b.dataset.act === 'friend'){ await friend(id); msg.textContent = `Demande d'ami envoyée à ${p?.name ?? 'ce joueur'}.`; }

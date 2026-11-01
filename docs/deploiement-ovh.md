@@ -110,6 +110,11 @@ Ensuite, Render peut être supprimé (Settings → Delete Web Service) quand tou
 | Changer un réglage | `sudo nano /etc/deep-idle-mine.env` (Ctrl+O Entrée pour enregistrer, Ctrl+X pour sortir), puis redémarrer |
 | Redémarrer tout le VPS | `sudo reboot` (le jeu repart tout seul) |
 | Modération du chat (avertissements, bans) | `sudo node /opt/deep-idle-mine/scripts/moderation.js --name PSEUDO` : sa fiche (chaque avertissement : date, salon, motif, mots repérés, message **tel qu'écrit** et tel que publié, avec qui s'il complète un message ; ses bans). `--recent` : derniers avertissements de tout le monde. `--unban` : lève son ban. `--forgive 2` / `--forgive all` : retire un avertissement (il reste dans la fiche, marqué « retiré », mais ne compte plus). **Sans redémarrer** ; il faut la clé `DIM_ADMIN_TOKEN` |
+| Signalements des joueurs | `sudo node /opt/deep-idle-mine/scripts/reports.js --open` : ceux à traiter (`--name PSEUDO` : ceux d'un joueur). `--close 12` : marque le n° 12 traité. `--log` : journal des actions de modération (qui, quoi, quand). **Sans redémarrer** ; il faut la clé `DIM_ADMIN_TOKEN` |
+| Supprimer un message du chat global | `sudo node /opt/deep-idle-mine/scripts/delete-message.js --list`, puis `--id 42` : il disparaît pour tous, bulles comprises. **Sans redémarrer** |
+| Couper le chat d'un joueur | `sudo node /opt/deep-idle-mine/scripts/mute.js --name PSEUDO --hours 24` ; `--off` pour lever. **Sans redémarrer** |
+| Suspendre un compte | `sudo node /opt/deep-idle-mine/scripts/ban.js --name PSEUDO --days 7 --reason "Motif"` ; sans `--days` : définitif ; `--off` pour lever. Connexion refusée avec un message. **Sans redémarrer** |
+| Forcer un pseudo | `sudo node /opt/deep-idle-mine/scripts/rename.js --name PSEUDO --to NOUVEAU`. **Sans redémarrer** |
 | Donner un objet à un joueur | `sudo node /opt/deep-idle-mine/scripts/give-item.js --name PSEUDO --item "Treasure T3" --qty 1` (nom exact de l'objet ; `--quality 5` : une pièce de stuff déjà identifiée R5 ; **sans redémarrer** : le joueur le voit tout de suite ; il faut la clé `DIM_ADMIN_TOKEN`, voir plus bas) |
 | Retirer un objet à un joueur | `sudo node /opt/deep-idle-mine/scripts/take-item.js --name PSEUDO --item "Glyphe Ruée" --qty 1` (nom exact ; d'abord dans l'inventaire, puis un glyphe posé sur son skill ; tout ou rien : s'il en a moins, rien ne change ; **sans redémarrer**, même clé que ci-dessus) |
 | Régler une jauge Ange / Démon | `sudo node /opt/deep-idle-mine/scripts/set-judgment.js --side demon --count 175` (`angel` ou `demon`, 0 à 200 ; pleine = la tour s'ouvre ; **sans redémarrer**, même clé que ci-dessus) |
@@ -145,7 +150,18 @@ sudo systemctl restart deep-idle-mine
 
 Comme la clé d'administration, cette adresse est secrète et ne va **jamais** dans git. Sans elle, rien n'est annoncé.
 
-Réglages (`/etc/deep-idle-mine.env`) : `DATABASE_URL` (Neon), `DIM_ADMIN_TOKEN` (clé d'administration, ci-dessus), `DIM_DISCORD_WEBHOOK` (annonces Discord, ci-dessus), `DIM_MAX_LIVE` (sessions en même temps, 24),
+### Salon Discord privé de modération
+
+Pour recevoir les signalements des joueurs : créer un salon **privé** (visible par l'équipe seulement), y créer un webhook **à part**, jamais celui des annonces, puis sur le VPS :
+
+```
+echo "DIM_DISCORD_MOD_WEBHOOK=https://discord.com/api/webhooks/XXXX/YYYY" | sudo tee -a /etc/deep-idle-mine.env > /dev/null
+sudo systemctl restart deep-idle-mine
+```
+
+Sans elle, les signalements restent en base (`scripts/reports.js`), rien n'est envoyé.
+
+Réglages (`/etc/deep-idle-mine.env`) : `DATABASE_URL` (Neon), `DIM_ADMIN_TOKEN` (clé d'administration, ci-dessus), `DIM_DISCORD_WEBHOOK` (annonces Discord, ci-dessus), `DIM_DISCORD_MOD_WEBHOOK` (signalements, salon privé, ci-dessus), `DIM_MAX_LIVE` (sessions en même temps, 24),
 `DIM_HOST=127.0.0.1`, `DIM_TRUST_PROXY=1`, `DIM_SECURE_COOKIE=1` (ces trois-là ne se changent pas).
 
 Le script de mise à jour (`/usr/local/sbin/deep-idle-mine-update`) est une copie fixe : un push ne peut pas

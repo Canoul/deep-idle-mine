@@ -50,9 +50,10 @@ Toutes les réponses sont en JSON ; une erreur = `{ error: { code, message } }` 
 
 | Route | Corps | Réponse |
 |---|---|---|
-| `GET /api/account/me` | | `{ account }` (`null` si personne n'est connecté) |
-| `POST /api/account/guest` | `{}` | 201 `{ account }` |
-| `POST /api/account/register` | `{ name, password }` | 201 `{ account, recoveryCode }` |
+| `GET /api/account/me` | | `{ account }` (`null` si personne n'est connecté) ; compte suspendu : `{ account: null, suspended: texte }` |
+| `POST /api/account/guest` | `{ acceptRules: true }` | 201 `{ account }` ; 400 `rules_required` sans la case |
+| `POST /api/account/register` | `{ name, password, acceptRules: true }` | 201 `{ account, recoveryCode }` ; 400 `rules_required` sans la case |
+| `POST /api/account/rules` | `{ accept: true }` (connecté) | `{ ok, version }` : compte existant ou conditions changées |
 | `POST /api/account/login` | `{ name, password }` | `{ account }` |
 | `POST /api/account/logout` | `{}` | 204 |
 | `POST /api/account/claim` | `{ name, password }` (invité connecté) | `{ account, recoveryCode }` |
@@ -62,7 +63,7 @@ Toutes les réponses sont en JSON ; une erreur = `{ error: { code, message } }` 
 `account` = `{ id, displayId, name, displayName, guest, createdAt }` — jamais d'empreinte ni de secret.
 
 Codes d'erreur : `invalid_name`, `invalid_password`, `name_taken`, `bad_credentials`, `bad_recovery`,
-`not_authenticated`, `not_guest`, `guest`, `rate_limited` (+ en-tête `Retry-After`), `bad_request`, `not_found`.
+`not_authenticated`, `not_guest`, `guest`, `rules_required`, `suspended`, `rate_limited` (+ en-tête `Retry-After`), `bad_request`, `not_found`.
 
 ## Sécurité (choix et pourquoi)
 

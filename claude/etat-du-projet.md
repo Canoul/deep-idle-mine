@@ -243,13 +243,14 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   formé d'un coup (3 solos → chez le premier ; groupe de 2 prioritaire), « Lancer dès que plein » au choix du chef.
 - **Chat de session** (**ancien** : panneau retiré de l'onglet Session le 01/11, Geoffrey ; les routes `/api/game/chat` restent sur le serveur, sans page qui les appelle ; 22/10, Jules) : panneau dans l'onglet Session (mine classique), joueurs de la session
   seulement, en mémoire du serveur (`server/game/chat.js`, jamais en base), effacé à la fin ; réglages `CHAT`.
+- **Modération pour les stores** (01/11, Geoffrey ; branche `geoffrey/moderation`, pas en ligne ; `MODERATION`, `RULES`) : **Signaler** (⋮ sur un message ou un joueur, ns `report`, 10 / h, un par message, salon Discord privé `DIM_DISCORD_MOD_WEBHOOK`, `server/moderation/reports.js`) ; **Bloquer** (champ `blocked` du ns `social`, filtré par le serveur, liste dans Social, l'autre n'est pas prévenu) ; **outils** `scripts/reports.js` (`--open`, `--name`, `--close`, `--log`), `delete-message.js`, `mute.js`, `ban.js` (suspension, distincte du ban auto de 24 h), `rename.js`, journal ns `mod_log` ; **règles** acceptées à la création du compte et au premier message des anciens comptes (`rulesVersion`, `rulesAt`). Le chat de session n'ayant plus de panneau, seuls ses côtés serveur sont couverts. **En attente** : pages /conditions et /confidentialite (404 au 01/11).
 - **Modération du chat** (30/10, Geoffrey, en ligne) : mots interdits masqués (global et session,
   même déguisés ou coupés sur plusieurs messages / joueurs), avertissement avec motif, 3 → ban 24 h (plus aucune action
   de jeu, prison arrêtée). Liste : `server/moderation/words.js`. Outil : `scripts/moderation.js` (fiche, recent, unban, forgive).
 - **Chat global** (28/10, Jules, en ligne) : carte du **Lobby**, tous les comptes
   (invités compris), en session ou non ; un message / 3 s (`CHAT.globalGapMs`), 50 derniers gardés **en base** (ns
   `chat_global`, survit aux redémarrages) ; `server/social/service.js` (`chatPost` / `chatGet`, `/api/social/chat`), même
-  module d'affichage que le chat de session (`src/ui/chat.js`), relu seulement Lobby ouvert. **Pas de modération.**
+  module d'affichage que le chat de session (`src/ui/chat.js`), relu seulement Lobby ouvert. Modération : voir plus haut (**ancien** : aucune).
 - **Social** (21/10, Geoffrey ; fusionné par Jules) : amis par pseudo (ou ID pour un invité), demandes à accepter,
   présence (hors ligne, en ligne, en session, dans le lobby x/3), Inviter / Rejoindre, notifications en pop-up en haut
   à gauche (GAME_DESIGN §6). **Sous-onglets Amis / Online** (26/10, Geoffrey) : Online = compteur et liste de tous les

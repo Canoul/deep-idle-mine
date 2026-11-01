@@ -508,6 +508,9 @@ body.phone .chatDock .card{background:#0b0806}
 .chatLog div{padding:var(--u) 0}
 .chatLobby{all:unset;cursor:pointer;color:#ffd23f;text-decoration:underline}
 .chatLobby:hover,.chatLobby:focus-visible{color:#fff}
+.chatMore{all:unset;cursor:pointer;padding:0 calc(2*var(--u));color:var(--mut,#a89a8c);opacity:.45}
+.chatMore:hover,.chatMore:focus-visible{opacity:1;color:#fff}
+body.phone .chatMore{opacity:1;padding:0 calc(5*var(--u))}
 .lobbyPeek{position:fixed;z-index:60;width:calc(190*var(--u));max-width:calc(100vw - 16px);padding:calc(4*var(--u));background:var(--panel,#1a1512);box-shadow:0 0 0 var(--u) #000,0 0 0 calc(2*var(--u)) var(--sep);pointer-events:none}
 .lobbyPeek b.tit,.formGroup b.tit{display:block;margin-bottom:calc(2*var(--u))}
 .lobbyPeek .peekSlots,.formGroup .peekSlots{display:grid;grid-template-columns:repeat(3,1fr);gap:calc(2*var(--u));margin-bottom:calc(2*var(--u))}
@@ -608,6 +611,7 @@ body.phone .chatDock .card{background:#0b0806}
 #account .code.sm{font-size:var(--fs);padding:0 calc(3*var(--u));display:inline-block}
 #account .code.copied{box-shadow:inset 0 0 0 var(--u) var(--ok)}
 #account .chk{display:flex;gap:calc(3*var(--u));align-items:center;cursor:pointer}
+#account .rulesChk{align-items:flex-start;margin:calc(3*var(--u)) 0}
 #account .chk input{min-height:0;width:calc(8*var(--u));height:calc(8*var(--u))}
 
 /* ---------- onglets Four et Concasseur ---------- */
@@ -921,6 +925,12 @@ button.gopen:active:not(:disabled){transform:none}
 .dlgText{margin:0 0 calc(4*var(--u));line-height:1.35}
 .dlgInput{width:100%;box-sizing:border-box;margin-bottom:calc(4*var(--u))}
 .dlgBtns{display:flex;justify-content:flex-end;gap:calc(3*var(--u));margin:0}
+.dlgMenu{flex-wrap:wrap}
+.dlgLinks{display:flex;flex-direction:column;gap:var(--u);margin:0 0 calc(4*var(--u))}
+.dlgChoices{display:flex;flex-direction:column;gap:calc(2*var(--u));margin-bottom:calc(4*var(--u))}
+.dlgChoices .chk{display:flex;gap:calc(3*var(--u));align-items:center;cursor:pointer}
+.dlgNote{display:block}
+.dlgNote textarea{resize:vertical}
 button.danger{color:var(--bad)}
 @keyframes obin{from{transform:scale(.8);opacity:0}to{transform:none;opacity:1}}
 @keyframes nin{from{transform:translateX(calc(-12*var(--u)));opacity:0}to{transform:none;opacity:1}}

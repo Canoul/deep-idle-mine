@@ -4,7 +4,7 @@
 import { ADMIN_VIEW } from '../config.js';
 import { renderPrisonDashboard } from '../meta/prison-dashboard.js';
 const isTeam = a => !!a && !a.guest && ADMIN_VIEW.names.some(n => n.toLowerCase() === String(a.name ?? a.displayName ?? '').toLowerCase());
-import { ACCOUNT } from '../config.js';
+import { ACCOUNT, RULES } from '../config.js';
 import { checkName, checkPassword, parseRecoveryCode } from '../shared/account.js';
 import { accountApi, ApiError, OfflineError } from '../net/api.js';
 import { tell } from './dialog.js';
@@ -17,7 +17,8 @@ export function checkForm(mode, v){
   if(mode === 'rename') return checkName(v.name);
   if(mode === 'register' || mode === 'claim'){
     return checkName(v.name) ?? checkPassword(v.password, v.name)
-        ?? (v.password !== v.confirm ? 'Les deux mots de passe ne sont pas identiques.' : null);
+        ?? (v.password !== v.confirm ? 'Les deux mots de passe ne sont pas identiques.' : null)
+        ?? (mode === 'register' && !v.acceptRules ? "Accepte les conditions d'utilisation et la politique de confidentialité pour continuer." : null);
   }
   if(mode === 'recover'){
     if(!v.name?.trim()) return 'Pseudo requis.';
@@ -41,6 +42,11 @@ const newPassFields = () =>
   field('password', 'Mot de passe', 'password', `autocomplete="new-password" placeholder="${ACCOUNT.passMin} caractères minimum"`) +
   field('confirm', 'Confirmation', 'password', 'autocomplete="new-password"');
 
+/* case des règles (01/11/2026) : sans elle, pas de compte, invité compris ; le serveur la revérifie */
+const rulesCheck = () => `<label class="chk rulesChk"><input type="checkbox" name="acceptRules" data-rules> <span>J'accepte les
+  <a href="${RULES.terms}" target="_blank" rel="noopener">conditions d'utilisation</a> et la
+  <a href="${RULES.privacy}" target="_blank" rel="noopener">politique de confidentialité</a></span></label>`;
+
 /* options du joueur dans « Mon compte » : une case à cocher par option (rien s'il n'y en a pas) */
 export const optionsHtml = (options = []) => options.length ? `<h4>Options</h4>` + options.map(o =>
   `<label class="chk" title="${esc(o.title ?? '')}"><input type="checkbox" data-opt="${esc(o.key)}"${o.on ? ' checked' : ''}> ${esc(o.label)}</label>`).join('') : '';
@@ -57,15 +63,16 @@ const VIEWS = {
     </form>
     <p class="links"><a href="#" data-go="recover">Mot de passe oublié ?</a></p>
     <div class="sep"><span>pas encore de compte ?</span></div>
+    ${rulesCheck()}
     <div class="acts">
       <button data-go="register">Créer un compte</button>
-      <button data-act="guest" title="Sans pseudo ni mot de passe. Tu pourras sécuriser ton compte plus tard.">Jouer en invité</button>
+      <button data-act="guest" disabled title="Sans pseudo ni mot de passe. Tu pourras sécuriser ton compte plus tard.">Jouer en invité</button>
     </div>`,
 
   register: () => `
     <h3>Créer un compte</h3>
     <p class="mut">Pas besoin d'e-mail : un pseudo et un mot de passe suffisent.</p>
-    <form data-mode="register">${pseudoField('username')}${newPassFields()}
+    <form data-mode="register">${pseudoField('username')}${newPassFields()}${rulesCheck()}
       <p class="err" hidden></p><button class="main" type="submit">Créer mon compte</button></form>
     <p class="links"><a href="#" data-go="login">← J'ai déjà un compte</a></p>`,
 
@@ -151,7 +158,10 @@ export function createAccountUI(root, state, handlers = {}){
   const hide = () => { root.hidden = true; };
 
   /* écran de connexion (au lancement : impossible de le fermer sans se connecter) */
-  function gate(){ closable = false; show('login'); }
+  function gate(message = ''){
+    closable = false; show('login');
+    if(message){ const e = box.querySelector('.err'); e.textContent = message; e.hidden = false; }   // compte suspendu : pourquoi
+  }
   /* compte déjà connecté dont le pseudo est interdit */
   function forceRename(account){ state.account = account; closable = false; show('rename'); }
   /* fenêtre « Mon compte » (depuis la barre) */
@@ -230,6 +240,7 @@ export function createAccountUI(root, state, handlers = {}){
   });
   box.addEventListener('change', e => {
     if(e.target.matches('[data-ok]')) box.querySelector('[data-act="done"]').disabled = !e.target.checked;
+    if(e.target.matches('[data-rules]')){ const g = box.querySelector('[data-act="guest"]'); if(g) g.disabled = !e.target.checked; }
     if(e.target.matches('[data-opt]')) on.setOption(e.target.dataset.opt, e.target.checked);
   });
   root.addEventListener('click', e => { if(e.target === root && closable) hide(); });
@@ -256,7 +267,11 @@ export function renderNavAccount(el, { account, offline }){
    Sans serveur de jeu, on joue hors ligne (sans compte) comme avant. */
 export async function bootAccount(accountUI){
   try {
-    const account = await accountApi.me();
+    const { account, suspended } = await accountApi.whoAmI();
+    if(suspended) return new Promise(resolve => {     // compte suspendu (01/11) : l'écran de connexion dit pourquoi ; un autre compte reste possible
+      accountUI.on.onSignedIn = a => resolve({ account: a, offline: false });
+      accountUI.gate(suspended);
+    });
     if(account?.mustRename) return new Promise(resolve => {
       accountUI.on.onSignedIn = a => resolve({ account: a, offline: false });
       accountUI.forceRename(account);

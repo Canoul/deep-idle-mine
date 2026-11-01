@@ -15,7 +15,7 @@ export const stuckToEnd = (el, prev = true, slack = 8) => el.clientHeight ? el.s
          post(text) → { message, warning? }, meId() → ID du compte du joueur, onWarning(warning) : mot interdit (30/10),
          paused() → true : on ne relit pas (ex. onglet fermé ; poke() relit dès qu'il rouvre), time : heure des messages,
          chat global : show(m) : à montrer ?, line(m, me) : sa ligne en HTML, parse(texte) → message à envoyer ou { error }, sent(message) : bien envoyé,
-         fresh(messages) : messages reçus du serveur } */
+         fresh(messages) : messages reçus du serveur, onRules() → promesse true : règles acceptées, le message repart (01/11) } */
 export function setupChat(h){
   const p = h.prefix ?? 'chat';
   const log = $(p + 'Log'), input = $(p + 'Input'), note = $(p + 'Note');
@@ -55,7 +55,14 @@ export function setupChat(h){
     const g = gen;
     if(!h.paused?.()){
       reading = g;
-      try { const r = await h.get(last); if(g === gen) add(r.messages); }
+      try {
+        const r = await h.get(last);
+        if(g === gen){
+          add(r.messages);
+          /* retiré par les créateurs (01/11/2026) : il disparaît aussi des pages déjà ouvertes */
+          if(r.removed?.some(id => msgs.some(m => m.id === id))){ msgs = msgs.filter(m => !r.removed.includes(m.id)); render(); }
+        }
+      }
       catch(e){ console.warn(e); }
       finally { if(reading === g) reading = null; }
     }
@@ -66,7 +73,11 @@ export function setupChat(h){
   async function send(msg){
     busy = true;
     try { const r = await h.post(msg); display([r.message]); poll(); note.textContent = ''; h.sent?.(msg); if(r.warning) h.onWarning?.(r.warning); return true; }
-    catch(err){ note.textContent = err.message; return false; }
+    catch(err){
+      /* compte d'avant les règles (01/11/2026) : la demande, puis le message repart */
+      if(err.code === 'rules_required' && h.onRules){ if(await h.onRules()) return send(msg); note.textContent = ''; return false; }
+      note.textContent = err.message; return false;
+    }
     finally { busy = false; }
   }
   $(p + 'Form').onsubmit = async e => {
@@ -85,6 +96,10 @@ export function setupChat(h){
     stop(){ gen++; on = false; clearTimeout(timer); msgs = []; last = 0; render(); },
     /* réafficher (onglet ou canaux changés) */
     refresh: render,
+    /* un message affiché, par son numéro (menu Signaler / Bloquer) */
+    find: id => msgs.find(m => m.id === id) ?? null,
+    /* joueur qu'on vient de bloquer : ses messages déjà affichés disparaissent (le serveur ne les renvoie plus) */
+    forget(account){ msgs = msgs.filter(m => m.account !== account); render(); },
     /* relire tout de suite (le panneau redevient visible) */
     poke(){ if(on) poll(); },
     /* envoyer un message sans passer par le champ (bouton « Pub LFG » du lobby) */

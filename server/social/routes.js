@@ -13,6 +13,8 @@ export function socialRoutes(social){
     'POST /api/social/accept':  async ctx => { needMe(ctx); return social.answer(ctx.me, str(ctx.body.id), true); },
     'POST /api/social/refuse':  async ctx => { needMe(ctx); return social.answer(ctx.me, str(ctx.body.id), false); },
     'POST /api/social/remove':  async ctx => { needMe(ctx); return social.remove(ctx.me, str(ctx.body.id)); },
+    'POST /api/social/block':   async ctx => { needMe(ctx); return social.block(ctx.me, str(ctx.body.id)); },
+    'POST /api/social/unblock': async ctx => { needMe(ctx); return social.unblock(ctx.me, str(ctx.body.id)); },
     'POST /api/social/invite':  async ctx => { needMe(ctx); return social.invite(ctx.me, str(ctx.body.id)); },
     'POST /api/social/join':    async ctx => { needMe(ctx); return social.join(ctx.me, str(ctx.body.id)); },
     'POST /api/social/profile': async ctx => { needMe(ctx); return social.profile(ctx.me, str(ctx.body.id)); },

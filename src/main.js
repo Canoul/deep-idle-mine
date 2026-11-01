@@ -78,9 +78,10 @@ import { setupNotify } from './ui/notify.js';
 import { setupObtained } from './ui/obtained.js';
 import { recipeOf } from './meta/craft.js';
 import { createAccountUI, bootAccount, renderNavAccount } from './ui/account.js';
-import { gameApi, partyApi, instantApi, socialApi, guildApi, giantApi, hesComingApi, townApi, ApiError, moderationApi } from './net/api.js';
+import { gameApi, partyApi, instantApi, socialApi, guildApi, giantApi, hesComingApi, townApi, ApiError, moderationApi, accountApi } from './net/api.js';
 import { ask, tell } from './ui/dialog.js';
 import { warningText, banBarText } from './shared/moderation-text.js';
+import { setupModeration, askRules } from './ui/moderate.js';
 import { energyText, energyPct, prisonBanner, awayText, hasAway, prisonActive, launchPrisonText, prisonPollError, prisonOnScreen } from './ui/prison.js';
 import { prisonLootHtml, showPrisonRecap } from './ui/prison-loot.js';
 import { bootApp, dropApp } from './app/boot.js';
@@ -121,6 +122,8 @@ const town = setupTown($('bgTown'), {
   /* fiche d'un joueur dans la ville : demande d'ami (par ID : un invité n'a pas de pseudo), invitation dans mon groupe */
   friend: async id => setSocial(await socialApi.request(id)),
   invite: async id => { await partyApi.invite(id); pollLobby(); },
+  report: p => moderate.reportPlayer(p),
+  block: p => moderate.block(p),
   /* recherche de groupe depuis la ville (30/10) : celle du Lobby (lobby est créé plus bas, appelé seulement ensuite) */
   lfg: { view: () => lobby.lfgView(), toggle: () => lobby.toggleLfg() },
 });
@@ -525,6 +528,8 @@ const social = setupSocial({
   profile: id => socialApi.profile(id),
   online:  () => socialApi.online(),
   leaderboard: board => socialApi.leaderboard(board),
+  moderate: p => moderate.playerMenu(p),
+  unblock: async id => setSocial(await socialApi.unblock(id)),
 });
 
 /* ---------- Jugement (dans le Lobby, « Où miner ») : jauges Ange / Démon (communes à tous) ----------
@@ -572,11 +577,19 @@ const gchatDock = setupChatDock({ dock: $('gchatDock'), edges: $('gchatDock').qu
 const gchatTabs = setupChatTabs({ bar: $('gchatTabs'), panel: $('gchatPanel'), select: $('gchatChan'),
                                   save: p => socialApi.chatPrefsSave(p).catch(console.warn), onChange: () => gchat?.refresh() });
 const gchat = setupChat({ prefix:'gchat', get: after => socialApi.chat(after), post: msg => socialApi.say(msg), meId: () => acct.account?.id, onWarning,
+                          onRules: () => askRules(() => accountApi.acceptRules()),
                           paused: () => document.hidden || gchatDock.folded, time: true,
                           show: gchatTabs.show, line: chatLine, sent: gchatTabs.sent,
                           /* gagnant d'un raffle : son lot est sur le serveur, à relire tout de suite */
                           fresh: list => { if(list.some(m => m.winner && m.winner === acct.account?.id)) gameApi.state().then(st => { setInventory(st.inventory); setEnergy(st.energy); }).catch(() => {}); },
                           parse: text => { const msg = parseChatInput(text, gchatTabs.channel(), gchatTabs.target()); return msg.lobby ? { ...msg, lobby: lobby.pubContext() } : msg; } });
+/* signaler, bloquer (01/11/2026) : fiche d'un joueur, menu d'un message */
+const moderate = setupModeration({ report: body => moderationApi.report(body),
+                                   block: async p => { setSocial(await socialApi.block(p.id)); gchat.forget(p.id); } });
+$('gchatLog').addEventListener('click', e => {
+  const b = e.target.closest?.('[data-msg]'), m = b && gchat.find(+b.dataset.msg);
+  if(m) moderate.messageMenu(m);
+});
 /* groupes en formation (31/10/2026) : la liste se relit toute seule tant que la fenêtre est ouverte */
 const forming = setupForming({ list: () => partyApi.forming(), team: () => lobby.team(),
                                join: async code => { await partyApi.join(code); await pollLobby(); },

@@ -88,13 +88,16 @@ export const towerDetail = r => [JUDGMENT.sides[r.side]?.label, r.team?.filter(n
 /* « 12e sur 340 » */
 export const rankText = (rank, total) => `${rank}${rank === 1 ? 'er' : 'e'} sur ${total}`;
 
-/* h : { request(name), accept(id), refuse(id), remove(id), invite(id), join(id), profile(id), online(), leaderboard(board) } */
+/* h : { request(name), accept(id), refuse(id), remove(id), invite(id), join(id), profile(id), online(), leaderboard(board),
+         moderate({ id, name }) : menu Signaler / Bloquer, unblock(id) } */
 export function setupSocial(h){
   let st = null, busy = false, tab = 'friends', online = null, onlineAt = 0, onlineBusy = false;
   /* board : bouton choisi (gs, xp, spec, tower, instance) ; sub : sous-onglet choisi de chaque bouton (id de classement) */
   let board = 'gs', boards = {}, boardAt = 0, boardBusy = false;
   const sub = Object.fromEntries(['spec', 'tower', 'instance'].map(g => [g, boardSubs(g)[0].id]));
 
+  /* bouton Signaler / Bloquer d'une ligne (01/11/2026, src/ui/moderate.js) */
+  const modBtn = p => `<button class="x" data-mod="${esc(p.id)}" data-name="${esc(p.name)}" title="Signaler ou bloquer" aria-label="Signaler ou bloquer">⋮</button>`;
   function friendRow(f){
     const why = f.together ? 'Déjà dans ton groupe' : f.status === 'session' ? 'En session' : f.status === 'offline' ? 'Hors ligne' : '';
     return `<div class="frow"><span class="fdot ${statusDot(f)}"></span>`+
@@ -102,7 +105,7 @@ export function setupSocial(h){
       `<span class="fbtns"><button data-profile="${esc(f.id)}" title="Voir son équipement, ses stats et son niveau">${pxi('helmet')}Stuff</button>`+
       `<button data-invite="${esc(f.id)}"${f.canInvite ? '' : ` disabled title="${esc(why || 'Indisponible')}"`}>${pxi('group')}Inviter</button>`+
       `<button data-join="${esc(f.id)}"${f.canJoin ? '' : ` disabled title="${esc(why || (f.status === 'lobby' ? 'Groupe complet' : 'Indisponible'))}"`}>${pxi('arrow')}Rejoindre</button>`+
-      `<button class="x" data-remove="${esc(f.id)}" data-name="${esc(f.name)}" title="Retirer des amis">×</button></span></div>`;
+      `${modBtn(f)}<button class="x" data-remove="${esc(f.id)}" data-name="${esc(f.name)}" title="Retirer des amis">×</button></span></div>`;
   }
 
   /* une ligne de la liste Online : p = { id, name, status…, energy, me, friend } */
@@ -113,7 +116,7 @@ export function setupSocial(h){
       : `<button data-add="${esc(p.id)}" title="Envoyer une demande d'ami">${pxi('person')}Ajouter</button>`;
     return `<div class="frow"><span class="fdot ${statusDot(p)}"></span>`+
       `<span class="fname"><b>${esc(p.name)}</b><small class="mut">${energyHTML(p.energy)}${esc(statusText(p))}${tag}</small></span>`+
-      `<span class="fbtns">${btn}</span></div>`;
+      `<span class="fbtns">${btn}${p.me ? '' : modBtn(p)}</span></div>`;
   }
   function renderOnline(){
     if(!online) return;
@@ -128,7 +131,7 @@ export function setupSocial(h){
     const detail = board === 'tower' ? towerDetail(r) : board === 'instance' ? instanceDetail(r) : '';
     return `<div class="frow lrow${r.me ? ' mine' : ''}"><span class="lrank">${r.rank}</span>`+
       `<span class="fname"><b>${esc(r.name)}</b>${detail ? `<small class="mut">${esc(detail)}</small>` : ''}</span>`+
-      `<span class="lval">${esc(BOARD_INFO[board === 'spec' ? 'spec' : boardId()].value(r))}</span></div>`;
+      `<span class="lval">${esc(BOARD_INFO[board === 'spec' ? 'spec' : boardId()].value(r))}</span>${r.me || !r.id ? '' : modBtn(r)}</div>`;
   }
   function renderBoard(){
     const info = BOARD_INFO[board === 'spec' ? 'spec' : boardId()], subs = boardSubs(board), cur = subs?.find(s => s.id === boardId());
@@ -187,7 +190,15 @@ export function setupSocial(h){
     if(tab === 'board'){ renderBoard(); loadBoard(); }
   };
 
+  /* joueurs bloqués : la liste pour les débloquer */
+  function renderBlocked(){
+    const list = st?.blocked ?? [];
+    $('socialBlockedCard').hidden = !list.length;
+    $('socialBlocked').innerHTML = list.map(p => `<div class="frow"><span class="fname"><b>${esc(p.name)}</b></span>`+
+      `<span class="fbtns"><button data-unblock="${esc(p.id)}">Débloquer</button></span></div>`).join('');
+  }
   function render(){
+    renderBlocked();
     if(!st) return;
     $('socialReq').innerHTML = st.incoming.length
       ? st.incoming.map(r => `<div class="frow"><span class="fname"><b>${esc(r.name)}</b><small class="mut">veut devenir ton ami</small></span>`+
@@ -225,6 +236,8 @@ export function setupSocial(h){
     else if(d.invite) act(() => h.invite(d.invite), '✔ Invitation envoyée.');
     else if(d.join) act(() => h.join(d.join));
     else if(d.profile) act(async () => showProfile(await h.profile(d.profile)));
+    else if(d.mod) h.moderate({ id: d.mod, name: d.name });
+    else if(d.unblock) act(() => h.unblock(d.unblock));
     else if(d.add) act(() => h.request(d.add), r => r.friend ? `✔ ${r.friend} et toi êtes maintenant amis.` : `✔ Demande envoyée à ${r.sent}.`);
     else if(d.remove) (d.name ? ask(`Retirer ${d.name} de tes amis ?`, { ok:'Retirer', danger:true }) : Promise.resolve(true))
       .then(yes => { if(yes) act(() => h.remove(d.remove)); });

@@ -77,8 +77,9 @@ export function adminRoutes({ accounts, service = null, game, party = null, mode
   const noMod = () => { if(!moderation) throw new HttpError(503, 'no_moderation', 'Modération indisponible sur ce serveur.'); };
   const label = acc => displayName(acc) || formatAccountId(acc.id);
   /* qui agit (le script donne son nom de session) et trace de l'action */
+  const adminName = ctx => typeof ctx.body?.by === 'string' && ctx.body.by.trim() ? ctx.body.by.trim().slice(0, 40) : 'admin';
   const journal = async (ctx, action, target, detail = '') => {
-    const by = typeof ctx.body?.by === 'string' && ctx.body.by.trim() ? ctx.body.by.trim().slice(0, 40) : 'admin';
+    const by = adminName(ctx);
     await moderation?.log({ by, action, target, detail });
     console.log(`Admin (${by}) : ${action} ${target ?? ''} ${detail}`.trim());
     return by;
@@ -93,7 +94,7 @@ export function adminRoutes({ accounts, service = null, game, party = null, mode
       guard(ctx);
       if(!reports) throw new HttpError(503, 'no_reports', 'Signalements indisponibles sur ce serveur.');
       if(ctx.body?.action === 'close'){
-        const report = await reports.close(count(ctx.body?.id, Number.MAX_SAFE_INTEGER, 'id'), 'admin');
+        const report = await reports.close(count(ctx.body?.id, Number.MAX_SAFE_INTEGER, 'id'), adminName(ctx));
         await journal(ctx, 'report-close', report.targetName, `n° ${report.id}`);
         return { report };
       }
