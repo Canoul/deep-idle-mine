@@ -428,3 +428,38 @@ test('texte du statut (31/10) : « En ligne - Prison » le jeu ouvert, « En ses
   assert.equal(statusText({ status:'session', mode:'prison', online:true }), 'En ligne - Prison');
   assert.equal(statusText({ status:'session', mode:'prison', online:false }), 'En session · Prison');
 });
+
+/* onglet Guilde : inviter un membre dans son lobby (01/11/2026), sans être amis */
+async function guildSetup(){
+  let now = 5_000_000;
+  const clock = () => now, store = createMemoryGameStore(), rosters = { [A.id]:[A.id, C.id], [C.id]:[A.id, C.id] };
+  const game = createGameService({ store, liveRunner:fakeLive(fakeSummary), clock, randomSeed:() => 7 });
+  const party = createPartyService({ game, clock, getAccount:accounts.getAccount });
+  const social = createSocialService({ store, accounts, party, game, clock, guildMembers: async id => rosters[id] ?? [] });
+  await social.state(A); await social.state(C);
+  return { party, social, advance: ms => { now += ms; } };
+}
+test('guilde : inviter un membre connecté sans être amis ; il reçoit l\'invitation et peut entrer', async () => {
+  const { social, party } = await guildSetup();
+  const st = await social.guildInvite(A, C.id);
+  assert.ok(st.friends.length === 0);
+  const got = (await social.state(C)).partyInvites;
+  assert.equal(got.length, 1);
+  await party.join(C, got[0].code);
+  assert.equal(party.groupOf(C.id).size, 2);
+  const check = await social.inviteCheck(A);
+  assert.equal(check(C.id, { status:'lobby' }), false, 'déjà dans le groupe');
+});
+test('guilde : pas membre, ou hors ligne : refusé, aucune invitation', async () => {
+  const { social, party, advance } = await guildSetup();
+  await social.state(D);
+  await assert.rejects(social.guildInvite(A, D.id), e => e.code === 'not_member');
+  await assert.rejects(social.guildInvite(D, A.id), e => e.code === 'not_member');
+  await assert.rejects(social.guildInvite(A, 'pas un id'), e => e.code === 'not_member');
+  assert.equal(party.invitesOf(D.id).length, 0);
+  advance(SOCIAL_SERVER.onlineFor + 1);
+  await social.state(A);
+  await assert.rejects(social.guildInvite(A, C.id), e => e.code === 'friend_offline');
+  assert.equal(party.invitesOf(C.id).length, 0);
+});
+

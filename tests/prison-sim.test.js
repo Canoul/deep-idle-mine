@@ -256,3 +256,9 @@ test('étourdi 60 s de suite (30/10) : le run finit tout de suite ; des étourdi
     for(let i = 0; i < s / DT && !H.over; i++){ if(on) stun(H, 1); else H.miners[0].action = null; tickPrison(H); }
   assert.ok(!H.prison.stunReset);
 });
+
+test('XP : un pot terminé en ,5 (mob à XP impaire, PRISON.mobXpMul) donne sa part arrondie, pas zéro', () => {
+  const G = newPrisonRun(1, { areaMax: 2 });
+  G.stats.xp = 11.5;
+  assert.equal(endPrisonRun(G).shares[0].xp, 11);
+});

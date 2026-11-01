@@ -5,10 +5,11 @@ import { RANK_LABEL, canRecruit } from '../shared/guild.js';
 import { ask, askText, tell } from './dialog.js';
 import { guildApi } from '../net/api.js';
 import { rname } from './rarity.js';
+import { statusDot, statusText } from './social.js';
+import { pxi } from './pxicons.js';
 
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
 const fr = n => Math.round(n).toLocaleString('fr-FR');
-const ACTIVITY = { online:{ label:'Connecté', cls:'on' }, session:{ label:'En session', cls:'play' }, offline:{ label:'Absent', cls:'off' } };
 const ACTION_LABEL = { promote:'Passer officier', demote:'Rétrograder', transfer:'Donner ma place de chef', kick:'Exclure' };
 
 /* relecture : une case d'actions ouverte ne doit pas se fermer ; un bouton qui garde le focus après un clic ne retient rien */
@@ -18,9 +19,12 @@ export const holdsPanel = el => !!el?.matches('[data-gact]');
 export const guildTabs = st => [...(st.mine ? [{ id:'mine', label:esc(st.mine.name) }] : []), { id:'search', label:'Rechercher' }, { id:'board', label:'Leaderboard' }];
 
 function memberRow(m){
-  const a = ACTIVITY[m.activity] ?? ACTIVITY.offline, actions = Object.keys(ACTION_LABEL).filter(k => m.actions[k]);
+  const actions = Object.keys(ACTION_LABEL).filter(k => m.actions[k]);
   const box = actions.length ? `<select class="gact" data-gact data-id="${esc(m.id)}" aria-label="Actions sur ${esc(m.name)}"><option value="">Actions</option>${actions.map(k => `<option value="${k}">${ACTION_LABEL[k]}</option>`).join('')}</select>` : '';
-  return `<div class="frow"><span class="fdot ${a.cls}"></span><span class="fname"><b>${esc(m.name)}</b><small class="mut">${RANK_LABEL[m.rank]} · ${a.label}</small></span><span class="gxp">${fr(m.xp)} XP</span>${box}</div>`;
+  /* inviter dans son lobby (01/11/2026, Geoffrey) ; le serveur dit si c'est possible, comme dans Social */
+  const why = m.status === 'session' ? 'En session' : m.status === 'offline' ? 'Hors ligne' : 'Déjà dans ton groupe, ou tu es en session';
+  const invite = m.me ? '' : `<button data-g="lobbyInvite" data-id="${esc(m.id)}" data-name="${esc(m.name)}"${m.canInvite ? '' : ` disabled title="${why}"`}>${pxi('group')}Inviter</button>`;
+  return `<div class="frow"><span class="fdot ${statusDot(m)}"></span><span class="fname"><b>${esc(m.name)}</b><small class="mut">${RANK_LABEL[m.rank]} · ${esc(statusText(m))}</small></span><span class="gxp">${fr(m.xp)} XP</span><span class="fbtns">${invite}${box}</span></div>`;
 }
 /* bâtiments (01/11/2026) : image, niveau, bonus, matériaux du prochain niveau. opts : owned (ce que je possède), canBuild ;
    sans owned, lecture seule (fiche d'une autre guilde) */
@@ -170,6 +174,12 @@ export function setupGuild({ root, api = guildApi, onChange = () => {} }){
     if(name === 'invite'){
       const who = await askText('Pseudo du joueur à inviter', '', { maxLength:32, ok:'Inviter' });
       if(who?.trim()) await sendInvite(who, { invite:name => api.invite(name), done:quiet, tell });
+      return;
+    }
+    if(name === 'lobbyInvite'){
+      let sent = false;
+      await run(async () => { await api.lobbyInvite(id); sent = true; });
+      if(sent) say(`Invitation envoyée à ${el.dataset.name}.`);
       return;
     }
     if(name === 'leave' && !await ask('Quitter la guilde ?', { danger:true, ok:'Quitter' })) return;

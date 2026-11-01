@@ -517,7 +517,7 @@ async function joinParty(fn){
   nav.show('lobby'); pollLobby(); pollSocial();
   return r;
 }
-guildTab = setupGuild({ root: document.querySelector('.view[data-view="guilde"]'), onChange: () => pollSocial() });
+guildTab = setupGuild({ root: document.querySelector('.view[data-view="guilde"]'), onChange: () => { pollSocial(); pollLobby(); } });
 const social = setupSocial({
   request: async name => setSocial(await socialApi.request(name)),
   accept:  async id => setSocial(await socialApi.accept(id)),

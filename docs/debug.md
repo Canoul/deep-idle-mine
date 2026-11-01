@@ -6377,6 +6377,20 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** ✅ tests/hescoming-sim.test.js, hescoming-service, anticheat.
 - **À surveiller** : 30 Cristaux par jour au dernier palier, à comparer aux 1 à 3 d'un minotaure ; un +9 en coûte 32.
 
+## 01/11/2026 — Geoffrey — Prison : moins de gobelins sous 2 500 GS
+
+- **Quoi** : `PRISON.lowGs { gsMax: 2500, goblinMul: 0 }` ; `prisonGoblinMul(gs)` (`src/meta/gearscore.js`) va de `goblinMul` à 0 GS à 1 à `gsMax`, en ligne droite. `fewerGoblins(table, mul)` (`src/sim/mobs.js`) baisse la part des gobelins et redonne le reste aux autres mobs à proportion (mimics compris). `buildPrisonRun` (`src/shared/prison.js`) calcule le multiplicateur depuis `specs.gear`, relu à chaque run ; il passe par `newPrisonRun` → `G.prison.goblinMul`.
+- **Mesures** (6 chaînes de 1,5 h, area 4, compo à jour) : 0 GS 22 → 53 % ; 1 132 GS 48 → 50 % ; 2 160 GS (fer, area 5) 53 → 51 % ; 1 908 GS (5 pièces, area 5) 54 % ; 3 615 GS (acier) 61 %, inchangé. Plancher 0,25 puis 0,1 : 46 et 48 % à 0 GS, sous la cible, d'où 0. Bruit : ± 3 à 5 points.
+- **Tests** : `tests/prison-gobelins-gs.test.js`, prison-*. ✅ `une tour et une instance lancées terminent la prison` (`tests/prison-server.test.js`) ❌ échoue aussi sur `main` sans ce chantier, non traité ici.
+- **À vérifier / fragile** : ⚠️ les gobelins de pièges et les pièges restent (encore ~7 vols/h à 0 GS). ⚠️ `src/ui/prison.js` affiche la part de mobs de la compo sans cette baisse. ⚠️ En area 5 et plus la table contient moins de gobelins : l'effet y est plus faible. ⚠️ Rendement des vrais joueurs à revérifier sur le tableau, dont le biais (toutes les prisons / 10 dernières mines) reste entier.
+
+## 01/11/2026 — Geoffrey — Prison : 40 % des runs à 0 XP
+
+- **Quoi** : `PRISON.mobXpMul` 0,5 (31/10) rend le pot d'XP non entier dès qu'un nombre impair de mobs à XP impaire est tué ; `xpShare` (`src/meta/level.js`) renvoie alors 0 pour tout le pot. Mesure : 12 runs sur 30 à 0 XP (2 607 XP perdues pour 3 815 gagnées) ; après correction, 0 sur 30 (6 416). Trouvé par `tests/prison-server.test.js`, dont le résultat changeait avec la table des mobs.
+- **Correction** : `shareBySegments` (`src/sim/session.js`) arrondit le pot à l'entier inférieur, y compris pour `prevXp` (sessions à plusieurs tranches).
+- **Tests** : `tests/prison-sim.test.js`, prison-*. ✅ `G.summary.xp` (bilan) garde le ,5, sans effet sur les versements.
+- **À vérifier** : ⚠️ l'XP perdue depuis le 31/10 n'est pas rendue. ⚠️ Ce chantier augmente l'XP de prison réelle d'environ 70 % par rapport à ce qui était versé (le niveau prévu au réglage du 31/10) : à garder en tête si le réglage de `mobXpMul` s'était appuyé sur des chiffres en ligne.
+
 ## 01/11/2026 — Amélioration : cristaux = plumes (Geoffrey)
 - **Quoi** : `UPGRADE.levels` (src/config.js), cristaux 6 / 9 / 14 / 18 / 24 / 32 / 40 / 50 / 63. Anneaux inchangés (doublon).
 - **Tests** ✅ tests/amelioration.test.js, tests/anneaux.test.js, `npm run test:anticheat`.
@@ -6417,6 +6431,11 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   avant), tests/admin-khole.test.js (29 au total). ✅ Simulation 3 mineurs × 5 : 0 blocage.
 - **Point fragile** : la mine classique garde 2 cases de marge (`DUNGEON.margin`) ; le k hole n'en garde pas, d'où ce cas.
   Une autre boîte (piège) collée à l'entrée est exclue par l'écart d'une case de `placeBox`.
+
+## 01/11/2026 — Guilde : Inviter et état des membres (Geoffrey) — branche `geoffrey/guilde-membres`
+- **Quoi** : `mineView` (`server/guild/service.js`) envoie le statut complet de `statusOf`, `me`, `canInvite` ; `inviteCheck(me)` et `guildInvite` dans `server/social/service.js`, route `POST /api/social/guild-invite` ; `memberRow` (`src/ui/guild.js`) réutilise `statusDot` / `statusText` de Social. Le serveur revérifie : membre de ma guilde, en ligne, puis les règles de `party.invite`.
+- **Tests** : `tests/social.test.js`, `tests/guild-service.test.js`, `tests/guild-ui.test.js` ; ⚠️ pas vu dans un navigateur.
+- **Point fragile** : `leftMs` change à chaque relecture, la liste est donc réécrite ; `holdsPanel` protège le menu Actions ouvert.
 
 ## 01/11/2026 — Bot Discord : /todo done efface le message de #report (Geoffrey)
 - **Quoi** : `removeReport` remplace `markDone` dans bot/main.js. Aucun droit Discord en plus : le bot efface ses propres messages.

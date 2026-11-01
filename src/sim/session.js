@@ -42,7 +42,7 @@ export function newSession(seed, opts={}){
        effets sur la génération (oreBonus : points de terrain changés en minerais, src/meta/shrines.js) */
     shrines: Array.isArray(opts.shrines) && !opts.prison ? opts.shrines.filter(id => shrineOf(id)) : [],
   };
-  if(opts.prison){ G.prison = { areaMax: Math.max(0, opts.prison.areaMax | 0), profile: sanitizeProfile(opts.prison.profile) }; G.endAt = Infinity; }
+  if(opts.prison){ G.prison = { areaMax: Math.max(0, opts.prison.areaMax | 0), profile: sanitizeProfile(opts.prison.profile), goblinMul: opts.prison.goblinMul ?? 1 }; G.endAt = Infinity; }
   G.oreBonus = shrineEffects(G.shrines).orePoints;
   /* Escalateur (skill Logisticien) : le seau du treuil va plus vite pour tout le groupe ; le meilleur rang des mineurs
      présents au lancement compte, sans cumul (figé, comme le stuff) */
@@ -236,7 +236,7 @@ function shareBySegments(G, present){
   marks.forEach((mk, i) => {
     const delta = {};
     for(const k in mk.chest){ const q = mk.chest[k] - (prevChest[k] || 0); if(q > 0) delta[k] = q; }
-    const n = mk.present.length, dxp = Math.max(0, mk.xp - prevXp);
+    const n = mk.present.length, dxp = Math.max(0, Math.floor(mk.xp) - prevXp);   // floor : en prison, l'XP d'un mob peut finir en ,5 (PRISON.mobXpMul) ; xpShare refuse un pot non entier
     const parts = shareChest(delta, n, (G.seed + i * 0x9e37) | 0), px = xpShare(dxp, n);
     mk.present.forEach((m, j) => {
       if(!bags.has(m)) return;                                       // parti avant la fin : sa part est perdue
@@ -245,7 +245,7 @@ function shareBySegments(G, present){
       xp.set(m, xp.get(m) + px);
     });
     segments.push({ until:mk.t, players:n });
-    prevChest = mk.chest; prevXp = mk.xp;
+    prevChest = mk.chest; prevXp = Math.floor(mk.xp);
   });
   /* bonus d'XP personnel (Anneau du nerd, m.xpPct) : sur SA part, après le partage ; seul le bonus n'est pas partagé */
   for(const [m, v] of xp) xp.set(m, Math.floor(v * (1 + (m.xpPct || 0) / 100)));

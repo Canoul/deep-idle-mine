@@ -16,6 +16,7 @@ export function socialRoutes(social){
     'POST /api/social/block':   async ctx => { needMe(ctx); return social.block(ctx.me, str(ctx.body.id)); },
     'POST /api/social/unblock': async ctx => { needMe(ctx); return social.unblock(ctx.me, str(ctx.body.id)); },
     'POST /api/social/invite':  async ctx => { needMe(ctx); return social.invite(ctx.me, str(ctx.body.id)); },
+    'POST /api/social/guild-invite': async ctx => { needMe(ctx); return social.guildInvite(ctx.me, str(ctx.body.id)); },
     'POST /api/social/join':    async ctx => { needMe(ctx); return social.join(ctx.me, str(ctx.body.id)); },
     'POST /api/social/profile': async ctx => { needMe(ctx); return social.profile(ctx.me, str(ctx.body.id)); },
     'POST /api/social/leaderboard': async ctx => { needMe(ctx); return social.leaderboard(ctx.me, str(ctx.body.board)); },
