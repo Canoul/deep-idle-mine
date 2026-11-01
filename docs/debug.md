@@ -6179,3 +6179,8 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Quoi** : `notify.flash` (`src/ui/notify.js`, à part de `sync` qui retire ce qu'il ne connaît pas), `NOTIFY.flashMs`, `savedText` /
   `equippedText` et `onDone` (`src/ui/sets.js`), branché dans `src/main.js`. Les erreurs restent sous la liste des sets.
 - **Tests** : `tests/notify.test.js`, `tests/sets.test.js` ✅ ; ⚠️ pas vu dans un navigateur.
+
+## 01/11/2026 — Guilde : membres visibles depuis Rechercher (Geoffrey)
+- **Quoi** : `guild.members(me, id)` (server/guild/service.js), `POST /api/guild/members`, `guildApi.members`. Renvoie pseudo, grade, XP : ni identifiant de compte ni présence, qui restent réservés aux membres. Dans src/ui/guild.js, `open` = guilde dépliée, relue à chaque relecture ; refermée si elle sort de la liste ou disparaît. `members` garde l'id de sa guilde : une réponse en retard ne s'affiche pas sous une autre.
+- **Tests** ✅ tests/guild-service.test.js, tests/guild-ui.test.js.
+
