@@ -13,7 +13,7 @@ Modèle d'entrée :
 - **Pour le joueur** : rien sur le site. L'appli iPhone « Deep Mine Idle MMO » est la même que sur Android : jeu dans l'appli, encoche gérée, clavier qui ne cache pas le chat, liens dans Safari, notifications sur le téléphone.
 - **Décisions** : projet repris de `jules/appli-ios`. iPhone seul, écran vertical (Jules visait aussi l'iPad). Signature par la clé d'API seule, sans certificat ni profil.
 - **À suivre** : mettre le workflow sur `main` (sans ça, pas de bouton « Run workflow »), créer les 4 secrets, lancer `testflight`, essayer sur un vrai iPhone.
-- **État** : 🧪 sur la branche `geoffrey/appli-ios` (pas en ligne)
+- **État** : ✅ en ligne le 01/11
 
 ## 01/11/2026 — Geoffrey — Appli Android prête pour Google Play
 - **Pour le joueur** : rien sur le site. L'appli « Deep Mine Idle MMO » contient maintenant le jeu : elle s'ouvre même avec un réseau lent, gère l'encoche, le bouton retour Android (fenêtre, onglet précédent, confirmation pour quitter), affiche « Pas de connexion, nouvelle tentative… », et ouvre Discord, le wiki et les pages légales dans le navigateur du téléphone.
