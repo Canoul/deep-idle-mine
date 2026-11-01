@@ -1,4 +1,4 @@
-/* Classements (onglet Social → Classements, 27/10/2026, Geoffrey) : logique pure, partagée par le serveur et le navigateur.
+/* Classements (onglet Classement, 27/10/2026, Geoffrey) : logique pure, partagée par le serveur et le navigateur.
    Classements : gs (gear score des pièces portées), xp (XP du mineur), spec:<arbre> (XP de spécialisation de cet arbre,
    un classement par arbre), tower (meilleur temps de victoire dans une tour céleste, Ange et Démon confondus, en secondes
    de jeu ; tower2 : au niveau 2, 29/10/2026), instance (29/10/2026, Geoffrey : meilleur temps pour vaincre le roi gobelin de l'Instance I, en secondes de

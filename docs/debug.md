@@ -6441,6 +6441,12 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Quoi** : `removeReport` remplace `markDone` dans bot/main.js. Aucun droit Discord en plus : le bot efface ses propres messages.
 - **Tests** ✅ tests/bot-todo.test.js (logique et aide), `node --check bot/main.js`. ⚠️ Effacement non essayé sur le vrai Discord : main.js n'a pas de test sans connexion.
 
+## 01/11/2026 — Onglet Classement (Geoffrey) — branche `geoffrey/onglet-classement`
+- **Quoi** : code des classements déplacé de `src/ui/social.js` vers `src/ui/leaderboard.js` (mêmes logiques, route serveur inchangée), section `classement` dans `index.html`, `TABS` et `TAB_KEYS` (c, g, s ; ² retiré), famille Social de l'appli.
+- **Tests** : `tests/nav.test.js`, `tests/app-families.test.js`, `tests/app-bar.test.js`, `tests/leaderboard.test.js`, `tests/town.test.js` ; ⚠️ pas vu dans un navigateur (15 boutons dans la barre).
+- **Point fragile** : pas de bâtiment au Carreau pour Classement (`noBuilding`, comme Guilde).
+- **Déjà cassé avant ce chantier** : `tests/leaderboard.test.js`, « roi gobelin : record revérifié », échoue aussi sur `main` (il attend un refus de `instance_2`, prête depuis le 30/10). Pas touché.
+
 ## 01/11/2026 — Message de guilde (Geoffrey) — branche `geoffrey/guilde-message`
 - **Quoi** : champ `message { text, by, at }` de la guilde (`sanitizeGuilds` le garde), `setMessage` (`server/guild/service.js`, grade vérifié par `recruiter`), route `POST /api/guild/message`, `messageHTML` (`src/ui/guild.js`), option `multiline` de `askText`. Saisie dans une fenêtre et pas dans la page : la liste des membres est réécrite à chaque relecture et effacerait le texte en cours.
 - **Tests** : `tests/guild-service.test.js`, `tests/guild-ui.test.js`, `tests/dialog.test.js` ; ⚠️ pas vu dans un navigateur.

@@ -10,7 +10,7 @@ test('familles : les 5 de la spec, dans l\'ordre', () => {
     ['session', ['session', 'historique']],
     ['sac', ['inventaire', 'four', 'concasseur', 'craft', 'recherche']],
     ['perso', ['stuff', 'amelioration', 'skills', 'sorts']],
-    ['social', ['social', 'guilde', 'chat']],
+    ['social', ['classement', 'guilde', 'social', 'chat']],
   ]);
 });
 
