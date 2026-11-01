@@ -1038,6 +1038,7 @@ Ex. pioche en pierre +3 : 0,2 × 1,09 = 0,218 de vitesse de minage. Épée en fe
 - ⚠️ **Ordre de grandeur** (simulation 3 mineurs, 21/10) : une session rapporte ≈ 530 terre + 760 pierre au coffre commun, soit ≈ 4 lots par joueur. Avec les chances du 22/10 : ≈ 1 gemme toutes les 30 sessions par joueur, un treasure toutes les ≈ 60 sessions (avant : 60 et ≈ 2 000). À surveiller : le treasure est 25 à 50 fois plus fréquent qu'avant.
 
 ### Table de recherche (onglet Recherche)
+- **Pas de doublon immédiat** *(01/11/2026, Geoffrey ; `RESEARCH.recentMs`, valeur provisoire)* : un plan sorti de la recherche depuis moins de **2 min** ne peut pas ressortir, même s'il n'est pas encore appris. S'il ne reste que des plans dans ce cas, la recherche est refusée avec un message et **rien n'est dépensé**. Au-delà de 2 min, un plan gardé sans l'apprendre peut ressortir.
 Elle sert à **dépenser les Blueprint parts** et à **recycler des blueprints**. Deux sous-onglets :
 - **Recherche** : on choisit le **tier**, on pose les parts dans la case (c'est **0 ou le prix du tier**, un clic pose ou retire), puis **Rechercher** : les parts sont dépensées et un **blueprint du tier** arrive dans l'inventaire. Le blueprint obtenu s'affiche dans la **case de résultat** de la table (à droite de la flèche), avec dessous sa **description** : la recette qu'il débloque et les effets de l'objet.
 

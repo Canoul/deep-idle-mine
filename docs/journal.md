@@ -9,6 +9,11 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 01/11/2026 — Geoffrey — Recherche : pas de doublon immédiat
+- **Pour le joueur** : un plan sorti de la recherche ne peut pas ressortir pendant 2 min. S'il ne reste que des plans dans ce
+  cas, la recherche est refusée avec un message et les parts ne sont pas dépensées.
+- **État** : ✅ en ligne le 01/11
+
 ## 01/11/2026 — Geoffrey — Plus de chat dans l'onglet Session
 - **Pour le joueur** : le panneau Chat de l'onglet Session disparaît. On discute dans le chat global, et le canal Groupe sert à parler à son équipe.
 - **État** : ✅ en ligne le 01/11

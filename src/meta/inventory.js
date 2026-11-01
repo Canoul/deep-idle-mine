@@ -195,7 +195,7 @@ export function deserialize(json){
     ? [...new Set(d.unlocked.filter(n => typeof n === 'string' && ((Object.hasOwn(RECIPES, n) && RECIPES[n].unlock) || FURNACE_UNLOCKS.has(n))))] : [];   // + recettes du four (« Four : Chitine », 27/10)
   inv.research = Array.isArray(d.research) ? d.research.filter(e => e && typeof e.id === 'string' && typeof e.kind === 'string'
       && e.result && typeof e.result.item === 'string' && (e.result.parts === undefined || Number.isSafeInteger(e.result.parts)))
-    .map(e => ({ id:e.id, kind:e.kind, result:{ ...e.result, ok:true } })).slice(-RESEARCH.opMemory) : [];
+    .map(e => ({ id:e.id, kind:e.kind, result:{ ...e.result, ok:true }, ...(Number.isFinite(e.at) ? { at:e.at } : {}) })).slice(-RESEARCH.opMemory) : [];
   inv.upgrades = Array.isArray(d.upgrades) ? d.upgrades.filter(e => e && typeof e.id === 'string' && typeof e.kind === 'string' && Number.isSafeInteger(e.uid))
     .map(e => ({ id:e.id, kind:e.kind, uid:e.uid, ...(typeof e.success === 'boolean' ? { success:e.success } : {}),
                  ...(Number.isSafeInteger(e.fragment) ? { fragment:e.fragment } : {}) })).slice(-UPGRADE.opMemory) : [];

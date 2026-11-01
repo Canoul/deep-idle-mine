@@ -23,7 +23,7 @@
      visite ; à son retour, l'attente passe dans pausedMs et le run repart où il s'était arrêté.
    Testable seul : on lui passe un stockage, une horloge et la façon de faire tourner les parties (liveRunner). */
 import crypto from 'node:crypto';
-import { GAME, ENERGY, PRISON, PREFS, FOCUS, FURNACE, MINE_MODES, CHAT, ITEMS, JUDGMENT, KHOLE, TOWER, WIKI, LEADERBOARD, SKILLS, AREAS, treasureItem, goblinChestItem, golbuteChestItem } from '../../src/config.js';
+import { GAME, ENERGY, PRISON, PREFS, RESEARCH, FOCUS, FURNACE, MINE_MODES, CHAT, ITEMS, JUDGMENT, KHOLE, TOWER, WIKI, LEADERBOARD, SKILLS, AREAS, treasureItem, goblinChestItem, golbuteChestItem } from '../../src/config.js';
 import { sanitizeTowerRecord, betterTower, sanitizeInstanceRecord, betterInstance, recordKey, splitRecordKey } from '../../src/meta/leaderboard.js';
 import { DT } from '../../src/config.js';
 import { sanitizePrefs, sanitizeOverrides, sanitizeDevSpecs, tickAt, realDurationMs, TOTAL_TICKS } from '../../src/shared/game.js';
@@ -90,6 +90,7 @@ const SET_ERRORS = { unknown: 'Set introuvable.', too_many: 'Tu as déjà le nom
                      bad_name: 'Nom vide ou trop long.', session_running: 'Impossible pendant une session : termine-la d\'abord.',
                      bad_request: 'Demande invalide.' };
 const RESEARCH_ERRORS = { bad_tier: 'Tier de recherche inconnu.', tier_locked: 'Apprends d\'abord toutes les recettes des tiers inférieurs.', nothing_left: 'Tu as appris tous les blueprints de ce tier.',
+                          too_recent: `Les plans restants de ce tier viennent de sortir : apprends-les, ou réessaie dans ${RESEARCH.recentMs / 60_000} min au plus.`,
                           not_enough: 'Il te faut plus de Blueprint parts.', bad_item: 'Seul un blueprint se recycle.',
                           not_owned: 'Tu n\'as pas ce blueprint.', bad_request: 'Demande invalide.' };
 const RECYCLE_ERRORS = { not_owned: 'Cette pièce n\'est plus dans ton inventaire.', not_recyclable: 'Cette pièce ne se recycle pas.',
@@ -1576,8 +1577,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       if(typeof opId !== 'string' || !/^[\w-]{8,64}$/.test(opId)) fail('bad_request', 400, 'Demande invalide.');
       return withLock('inv:' + me.id, async () => {
         const inv = await loadInventory(me.id);
-        const r = action === 'research' ? research(inv, body.tier, opId, random) : recycle(inv, body.item, opId, random);
-        if(r.error) fail(r.error, ['not_enough', 'not_owned', 'nothing_left', 'tier_locked'].includes(r.error) ? 409 : 400, RESEARCH_ERRORS[r.error]);
+        const r = action === 'research' ? research(inv, body.tier, opId, random, clock()) : recycle(inv, body.item, opId, random);
+        if(r.error) fail(r.error, ['not_enough', 'not_owned', 'nothing_left', 'too_recent', 'tier_locked'].includes(r.error) ? 409 : 400, RESEARCH_ERRORS[r.error]);
         if(!r.repeated){
           await store.putInventory(me.id, JSON.parse(serialize(inv)));
           if(action === 'research') markFound([r.item], displayName(me));   // tier 4 : un plan secret sorti de la recherche le révèle aussi (28/10)
