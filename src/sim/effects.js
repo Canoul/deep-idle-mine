@@ -27,6 +27,7 @@ export function minerEffects(G, m, ctx = {}){
   if(a?.type === 'stun') push({ id:'stun', left:Math.max(0, r1((a.dur ?? 0) - (a.t ?? 0))), src:stunCause(a) });
   const foe = (ctx.foes || []).find(o => o.hp > 0 && o.grab === m.id) ?? null;
   if(foe) push({ id:'tackled', src:foe.type ?? null });
+  if(m.fearUntil > G.t) push({ id:'fear', left:left(G, m.fearUntil) });   // He's coming (01/11)
   const cage = G.cages?.some(c => c.id === m.id) && G.boss?.state === 'wait';
   if(cage) push({ id:'caged', left:Math.max(0, r1(INSTANCE.boss.cageMaxWait - (G.boss.t || 0))) });
   /* debuffs */

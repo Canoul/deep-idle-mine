@@ -11,6 +11,7 @@ import zlib
 
 from gen_town import town   # le Carreau, ville du spawn (scripts/gen_town.py, 29/10/2026)
 from gen_bosses import bosses, tower_mobs   # boss et mobs des tours du Jugement (scripts/gen_bosses.py, 30/10/2026)
+from gen_lucifer import lucifer_textures   # Lucifer et son portail, He's coming (scripts/gen_lucifer.py, 01/11/2026)
 from gen_golbute import golbute, golem   # le Golbute de l'Instance II (et sa forme cristallisée) et le golem (scripts/gen_golbute.py, 30/10/2026)
 
 S = 16
@@ -1645,6 +1646,8 @@ def main():
     for name, (w, h, px) in giant().items():
         png_wh(os.path.join(OUT, name + '.png'), w, h, px)
     for name, (w, h, px) in instance().items():
+        png_wh(os.path.join(OUT, name + '.png'), w, h, px)
+    for name, (w, h, px) in lucifer_textures().items():
         png_wh(os.path.join(OUT, name + '.png'), w, h, px)
     for name, (w, h, px) in golbute().items():
         png_wh(os.path.join(OUT, name + '.png'), w, h, px)

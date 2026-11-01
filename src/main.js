@@ -13,12 +13,13 @@
      (src/ui/instant-lobby.js) ; à l'heure, le serveur l'ouvre et le navigateur bascule sur Session, où elle a son
      propre affichage (src/render/instant.js, src/ui/instant-hud.js). */
 import { applyRarityColors } from './ui/rarity.js';
-import { GAME, PARTY, SESSION_LEN, INSTANT_MINE, STATS, SOCIAL, CAMERA, JUDGMENT, TOWER, MINE_MODES, INSTANCE, GUIDE, PRISON, ENERGY, DT } from './config.js';
+import { GAME, HES_COMING, PARTY, SESSION_LEN, INSTANT_MINE, STATS, SOCIAL, CAMERA, JUDGMENT, TOWER, MINE_MODES, INSTANCE, GUIDE, PRISON, ENERGY, DT } from './config.js';
 import { emptyView, applyView, shownPos } from './shared/view.js';
 import { applyInstantView } from './shared/instant-view.js';
 import { createInstantRenderer, MI_TILE } from './render/instant.js';
 import { setupInstantLobby } from './ui/instant-lobby.js';
 import { setupGiant } from './ui/giant.js';
+import { createLuciferRenderer } from './render/hescoming.js';
 import { updateInstantHUD, showInstantEnd } from './ui/instant-hud.js';
 import { updateTowerHUD, showTowerEnd } from './ui/tower-hud.js';
 import { setTeamEnergies } from './ui/energy-tag.js';
@@ -77,7 +78,7 @@ import { setupNotify } from './ui/notify.js';
 import { setupObtained } from './ui/obtained.js';
 import { recipeOf } from './meta/craft.js';
 import { createAccountUI, bootAccount, renderNavAccount } from './ui/account.js';
-import { gameApi, partyApi, instantApi, socialApi, guildApi, giantApi, townApi, ApiError, moderationApi } from './net/api.js';
+import { gameApi, partyApi, instantApi, socialApi, guildApi, giantApi, hesComingApi, townApi, ApiError, moderationApi } from './net/api.js';
 import { ask, tell } from './ui/dialog.js';
 import { warningText, banBarText } from './shared/moderation-text.js';
 import { energyText, energyPct, prisonBanner, awayText, hasAway, prisonActive, launchPrisonText, prisonPollError, prisonOnScreen } from './ui/prison.js';
@@ -276,7 +277,8 @@ fillHelp();        // « ? » d'aide des pages (src/ui/help.js)
 const historyTab = setupHistory({ load: () => gameApi.history() });
 let guildTab = null;   // créé plus bas ; l'onglet peut s'ouvrir dès setupNav
 let nav;   // l'onglet de départ est ouvert pendant setupNav, avant que nav soit assigné
-let giantUI = null;   // Bloc géant (créé plus bas) : sa visite occupe l'onglet Session
+let giantUI = null, hcUI = null;   // Bloc géant, He's coming (créés plus bas) : leur visite occupe l'onglet Session
+const inRoom = () => !!giantUI?.active() || !!hcUI?.active();
 let guide = null;     // guide « Premiers pas » (créé au démarrage, une fois l'état du joueur lu)
 let wantJudgment = /^#jugement$/i.test(location.hash);   // ancien onglet Jugement : ouvre le Lobby sur les jauges
 nav = setupNav($('nav'), $('views'), id => {
@@ -337,7 +339,7 @@ const lobby = setupLobby({
   towerWho: side => socialApi.towerWho(side),
   onPrefs: prefs => gameApi.prefs(prefs).catch(e => lobby.error(e.message)),
   onShowSession: () => nav.show('session'),
-  onMode: mode => { if(mode === 'mi') instantLobby.refresh(); if(mode === 'giant') giantUI?.shown(); },
+  onMode: mode => { if(mode === 'mi') instantLobby.refresh(); if(mode === 'giant') giantUI?.shown(); if(mode === 'hescoming') hcUI?.shown(); },
   onJudgment: () => pollJudgment(),
   onPrisonStart: opts => startPrison(opts),
   devCopy: name => gameApi.devCopy(name),   // mode dev : copier un joueur du jeu en ligne (31/10)
@@ -378,27 +380,34 @@ const instantLobby = setupInstantLobby({
   onState: st => { if(st.registered && !miModeShown){ miModeShown = true; lobby.update({ mode:'mi' }); } },
   onOpened: () => pollLobby(),                       // mode dev : la session est là, le lobby la voit et bascule
 });
-function startInstant(){ if(acct.account && !acct.offline){ instantLobby.start(); giantUI?.refresh(); } else instantLobby.stop(); }
+function startInstant(){ if(acct.account && !acct.offline){ instantLobby.start(); giantUI?.refresh(); hcUI?.refresh(); } else instantLobby.stop(); }
 
 /* Bloc géant : carte du lobby (« Où miner »), visite dans l'onglet Session, écran de fin (src/ui/giant.js) */
 giantUI = setupGiant({ api: giantApi, nav, onInventory: (inv, bag) => setInventory(inv, bag), session: () => !!rec, me: () => acct.account?.id });
+hcUI = setupGiant({ api: hesComingApi, nav, onInventory: (inv, bag) => setInventory(inv, bag), session: () => !!rec, me: () => acct.account?.id,
+                    prefix: 'hc', config: HES_COMING, renderer: createLuciferRenderer,
+                    words: { place: HES_COMING.bossName, front: HES_COMING.bossName, title: 'He\'s coming', rate: 'DPS',
+                             rules: `Ton mineur frappe ${HES_COMING.bossName} : 1 dégât = 1 point.\nToutes les ${HES_COMING.roar.every} s, il rugit : à ${HES_COMING.roar.radius} cases ou moins, Fear ${HES_COMING.roar.fear} s (ton mineur erre et ne frappe plus).\nToutes les ${HES_COMING.swing.every} s, il projette ceux à son contact.\nLa ténacité résiste aux deux.` } });
 
 /* Session et visite au Bloc géant en même temps (27/10/2026, Geoffrey) : l'onglet Session montre l'une OU l'autre, une
    barre permet de passer de l'une à l'autre. Ce qui vient de commencer passe devant. Chaque partie garde ses propres
    hidden (#run, #gtRun…) ; seules les classes de l'onglet décident de ce qui est caché quand il y a les deux. */
 const sessionView = document.querySelector('.view[data-view="session"]');
-let pane = 'session', hadSession = false, hadGiant = false;
+let pane = 'session', hadSession = false, hadGiant = false, hadHc = false;
 function updatePanes(){
-  const sess = !!rec || !$('end').hidden || prisonShown(), gt = !!giantUI?.active();
+  const sess = !!rec || !$('end').hidden || prisonShown(), gt = !!giantUI?.active(), hc = !!hcUI?.active();
   if(sess && !hadSession) pane = 'session';
   if(gt && !hadGiant) pane = 'giant';
-  hadSession = sess; hadGiant = gt;
-  const both = sess && gt;
+  if(hc && !hadHc) pane = 'hc';
+  hadSession = sess; hadGiant = gt; hadHc = hc;
+  const open = { session: sess, giant: gt, hc }, both = sess + gt + hc > 1;
+  if(!open[pane]) pane = Object.keys(open).find(k => open[k]) ?? 'session';
   sessionView.classList.toggle('both', both);
   sessionView.classList.toggle('paneGiant', pane === 'giant');
-  sessionView.classList.toggle('paneSession', pane !== 'giant');
+  sessionView.classList.toggle('paneHc', pane === 'hc');
+  sessionView.classList.toggle('paneSession', pane === 'session');
   $('sessSwitch').hidden = !both;
-  for(const b of $('sessSwitch').querySelectorAll('button')) b.classList.toggle('on', b.dataset.pane === pane);
+  for(const b of $('sessSwitch').querySelectorAll('button')) { b.classList.toggle('on', b.dataset.pane === pane); b.hidden = !open[b.dataset.pane]; }
 }
 $('sessSwitch').onclick = e => { const b = e.target.closest('button'); if(b){ pane = b.dataset.pane; updatePanes(); } };
 setInterval(updatePanes, 300);
@@ -408,7 +417,7 @@ window.MI = instantLobby;                            // pour le débogage depuis
 function showNoSession(){
   rec = null; G = null; waiting = false; clearTimeout(viewTimer);
   setsUI.refresh(); sessionFlag();   // sets de nouveau disponibles
-  $('run').hidden = true; $('miRun').hidden = true; $('twRun').hidden = true; $('inRun').hidden = true; $('noSession').hidden = !!giantUI?.active();   // une visite au Bloc géant garde l'onglet
+  $('run').hidden = true; $('miRun').hidden = true; $('twRun').hidden = true; $('inRun').hidden = true; $('noSession').hidden = inRoom();   // une visite au Bloc géant garde l'onglet
   lobby.update({ account:acct.account, offline:acct.offline, info, session:null });
   updatePrisonUI();   // la prison reprend l'onglet Session
   pollLobby();
@@ -418,7 +427,7 @@ $('miLeaveBtn').onclick = () => leave();
 $('twLeaveBtn').onclick = () => leave();
 $('inLeaveBtn').onclick = () => leave();
 const navSession = document.querySelector('.navSession');
-navSession.onclick = () => { if(rec || giantUI?.active()) nav.show('session'); };
+navSession.onclick = () => { if(rec || inRoom()) nav.show('session'); };
 $('navPrisonBtn').onclick = () => nav.show('session');
 $('navPrisonStop').onclick = () => stopPrison();
 
@@ -786,7 +795,7 @@ function updatePrisonUI(){
     for(const b of document.querySelectorAll('.pauseBtn')) b.hidden = true;
   }
   /* 30/10/2026 : seulement sans prison (avant : ce « sinon » suivait « prison ET mode dev », il cachait la prison hors dev) */
-  if(!on){ $('run').hidden = true; $('noSession').hidden = !!giantUI?.active(); }
+  if(!on){ $('run').hidden = true; $('noSession').hidden = inRoom(); }
 }
 
 /* la partie du serveur est finie : on attend son résultat (partage et versement, quelques instants) */

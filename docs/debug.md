@@ -6219,6 +6219,13 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Cause** : `shrinesHtml` affichait la règle sur la carte d'un shrine non actif (`left` 0). Actif, la carte dit déjà « encore N sessions ».
 - **Quoi** : texte de src/ui/lobby.js. **Tests** ✅ tests/shrines.test.js. ⚠️ Pas vu dans un navigateur.
 
+## 01/11/2026 — He's coming (Geoffrey)
+- **Quoi** : `HES_COMING` (config, hérite de GIANT), `src/sim/hescoming/session.js`, `luciferSim` / `giantSim` (src/shared/giant-room.js), `createGiantService` paramétré (sim, key, mode, place), `giantRoutes(svc, base)`, `rooms[]` dans le service de jeu (avant : un seul crochet), `hc_day` / `hc_player` (store + PostgreSQL), `setupGiant` paramétré (prefix : `$` remplace giant/gt par hc), `src/render/hescoming.js`, `scripts/gen_lucifer.py`, `scripts/simulate-hescoming.js`, état `fear`, `updatePanes` à trois volets.
+- **Tests** ✅ tests/hescoming-sim, hescoming-service, hescoming-ui, anticheat/hescoming, giant-*, lobby, nav, effects, wiki, shrines. `npm run test:anticheat` ✅. Parcours HTTP ✅ sur serveur local (fichiers) : invité, entrée à Lucifer et au Bloc, vue, paliers, fichiers servis.
+- **Simulation** (`npm run simulate:hescoming`, 20 seeds, seul) : fer 1 093 points par visite, acier 1 405, acier + ténacité 50 % 2 230, Arc de l'Admin 4 240. Le Bloc en fer vaut 183 points : avec × 25 (183 × 25 = 4 575), He's coming demandait environ 4 fois plus de visites. Décision Geoffrey : × 8 (paliers 8 000 à 160 000, pépites par 800) : fer ≈ 8 visites pour le 1er palier, 147 pour le dernier (Bloc : 6 et 110).
+- **Points fragiles** : rugissement et autoattaque tombent ensemble toutes les 30 s. Inspiration agit sur la vitesse d'attaque (`S.mineSpeed`), pas sur le minage. Horloge de Lucifer : celle de la salle, qui repart de zéro quand la salle se vide.
+- ⚠️ Pas vu dans un navigateur : carte, salle, onde, fin de visite, téléphone, bascule à trois volets. Pas testé sur PostgreSQL.
+
 ## 01/11/2026 — Recherche : pas de doublon immédiat (Geoffrey) — branche `geoffrey/plan-doublon`
 - **Quoi** : `recentPlans`, erreur `too_recent` et champ `at` des entrées de `inv.research` (`src/meta/research.js`, relu par `deserialize`) ;
   `RESEARCH.recentMs` ; heure du serveur passée par `server/game/service.js`. L'affichage ne change pas : le navigateur ne connaît pas

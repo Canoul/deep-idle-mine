@@ -19,6 +19,8 @@ import { createInstantService } from './instant/service.js';
 import { createSocialService } from './social/service.js';
 import { createGuildService } from './guild/service.js';
 import { createGiantService } from './giant/service.js';
+import { HES_COMING } from '../src/config.js';
+import { luciferSim } from '../src/shared/giant-room.js';
 import { createTownService } from './town/service.js';
 import { createDiscordAnnouncer } from './social/discord.js';
 import { createModerationService } from './moderation/service.js';
@@ -49,14 +51,16 @@ const social = createSocialService({ store: gameStore, accounts: store, party, g
 const guild = createGuildService({ store: gameStore, accounts: store, statusOf: id => social.statusOf(id), spend: game.guildSpend, counts: game.itemCounts });
 /* Bloc géant : salle commune, visites, scores du jour, récompenses */
 const giant = createGiantService({ store: gameStore, game, dev: GAME_SERVER.dev });
+/* He's coming : le même service, sa partie et ses fiches */
+const hescoming = createGiantService({ store: gameStore, game, dev: GAME_SERVER.dev, config: HES_COMING, sim: luciferSim, key: 'Hc', mode: 'hescoming', place: HES_COMING.bossName });
 /* le Carreau : la ville du spawn (joueurs en ligne hors session, leur place, bulles du chat global) */
 const town = createTownService({ accounts: store, game, party, recentChat: ms => social.recentChat(ms), guildNameOf: id => guild.nameOf(id) });
-const server = http.createServer(createApp({ store, service, game, party, instant, social, guild, giant, town, moderation, root: ROOT }));
+const server = http.createServer(createApp({ store, service, game, party, instant, social, guild, giant, hescoming, town, moderation, root: ROOT }));
 
 /* sessions de jeu : le serveur les fait tourner en direct (reprises au démarrage), puis les fait avancer en continu ;
    chacune se termine et se partage d'elle-même au dernier tick, joueurs présents ou non */
 game.recover().catch(console.error);       // sans attendre : le serveur répond tout de suite, les sessions rattrapent ensuite
-const pump = setInterval(() => { instant.tick().catch(console.error); game.pump().catch(console.error); giant.pump().catch(console.error); social.raffleTick().catch(console.error); }, GAME_SERVER.pumpEvery);
+const pump = setInterval(() => { instant.tick().catch(console.error); game.pump().catch(console.error); giant.pump().catch(console.error); hescoming.pump().catch(console.error); social.raffleTick().catch(console.error); }, GAME_SERVER.pumpEvery);
 pump.unref();
 
 /* ménage des connexions expirées, au démarrage puis toutes les heures */

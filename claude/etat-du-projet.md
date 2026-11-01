@@ -203,6 +203,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   sont resimulés** (`npm run weights`, `stat-values`). Les stats du T4 sont la première version divisée (pas recalculées).
 - **Wiki : plans secrets** (27/10, `WIKI.secret`) : pièces thorium / cobalt et pièces spéciales cachées jusqu'au premier
   BP trouvé ; première découverte (BP, ou stuff du Roi Gobelin) annoncée sur Discord avec les stats.
+- **He's coming** (01/11, Geoffrey ; spec `docs/superpowers/specs/2026-11-01-hes-coming-design.md`, GAME_DESIGN §6, `HES_COMING`) : Bloc géant version combat, contre Lucifer. `src/sim/hescoming/session.js` ; service, routes et interface du Bloc réutilisés par paramètres (`createGiantService` : sim, key, mode, place ; `setupGiant` : prefix, config, renderer, words) ; fiches `hc_day`, `hc_player` ; `/api/hescoming/…`. Indépendant du Bloc : on peut avoir une session, une visite au Bloc et une à Lucifer en même temps (`updatePanes`).
 - **Bloc géant** (26/10, Geoffrey ; spec `docs/superpowers/specs/2026-10-26-bloc-geant-design.md`, GAME_DESIGN §6,
   config `GIANT`, `src/sim/giant/`, `src/shared/giant.js` + `giant-room.js`, `server/giant/`, `src/ui/giant.js`,
   `src/render/giant.js`) : mode « Où miner » → Bloc géant, session commune de minuit à minuit (Paris), entrée seul toutes

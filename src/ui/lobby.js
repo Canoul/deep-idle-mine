@@ -204,6 +204,7 @@ const ACTIVITIES = [
   { id:'mine',      icon:'⛏', title:'Mine',             desc:'Va de plus en plus profond avec ta team' },
   { id:'mi',        icon:'🌀', title:'Mine instantanée', desc:'Mine avec full minerais' },
   { id:'giant',     icon:'🌈', title:'Bloc géant',       desc:'Mine le plus vite possible' },
+  { id:'hescoming', icon:'😈', title:'He\'s coming',     desc:'Frappe Lucifer le plus fort possible' },
   { id:'jugement',  icon:'⚖', title:'Jugement',         desc:'Combat le jugement' },
   { id:'instances', icon:'🗝', title:'Instances',        desc:'Affronte un boss en équipe pour son coffre' },
   { id:'forming',   icon:'👥', title:'Groupes en formation', desc:'Rejoins un groupe qui cherche des joueurs' },
@@ -289,8 +290,12 @@ export function setupLobby(h){
     }
     $('instCard').hidden = !cards.inst;
     if(cards.inst) renderInstances();
-    const giantWas = $('giantCard').hidden; $('giantCard').hidden = !cards.giant;
-    if(giantWas && cards.giant) h.onMode?.('giant');   // la carte vient d'apparaître : elle se met à jour
+    /* Bloc géant et He's coming : même sorte de carte, une par mode (01/11) */
+    for(const [id, card] of [['giant', 'giantCard'], ['hescoming', 'hcCard']]){
+      const on = cards.giant && def?.id === id, was = $(card).hidden;
+      $(card).hidden = !on;
+      if(was && on) h.onMode?.(id);   // la carte vient d'apparaître : elle se met à jour
+    }
     $('launchBtn').hidden = !cards.launch;
     $('mineModes').innerHTML = activityMenu(modes, { towerOpen: st.judgmentPending, prisonOn: prisonActive(st.prison), noForming: offline || !account || locked }).map(a =>
       `<button ${a.kind === 'forming' ? 'data-forming' : a.kind === 'view' ? 'data-view="jugement"' : `data-mode="${a.mode}"`} class="actBtn"${a.disabled ? ' disabled' : ''}${a.hint ? ` title="${esc(a.hint)}"` : ''}>`+

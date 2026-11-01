@@ -9,7 +9,9 @@ import { glide, pace, shownPos } from '../shared/view.js';
 
 export const GT_TILE = 16;
 
-export function createGiantRenderer(cv){
+/* o (He's coming, src/render/hescoming.js) : drawBoss(ctx, L, view, now, blit, T, at) à la place du bloc ; flight, high : recul ;
+   strike(m, L) : action dessinée quand il frappe */
+export function createGiantRenderer(cv, o = {}){
   const ctx = cv.getContext('2d'), T = GT_TILE;
   ctx.imageSmoothingEnabled = false;
   const TEX = loadTextures();
@@ -37,9 +39,18 @@ export function createGiantRenderer(cv){
   /* hauteur de l'arc d'un recul (cases), selon l'avancement du vol */
   const arc = (m, now) => {
     if(!m.fly) return 0;
-    const k = Math.min(1, m.fly.k + (now - at) / 1000 / GIANT.knock.flight);
-    return k < 1 ? 1.2 * Math.sin(Math.PI * k) : 0;
+    const k = Math.min(1, m.fly.k + (now - at) / 1000 / (o.flight ?? GIANT.knock.flight));
+    return k < 1 ? (o.high ?? 1.2) * Math.sin(Math.PI * k) : 0;
   };
+
+  function drawBlock(L, now){
+    const bx = L.bx * T, by = L.by * T, bw = L.bw * T, bh = L.bh * T, pulse = 0.5 + 0.5 * Math.sin(now / 450);
+    ctx.save();
+    ctx.shadowColor = `hsl(${(now / 20) % 360}, 90%, 65%)`; ctx.shadowBlur = 6 + 10 * pulse;
+    blit('giant_block', bx, by, '#6a4fa0', bw, bh);
+    ctx.restore();
+    ctx.fillStyle = `rgba(255,255,255,${(0.04 + 0.10 * pulse).toFixed(3)})`; ctx.fillRect(bx, by, bw, bh);
+  }
 
   function draw(view){
     const L = view?.layout ?? { w: GIANT.w, h: GIANT.h, bx: GIANT.w - GIANT.block, by: GIANT.h - GIANT.block, bw: GIANT.block, bh: GIANT.block,
@@ -61,12 +72,8 @@ export function createGiantRenderer(cv){
     /* fontaine à oxygène */
     blit('giant_fountain', L.fountain * T, (L.row - 1) * T, '#3d8bff', T, 2 * T);
     /* le bloc géant, qui pulse */
-    const bx = L.bx * T, by = L.by * T, bw = L.bw * T, bh = L.bh * T, pulse = 0.5 + 0.5 * Math.sin(now / 450);
-    ctx.save();
-    ctx.shadowColor = `hsl(${(now / 20) % 360}, 90%, 65%)`; ctx.shadowBlur = 6 + 10 * pulse;
-    blit('giant_block', bx, by, '#6a4fa0', bw, bh);
-    ctx.restore();
-    ctx.fillStyle = `rgba(255,255,255,${(0.04 + 0.10 * pulse).toFixed(3)})`; ctx.fillRect(bx, by, bw, bh);
+    if(o.drawBoss) o.drawBoss(ctx, L, view, now, blit, T, at);
+    else drawBlock(L, now);
     /* mineurs : les autres d'abord, le sien par-dessus. Ils se superposent devant le bloc : un seul pseudo par endroit
        (le sien d'abord), avec le nombre de mineurs (« ×3 ») */
     const list = [...M.miners].sort((a, b) => (a.me ? 1 : 0) - (b.me ? 1 : 0));
@@ -79,7 +86,7 @@ export function createGiantRenderer(cv){
     }
     for(const m of list){
       const [x, y] = pos.get(m.id), tag = named.find(n => n.id === m.id);
-      sprite({ ...m, name: tag ? m.name : '', action: m.mining ? { type: 'mine' } : null }, x * T, y * T, m.me, now);
+      sprite({ ...m, name: tag ? m.name : '', action: m.mining ? o.strike?.(m, L) ?? { type: 'mine' } : null }, x * T, y * T, m.me, now);
     }
     ctx.font = 'bold 7px sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
     for(const n of named) if(n.n > 1){

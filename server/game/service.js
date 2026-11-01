@@ -198,8 +198,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
   const startHooks = [];           // appelés après le lancement d'une session normale (comptes des joueurs)
   /* Bloc géant (server/giant/service.js) : { busy(compte) → { mode, leftMs } | null, players() → [compte] } ; une visite
      en cours compte comme une session (une seule à la fois), sans être une session de ce service */
-  let giant = null;
-  const inGiant = async accountId => giant ? await giant.busy(accountId) : null;
+  const rooms = [];   // Bloc géant et He's coming (01/11)
+  const inGiant = async accountId => { for(const r of rooms){ const b = await r.busy(accountId); if(b) return b; } return null; };
 
   /* wiki (WIKI.secret) : un objet secret vient d'être trouvé en jeu (coffre, trésor, fin de session) : ses effets
      apparaissent dans le wiki. Une seule fois par objet ; une erreur ici ne bloque jamais le gain. */
@@ -1820,12 +1820,12 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       const ids = new Set();
       for(const status of ACTIVE) for(const rec of await store.sessionsWithStatus(status))
         for(const p of rec.players) if(!hasLeft(rec, p.account)) ids.add(p.account);
-      if(giant) for(const a of await giant.players()) ids.add(a);
+      for(const r of rooms) for(const a of await r.players()) ids.add(a);
       return [...ids];
     },
 
     /* ---------- Bloc géant (server/giant/service.js) ---------- */
-    useGiant(hooks){ giant = hooks; },
+    useGiant(hooks){ rooms.push(hooks); },
     /* entrer au Bloc géant : sous le verrou du compte ; fn(fiche) reçoit le stuff, les skills et les sorts figés pour la
        visite et enregistre l'entrée. Possible pendant une session, et une session peut se lancer pendant une visite
        (27/10/2026, Geoffrey ; avant : l'un ou l'autre) : la visite et la session tournent chacune de leur côté. */
@@ -1839,12 +1839,12 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     },
     /* donner une récompense du Bloc géant : sous le verrou de l'inventaire ; fn(inv) ajoute les objets et renvoie
        { player, … } (état du joueur à écrire AVEC l'inventaire) ou null (rien à donner, rien n'est écrit) */
-    async giantGrant(accountId, fn){
+    async giantGrant(accountId, fn, key = 'Giant'){
       return withLock('inv:' + accountId, async () => {
         const inv = await loadInventory(accountId);
         await loadStuff(accountId, inv);                 // uid neufs : jamais celui d'une pièce portée
         const r = await fn(inv);
-        if(r?.player) await store.putInventoryAndGiantPlayer(accountId, JSON.parse(serialize(inv)), r.player);
+        if(r?.player) await store[`putInventoryAnd${key}Player`](accountId, JSON.parse(serialize(inv)), r.player);
         return { ...r, inventory: publicInventory(inv) };
       });
     },

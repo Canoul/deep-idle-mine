@@ -16,6 +16,7 @@
     "simulate:prison": "node scripts/simulate-prison.js",
     "simulate:tower": "node scripts/simulate-tower.js",
     "simulate:giant": "node scripts/simulate-giant.js",
+    "simulate:hescoming": "node scripts/simulate-hescoming.js",
     "simulate:instance": "node scripts/simulate-instance.js",
     "simulate:golbute": "node scripts/simulate-golbute.js",
     "weights": "node scripts/weights.js",
