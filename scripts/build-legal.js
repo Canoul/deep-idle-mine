@@ -9,12 +9,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-export const LEGAL_PAGES = { confidentialite: 'Politique de confidentialité', 'mentions-legales': 'Mentions légales', conditions: "Conditions d'utilisation" };
+export const LEGAL_PAGES = { confidentialite: 'Politique de confidentialité', 'mentions-legales': 'Mentions légales', conditions: "Conditions générales d'utilisation" };
 
 const esc = s => s.replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
 function inline(raw){
   const code = [];
-  return esc(raw).replace(/`([^`]+)`/g, (_, c) => { code.push(c); return `\u0000${code.length - 1}\u0000`; })
+  return esc(raw.replace(/\\([[\]])/g, '$1')).replace(/`([^`]+)`/g, (_, c) => { code.push(c); return `\u0000${code.length - 1}\u0000`; })
     .replace(/\[([^\]]+)\]\(((?:https?:\/\/|mailto:|\/)[^\s)]+)\)/g, '<a href="$2">$1</a>')
     .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>').replace(/\*([^*]+)\*/g, '<i>$1</i>')
     .replace(/\u0000(\d+)\u0000/g, (_, i) => `<code>${code[+i]}</code>`);
@@ -47,7 +47,7 @@ export function mdToHtml(md){
   return out.join('\n');
 }
 /* passages à compléter : [texte] qui n'est pas un lien */
-export const placeholders = md => [...md.matchAll(/\[([^\]\n]+)\](?!\()/g)].map(m => m[0]);
+export const placeholders = md => [...md.replace(/\\([[\]])/g, '$1').matchAll(/\[([^\]\n]+)\](?!\()/g)].map(m => m[0]);
 
 export const pageHtml = (title, body) => `<!doctype html>
 <html lang="fr">

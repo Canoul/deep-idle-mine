@@ -58,7 +58,7 @@ test('rareté : la liste du créateur est inhabituelle, tout le reste du catalog
     'Clé d\'instance I BP':'inhabituel', 'Cuir de minotaure':'rare', 'Poudre de rêve':'rare', 'Jambières titanesques':'epique', 'Jambières titanesques BP':'epique', 'Cape inclusive':'epique', 'Cape inclusive BP':'epique',
     ...Object.fromEntries(PIECES.flatMap(p => [[`${p} en mithril`, 'inhabituel'], [`${p} en mithril BP`, 'inhabituel'],
       [`${p} en thorium`, 'rare'], [`${p} en thorium BP`, 'rare'], [`${p} en cobalt`, 'rare'], [`${p} en cobalt BP`, 'rare']])),
-    ...Object.fromEntries(['Lunettes du Dandy', 'Rangers ferrées', 'Ceinture golémique', 'Gants de boucher'].flatMap(n => [[n, 'rare'], [`${n} BP`, 'rare']])) };
+    ...Object.fromEntries(['Lunettes de luxe', 'Bottes de chantier', 'Ceinture golémique', 'Gants de boucher'].flatMap(n => [[n, 'rare'], [`${n} BP`, 'rare']])) };
   for(const [n, r] of Object.entries(T4)){ assert.ok(ITEMS[n], n); assert.equal(rarityOf(n), r, n); }
   for(const n of Object.keys(ITEMS)) if(![...DEEP, ...UNCOMMON, ...TIER2, ...RARE, ...TOWER, ...STEEL, ...EPIC, ...RINGS_, ...GLYPH, ...Object.keys(MOB_STUFF), ...Object.keys(KING), ...Object.keys(T4)].includes(n)) assert.equal(rarityOf(n), 'commun', n);
   assert.ok(ITEMS['Shiny iron'] && ITEMS['Shiny gold']);

@@ -285,8 +285,8 @@ export const LOOT = {
     oneOf: [
       /* 1er jet : un BP au plus (13 % en tout ; Cape inclusive en plus le 31/10) */
       { family:'blueprint', tex:'blueprint', items:[
-        { item:'Lunettes du Dandy BP',         chance:0.01 },
-        { item:'Rangers ferrées BP',            chance:0.01 },
+        { item:'Lunettes de luxe BP',         chance:0.01 },
+        { item:'Bottes de chantier BP',            chance:0.01 },
         { item:'Ceinture golémique BP',     chance:0.01 },
         { item:'Gants de boucher BP',       chance:0.01 },
         { item:'Jambières titanesques BP',  chance:0.005 },
@@ -357,7 +357,7 @@ export const RESEARCH = {
        reste à apprendre (chances égales) ; l'étape suivante s'ouvre quand toutes ses recettes sont apprises. */
     { tier:4, label:'Tier 4', from:'Treasure T4', cost:250, recycle:{ min:25, max:40 }, stages:[
       [...['Casque', 'Plastron', 'Jambes', 'Bottes'].map(p => `${p} en mithril BP`),
-       'Lunettes du Dandy BP', 'Rangers ferrées BP', 'Ceinture golémique BP', 'Gants de boucher BP'],
+       'Lunettes de luxe BP', 'Bottes de chantier BP', 'Ceinture golémique BP', 'Gants de boucher BP'],
       ['thorium', 'cobalt'].flatMap(m => ['Casque', 'Plastron', 'Jambes', 'Bottes'].map(p => `${p} en ${m} BP`)),
       ['Jambières titanesques BP', 'Cape inclusive BP'],
     ] },
@@ -795,7 +795,7 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'brick_angel','brick_angel_hard','brick_demon','brick_demon_hard','boss_angel','boss_demon','seraph','imp',
   'crown_goblin_king','mace_goblin_king','cape_goblin_royal','furnace_gold','recipe_chitin','chest_goblin_king','nugget_silver','ingot_silver','shrine_abundance',
   'ingot_mithril','refined_cobalt','refined_thorium','ingot_cobalt','ingot_thorium','minotaur_leather','rotten_flesh','treasure_t4',
-  'gem_topaz','gem_ruby_fine','gem_jade_fine','gem_sapphire_fine','glasses_dandy','boots_rangers','belt_golem','gloves_butcher','legs_titan','cape_inclusive',
+  'gem_topaz','gem_ruby_fine','gem_jade_fine','gem_sapphire_fine','glasses_luxury','boots_worksite','belt_golem','gloves_butcher','legs_titan','cape_inclusive',
   'helmet_mithril','chest_mithril','legs_mithril','boots_mithril','helmet_thorium','chest_thorium','legs_thorium','boots_thorium',
   'helmet_cobalt','chest_cobalt','legs_cobalt','boots_cobalt',
   'ring_tiger','ring_lion','ring_rat','ring_whale','ring_cuck','ring_nerd','ring_midas','ring_jester','ring_stone','pickaxe_nemesis','chest_gollex','legs_golbute','soul_golbute',
@@ -1104,7 +1104,7 @@ export const RARITY = {
     'Clé d\'instance I BP':'inhabituel', 'Cuir de minotaure':'rare',
     ...Object.fromEntries(['Casque', 'Plastron', 'Jambes', 'Bottes'].flatMap(p => [[`${p} en mithril`, 'inhabituel'], [`${p} en mithril BP`, 'inhabituel'],
       [`${p} en thorium`, 'rare'], [`${p} en thorium BP`, 'rare'], [`${p} en cobalt`, 'rare'], [`${p} en cobalt BP`, 'rare']])),
-    ...Object.fromEntries(['Lunettes du Dandy', 'Rangers ferrées', 'Ceinture golémique', 'Gants de boucher'].flatMap(n => [[n, 'rare'], [`${n} BP`, 'rare']])),
+    ...Object.fromEntries(['Lunettes de luxe', 'Bottes de chantier', 'Ceinture golémique', 'Gants de boucher'].flatMap(n => [[n, 'rare'], [`${n} BP`, 'rare']])),
     'Jambières titanesques':'epique', 'Jambières titanesques BP':'epique',
     'Cape inclusive':'epique', 'Cape inclusive BP':'epique',
     ...Object.fromEntries(Object.keys(GOBLIN_CHEST_ITEMS).map(n => [n, RUNE.treasureRarity])),
@@ -1201,8 +1201,8 @@ export const STUFF = {
     'Plastron en cobalt':  { slot:'torse',  tex:'chest_cobalt',   stats:{ pods:103, mineSpeed:0.158 } },   // 0,474 ÷ 3
     'Jambes en cobalt':    { slot:'jambes', tex:'legs_cobalt',    stats:{ climbSpeed:1.5, mineSpeedPct:9.6 } },   // 28,8 ÷ 3
     'Bottes en cobalt':    { slot:'pieds',  tex:'boots_cobalt',   stats:{ speed:1.56, oneTap:28.8 } },
-    'Lunettes du Dandy':      { slot:'casque',   tex:'glasses_dandy',  stats:{ discoverMax:1, oxygenMax:115 } },
-    'Rangers ferrées':         { slot:'pieds',    tex:'boots_rangers',     stats:{ knockRes:10.8, tenacity:16.25 } },   // recul 32,5 ÷ 3, ténacité 32,5 ÷ 2
+    'Lunettes de luxe':      { slot:'casque',   tex:'glasses_luxury',  stats:{ discoverMax:1, oxygenMax:115 } },
+    'Bottes de chantier':         { slot:'pieds',    tex:'boots_worksite',     stats:{ knockRes:10.8, tenacity:16.25 } },   // recul 32,5 ÷ 3, ténacité 32,5 ÷ 2
     'Ceinture golémique':  { slot:'ceinture', tex:'belt_golem',     stats:{ pods:54, knockRes:10.8 } },   // recul 32,5 ÷ 3
     'Gants de boucher':    { slot:'gants',    tex:'gloves_butcher', stats:{ damage:4.05 } },   // 8,1 ÷ 2
     /* 31/10/2026 (Geoffrey) : pas de stat fixe. rolled : `lines` stats tirées au craft par le serveur (la pièce garde leurs noms,
@@ -1369,7 +1369,7 @@ export const UPGRADE = {
                        'Masse du Roi Gobelin','Cape royale du Gobelin'] },   // stuff du Roi Gobelin : tier 3 (Geoffrey, 27/10)
     /* tier 4 (27/10/2026, Geoffrey) : 650 x (avant 600, Couronne seule) ; mithril et pièces spéciales du Treasure T4 */
     4: { x:650, items:['Couronne du Roi Gobelin', 'Casque en mithril', 'Plastron en mithril', 'Jambes en mithril', 'Bottes en mithril',
-                       'Lunettes du Dandy', 'Rangers ferrées', 'Ceinture golémique', 'Gants de boucher'] },
+                       'Lunettes de luxe', 'Bottes de chantier', 'Ceinture golémique', 'Gants de boucher'] },
     /* tier 4.5 (27/10/2026, Geoffrey) : 750 x, thorium, cobalt, Jambières titanesques */
     '4.5': { x:750, items:[...['thorium', 'cobalt'].flatMap(m => ['Casque', 'Plastron', 'Jambes', 'Bottes'].map(p => `${p} en ${m}`)),
                            'Jambières titanesques', 'Cape inclusive', 'Némésis du Golbute', 'Torse de Gollex', 'Jambières du Golbute', 'Âme du Golbute',   // Coffre du Golbute (30/10) : T4.5
@@ -1618,7 +1618,7 @@ export const WIKI = { secret: ['Couronne du Roi Gobelin', 'Masse du Roi Gobelin'
   /* Treasure T4 (27/10/2026, Geoffrey) : révélés dès que leur BP sort pour la première fois (le stuff en mithril reste
      visible) ; cette première découverte est annoncée sur Discord avec les stats de la pièce */
   ...['thorium', 'cobalt'].flatMap(m => ['Casque', 'Plastron', 'Jambes', 'Bottes'].map(p => `${p} en ${m}`)),
-  'Lunettes du Dandy', 'Rangers ferrées', 'Ceinture golémique', 'Gants de boucher', 'Jambières titanesques', 'Cape inclusive', 'Arc de l\'Admin'] };
+  'Lunettes de luxe', 'Bottes de chantier', 'Ceinture golémique', 'Gants de boucher', 'Jambières titanesques', 'Cape inclusive', 'Arc de l\'Admin'] };
 
 /* Instances (concept de Geoffrey, 27/10/2026 ; spec docs/superpowers/specs/2026-10-27-instances-design.md). Valeurs
    provisoires. Lobby, « Où miner » → Instances : list (les instances pas prêtes sont grisées). Un groupe de 1 à 3, une

@@ -40,7 +40,7 @@ export const SKIN = {
     'Couronne du Roi Gobelin': 'skins/goblin_crown',     // couronne dorée à trois pointes, gemmes rouges
     'Cape royale du Gobelin':  'skins/goblin_royal_cape_front', // devant : col laineux blanc, fermoir doré (le dos : back)
     /* Treasure T4 (29/10/2026) */
-    'Lunettes du Dandy':      'skins/dandy_glasses',      // monture dorée, verre sombre sur l'œil
+    'Lunettes de luxe':      'skins/luxury_glasses',      // monture dorée, verre sombre sur l'œil
   },
   /* calques dessinés DERRIÈRE le corps (même ordre de cases), ex. le dos d'une cape */
   back: {

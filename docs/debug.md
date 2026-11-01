@@ -6495,3 +6495,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   donc inexactes (quelques minutes de retard possibles). Heures calmes testées sur l'heure de la notification : celle de
   la mine de 8 h (7 h 55) ne sonne pas. Identifiant de mine lié à l'heure du créneau.
 - **Relecture indépendante** : ✅ corrigés : tout était reprogrammé à chaque synchro en session (`clockOffset` bouge de quelques ms, tolérance `syncTolerance`) ; horloge non recalée hors session (`setClock`, avec l'heure des fours).
+
+## 01/11/2026 — Noms définitifs des objets, pages légales publiées (Geoffrey)
+- **Noms** : Lunettes de luxe et Bottes de chantier (remplacent Lunettes du Dandy et Rangers ferrées, jamais en ligne ; les entrées ci-dessus gardent ces noms). Migration inchangée : depuis Lunettes Gucci et Doc Martins. Textures : `glasses_luxury`, `boots_worksite`, `skins/luxury_glasses`.
+- **Pages** : `legal/*.md` reçus, `npm run legal` ; `\[` lu comme `[` par `scripts/build-legal.js`. ⚠️ Passages entre crochets encore visibles, et écarts entre la politique et le code : voir docs/journal.md.

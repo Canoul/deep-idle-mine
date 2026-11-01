@@ -50,16 +50,16 @@ test('serveur : trouvé à l\'ouverture d\'un coffre (une fois), pas par un don 
 test('Treasure T4 (27/10) : le premier BP d\'une pièce secrète la révèle et l\'annonce sur Discord avec ses stats, une seule fois', async () => {
   const store = createMemoryGameStore(), said = [];
   const game = createGameService({ store, liveRunner: fakeLive(r => ({ id: r.id, shares: [] })), clock: () => 1e12, randomSeed: () => 7,
-                                   random: () => 0, announce: t => { said.push(t); } });   // 1er objet de chaque tirage : Lunettes du Dandy BP
-  assert.ok(WIKI.secret.includes('Lunettes du Dandy') && !WIKI.secret.includes('Casque en mithril'), 'le mithril reste visible');
+                                   random: () => 0, announce: t => { said.push(t); } });   // 1er objet de chaque tirage : Lunettes de luxe BP
+  assert.ok(WIKI.secret.includes('Lunettes de luxe') && !WIKI.secret.includes('Casque en mithril'), 'le mithril reste visible');
   const inv = createInventory(); addItem(inv, 'Treasure T4', 2);
   await store.putInventory(ME.id, JSON.parse(serialize(inv)));
   const r = await game.open(ME, { item: 'Treasure T4', opId: 'open-t4-1' });
-  assert.equal(r.loot['Lunettes du Dandy BP'], 1);
+  assert.equal(r.loot['Lunettes de luxe BP'], 1);
   await new Promise(res => setTimeout(res, 10));
-  assert.ok((await game.wiki()).discovered.includes('Lunettes du Dandy'), 'révélée par son BP');
+  assert.ok((await game.wiki()).discovered.includes('Lunettes de luxe'), 'révélée par son BP');
   assert.equal(said.length, 1);
-  assert.match(said[0], /Zoe a découvert le premier plan : Lunettes du Dandy BP ! Lunettes du Dandy : Découverte \+1/);
+  assert.match(said[0], /Zoe a découvert le premier plan : Lunettes de luxe BP ! Lunettes de luxe : Découverte \+1/);
   await game.open(ME, { item: 'Treasure T4', opId: 'open-t4-2' });
   await new Promise(res => setTimeout(res, 10));
   assert.equal(said.length, 1, 'le deuxième BP n\'est pas annoncé');

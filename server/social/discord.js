@@ -32,7 +32,7 @@ export function identifyMessage(player, piece){
   return line(`${name(player)} a identifié ${piece.item} R${piece.q}`);
 }
 
-/* premier BP trouvé d'une pièce secrète : « 🚨 Zoe a découvert le plan des Rangers ferrées ! Résistance au recul +10,8 % ·
+/* premier BP trouvé d'une pièce secrète : « 🚨 Zoe a découvert le plan des Bottes de chantier ! Résistance au recul +10,8 % ·
    Ténacité +16,25 % 🚨 » (27/10/2026) */
 export function blueprintMessage(player, bp, piece){
   if(!ITEMS[piece]) return null;

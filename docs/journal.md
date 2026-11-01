@@ -17,9 +17,9 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `geoffrey/capacitor-android` (pas en ligne ; contient modération, suppression de compte et stores-legal)
 
 ## 01/11/2026 — Geoffrey — Stores : noms de marques retirés, pages légales préparées
-- **Pour le joueur** : les Lunettes Gucci deviennent les **Lunettes du Dandy**, les Doc Martins les **Rangers ferrées**, plans et images compris. Personne ne perd rien : qualité, amélioration et rune restent. Des liens vers Confidentialité, Mentions légales, Conditions et Suppression du compte apparaissent sur l'écran d'accueil, à la création de compte et dans Mon compte.
+- **Pour le joueur** : les Lunettes Gucci deviennent les **Lunettes de luxe**, les Doc Martins les **Bottes de chantier**, plans et images compris. Personne ne perd rien : qualité, amélioration et rune restent. Des liens vers Confidentialité, Mentions légales, Conditions et Suppression du compte apparaissent sur l'écran d'accueil, à la création de compte et dans Mon compte.
 - **Décisions** : les noms sont écrits sans crochets, comme tous les objets du jeu. Le renommage se fait tout seul au démarrage du serveur. Signalements, journal et messages du chat gardent l'ancien nom : ce sont des preuves ou les mots des joueurs.
-- **À suivre** : **les trois textes légaux manquent** (rien n'a été joint) : les déposer dans `legal/`, lancer `npm run legal`. Tant que ce n'est pas fait, les liens Confidentialité, Mentions légales et Conditions mènent à une page vide. Avant la mise en ligne, lancer `scripts/migrate-item-names.js` sur le VPS. Autres noms à examiner : Braum, Ulti shen (League of Legends).
+- **À suivre** : les trois textes sont publiés sur la branche (`legal/`, `npm run legal` après chaque retouche) ; compléter les passages entre crochets et choisir l'option des mentions légales. Avant la mise en ligne, lancer `scripts/migrate-item-names.js` sur le VPS. Autres noms à examiner : Braum, Ulti shen (League of Legends).
 - **État** : 🧪 sur la branche `geoffrey/stores-legal` (pas en ligne ; contient la modération et la suppression de compte)
 
 ## 01/11/2026 — Geoffrey — Supprimer son compte (Google Play, App Store)

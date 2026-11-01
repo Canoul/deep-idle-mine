@@ -30,7 +30,8 @@ export function externalUrl(href, site, here){
 }
 
 export function startNative({ doc, win }){
-  const { App, AppLauncher } = win.Capacitor.Plugins;
+  const { App, AppLauncher } = win.Capacitor.Plugins ?? {};
+  if(!App || !AppLauncher) return { attach(){} };      // ancienne APK sans ces plugins
   let layer = null, off = null;
   const visible = id => { const el = doc.getElementById(id); return el && !el.hidden ? el : null; };
 

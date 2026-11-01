@@ -1,5 +1,7 @@
 /* Pages légales (01/11/2026) : texte publié tel quel, crochets visibles, aucun HTML du fichier interprété, liens partout. */
 import { test } from 'node:test';
+import fs from 'node:fs';
+import path from 'node:path';
 import assert from 'node:assert/strict';
 import { mdToHtml, placeholders, pageHtml, LEGAL_PAGES } from '../scripts/build-legal.js';
 import { resolvePublic } from '../server/http/static.js';
@@ -43,4 +45,18 @@ test('liens : les quatre pages, ouverts à part', () => {
   for(const u of [RULES.privacy, RULES.notice, RULES.terms, RULES.deletion]) assert.ok(h.includes(`href="${u}"`), u);
   assert.match(h, /target="_blank"/); assert.match(h, /rel="noopener"/);
   assert.equal(typeof createAccountUI, 'function');
+});
+
+test('crochets écrits \\[ \\] : affichés [ ] et listés', () => {
+  const md = 'Mise à jour : \\[date de mise en ligne\\]';
+  assert.match(mdToHtml(md), /\[date de mise en ligne\]/); assert.doesNotMatch(mdToHtml(md), /\\\\/);
+  assert.deepEqual(placeholders(md), ['[date de mise en ligne]']);
+});
+
+test('les trois vraies pages sont publiées, à partir du texte reçu', () => {
+  for(const [page, title] of Object.entries(LEGAL_PAGES)){
+    const html = fs.readFileSync(path.join(ROOT, page + '.html'), 'utf8');
+    assert.ok(html.includes(title), page); assert.doesNotMatch(html, /<script/);
+    assert.doesNotMatch(html, /\\\[/, 'pas de barre oblique visible');
+  }
 });

@@ -3,7 +3,7 @@
    au démarrage, AVANT tout service (server/main.js). Sans rien à faire, elle n'écrit rien : on peut la laisser en place.
    Une chaîne contient un ancien nom : il est remplacé (les plans « … BP » suivent). Le reste de la pièce ne bouge pas.
    Jamais touchés : signalements et journal (preuves), chat global (les mots des joueurs, effacés en 18 h). */
-export const ITEM_RENAMES = { 'Lunettes Gucci': 'Lunettes du Dandy', 'Doc Martins': 'Rangers ferrées' };
+export const ITEM_RENAMES = { 'Lunettes Gucci': 'Lunettes de luxe', 'Doc Martins': 'Bottes de chantier' };
 const SKIP = ['report', 'mod_log', 'chat_global'];
 
 const OLD = Object.keys(ITEM_RENAMES);

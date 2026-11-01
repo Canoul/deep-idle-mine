@@ -7,7 +7,7 @@ import { sanitizePiece } from '../src/meta/piece.js';
 import { createMemoryGameStore, GAME_NS } from '../server/game/store.js';
 import { migrateItemNames, ITEM_RENAMES, renameText, countOldNames } from '../server/game/rename-items.js';
 
-const OLD_G = 'Lunettes Gucci', OLD_D = 'Doc Martins', NEW_G = 'Lunettes du Dandy', NEW_D = 'Rangers ferrées';
+const OLD_G = 'Lunettes Gucci', OLD_D = 'Doc Martins', NEW_G = 'Lunettes de luxe', NEW_D = 'Bottes de chantier';
 
 test('table : les nouveaux noms existent dans le jeu, les anciens n\'y sont plus', () => {
   assert.deepEqual(ITEM_RENAMES, { [OLD_G]: NEW_G, [OLD_D]: NEW_D });
