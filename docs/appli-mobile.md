@@ -55,6 +55,8 @@ les stores. Sur le site, rien ne change : la nouvelle interface sera dans l'appl
   `www/offline.html`). Dépendances seulement dans `mobile/package.json` ; le serveur ne sert jamais `mobile/`.
 - Après un changement de `capacitor.config.json` ou des plugins : `cd mobile && npm install && npm run sync`.
 - Icône : `npm run app:icon` (Python + Pillow, `scripts/gen_app_icon.py`).
+- Visuels des fiches des stores (icônes 512 et 1024, bannière Google) : `npm run store:art`, dans `mobile/store/` ;
+  ce qu'il reste à faire (captures d'écran) : `docs/fiches-stores.md`.
 - Couche appli dans le jeu : `src/app/` (détection : pont natif ou `?app` dans l'adresse ; sur le site, rien).
   Aperçu dans un navigateur : `http://localhost:8000/?app`.
 - Pas besoin d'Android Studio : GitHub fabrique l'APK (`.github/workflows/android-apk.yml`, Java 21, Node 22).

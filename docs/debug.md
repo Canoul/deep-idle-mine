@@ -6445,3 +6445,22 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Quoi** : champ `message { text, by, at }` de la guilde (`sanitizeGuilds` le garde), `setMessage` (`server/guild/service.js`, grade vérifié par `recruiter`), route `POST /api/guild/message`, `messageHTML` (`src/ui/guild.js`), option `multiline` de `askText`. Saisie dans une fenêtre et pas dans la page : la liste des membres est réécrite à chaque relecture et effacerait le texte en cours.
 - **Tests** : `tests/guild-service.test.js`, `tests/guild-ui.test.js`, `tests/dialog.test.js` ; ⚠️ pas vu dans un navigateur.
 - **Point fragile** : mot interdit masqué sans avertissement de modération (`moderate` seul, pas `moderation.warn`).
+
+## 01/11/2026 — Visuels des fiches des stores (Jules) — branche `jules/visuels-stores`
+- **Quoi** : `scripts/gen_store_art.py` (`npm run store:art`, Python + Pillow) écrit `mobile/store/` :
+  `icon-google-512.png` (RGBA opaque), `icon-apple-1024.png` (RGB, sans alpha), `banner-google-1024x500.png` (RGB).
+  Les icônes réutilisent `centered()` de `scripts/gen_app_icon.py` (même pioche que l'icône de l'appli). La bannière est
+  composée à l'échelle de l'art (256 × 125, cases de 16) puis agrandie ×4 au plus proche voisin : mine écrite en texte
+  (`MINE`), rendu repris de `src/render/canvas.js` (assombrissement 0,72 × (1 − lumière) par case, cases jamais vues en
+  `#060608`, halo des torches en 4 paliers au lieu du dégradé), mineurs de `src/skins.js` (pioche 13 × 13 tournée autour
+  du pivot (11, 10) comme `miner-sprite.js`), ciel en bandes de `TOWN.sky`, titre en glyphes pixel 7 de haut (`GLYPHS`).
+  Aucun hasard : relancer le script redonne les mêmes fichiers.
+- **Workflow** : `android-apk.yml` ignore `mobile/store/**` (ajouté en dernier dans `paths`, après `mobile/**`).
+  ⚠️ `ios-ipa.yml` (branche `jules/appli-ios`) doit l'ignorer aussi : le test ci-dessous échoue sinon après la fusion.
+- **Tests** ✅ tests/store-art.test.js (tailles, type de couleur 2 = RVB sans alpha et pas de bloc tRNS pour Apple et la
+  bannière, exclusion dans chaque workflow qui suit `mobile/**`) ; tests/mobile-icon.test.js, tests/mobile-config.test.js
+  inchangés et verts.
+- **Reste à faire** : captures d'écran (plan dans `docs/fiches-stores.md`) quand l'interface tactile existera ; trancher
+  iPhone seul ou iPhone + iPad (`TARGETED_DEVICE_FAMILY = "1,2"` dans le projet iOS : captures iPad 13" exigées).
+- **Point fragile** : si l'icône de l'appli change (`gen_app_icon.py`), relancer aussi `npm run store:art` : les stores
+  veulent la même icône sur la fiche et sur le téléphone.

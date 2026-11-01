@@ -23,7 +23,8 @@
     "stat-values": "node scripts/stat-values.js",
     "textures": "python scripts/gen_textures.py",
     "textures:ui": "python scripts/gen_ui.py && python scripts/build_pxicons.py",
-    "app:icon": "python scripts/gen_app_icon.py"
+    "app:icon": "python scripts/gen_app_icon.py",
+    "store:art": "python scripts/gen_store_art.py"
   },
   "engines": {
     "node": ">=20"

@@ -24,6 +24,16 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 01/11/2026 — Jules — Fiches des stores : icônes et bannière
+- **Pour le joueur** : rien pour l'instant. Les images des futures fiches Google Play et App Store sont prêtes, dans
+  `mobile/store/` : l'icône (la pioche de l'appli) en 512 × 512 pour Google et en 1024 × 1024 sans transparence pour
+  Apple, et la bannière Google (1024 × 500) : le titre en lettres pixel et une mine en coupe avec une session à 3.
+- **Décisions** : les captures d'écran attendent la version tactile ; scènes choisies : une session à 3, le Bloc géant,
+  une tour, le Carreau. Ordre, légendes et tailles proposés dans `docs/fiches-stores.md`.
+- **À suivre** : valider la bannière et les légendes ; une 5e capture « Stuff / Craft » pour montrer la progression ?
+  L'appli iPhone est déclarée aussi pour iPad : Apple demandera alors des captures iPad (à trancher : iPhone seulement ?).
+- **État** : 🧪 sur la branche `jules/visuels-stores` (pas en ligne)
+
 ## 01/11/2026 — Geoffrey — Prison : des runs ne donnaient aucune XP
 - **Pour le joueur** : depuis le 31/10, environ 4 runs de prison sur 10 ne rapportaient aucune XP à cause d'un arrondi. Chaque run donne maintenant son XP. L'XP perdue avant la correction n'est pas rendue.
 - **État** : ✅ en ligne le 01/11

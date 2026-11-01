@@ -10,6 +10,7 @@ on:
     paths:
       - 'mobile/**'
       - '.github/workflows/android-apk.yml'
+      - '!mobile/store/**'
 
 jobs:
   apk:

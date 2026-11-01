@@ -140,7 +140,7 @@ Tout ce qui existe aujourd'hui (systèmes, hébergement, équipe, chantiers en a
   (`src/ui/pxicons.js`) (Python).
 - **Appli mobile** (`mobile/`, guide `docs/appli-mobile.md`) : l'APK Android de test est fabriquée par GitHub
   (onglet Actions) à chaque changement de `mobile/`. `cd mobile && npm install && npm run sync` après un changement de
-  sa config ; `npm run app:icon` : régénère l'icône (Python). Aperçu de la couche appli dans un navigateur : `?app`.
+  sa config ; `npm run app:icon` : régénère l'icône (Python) ; `npm run store:art` : icônes et bannière des fiches des stores (`mobile/store/`, `docs/fiches-stores.md`). Aperçu de la couche appli dans un navigateur : `?app`.
   **Le site ne change pas** : la couche appli (`src/app/`) ne fait rien sans l'appli ou `?app`.
 
 ## 7. Structure
