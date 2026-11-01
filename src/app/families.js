@@ -24,7 +24,15 @@ export function targetTab(family, remembered, ctx){
   return tabs.includes(remembered) ? remembered : tabs[0];
 }
 
-export const tabLabel = id => [...TABS, CHAT_TAB].find(t => t.id === id)?.label ?? id;
+/* changement d'onglet automatique : l'onglet Session vide donne l'Historique, et une session qui apparaît pendant
+   qu'on est sur l'Historique (page rechargée, session retrouvée) ramène à la mine. shown : Session a quelque chose à montrer */
+export function sessionRedirect({ tab, shown, wasShown }){
+  if(tab === 'session' && !shown) return 'historique';
+  if(tab === 'historique' && shown && !wasShown) return 'session';
+  return null;
+}
+
+export const tabLabel =id => [...TABS, CHAT_TAB].find(t => t.id === id)?.label ?? id;
 
 /* pastilles d'onglets (Set) → familles à marquer (Set) */
 export const familyMarks = marks => new Set([...marks].map(familyOf).filter(Boolean));
