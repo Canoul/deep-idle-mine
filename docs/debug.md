@@ -6329,6 +6329,23 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Points fragiles** : le site a maintenant un onglet Chat réservé au téléphone (`CHAT_TAB`, 31/10) et le Carreau en fond :
   à reprendre dans la navigation de l'appli (étape 2). `gh` absent de ce PC : suivre les fabrications par l'API GitHub.
 
+## 01/11/2026 — Geoffrey — Appli mobile, étape 2a : navigation en 5 familles (en ligne le 01/11)
+- **Quoi** : `src/app/families.js` (logique pure), `bar.js` (HTML), `main.js` (`startApp`, chargé par import dynamique),
+  `app.css` ; accroches `phoneMode` et `nav.onMark` dans `src/ui/nav.js`, `appLayer` dans `src/main.js`. `boot.js` : CSS et
+  `viewport-fit=cover` par le code, badge seulement si le pont est bloqué.
+- **Tests** : ✅ `app-families`, `app-bar`, `app-mode`, `nav`, `chat-ui`. ✅ Chrome headless : site à 393 et 1440 px, seuls
+  `boot.js` et `mode.js` chargés, barre d'origine ; `?app` à 393 et 360 px, 14 onglets sans débordement horizontal, `#craft`
+  ouvre Sac / Craft ; 1024 × 768, Chat s'ouvre ; session lancée puis page rechargée : retour sur `#session`.
+- **À vérifier** : ⚠️ vrai Android ; ⚠️ bilan de fin de session jamais joué en navigateur (seulement `sessionRedirect` et
+  `#end` dans `shown()`) ; ⚠️ marges d'encoche (`env(safe-area-inset-*)`) à voir sur téléphone.
+- **Points fragiles** : `sync()` tourne toutes les secondes (aucun événement commun aux modes de jeu). Onglet Chat :
+  `POST /api/town` répond 400, probablement parce que `chat` n'est pas un bâtiment ; déjà vrai sur le site côté téléphone,
+  sans effet. Guide « Premiers pas » : il couvre l'écran sur téléphone.
+- **Relecture indépendante** : ✅ 5 points de risque validés, 3 corrections : `dropApp` si la couche ne se charge pas (la barre du
+  site revient), Carreau vraiment coupé dans l'appli (ni dessin ni `POST /api/town`, option de Mon compte masquée), colonnes de
+  session mesurées contre `#appBar` (`dockEl`). Restent : orbes oxygène / pods cachés avec `#nav` (accepté par Geoffrey) ; JSON corrompu dans `deepIdleMine.appFamilyTab` ; `startApp` sans test de câblage ; bouton Session vers l'Historique
+  si c'était le dernier sous-onglet, même en pleine partie lancée ailleurs.
+
 ## 01/11/2026 — Contour doré du Bloc géant et de He's coming dans le menu du Lobby (Geoffrey)
 - **Quoi** : `setupGiant` (src/ui/giant.js) appelle `h.onReady` quand `entryState(...).can` change ; main.js le passe au lobby (`giantReady`, `hcReady`), `activityMenu` pose `ready` (jamais sur un bouton grisé), classe `.actBtn.ready` (style.css).
 - **Rafraîchissement** : `refresh` tourne maintenant aussi carte fermée, toutes les `GIANT.readyPoll` ms (60 s, valeur reprise par HES_COMING), et à l'heure de `nextEntry`. Soit 2 GET de plus par minute et par joueur connecté, classement compris. Sans compte : pas d'appel, pas d'or. `startInstant` appelle donc `refresh` aussi à la déconnexion.
