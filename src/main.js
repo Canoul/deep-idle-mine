@@ -309,8 +309,8 @@ nav = setupNav($('nav'), $('views'), id => {
   appLayer?.onTab(id);
 });
 /* appli mobile : barre des familles ; shown : l'onglet Session a-t-il quelque chose à montrer (partie, prison, bilan) ? */
-if(appBoot.app) import('./app/main.js').then(m => { appLayer = m.startApp({ doc:document, win:window, nav,
-  shown: () => !!rec || inRoom() || prisonShown() || !$('end').hidden }); }).catch(e => { console.warn(e); dropApp(document); });
+if(appBoot.app) import('./app/main.js').then(async m => { appLayer = m.startApp({ doc:document, win:window, nav,
+  shown: () => !!rec || inRoom() || prisonShown() || !$('end').hidden }); (await appBoot.native)?.attach(appLayer); }).catch(e => { console.warn(e); dropApp(document); });
 
 /* orbes de la barre d'action : temps de session et XP ; pendant une session, oxygène et pods du mineur suivi */
 const orbs = setupOrbs($('orbL'), $('orbR'));
@@ -905,7 +905,9 @@ async function refresh(waited){
 }
 
 /* ---------- démarrage ---------- */
+await appBoot.native;
 Object.assign(acct, await bootAccount(accountUI));
+window.dimBootOffline = acct.offline;      // appli : parti sans serveur, src/app/native.js recharge quand il revient
 renderNavAccount($('navAccount'), acct);
 lobby.update({ account:acct.account, offline:acct.offline });   // tout de suite : une page ouverte pendant une session ne passe par showNoSession qu'en quittant le bilan (27/10)
 $('navAccount').onclick = () => accountUI.openProfile();

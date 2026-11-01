@@ -6,7 +6,8 @@ import { renderPrisonDashboard } from '../meta/prison-dashboard.js';
 const isTeam = a => !!a && !a.guest && ADMIN_VIEW.names.some(n => n.toLowerCase() === String(a.name ?? a.displayName ?? '').toLowerCase());
 import { ACCOUNT, RULES, ACCOUNT_DELETE_WORD } from '../config.js';
 import { checkName, checkPassword, parseRecoveryCode } from '../shared/account.js';
-import { accountApi, ApiError, OfflineError } from '../net/api.js';
+import { accountApi, request, ApiError, OfflineError } from '../net/api.js';
+import { inLocalApp } from '../net/base.js';
 import { ask, askFields, tell } from './dialog.js';
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
@@ -121,7 +122,7 @@ const VIEWS = {
          il est perdu. Sécurise-le avec un pseudo et un mot de passe pour le garder (ton ID ne change pas).</p>
       <div class="acts"><button class="main" data-go="claim">Sécuriser mon compte</button></div>` : `
       <div class="acts"><button data-go="password">Changer de mot de passe</button></div>`}
-    ${isTeam(account) ? `<div class="acts"><button data-act="prisonDash" title="Rendement de la prison de chaque joueur contre ses 10 dernières mines (compte de l'équipe)">📊 Rendement de la prison</button></div>` : ''}
+    ${isTeam(account) && !inLocalApp ? `<div class="acts"><button data-act="prisonDash" title="Rendement de la prison de chaque joueur contre ses 10 dernières mines (compte de l'équipe)">📊 Rendement de la prison</button></div>` : ''}
     ${optionsHtml(options)}
     <div class="acts end"><button data-act="logout">Se déconnecter</button><button data-act="close">Fermer</button></div>
     ${profileDanger()}
@@ -231,9 +232,7 @@ export function createAccountUI(root, state, handlers = {}){
     if(name === 'prisonDash'){
       const w = window.open('', '_blank');
       try {
-        const r = await fetch('/api/game/admin/prison', { credentials: 'same-origin' });
-        if(!r.ok) throw new Error('refusé (' + r.status + ')');
-        const html = renderPrisonDashboard((await r.json()).rows || []);
+        const html = renderPrisonDashboard((await request('GET', '/api/game/admin/prison')).rows || []);
         if(w){ w.document.open(); w.document.write(html); w.document.close(); }
       } catch(e){ w?.close(); tell('Tableau de bord indisponible : ' + e.message); }
       return;

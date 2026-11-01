@@ -1,5 +1,6 @@
-/* Appels au serveur du jeu (/api/…). La connexion voyage dans un cookie que le JavaScript ne voit pas :
-   ici on n'a jamais de jeton à manipuler ni à stocker. */
+/* Appels au serveur du jeu (/api/…). Sur le site, la connexion voyage dans un cookie que le JavaScript ne voit pas. Dans l'appli
+   mobile, où ce cookie ne passe pas, un jeton dans un en-tête (src/net/base.js). */
+import { API_BASE, inLocalApp, authOptions, setToken } from './base.js';
 
 /* Le serveur répond par une erreur lisible (pseudo pris, mauvais mot de passe…). */
 export class ApiError extends Error {
@@ -8,19 +9,28 @@ export class ApiError extends Error {
 /* Pas de serveur de jeu joignable (hors ligne, ou page servie par un simple serveur de fichiers). */
 export class OfflineError extends Error {}
 
+/* appli : l'écran « Pas de connexion » (src/app/native.js) */
+function offline(text){
+  if(inLocalApp && typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('dim:offline'));
+  return new OfflineError(text);
+}
+
 export async function request(method, path, body){
   let res;
+  const auth = await authOptions();
   try {
-    res = await fetch(path, {
-      method, credentials: 'same-origin',
-      headers: body !== undefined ? { 'Content-Type': 'application/json' } : {},
+    res = await fetch(API_BASE + path, {
+      method, credentials: auth.credentials,
+      headers: { ...auth.headers, ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}) },
       body: body !== undefined ? JSON.stringify(body) : undefined,
     });
-  } catch { throw new OfflineError('Serveur injoignable.'); }
+  } catch { throw offline('Serveur injoignable.'); }
+  if(inLocalApp && (path === '/api/account/logout' || path === '/api/account/delete') && res.ok) await setToken(null);   // connexion finie
   if(res.status === 204) return null;
   const isJson = (res.headers.get('content-type') ?? '').includes('application/json');
-  if(!isJson) throw new OfflineError('Pas de serveur de jeu à cette adresse.');
+  if(!isJson) throw offline('Pas de serveur de jeu à cette adresse.');
   const data = await res.json();
+  if(inLocalApp && typeof data?.token === 'string') await setToken(data.token);
   if(!res.ok){
     const err = new ApiError(res.status, data?.error?.code ?? 'error', data?.error?.message ?? 'Erreur inconnue.',
                              +res.headers.get('retry-after') || null);

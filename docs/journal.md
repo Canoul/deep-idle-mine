@@ -9,6 +9,13 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 01/11/2026 — Geoffrey — Appli Android prête pour Google Play
+- **Pour le joueur** : rien sur le site. L'appli « Deep Mine Idle MMO » contient maintenant le jeu : elle s'ouvre même avec un réseau lent, gère l'encoche, le bouton retour Android (fenêtre, onglet précédent, confirmation pour quitter), affiche « Pas de connexion, nouvelle tentative… », et ouvre Discord, le wiki et les pages légales dans le navigateur du téléphone.
+- **Décisions** : fichiers du jeu dans l'appli (ancien : l'appli ouvrait le site à distance). Connexion par jeton dans un en-tête pour l'appli seulement, le site garde son cookie. Écran vertical, à confirmer. Icône provisoire : la pioche d'acier.
+- **Attention** : le code est figé dans l'appli. Une mise en ligne ne change plus l'appli des joueurs, il faut une mise à jour sur Google Play ; une ancienne appli peut casser si le serveur change trop.
+- **À suivre** : mettre la branche en ligne d'abord (le serveur doit connaître le jeton), créer la clé d'envoi et les 4 secrets GitHub, tester l'APK sur un vrai téléphone.
+- **État** : 🧪 sur la branche `geoffrey/capacitor-android` (pas en ligne ; contient modération, suppression de compte et stores-legal)
+
 ## 01/11/2026 — Geoffrey — Stores : noms de marques retirés, pages légales préparées
 - **Pour le joueur** : les Lunettes Gucci deviennent les **Lunettes du Dandy**, les Doc Martins les **Rangers ferrées**, plans et images compris. Personne ne perd rien : qualité, amélioration et rune restent. Des liens vers Confidentialité, Mentions légales, Conditions et Suppression du compte apparaissent sur l'écran d'accueil, à la création de compte et dans Mon compte.
 - **Décisions** : les noms sont écrits sans crochets, comme tous les objets du jeu. Le renommage se fait tout seul au démarrage du serveur. Signalements, journal et messages du chat gardent l'ancien nom : ce sont des preuves ou les mots des joueurs.

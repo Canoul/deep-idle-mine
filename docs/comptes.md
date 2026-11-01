@@ -46,6 +46,8 @@ server/accounts/
 
 ## API
 
+Appli mobile : même API, depuis une origine de `SERVER.appOrigins`. Connexion, création et changement de mot de passe répondent en plus `token`, sans cookie ; il s'envoie ensuite dans `Authorization: Bearer`.
+
 Toutes les réponses sont en JSON ; une erreur = `{ error: { code, message } }` avec un message prêt à afficher.
 
 | Route | Corps | Réponse |

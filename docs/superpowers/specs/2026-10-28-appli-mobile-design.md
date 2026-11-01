@@ -8,6 +8,9 @@ confirmée, **Android seul pour l'instant**, iOS plus tard (même jeu ; il faut 
 sur `main` : Guilde et onglet Chat rangés dans les familles, plus de chat dans la session. « Jules » dans les étapes
 ci-dessous = la personne qui porte le chantier.*
 
+> **Remplacé en partie le 01/11/2026 (Geoffrey)** : les fichiers du jeu sont maintenant **dans l'appli** (`docs/app-android.md`), plus ouverts depuis le site.
+> L'objectif « une mise en ligne arrive dans l'appli sans repasser par les stores » ne tient donc plus. Le reste de ce document reste valable.
+
 ## En une phrase
 
 Le jeu actuel, sans réécriture, emballé dans une appli native (Capacitor) pour iOS et Android, avec une interface

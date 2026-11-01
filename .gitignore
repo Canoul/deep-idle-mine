@@ -11,3 +11,12 @@ __pycache__/
 
 # maquettes et brouillons des sessions Claude (outil de maquettes)
 .superpowers/
+
+# appli mobile : copie générée du jeu, et clés de signature (dépôt public : JAMAIS dans git)
+mobile/www/
+*.jks
+*.keystore
+*.p12
+*.pem
+keystore.properties
+upload-key*.txt

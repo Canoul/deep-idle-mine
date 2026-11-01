@@ -46,6 +46,9 @@ export function createApp({ store, root, config = SERVER, service, game, party, 
                 `· relais de confiance ${config.trustProxy}`);
   }
 
+  /* origine de l'appli ? Jamais l'administration */
+  const appOrigin = (req, pathname) => !pathname.startsWith('/api/admin') && (config.appOrigins ?? []).includes(req.headers.origin);
+
   async function handleApi(req, res, pathname){
     const route = routes[`${req.method} ${pathname}`];
     if(!route){
@@ -54,16 +57,23 @@ export function createApp({ store, root, config = SERVER, service, game, party, 
                     : sendError(res, 404, 'not_found', 'Route inconnue.');
     }
     const cookies = [];
-    const token = parseCookies(req.headers.cookie)[config.cookie.name];
-    const auth = token ? await accounts.authenticate(token) : null;
-    if(token && !auth) cookies.push(sessionCookie(config.cookie, '', 0));                      // jeton périmé : on l'efface
-    if(auth?.renewed) cookies.push(sessionCookie(config.cookie, token, auth.renewed));          // connexion prolongée
+    const cookieToken = parseCookies(req.headers.cookie)[config.cookie.name];
+    /* appli mobile (01/11/2026) : jeton dans Authorization (sauf /api/admin, où cet en-tête porte la clé d'administration). Un mauvais
+       en-tête ne connecte personne et n'efface aucun cookie */
+    const header = pathname.startsWith('/api/admin') ? null : /^Bearer (\S+)$/.exec(String(req.headers.authorization ?? ''))?.[1];
+    const byHeader = header ? await accounts.authenticate(header) : null;
+    const token = byHeader ? header : cookieToken;
+    const auth = byHeader ?? (cookieToken ? await accounts.authenticate(cookieToken) : null);
+    if(!byHeader && cookieToken && !auth) cookies.push(sessionCookie(config.cookie, '', 0));    // jeton périmé : on l'efface
+    if(!byHeader && auth?.renewed) cookies.push(sessionCookie(config.cookie, token, auth.renewed));   // connexion prolongée
+    const fromApp = appOrigin(req, pathname);
+    let appToken = null;                                                                        // nouvelle connexion de l'appli
 
     const ip = clientIp(req, config.trustProxy);
     logProxyCheck(req, ip);
     const ctx = {
       req, ip, me: auth?.account ?? null, body: {},
-      login: r => { cookies.length = 0; cookies.push(sessionCookie(config.cookie, r.token, r.maxAge)); },
+      login: r => { if(fromApp){ appToken = r.token; return; } cookies.length = 0; cookies.push(sessionCookie(config.cookie, r.token, r.maxAge)); },
       logout: async () => { await accounts.logout(token); cookies.length = 0; cookies.push(sessionCookie(config.cookie, '', 0)); },
     };
     try {
@@ -82,7 +92,8 @@ export function createApp({ store, root, config = SERVER, service, game, party, 
         throw new HttpError(403, 'must_rename', 'Change ton pseudo pour continuer.');
       if(req.method === 'POST') ctx.body = await readJson(req, config.maxBodyBytes);
       const out = await route(ctx);
-      const [status, data] = Array.isArray(out) ? out : [200, out];
+      const [status, body] = Array.isArray(out) ? out : [200, out];
+      const data = appToken ? { ...body, token: appToken } : body;
       const headers = cookies.length ? { 'Set-Cookie': cookies } : {};
       if(data === undefined){ res.writeHead(status, { 'Cache-Control':'no-store', ...headers }); return res.end(); }
       sendJson(res, status, data, headers);
@@ -97,7 +108,19 @@ export function createApp({ store, root, config = SERVER, service, game, party, 
     if(config.cookie?.secure && config.hsts) res.setHeader('Strict-Transport-Security', config.hsts);
     const pathname = req.url.split('?')[0];
     try {
-      if(pathname === '/api' || pathname.startsWith('/api/')) return await handleApi(req, res, pathname);
+      if(pathname === '/api' || pathname.startsWith('/api/')){
+        /* CORS de l'appli : cette origine exacte, sans cookies (Allow-Credentials n'est jamais envoyé) */
+        res.setHeader('Vary', 'Origin');
+        if(appOrigin(req, pathname)){
+          res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
+          res.setHeader('Access-Control-Expose-Headers', 'Retry-After');
+          if(req.method === 'OPTIONS'){
+            res.writeHead(204, { 'Access-Control-Allow-Methods': 'GET, POST', 'Access-Control-Allow-Headers': 'Authorization, Content-Type', 'Access-Control-Max-Age': '600' });
+            return res.end();
+          }
+        }
+        return await handleApi(req, res, pathname);
+      }
       return await serveStatic(req, res, root, config.publicPaths, config.pages);
     } catch(e){
       if(res.headersSent) return res.end();

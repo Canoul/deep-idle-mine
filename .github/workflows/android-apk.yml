@@ -1,19 +1,30 @@
-# Appli mobile : fabrique l'APK Android de TEST (signée avec une clé de debug, propre à chaque fabrication).
-# Se lance tout seul quand mobile/ change (ou à la main : onglet Actions → « Run workflow »).
-# L'APK se télécharge dans l'onglet Actions → la fabrication → « Artifacts » (guide : docs/appli-mobile.md).
-# Le serveur du jeu n'utilise jamais ce fichier ni le dossier mobile/.
-name: Appli Android (APK de test)
+# Appli Android. Sans Android Studio : tout se compile ici (guide : docs/app-android.md).
+# - À la main (Actions → « Appli Android » → Run workflow) : choisir apk (test), aab (Google Play, signé) ou les deux.
+# - Tout seul quand mobile/ change : APK de test seulement, jamais de clé.
+# Le fichier s'appelle encore android-apk.yml : c'est le nom que GitHub connaît sur main. Le serveur du jeu ne l'utilise jamais.
+name: Appli Android
 
 on:
   workflow_dispatch:
+    inputs:
+      build:
+        description: Que fabriquer ?
+        type: choice
+        options: [apk, aab, les deux]
+        default: apk
   push:
     paths:
       - 'mobile/**'
       - '.github/workflows/android-apk.yml'
 
+permissions:
+  contents: read
+
 jobs:
-  apk:
+  build:
     runs-on: ubuntu-latest
+    env:
+      WANT: ${{ inputs.build || 'apk' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -28,20 +39,59 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - name: Capacitor (dépendances, réglages copiés dans le projet Android)
+      - uses: android-actions/setup-android@v3
+
+      - name: Fichiers du jeu copiés dans l'appli, projet Android à jour
         working-directory: mobile
         run: |
           npm ci
-          npx cap sync android
+          npm run sync
 
-      - name: Fabrication de l'APK
+      - name: APK de test (clé de debug, pour un téléphone)
+        if: env.WANT != 'aab'
         working-directory: mobile/android
         run: |
           chmod +x gradlew
           ./gradlew assembleDebug
 
+      - name: Permissions et version de l'APK (visibles dans le résumé de la fabrication)
+        if: env.WANT != 'aab'
+        run: |
+          AAPT=$(ls "$ANDROID_HOME"/build-tools/*/aapt | tail -1)
+          APK=mobile/android/app/build/outputs/apk/debug/app-debug.apk
+          echo "::notice title=Permissions::$("$AAPT" dump permissions "$APK" | grep -o "name='[^']*'" | tr '\n' ' ')"
+          echo "::notice title=Version::$("$AAPT" dump badging "$APK" | head -1)"
+          echo "::notice title=Nom::$("$AAPT" dump badging "$APK" | grep "^application-label:")"
+
       - uses: actions/upload-artifact@v4
+        if: env.WANT != 'aab'
         with:
-          name: deep-mine-idle-apk
+          name: deep-mine-idle-apk-test
           path: mobile/android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30
+
+      - name: AAB de production, signé avec la clé d'envoi
+        if: env.WANT != 'apk'
+        working-directory: mobile/android
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ] || [ -z "$ANDROID_KEYSTORE_PASSWORD" ] || [ -z "$ANDROID_KEY_ALIAS" ] || [ -z "$ANDROID_KEY_PASSWORD" ]; then
+            echo "::error::Secrets manquants : voir docs/app-android.md"; exit 1
+          fi
+          export ANDROID_KEYSTORE_FILE="$RUNNER_TEMP/upload.jks"
+          trap 'rm -f "$ANDROID_KEYSTORE_FILE"' EXIT
+          printf '%s' "$KEYSTORE_BASE64" | base64 -d > "$ANDROID_KEYSTORE_FILE"
+          chmod +x gradlew
+          ./gradlew bundleRelease
+          jarsigner -verify app/build/outputs/bundle/release/app-release.aab | tail -1
+
+      - uses: actions/upload-artifact@v4
+        if: env.WANT != 'apk'
+        with:
+          name: deep-mine-idle-aab
+          path: mobile/android/app/build/outputs/bundle/release/app-release.aab
           retention-days: 30

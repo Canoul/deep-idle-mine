@@ -1,16 +1,23 @@
 {
   "name": "deep-mine-idle-mobile",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
-  "description": "Coque de l'appli mobile (Capacitor) : ouvre deepmineidle.fr. Le jeu et le serveur n'en dépendent pas.",
+  "description": "Appli mobile (Capacitor) : contient une copie des fichiers du jeu, seuls les appels au serveur passent par le réseau. Le jeu et le serveur n'en dépendent pas.",
   "scripts": {
-    "sync": "cap sync android"
+    "copy-web": "node scripts/copy-web.js",
+    "sync": "node scripts/copy-web.js && cap sync android",
+    "assets": "capacitor-assets generate --android --assetPath assets --iconBackgroundColor #191310 --iconBackgroundColorDark #191310 --splashBackgroundColor #191310 --splashBackgroundColorDark #191310"
   },
   "dependencies": {
     "@capacitor/android": "^8.6.0",
-    "@capacitor/core": "^8.6.0"
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/app-launcher": "^8.0.1",
+    "@capacitor/core": "^8.6.0",
+    "@capacitor/preferences": "^8.0.1"
   },
   "devDependencies": {
+    "@capacitor/assets": "^4.0.0",
     "@capacitor/cli": "^8.6.0"
-  }
+  },
+  "type": "module"
 }
