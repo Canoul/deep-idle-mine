@@ -44,10 +44,25 @@ Android 7 ou plus récent. Pas d'iPhone pour l'instant (il faut le compte Apple)
 
 Noter aussi le modèle du téléphone et sa version d'Android.
 
+## Notifications
+
+Elles demandent une **nouvelle APK** : désinstaller l'ancienne, installer la nouvelle, se reconnecter, accepter
+l'autorisation demandée par Android à la première ouverture. Essais à faire **appli fermée** :
+
+1. Lancer une session, fermer l'appli : « Session terminée » à la fin ; la toucher ouvre Session ou l'Historique.
+2. Mettre un four en route, fermer l'appli : « Four terminé » quand le dernier four en marche finit ; la toucher ouvre le Four.
+3. Visiter le Bloc géant : « Bloc géant accessible » 3 h après.
+4. Attendre un créneau : « Mine instantanée dans 5 min », jamais de 23 h à 8 h.
+5. Mon compte → Options : couper « Notifications sur ce téléphone » coupe tout ; chaque type se coupe aussi seul.
+
+Limites : tout est calculé sur le téléphone, donc une session lancée depuis le PC n'est connue qu'à la prochaine
+ouverture de l'appli ; sans ouvrir l'appli pendant 48 h, les rappels de mine instantanée s'arrêtent ; Android peut
+retarder une notification de quelques minutes pour économiser la batterie (surtout certaines marques). Après deux
+refus, Android ne redemande plus : il faut autoriser l'appli dans les réglages du téléphone.
+
 ## Pas encore là
 
-La fin de l'interface pensée pour le téléphone (Accueil, session, Stuff, Skills), les notifications, la version iPhone,
-les stores. Sur le site, rien ne change : la nouvelle interface sera dans l'appli seulement.
+La fin de l'interface pensée pour le téléphone (Accueil, session, Stuff, Skills), la version iPhone, les stores. Sur le site, rien ne change : la nouvelle interface sera dans l'appli seulement.
 
 ## Pour les développeurs
 

@@ -9,6 +9,13 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 01/11/2026 — Geoffrey — Appli mobile : notifications
+- **Pour le joueur** : rien sur le site. L'appli Android prévient, même fermée : session terminée, mine instantanée dans
+  5 min (sauf de 23 h à 8 h), Bloc géant accessible, four terminé. Toucher la notification ouvre le bon écran. Dans Mon
+  compte → Options : un interrupteur général et un par type, tous activés par défaut, propres à chaque compte.
+- **Limite** : une session lancée depuis le PC n'est connue qu'à la prochaine ouverture de l'appli.
+- **État** : 🧪 sur la branche `geoffrey/appli-notifs` (pas en ligne), nouvelle APK à installer
+
 ## 01/11/2026 — Geoffrey — Guilde : message de guilde
 - **Pour le joueur** : en haut de l'onglet de sa guilde, une case **Message de guilde**. Le chef et les officiers l'écrivent, tous les membres le lisent.
 - **État** : ✅ en ligne le 01/11

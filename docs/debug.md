@@ -6445,3 +6445,15 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Quoi** : champ `message { text, by, at }` de la guilde (`sanitizeGuilds` le garde), `setMessage` (`server/guild/service.js`, grade vérifié par `recruiter`), route `POST /api/guild/message`, `messageHTML` (`src/ui/guild.js`), option `multiline` de `askText`. Saisie dans une fenêtre et pas dans la page : la liste des membres est réécrite à chaque relecture et effacerait le texte en cours.
 - **Tests** : `tests/guild-service.test.js`, `tests/guild-ui.test.js`, `tests/dialog.test.js` ; ⚠️ pas vu dans un navigateur.
 - **Point fragile** : mot interdit masqué sans avertissement de modération (`moderate` seul, pas `moderation.warn`).
+
+## 01/11/2026 — Appli mobile : notifications programmées (Geoffrey) — branche `geoffrey/appli-notifs`
+- **Quoi** : `src/app/notifs.js` (calcul pur, réglages par compte), `src/app/native.js` (seul accès au plugin, par
+  `window.Capacitor.Plugins`, assemblage `startNotifs`), `APP_NOTIFS` dans `src/config.js`, `nextEntry()` dans `setupGiant`,
+  `@capacitor/local-notifications` 8.3 dans `mobile/` seulement. Serveur inchangé.
+- **Tests** : ✅ `app-notifs`, `app-native`, `app-mode`, `app-families`, `app-bar`, `mobile-config`. ✅ APK fabriquée par GitHub.
+  ✅ Chrome `?app` avec un faux plugin : rappels de mine programmés, options dans Mon compte, tout couper / rallumer, toucher → Four.
+  ⚠️ « Session terminée » pas vue en navigateur (invité neuf : `no_energy` ; mode dev : `finishAt` nul). ⚠️ Rien d'essayé sur un vrai téléphone.
+- **Points fragiles** : `isExactNotification:false` est obligatoire, sinon le plugin ouvre l'écran système des alarmes à
+  chaque `schedule` (Android 12+) ; ne jamais appeler `schedule` sans autorisation, il la redemande tout seul. Alarmes
+  donc inexactes (quelques minutes de retard possibles). Heures calmes testées sur l'heure de la notification : celle de
+  la mine de 8 h (7 h 55) ne sonne pas. Identifiant de mine lié à l'heure du créneau.

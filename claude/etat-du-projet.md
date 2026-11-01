@@ -539,6 +539,9 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 
 - Lecture en différé (31/10/2026) : le navigateur affiche la partie 0,4 s en arrière (`FLUID`, src/shared/view.js), envois à rythme fixe, partie avancée toutes les 100 ms. Détails : `docs/debug.md`.
 
+- **Notifications de l'appli** (01/11, Geoffrey) : locales, calculées sur le téléphone (`src/app/notifs.js`, `native.js`,
+  `APP_NOTIFS`) : session finie, mine instantanée 5 min avant (pas de 23 h à 8 h), Bloc géant, four. Interrupteur général et
+  un par type dans Mon compte, par compte. Push serveur : plus tard.
 - **Appli mobile** (28/10, Jules ; repris le 01/11 par Geoffrey, **étape 1 en ligne le 01/11**, Android d'abord, iOS plus
   tard : interface téléphone confirmée, Guilde et Chat dans la famille Social ; spec
   `docs/superpowers/specs/2026-10-28-appli-mobile-design.md`, guide `docs/appli-mobile.md`) : **Capacitor 8**, le jeu
