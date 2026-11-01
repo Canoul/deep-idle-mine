@@ -13,7 +13,7 @@ Modèle d'entrée :
 - **Pour le joueur** : le Dash, le Cleave, la Dynamite, la Bonbonne de zipette et l'Ulti shen sont maintenant utilisés contre
   Lucifer. Illumination, Fast learner et Hand of Justice restent sans effet ici.
 - **Décision** : mêmes règles que contre un boss de tour. Ulti shen ne fait pas de dégâts, car Lucifer n'a pas de PV.
-- **État** : 🧪 sur la branche `geoffrey/hc-sorts` (pas en ligne)
+- **État** : ✅ en ligne le 01/11
 
 ## 01/11/2026 — Geoffrey — Administration : envoyer un joueur en prison
 - **Pour l'équipe** : `sudo node scripts/send-to-prison.js --name PSEUDO` envoie un joueur en prison, sans redémarrer le jeu. Il
