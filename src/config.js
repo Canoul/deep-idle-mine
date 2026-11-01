@@ -1827,7 +1827,7 @@ export const TOWN = {
    gauche (invitation, demande d'ami, groupe trouvé) se ferme seule au bout de ce temps (ms) ; l'invitation et la demande
    restent dans le Lobby et l'onglet Social. noticeMs : un rappel de mine instantanée sans bouton se ferme au bout de ce
    temps ; le dernier (Rejoindre / Décliner) se ferme à l'ouverture de la mine. */
-export const NOTIFY = { popupMs:20_000, noticeMs:12_000 };
+export const NOTIFY = { popupMs:20_000, noticeMs:12_000, flashMs:4000 };   // flashMs : petite confirmation sans bouton (sets, 01/11)
 /* Guide « Premiers pas » des nouveaux joueurs (src/ui/guide.js, 28/10/2026, Jules) : les objets que visent ses étapes
    (première pioche à crafter, lingot à fondre), et le délai entre deux relectures de l'état du joueur */
 export const GUIDE = { pickaxe:'Pioche en pierre', ingot:'Lingot de fer', ore:'Fer', refreshMs:1500 };

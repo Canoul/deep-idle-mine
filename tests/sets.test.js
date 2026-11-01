@@ -200,3 +200,12 @@ test('set équipé (29/10/2026) : celui qui correspond exactement à l\'équipem
   assert.match(setsHtml({ list:sets.list }), /Set équipé : <span class="mut">aucun/);
   assert.doesNotMatch(setsHtml({ list:[] }), /Set équipé/);
 });
+
+test('sets : textes de la pop-up de confirmation', async () => {
+  const { savedText, equippedText } = await import('../src/ui/sets.js');
+  assert.equal(savedText('Mine'), 'Stuff bien sauvegardé dans « Mine »');
+  assert.equal(equippedText('Mine'), 'Set « Mine » bien équipé');
+  assert.equal(equippedText('Mine', 1), 'Set « Mine » équipé : 1 pièce introuvable');
+  assert.equal(equippedText('Mine', 2), 'Set « Mine » équipé : 2 pièces introuvables');
+  assert.equal(equippedText('Mine', 0, true), 'Set « Mine » bien équipé. Il compte dès la prochaine session.');
+});

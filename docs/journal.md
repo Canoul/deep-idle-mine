@@ -9,6 +9,11 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 01/11/2026 — Geoffrey — Sets : pop-up de confirmation
+- **Pour l'équipe** : sauvegarder un set ou en équiper un affiche une petite pop-up de 4 s en haut à gauche, avec le nom du
+  set. Elle remplace la petite ligne sous la liste des sets.
+- **État** : 🧪 sur la branche `geoffrey/set-popup` (pas en ligne)
+
 ## 01/11/2026 — Geoffrey — Prêt tout le temps : prêt d'office au retour de prison
 - **Pour l'équipe** : avec la case cochée, on est prêt sans clic en entrant dans un groupe et en sortant de prison. Avant,
   la prison obligeait à quitter le groupe, ce qui effaçait « prêt » même si la case restait cochée.

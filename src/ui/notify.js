@@ -2,7 +2,8 @@
    sync(items) reçoit la liste complète de ce qui doit être affiché (items = [{ key, icon, text, actions:[{ label,
    primary, run }] }]) : une notification déjà là reste en place, une nouvelle apparaît, une disparue (acceptée ailleurs,
    expirée) s'en va. Un bouton lance son action (une promesse) ; la notification part dès qu'elle a réussi.
-   Sans clic, elle se ferme seule au bout de ttl ms (NOTIFY.popupMs) et ne revient pas tant que le serveur l'envoie. */
+   Sans clic, elle se ferme seule au bout de ttl ms (NOTIFY.popupMs) et ne revient pas tant que le serveur l'envoie.
+   flash(text) : petite confirmation sans bouton, à part de cette liste, fermée au bout de NOTIFY.flashMs. */
 import { NOTIFY } from '../config.js';
 
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -36,6 +37,13 @@ export function setupNotify(root, ttl = NOTIFY.popupMs){
   function remove(key){ const el = shown.get(key); if(el){ clearTimeout(el._t); el.remove(); } shown.delete(key); }
 
   return {
+    flash(text){
+      const el = document.createElement('div');
+      el.className = 'notif';
+      el.innerHTML = `<div class="ntext"><span class="nico">✔</span><span>${esc(text)}</span></div>`;
+      root.appendChild(el);
+      setTimeout(() => el.remove(), NOTIFY.flashMs);
+    },
     sync(items){
       const keys = new Set(items.map(i => i.key));
       for(const k of [...shown.keys()]) if(!keys.has(k)) remove(k);

@@ -6174,3 +6174,8 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** : `tests/party.test.js` ✅ (3 nouveaux) ; ⚠️ pas vu dans un navigateur.
 - **Point fragile** : la route `POST /api/game/prison/start` passe `members:null`, donc « solo seulement » n'est vérifié que par le
   navigateur.
+
+## 01/11/2026 — Sets : pop-up de confirmation (Geoffrey) — branche `geoffrey/set-popup`
+- **Quoi** : `notify.flash` (`src/ui/notify.js`, à part de `sync` qui retire ce qu'il ne connaît pas), `NOTIFY.flashMs`, `savedText` /
+  `equippedText` et `onDone` (`src/ui/sets.js`), branché dans `src/main.js`. Les erreurs restent sous la liste des sets.
+- **Tests** : `tests/notify.test.js`, `tests/sets.test.js` ✅ ; ⚠️ pas vu dans un navigateur.
