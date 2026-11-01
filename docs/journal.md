@@ -9,6 +9,12 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 01/11/2026 — Geoffrey — Guilde : les bâtiments
+- **Pour le joueur** : à droite de l'onglet de sa guilde, trois bâtiments avec leur texture : Armurerie (+2 % de dégâts), Trésorerie (+2 % de fortune), Forge (+2 % de vitesse de minage). Chaque membre donne des matériaux ; quand tout est réuni, le chef ou un officier lance la construction. Le bonus vaut pour tous les membres, dans tous les modes. En dessous, un journal des dons sans limite, jamais effacé.
+- **Décisions** : « Poussière magique » = Poudre de rêve. Don définitif, ramené à ce qu'il manque. Bonus dès l'arrivée dans la guilde, figé au lancement. Bâtiments et journal publics (bouton Voir dans Rechercher). Niveau 1 seul pour l'instant, les suivants s'ajoutent en config.
+- **À suivre** : les coûts sont ceux donnés par Geoffrey, à juger une fois en jeu. Un joueur peut changer de guilde pour profiter des bonus d'une autre.
+- **État** : 🧪 sur la branche `geoffrey/guilde-batiments` (pas en ligne)
+
 ## 01/11/2026 — Geoffrey — Trois nouveaux talents (étage 6)
 - **Pour le joueur** : un nouveau talent à 1 point au bout de chaque arbre. **Ivresse Minérale** (Mineur) : chaque minerai ajoute 1 dégât à la prochaine attaque. **Reconnaissance** (Logisticien) : chaque autre mineur dans le seau du treuil lui rend 1 d'oxygène toutes les 2 s. **Saccager** (Barbare) : après 2 critiques d'affilée, la prochaine attaque est double.
 - **Décisions** : Ivresse sans limite de stacks, Reconnaissance cumulable, Saccager remet son compteur à 0. Valeurs provisoires.

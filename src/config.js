@@ -789,6 +789,7 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'pickaxe_iron','sword_stone','sword_iron','spear_iron','helmet_iron','chest_iron','legs_iron','boots_iron','belt_goblin',
   'lamp_incandescent','pickaxe_steel','sword_steel','helmet_steel','chest_steel','legs_steel','boots_steel','chest_balance',
   'gloves_tactical','gloves_worker','cape_naingui','straps_goblin','hood_dark','cloud_magic','belt_giant','dark_cloth','gas_vesicle','slippery_stone','dungeon_brick','minotaur','minotaur_black','moon_crystal','orb','orb_superior','pick_goblin','kilt_dark','hat_naab','sword_cardboard','key_instance_1','key_instance_2','angel_feather','angel_feathers',
+  'guild_armory','guild_treasury','guild_forge',
   'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon','giant_block','giant_fountain','giant_torch','instance_spawner','instance_cage','goblin_king','golbute','golbute_crystal','golbute_body','golbute_body_crystal','golbute_arm','golbute_arm_crystal','golbute_rock','chest_golbute',
   'brick_angel','brick_angel_hard','brick_demon','brick_demon_hard','boss_angel','boss_demon','seraph','imp',
   'crown_goblin_king','mace_goblin_king','cape_goblin_royal','furnace_gold','recipe_chitin','chest_goblin_king','nugget_silver','ingot_silver','shrine_abundance',
@@ -1840,7 +1841,22 @@ export const GUIDE = { pickaxe:'Pioche en pierre', ingot:'Lingot de fer', ore:'F
 export const ADMIN_VIEW = { names:['admin'] };
 /* Guilde (31/10/2026, Geoffrey) : xpPct % de l'XP reçue par un membre va à la guilde ; mêmes niveaux que le mineur (XP.curve).
    poll : relecture de l'onglet ouvert. maxInvites, maxRequests : en attente par guilde ; maxPendingPerPlayer : demandes par joueur. */
-export const GUILD = { maxMembers:30, xpPct:1, nameMin:3, nameMax:24, maxInvites:50, maxRequests:50, maxPendingPerPlayer:5, poll:5000 };
+/* buildings (01/11/2026, Geoffrey ; valeurs provisoires) : levels[n] = niveau n + 1 : cost matériaux, label affiché ; bonus du
+   mineur, cumulés d'un niveau à l'autre : mult = % du total, add = points (la fortune est déjà en %, comme l'Anneau de Midas).
+   Ajouter un niveau : une ligne dans levels. logPage : dons par page enregistrée ; logShow : dons par écran du journal. */
+export const GUILD = { maxMembers:30, xpPct:1, nameMin:3, nameMax:24, maxInvites:50, maxRequests:50, maxPendingPerPlayer:5, poll:5000,
+  maxGift:1e9, opMemory:50, logPage:100, logShow:50,
+  buildings:[
+    { id:'armurerie', name:'Armurerie', tex:'guild_armory', levels:[
+      { label:'+2 % de dégâts', mult:{ damage:2 }, cost:{ 'Pierre':100000, 'Lingot de fer':5000, 'Lingot d\'or':2500, 'Orbe supérieur':100, 'Orbe':500 } },
+    ] },
+    { id:'tresorerie', name:'Trésorerie', tex:'guild_treasury', levels:[
+      { label:'+2 % de fortune', add:{ fortune:2 }, cost:{ 'Shiny iron':1000, 'Shiny gold':500, 'Poudre de rêve':1000 } },
+    ] },
+    { id:'forge', name:'Forge', tex:'guild_forge', levels:[
+      { label:'+2 % de vitesse de minage', mult:{ mineSpeed:2 }, cost:{ 'Pierre dure':100000, 'Diamant':5000, 'Jade inférieur':25, 'Rubis inférieur':25, 'Saphir inférieur':25 } },
+    ] },
+  ] };
 
 export const LEADERBOARD = { size:50, refresh:30_000, cacheMs:15_000, teamMax:3, hidden:['admin'] };
 

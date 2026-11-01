@@ -45,7 +45,7 @@ import { sanitizeSets, setOp, applySet, snapshot, publicSets, inSomeSet } from '
 import { canOpen, openTreasure, openAll } from '../../src/meta/loot.js';
 import { sanitizeFurnaces, furnaceOp, advance } from '../../src/meta/furnace.js';
 import { sanitizeCrusher, crusherOp, advance as advanceCrusher, publicCrusher } from '../../src/meta/crusher.js';
-import { craft, learn, recycleStuff } from '../../src/meta/craft.js';
+import { craft, learn, recycleStuff, spendFor } from '../../src/meta/craft.js';
 import { research, recycle } from '../../src/meta/research.js';
 import { sanitizeEnergy, canPay, rollCost, spendEnergy, creditEnergy, energyOfTicks, publicEnergy, settleIdle } from '../../src/meta/energy.js';
 import { cleanTime, sanitizePrison, newPrisonRecord, runId, runRecord, prisonTickAt, publicPrison, prisonDueMs, touchPrison, isPresent, batchDue,
@@ -158,6 +158,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
                                     onXp = () => {},
                                     /* nom de guilde d'un joueur, figé au lancement : affiché sous son pseudo (server/guild/service.js) */
                                     guildNameOf = async () => null,
+                                    /* bonus des bâtiments de la guilde d'un joueur (server/guild/service.js) */
+                                    guildBonusOf = async () => null,
                                     /* annonces Discord (server/social/discord.js) : announce(texte), en tâche de fond */
                                     announce = () => {} }){
   /* nom de guilde d'un joueur au lancement ; une panne de ce côté n'empêche jamais de jouer */
@@ -296,9 +298,15 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
   /* le mineur d'un joueur, figé au lancement (session ou prison) : préférences, skills (glyphes actifs ; owned : glyphes
      possédés, pour le drop), sorts équipés encore valides, apparence (src/skins.js) et pièces portées avec leur qualité
      et leur niveau (gear) */
+  /* skills d'une partie, avec le bonus de guilde du lancement ; une panne de ce côté n'empêche jamais de jouer */
+  async function frozenSkills(accountId, sk){
+    let guild = null;
+    try { guild = await guildBonusOf(accountId); } catch(e){ console.error(e); }
+    return { ...sessionSkills(sk), ...(guild ? { guild } : {}) };
+  }
   async function freezePlayer(accountId){
     const sk = await loadSkills(accountId), inv = await loadInventory(accountId), st = await loadStuff(accountId, inv);
-    return { prefs: await loadPrefs(accountId), skills: { ...sessionSkills(sk), owned: ownedGlyphs(sk, inv) },
+    return { prefs: await loadPrefs(accountId), skills: { ...await frozenSkills(accountId, sk), owned: ownedGlyphs(sk, inv) },
              spells: equippedSpells(await loadSpells(accountId), await spellCtx(accountId)), look: lookOf(st), gear: gearOf(st) };
   }
 
@@ -1199,7 +1207,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         if(!ok.length) return null;
         const looks = {}, gear = {}, skills = {};
         for(const p of ok){
-          skills[p.account] = sessionSkills(await loadSkills(p.account));
+          skills[p.account] = await frozenSkills(p.account, await loadSkills(p.account));
           const st = await loadStuff(p.account, await loadInventory(p.account));
           looks[p.account] = lookOf(st);
           gear[p.account] = gearOf(st);      // pièces complètes : seulement pour l'aura (src/meta/aura.js)
@@ -1463,6 +1471,22 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         if(!r.repeated) await store.putInventory(me.id, JSON.parse(serialize(inv)));
         return { item, ...(r.pieces ? { piece: r.pieces[0] } : {}), inventory: publicInventory(inv) };
       });
+    },
+
+    /* don à la guilde (01/11/2026, server/guild/service.js) : retire les objets, une seule fois par opId ; false s'il en manque */
+    guildSpend(accountId, item, qty, opId){
+      return withLock('inv:' + accountId, async () => {
+        const inv = await loadInventory(accountId), known = inv.crafted.includes(opId);
+        await loadStuff(accountId, inv);
+        if(!spendFor(inv, item, qty, opId)) return false;
+        if(!known) await store.putInventory(accountId, JSON.parse(serialize(inv)));
+        return true;
+      });
+    },
+    /* quantités possédées de ces objets (écran des bâtiments) */
+    async itemCounts(accountId, items){
+      const inv = await loadInventory(accountId);
+      return Object.fromEntries(items.map(i => [i, countOf(inv, i)]));
     },
 
     /* skills : { action:'learn', node } ou { action:'reset' } (gratuit, refusé pendant une session : les skills de la
@@ -1808,7 +1832,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       return withLock('acct:' + accountId, async () => {
         const inv = await loadInventory(accountId), st = await loadStuff(accountId, inv);
         const sk = await loadSkills(accountId);
-        return fn({ gear: gearOf(st), look: lookOf(st), skills: sessionSkills(sk),
+        return fn({ gear: gearOf(st), look: lookOf(st), skills: await frozenSkills(accountId, sk),
                     spells: equippedSpells(await loadSpells(accountId), await spellCtx(accountId)) });
       });
     },

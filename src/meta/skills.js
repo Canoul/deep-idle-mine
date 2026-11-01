@@ -7,7 +7,7 @@
    - un nœud de l'étage r > 1 exige qu'au moins un nœud de l'étage r−1 de son arbre soit au rang max (tous, si le
      nœud a needsAll : Navette exige Échelle de 2 et Treuil) ;
    - reset : tout est rendu (gratuit), refusé pendant une session (vérifié par le serveur). */
-import { SKILLS, STUFF, GLYPHS } from '../config.js';
+import { SKILLS, STUFF, GLYPHS, GUILD } from '../config.js';
 
 export const NODES = Object.fromEntries(SKILLS.trees.flatMap(t => t.nodes.map((n, i) => [n.id, { ...n, tree:t.id, index:i }])));
 /* nœuds de l'étage d'avant (ceux qui débloquent ce nœud) ; vide pour l'étage 1 */
@@ -67,7 +67,21 @@ export function sanitizeSkills(raw, points = Infinity){
   if(raw?.glyphs && typeof raw.glyphs === 'object')
     for(const [node, item] of Object.entries(GLYPHS.items)) if(Object.hasOwn(raw.glyphs, node) && raw.glyphs[node] === item) st.glyphs[node] = item;
   st.ops = Array.isArray(raw?.ops) ? raw.ops.filter(o => typeof o === 'string').slice(-SKILLS.opMemory) : [];
+  const guild = cleanGuildBonus(raw?.guild);
+  if(guild) st.guild = guild;
   return st;
+}
+
+/* bonus des bâtiments de guilde (01/11/2026), figé au lancement avec les skills (server/game/service.js frozenSkills) :
+   il suit ainsi tous les modes, et un rejeu garde celui de la partie. Seuls les stats et les plafonds de la config passent. */
+function cleanGuildBonus(raw){
+  if(!raw || typeof raw !== 'object') return null;
+  const out = { mult:{}, add:{} }, levels = GUILD.buildings.flatMap(b => b.levels);
+  for(const kind of ['mult', 'add']) for(const k of new Set(levels.flatMap(l => Object.keys(l[kind] ?? {})))){
+    const v = raw[kind]?.[k], max = levels.reduce((n, l) => n + (l[kind]?.[k] ?? 0), 0);
+    if(Number.isFinite(v) && v > 0) out[kind][k] = Math.min(v, max);
+  }
+  return Object.keys(out.mult).length || Object.keys(out.add).length ? out : null;
 }
 
 /* skills qui multiplient une stat du mineur (le reste agit pendant la partie : oxygène, vitesse après un minerai…) */
@@ -92,6 +106,8 @@ export function withSkillStats(carac, effects){
     const r = rankFrom(n, effects);
     if(r) for(const [stat, v] of Object.entries(n.adds)) out[stat] = (out[stat] || 0) + r * v;
   }
+  for(const [stat, v] of Object.entries(effects?.guild?.mult ?? {})) out[stat] = (out[stat] || 0) * (1 + v / 100);
+  for(const [stat, v] of Object.entries(effects?.guild?.add ?? {})) out[stat] = (out[stat] || 0) + v;
   return out;
 }
 
@@ -120,6 +136,7 @@ export function skillEffects(st){
   /* glyphes actifs (posés, skill au rang max) : glyph_<nœud> = 1 (src/meta/glyphs.js ; lus par la partie) */
   for(const [node, item] of Object.entries(GLYPHS.items))
     if(st?.glyphs?.[node] === item && rankOf(st, node) >= NODES[node].max) out['glyph_' + node] = 1;
+  if(st?.guild) out.guild = st.guild;
   return out;
 }
 
