@@ -11,7 +11,7 @@ Modèle d'entrée :
 ```
 ## 01/11/2026 — Geoffrey — He's coming et Bloc géant : changement d'onglet
 - **Pour le joueur** : quand une session ou une prison tournait aussi, la salle restait figée par-dessus le nouvel onglet pendant près d'une demi-seconde. Elle disparaît maintenant tout de suite.
-- **État** : 🧪 sur la branche `geoffrey/fix-hc-onglet` (pas en ligne)
+- **État** : ✅ en ligne le 01/11
 
 ## 01/11/2026 — Geoffrey — Administration : vitesse d'une session
 - **Pour l'équipe** : `sudo node scripts/session-speed.js --name PSEUDO` passe la session d'un joueur et de son lobby à ×300, sans
