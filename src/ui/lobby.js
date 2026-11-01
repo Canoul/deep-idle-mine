@@ -134,7 +134,7 @@ export function shrinesHtml(list = [], { have = () => 0, leaderName = null, busy
         (need > 0 ? `<input type="number" min="1" max="${need}" value="${Math.max(1, Math.min(need, mine))}" data-shrine-qty="${e(sh.id)}|${e(item)}">`+
                     `<button data-shrine-give="${e(sh.id)}|${e(item)}"${busy || !mine ? ' disabled' : ''}>Donner</button>` : '<small class="ok">✔</small>')+`</div>`;
     }).join('');
-    return `<div class="shrine">${top}${rows}<p class="mut small">Prix atteint : ${sh.tower ? 'une charge, consommée à la victoire' : `actif pour ${sh.sessions} mines`}.</p></div>`;
+    return `<div class="shrine">${top}${rows}<p class="mut small">${sh.tower ? 'Pas chargée. Une fois payée : une charge, consommée à la victoire' : `Inactif. Une fois payé : actif pour ${sh.sessions} mines`}.</p></div>`;
   }).join('');
 }
 

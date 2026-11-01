@@ -6204,3 +6204,9 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 ## 01/11/2026 — Guilde : fenêtre après une invitation (Geoffrey)
 - **Quoi** : `sendInvite` (src/ui/guild.js) passe par `tell` (src/ui/dialog.js) au lieu de `say`, succès compris. Une invitation déjà envoyée au même joueur dit aussi « envoyée » (le service ne distingue pas ce cas).
 - **Tests** ✅ tests/guild-ui.test.js, guild-service. ⚠️ Fenêtre pas vue dans un navigateur.
+
+## 01/11/2026 — Shrine « illimité » : faux problème de décompte, vrai problème de texte (Geoffrey)
+- **Signalé** : « Prix atteint : actif pour 5 mines » sur un shrine activé plusieurs mines plus tôt, chiffre figé, impression d'illimité.
+- **Vérifié** ✅ 7 `game.start` d'affilée sur le vrai service (mémoire, dev false) : `session.shrines` = abundance pour les mines 1 à 5, vide pour 6 et 7 ; `left` 4, 3, 2, 1, 0, 0, 0. Non vérifié sur la base en ligne.
+- **Cause** : `shrinesHtml` affichait la règle sur la carte d'un shrine non actif (`left` 0). Actif, la carte dit déjà « encore N sessions ».
+- **Quoi** : texte de src/ui/lobby.js. **Tests** ✅ tests/shrines.test.js. ⚠️ Pas vu dans un navigateur.

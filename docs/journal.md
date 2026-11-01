@@ -9,6 +9,10 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 01/11/2026 — Geoffrey — Shrines : texte d'un shrine éteint
+- **Pour le joueur** : la carte d'un shrine éteint disait « Prix atteint : actif pour 5 mines », comme s'il tournait encore. Elle dit maintenant « Inactif. Une fois payé : actif pour 5 mines. » Le décompte, lui, était juste : 5 mines, puis plus de bonus.
+- **État** : 🧪 sur la branche `geoffrey/shrine-texte` (pas en ligne)
+
 ## 01/11/2026 — Geoffrey — Guilde : message après une invitation
 - **Pour le joueur** : inviter un joueur ouvre maintenant une petite fenêtre : « Invitation envoyée à X. », ou « Ce pseudo n'existe pas. » (ou tout autre refus du serveur).
 - **État** : ✅ en ligne le 01/11
