@@ -9,6 +9,13 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 01/11/2026 — Geoffrey — Mises à jour à chaud des applis : conception
+- **Pour le joueur** : rien pour l'instant, rien n'est codé.
+- **Pour l'équipe** : l'appli embarque une copie du jeu figée à sa fabrication ; avec ~50 commits par jour, elle se casserait entre deux versions des stores. Proposition : à chaque lancement, l'appli récupère la dernière version du jeu publiée par deepmineidle.fr (empreintes vérifiées, retour en arrière si elle ne démarre pas, message « Mets à jour l'appli » si la coque native est trop ancienne). Autorisé par Apple et Google tant que le code tourne dans le moteur web et ne change pas la nature de l'appli. Détail : `docs/superpowers/specs/2026-11-01-mises-a-jour-a-chaud-design.md`.
+- **À décider** : chaque mise en ligne part dans l'appli ou seulement certaines ; appliquer au lancement suivant ou avant la connexion ; canal à part pour les testeurs.
+- **À suivre** : à faire avant d'ouvrir l'appli aux joueurs (lien TestFlight public, test fermé Google).
+- **État** : 📝 conception, branche `geoffrey/spec-maj-a-chaud`
+
 ## 01/11/2026 — Geoffrey — Contrôle iPhone plus solide
 - **Pour le joueur** : rien, c'est un outil de l'équipe.
 - **Pour l'équipe** : le contrôle de l'appli iPhone échouait parfois sans raison : il photographiait l'écran à 40 s, alors que le simulateur met de 31 à 55 s à afficher le jeu. Il attend maintenant le bouton, 2 minutes au plus.
