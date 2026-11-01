@@ -95,13 +95,20 @@ jobs:
           xcrun simctl install "$UDID" buildsim/Build/Products/Debug-iphonesimulator/App.app
           mkdir -p sim
           xcrun simctl launch --console "$UDID" fr.deepmineidle.app > sim/console.txt 2>&1 &
-          sleep 30
+          sleep 40
           xcrun simctl io "$UDID" screenshot sim/ecran.png
           alive=$(xcrun simctl spawn "$UDID" launchctl list | grep -c 'fr.deepmineidle.app' || true)
           errors=$(grep -c -E '\[error\]|Uncaught|SyntaxError|ReferenceError' sim/console.txt || true)
           echo "::notice title=Simulateur::appli vivante : $alive · erreurs JavaScript : $errors · lignes de console : $(wc -l < sim/console.txt | tr -d ' ')"
           grep -E '\[error\]|Uncaught|SyntaxError|ReferenceError' sim/console.txt | head -3 | cut -c1-200 | while read -r l; do echo "::notice title=Erreur::$l"; done
           [ "$alive" -gt 0 ] || { echo "::error::l'appli s'est fermée dans le simulateur"; tail -30 sim/console.txt; exit 1; }
+          # la console en dit peu : la preuve est l'écran. Le bouton orange « Se connecter » n'existe que si le jeu a démarré ET que le
+          # serveur a répondu à l'appli depuis capacitor://localhost
+          orange=$(node -e "
+            require('../../node_modules/sharp')('sim/ecran.png').removeAlpha().raw().toBuffer().then(b=>{let n=0;
+              for(let i=0;i<b.length;i+=3)if(b[i]>220&&b[i+1]>90&&b[i+1]<150&&b[i+2]<90)n++;console.log(n)})")
+          echo "::notice title=Ecran::pixels du bouton Se connecter : $orange"
+          [ "$orange" -gt 2000 ] || { echo "::error::le jeu ne s'affiche pas dans le simulateur (voir ecran.png)"; exit 1; }
           [ "$errors" = 0 ] || { echo "::error::erreurs JavaScript au démarrage"; exit 1; }
 
       - uses: actions/upload-artifact@v4
