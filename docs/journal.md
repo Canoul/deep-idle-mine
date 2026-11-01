@@ -72,7 +72,7 @@ Modèle d'entrée :
 ## 01/11/2026 — Geoffrey — Appli mobile : plus de transition entre les onglets
 - **Pour le joueur** : rien sur le site. Dans l'appli, passer de la Session à un autre onglet pendant une partie est
   immédiat : plus de zoom de la mine ni de panneaux qui glissent.
-- **État** : 🧪 sur la branche `geoffrey/appli-sans-transitions` (pas en ligne)
+- **État** : ✅ en ligne le 01/11
 
 ## 01/11/2026 — Geoffrey — Appli mobile : navigation en 5 familles
 - **Pour le joueur** : rien sur le site. Dans l'appli Android, les 15 onglets laissent la place à 5 boutons en bas
