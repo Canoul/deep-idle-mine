@@ -5,14 +5,16 @@
   "description": "Appli mobile (Capacitor) : contient une copie des fichiers du jeu, seuls les appels au serveur passent par le réseau. Le jeu et le serveur n'en dépendent pas.",
   "scripts": {
     "copy-web": "node scripts/copy-web.js",
-    "sync": "node scripts/copy-web.js && cap sync android",
-    "assets": "capacitor-assets generate --android --assetPath assets --iconBackgroundColor #191310 --iconBackgroundColorDark #191310 --splashBackgroundColor #191310 --splashBackgroundColorDark #191310"
+    "sync": "node scripts/copy-web.js && cap sync",
+    "assets": "capacitor-assets generate --android --ios --assetPath assets --iconBackgroundColor #191310 --iconBackgroundColorDark #191310 --splashBackgroundColor #191310 --splashBackgroundColorDark #191310"
   },
   "dependencies": {
     "@capacitor/android": "^8.6.0",
     "@capacitor/app": "^8.1.2",
     "@capacitor/app-launcher": "^8.0.1",
     "@capacitor/core": "^8.6.0",
+    "@capacitor/ios": "^8.6.0",
+    "@capacitor/keyboard": "^8.0.6",
     "@capacitor/local-notifications": "^8.3.1",
     "@capacitor/preferences": "^8.0.1"
   },

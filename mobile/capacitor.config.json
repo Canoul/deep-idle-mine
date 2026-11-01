@@ -10,6 +10,11 @@
     "SystemBars": {
       "insetsHandling": "css",
       "style": "DARK"
+    },
+    "Keyboard": {
+      "resize": "native",
+      "style": "DARK"
     }
-  }
+  },
+  "backgroundColor": "#191310"
 }

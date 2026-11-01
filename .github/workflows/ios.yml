@@ -1,0 +1,200 @@
+# Appli iPhone. Sans Mac : tout se compile ici, sur un Mac de GitHub (guide : docs/app-ios.md). Projet repris de jules/appli-ios.
+# - À la main (Actions → « Appli iPhone » → Run workflow) :
+#     controle    compile sans clé, lance l'appli dans un simulateur d'iPhone ;
+#     ipa         signe et garde l'IPA en artefact, sans rien envoyer ;
+#     testflight  signe, garde l'IPA et l'envoie sur App Store Connect.
+# - Tout seul quand mobile/ change (sauf Android) : « controle » seulement, jamais de clé.
+# Signature : la clé d'API seule (xcodebuild -allowProvisioningUpdates). Le rôle Admin de la clé permet à Apple de signer dans son
+# cloud : pas de certificat, pas de profil, pas d'identifiant Apple. macos-26 et pas macos-latest : Apple exige le SDK d'iOS 26.
+# Le serveur du jeu ne l'utilise jamais.
+name: Appli iPhone
+
+on:
+  workflow_dispatch:
+    inputs:
+      build:
+        description: Que fabriquer ?
+        type: choice
+        options: [controle, ipa, testflight]
+        default: controle
+  push:
+    paths:
+      - 'mobile/**'
+      - '!mobile/android/**'
+      - '!mobile/store/**'
+      - '.github/workflows/ios.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-26
+    env:
+      WANT: ${{ inputs.build || 'controle' }}
+      RUN_NUMBER: ${{ github.run_number }}
+      RUN_ATTEMPT: ${{ github.run_attempt }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Fichiers du jeu copiés dans l'appli, projet iOS à jour
+        working-directory: mobile
+        run: |
+          npm ci
+          npm run copy-web
+          npx cap sync ios
+
+      # ---------- contrôle : aucune clé ----------
+
+      - name: Contrôle (sans signature)
+        if: env.WANT == 'controle'
+        working-directory: mobile/ios/App
+        run: |
+          xcodebuild -version
+          xcodebuild -project App.xcodeproj -scheme App -configuration Release \
+            -destination 'generic/platform=iOS' -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            build
+
+      - name: Vérification (bibliothèques, jeu copié, adresse du serveur, icône, manifeste)
+        if: env.WANT == 'controle'
+        working-directory: mobile/ios/App
+        run: |
+          app=build/Build/Products/Release-iphoneos/App.app
+          # chaque bibliothèque « @rpath » demandée par l'appli doit être dans l'appli, sinon elle se ferme à l'ouverture
+          for lib in $(otool -L "$app/App" | awk '/@rpath\//{print $1}'); do
+            test -e "$app/Frameworks/${lib#@rpath/}" || { echo "::error::manque dans l'appli : $lib"; exit 1; }
+          done
+          test -f "$app/public/index.html"
+          grep -q 'https://deepmineidle.fr' "$app/public/app-config.js"
+          test -f "$app/PrivacyInfo.xcprivacy" || { echo "::error::manifeste de confidentialité absent de l'appli"; exit 1; }
+          icon=App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png
+          sips -g hasAlpha "$icon" | grep -q 'hasAlpha: no' || { echo "::error::icône avec transparence : Apple la refuse"; exit 1; }
+          echo "::notice title=Version::$(plutil -extract CFBundleShortVersionString raw "$app/Info.plist")"
+          echo "::notice title=Nom::$(plutil -extract CFBundleDisplayName raw "$app/Info.plist")"
+          echo "::notice title=Identifiant::$(plutil -extract CFBundleIdentifier raw "$app/Info.plist")"
+
+      - name: Essai dans un simulateur d'iPhone (l'appli s'ouvre et le jeu démarre)
+        if: env.WANT == 'controle'
+        working-directory: mobile/ios/App
+        run: |
+          xcodebuild -project App.xcodeproj -scheme App -configuration Debug -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' -derivedDataPath buildsim CODE_SIGNING_ALLOWED=NO build
+          UDID=$(xcrun simctl list devices available -j | node -e "
+            let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{
+              const all=Object.entries(JSON.parse(s).devices).filter(([r])=>r.includes('iOS')).flatMap(([,l])=>l);
+              console.log(all.filter(d=>/^iPhone/.test(d.name)).at(-1).udid)})")
+          xcrun simctl boot "$UDID"
+          xcrun simctl bootstatus "$UDID" -b > /dev/null
+          xcrun simctl install "$UDID" buildsim/Build/Products/Debug-iphonesimulator/App.app
+          mkdir -p sim
+          xcrun simctl launch --console "$UDID" fr.deepmineidle.app > sim/console.txt 2>&1 &
+          sleep 40
+          xcrun simctl io "$UDID" screenshot sim/ecran.png
+          alive=$(xcrun simctl spawn "$UDID" launchctl list | grep -c 'fr.deepmineidle.app' || true)
+          errors=$(grep -c -E '\[error\]|Uncaught|SyntaxError|ReferenceError' sim/console.txt || true)
+          echo "::notice title=Simulateur::appli vivante : $alive · erreurs JavaScript : $errors · lignes de console : $(wc -l < sim/console.txt | tr -d ' ')"
+          grep -E '\[error\]|Uncaught|SyntaxError|ReferenceError' sim/console.txt | head -3 | cut -c1-200 | while read -r l; do echo "::notice title=Erreur::$l"; done
+          [ "$alive" -gt 0 ] || { echo "::error::l'appli s'est fermée dans le simulateur"; tail -30 sim/console.txt; exit 1; }
+          # la console en dit peu : la preuve est l'écran. Le bouton orange « Se connecter » n'existe que si le jeu a démarré ET que le
+          # serveur a répondu à l'appli depuis capacitor://localhost
+          orange=$(node -e "
+            require('../../node_modules/sharp')('sim/ecran.png').removeAlpha().raw().toBuffer().then(b=>{let n=0;
+              for(let i=0;i<b.length;i+=3)if(b[i]>220&&b[i+1]>90&&b[i+1]<150&&b[i+2]<90)n++;console.log(n)})")
+          echo "::notice title=Ecran::pixels du bouton Se connecter : $orange"
+          [ "$orange" -gt 2000 ] || { echo "::error::le jeu ne s'affiche pas dans le simulateur (voir ecran.png)"; exit 1; }
+          [ "$errors" = 0 ] || { echo "::error::erreurs JavaScript au démarrage"; exit 1; }
+
+      - uses: actions/upload-artifact@v4
+        if: always() && env.WANT == 'controle'
+        with:
+          name: deep-mine-idle-simulateur
+          path: mobile/ios/App/sim
+          retention-days: 14
+
+      # ---------- ipa, testflight : signés par la clé d'API ----------
+
+      - name: Clé d'API (fichier temporaire, jamais affiché)
+        if: env.WANT != 'controle'
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+          IOS_TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
+        run: |
+          for v in ASC_KEY_ID ASC_ISSUER_ID ASC_KEY_P8 IOS_TEAM_ID; do
+            [ -n "${!v}" ] || { echo "::error::Secret manquant ($v) : voir docs/app-ios.md"; exit 1; }
+          done
+          mkdir -p "$HOME/.appstoreconnect/private_keys"
+          umask 077
+          printf '%s\n' "$ASC_KEY_P8" > "$HOME/.appstoreconnect/private_keys/AuthKey_$ASC_KEY_ID.p8"
+          grep -q 'BEGIN PRIVATE KEY' "$HOME/.appstoreconnect/private_keys/AuthKey_$ASC_KEY_ID.p8" \
+            || { echo "::error::ASC_KEY_P8 : coller tout le fichier .p8, lignes BEGIN et END comprises"; exit 1; }
+
+      - name: "Archive non signée, Apple signe à l'étape suivante"
+        if: env.WANT != 'controle'
+        working-directory: mobile/ios/App
+        env:
+          IOS_TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
+        run: |
+          # jamais deux fois le même numéro, même en relançant une fabrication
+          BUILD=$(( RUN_NUMBER * 100 + RUN_ATTEMPT ))
+          echo "BUILD=$BUILD" >> "$GITHUB_ENV"
+          xcodebuild -project App.xcodeproj -scheme App -configuration Release \
+            -destination 'generic/platform=iOS' -archivePath "$RUNNER_TEMP/App.xcarchive" \
+            DEVELOPMENT_TEAM="$IOS_TEAM_ID" CURRENT_PROJECT_VERSION="$BUILD" \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            archive
+
+      - name: Signature par Apple et IPA
+        if: env.WANT != 'controle'
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          IOS_TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
+        run: |
+          plutil -create xml1 "$RUNNER_TEMP/ExportOptions.plist"
+          plutil -insert method -string app-store-connect "$RUNNER_TEMP/ExportOptions.plist"
+          plutil -insert destination -string export "$RUNNER_TEMP/ExportOptions.plist"
+          plutil -insert signingStyle -string automatic "$RUNNER_TEMP/ExportOptions.plist"
+          plutil -insert teamID -string "$IOS_TEAM_ID" "$RUNNER_TEMP/ExportOptions.plist"
+          plutil -insert manageAppVersionAndBuildNumber -bool NO "$RUNNER_TEMP/ExportOptions.plist"
+          plutil -insert uploadSymbols -bool YES "$RUNNER_TEMP/ExportOptions.plist"
+          xcodebuild -exportArchive -archivePath "$RUNNER_TEMP/App.xcarchive" \
+            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" -exportPath "$RUNNER_TEMP/export" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$HOME/.appstoreconnect/private_keys/AuthKey_$ASC_KEY_ID.p8" \
+            -authenticationKeyID "$ASC_KEY_ID" -authenticationKeyIssuerID "$ASC_ISSUER_ID"
+          cd "$RUNNER_TEMP/export"
+          mv ./*.ipa DeepMineIdle.ipa
+          unzip -q DeepMineIdle.ipa -d verif
+          codesign -dvv verif/Payload/App.app 2>&1 | grep -q 'Authority=Apple Distribution' \
+            || { echo "::error::IPA sans signature Apple Distribution"; exit 1; }
+          rm -rf verif
+          echo "::notice title=Build::numéro $BUILD"
+
+      - uses: actions/upload-artifact@v4
+        if: env.WANT != 'controle'
+        with:
+          name: deep-mine-idle-ipa
+          path: ${{ runner.temp }}/export/DeepMineIdle.ipa
+          retention-days: 30
+
+      - name: Envoi à App Store Connect (TestFlight)
+        if: env.WANT == 'testflight'
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: |
+          xcrun altool --upload-app -f "$RUNNER_TEMP/export/DeepMineIdle.ipa" -t ios --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID"
+          echo "::notice title=TestFlight::Build $BUILD envoyé. Apple le traite en 5 à 30 min avant qu'il apparaisse dans TestFlight."
+
+      - name: Effacement de la clé
+        if: always()
+        run: rm -rf "$HOME/.appstoreconnect"

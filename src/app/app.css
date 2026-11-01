@@ -27,3 +27,5 @@ body.app{touch-action:pan-x pan-y;-webkit-tap-highlight-color:transparent}
 /* pas de connexion (src/app/device.js) : par-dessus tout, jamais de page blanche */
 #appOffline{position:fixed;inset:0;z-index:9000;display:flex;align-items:center;justify-content:center;padding:24px;background:#191310;color:#f0e0c8;font:20px/1.4 'VT323',monospace;text-align:center}
 #appOffline[hidden]{display:none}
+/* iPhone : un champ sous 16 px fait zoomer Safari quand on le touche */
+body.app #gchatInput{font-size:16px}
