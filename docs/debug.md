@@ -6329,7 +6329,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Points fragiles** : le site a maintenant un onglet Chat réservé au téléphone (`CHAT_TAB`, 31/10) et le Carreau en fond :
   à reprendre dans la navigation de l'appli (étape 2). `gh` absent de ce PC : suivre les fabrications par l'API GitHub.
 
-## 01/11/2026 — Geoffrey — Appli mobile, étape 2a : navigation en 5 familles
+## 01/11/2026 — Geoffrey — Appli mobile, étape 2a : navigation en 5 familles (en ligne le 01/11)
 - **Quoi** : `src/app/families.js` (logique pure), `bar.js` (HTML), `main.js` (`startApp`, chargé par import dynamique),
   `app.css` ; accroches `phoneMode` et `nav.onMark` dans `src/ui/nav.js`, `appLayer` dans `src/main.js`. `boot.js` : CSS et
   `viewport-fit=cover` par le code, badge seulement si le pont est bloqué.
@@ -6343,6 +6343,5 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   sans effet. Guide « Premiers pas » : il couvre l'écran sur téléphone.
 - **Relecture indépendante** : ✅ 5 points de risque validés, 3 corrections : `dropApp` si la couche ne se charge pas (la barre du
   site revient), Carreau vraiment coupé dans l'appli (ni dessin ni `POST /api/town`, option de Mon compte masquée), colonnes de
-  session mesurées contre `#appBar` (`dockEl`). Restent : ⚠️ orbes oxygène / pods cachés avec `#nav` jusqu'au plan de la
-  session ; JSON corrompu dans `deepIdleMine.appFamilyTab` ; `startApp` sans test de câblage ; bouton Session vers l'Historique
+  session mesurées contre `#appBar` (`dockEl`). Restent : orbes oxygène / pods cachés avec `#nav` (accepté par Geoffrey) ; JSON corrompu dans `deepIdleMine.appFamilyTab` ; `startApp` sans test de câblage ; bouton Session vers l'Historique
   si c'était le dernier sous-onglet, même en pleine partie lancée ailleurs.

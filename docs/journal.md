@@ -49,11 +49,11 @@ Modèle d'entrée :
 - **Pour le joueur** : rien sur le site. Dans l'appli Android, les 15 onglets laissent la place à 5 boutons en bas
   (Accueil, Session, Sac, Perso, Social) et à des sous-onglets en haut. Hors partie, Session montre l'Historique.
 - **Décisions** (Geoffrey) : pas de Carreau dans l'appli pour l'instant. Le badge vert « APPLI ✓ » est retiré, seule
-  l'alerte « pont bloqué » reste.
+  l'alerte « pont bloqué » reste. Oxygène et pods absents de l'appli pour l'instant : accepté par Geoffrey.
 - **À suivre** : essai sur l'Android de Geoffrey après la mise en ligne ; le contenu des écrans reste celui du site
   (prochains morceaux : session, Accueil, Stuff et Skills, gestes au doigt). Le guide « Premiers pas » couvre presque
   tout l'écran sur téléphone.
-- **État** : 🧪 sur la branche `geoffrey/appli-interface` (pas en ligne)
+- **État** : ✅ en ligne le 01/11
 
 ## 01/11/2026 — Geoffrey — Appli mobile : reprise du chantier de Jules
 - **Pour le joueur** : rien sur le site. L'appli Android de test est remise à jour avec le jeu actuel.
