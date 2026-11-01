@@ -1511,6 +1511,12 @@ export const ACCOUNT = {
    La partie tourne sur le serveur (une seule copie) : un départ ou un focus s'applique tout de suite. */
 export const GAME = { speed:2, devSpeeds:[1,2,5,20,60,300], maxPlayers:3 };
 
+/* Appli mobile, notifications programmées sur le téléphone (src/app/notifs.js).
+   miBefore : s avant l'ouverture de la mine instantanée ; quietFrom / quietTo : rien entre ces heures (téléphone) ;
+   miAhead : créneaux programmés d'avance (24 = 48 h, le temps de rouvrir l'appli) ; syncEvery : s entre deux recalculs ;
+   syncTolerance : s d'écart d'heure en dessous duquel une notification reste telle quelle. */
+export const APP_NOTIFS = { miBefore:300, quietFrom:23, quietTo:8, miAhead:24, syncEvery:30, syncTolerance:5 };
+
 /* ---- Mine instantanée (MI, GAME_DESIGN §6 « Mine instantanée ») *(décisions du créateur, 21/10/2026 ; valeurs
    provisoires)* ----
    Toutes les everyHours heures pile, heure de Paris (0 h, 2 h, 4 h…), une mine commune s'ouvre aux inscrits du lobby
@@ -1869,7 +1875,7 @@ export const ADMIN_VIEW = { names:['admin'] };
    mineur, cumulés d'un niveau à l'autre : mult = % du total, add = points (la fortune est déjà en %, comme l'Anneau de Midas).
    Ajouter un niveau : une ligne dans levels. logPage : dons par page enregistrée ; logShow : dons par écran du journal. */
 export const GUILD = { maxMembers:30, xpPct:1, nameMin:3, nameMax:24, maxInvites:50, maxRequests:50, maxPendingPerPlayer:5, poll:5000,
-  maxGift:1e9, opMemory:50, logPage:100, logShow:50,
+  maxGift:1e9, opMemory:50, logPage:100, logShow:50, messageMax:500,
   buildings:[
     { id:'armurerie', name:'Armurerie', tex:'guild_armory', levels:[
       { label:'+2 % de dégâts', mult:{ damage:2 }, cost:{ 'Pierre':500000, 'Lingot de fer':5000, 'Lingot d\'or':2500, 'Orbe supérieur':100, 'Orbe':500 } },

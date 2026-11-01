@@ -104,6 +104,9 @@ let waitingFor = null;     // … celui de cette session (id)
 let prison = null, PG = null, prisonViewAt = 0;
 let pendingJoin = joinCodeFromHash(location.hash);   // lien d'invitation (#rejoindre=CODE), lu avant que la barre change l'adresse
 const serverNow = () => Date.now() + clockOffset;
+/* hors session : l'heure du serveur reçue avec les fours (notifications de l'appli).
+   Pas « setClock » : c'est déjà la vitesse / pause du mode dev (plus bas). */
+const syncClock = t => { if(!rec && Number.isFinite(t)) clockOffset = t - Date.now(); };
 const renderer = createRenderer($('cv'));
 const miRenderer = createInstantRenderer($('cvMi'));
 const isMi = () => rec?.mode === 'mi';
@@ -230,7 +233,7 @@ const furnace = setupFurnace({
   onOp: async op => {
     const r = await gameApi.furnace({ ...op, opId: newOpId() });
     setInventory(r.inventory);
-    furnace.set(r.furnaces);
+    furnace.set(r.furnaces); syncClock(r.furnaces?.now); appLayer?.refreshNotifs();
     return r;
   },
 });
@@ -309,7 +312,8 @@ nav = setupNav($('nav'), $('views'), id => {
 });
 /* appli mobile : barre des familles ; shown : l'onglet Session a-t-il quelque chose à montrer (partie, prison, bilan) ? */
 if(appBoot.app) import('./app/main.js').then(m => { appLayer = m.startApp({ doc:document, win:window, nav,
-  shown: () => !!rec || inRoom() || prisonShown() || !$('end').hidden }); }).catch(e => { console.warn(e); dropApp(document); });
+  shown: () => !!rec || inRoom() || prisonShown() || !$('end').hidden,
+  notifData: () => ({ now:serverNow(), offset:clockOffset, sessionEnd:rec?.finishAt ?? null, furnaces:furnace.state().list, giantNext:giantUI?.nextEntry() ?? null, account:acct.account?.id ?? null }) }); }).catch(e => { console.warn(e); dropApp(document); });
 
 /* orbes de la barre d'action : temps de session et XP ; pendant une session, oxygène et pods du mineur suivi */
 const orbs = setupOrbs($('orbL'), $('orbR'));
@@ -328,14 +332,15 @@ function updateOrbs(shown, mi, len = mi ? INSTANT_MINE.duration : SESSION_LEN){
 
 /* ---------- compte ---------- */
 const accountUI = createAccountUI($('account'), acct, {
-  onChange: () => { renderNavAccount($('navAccount'), acct); lobby.update({ account:acct.account }); startInstant(); pollSocial(); pollJudgment(); },
+  onChange: () => { renderNavAccount($('navAccount'), acct); lobby.update({ account:acct.account }); startInstant(); pollSocial(); pollJudgment(); appLayer?.refreshNotifs(); },
   confirmLeave: () => ask([
     acct.account?.guest && 'Compte invité : sans pseudo ni mot de passe, tu ne pourras plus jamais y revenir.',
     G && !G.over && 'Ta session continue sur le serveur : tu la retrouveras en te reconnectant.',
     'Se déconnecter quand même ?'].filter(Boolean).join('\n'), { ok:'Se déconnecter' }),
   options: () => [{ key:'bgSession', label:'Session en cours en fond d\'écran', title:'Pendant une session, la mine s\'affiche en fond, assombrie, derrière les autres onglets.', on: backdrop.on },
-                   ...(appBoot.app ? [] : [{ key:'bgTown', label:'Le Carreau (la ville) en fond d\'écran', title:'Hors session, la ville du spawn s\'affiche en fond, avec les autres joueurs en ligne ; l\'onglet Session sans session permet de s\'y promener.', on: town.on }])],
-  setOption: (key, v) => { if(key === 'bgSession') backdrop.set(v); if(key === 'bgTown') town.set(v); },
+                   ...(appBoot.app ? [] : [{ key:'bgTown', label:'Le Carreau (la ville) en fond d\'écran', title:'Hors session, la ville du spawn s\'affiche en fond, avec les autres joueurs en ligne ; l\'onglet Session sans session permet de s\'y promener.', on: town.on }]),
+                   ...(appLayer?.notifOptions() ?? [])],
+  setOption: (key, v) => { if(key === 'bgSession') backdrop.set(v); if(key === 'bgTown') town.set(v); if(key.startsWith('notif_')) appLayer?.setNotif(key.slice(6), v); },
 });
 
 /* ---------- lobby ---------- */
@@ -606,6 +611,7 @@ function enterSession(session){
   rec = session; waiting = false;
   setsUI.refresh(); sessionFlag();   // sets indisponibles pendant la session
   clockOffset = session.now - Date.now();
+  appLayer?.refreshNotifs();
   const mi = session.mode === 'mi', tw = isTowerMode(session.mode), ins = isInstanceMode(session.mode);
   G = mi ? { mode:'mi', ready:false, miners:[] } : tw ? { mode:'tower', ready:false, miners:[] } : ins ? { mode:'instance', ready:false, miners:[] } : emptyView();   // MI et tour : remplacées en entier à chaque envoi
   window.G = G;                             // pour le débogage depuis la console (F12)
@@ -880,7 +886,8 @@ async function refresh(waited){
   showBan();
   setInventory(st.inventory);
   if(!st.ended || st.session) setProgress(st.progress);
-  furnace.set(st.furnaces);
+  furnace.set(st.furnaces); syncClock(st.furnaces?.now);
+  appLayer?.refreshNotifs();
   crusher.set(st.crusher);
   stuff.set(st.stuff);
   skills.set(st.skills);

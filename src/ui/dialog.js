@@ -3,12 +3,15 @@
    clic à côté = annuler. Elles ne font que demander : le serveur refait toujours ses vérifications.
      ask(text, { ok, cancel, danger }) → promesse true / false
      tell(text)                        → promesse, à la fermeture
-     askText(text, value, { maxLength, readOnly }) → promesse du texte saisi, ou null si annulé */
+     askText(text, value, { maxLength, readOnly, multiline }) → promesse du texte saisi, ou null si annulé ; multiline :
+       plusieurs lignes, Entrée va à la ligne (on valide au bouton) */
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
 
 /* contenu de la fenêtre (logique pure, testée) ; kind : 'ask' | 'tell' | 'text' */
-export function dialogHtml({ kind, text, ok = 'OK', cancel = 'Annuler', danger = false, value = '', maxLength = 200, readOnly = false }){
-  const input = kind === 'text'
+export function dialogHtml({ kind, text, ok = 'OK', cancel = 'Annuler', danger = false, value = '', maxLength = 200, readOnly = false, multiline = false }){
+  const input = kind === 'text' && multiline
+    ? `<textarea class="dlgInput" rows="6" maxlength="${maxLength}" spellcheck="false">${esc(value)}</textarea>`
+    : kind === 'text'
     ? `<input class="dlgInput" value="${esc(value)}" maxlength="${maxLength}"${readOnly ? ' readonly' : ''} autocomplete="off" spellcheck="false">` : '';
   const no = kind === 'ask' || (kind === 'text' && !readOnly) ? `<button data-dlg="no">${esc(cancel)}</button>` : '';
   return `<div class="box" role="dialog" aria-modal="true">`+
@@ -31,6 +34,7 @@ function open(opts){
       resolve(opts.kind === 'text' ? (yes || opts.readOnly ? v : null) : opts.kind === 'tell' ? undefined : yes);
     };
     const onKey = e => {
+      if(e.key === 'Enter' && opts.multiline) return;
       if(e.key === 'Escape' || e.key === 'Enter'){ e.preventDefault(); e.stopPropagation(); done(e.key === 'Enter'); }
     };
     addEventListener('keydown', onKey, true);

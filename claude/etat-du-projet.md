@@ -51,7 +51,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   refus nommant les joueurs à court, un refus n'arrête pas la prison. Recharge **seulement en prison** : 8 par heure de jeu,
   plafonnée à 100, gardée au dixième. Aucun autre mode ne coûte.
 - **Lobby par activités** (31/10, Geoffrey) : menu des 6 activités, puis sets à gauche et carte de l'activité à droite (ancien : carte « Où miner »). Niveau et XP dans le bandeau du haut. Chat global permanent en bas à gauche, hauteur réglable (`CHAT.dock`, src/ui/chat-dock.js) ; ancien : carte du Lobby.
-- **Guildes** (31/10, Geoffrey ; `GUILD`, server/guild/, src/shared/guild.js, src/ui/guild.js) : onglet Guilde, grades Chef / Officier / Membre, invitations et demandes, 30 membres, 1 % de l'XP des membres, même courbe que le mineur, classement. Bonus et bâtiments à venir.
+- **Guildes** (31/10, Geoffrey ; `GUILD`, server/guild/, src/shared/guild.js, src/ui/guild.js) : message de guilde (01/11, champ `message`), onglet Guilde, grades Chef / Officier / Membre, invitations et demandes, 30 membres, 1 % de l'XP des membres, même courbe que le mineur, classement. Bonus et bâtiments à venir.
 - **Bâtiments de guilde** (01/11, Geoffrey ; `GUILD.buildings`, server/guild/service.js) : Armurerie, Trésorerie, Forge, niveau 1 ; dons définitifs, construction par chef ou officier ; bonus figé avec les skills (`skills.guild`), dans tous les modes ; journal public sans limite (ns `guild_log`).
 - **Raffle** (31/10, Geoffrey ; `RAFFLE`, server/social/raffle.js, src/shared/raffle.js) : tirage au sort dans le chat global, `!join` jamais publié, réservé aux comptes avec pseudo, état en ns `raffle` (reprend après un redémarrage), lot versé une fois par id de raffle. Forcer : `sudo node scripts/force-raffle.js` (route `/api/admin/raffle`).
 - **Arc de l'Admin** (01/11, Geoffrey) : légendaire, case épée, portée +8, dégâts +15, recul +2, T4.5 pour les runes, aucune obtention (`give-item.js`), secret au wiki. Première arme à distance : flèche seulement affichée (`src/render/bow.js`, `SKIN.bow`).
@@ -539,6 +539,9 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 
 - Lecture en différé (31/10/2026) : le navigateur affiche la partie 0,4 s en arrière (`FLUID`, src/shared/view.js), envois à rythme fixe, partie avancée toutes les 100 ms. Détails : `docs/debug.md`.
 
+- **Notifications de l'appli** (01/11, Geoffrey) : locales, calculées sur le téléphone (`src/app/notifs.js`, `native.js`,
+  `APP_NOTIFS`) : session finie, mine instantanée 5 min avant (pas de 23 h à 8 h), Bloc géant, four. Interrupteur général et
+  un par type dans Mon compte, par compte. Push serveur : plus tard.
 - **Appli mobile** (28/10, Jules ; repris le 01/11 par Geoffrey, **étape 1 en ligne le 01/11**, Android d'abord, iOS plus
   tard : interface téléphone confirmée, Guilde et Chat dans la famille Social ; spec
   `docs/superpowers/specs/2026-10-28-appli-mobile-design.md`, guide `docs/appli-mobile.md`) : **Capacitor 8**, le jeu
