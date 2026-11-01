@@ -52,9 +52,9 @@ export const SERVER = {
      jamais le salon public des annonces. Absent : les signalements restent en base, rien n'est envoyé. */
   discordModWebhook: process.env.DIM_DISCORD_MOD_WEBHOOK || '',
   /* seuls ces chemins sont servis au navigateur (le reste du dépôt, dont data/ et l'ancien prototype, ne l'est jamais) */
-  publicPaths: ['/index.html', '/wiki.html', '/suppression-compte.html', '/src/', '/textures/'],
-  /* adresses sans extension : celle de la fiche Google Play reste stable */
-  pages: { '/suppression-compte': '/suppression-compte.html' },
+  publicPaths: ['/index.html', '/wiki.html', '/suppression-compte.html', '/confidentialite.html', '/mentions-legales.html', '/conditions.html', '/src/', '/textures/'],
+  /* adresses sans extension : celles des fiches des stores restent stables (les pages légales viennent de scripts/build-legal.js) */
+  pages: { '/suppression-compte': '/suppression-compte.html', '/confidentialite': '/confidentialite.html', '/mentions-legales': '/mentions-legales.html', '/conditions': '/conditions.html' },
   /* en-têtes de sécurité, sur toutes les réponses (pages, fichiers, API) :
      - CSP : seuls les scripts du jeu s'exécutent (aucun script en ligne, aucun autre site) ; styles et polices :
        le jeu et Google Fonts ; le jeu ne peut pas être affiché dans un cadre (iframe) d'un autre site ;

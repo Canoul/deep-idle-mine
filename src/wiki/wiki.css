@@ -42,6 +42,7 @@ li{margin:4px 0}
 .tabcard p b{color:var(--txt)}
 
 .tw{overflow-x:auto;margin:10px 0;border:1px solid var(--line);border-radius:10px}
+.scroll{overflow-x:auto}
 table{border-collapse:collapse;width:100%;font-size:14px}
 th,td{padding:7px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
 th{background:var(--panel);color:var(--mut);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}

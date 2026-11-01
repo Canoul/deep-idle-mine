@@ -47,6 +47,10 @@ const rulesCheck = () => `<label class="chk rulesChk"><input type="checkbox" nam
   <a href="${RULES.terms}" target="_blank" rel="noopener">conditions d'utilisation</a> et la
   <a href="${RULES.privacy}" target="_blank" rel="noopener">politique de confidentialité</a></span></label>`;
 
+/* pages légales (01/11/2026) : Mon compte, création de compte, bas de l'écran d'accueil */
+export const legalLinks = () => `<p class="legalLinks">${[[RULES.privacy, 'Confidentialité'], [RULES.notice, 'Mentions légales'], [RULES.terms, 'Conditions'], [RULES.deletion, 'Supprimer son compte']]
+  .map(([u, t]) => `<a href="${u}" target="_blank" rel="noopener">${t}</a>`).join(' · ')}</p>`;
+
 /* supprimer son compte (01/11/2026) : textes et champs de la fenêtre ; le serveur revérifie tout */
 export const deleteWarning = account => `Supprimer ton compte ?\nTu perdras pour toujours ta progression, ton inventaire, ton stuff, tes amis et tes records. Cette action est irréversible.${account.guest ? '' : '\nTes messages du chat seront effacés.'}`;
 export const deleteFields = account => account.guest ? [{ name: 'confirm', label: `Tape ${ACCOUNT_DELETE_WORD}` }]
@@ -73,14 +77,16 @@ const VIEWS = {
     <div class="acts">
       <button data-go="register">Créer un compte</button>
       <button data-act="guest" disabled title="Sans pseudo ni mot de passe. Tu pourras sécuriser ton compte plus tard.">Jouer en invité</button>
-    </div>`,
+    </div>
+    ${legalLinks()}`,
 
   register: () => `
     <h3>Créer un compte</h3>
     <p class="mut">Pas besoin d'e-mail : un pseudo et un mot de passe suffisent.</p>
     <form data-mode="register">${pseudoField('username')}${newPassFields()}${rulesCheck()}
       <p class="err" hidden></p><button class="main" type="submit">Créer mon compte</button></form>
-    <p class="links"><a href="#" data-go="login">← J'ai déjà un compte</a></p>`,
+    <p class="links"><a href="#" data-go="login">← J'ai déjà un compte</a></p>
+    ${legalLinks()}`,
 
   recover: () => `
     <h3>Mot de passe oublié</h3>
@@ -118,7 +124,8 @@ const VIEWS = {
     ${isTeam(account) ? `<div class="acts"><button data-act="prisonDash" title="Rendement de la prison de chaque joueur contre ses 10 dernières mines (compte de l'équipe)">📊 Rendement de la prison</button></div>` : ''}
     ${optionsHtml(options)}
     <div class="acts end"><button data-act="logout">Se déconnecter</button><button data-act="close">Fermer</button></div>
-    ${profileDanger()}`,
+    ${profileDanger()}
+    ${legalLinks()}`,
 
   claim: () => `
     <h3>Sécuriser mon compte</h3>

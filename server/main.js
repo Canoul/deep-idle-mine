@@ -26,6 +26,7 @@ import { createDiscordAnnouncer } from './social/discord.js';
 import { createModerationService } from './moderation/service.js';
 import { createReportService } from './moderation/reports.js';
 import { createAccountEraser } from './accounts/erase.js';
+import { migrateItemNames } from './game/rename-items.js';
 
 const port = +(process.argv[2] || SERVER.port);
 /* stockage : PostgreSQL si DATABASE_URL est défini (en ligne), sinon fichiers dans data/ (en local) */
@@ -33,6 +34,9 @@ const db = process.env.DATABASE_URL ? await openDatabase(process.env.DATABASE_UR
 const store = db ? await createPgStore(db) : await createFileStore(SERVER.dataDir);
 const service = createAccountService({ store });
 const gameStore = db ? await createPgGameStore(db) : await createFileGameStore(SERVER.dataDir);
+/* objets renommés (01/11) : avant tout service, sinon une pièce à l'ancien nom serait écartée à la relecture */
+const renamed = await migrateItemNames(gameStore);
+if(renamed.rows) console.log(`Objets renommés : ${renamed.rows} ligne(s)`, renamed.ns);
 /* annonces Discord (trésor ou identification R7) : seulement si DIM_DISCORD_WEBHOOK est défini */
 /* mode dev : copies de vrais joueurs pour les mineurs de test (data/presets/*.json, server/game/dev-copies.js) */
 /* modération du chat (30/10) : un joueur banni voit sa prison arrêtée */

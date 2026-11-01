@@ -955,7 +955,7 @@ def main():
     # gants de boucher (Treasure T4, 27/10) : cuir rouge sang, manchette d'acier
     tex['gloves_butcher'] = glove('#8e1b1b', '#c43a3a', '#4f0d0d', '#9aa1ab')
 
-    # Treasure T4 (27/10) : lunettes Gucci (monture dorée, verres sombres), Doc Martins (bottes noires, semelle jaune),
+    # Treasure T4 (27/10) : lunettes du Dandy (monture dorée, verres sombres), Rangers ferrées (bottes noires, semelle jaune),
     # ceinture golémique (pierre grise et boucle de pierre glissante), jambières titanesques (or et pierres des 4 gemmes)
     gl = blank()
     rect(gl, 1, 6, 14, 1, hexc('#d4a017'))                 # branche / pont
@@ -963,7 +963,7 @@ def main():
         rect(gl, x0, 6, 5, 4, hexc('#d4a017'))
         rect(gl, x0 + 1, 7, 3, 2, hexc('#1b1b1f'))
         rect(gl, x0 + 1, 7, 1, 1, hexc('#6a707a'))
-    tex['glasses_gucci'] = gl
+    tex['glasses_dandy'] = gl
     docs = blank()
     for x0 in (2, 9):
         rect(docs, x0, 4, 4, 7, hexc('#1b1b1f'))
@@ -971,7 +971,7 @@ def main():
         rect(docs, x0, 13, 6 if x0 == 2 else 5, 1, hexc('#e8c547'))   # semelle jaune
         rect(docs, x0 + 1, 5, 2, 1, hexc('#e8c547'))                  # lacets
         rect(docs, x0 + 1, 7, 2, 1, hexc('#e8c547'))
-    tex['boots_docs'] = docs
+    tex['boots_rangers'] = docs
     gb = blank()
     rect(gb, 1, 6, 14, 4, hexc('#7d828c'))
     rect(gb, 1, 6, 14, 1, hexc('#b4bac4')); rect(gb, 1, 9, 14, 1, hexc('#4a4e55'))
@@ -1409,14 +1409,14 @@ def main():
     rect(sk_gbelt, 7, 10, 2, 1, hexc('#5a3a22'))
     rect(sk_gbelt, 6, 9, 1, 1, hexc('#e8dcc0')); rect(sk_gbelt, 9, 9, 1, 1, hexc('#e8dcc0'))
     tex['skins/giant_belt'] = sk_gbelt
-    # lunettes Gucci (29/10/2026) : sur la ligne de l'œil (regard à droite), branche dorée vers les cheveux, verre sombre
+    # lunettes du Dandy (29/10/2026) : sur la ligne de l'œil (regard à droite), branche dorée vers les cheveux, verre sombre
     sk_glasses = blank()
     rect(sk_glasses, 5, 4, 3, 1, hexc('#d4a017'))   # branche
     rect(sk_glasses, 8, 4, 3, 2, hexc('#1b1b1f'))   # verre
     rect(sk_glasses, 8, 4, 1, 1, hexc('#6a707a'))   # reflet
     rect(sk_glasses, 11, 4, 1, 2, hexc('#d4a017'))  # monture, devant
     rect(sk_glasses, 8, 6, 3, 1, hexc('#b8860b'))   # bas de la monture
-    tex['skins/gucci_glasses'] = sk_glasses
+    tex['skins/dandy_glasses'] = sk_glasses
     # Roi Gobelin (27/10/2026) : couronne dorée sur la tête, cape rouge à bordure laineuse blanche (dos + col), masse en main
     sk_crown = blank()
     rect(sk_crown, 4, 1, 8, 2, hexc('#ffd23f')); rect(sk_crown, 4, 2, 8, 1, hexc('#b8860b'))

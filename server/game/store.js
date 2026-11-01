@@ -93,6 +93,10 @@ export function createMemoryGameStore(initial = {}){
   const modLogs = new Map(Object.entries(initial.modLogs ?? {}));
   const moderations = new Map(Object.entries(initial.moderations ?? {}));   // modération du chat, par compte (server/moderation/, 30/10)         // chat global du lobby, clé 'state'
   const copy = o => o && structuredClone(o);
+  const allMaps = () => ({ inventory: inventories, furnace: furnaces, crusher: crushers, stuff, prefs, progress, skills, spells, sets, game_session: sessions, party: parties,
+                           always_ready: alwaysReady, mi_signup: signups, social: socials, judgment: judgments, giant_day: giantDays, giant_player: giantPlayers, hc_day: hcDays, hc_player: hcPlayers,
+                           discovered, session_stat: sessionStats, tower_record: towerRecords, instance_record: instanceRecords, shrine: shrines, energy: energies, prison: prisons, prison_compo: prisonCompos,
+                           chat_global: chats, chat_prefs: chatPrefs, moderation: moderations, report: reports, mod_log: modLogs, raffle: raffles, guilds, guild_log: guildLogs });
 
   const store = {
     async getInventory(accountId){ return copy(inventories.get(accountId)) ?? null; },
@@ -300,6 +304,25 @@ export function createMemoryGameStore(initial = {}){
     async listDiscovered(){ return [...discovered.keys()]; },
     /* renvoie true si c'est la première fois (annonce Discord d'un BP, 27/10), false si l'objet était déjà trouvé */
     async putDiscovered(item, v){ if(discovered.has(item)) return false; discovered.set(item, copy(v)); await store.changed([{ ns: 'discovered', key: item, value: v }]); return true; },
+
+    /* toutes les sortes de données (renommage d'objets, server/game/rename-items.js) */
+    nsList: () => Object.keys(allMaps()),
+    eachRow(fn){ for(const [ns, map] of Object.entries(allMaps())) for(const [k, v] of map) fn(ns, k, v); },
+    /* réécrit clés et valeurs (sauf les sortes de skip) ; met la mémoire à jour et renvoie les changements, sans les écrire */
+    rewrite(keyFn, valueFn, skip = []){
+      const out = [];
+      for(const [ns, map] of Object.entries(allMaps())){
+        if(skip.includes(ns)) continue;
+        for(const [k, v] of [...map]){
+          const nk = keyFn(k), nv = valueFn(v);
+          if(nk === k && nv === v) continue;
+          if(nk !== k){ map.delete(k); out.push({ ns, key: k, value: null }); }
+          map.set(nk, nv);
+          out.push({ ns, key: nk, value: copy(nv) });
+        }
+      }
+      return out;
+    },
 
     /* Suppression d'un compte : met tout à jour en mémoire et renvoie les changements, SANS les écrire : l'appelant les écrit en une
        fois avec ceux du compte. who : { id, names, anon } ; line : la ligne du journal, seule trace gardée. */

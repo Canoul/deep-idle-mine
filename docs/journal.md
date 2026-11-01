@@ -9,6 +9,12 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 01/11/2026 — Geoffrey — Stores : noms de marques retirés, pages légales préparées
+- **Pour le joueur** : les Lunettes Gucci deviennent les **Lunettes du Dandy**, les Doc Martins les **Rangers ferrées**, plans et images compris. Personne ne perd rien : qualité, amélioration et rune restent. Des liens vers Confidentialité, Mentions légales, Conditions et Suppression du compte apparaissent sur l'écran d'accueil, à la création de compte et dans Mon compte.
+- **Décisions** : les noms sont écrits sans crochets, comme tous les objets du jeu. Le renommage se fait tout seul au démarrage du serveur. Signalements, journal et messages du chat gardent l'ancien nom : ce sont des preuves ou les mots des joueurs.
+- **À suivre** : **les trois textes légaux manquent** (rien n'a été joint) : les déposer dans `legal/`, lancer `npm run legal`. Tant que ce n'est pas fait, les liens Confidentialité, Mentions légales et Conditions mènent à une page vide. Avant la mise en ligne, lancer `scripts/migrate-item-names.js` sur le VPS. Autres noms à examiner : Braum, Ulti shen (League of Legends).
+- **État** : 🧪 sur la branche `geoffrey/stores-legal` (pas en ligne ; contient la modération et la suppression de compte)
+
 ## 01/11/2026 — Geoffrey — Supprimer son compte (Google Play, App Store)
 - **Pour le joueur** : dans « Mon compte », un bouton **Supprimer mon compte**, dans une zone rouge à part. Le jeu dit ce qui sera perdu, puis demande le pseudo et le mot de passe (ou le mot SUPPRIMER pour un invité). Une page publique https://deepmineidle.fr/suppression-compte explique tout, et donne l'adresse contact@deepmineidle.fr pour qui n'a plus accès au jeu.
 - **Pour l'équipe** : `scripts/delete-account.js` traite les demandes reçues par mail. Le compte et ses données partent d'un coup. Dans les records et l'historique des coéquipiers, son pseudo devient « Joueur supprimé » ; les statistiques du tableau de bord restent, sous un compte anonyme.
