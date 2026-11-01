@@ -269,7 +269,6 @@ export const LOOT = {
         { item:'Plastron de l\'équilibre BP', chance:0.005 },
       ]},
       { family:'gem', items:gems(0.02) },
-      { family:'material', tex:'moon_crystal', items:[ { item:'Cristal de pleine lune', chance:0.10, tex:'moon_crystal' } ] },
       /* Clé d'instance I (27/10/2026, Geoffrey) : son propre tirage, en plus du reste (INSTANCE) */
       { family:'key', tex:'key_instance_1', items:[ { item:'Clé d\'instance I', chance:0.20, tex:'key_instance_1' } ] },   // 20 % (27/10, Geoffrey ; avant 5 %)
     ],
@@ -1445,7 +1444,7 @@ export const ITEMS = {
   'Clé d\'instance II': { cat:'key', tex:'key_instance_2', w:1, stack:true },           // Treasure T4 (10 %) ; ouvre l'Instance II, le Golbute (30/10)
   'Orbe supérieur': { cat:'material', tex:'orb_superior', w:1, stack:true },   // 31/10 (Geoffrey) : se crafte de base ; sans usage pour l'instant
   'Orbe': { cat:'material', tex:'orb', w:1, stack:true },   // 30/10 (Geoffrey) : se crafte de base ; 31/10 : sert à la Clé d'instance I
-  'Cristal de pleine lune': { cat:'material', tex:'moon_crystal', w:1, stack:true },   // butin du minotaure (DUNGEON.loot) et du Treasure T3 ; après LOOT pour garder son poids
+  'Cristal de pleine lune': { cat:'material', tex:'moon_crystal', w:1, stack:true },   // butin du minotaure (DUNGEON.loot) ; plus dans le Treasure T3 depuis le 01/11/2026 ; après LOOT pour garder son poids
   ...Object.fromEntries(Object.entries(STUFF.items).map(([n, d]) => [n, { cat:'stuff', slot:d.slot, tex:d.tex, stats:d.stats ?? {}, set:d.set ?? {}, w:0, stack:false }])),
 };
 

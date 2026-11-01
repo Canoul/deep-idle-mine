@@ -87,7 +87,7 @@ test('Treasure T3 : areas 5 et 6 (T4 au-delà depuis le 27/10), table du créate
   const fam = f => Object.fromEntries(T3.oneOf.find(o => o.family === f).items.map(i => [i.item, i.chance]));
   assert.deepEqual(fam('blueprint'), { ...Object.fromEntries(Object.keys(STEEL).map(k => [k + ' BP', 0.01])), [BALANCE + ' BP']:0.005 });
   assert.deepEqual(fam('gem'), { 'Rubis inférieur':0.02, 'Jade inférieur':0.02, 'Saphir inférieur':0.02 });
-  assert.deepEqual(fam('material'), { 'Cristal de pleine lune':0.10 });
+  assert.ok(!T3.oneOf.some(o => o.items.some(i => i.item === 'Cristal de pleine lune')), 'plus de cristal depuis le 01/11/2026');
   assert.equal(ITEMS['Cristal de pleine lune'].w, 1, 'garde son poids (butin du minotaure)');
   for(const bp of Object.keys(fam('blueprint'))) assert.equal(ITEMS[bp]?.cat, 'blueprint', bp);
 });
@@ -98,7 +98,7 @@ test('ouvrir des Treasure T3 : toujours graphite, tissu, parts ; fréquences pro
     if(['Graphite ore', 'Tissu sombre', 'Blueprint parts'].includes(k)) continue;
     got[k] = (got[k] || 0) + v;
   }
-  assert.ok(Math.abs(got['Cristal de pleine lune'] / N - 0.10) < 0.01);
+  assert.equal(got['Cristal de pleine lune'], undefined);
   assert.ok(Math.abs((got['Casque en acier BP'] || 0) / N - 0.01) < 0.004);
   const inv = invWith({ 'Treasure T3':1 });
   const r = openTreasure(inv, 'Treasure T3', id(), mulberry32(9));
