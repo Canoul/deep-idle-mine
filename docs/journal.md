@@ -11,7 +11,7 @@ Modèle d'entrée :
 ```
 ## 01/11/2026 — Geoffrey — Guilde : voir les membres depuis la recherche
 - **Pour le joueur** : dans Guilde > Rechercher, un clic sur une guilde déplie ses membres (pseudo, grade, XP rapportée). Un autre clic la replie.
-- **État** : 🧪 sur la branche `geoffrey/guilde-voir-membres` (pas en ligne)
+- **État** : ✅ en ligne le 01/11
 
 ## 01/11/2026 — Geoffrey — Prêt tout le temps : prêt d'office au retour de prison
 - **Pour l'équipe** : avec la case cochée, on est prêt sans clic en entrant dans un groupe et en sortant de prison. Avant,
