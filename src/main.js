@@ -86,7 +86,8 @@ import { prisonLootHtml, showPrisonRecap } from './ui/prison-loot.js';
 import { bootApp } from './app/boot.js';
 
 /* appli mobile (src/app/) : sur le site, ne fait rien */
-bootApp({ doc:document, win:window });
+const appBoot = bootApp({ doc:document, win:window });
+let appLayer = null;   // couche appli, chargée seulement dans l'appli (après setupNav)
 
 const $ = id => document.getElementById(id);
 const ui = { speed:1, paused:false, follow:null, inv:{ slots:[] }, fresh:new Set(), tab:'lobby' };
@@ -302,7 +303,11 @@ nav = setupNav($('nav'), $('views'), id => {
   guide?.refresh();                      // « Regarde ton butin » : l'inventaire vient d'être ouvert
   if(id==='lobby') setTimeout(() => lobby.showMenu());   // cliquer sur Lobby rouvre le menu des activités (différé : le lobby n'est pas encore créé au tout début)
   if(id==='lobby' && wantJudgment){ wantJudgment = false; setTimeout(() => lobby.showJudgment()); }   // différé : le lobby n'est pas encore créé au tout début
+  appLayer?.onTab(id);
 });
+/* appli mobile : barre des familles ; shown : l'onglet Session a-t-il quelque chose à montrer (partie, prison, bilan) ? */
+if(appBoot.app) import('./app/main.js').then(m => { appLayer = m.startApp({ doc:document, win:window, nav,
+  shown: () => !!rec || inRoom() || prisonShown() || !$('end').hidden }); });
 
 /* orbes de la barre d'action : temps de session et XP ; pendant une session, oxygène et pods du mineur suivi */
 const orbs = setupOrbs($('orbL'), $('orbR'));

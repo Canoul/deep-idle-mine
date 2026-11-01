@@ -1,0 +1,2 @@
+/* Couche appli : chargée seulement dans l'appli ou avec ?app (src/app/boot.js). Chaque règle commence par body.app. */
+body.app #nav{display:none}

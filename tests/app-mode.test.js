@@ -6,10 +6,12 @@ import { bootApp } from '../src/app/boot.js';
 
 /* faux document : note les classes posées et les éléments ajoutés */
 function fakeDoc(){
-  const added = [], classes = [];
+  const added = [], classes = [], links = [], viewport = { content: 'width=device-width,initial-scale=1' };
   return {
-    added, classes,
+    added, classes, links, viewport,
     createElement: tag => ({ tag, id: '', textContent: '', style: {} }),
+    querySelector: sel => sel === 'meta[name="viewport"]' ? viewport : null,
+    head: { append: el => links.push(el) },
     body: { classList: { add: c => classes.push(c) }, append: el => added.push(el) },
   };
 }
@@ -49,20 +51,22 @@ test('appli : site sans ?app → aucun appel au document', () => {
   assert.deepEqual(bootApp({ doc, win: web('') }), { status: 'web', app: false });
 });
 
-test('appli : ?app dans un navigateur → classe app, pas de badge', () => {
+test('appli : ?app dans un navigateur → classe app, CSS de l’appli, écran bord à bord, pas de badge', () => {
   const doc = fakeDoc();
   assert.deepEqual(bootApp({ doc, win: web('?app') }), { status: 'web', app: true });
   assert.deepEqual(doc.classes, ['app']);
   assert.equal(doc.added.length, 0);
+  assert.equal(doc.links.length, 1);
+  assert.equal(doc.links[0].rel, 'stylesheet');
+  assert.equal(doc.links[0].href, 'src/app/app.css');
+  assert.equal(doc.viewport.content, 'width=device-width,initial-scale=1,viewport-fit=cover');
 });
 
-test('appli : pont ok → classe app et badge « APPLI ✓ »', () => {
+test('appli : pont ok → classe app, plus de badge', () => {
   const doc = fakeDoc();
   bootApp({ doc, win: { ...web(''), Capacitor: { isNativePlatform: () => true } } });
   assert.deepEqual(doc.classes, ['app']);
-  assert.equal(doc.added.length, 1);
-  assert.equal(doc.added[0].id, 'appBadge');
-  assert.equal(doc.added[0].textContent, 'APPLI ✓');
+  assert.equal(doc.added.length, 0);
 });
 
 test('appli : pont bloqué → badge « APPLI ⚠ pont bloqué »', () => {
