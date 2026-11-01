@@ -11,7 +11,7 @@ Modèle d'entrée :
 ```
 ## 01/11/2026 — Geoffrey — Runes : la couleur de la qualité dans le cadre
 - **Pour le joueur** : le contour de la case d'une rune ou d'un fragment prend la couleur de sa qualité (R1 à R7), au lieu d'être toujours violet ou bleu. On reconnaît une bonne rune d'un coup d'œil dans l'inventaire.
-- **État** : 🧪 sur la branche `geoffrey/rune-couleur` (pas en ligne)
+- **État** : ✅ en ligne le 01/11
 
 ## 01/11/2026 — Geoffrey — He's coming et Bloc géant : changement d'onglet
 - **Pour le joueur** : quand une session ou une prison tournait aussi, la salle restait figée par-dessus le nouvel onglet pendant près d'une demi-seconde. Elle disparaît maintenant tout de suite.
