@@ -48,7 +48,7 @@ await instant.load();
 /* amis (onglet Social) : demandes, présence, inviter / rejoindre un ami */
 const social = createSocialService({ store: gameStore, accounts: store, party, game, moderation, guildInvites: id => guild.invitesOf(id), guildMembers: id => guild.membersOf(id) });
 /* guildes : créées après les amis (présence des membres) ; game et social ne les appellent qu'une fois le serveur lancé */
-const guild = createGuildService({ store: gameStore, accounts: store, statusOf: id => social.statusOf(id), spend: game.guildSpend, counts: game.itemCounts });
+const guild = createGuildService({ store: gameStore, accounts: store, statusOf: id => social.statusOf(id), inviteCheck: me => social.inviteCheck(me), spend: game.guildSpend, counts: game.itemCounts });
 /* Bloc géant : salle commune, visites, scores du jour, récompenses */
 const giant = createGiantService({ store: gameStore, game, dev: GAME_SERVER.dev });
 /* He's coming : le même service, sa partie et ses fiches */
