@@ -278,9 +278,7 @@ test('message de guilde : refus sans guilde ou trop long ; caché aux autres ; g
 
 test('message de guilde : les mots interdits sont masqués', async () => {
   const { guild } = await trio();
-  const { WORD } = await import('../server/moderation/words.js');
-  const word = typeof WORD[0] === 'string' ? WORD[0] : WORD[0].word;
-  await guild.setMessage(ZOE, `salut ${word}`);
+  await guild.setMessage(ZOE, 'salut bande de connards');
   const text = (await guild.view(ZOE)).mine.message.text;
-  assert.ok(text.startsWith('salut ') && !text.includes(word), text);
+  assert.ok(text.startsWith('salut bande de ') && !text.includes('connard'), text);
 });
