@@ -614,6 +614,8 @@ export const SKILLS = {
       /* maîtrises (28/10/2026, Geoffrey) : slot = case du stuff dont la pièce portée voit ses stats × (1 + rang × per),
          comme l'amélioration (bonus positifs, et ce qu'une valeur `set` ajoute à la base) ; pas dans le GS */
       { id:'pick_mastery', row:5, max:3, per:0.05, slot:'pioche', icon:'⚒', name:'Maîtrise de la pioche', desc:'Les stats données par la pioche +{v}' },
+      /* étage 6 (01/11/2026, Geoffrey) : un point chacun */
+      { id:'ore_drunk',   row:6, max:1, per:1,    icon:'🍺', name:'Ivresse Minérale', desc:'Miner un minerai ajoute 1 dégât fixe à sa prochaine attaque (cumulable, sans limite)' },
     ]},
     { id:'logisticien', label:'Logisticien', icon:'🪜', nodes:[
       { id:'travel_rush', row:1, max:3, per:0.03, icon:'👟', name:'Navette',         desc:'Vitesse de marche +{v} quand il remonte à la surface ou redescend au front' },
@@ -623,6 +625,7 @@ export const SKILLS = {
       { id:'winch_speed', row:3, max:5, per:0.05, needsAll:true, icon:'🛗', name:'Escalateur', desc:'Vitesse du seau du treuil +{v} pour tout le groupe (plusieurs logisticiens : le meilleur rang compte)' },
       { id:'mule',        row:4, max:1, per:1,    icon:'🎒', name:'Mule',            desc:'Pose un sac en bas du treuil où tout le monde dépose (capacité : 2 × ses pods). Il le vide au coffre quand il prolonge le treuil et en fin de session' },
       { id:'bench_mastery', row:5, max:3, per:0.03, slot:'torse', icon:'🏋', name:'Maîtrise du bench', desc:'Les stats données par le torse +{v}' },
+      { id:'recon',       row:6, max:1, per:1,    icon:'🔭', name:'Reconnaissance',  desc:'Chaque autre mineur dans le seau du treuil lui rend 1 d\'oxygène toutes les 2 s (cumulable)' },
     ]},
     { id:'barbare', label:'Barbare', icon:'🪓', nodes:[
       { id:'damage',      row:1, max:3, per:0.05, icon:'🪓', name:'Force brute',     desc:'Dégâts infligés +{v}, ténacité +{tenacity}, dégâts de zone {aoe} (mobs à 1 case de sa cible)', adds:{ tenacity:5 }, aoe:0.02 },   // zone : 23/10 (Geoffrey)
@@ -630,9 +633,12 @@ export const SKILLS = {
       { id:'loot',        row:3, max:5, per:0.03, icon:'💰', name:'Pillage',         desc:'Butin des mobs +{v}' },
       { id:'braum',       row:4, max:3, per:0.1,  icon:'🛡', name:'Braum',           desc:'Vitesse de marche et de montée (échelle, seau) +{v} quand il va aider un allié (tacle, donjon, piège) et pendant ce combat' },
       { id:'sword_mastery', row:5, max:3, per:0.05, slot:'epee', icon:'⚔', name:'Maîtrise de l\'épée', desc:'Les stats données par l\'épée +{v}' },
+      { id:'ravage',      row:6, max:1, per:1,    icon:'🩸', name:'Saccager',        desc:'Après 2 critiques d\'affilée, sa prochaine attaque est une double attaque' },
     ]},
   ],
   rushTime: 3,          // s : durée du bonus de vitesse après un minerai (ore_rush), remise à 3 s à chaque minerai
+  reconEvery: 2,        // s dans le seau, par mineur, pour 1 d'oxygène (recon, Reconnaissance)
+  ravageCrits: 2,       // critiques d'affilée pour une double attaque garantie (ravage, Saccager)
   /* au retour, un mineur qui doit poser une échelle laisse faire un logisticien qui remonte aussi, à moins de
      ladderYieldRadius cases (Manhattan), en dessous ou à sa hauteur ; au-delà de ladderYieldMax s d'attente, il la pose
      lui-même (le logisticien a pris un autre chemin : jamais bloqué) */

@@ -6155,6 +6155,11 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** ✅ tests/guild-label.test.js, town, game-service, prison-server, instant-server, instance-server (rouge connu : « une tour et une instance… »). Simulation 2 sessions OK.
 - ⚠️ Rendu pas vu dans un navigateur.
 
+## 01/11/2026 — Talents de l'étage 6 (Geoffrey)
+- **Quoi** : nœuds `ore_drunk`, `recon`, `ravage` (row 6). `hitDamage(G,m,flat)` pose `m.hitCrit` ; `landHit` consomme `m.oreDrunk` et gère `m.critRun` / `m.ravage` ; `reconnaissance(G)` dans `tick` (src/sim/session.js), compteur `m.reconT`.
+- **Hasard** : tirages de `gearRng` inchangés, une partie sans ces talents reste identique.
+- **Pas fait** : mine instantanée (Ivresse n'y passe pas par `oreSkills`), aucune icône d'effet dans le HUD pour les stacks.
+
 ## 01/11/2026 — Canal Guilde du chat (Geoffrey)
 - **Quoi** : canal `guild` (CHAT.channels, `.ch-guild` violet), `/g` (parseChatInput), lecteurs décidés par `audience` (server/social/service.js) via `guildMembers` → `guild.membersOf`. Même mécanique que Groupe : `to` figé à l'envoi.
 - **Conséquences** : un nouveau membre ne lit pas l'historique ; un ancien membre garde ce qu'il pouvait lire (jusqu'à l'expiration du message, 18 h) mais ne reçoit plus rien. Seul dans sa guilde : le message passe, lu par lui seul. Les 300 messages gardés (globalKeep) sont communs à tous les canaux.
