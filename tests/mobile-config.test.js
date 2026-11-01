@@ -39,13 +39,20 @@ test('appli : la racine garde pg comme seule dépendance', () => {
 test('appli : mobile/ ne dépend que de Capacitor 8', () => {
   const p = json('mobile/package.json');
   for(const [name, v] of Object.entries(p.dependencies ?? {})){
-    assert.ok(['@capacitor/core', '@capacitor/android'].includes(name), name);
+    assert.ok(['@capacitor/core', '@capacitor/android', '@capacitor/local-notifications'].includes(name), name);
     assert.match(v, /^\^8\./, name);
   }
   for(const [name, v] of Object.entries(p.devDependencies ?? {})){
     assert.ok(['@capacitor/cli'].includes(name), name);
     assert.match(v, /^\^8\./, name);
   }
+});
+
+test('coque : plugin des notifications dans mobile/, jamais à la racine', () => {
+  assert.ok(json('mobile/package.json').dependencies['@capacitor/local-notifications']);
+  assert.ok(!json('package.json').dependencies['@capacitor/local-notifications']);
+  assert.match(read('mobile/android/capacitor.settings.gradle'), /capacitor-local-notifications/);
+  assert.match(read('mobile/android/app/src/main/AndroidManifest.xml'), /android\.permission\.POST_NOTIFICATIONS/);
 });
 
 test('appli : le serveur ne sert jamais mobile/', () => {

@@ -28,6 +28,13 @@ Modèle d'entrée :
 - **Décisions** : on garde les signalements qui le visent et une ligne de journal, rien d'autre. Le script ne supprime qu'avec `--yes`. Une session encore en cours avec d'autres joueurs est nettoyée à sa fin.
 - **À suivre** : cette branche contient la modération, pas encore en ligne (les deux partiront ensemble) ; créer l'adresse contact@deepmineidle.fr ; relire la politique de confidentialité (liste dans `docs/comptes.md`).
 - **État** : 🧪 sur la branche `geoffrey/suppression-compte` (pas en ligne)
+## 01/11/2026 — Geoffrey — Appli mobile : notifications
+- **Pour le joueur** : rien sur le site. L'appli Android prévient, même fermée : session terminée, mine instantanée dans
+  5 min (sauf de 23 h à 8 h), Bloc géant accessible, four terminé. Toucher la notification ouvre le bon écran. Dans Mon
+  compte → Options : un interrupteur général et un par type, tous activés par défaut, propres à chaque compte.
+- **Limite** : une session lancée depuis le PC n'est connue qu'à la prochaine ouverture de l'appli.
+- **État** : ✅ en ligne le 01/11, nouvelle APK à installer
+
 ## 01/11/2026 — Geoffrey — Guilde : message de guilde
 - **Pour le joueur** : en haut de l'onglet de sa guilde, une case **Message de guilde**. Le chef et les officiers l'écrivent, tous les membres le lisent.
 - **État** : ✅ en ligne le 01/11
