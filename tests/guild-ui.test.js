@@ -1,7 +1,7 @@
 /* Guilde : affichage (src/ui/guild.js), textes échappés, cases d'actions, barre d'onglets. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { guildTabs, holdsPanel, mineHTML, listHTML, boardHTML, invitesHTML } from '../src/ui/guild.js';
+import { guildTabs, holdsPanel, mineHTML, listHTML, boardHTML, invitesHTML, sendInvite } from '../src/ui/guild.js';
 import { TABS } from '../src/ui/nav.js';
 
 const NONE = { kick:false, promote:false, demote:false, transfer:false };
@@ -85,3 +85,15 @@ test('liste : cliquer une guilde déplie ses membres, échappés', () => {
   assert.ok(h.includes('data-g="request"'), 'le bouton reste là');
 });
 
+
+test('inviter : la fenêtre confirme avec le pseudo, après la relecture de l\'onglet', async () => {
+  const log = [], h = { invite:async n => log.push('invite ' + n), done:async () => log.push('done'), tell:async t => log.push(t) };
+  await sendInvite('  Zoe ', h);
+  assert.deepEqual(log, ['invite Zoe', 'done', 'Invitation envoyée à Zoe.']);
+});
+
+test('inviter : pseudo inconnu, la fenêtre donne le refus du serveur', async () => {
+  const told = [];
+  await sendInvite('Personne', { invite:async () => { throw new Error('Ce pseudo n\'existe pas.'); }, done:async () => { throw new Error('pas de relecture'); }, tell:async t => told.push(t) });
+  assert.deepEqual(told, ['Ce pseudo n\'existe pas.']);
+});

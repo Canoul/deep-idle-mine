@@ -2,7 +2,7 @@
    viennent de ce qu'il renvoie (actions d'un membre, demandes), et il revérifie tout. */
 import { GUILD, ITEMS } from '../config.js';
 import { RANK_LABEL, canRecruit } from '../shared/guild.js';
-import { ask, askText } from './dialog.js';
+import { ask, askText, tell } from './dialog.js';
 import { guildApi } from '../net/api.js';
 import { rname } from './rarity.js';
 
@@ -93,6 +93,16 @@ export const boardHTML = list => list.length ? list.map(g =>
 export const invitesHTML = list => list.map(g =>
   `<div class="frow"><span class="fname"><b>${esc(g.name)}</b><small class="mut">${place(g)}</small></span><span class="fbtns"><button class="on" data-g="acceptInvite" data-id="${esc(g.id)}">Accepter</button><button data-g="refuseInvite" data-id="${esc(g.id)}">Refuser</button></span></div>`).join('');
 
+/* inviter un joueur : une fenêtre dit toujours ce qui s'est passé (01/11/2026, Geoffrey) ; refus : le message du serveur.
+   h : { invite(pseudo), done() : relire l'onglet, tell(texte) } */
+export async function sendInvite(input, { invite, done, tell }){
+  const who = input.trim();
+  try { await invite(who); }
+  catch(e){ await tell(e.message); return; }
+  await done();
+  await tell(`Invitation envoyée à ${who}.`);
+}
+
 /* onChange() : un changement peut retirer un pop-up d'invitation (src/main.js) */
 export function setupGuild({ root, api = guildApi, onChange = () => {} }){
   const $ = id => document.getElementById(id);
@@ -159,7 +169,7 @@ export function setupGuild({ root, api = guildApi, onChange = () => {} }){
     if(name === 'peek') return run(async () => { peek = await api.peek(id); peekOlder = {}; });
     if(name === 'invite'){
       const who = await askText('Pseudo du joueur à inviter', '', { maxLength:32, ok:'Inviter' });
-      if(who) await run(() => api.invite(who));
+      if(who?.trim()) await sendInvite(who, { invite:name => api.invite(name), done:quiet, tell });
       return;
     }
     if(name === 'leave' && !await ask('Quitter la guilde ?', { danger:true, ok:'Quitter' })) return;

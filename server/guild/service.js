@@ -233,7 +233,7 @@ export function createGuildService({ store, accounts, statusOf, spend = async ()
       if(!text || text.length > 32) fail('bad_name', 400, 'Tape le pseudo du joueur.');
       const { g } = recruiter(me);
       const who = await accounts.findAccountByName(nameKey(text));
-      if(!who || who.guest) fail('not_found', 404, 'Aucun joueur avec ce pseudo.');
+      if(!who || who.guest) fail('not_found', 404, 'Ce pseudo n\'existe pas.');
       if(g.members.some(m => m.id === who.id)) fail('already_member', 409, `${who.name} est déjà dans ta guilde.`);
       if(g.invites.some(i => i.id === who.id)) return false;
       if(g.invites.length >= GUILD.maxInvites) fail('too_many', 409, 'Trop d\'invitations en attente.');

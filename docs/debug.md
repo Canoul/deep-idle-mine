@@ -6201,3 +6201,6 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Quoi** : `guild.members(me, id)` (server/guild/service.js), `POST /api/guild/members`, `guildApi.members`. Renvoie pseudo, grade, XP : ni identifiant de compte ni présence, qui restent réservés aux membres. Dans src/ui/guild.js, `open` = guilde dépliée, relue à chaque relecture ; refermée si elle sort de la liste ou disparaît. `members` garde l'id de sa guilde : une réponse en retard ne s'affiche pas sous une autre.
 - **Tests** ✅ tests/guild-service.test.js, tests/guild-ui.test.js.
 
+## 01/11/2026 — Guilde : fenêtre après une invitation (Geoffrey)
+- **Quoi** : `sendInvite` (src/ui/guild.js) passe par `tell` (src/ui/dialog.js) au lieu de `say`, succès compris. Une invitation déjà envoyée au même joueur dit aussi « envoyée » (le service ne distingue pas ce cas).
+- **Tests** ✅ tests/guild-ui.test.js, guild-service. ⚠️ Fenêtre pas vue dans un navigateur.
