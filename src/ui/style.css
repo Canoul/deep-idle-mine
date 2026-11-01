@@ -808,6 +808,10 @@ body.phone .chatDock .card{background:#0b0806}
 .gcols>div{display:flex;flex-direction:column;gap:calc(4*var(--u))}
 .gxp{font-size:var(--fs-s);white-space:nowrap}
 .gact{max-width:calc(60*var(--u))}
+button.gopen{align-items:stretch;gap:0;min-height:0;padding:0;border:0;border-image:none;text-align:left}
+button.gopen:active:not(:disabled){transform:none}
+.gopen:hover b{color:var(--acc)}
+.gfold{margin:0 0 calc(3*var(--u)) calc(5*var(--u));padding-left:calc(3*var(--u));border-left:var(--u) solid var(--sep)}
 #guildQuery{width:100%;margin-bottom:calc(3*var(--u))}
 @media (max-width:700px){.gcols{grid-template-columns:minmax(0,1fr)}}
 .sadd{display:flex;align-items:center;gap:calc(3*var(--u));flex-wrap:wrap}

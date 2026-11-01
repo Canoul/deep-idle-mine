@@ -97,6 +97,15 @@ export function createGuildService({ store, accounts, statusOf, clock = Date.now
       const found = all().filter(g => guildNameKey(g.name).includes(q)).sort((a, b) => b.rawXp - a.rawXp || a.name.localeCompare(b.name, 'fr'));
       return { guilds:await Promise.all(found.map(summary)) };
     },
+    /* membres d'une guilde vus de l'extérieur : ni identifiant ni présence (01/11/2026) */
+    async members(me, id){
+      needGuildId(id);
+      await load();
+      const g = all().find(x => x.id === id);
+      if(!g) fail('not_found', 404, 'Cette guilde n\'existe plus.');
+      const rows = await Promise.all(g.members.map(async m => ({ name:await nameOf(m.id), rank:m.rank, xp:guildXpOf(m.rawXp) })));
+      return { id:g.id, members:sortMembers(rows) };
+    },
     /* niveau puis XP : le niveau suit l'XP, un seul tri suffit */
     async board(me){
       await load();

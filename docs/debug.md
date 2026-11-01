@@ -6174,3 +6174,8 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** : `tests/party.test.js` ✅ (3 nouveaux) ; ⚠️ pas vu dans un navigateur.
 - **Point fragile** : la route `POST /api/game/prison/start` passe `members:null`, donc « solo seulement » n'est vérifié que par le
   navigateur.
+
+## 01/11/2026 — Guilde : membres visibles depuis Rechercher (Geoffrey)
+- **Quoi** : `guild.members(me, id)` (server/guild/service.js), `POST /api/guild/members`, `guildApi.members`. Renvoie pseudo, grade, XP : ni identifiant de compte ni présence, qui restent réservés aux membres. Dans src/ui/guild.js, `open` = guilde dépliée, relue à chaque relecture ; refermée si elle sort de la liste ou disparaît. `members` garde l'id de sa guilde : une réponse en retard ne s'affiche pas sous une autre.
+- **Tests** ✅ tests/guild-service.test.js, tests/guild-ui.test.js.
+
