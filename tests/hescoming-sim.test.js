@@ -11,10 +11,10 @@ const run = (G, s) => { for(let i = 0, n = Math.round(s / DT); i < n; i++) tickL
 /* mineur posé à sa place, combat engagé */
 const ready = (carac, seed) => { const r = room(carac, seed); r.m.x = standX(r.G, r.m); return r; };
 
-test('config : paliers du Bloc × 25, pépites ÷ 25, mêmes objets, même durée', () => {
-  assert.deepEqual(HC.tiers.map(t => t.min), [25000, 125000, 250000, 375000, 500000]);
+test('config : paliers du Bloc × 8, pépites ÷ 8, mêmes objets, même durée', () => {
+  assert.deepEqual(HC.tiers.map(t => t.min), [8000, 40000, 80000, 120000, 160000]);
   assert.deepEqual(HC.tiers.map(t => t.items), GIANT.tiers.map(t => t.items));
-  assert.equal(HC.nugget.per, 2500);
+  assert.equal(HC.nugget.per, 800);
   assert.equal(HC.visit, GIANT.visit); assert.equal(HC.cooldownMs, GIANT.cooldownMs);
 });
 

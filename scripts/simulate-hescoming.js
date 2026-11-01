@@ -20,7 +20,7 @@ const PROFILES = [
 ];
 const avg = a => a.reduce((s, v) => s + v, 0) / (a.length || 1);
 console.log(`He's coming : visite de ${HC.visit} s, ${count} seeds, un mineur seul. Palier le plus haut : ${HC.tiers.at(-1).min.toLocaleString('fr-FR')}`);
-console.log('profil                        points (min / moy / max)   reculs  recharges  visites pour 25 000 / 500 000');
+console.log('profil                        points (min / moy / max)   reculs  recharges  visites pour le 1er / dernier palier');
 for(const [label, carac] of PROFILES){
   const pts = [], knocks = [], refills = [];
   for(let i = 1; i <= count; i++){
@@ -31,5 +31,5 @@ for(const [label, carac] of PROFILES){
     pts.push(v.points); knocks.push(v.knocks); refills.push(v.refills);
   }
   const a = avg(pts);
-  console.log(`${label.padEnd(28)}  ${`${Math.min(...pts).toFixed(0)} / ${a.toFixed(0)} / ${Math.max(...pts).toFixed(0)}`.padStart(22)}   ${avg(knocks).toFixed(1).padStart(6)}  ${avg(refills).toFixed(2).padStart(9)}  ${String(Math.ceil(25000 / a)).padStart(8)} / ${Math.ceil(500000 / a)}`);
+  console.log(`${label.padEnd(28)}  ${`${Math.min(...pts).toFixed(0)} / ${a.toFixed(0)} / ${Math.max(...pts).toFixed(0)}`.padStart(22)}   ${avg(knocks).toFixed(1).padStart(6)}  ${avg(refills).toFixed(2).padStart(9)}  ${String(Math.ceil(HC.tiers[0].min / a)).padStart(8)} / ${Math.ceil(HC.tiers.at(-1).min / a)}`);
 }

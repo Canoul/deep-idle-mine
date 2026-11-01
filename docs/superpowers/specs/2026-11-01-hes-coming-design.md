@@ -22,17 +22,17 @@ un bloc, on frappe Lucifer. C'est le DPS qui compte, plus la vitesse de minage. 
 
 **Points** : 1 dégât infligé = 1 point. Compte tout le calcul d'un coup de la mine : dégâts, dégâts %, critiques, double attaque, vitesse d'attaque.
 
-**Paliers** : ceux du Bloc × 25.
+**Paliers** : ceux du Bloc × 8 (décision après simulation, avant : × 25).
 
 | Score collectif | Récompense |
 |---|---|
-| 25 000 | 1 Treasure T1 |
-| 125 000 | 1 Treasure T1 + 15 Blueprint parts |
-| 250 000 | 1 Treasure T2 |
-| 375 000 | 1 Treasure T2 + 30 Blueprint parts |
-| 500 000 | 1 Treasure T3 |
+| 8 000 | 1 Treasure T1 |
+| 40 000 | 1 Treasure T1 + 15 Blueprint parts |
+| 80 000 | 1 Treasure T2 |
+| 120 000 | 1 Treasure T2 + 30 Blueprint parts |
+| 160 000 | 1 Treasure T3 |
 
-**Pépites d'argent** : 1 par tranche de 2 500 points (celles du Bloc ÷ 25, même rythme).
+**Pépites d'argent** : 1 par tranche de 800 points (celles du Bloc ÷ 8).
 
 **Salle** : 15 × 7, spawn et fontaine à gauche. Lucifer à droite : gros démon charismatique, seuls son torse, ses bras et sa tête sortent du sol, qui est un portail de lave. Il ne meurt jamais, il ne se déplace pas. Le recul à 10 % par coup du Bloc disparaît, remplacé par les attaques de Lucifer.
 

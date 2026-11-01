@@ -86,7 +86,7 @@ test('redémarrage : la visite reprend, sans perdre de temps ni être comptée d
   assert.ok(i.total > 0);
 });
 
-test('récompense : deux visites, paliers × 25, pépites par 2 500 points, une seule fois', async () => {
+test('récompense : deux visites, paliers × 8, pépites par 800 points, une seule fois', async () => {
   const config = { ...HC, tiers:[{ min:1, items:{ 'Treasure T1':1 } }], nugget:{ ...HC.nugget, per:1 } };
   const { hc, advance, clock, store } = setup({ config });
   await hc.enter(A); await advance(VISIT + 1000);
