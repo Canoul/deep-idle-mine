@@ -9,7 +9,7 @@ import { isRing } from '../meta/piece.js';
 import { pieceGS } from '../meta/gearscore.js';
 import { recipeOfBlueprint } from '../meta/craft.js';
 import { icon } from './craft.js';
-import { rcls, rname, pname } from './rarity.js';
+import { rcls, rname, pname, rframe } from './rarity.js';
 
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
 
@@ -39,7 +39,7 @@ export function setupObtained(root){
     const name = typeof entry === 'string' ? rname(entry, undefined, 'b') : pname(entry, 'b');
     root.innerHTML = `<div class="box" role="dialog" aria-modal="true" aria-label="${esc(title)}">`+
       `<p class="obTitle">${esc(title)}</p>`+
-      `<div class="slot obIcon${rcls(item)}">${icon(item)}</div>`+
+      `<div class="slot obIcon${rcls(item)}"${rframe(entry)}>${icon(item)}</div>`+
       `<p class="obName">${name}${qty > 1 ? ` <span class="mut">× ${qty}</span>` : ''}</p>`+
       obtainedLines(entry).map(l => `<div class="obLine">${esc(l)}</div>`).join('')+
       `<p class="mut small obHint">Clique pour fermer</p></div>`;
