@@ -20,6 +20,7 @@ import { SPELL } from '../../meta/spells.js';
 import { log } from '../log.js';
 import { cleanRings } from '../effects.js';
 import { knockOf } from '../knock.js';
+import { oneTapBonus } from '../one-tap.js';
 import { mobHp } from '../../config.js';
 
 const C = INSTANCE.golbute;
@@ -399,7 +400,7 @@ function stepMiner(G, m){
   while(budget > 1e-9 && guard++ < 30 && !G.over){
     if(!m.action){ m.now = G.t - budget; decide(G, m); m.now = null; if(!m.action) break; }
     const a = m.action, need = a.dur - a.t, used = Math.min(budget, need);
-    if(a.type === 'drill'){ drainCrystal(G, m, golRate(G, m) * used); G.stats.mineT += used; }
+    if(a.type === 'drill'){ const r = golRate(G, m); drainCrystal(G, m, r * used + oneTapBonus(m, used, r, G.fightRng)); G.stats.mineT += used; }
     else if(a.type === 'attack') G.stats.fightT += used;
     if(budget >= need){ budget -= need; m.action = null; if(a.type === 'move'){ if(golOpen(G, a.data.x, a.data.y)) m.x = a.data.x; } }
     else { a.t += budget; budget = 0; }

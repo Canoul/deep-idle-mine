@@ -271,7 +271,7 @@ const STAT_HELP = {
   mineSpeedPct:'Bonus de vitesse de minage en %, sur certaines pièces identifiées : vitesse = (base + bonus fixes) × (1 + ce %).',
   damagePct:  'Bonus de dégâts en %, sur certaines pièces identifiées : dégâts = (base + bonus fixes) × (1 + ce %).',
   crit:       'Chance qu\'un coup contre un mob fasse le double de dégâts.',
-  oneTap:     'Chance de casser un bloc instantanément.',
+  oneTap:     'Chance de casser un bloc instantanément. Sur le Bloc géant, les spawners et le cristal du Golbute : à chaque seconde de minage, chance de compter une seconde de plus.',
   piercing:   'Chance de casser aussi le bloc juste derrière celui qu\'il mine.',
   looting:    "Chance, en %, d'un butin en plus à chaque mob tué (comme le skill Pillage).",
 };

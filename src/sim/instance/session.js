@@ -20,6 +20,7 @@ import { SPELL } from '../../meta/spells.js';
 import { log } from '../log.js';
 import { cleanRings } from '../effects.js';
 import { ladderTime, nowOf } from '../mineur.js';
+import { oneTapBonus } from '../one-tap.js';
 import { inReach, push, driftsAway, reachOf, knockbackOf, knockOf, stopAction } from '../knock.js';
 import { genInstance, isOpen, toCenter, AIR, CAGE, SPAWNER } from './world.js';
 
@@ -652,7 +653,7 @@ function stepMiner(G, m){
     if(!m.action){ m.now = G.t - budget; decide(G, m); m.now = null; if(!m.action) break; }   // m.now : heure exacte (nowOf)
     const a = m.action, need = a.dur - a.t, used = Math.min(budget, need);
     /* casser un spawner : il perd la vitesse de minage × le temps passé (au tick près, même entre deux actions) */
-    if(a.type === 'drill'){ const s = G.spawners.find(q => q.id === a.data.sp); if(s?.alive) drain(G, m, s, instRate(G, m) * used); }
+    if(a.type === 'drill'){ const s = G.spawners.find(q => q.id === a.data.sp); if(s?.alive){ const r = instRate(G, m); drain(G, m, s, r * used + oneTapBonus(m, used, r, G.fightRng)); } }
     if(budget >= need){ budget -= need; m.action = null; finishAction(G, m, a); }
     else { a.t += budget; budget = 0; }
   }

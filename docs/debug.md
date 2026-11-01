@@ -6338,3 +6338,10 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Quoi** : `rframe(p)` (src/ui/rarity.js) pose `--rc` en style sur la case, ce qui l'emporte sur `.slot.r-…`. Seulement pour les objets `cat:'rune'` avec une qualité connue ; les pièces de stuff gardent la rareté de leur type. Utilisé dans src/ui/inventory.js, upgrade.js (`box`), obtained.js.
 - **Tests** ✅ tests/rune-mark.test.js. ⚠️ Pas vu dans un navigateur.
 - **Non touché** : la petite icône d'une rune posée sur une pièce (`runeMark`) et la liste de choix des runes (sans case, le nom est déjà coloré).
+
+## 01/11/2026 — Coup unique sur les boss qui se minent (Geoffrey)
+- **Quoi** : `oneTapBonus` (src/sim/one-tap.js, `ONE_TAP.every` en config), appelé par le Bloc géant (`mine`, hasard `G.rng`), les spawners (src/sim/instance/session.js) et le cristal (src/sim/instance/golbute.js), hasard `G.fightRng`. Temps gardé dans `m.tapAcc` : une interruption (recul, recharge) ne perd pas la fraction de seconde. Ne compte pas comme des coups : ni oxygène, ni recul.
+- **Effet** : espérance = vitesse × (1 + coup unique). Le tirage ne se fait qu'avec la stat : sans elle, une partie est identique.
+- **Non vérifié** : pas de nouvelle mesure de la valeur du coup unique en x ; paliers du Bloc géant et 720 coups du cristal inchangés.
+- **Tests** ✅ tests/one-tap.test.js, giant-sim, golbute, instance-sim.
+
