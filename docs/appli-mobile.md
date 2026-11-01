@@ -29,8 +29,7 @@ Android 7 ou plus récent. Pas d'iPhone pour l'instant (il faut le compte Apple)
   - **APPLI ✓** (vert) : l'appli est branchée au téléphone. Tout va bien.
   - **APPLI ⚠ pont bloqué** (orange) : l'appli s'ouvre mais ne peut pas parler au téléphone (notifications impossibles).
     Le prévenir tout de suite : c'est une décision d'équipe (sécurité du site), on n'y touche pas seul.
-  - pas de badge : normal **tant que la branche `jules/appli-mobile` n'est pas en ligne** (l'appli charge le jeu de
-    deepmineidle.fr, donc de `main`, où la détection de l'appli n'est pas encore) ; après la mise en ligne, le signaler.
+  - pas de badge : anormal, le signaler (la détection de l'appli est en ligne depuis le 01/11).
 - Sans réseau : une page « Pas de connexion au serveur du jeu » avec **Réessayer**. Même page quelques secondes après
   une mise en ligne (le serveur redémarre).
 

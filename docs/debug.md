@@ -6289,12 +6289,14 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   `server.url` déconseillé en production par Capacitor (Apple, plan B dans la spec) ; le badge est provisoire (à retirer
   à l'étape 2).
 
-## 01/11/2026 — Geoffrey — Appli mobile : reprise, branche remise à jour sur main
+## 01/11/2026 — Geoffrey — Appli mobile : reprise, branche remise à jour sur main (en ligne le 01/11)
 - **Quoi** : `geoffrey/appli-mobile` créée depuis `jules/appli-mobile` (branche de Jules intacte), fusion de `origin/main`
   (673 commits de retard). Conflits : `src/main.js` (imports de main + `bootApp`), journal, debug, état du projet (les deux
   textes gardés). Spec : Guilde et Chat dans la famille Social, plus de chat dans la session.
-- **Tests** : ✅ `tests/app-mode`, `mobile-config`, `mobile-icon` (18/18) après la fusion.
+- **Tests** : ✅ `tests/app-mode`, `mobile-config`, `mobile-icon` (18/18) après la fusion. ✅ Serveur local : `/src/app/boot.js` et
+  `mode.js` servis (200), `/mobile/…` et `/.github/…` refusés (404). ✅ APK fabriquée (run 41300583527). Pas de simulation ni
+  d'anti-triche : ni la simulation ni l'économie n'ont bougé.
 - **À vérifier** : ⚠️ jamais essayé sur un vrai Android (pont natif et politique de sécurité : `script-src 'self'`) ;
-  le badge n'apparaît qu'après la mise en ligne, l'appli chargeant `main`.
+  le badge doit maintenant apparaître dans l'appli.
 - **Points fragiles** : le site a maintenant un onglet Chat réservé au téléphone (`CHAT_TAB`, 31/10) et le Carreau en fond :
   à reprendre dans la navigation de l'appli (étape 2). `gh` absent de ce PC : suivre les fabrications par l'API GitHub.

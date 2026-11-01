@@ -531,7 +531,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 
 - Lecture en différé (31/10/2026) : le navigateur affiche la partie 0,4 s en arrière (`FLUID`, src/shared/view.js), envois à rythme fixe, partie avancée toutes les 100 ms. Détails : `docs/debug.md`.
 
-- **Appli mobile** (28/10, Jules ; **en cours, branche `jules/appli-mobile`, pas en ligne** ; spec
+- **Appli mobile** (28/10, Jules ; repris le 01/11 par Geoffrey, **étape 1 en ligne le 01/11**, Android d'abord, iOS plus
+  tard : interface téléphone confirmée, Guilde et Chat dans la famille Social ; spec
   `docs/superpowers/specs/2026-10-28-appli-mobile-design.md`, guide `docs/appli-mobile.md`) : **Capacitor 8**, le jeu
   actuel dans une coque native (pas de réécriture), qui **charge deepmineidle.fr** (`server.url` ; plan B si Apple
   refuse : fichiers dans l'appli + mise à jour du code web). **Le site ne change pas** (décision de Jules, sur PC comme
@@ -543,7 +544,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   (push serveur) ; pas le concasseur. Étapes : 1 coque Android (APK de test par GitHub Actions) → 2 interface → 3
   notifications programmées → 4 push, iOS, stores (comptes Apple / Google : plus tard, avec un business plan, Geoffrey).
   **Étape 1 faite le 28/10** : `mobile/`, `src/app/` (classe `app`, badge provisoire « APPLI ✓ / ⚠ pont bloqué »),
-  icône (`npm run app:icon`), `.github/workflows/android-apk.yml` ; reste l'essai sur un vrai Android.
+  icône (`npm run app:icon`), `.github/workflows/android-apk.yml` ; reste l'essai sur un vrai Android (Geoffrey).
 
 ## Hébergement
 
