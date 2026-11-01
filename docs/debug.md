@@ -6527,3 +6527,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Point fragile** : `node --check` ne voit que la syntaxe ; une erreur à l'exécution (variable inconnue, import d'un nom
   qui n'existe pas) passe encore. Les imports nommés absents sont, eux, une erreur de liaison du navigateur, pas de
   `node --check`.
+
+## 01/11/2026 — Mise en ligne groupée : modération, suppression de compte, marques et pages légales, appli Android (Geoffrey)
+- **Tests** : `npm test` complet : 8 échecs, les mêmes que sur `main` juste avant (comparaison des deux suites) : energyOfTicks, fortune, boîte de mesures, lobby mode dev, recettes du T4, recycle, roi gobelin, tour et instance terminent la prison. ❌ À regarder, sans lien avec ces chantiers. `test:anticheat` 152/152, simulation 3 mineurs × 5 sans blocage.
+- **Fusion** : classements déplacés par `geoffrey/onglet-classement` dans src/ui/leaderboard.js : le bouton ⋮ y a été remis.

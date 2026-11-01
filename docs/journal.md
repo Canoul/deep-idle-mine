@@ -14,20 +14,20 @@ Modèle d'entrée :
 - **Décisions** : fichiers du jeu dans l'appli (ancien : l'appli ouvrait le site à distance). Connexion par jeton dans un en-tête pour l'appli seulement, le site garde son cookie. Écran vertical, à confirmer. Icône provisoire : la pioche d'acier.
 - **Attention** : le code est figé dans l'appli. Une mise en ligne ne change plus l'appli des joueurs, il faut une mise à jour sur Google Play ; une ancienne appli peut casser si le serveur change trop.
 - **À suivre** : mettre la branche en ligne d'abord (le serveur doit connaître le jeton), créer la clé d'envoi et les 4 secrets GitHub, tester l'APK sur un vrai téléphone.
-- **État** : 🧪 sur la branche `geoffrey/capacitor-android` (pas en ligne ; contient modération, suppression de compte et stores-legal)
+- **État** : ✅ en ligne le 01/11
 
 ## 01/11/2026 — Geoffrey — Stores : noms de marques retirés, pages légales préparées
 - **Pour le joueur** : les Lunettes Gucci deviennent les **Lunettes de luxe**, les Doc Martins les **Bottes de chantier**, plans et images compris. Personne ne perd rien : qualité, amélioration et rune restent. Des liens vers Confidentialité, Mentions légales, Conditions et Suppression du compte apparaissent sur l'écran d'accueil, à la création de compte et dans Mon compte.
 - **Décisions** : les noms sont écrits sans crochets, comme tous les objets du jeu. Le renommage se fait tout seul au démarrage du serveur. Signalements, journal et messages du chat gardent l'ancien nom : ce sont des preuves ou les mots des joueurs.
 - **À suivre** : les trois textes sont publiés sur la branche (`legal/`, `npm run legal` après chaque retouche) ; compléter les passages entre crochets et choisir l'option des mentions légales. Avant la mise en ligne, lancer `scripts/migrate-item-names.js` sur le VPS. Autres noms à examiner : Braum, Ulti shen (League of Legends).
-- **État** : 🧪 sur la branche `geoffrey/stores-legal` (pas en ligne ; contient la modération et la suppression de compte)
+- **État** : ✅ en ligne le 01/11
 
 ## 01/11/2026 — Geoffrey — Supprimer son compte (Google Play, App Store)
 - **Pour le joueur** : dans « Mon compte », un bouton **Supprimer mon compte**, dans une zone rouge à part. Le jeu dit ce qui sera perdu, puis demande le pseudo et le mot de passe (ou le mot SUPPRIMER pour un invité). Une page publique https://deepmineidle.fr/suppression-compte explique tout, et donne l'adresse contact@deepmineidle.fr pour qui n'a plus accès au jeu.
 - **Pour l'équipe** : `scripts/delete-account.js` traite les demandes reçues par mail. Le compte et ses données partent d'un coup. Dans les records et l'historique des coéquipiers, son pseudo devient « Joueur supprimé » ; les statistiques du tableau de bord restent, sous un compte anonyme.
 - **Décisions** : on garde les signalements qui le visent et une ligne de journal, rien d'autre. Le script ne supprime qu'avec `--yes`. Une session encore en cours avec d'autres joueurs est nettoyée à sa fin.
 - **À suivre** : cette branche contient la modération, pas encore en ligne (les deux partiront ensemble) ; créer l'adresse contact@deepmineidle.fr ; relire la politique de confidentialité (liste dans `docs/comptes.md`).
-- **État** : 🧪 sur la branche `geoffrey/suppression-compte` (pas en ligne)
+- **État** : ✅ en ligne le 01/11
 ## JJ/MM/AAAA — Prénom — Titre court
 - **Pour le joueur** : ce qui change en jeu (ou « rien, c'est de l'organisation »).
 - **Décisions** : choix de design ou d'équilibrage tranchés (s'il y en a).
@@ -75,7 +75,7 @@ Modèle d'entrée :
 - **Pour l'équipe** : cinq nouveaux outils sur le VPS, `reports.js`, `delete-message.js`, `mute.js`, `ban.js`, `rename.js`, et un journal de ce qui a été fait (`reports.js --log`). Chaque signalement arrive aussi sur un salon Discord privé.
 - **Décisions** : on garde les avertissements et le ban auto de 24 h ; `ban.js` est une sanction à part (connexion refusée). Les jurons d'humeur (putain, merde, fuck) restent permis. Un bloqué n'est pas chassé du Carreau, seule sa bulle disparaît.
 - **À suivre** : les pages https://deepmineidle.fr/conditions et /confidentialite **n'existent pas encore** (404) ; il faut les publier avant la soumission aux stores. Créer le salon privé et régler `DIM_DISCORD_MOD_WEBHOOK` sur le VPS.
-- **État** : 🧪 sur la branche `geoffrey/moderation` (pas en ligne)
+- **État** : ✅ en ligne le 01/11
 ## 01/11/2026 — Geoffrey — Prison : des runs ne donnaient aucune XP
 - **Pour le joueur** : depuis le 31/10, environ 4 runs de prison sur 10 ne rapportaient aucune XP à cause d'un arrondi. Chaque run donne maintenant son XP. L'XP perdue avant la correction n'est pas rendue.
 - **État** : ✅ en ligne le 01/11
