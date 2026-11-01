@@ -145,6 +145,29 @@ select option{background:var(--panel)}
 #tip div{color:var(--o2)}
 #tip.help{max-width:min(calc(170*var(--u)),calc(100vw - 16px))}
 #tip.help div{color:var(--txt);margin-top:var(--u)}
+/* bulle « tableau de butin » (src/ui/loot-tip.js) : groupes de lignes icône · nom · quantité ou chance */
+#tip.loot{max-width:min(calc(230*var(--u)),calc(100vw - 16px))}
+#tip.loot div{color:var(--txt);margin:0}
+#tip.loot p{margin:0 0 calc(2*var(--u));color:var(--mut)}
+#tip .ltGroup{margin-top:calc(3*var(--u))}
+#tip .ltGroup>i{display:block;font-style:normal;color:var(--acc-lt);margin-bottom:var(--u)}
+#tip .ltRows{display:grid;grid-template-columns:1fr;column-gap:calc(6*var(--u))}
+#tip .ltRows.two{grid-template-columns:1fr 1fr}
+#tip .ltRows.qual{display:flex;flex-wrap:wrap;gap:var(--u) calc(6*var(--u))}
+#tip .ltRows.qual span{flex:none}
+#tip .ltRow{display:flex;align-items:center;gap:calc(2*var(--u));line-height:1.25}
+#tip .ltRow img,#tip .ltMob img{width:calc(8*var(--u));height:calc(8*var(--u));image-rendering:pixelated;flex:none}
+#tip .ltRow span{flex:1;min-width:0}
+#tip .ltRow small,#tip .ltMob small{color:var(--mut)}
+#tip .ltRow b{display:inline;margin:0;font-size:var(--fs-s);color:var(--o2);white-space:nowrap}
+#tip .ltMob{display:grid;grid-template-columns:calc(62*var(--u)) 1fr;column-gap:calc(4*var(--u));padding:var(--u) 0;border-top:1px solid var(--line)}
+#tip .ltMobName{display:flex;flex-wrap:wrap;align-items:center;gap:0 calc(2*var(--u))}
+#tip .ltMobName small{flex-basis:100%}
+#tip .ltLoot{display:flex;flex-wrap:wrap;gap:var(--u) calc(4*var(--u))}
+#tip .ltLoot span{display:inline-flex;align-items:center;gap:var(--u)}
+#tip .ltRare{grid-column:2;color:var(--mut)}
+#tip .ltNotes{margin-top:calc(3*var(--u))}
+#tip .ltNotes p{margin:0;font-size:var(--fs-s)}
 /* « ? » d'aide (src/ui/help.js) : une petite case, la bulle au survol ou au toucher ; zone de toucher élargie */
 .qhelp{display:inline-flex;align-items:center;gap:calc(3*var(--u));vertical-align:middle;padding:calc(2*var(--u));margin:calc(-2*var(--u)) 0;
   cursor:help;color:var(--mut);font-family:var(--f-body);font-size:var(--fs-s);line-height:1;text-transform:none;letter-spacing:0}
