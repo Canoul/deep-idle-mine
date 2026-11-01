@@ -9,6 +9,11 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 01/11/2026 — Geoffrey — Sets : pop-up de confirmation
+- **Pour l'équipe** : sauvegarder un set ou en équiper un affiche une petite pop-up de 4 s en haut à gauche, avec le nom du
+  set. Elle remplace la petite ligne sous la liste des sets.
+- **État** : ✅ en ligne le 01/11
+
 ## 01/11/2026 — Geoffrey — Arc de l'Admin
 - **Pour le joueur** : nouvelle arme légendaire, portée +8, dégâts +15, recul +2. Le mineur tire des flèches de loin, et continue quand le mob est au contact. On ne peut pas l'obtenir dans le jeu : seule l'administration le donne.
 - **État** : ✅ en ligne le 01/11
