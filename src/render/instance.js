@@ -97,7 +97,7 @@ export function createInstanceRenderer(cv){
     const mine = G.miners.find(m => m.account === me);
     for(const m of [...G.miners.filter(x => x !== mine), ...(mine ? [mine] : [])]){
       const [x, y0] = posOf(G, m, now), y = y0 - arcOf(m, now);
-      const a = m.action?.type === 'drill' || m.action?.type === 'mine' ? { type: 'mine' } : m.action?.type === 'attack' ? { type: 'attack' } : m.action;
+      const a = m.action?.type === 'drill' || m.action?.type === 'mine' ? { type: 'mine' } : m.action?.type === 'attack' ? { type: 'attack', data: m.action.data } : m.action;
       sprite({ ...m, action: a }, x * T, y * T, m === mine, now);
     }
   }
@@ -163,7 +163,7 @@ export function createInstanceRenderer(cv){
         ctx.save(); ctx.globalAlpha = 0.55; sprite.label(m.name, x * T, y * T, m === mine, m.guild); ctx.restore();   // le corps est couché, pas son pseudo
         continue;
       }
-      const a = m.action?.type === 'drill' ? { type: 'mine' } : m.action?.type === 'attack' ? { type: 'attack' } : m.action;
+      const a = m.action?.type === 'drill' ? { type: 'mine' } : m.action?.type === 'attack' ? { type: 'attack', data: m.action.data } : m.action;
       sprite({ ...m, action: a }, x * T, y * T, m === mine, now);
     }
     /* rochers de l'avalanche : chacun tombe du plafond sur sa colonne jusqu'au sol, s'y brise dans la poussière */

@@ -1,6 +1,8 @@
 /* Dessin d'un mineur (partagé par la mine normale et la mine instantanée) : même corps pour tous, son équipement
    par-dessus (src/skins.js) avec l'aura de ses pièces (src/render/aura.js), sa pioche quand il mine ou frappe, et son pseudo au-dessus de la tête. Lit, ne modifie rien. */
-import { SKIN, armorPieces, backPieces, auraPieces, toolOf, toolSlotOf } from '../skins.js';
+import { SKIN, armorPieces, backPieces, auraPieces, toolOf, toolSlotOf, bowOf } from '../skins.js';
+import { BOW_SHOT } from '../config.js';
+import { bowShot } from './bow.js';
 import { drawAura } from './aura.js';
 import { drawMinerFx, createCastWatch } from './effects.js';
 
@@ -30,8 +32,8 @@ export function createMinerSprite(ctx, TEX, TILE){
     for(const [,l] of backPieces(m.look)) blit(l,bx,py);   // derrière le corps (dos de la cape)
     blit(SKIN.body,bx,py,'#3f5f8a');
     for(const [,l] of pieces) blit(l,bx,py);
-    const a=m.action;
-    if(a&&(a.type==='mine'||a.type==='attack')){
+    const a=m.action, bow=a?.type==='attack' ? bowOf(m.look) : null;
+    if(a&&(a.type==='mine'||a.type==='attack')&&!bow){
       /* l'outil tenu à la main, animé à l'horloge de la page (fluide entre deux envois du serveur) : la pioche se
          balance ; pour frapper un mob, l'épée (ou la pioche sans épée) donne un coup de taille, de haut en bas */
       const ph=now/1000 + (m.id||0)*0.37, i=TEX[toolOf(m.look, a.type)];
@@ -44,6 +46,7 @@ export function createMinerSprite(ctx, TEX, TILE){
       }
     }
     ctx.restore();
+    if(bow) shoot(m,bow,px,py,now);
     /* états (28/10, src/render/effects.js) : étoiles qui tournent, botte barrée, bulles, sorts qui partent… ; une
        partie sans m.effects (ancien envoi) garde les étoiles de l'étourdissement */
     if(m.effects) drawMinerFx(ctx,m,px,py,TILE,now,castsOf(m,now));
@@ -55,6 +58,14 @@ export function createMinerSprite(ctx, TEX, TILE){
     }
     if(focused){ ctx.strokeStyle='#ffb84d'; ctx.lineWidth=1; ctx.strokeRect(px-1.5,py-1.5,TILE+3,TILE+3); }
     label(m.name,px,py,focused,m.guild);
+  }
+  /* tir à l'arc (01/11/2026) : l'arc tourné vers la cible, hors du miroir (l'angle suffit), bandé puis relâché, et la flèche en vol */
+  function shoot(m,bow,px,py,now){
+    const s=bowShot(m,now/1000*BOW_SHOT.perSec + (m.id||0)*0.37), held=TEX[s.drawn ? bow.drawn : SKIN.sword[m.look.epee]], arrow=TEX[bow.arrow];
+    ctx.save(); ctx.translate(px+TILE/2,py+TILE*0.55); ctx.rotate(s.angle);
+    if(held?.complete && held.naturalWidth) ctx.drawImage(held,-2,-7,14,14);
+    if(s.arrow!=null && arrow?.complete && arrow.naturalWidth) ctx.drawImage(arrow,6+(s.dist*TILE-6)*s.arrow-TILE/2,-TILE/2,TILE,TILE);
+    ctx.restore();
   }
   /* pseudo : petit, contour sombre pour rester lisible sur la roche comme sur le ciel ; aussi seul (mineur couché, 31/10) */
   function label(name,px,py,focused,guild){

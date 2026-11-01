@@ -9,6 +9,10 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 01/11/2026 — Geoffrey — Arc de l'Admin
+- **Pour le joueur** : nouvelle arme légendaire, portée +8, dégâts +15, recul +2. Le mineur tire des flèches de loin, et continue quand le mob est au contact. On ne peut pas l'obtenir dans le jeu : seule l'administration le donne.
+- **État** : ✅ en ligne le 01/11
+
 ## 01/11/2026 — Geoffrey — Guilde : voir les membres depuis la recherche
 - **Pour le joueur** : dans Guilde > Rechercher, un clic sur une guilde déplie ses membres (pseudo, grade, XP rapportée). Un autre clic la replie.
 - **État** : ✅ en ligne le 01/11

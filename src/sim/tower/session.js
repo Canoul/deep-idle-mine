@@ -452,7 +452,7 @@ function strike(G, m, o, status){
   combatSpells(G, m, o);
   const now = nowOf(G, m);   // heure exacte dans le tick (28/10/2026 : sinon paliers de 0,1 s)
   if(now + 1e-9 >= (m.atkReady || 0)){ hitMob(G, m, o); m.atkReady = now + hitT(G, m) / dk(G, m); }
-  return act(m, 'attack', m.atkReady - now, { mob: o.id, done: true }, status);
+  return act(m, 'attack', m.atkReady - now, { mob: o.id, done: true, aim: { x: o.x, y: o.y } }, status);
 }
 const torchByOther = (G, m) => G.miners.some(o => o !== m && o.action?.type === 'torch' && Math.abs(o.x - m.x) + Math.abs(o.y - m.y) <= 2);
 
