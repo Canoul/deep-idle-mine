@@ -6238,3 +6238,9 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Quoi** : `RAFFLE.joinMs` à 120 s ; l'annonce (`server/social/raffle.js`) affiche maintenant des minutes.
 - **Tests** : `tests/raffle.test.js`, `tests/admin-raffle.test.js` ✅.
 - **Point fragile** : l'annonce divise `joinMs` par 60 s : une durée qui n'est pas un nombre rond de minutes s'afficherait « 1.5 min ».
+
+## 01/11/2026 — Administration : prison forcée (Geoffrey) — branche `geoffrey/admin-prison`
+- **Quoi** : `adminPrison` (`server/party/service.js`), route `POST /api/admin/prison`, `scripts/send-to-prison.js`. `state()` renvoie `inPrison` : le
+  navigateur (`pollLobby`) relit la prison lancée sans lui, sinon rien ne s'afficherait avant un rechargement.
+- **Tests** : `tests/admin-prison.test.js` ✅, `tests/party.test.js` ✅ ; ⚠️ script et affichage dans le navigateur pas essayés.
+- **Point fragile** : passe par `prisonStart`, donc sa limite de prisons par heure s'applique.

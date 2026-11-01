@@ -161,6 +161,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   - Lancement forcé (29/10) : `sudo node scripts/launch-lobby.js --name X` (route `/api/admin/party-launch` : le lobby de X
     part dans la mine classique, prêts ou pas).
   - Chef du lobby (29/10) : `sudo node scripts/set-leader.js --name X` (route `/api/admin/party-lead`).
+  - Prison forcée (01/11) : `sudo node scripts/send-to-prison.js --name X` (route `/api/admin/prison` : il quitte son groupe ; refusé s'il est
+    en session ou déjà en prison).
 - **Instances** (27/10, Geoffrey ; spec `docs/superpowers/specs/2026-10-27-instances-design.md`, GAME_DESIGN §6, config
   `INSTANCE`, `src/sim/instance/`, `src/shared/instances.js` + `instances-view.js`, `src/render/instance.js`,
   `src/ui/instance-hud.js`) : « Où miner » → Instances (I et II jouables depuis le 30/10, III « bientôt » ; ancien : II « bientôt »). **Instance I, le roi

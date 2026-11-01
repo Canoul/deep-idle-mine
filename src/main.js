@@ -445,6 +445,7 @@ async function pollLobby(){
       endAck?.(); await refresh(); return nav.show('session');
     }
     lobby.update({ party:st.party, invites:st.invites, lfg:st.lfg, shrines:st.shrines ?? [], alwaysReady:st.alwaysReady });
+    if(st.inPrison && !prisonActive(prison)) syncAccount();   // envoyé en prison par l'administration
     setLfgFound(st.lfg?.found);
   } catch(e){ console.warn(e); }
   lobbyTimer = setTimeout(pollLobby, rec ? PARTY.pollInSession : PARTY.poll);

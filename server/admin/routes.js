@@ -11,6 +11,7 @@
    POST /api/admin/khole {"name":"crousti","map":2} : ouvre un k hole dans sa session en cours (scripts/force-khole.js).
    POST /api/admin/party-move {"name":"crousti","to":"canoul"} : met crousti dans le lobby de canoul (scripts/move-to-lobby.js).
    POST /api/admin/end-session {"name":"crousti"} : le sort de sa session en cours, sans butin (scripts/end-session.js).
+   POST /api/admin/prison {"name":"crousti"} : l'envoie en prison, hors de son groupe (scripts/send-to-prison.js).
    POST /api/admin/party-launch {"name":"crousti"} : lance le lobby de crousti dans la mine, prêts ou pas (scripts/launch-lobby.js).
    POST /api/admin/party-lead {"name":"crousti"} : crousti devient chef de son lobby (scripts/set-leader.js).
    POST /api/admin/party-ready {"name":"crousti","ready":true,"always":true} : prêt / prêt tout le temps (scripts/set-ready.js).
@@ -76,6 +77,14 @@ export function adminRoutes({ accounts, game, party = null, moderation = null, s
       const r = await game.adminLeave(acc.id);
       console.log(`Admin : ${acc.name} (${acc.id}) sorti de sa session ${r.session} (${r.mode})${r.ended ? ', partie arrêtée (plus personne)' : ', les autres continuent'}`);
       return { account: acc.name, ...r };
+    },
+    /* prison forcée (01/11/2026, Geoffrey) : comme s'il l'avait lancée, seul */
+    'POST /api/admin/prison': async ctx => {
+      guard(ctx); noParty();
+      const acc = await byName(ctx);
+      const r = await party.adminPrison(acc);
+      console.log(`Admin : ${acc.name} (${acc.id}) envoyé en prison${r.left ? ', retiré de son groupe' : ''}`);
+      return { account: acc.name, left: r.left };
     },
     /* lancement forcé (29/10/2026, Geoffrey) : le lobby d'un joueur part dans la mine classique */
     'POST /api/admin/party-launch': async ctx => {
