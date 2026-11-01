@@ -6204,3 +6204,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 ## 01/11/2026 — Guilde : fenêtre après une invitation (Geoffrey)
 - **Quoi** : `sendInvite` (src/ui/guild.js) passe par `tell` (src/ui/dialog.js) au lieu de `say`, succès compris. Une invitation déjà envoyée au même joueur dit aussi « envoyée » (le service ne distingue pas ce cas).
 - **Tests** ✅ tests/guild-ui.test.js, guild-service. ⚠️ Fenêtre pas vue dans un navigateur.
+
+## 01/11/2026 — Chat de l'onglet Session retiré (Geoffrey)
+- **Quoi** : `#chatCard` (index.html), son `setupChat` (src/main.js), `gameApi.chat` et `say` (src/net/api.js). `setupChat` reste pour le chat global.
+- **Gardé** : routes `/api/game/chat` et server/game/chat.js, encore couvertes par tests/chat et game-http ; une page restée ouverte peut les appeler jusqu'à son rechargement. À retirer plus tard si on veut.

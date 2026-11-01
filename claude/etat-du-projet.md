@@ -233,7 +233,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - **Recherche de groupe (LFG)** (22/10, Geoffrey ; GAME_DESIGN §6 « Jouer à plusieurs ») : bouton dans le Lobby
   (mine classique), file en mémoire du serveur (`server/party/service.js`, règle `src/shared/lfg.js`), lobby de 3
   formé d'un coup (3 solos → chez le premier ; groupe de 2 prioritaire), « Lancer dès que plein » au choix du chef.
-- **Chat de session** (22/10, Jules) : panneau dans l'onglet Session (mine classique), joueurs de la session
+- **Chat de session** (**ancien** : panneau retiré de l'onglet Session le 01/11, Geoffrey ; les routes `/api/game/chat` restent sur le serveur, sans page qui les appelle ; 22/10, Jules) : panneau dans l'onglet Session (mine classique), joueurs de la session
   seulement, en mémoire du serveur (`server/game/chat.js`, jamais en base), effacé à la fin ; réglages `CHAT`.
 - **Modération du chat** (30/10, Geoffrey, en ligne) : mots interdits masqués (global et session,
   même déguisés ou coupés sur plusieurs messages / joueurs), avertissement avec motif, 3 → ban 24 h (plus aucune action

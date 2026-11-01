@@ -9,6 +9,10 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 01/11/2026 — Geoffrey — Plus de chat dans l'onglet Session
+- **Pour le joueur** : le panneau Chat de l'onglet Session disparaît. On discute dans le chat global, et le canal Groupe sert à parler à son équipe.
+- **État** : pas encore en ligne
+
 ## 01/11/2026 — Geoffrey — Guilde : message après une invitation
 - **Pour le joueur** : inviter un joueur ouvre maintenant une petite fenêtre : « Invitation envoyée à X. », ou « Ce pseudo n'existe pas. » (ou tout autre refus du serveur).
 - **État** : ✅ en ligne le 01/11

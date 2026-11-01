@@ -1,5 +1,4 @@
-/* Panneaux de chat : « Chat » de l'onglet Session (joueurs de la session) et « Chat global » du Lobby (tous les
-   joueurs, 28/10). Les messages sont relus au serveur toutes les CHAT.poll ms, avec un champ pour écrire. Le serveur
+/* Panneau du chat global (tous les joueurs, 28/10 ; le chat de l'onglet Session a été retiré le 01/11/2026). Les messages sont relus au serveur toutes les CHAT.poll ms, avec un champ pour écrire. Le serveur
    vérifie tout (qui écrit, texte, cadence) ; le texte reçu est toujours échappé à l'affichage, jamais interprété. */
 import { CHAT } from '../config.js';
 import { cleanChatText, freshMessages, mergeMessages } from '../shared/chat.js';
