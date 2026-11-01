@@ -28,6 +28,22 @@ Modèle d'entrée :
 - **Décisions** : on garde les signalements qui le visent et une ligne de journal, rien d'autre. Le script ne supprime qu'avec `--yes`. Une session encore en cours avec d'autres joueurs est nettoyée à sa fin.
 - **À suivre** : cette branche contient la modération, pas encore en ligne (les deux partiront ensemble) ; créer l'adresse contact@deepmineidle.fr ; relire la politique de confidentialité (liste dans `docs/comptes.md`).
 - **État** : 🧪 sur la branche `geoffrey/suppression-compte` (pas en ligne)
+## JJ/MM/AAAA — Prénom — Titre court
+- **Pour le joueur** : ce qui change en jeu (ou « rien, c'est de l'organisation »).
+- **Décisions** : choix de design ou d'équilibrage tranchés (s'il y en a).
+- **À suivre** : ce qui reste à faire ou à vérifier.
+- **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
+```
+
+## 01/11/2026 — Jules — Correctif : le jeu ne démarrait plus
+- **Pour le joueur** : depuis la mise en ligne des notifications de l'appli (01/11 au soir), le jeu s'arrêtait au
+  démarrage sur « Le jeu a planté au démarrage — Identifier 'setClock' has already been declared », pour tout le monde.
+  Deux morceaux du jeu portaient le même nom ; l'un est renommé, le jeu démarre de nouveau. Rien n'est perdu : les
+  sessions tournent sur le serveur, seul l'affichage était bloqué.
+- **À suivre** : un nouveau test vérifie maintenant que chaque fichier chargé par le jeu est lisible par le navigateur ;
+  ce genre d'erreur sera arrêté par les tests avant la mise en ligne.
+- **État** : ✅ en ligne le 01/11
+
 ## 01/11/2026 — Geoffrey — Appli mobile : notifications
 - **Pour le joueur** : rien sur le site. L'appli Android prévient, même fermée : session terminée, mine instantanée dans
   5 min (sauf de 23 h à 8 h), Bloc géant accessible, four terminé. Toucher la notification ouvre le bon écran. Dans Mon

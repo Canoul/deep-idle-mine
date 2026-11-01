@@ -104,7 +104,8 @@ let waitingFor = null;     // … celui de cette session (id)
 let prison = null, PG = null, prisonViewAt = 0;
 let pendingJoin = joinCodeFromHash(location.hash);   // lien d'invitation (#rejoindre=CODE), lu avant que la barre change l'adresse
 const serverNow = () => Date.now() + clockOffset;
-/* hors session : l'heure du serveur reçue avec les fours (notifications de l'appli) */
+/* hors session : l'heure du serveur reçue avec les fours (notifications de l'appli).
+   Pas « setClock » : c'est déjà la vitesse / pause du mode dev (plus bas). */
 const syncClock = t => { if(!rec && Number.isFinite(t)) clockOffset = t - Date.now(); };
 const renderer = createRenderer($('cv'));
 const miRenderer = createInstantRenderer($('cvMi'));
