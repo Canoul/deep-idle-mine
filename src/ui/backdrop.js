@@ -48,6 +48,10 @@ function readPlaces(){
   } catch(e){ return {}; }
 }
 
+/* partie à zoomer au changement d'onglet : aucune quand une visite (Bloc géant, He's coming) est à l'écran (01/11/2026, Geoffrey) ; le zoom
+   et les panneaux qui glissent sont faits pour la mine : la salle restait figée par-dessus le nouvel onglet, puis disparaissait d'un coup */
+export const transitionGame = (G, roomShown) => roomShown ? null : G;
+
 /* panneaux de l'onglet Session pendant la transition (style.css .bgEnter / .bgLeave), au même rythme que la mine.
    enterPanels : ils glissent depuis les bords. leavePanels : l'onglet Session reste affiché par-dessus le nouvel onglet
    (fixé à sa place, sans capter les clics) le temps que ses panneaux repartent vers les bords, puis il se cache ;
