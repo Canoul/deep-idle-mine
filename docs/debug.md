@@ -6239,6 +6239,10 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** : `tests/raffle.test.js`, `tests/admin-raffle.test.js` ✅.
 - **Point fragile** : l'annonce divise `joinMs` par 60 s : une durée qui n'est pas un nombre rond de minutes s'afficherait « 1.5 min ».
 
+## 01/11/2026 — Récompenses de palier du Bloc géant et de He's coming (Geoffrey)
+- **Quoi** : `GIANT.tiers` (src/config.js), `HES_COMING.tiers` en dérive. Les pépites des paliers s'ajoutent à celles du score (`playerRewardFor`).
+- **Conséquence** : ces deux modes ne donnent plus de Treasure ni de Blueprint parts.
+
 ## 28/10/2026 — Jules — Appli mobile : conception (pas de code)
 - **Quoi** : spec `docs/superpowers/specs/2026-10-28-appli-mobile-design.md` (Capacitor 8, jeu chargé depuis
   deepmineidle.fr par `server.url`, interface téléphone ≤ 700 px, notifications locales puis push, APK par GitHub Actions).
