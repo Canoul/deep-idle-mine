@@ -6242,3 +6242,4 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 ## 01/11/2026 — Récompenses de palier du Bloc géant et de He's coming (Geoffrey)
 - **Quoi** : `GIANT.tiers` (src/config.js), `HES_COMING.tiers` en dérive. Les pépites des paliers s'ajoutent à celles du score (`playerRewardFor`).
 - **Conséquence** : ces deux modes ne donnent plus de Treasure ni de Blueprint parts.
+- **Incident de mise en ligne** : fusion partie avec un test faux dans tests/giant-service (2 pépites attendues au lieu de 17, jeu non touché) ; corrigé juste après.
