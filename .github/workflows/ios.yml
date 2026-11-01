@@ -130,7 +130,7 @@ jobs:
           grep -q 'BEGIN PRIVATE KEY' "$HOME/.appstoreconnect/private_keys/AuthKey_$ASC_KEY_ID.p8" \
             || { echo "::error::ASC_KEY_P8 : coller tout le fichier .p8, lignes BEGIN et END comprises"; exit 1; }
 
-      - name: Archive (non signée : Apple signe à l'étape suivante)
+      - name: "Archive non signée, Apple signe à l'étape suivante"
         if: env.WANT != 'controle'
         working-directory: mobile/ios/App
         env:

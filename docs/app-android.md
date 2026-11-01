@@ -100,11 +100,6 @@ puis commiter ce qui change dans `mobile/android`.
 - Permissions : `INTERNET` et `POST_NOTIFICATIONS` (notifications de l'appli, `src/app/native.js`, calculées sur le téléphone). Le résumé de chaque compilation les affiche.
 - Essai dans un navigateur : `http://localhost:8000/?app` montre l'interface de l'appli, avec le serveur local et le cookie.
 
-## Ce qui reste pour iOS
+## iPhone
 
-1. Un Mac avec Xcode et un compte Apple Developer (99 $ par an).
-2. Reprendre la branche `jules/appli-ios` (projet `mobile/ios`), à refaire partir de cette appli : `npm run sync` doit copier le jeu.
-3. Ajouter l'icône et l'écran de démarrage (`npm run assets` sans `--android`, à ajuster dans `mobile/package.json`).
-4. Le serveur accepte déjà l'origine de l'iPhone (`capacitor://localhost`) : rien à changer. Le bouton retour n'existe pas sur iPhone.
-5. Essayer sur un vrai iPhone : encoche, zones de sécurité, liens externes, stockage du jeton.
-6. Préparer la fiche App Store (captures, confidentialité) et la signature Apple.
+Même appli, même serveur, mêmes fichiers du jeu : voir `docs/app-ios.md` (workflow « Appli iPhone », sans Mac). `npm run sync` met à jour Android et iOS ensemble.
