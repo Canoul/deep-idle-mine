@@ -11,8 +11,10 @@ import { openDatabase } from '../server/db/postgres.js';
 import { arg, fail, readEnv } from './admin-client.js';
 
 const file = arg('file');
-if(!file && !process.env.DATABASE_URL) fail('--file data/game.json, ou DATABASE_URL (voir l\'en-tête de ce script).');
-const db = file ? null : await openDatabase(process.env.DATABASE_URL);
+/* lu dans le fichier, sans passer par le shell : l'adresse Neon contient un & */
+const url = process.env.DATABASE_URL || readEnv(arg('env', '/etc/deep-idle-mine.env')).DATABASE_URL;
+if(!file && !url) fail('--file data/game.json, ou DATABASE_URL dans /etc/deep-idle-mine.env (lance la commande avec sudo).');
+const db = file ? null : await openDatabase(url);
 const store = file ? createMemoryGameStore(JSON.parse(fs.readFileSync(file, 'utf8'))) : await createPgGameStore(db);
 store.changed = async () => {};           // même après le calcul à blanc ci-dessous : jamais une écriture
 
