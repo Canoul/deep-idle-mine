@@ -638,7 +638,7 @@ Une **barre d'action** est **toujours visible en bas** de l'écran, avec le nom 
 
 ### Guilde *(31/10/2026, Geoffrey ; `GUILD` en config ; valeurs provisoires)*
 
-Onglet Guilde : sa guilde (si on en a une), Rechercher, Leaderboard. Dans Rechercher, cliquer une guilde déplie ses membres (pseudo, grade, XP rapportée), sans leur présence *(01/11/2026)*.
+Onglet Guilde : sa guilde (si on en a une), Rechercher, Leaderboard. Dans Rechercher, cliquer une guilde déplie ses membres (pseudo, grade, XP rapportée), sans leur présence *(01/11/2026)*. Dans l'onglet de sa guilde, chaque membre montre le même état que dans Social (en ligne, dans le lobby, en session avec le temps restant, en prison, hors ligne) et un bouton **Inviter** dans son lobby, sans avoir besoin d'être amis, avec les mêmes conditions que pour un ami *(01/11/2026, Geoffrey)*.
 
 - **Créer** : gratuit, nom unique de 3 à 24 caractères, comptes avec pseudo seulement. Une guilde par joueur, 30 membres au plus.
 - **Grades** : Chef de guilde (tout) ; Officier (inviter, accepter une demande, exclure un membre, passer un membre officier, valider un bâtiment) ; Membre (rien). Seul le chef rétrograde, exclut un officier ou donne sa place (il devient alors officier).
