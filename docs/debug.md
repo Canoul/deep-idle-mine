@@ -6238,3 +6238,8 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Quoi** : `RAFFLE.joinMs` à 120 s ; l'annonce (`server/social/raffle.js`) affiche maintenant des minutes.
 - **Tests** : `tests/raffle.test.js`, `tests/admin-raffle.test.js` ✅.
 - **Point fragile** : l'annonce divise `joinMs` par 60 s : une durée qui n'est pas un nombre rond de minutes s'afficherait « 1.5 min ».
+
+## 01/11/2026 — Salle figée au changement d'onglet (Geoffrey)
+- **Cause** : `backdrop.switchTab` + `leavePanels` gardent l'onglet Session affiché 450 ms pour la transition de la mine, dès qu'une session ou une prison existe. `.bgLeave` ne bouge que les colonnes : le canvas d'une visite (#cvHc, #cvGt) restait en place, puis disparaissait d'un coup. Sans session ni prison, pas de transition, donc pas de bug.
+- **Quoi** : `transitionGame` (src/ui/backdrop.js) : pas de transition si une visite est à l'écran (`inRoom() && pane !== 'session'`, src/main.js).
+- **Tests** ✅ tests/backdrop.test.js. ⚠️ Cause déduite du code, non reproduite dans un navigateur ; suppose qu'une session ou une prison tournait.

@@ -142,3 +142,11 @@ test('panneaux : sortie = l\'onglet Session reste affiché par-dessus, fixé à 
     assert.ok(!v.cls.has('bgEnter'));
   } finally { BACKDROP.transitionMs = saved; }
 });
+
+test('visite à l\'écran (Bloc géant, He\'s coming) : pas de zoom ni de panneaux qui glissent ; sinon la partie', async () => {
+  const { transitionGame } = await import('../src/ui/backdrop.js');
+  const G = { mode:'mine' };
+  assert.equal(transitionGame(G, true), null);
+  assert.equal(transitionGame(G, false), G);
+  assert.equal(transitionGame(null, false), null);
+});
