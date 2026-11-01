@@ -11,6 +11,7 @@ Modèle d'entrée :
 ```
 ## 01/11/2026 — Geoffrey — He's coming, nouveau mode de jeu
 - **Pour le joueur** : le Bloc géant version combat. On frappe Lucifer, 1 dégât = 1 point, mêmes visites et mêmes récompenses de minuit, avec des paliers × 8. Toutes les 30 s il rugit (Fear 15 s à 3 cases ou moins), toutes les 5 s il projette ceux à son contact. La ténacité résiste aux deux. Il a son propre délai et son propre score.
+- **État** : ✅ en ligne le 01/11
 
 ## 01/11/2026 — Geoffrey — Guilde : une icône à elle
 - **Pour le joueur** : l'onglet Guilde a maintenant un bouclier, il ne ressemble plus à Social.
