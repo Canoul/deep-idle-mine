@@ -25,18 +25,17 @@ Android 7 ou plus récent. Pas d'iPhone pour l'instant (il faut le compte Apple)
 ## Ce qu'on doit voir
 
 - L'icône : la pioche en acier sur fond sombre.
-- En haut à droite du jeu, un petit badge **provisoire** :
-  - **APPLI ✓** (vert) : l'appli est branchée au téléphone. Tout va bien.
+- En bas, 5 boutons : Accueil, Session, Sac, Perso, Social. Ils remplacent la barre d'onglets du site.
+- En haut à droite du jeu, plus de badge (APPLI ✓ confirmé le 01/11, retiré depuis), sauf en cas de problème :
   - **APPLI ⚠ pont bloqué** (orange) : l'appli s'ouvre mais ne peut pas parler au téléphone (notifications impossibles).
     Le prévenir tout de suite : c'est une décision d'équipe (sécurité du site), on n'y touche pas seul.
-  - pas de badge : anormal, le signaler (la détection de l'appli est en ligne depuis le 01/11).
 - Sans réseau : une page « Pas de connexion au serveur du jeu » avec **Réessayer**. Même page quelques secondes après
   une mise en ligne (le serveur redémarre).
 
 ## Liste d'essais (à remonter dans `docs/debug.md`)
 
 1. L'APK s'installe, l'icône pioche apparaît.
-2. Le badge dit **APPLI ✓**.
+2. Pas de badge orange en haut à droite.
 3. Connexion, lancement d'une session, la mine tourne.
 4. Fermer l'appli, la rouvrir : toujours connecté.
 5. Mode avion puis ouvrir l'appli : page « Pas de connexion » ; réseau revenu, « Réessayer » ramène au jeu.
@@ -47,7 +46,7 @@ Noter aussi le modèle du téléphone et sa version d'Android.
 
 ## Pas encore là
 
-L'interface pensée pour le téléphone (5 familles d'onglets, Accueil, session), les notifications, la version iPhone,
+La fin de l'interface pensée pour le téléphone (Accueil, session, Stuff, Skills), les notifications, la version iPhone,
 les stores. Sur le site, rien ne change : la nouvelle interface sera dans l'appli seulement.
 
 ## Pour les développeurs

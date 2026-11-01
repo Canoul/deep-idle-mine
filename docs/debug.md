@@ -6323,3 +6323,16 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   le badge doit maintenant apparaître dans l'appli.
 - **Points fragiles** : le site a maintenant un onglet Chat réservé au téléphone (`CHAT_TAB`, 31/10) et le Carreau en fond :
   à reprendre dans la navigation de l'appli (étape 2). `gh` absent de ce PC : suivre les fabrications par l'API GitHub.
+
+## 01/11/2026 — Geoffrey — Appli mobile, étape 2a : navigation en 5 familles
+- **Quoi** : `src/app/families.js` (logique pure), `bar.js` (HTML), `main.js` (`startApp`, chargé par import dynamique),
+  `app.css` ; accroches `phoneMode` et `nav.onMark` dans `src/ui/nav.js`, `appLayer` dans `src/main.js`. `boot.js` : CSS et
+  `viewport-fit=cover` par le code, badge seulement si le pont est bloqué.
+- **Tests** : ✅ `app-families`, `app-bar`, `app-mode`, `nav`, `chat-ui`. ✅ Chrome headless : site à 393 et 1440 px, seuls
+  `boot.js` et `mode.js` chargés, barre d'origine ; `?app` à 393 et 360 px, 14 onglets sans débordement horizontal, `#craft`
+  ouvre Sac / Craft ; 1024 × 768, Chat s'ouvre ; session lancée puis page rechargée : retour sur `#session`.
+- **À vérifier** : ⚠️ vrai Android ; ⚠️ bilan de fin de session jamais joué en navigateur (seulement `sessionRedirect` et
+  `#end` dans `shown()`) ; ⚠️ marges d'encoche (`env(safe-area-inset-*)`) à voir sur téléphone.
+- **Points fragiles** : `sync()` tourne toutes les secondes (aucun événement commun aux modes de jeu). Onglet Chat :
+  `POST /api/town` répond 400, probablement parce que `chat` n'est pas un bâtiment ; déjà vrai sur le site côté téléphone,
+  sans effet. Guide « Premiers pas » : il couvre l'écran sur téléphone.
