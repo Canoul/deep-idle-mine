@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { TABS, CHAT_TAB } from '../src/ui/nav.js';
-import { FAMILIES, familyOf, tabsOf, targetTab, familyMarks } from '../src/app/families.js';
+import { FAMILIES, familyOf, tabsOf, targetTab, familyMarks, sessionRedirect } from '../src/app/families.js';
 
 test('familles : les 5 de la spec, dans l\'ordre', () => {
   assert.deepEqual(FAMILIES.map(f => [f.id, f.tabs]), [
@@ -39,4 +39,24 @@ test('sous-onglet retenu périmé : le premier de la famille', () => {
 
 test('une pastille d\'onglet marque sa famille', () => {
   assert.deepEqual([...familyMarks(new Set(['guilde', 'craft', 'inconnu']))].sort(), ['sac', 'social']);
+});
+
+test('Session sans rien à montrer : Historique', () => {
+  assert.equal(sessionRedirect({ tab:'session', shown:false, wasShown:false }), 'historique');
+});
+
+test('bilan affiché : on reste sur Session', () => {
+  assert.equal(sessionRedirect({ tab:'session', shown:true, wasShown:true }), null);
+});
+
+test('session retrouvée après rechargement : retour à la mine depuis l\'Historique', () => {
+  assert.equal(sessionRedirect({ tab:'historique', shown:true, wasShown:false }), 'session');
+});
+
+test('Historique ouvert exprès pendant une session : on y reste', () => {
+  assert.equal(sessionRedirect({ tab:'historique', shown:true, wasShown:true }), null);
+});
+
+test('session démarrée pendant qu\'on est dans le Sac : on ne bouge pas', () => {
+  assert.equal(sessionRedirect({ tab:'craft', shown:true, wasShown:false }), null);
 });
