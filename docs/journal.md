@@ -9,6 +9,10 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 01/11/2026 — Geoffrey — Prison : des runs ne donnaient aucune XP
+- **Pour le joueur** : depuis le 31/10, environ 4 runs de prison sur 10 ne rapportaient aucune XP à cause d'un arrondi. Chaque run donne maintenant son XP. L'XP perdue avant la correction n'est pas rendue.
+- **État** : 🧪 sur la branche `geoffrey/prison-gobelins-gs`, pas en ligne
+
 ## 01/11/2026 — Geoffrey — Prison : moins de gobelins pour les joueurs sous 2 500 GS
 - **Pour le joueur** : en prison, un mineur faible se faisait voler la moitié de son butin. Sous 2 500 GS, il y a moins de gobelins : aucun à 0 GS, puis de plus en plus jusqu'au nombre normal à 2 500 GS. Le nombre de mobs ne change pas, d'autres types prennent leur place. Rendement simulé : de 22 à 53 % sans stuff.
 - **État** : 🧪 sur la branche `geoffrey/prison-gobelins-gs`, pas en ligne
