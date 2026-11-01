@@ -105,6 +105,8 @@ export function createGuildService({ store, accounts, statusOf, clock = Date.now
     },
     /* nom de la guilde d'un joueur, null sans guilde (sous son pseudo) */
     async nameOf(id){ await load(); return guildOf(id)?.name ?? null; },
+    /* comptes de la guilde d'un joueur, [] sans guilde (canal Guilde du chat, server/social/service.js) */
+    async membersOf(id){ await load(); return guildOf(id)?.members.map(m => m.id) ?? []; },
     /* invitations reçues par un joueur (pop-up, server/social/service.js) */
     async invitesOf(id){ await load(); return invitesFor(id).map(g => ({ guildId:g.id, name:g.name })); },
 
