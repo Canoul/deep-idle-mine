@@ -9,6 +9,11 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 01/11/2026 — Geoffrey — Trois nouveaux talents (étage 6)
+- **Pour le joueur** : un nouveau talent à 1 point au bout de chaque arbre. **Ivresse Minérale** (Mineur) : chaque minerai ajoute 1 dégât à la prochaine attaque. **Reconnaissance** (Logisticien) : chaque autre mineur dans le seau du treuil lui rend 1 d'oxygène toutes les 2 s. **Saccager** (Barbare) : après 2 critiques d'affilée, la prochaine attaque est double.
+- **Décisions** : Ivresse sans limite de stacks, Reconnaissance cumulable, Saccager remet son compteur à 0. Valeurs provisoires.
+- **À suivre** : Ivresse peut donner une très grosse première frappe après une longue phase de minage, à surveiller sur les boss de mine.
+- **État** : ✅ en ligne le 01/11
 ## 01/11/2026 — Geoffrey — Canal Guilde dans le chat
 - **Pour le joueur** : nouveau canal **Guilde**, en violet, avec le raccourci `/g`. Seuls les membres de la guilde lisent ces messages, et ils ne font pas de bulle dans le Carreau. Le canal se masque par onglet, comme les autres.
 - **État** : ✅ en ligne le 01/11

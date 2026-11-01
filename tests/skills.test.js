@@ -20,9 +20,9 @@ const fullTree = tree => SKILLS.trees.find(t => t.id === tree).nodes.flatMap(n =
 test('arbres demandés : 3 étages (3 / 1 / 5 rangs, + au 4e : Braum 3 pour le Barbare, Légende de la flemme 1 pour le Mineur, Mule 1 pour le Logisticien) ; Logisticien : Échelle de 2 et Treuil côte à côte au 2e étage', () => {
   assert.deepEqual(SKILLS.trees.map(t => t.label), ['Mineur', 'Logisticien', 'Barbare']);
   for(const t of SKILLS.trees) for(const r of [1, 2, 3]) assert.ok(t.nodes.some(n => n.row === r), `${t.id} étage ${r}`);
-  for(const t of SKILLS.trees) assert.deepEqual(t.nodes.map(n => n.max), { mineur:[3, 1, 5, 1, 3], logisticien:[3, 1, 1, 5, 1, 3], barbare:[3, 1, 5, 3, 3] }[t.id]);   // 5e étage : maîtrises (28/10) ; 4e étage : Braum (Barbare), Légende de la flemme (Mineur), Mule (Logisticien)
+  for(const t of SKILLS.trees) assert.deepEqual(t.nodes.map(n => n.max), { mineur:[3, 1, 5, 1, 3, 1], logisticien:[3, 1, 1, 5, 1, 3, 1], barbare:[3, 1, 5, 3, 3, 1] }[t.id]);   // 5e étage : maîtrises (28/10) ; 4e étage : Braum (Barbare), Légende de la flemme (Mineur), Mule (Logisticien)
   const lg = SKILLS.trees.find(t => t.id === 'logisticien').nodes;
-  assert.deepEqual(lg.map(n => [n.id, n.row]), [['travel_rush', 1], ['tall_ladder', 2], ['winch', 2], ['winch_speed', 3], ['mule', 4], ['bench_mastery', 5]]);   // 23/10 soir : Bâtisseur supprimé
+  assert.deepEqual(lg.map(n => [n.id, n.row]), [['travel_rush', 1], ['tall_ladder', 2], ['winch', 2], ['winch_speed', 3], ['mule', 4], ['bench_mastery', 5], ['recon', 6]]);   // 23/10 soir : Bâtisseur supprimé
   for(const t of SKILLS.trees) for(const n of t.nodes) assert.ok(n.name && n.icon, n.id);
   assert.equal(nodeText('mine_speed', 3), 'Vitesse de minage +6 %');
   assert.equal(nodeText('ore_rush', 0).startsWith('Vitesse de marche +3 %'), true);
