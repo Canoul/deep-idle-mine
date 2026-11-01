@@ -418,7 +418,7 @@ function strike(G, m, target, status){
     if(boss) hitBoss(G, m); else hitGoblin(G, m, target);
     m.atkReady = now + hitT(G, m);
   }
-  return act(m, 'attack', (m.atkReady || 0) - now, { done: true, boss }, status);
+  return act(m, 'attack', (m.atkReady || 0) - now, { done: true, boss, aim: boss ? undefined : { x: target.x, y: target.y } }, status);
 }
 
 export function decide(G, m){

@@ -246,7 +246,7 @@ function strike(G, m, target, status){
     if(boss) damageBoss(G, m, strikeDmg(G, m)); else hitGolem(G, m, target);
     m.atkReady = now + hitT(G, m);
   }
-  return act(m, 'attack', (m.atkReady || 0) - now, { done: true, boss }, status);
+  return act(m, 'attack', (m.atkReady || 0) - now, { done: true, boss, aim: boss ? undefined : { x: target.x, y: target.y } }, status);
 }
 function walkTo(G, m, tx, status){
   const dir = Math.sign(tx - m.x);

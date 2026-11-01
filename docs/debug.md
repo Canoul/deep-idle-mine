@@ -6165,3 +6165,11 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Conséquences** : un nouveau membre ne lit pas l'historique ; un ancien membre garde ce qu'il pouvait lire (jusqu'à l'expiration du message, 18 h) mais ne reçoit plus rien. Seul dans sa guilde : le message passe, lu par lui seul. Les 300 messages gardés (globalKeep) sont communs à tous les canaux.
 - **Tests** ✅ tests/chat-guild.test.js, chat, chat-ui, social, guild-service.
 - ⚠️ Violet pas vu dans un navigateur.
+
+## 01/11/2026 — Arc de l'Admin (Geoffrey)
+- **Quoi** : `STUFF.items['Arc de l'Admin']` (T4.5, secret au wiki), `SKIN.bow`, `bowOf`, `src/render/bow.js` (bowShot, pur), `shoot` dans miner-sprite.js, 4 textures. Le coup reste instantané (landHit, reachOf) : la flèche est un dessin, son cycle suit l'horloge de la page (BOW_SHOT), pas les vrais coups.
+- **Cible de la flèche** : `action.data.aim` ; mine : calculée dans minerView depuis `d.mob` ; tour, Instances I et II : posée par `strike`. Sans aim (boss) : une case devant lui.
+- **IA** : `nearestThreat` (ai.js) compte aussi un mob hors lumière s'il est dans `inReach(reachOf(m))`. Sans ça, la portée 8 ne servait qu'à 2-5 cases (rayon de lumière). Sans effet sur les armes actuelles tant que la portée reste sous le rayon de lumière.
+- **Limites** : ligne droite seulement (`gap` : Infinity en diagonale). Roi Gobelin et Golbute : `inContact`, pas de tir de loin. Un mineur Ignorer/Fuir ne tire pas.
+- **Tests** ✅ tests/bow.test.js, lance, combat, focus, gearscore, rarity, wiki-secret, rune, stuff, instance*, tower* ; simulation 5 sessions OK (3 areas, prof. 189,8, sans arc équipé).
+- ⚠️ Pas vu dans un navigateur : dessin de l'arc, de la flèche, tir vertical. Rendu en tour et Instances non testé (fonction pure seulement). Arc jamais simulé sur une session complète.

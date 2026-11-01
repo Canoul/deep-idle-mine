@@ -15,7 +15,7 @@ function minerView(G, m){
   return {
     id: m.id, name: m.name, color: m.color, account: m.account, x: m.x, y: m.y, kx: m.kx || 0, ky: m.ky || 0, face: m.face, status: m.status,
     stats: m.stats, look: m.look || {}, auras: m.auras || {}, skillTree: m.skillTree,
-    action: a ? { type: a.type, t: a.t, dur: a.dur, data: { x: d.x, y: d.y } } : null,
+    action: a ? { type: a.type, t: a.t, dur: a.dur, data: { x: d.x, y: d.y, aim: d.aim } } : null,
     hop: m.hop ?? null, boosted: m.boosted ?? null,
     spells: m.spells || [], spellCd: { ...(m.spellCd || {}) },       // sorts (animation au lancement)
     effects: minerEffects(G, m, gol ? { foes: G.golems.filter(o => golTackler(G, m) === o), warcry: golWarcry(G, m) } : { foes: G.goblins, warcry: warcryOf(G, m) }),   // états (28/10, src/sim/effects.js)

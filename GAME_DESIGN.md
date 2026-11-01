@@ -1210,3 +1210,6 @@ Déjà en jeu, dans « Critères / préférences » du lobby : priorité `minera
 
 - Le temps de jeu est **réel (1h)** ; en dev, on doit pouvoir **accélérer** la simulation pour tester vite (x5 à x300 dans le prototype).
 - Les valeurs d'équilibrage doivent être modifiables facilement.
+
+## Arc de l'Admin (01/11/2026, Geoffrey)
+Arme légendaire de la case épée : **portée +8, dégâts +15, recul +2**. Aucune obtention dans le jeu (donné par l'administration). Il tire des flèches de loin comme au contact : tir en ligne droite (pas de diagonale), arrêté par les blocs. Le mineur vise tout mob à portée en ligne dégagée, même hors de sa lumière. Face à un boss qui se combat au contact (Instances, tours), il va au contact comme avec une autre arme.
