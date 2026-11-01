@@ -251,3 +251,36 @@ test('membres d\'une guilde : guilde inconnue ou identifiant invalide refusés',
   for(const bad of ['', null, 12, 'x'.repeat(65)]) await rejects(guild.members(TOM, bad), 'bad_request');
 });
 
+test('message de guilde : chef et officier écrivent, membre refusé, tous lisent ; vide l\'efface', async () => {
+  const { guild } = await trio();
+  assert.equal((await guild.view(LEA)).mine.message, null);
+  assert.equal((await guild.view(LEA)).mine.canMessage, false);
+  assert.equal((await guild.view(MAX)).mine.canMessage, true);
+  await rejects(guild.setMessage(LEA, 'Salut'), 'forbidden');
+  assert.equal((await guild.view(LEA)).mine.message, null);
+  await guild.setMessage(MAX, '  Rendez-vous\r\n\r\n\r\n\r\nce soir\u0007  ');
+  const m = (await guild.view(LEA)).mine.message;
+  assert.equal(m.text, 'Rendez-vous\n\nce soir'); assert.equal(m.name, 'Max'); assert.ok(!('by' in m));
+  await guild.setMessage(ZOE, '   ');
+  assert.equal((await guild.view(LEA)).mine.message, null);
+});
+
+test('message de guilde : refus sans guilde ou trop long ; caché aux autres ; gardé au redémarrage', async () => {
+  const { guild, store } = await trio();
+  await rejects(guild.setMessage(TOM, 'x'), 'no_guild');
+  await rejects(guild.setMessage(ZOE, 'x'.repeat(GUILD.messageMax + 1)), 'bad_request');
+  await guild.setMessage(ZOE, 'x'.repeat(GUILD.messageMax));
+  assert.equal((await guild.view(TOM)).mine, null);
+  assert.ok(!('message' in await guild.peek(TOM, 'g1')));
+  const again = setup({ store }).guild;
+  assert.equal((await again.view(ZOE)).mine.message.text.length, GUILD.messageMax);
+});
+
+test('message de guilde : les mots interdits sont masqués', async () => {
+  const { guild } = await trio();
+  const { WORD } = await import('../server/moderation/words.js');
+  const word = typeof WORD[0] === 'string' ? WORD[0] : WORD[0].word;
+  await guild.setMessage(ZOE, `salut ${word}`);
+  const text = (await guild.view(ZOE)).mine.message.text;
+  assert.ok(text.startsWith('salut ') && !text.includes(word), text);
+});

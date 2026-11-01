@@ -1869,7 +1869,7 @@ export const ADMIN_VIEW = { names:['admin'] };
    mineur, cumulés d'un niveau à l'autre : mult = % du total, add = points (la fortune est déjà en %, comme l'Anneau de Midas).
    Ajouter un niveau : une ligne dans levels. logPage : dons par page enregistrée ; logShow : dons par écran du journal. */
 export const GUILD = { maxMembers:30, xpPct:1, nameMin:3, nameMax:24, maxInvites:50, maxRequests:50, maxPendingPerPlayer:5, poll:5000,
-  maxGift:1e9, opMemory:50, logPage:100, logShow:50,
+  maxGift:1e9, opMemory:50, logPage:100, logShow:50, messageMax:500,
   buildings:[
     { id:'armurerie', name:'Armurerie', tex:'guild_armory', levels:[
       { label:'+2 % de dégâts', mult:{ damage:2 }, cost:{ 'Pierre':500000, 'Lingot de fer':5000, 'Lingot d\'or':2500, 'Orbe supérieur':100, 'Orbe':500 } },
