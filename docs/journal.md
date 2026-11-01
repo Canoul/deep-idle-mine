@@ -9,6 +9,12 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 01/11/2026 — Geoffrey — Guilde : les bâtiments
+- **Pour le joueur** : à droite de l'onglet de sa guilde, trois bâtiments avec leur texture : Armurerie (+2 % de dégâts), Trésorerie (+2 % de fortune), Forge (+2 % de vitesse de minage). Chaque membre donne des matériaux ; quand tout est réuni, le chef ou un officier lance la construction. Le bonus vaut pour tous les membres, dans tous les modes. En dessous, un journal des dons sans limite, jamais effacé.
+- **Décisions** : « Poussière magique » = Poudre de rêve. Don définitif, ramené à ce qu'il manque. Bonus dès l'arrivée dans la guilde, figé au lancement. Bâtiments et journal publics (bouton Voir dans Rechercher). Niveau 1 seul pour l'instant, les suivants s'ajoutent en config.
+- **À suivre** : les coûts sont ceux donnés par Geoffrey, à juger une fois en jeu. Un joueur peut changer de guilde pour profiter des bonus d'une autre.
+- **État** : ✅ en ligne le 01/11
+
 ## 01/11/2026 — Geoffrey — Sets : pop-up de confirmation
 - **Pour l'équipe** : sauvegarder un set ou en équiper un affiche une petite pop-up de 4 s en haut à gauche, avec le nom du
   set. Elle remplace la petite ligne sous la liste des sets.

@@ -6,7 +6,7 @@ import { TABS } from '../src/ui/nav.js';
 
 const NONE = { kick:false, promote:false, demote:false, transfer:false };
 const row = (o = {}) => ({ id:'AAAAAAAA', name:'Zoe', rank:'member', activity:'online', xp:1234, actions:NONE, ...o });
-const mine = (o = {}) => ({ id:'g1', name:'Les Rois', level:3, into:750, need:2250, xp:3250, rank:'chief', max:30, members:[row()], requests:[], ...o });
+const mine = (o = {}) => ({ id:'g1', name:'Les Rois', level:3, into:750, need:2250, xp:3250, rank:'chief', max:30, members:[row()], requests:[], buildings:[], owned:{}, canBuild:false, log:{ rows:[], next:0 }, ...o });
 
 test('pas de guilde : pas de sous-onglet à son nom', () => {
   assert.deepEqual(guildTabs({ mine:null }).map(t => t.id), ['search', 'board']);
@@ -43,9 +43,9 @@ test('inviter et demandes : chef et officier seulement', () => {
   assert.ok(h.includes('&lt;b&gt;Max')); assert.ok(h.includes('data-g="acceptRequest"'));
 });
 
-test('bonus et bâtiments : textes d\'attente', () => {
+test('sans bâtiment ni don : textes d\'attente', () => {
   const h = mineHTML(mine());
-  assert.match(h, /Aucun bonus pour l'instant/); assert.match(h, /Bientôt/);
+  assert.match(h, /Aucun bonus pour l'instant/); assert.match(h, /Aucun don pour l'instant/);
 });
 
 test('pseudos et noms échappés partout', () => {

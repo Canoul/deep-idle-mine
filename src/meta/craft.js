@@ -35,6 +35,15 @@ export function needs(inv, item){
 }
 export const canCraft = (inv, item) => isUnlocked(item, inv) && needs(inv, item).every(n => n.have >= n.need);
 
+/* don à la guilde (01/11/2026) : retire qty × item, une seule fois par opId. true si c'est fait (ou déjà fait), false s'il
+   en manque */
+export function spendFor(inv, item, qty, opId){
+  if(inv.crafted.includes(opId)) return true;
+  if(!Number.isSafeInteger(qty) || qty <= 0 || countOf(inv, item) < qty || !removeItem(inv, item, qty)) return false;
+  remember(inv, opId);
+  return true;
+}
+
 const remember = (inv, opId) => {
   inv.crafted.push(opId);
   if(inv.crafted.length > CRAFT_MEMORY) inv.crafted.splice(0, inv.crafted.length - CRAFT_MEMORY);

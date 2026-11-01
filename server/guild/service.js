@@ -2,11 +2,16 @@
    changement. Une action à la fois (comme le raffle) : deux acceptations simultanées ne dépassent jamais GUILD.maxMembers,
    et un joueur n'entre jamais dans deux guildes. Chaque action relit le grade du joueur dans la fiche : le navigateur ne
    donne que l'action et sa cible. Une action déjà faite (double clic, deux officiers) renvoie l'état, sans erreur.
-   accounts : { getAccount(id), findAccountByName(clé) } ; statusOf(id) : présence d'un joueur (server/social/service.js). */
+   accounts : { getAccount(id), findAccountByName(clé) } ; statusOf(id) : présence d'un joueur (server/social/service.js).
+   Bâtiments (01/11/2026) : spend(compte, objet, quantité, opId) retire les objets de l'inventaire (service de jeu), une seule
+   fois par opId ; counts(compte, objets) : ce qu'il possède. Un don se fait HORS de la file : le versement d'une session attend
+   addXp en tenant le verrou de l'inventaire, attendre ce verrou dans la file bloquerait les deux. pending réserve la part en cours :
+   deux dons en même temps ne dépassent jamais le coût, et rien n'est compté à la guilde avant d'avoir quitté l'inventaire. */
 import crypto from 'node:crypto';
 import { GUILD } from '../../src/config.js';
 import { RANK, canRecruit, canKick, canPromote, canDemote, canTransfer, nextChief, sortMembers, activityOf,
-         cleanGuildName, guildNameKey, guildNameError, sanitizeGuilds } from '../../src/shared/guild.js';
+         cleanGuildName, guildNameKey, guildNameError, sanitizeGuilds, buildingDef, buildingLevel, nextLevel, missing, buildingReady,
+         canBuild, guildBonus } from '../../src/shared/guild.js';
 import { guildXpOf, guildLevelOf } from '../../src/meta/level.js';
 import { displayName, formatAccountId, nameKey, parseAccountId } from '../../src/shared/account.js';
 import { nameBanned } from '../moderation/filter.js';
@@ -18,8 +23,10 @@ const needId = v => { if(!isId(v)) fail('bad_request', 400, 'Joueur inconnu.'); 
 const needGuildId = v => { if(typeof v !== 'string' || !v || v.length > 64) fail('bad_request', 400, 'Guilde inconnue.'); };
 const needName = me => { if(me.guest || !me.name) fail('guest', 403, 'Choisis un pseudo pour rejoindre une guilde.'); };
 
-export function createGuildService({ store, accounts, statusOf, clock = Date.now, makeId = () => crypto.randomUUID() }){
+export function createGuildService({ store, accounts, statusOf, spend = async () => false, counts = async () => ({}), clock = Date.now, makeId = () => crypto.randomUUID() }){
   let state = null, byAccount = new Map(), chain = Promise.resolve();
+  const pending = new Map();       // 'guilde:bâtiment:objet' → quantité en cours de don
+  const giving = new Set();        // opId des dons en cours : la même demande renvoyée pendant ce temps ne compte pas
   const serial = fn => { const run = chain.catch(() => {}).then(fn); chain = run.catch(() => {}); return run; };
   async function load(){
     if(state) return;
@@ -35,6 +42,28 @@ export function createGuildService({ store, accounts, statusOf, clock = Date.now
   const chiefOf = g => g.members.find(m => m.rank === RANK.chief);
   const summary = async g => ({ id:g.id, name:g.name, ...guildLevelOf(g.rawXp), xp:guildXpOf(g.rawXp), members:g.members.length, max:GUILD.maxMembers, chief:await nameOf(chiefOf(g).id) });
 
+  /* bâtiments vus par le navigateur : niveau, matériaux du prochain niveau, prêt à construire */
+  const buildingsView = g => GUILD.buildings.map(b => {
+    const next = nextLevel(g, b);
+    return { id:b.id, level:buildingLevel(g, b.id), max:b.levels.length, ready:buildingReady(g, b),
+             materials:Object.entries(next?.cost ?? {}).map(([item, need]) => ({ item, need, have:need - missing(g, b, item) })) };
+  });
+  /* journal, du plus récent au plus ancien : les lignes d'avant `before` (index), GUILD.logShow au plus */
+  async function logRows(g, before = g.log){
+    const end = Math.min(before, g.log), start = Math.max(0, end - GUILD.logShow), rows = [];
+    for(let p = Math.floor(start / GUILD.logPage); p * GUILD.logPage < end; p++){
+      const list = await store.getGuildLog(g.id, p);
+      list.forEach((r, i) => { const at = p * GUILD.logPage + i; if(at >= start && at < end) rows.push(r); });
+    }
+    return { rows:rows.reverse(), next:start };
+  }
+  async function addLog(g, row){
+    const page = Math.floor(g.log / GUILD.logPage), rows = await store.getGuildLog(g.id, page);
+    rows.push(row);
+    await store.putGuildLog(g.id, page, rows);
+    g.log++;
+  }
+
   async function mineView(me, g){
     const rank = g.members.find(m => m.id === me.id).rank;
     const rows = await Promise.all(g.members.map(async m => ({ id:m.id, name:await nameOf(m.id), rank:m.rank, xp:guildXpOf(m.rawXp),
@@ -42,7 +71,9 @@ export function createGuildService({ store, accounts, statusOf, clock = Date.now
       actions:m.id === me.id ? { kick:false, promote:false, demote:false, transfer:false }
         : { kick:canKick(rank, m.rank), promote:canPromote(rank, m.rank), demote:canDemote(rank, m.rank), transfer:canTransfer(rank, m.rank) } })));
     const requests = canRecruit(rank) ? await Promise.all(g.requests.map(async r => ({ id:r.id, name:await nameOf(r.id) }))) : [];
-    return { id:g.id, name:g.name, ...guildLevelOf(g.rawXp), xp:guildXpOf(g.rawXp), rank, max:GUILD.maxMembers, members:sortMembers(rows), requests };
+    const items = [...new Set(GUILD.buildings.flatMap(b => Object.keys(nextLevel(g, b)?.cost ?? {})))];
+    return { id:g.id, name:g.name, ...guildLevelOf(g.rawXp), xp:guildXpOf(g.rawXp), rank, max:GUILD.maxMembers, members:sortMembers(rows), requests,
+             buildings:buildingsView(g), canBuild:canBuild(rank), owned:await counts(me.id, items).catch(() => ({})), log:await logRows(g) };
   }
   const invitesFor = id => all().filter(g => g.invites.some(i => i.id === id));
   async function view(me){
@@ -112,6 +143,70 @@ export function createGuildService({ store, accounts, statusOf, clock = Date.now
       const sorted = all().sort((a, b) => b.rawXp - a.rawXp || a.createdAt - b.createdAt);
       return { guilds:await Promise.all(sorted.map(async (g, i) => ({ rank:i + 1, ...await summary(g) }))) };
     },
+    /* fiche publique d'une guilde : ses bâtiments et son journal (01/11/2026) */
+    async peek(me, id){
+      await load(); needGuildId(id);
+      const g = state.guilds[id];
+      if(!g) fail('not_found', 404, 'Cette guilde n\'existe plus.');
+      return { id:g.id, name:g.name, buildings:buildingsView(g), log:await logRows(g) };
+    },
+    async log(me, id, before){
+      await load(); needGuildId(id);
+      const g = state.guilds[id];
+      if(!g) fail('not_found', 404, 'Cette guilde n\'existe plus.');
+      if(!Number.isSafeInteger(before) || before < 0) fail('bad_request', 400, 'Demande invalide.');
+      return { log:await logRows(g, before) };
+    },
+    /* bonus des bâtiments de la guilde d'un joueur, null sans guilde ou sans bâtiment (figé au lancement) */
+    async bonusOf(id){ await load(); return guildBonus(guildOf(id)); },
+    /* don d'un membre : réservé dans la file, retiré de l'inventaire hors de la file, compté ensuite. La quantité est
+       ramenée à ce qu'il manque. Un don renvoyé (même opId) ne compte qu'une fois. */
+    async give(me, { building, item, qty, opId }){
+      const b = typeof building === 'string' ? buildingDef(building) : null;
+      if(!b) fail('bad_request', 400, 'Bâtiment inconnu.');
+      if(typeof item !== 'string' || !Number.isSafeInteger(qty) || qty <= 0 || qty > GUILD.maxGift) fail('bad_qty', 400, 'Quantité invalide.');
+      if(typeof opId !== 'string' || !/^[\w-]{8,64}$/.test(opId)) fail('bad_request', 400, 'Demande invalide.');
+      const key = g => `${g.id}:${b.id}:${item}`;
+      const held = await serial(async () => {
+        await load();
+        const { g } = actor(me);
+        if(g.ops.includes(opId) || giving.has(opId)) return null;
+        if(!Object.hasOwn(nextLevel(g, b)?.cost ?? {}, item)) fail('bad_item', 400, 'Ce bâtiment ne demande pas cet objet.');
+        const amount = Math.min(qty, missing(g, b, item, pending.get(key(g)) ?? 0));
+        if(amount <= 0) fail('complete', 409, 'Ce matériau est déjà complet.');
+        pending.set(key(g), (pending.get(key(g)) ?? 0) + amount);
+        giving.add(opId);
+        return { g, amount };
+      });
+      if(!held) return view(me);
+      const { g, amount } = held;
+      const release = () => { const left = pending.get(key(g)) - amount; if(left > 0) pending.set(key(g), left); else pending.delete(key(g)); giving.delete(opId); };
+      let taken = false;
+      try { taken = await spend(me.id, item, amount, opId); }
+      catch(e){ await serial(async () => release()); throw e; }
+      if(!taken){ await serial(async () => release()); fail('not_enough', 409, 'Tu n\'as pas assez de cet objet.'); }
+      await serial(async () => {
+        release();
+        const r = g.buildings[b.id] ??= { level:0, given:{} };
+        r.given[item] = (r.given[item] ?? 0) + amount;
+        g.ops.push(opId);
+        if(g.ops.length > GUILD.opMemory) g.ops.splice(0, g.ops.length - GUILD.opMemory);
+        await addLog(g, { at:clock(), by:me.id, name:displayName(me) || formatAccountId(me.id), kind:'give', building:b.id, item, qty:amount });
+        if(state.guilds[g.id] === g) await save();
+      });
+      return view(me);
+    },
+    /* construire : chef ou officier, tous les matériaux réunis ; déjà construit (double clic, deux officiers) : rien */
+    build: act(async (me, id) => {
+      const b = buildingDef(id);
+      if(!b) fail('bad_request', 400, 'Bâtiment inconnu.');
+      const { g, rank } = actor(me);
+      if(!canBuild(rank)) forbidden();
+      if(!buildingReady(g, b)) return false;
+      g.buildings[b.id] = { level:buildingLevel(g, b.id) + 1, given:{} };
+      await addLog(g, { at:clock(), by:me.id, name:displayName(me) || formatAccountId(me.id), kind:'build', building:b.id, level:g.buildings[b.id].level });
+    }),
+
     /* nom de la guilde d'un joueur, null sans guilde (sous son pseudo) */
     async nameOf(id){ await load(); return guildOf(id)?.name ?? null; },
     /* comptes de la guilde d'un joueur, [] sans guilde (canal Guilde du chat, server/social/service.js) */
@@ -130,7 +225,7 @@ export function createGuildService({ store, accounts, statusOf, clock = Date.now
       if(all().some(g => guildNameKey(g.name) === key)) fail('name_taken', 409, 'Ce nom est déjà pris.');
       dropPending(me.id);
       const id = makeId();
-      state.guilds[id] = { id, name, createdAt:clock(), rawXp:0, members:[{ id:me.id, rank:RANK.chief, joinedAt:clock(), rawXp:0 }], invites:[], requests:[] };
+      state.guilds[id] = { id, name, createdAt:clock(), rawXp:0, members:[{ id:me.id, rank:RANK.chief, joinedAt:clock(), rawXp:0 }], invites:[], requests:[], buildings:{}, log:0, ops:[] };
       byAccount.set(me.id, id);
     }),
     invite: act(async (me, input) => {

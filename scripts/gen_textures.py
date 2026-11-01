@@ -1057,6 +1057,65 @@ def main():
     rect(rec, 5, 10, 2, 1, hexc('#c0392b'))                                   # chitine
     tex['recipe_chitin'] = rec
     # coffre du Roi Gobelin : coffre de bois sombre, ferrures dorées, emblème vert (tête de gobelin)
+    # bâtiments de guilde (01/11/2026) : dessinés case par case, une lettre = une couleur de la palette
+    def art(rows, pal):
+        px = blank()
+        for y, row in enumerate(rows):
+            for x, c in enumerate(row):
+                if c != '.':
+                    px[y * S + x] = hexc(pal[c])
+        return px
+    tex['guild_armory'] = art([    # bouclier et épée
+        '.............ww.',
+        '............wlw.',
+        '...........wlw..',
+        '..bbbbbbbbwlwb..',
+        '..bBBBBBBwlwBb..',
+        '..bBBBYBwlwBBb..',
+        '..bBBYwwlwBBBb..',
+        '..bBBBwlwYBBBb..',
+        '..bBBwgwBBBBBb..',
+        '..bBgwggBBBBBb..',
+        '...bggBBBBBBb...',
+        '...gwgbBBBBb....',
+        '..g..g.bBBb.....',
+        '........bb......',
+        '................',
+        '................'], { 'w':'#dfe6ee', 'l':'#9aa7b5', 'b':'#3a2c20', 'B':'#7a2a26', 'Y':'#e8b93c', 'g':'#c99a2e' })
+    tex['guild_treasury'] = art([   # coffre plein de pièces
+        '................',
+        '.....Y.yY.......',
+        '...yYYyYYyYY....',
+        '..YYyYYYyYYyY...',
+        '..dddddddddddd..',
+        '..dWWWWggWWWWd..',
+        '..dWWWWggWWWWd..',
+        '..dddddggddddd..',
+        '..dWWWWkkWWWWd..',
+        '..dWWWWggWWWWd..',
+        '..dWWWWWWWWWWd..',
+        '..dWWWWWWWWWWd..',
+        '..dddddddddddd..',
+        '...D........D...',
+        '................',
+        '................'], { 'Y':'#f2cc4a', 'y':'#c2912a', 'd':'#c2912a', 'D':'#6b4a22', 'W':'#7a5230', 'g':'#e8b93c', 'k':'#2a1a10' })
+    tex['guild_forge'] = art([      # enclume et flammes
+        '.......o........',
+        '......oOo.......',
+        '.....oOyOo..o...',
+        '.....OyYyO.oOo..',
+        '......OyO..OyO..',
+        '................',
+        '.ssssssssssss...',
+        '..Lllllllllllss.',
+        '...DDlllllllDD..',
+        '......lllll.....',
+        '......DlllD.....',
+        '.....DDDDDDD....',
+        '....DDDDDDDDD...',
+        '....sssssssss...',
+        '................',
+        '................'], { 'o':'#a8340f', 'O':'#ff7a2e', 'y':'#ffc27a', 'Y':'#fff1dc', 's':'#2c2f36', 'L':'#c5ccd6', 'l':'#7c8590', 'D':'#4a4f58' })
     tex['chest_goblin_king'] = tower_chest(hexc('#6b4a22'), hexc('#3e2a12'), gold, hexc('#4f7d32'), [(6, 9), (9, 9), (7, 11), (8, 11)])
     # coffre du Golbute (30/10) : coffre de pierre grise, ferrures sombres, cristal bleu au centre
     tex['chest_golbute'] = tower_chest(hexc('#80868f'), hexc('#4d5259'), hexc('#2f3238'), hexc('#7fd6ff'), [(7, 9), (8, 9), (7, 10), (8, 10), (7, 11), (8, 11)])

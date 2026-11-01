@@ -34,7 +34,7 @@ const gameStore = db ? await createPgGameStore(db) : await createFileGameStore(S
 /* modération du chat (30/10) : un joueur banni voit sa prison arrêtée */
 const moderation = createModerationService({ store: gameStore, onBan: id => game.prisonStop({ id }).catch(() => {}) });
 const game = createGameService({ store: gameStore, announce: createDiscordAnnouncer({ url: SERVER.discordWebhook }), moderation,
-                                 onXp: (id, xp) => guild.addXp(id, xp), guildNameOf: id => guild.nameOf(id),
+                                 onXp: (id, xp) => guild.addXp(id, xp), guildNameOf: id => guild.nameOf(id), guildBonusOf: id => guild.bonusOf(id),
                                  devCopies: () => readDevCopies(path.join(SERVER.dataDir, 'presets')),
                                  devLiveCopies: GAME_SERVER.dev && process.env.DIM_DEV_COPY_URL
                                    ? createLiveCopies({ url: process.env.DIM_DEV_COPY_URL, dir: path.join(SERVER.dataDir, 'presets') }) : null });
@@ -46,7 +46,7 @@ await instant.load();
 /* amis (onglet Social) : demandes, présence, inviter / rejoindre un ami */
 const social = createSocialService({ store: gameStore, accounts: store, party, game, moderation, guildInvites: id => guild.invitesOf(id), guildMembers: id => guild.membersOf(id) });
 /* guildes : créées après les amis (présence des membres) ; game et social ne les appellent qu'une fois le serveur lancé */
-const guild = createGuildService({ store: gameStore, accounts: store, statusOf: id => social.statusOf(id) });
+const guild = createGuildService({ store: gameStore, accounts: store, statusOf: id => social.statusOf(id), spend: game.guildSpend, counts: game.itemCounts });
 /* Bloc géant : salle commune, visites, scores du jour, récompenses */
 const giant = createGiantService({ store: gameStore, game, dev: GAME_SERVER.dev });
 /* le Carreau : la ville du spawn (joueurs en ligne hors session, leur place, bulles du chat global) */

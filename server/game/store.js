@@ -57,6 +57,7 @@ export function createMemoryGameStore(initial = {}){
   const chats = new Map(Object.entries(initial.chats ?? {}));
   const raffles = new Map(Object.entries(initial.raffles ?? {}));
   const guilds = new Map(Object.entries(initial.guilds ?? {}));
+  const guildLogs = new Map(Object.entries(initial.guildLogs ?? {}));   // journal des bâtiments, jamais effacé : 'guilde:page' → lignes
   const alwaysReady = new Map(Object.entries(initial.alwaysReady ?? {}));   // comptes qui ont coché « Prêt tout le temps »
   const chatPrefs = new Map(Object.entries(initial.chatPrefs ?? {}));   // réglages du chat par compte (31/10/2026)
   const moderations = new Map(Object.entries(initial.moderations ?? {}));   // modération du chat, par compte (server/moderation/, 30/10)         // chat global du lobby, clé 'state'
@@ -181,6 +182,8 @@ export function createMemoryGameStore(initial = {}){
     /* Guildes (31/10/2026, server/guild/service.js) : une seule fiche pour toutes */
     async getGuilds(){ return copy(guilds.get('state')) ?? null; },
     async putGuilds(g){ guilds.set('state', copy(g)); await store.changed([{ ns: 'guilds', key: 'state', value: g }]); },
+    async getGuildLog(guildId, page){ return copy(guildLogs.get(`${guildId}:${page}`)) ?? []; },
+    async putGuildLog(guildId, page, rows){ const key = `${guildId}:${page}`; guildLogs.set(key, copy(rows)); await store.changed([{ ns: 'guild_log', key, value: rows }]); },
     async getGlobalChat(){ return copy(chats.get('state')) ?? null; },
     async putGlobalChat(c){ chats.set('state', copy(c)); await store.changed([{ ns: 'chat_global', key: 'state', value: c }]); },
 
@@ -261,7 +264,7 @@ export function createMemoryGameStore(initial = {}){
                          signups: Object.fromEntries(signups), socials: Object.fromEntries(socials),
                          judgments: Object.fromEntries(judgments), discovered: Object.fromEntries(discovered),
                          giantDays: Object.fromEntries(giantDays), giantPlayers: Object.fromEntries(giantPlayers), sessionStats: Object.fromEntries(sessionStats),
-                         towerRecords: Object.fromEntries(towerRecords), instanceRecords: Object.fromEntries(instanceRecords), energies: Object.fromEntries(energies), alwaysReady: Object.fromEntries(alwaysReady), chatPrefs: Object.fromEntries(chatPrefs), prisons: Object.fromEntries(prisons), prisonCompos: Object.fromEntries(prisonCompos), chats: Object.fromEntries(chats), raffles: Object.fromEntries(raffles), guilds: Object.fromEntries(guilds), moderations: Object.fromEntries(moderations) }; },
+                         towerRecords: Object.fromEntries(towerRecords), instanceRecords: Object.fromEntries(instanceRecords), energies: Object.fromEntries(energies), alwaysReady: Object.fromEntries(alwaysReady), chatPrefs: Object.fromEntries(chatPrefs), prisons: Object.fromEntries(prisons), prisonCompos: Object.fromEntries(prisonCompos), chats: Object.fromEntries(chats), raffles: Object.fromEntries(raffles), guilds: Object.fromEntries(guilds), guildLogs: Object.fromEntries(guildLogs), moderations: Object.fromEntries(moderations) }; },
   };
   return store;
 }
@@ -291,8 +294,8 @@ export async function createFileGameStore(dir){
 
 /* PostgreSQL (en ligne) : db ouverte par server/db/postgres.js, partagée avec les comptes */
 export async function createPgGameStore(db){
-  const rows = await db.load(['inventory', 'furnace', 'crusher', 'stuff', 'prefs', 'progress', 'skills', 'spells', 'sets', 'game_session', 'party', 'always_ready', 'mi_signup', 'social', 'judgment', 'giant_day', 'giant_player', 'discovered', 'session_stat', 'tower_record', 'instance_record', 'shrine', 'energy', 'prison', 'prison_compo', 'chat_global', 'chat_prefs', 'moderation', 'raffle', 'guilds']);
-  const store = createMemoryGameStore({ inventories: rows.inventory, furnaces: rows.furnace, crushers: rows.crusher, stuff: rows.stuff, prefs: rows.prefs,
+  const rows = await db.load(['inventory', 'furnace', 'crusher', 'stuff', 'prefs', 'progress', 'skills', 'spells', 'sets', 'game_session', 'party', 'always_ready', 'mi_signup', 'social', 'judgment', 'giant_day', 'giant_player', 'discovered', 'session_stat', 'tower_record', 'instance_record', 'shrine', 'energy', 'prison', 'prison_compo', 'chat_global', 'chat_prefs', 'moderation', 'raffle', 'guilds', 'guild_log']);
+  const store = createMemoryGameStore({ guildLogs: rows.guild_log, inventories: rows.inventory, furnaces: rows.furnace, crushers: rows.crusher, stuff: rows.stuff, prefs: rows.prefs,
                                         progress: rows.progress, skills: rows.skills, spells: rows.spells, sets: rows.sets,
                                         sessions: rows.game_session, parties: rows.party, signups: rows.mi_signup, socials: rows.social,
                                         judgments: rows.judgment, giantDays: rows.giant_day, giantPlayers: rows.giant_player, discovered: rows.discovered, sessionStats: rows.session_stat,

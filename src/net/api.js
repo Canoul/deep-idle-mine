@@ -122,6 +122,10 @@ export const guildApi = {
   demote:   id => request('POST', '/api/guild/demote', { id }),
   kick:     id => request('POST', '/api/guild/kick', { id }),
   transfer: id => request('POST', '/api/guild/transfer', { id }),
+  peek:  id => request('POST', '/api/guild/peek', { id }),
+  log:   (id, before) => request('POST', '/api/guild/log', { id, before }),
+  give:  (building, item, qty, opId) => request('POST', '/api/guild/give', { building, item, qty, opId }),
+  build: id => request('POST', '/api/guild/build', { id }),
 };
 
 /* Amis (onglet Social) : liste, demandes, présence ; inviter / rejoindre un ami */

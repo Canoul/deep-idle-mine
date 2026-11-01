@@ -1,6 +1,6 @@
 /* Guilde (31/10/2026, Geoffrey) : règles partagées par le jeu et le serveur (qui fait foi). Logique pure.
    Fiche : { guilds:{ id:{ id, name, createdAt, rawXp, members:[{ id, rank, joinedAt, rawXp }], invites:[{ id, by, at }],
-   requests:[{ id, at }] } } }. rawXp : XP brute des membres, GUILD.xpPct % ne s'applique que sur le total (src/meta/level.js). */
+   requests:[{ id, at }], buildings, log, ops } } } (log : nombre de lignes du journal, rangé à part, ns guild_log ; ops : dernières demandes de don). rawXp : XP brute des membres, GUILD.xpPct % ne s'applique que sur le total (src/meta/level.js). */
 import { GUILD } from '../config.js';
 import { nameKey, parseAccountId } from './account.js';
 
@@ -48,6 +48,35 @@ const whole = v => Number.isSafeInteger(v) && v >= 0 ? v : 0;
 const when = v => Number.isFinite(v) ? v : 0;
 const uniqueIds = list => { const seen = new Set(); return list.filter(x => !seen.has(x.id) && seen.add(x.id)); };
 
+/* bâtiments (01/11/2026) : g.buildings = { id: { level, given:{ matériau: quantité } } }, un niveau en cours de construction */
+export const buildingDef = id => GUILD.buildings.find(b => b.id === id) ?? null;
+export const buildingLevel = (g, id) => g?.buildings?.[id]?.level ?? 0;
+/* coût du prochain niveau, null au niveau maximum */
+export const nextLevel = (g, b) => b.levels[buildingLevel(g, b.id)] ?? null;
+/* ce qu'il manque de ce matériau pour le prochain niveau (pending : parts déjà réservées par des dons en cours) */
+export const missing = (g, b, item, pending = 0) => {
+  const need = nextLevel(g, b)?.cost[item] ?? 0;
+  return Math.max(0, need - (g?.buildings?.[b.id]?.given?.[item] ?? 0) - pending);
+};
+export const buildingReady = (g, b) => !!nextLevel(g, b) && Object.keys(nextLevel(g, b).cost).every(i => missing(g, b, i) === 0);
+export const canBuild = canRecruit;
+/* bonus de tous les niveaux construits : { mult:{ stat: % }, add:{ stat: points } }, null s'il n'y en a aucun */
+export function guildBonus(g){
+  const out = { mult:{}, add:{} };
+  for(const b of GUILD.buildings) for(const lv of b.levels.slice(0, buildingLevel(g, b.id))) for(const kind of ['mult', 'add'])
+    for(const [k, v] of Object.entries(lv[kind] ?? {})) out[kind][k] = (out[kind][k] ?? 0) + v;
+  return Object.keys(out.mult).length || Object.keys(out.add).length ? out : null;
+}
+function cleanBuildings(raw){
+  const out = {};
+  for(const b of GUILD.buildings){
+    const r = raw?.[b.id], level = Math.min(whole(r?.level), b.levels.length), given = {};
+    for(const item of Object.keys(b.levels[level]?.cost ?? {})) if(whole(r?.given?.[item])) given[item] = Math.min(whole(r.given[item]), b.levels[level].cost[item]);
+    if(level || Object.keys(given).length) out[b.id] = { level, given };
+  }
+  return out;
+}
+
 /* relue et revérifiée à chaque chargement : un joueur dans une seule guilde, un seul chef, pas de guilde vide */
 export function sanitizeGuilds(raw){
   const guilds = {}, taken = new Set();
@@ -64,7 +93,9 @@ export function sanitizeGuilds(raw){
     const list = v => uniqueIds(Array.isArray(v) ? v.filter(x => x && isId(x.id)) : []);
     guilds[id] = { id, name:g.name, createdAt:when(g.createdAt), rawXp:whole(g.rawXp), members,
                    invites:list(g.invites).map(x => ({ id:x.id, by:isId(x.by) ? x.by : null, at:when(x.at) })).slice(-GUILD.maxInvites),
-                   requests:list(g.requests).map(x => ({ id:x.id, at:when(x.at) })).slice(-GUILD.maxRequests) };
+                   requests:list(g.requests).map(x => ({ id:x.id, at:when(x.at) })).slice(-GUILD.maxRequests),
+                   buildings:cleanBuildings(g.buildings), log:whole(g.log),
+                   ops:Array.isArray(g.ops) ? g.ops.filter(o => typeof o === 'string').slice(-GUILD.opMemory) : [] };
   }
   return { guilds };
 }
