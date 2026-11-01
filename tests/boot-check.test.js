@@ -4,6 +4,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -26,6 +28,17 @@ test('boot-check : depuis main.js, il retrouve tous les fichiers chargés par le
   for(const f of ['src/config.js', 'src/ui/nav.js', 'src/sim/mobs.js', 'src/render/textures.js', 'src/core/rng.js'])
     assert.ok(seen.includes(pathToFileURL(path.join(ROOT, f)).href), `${f} parcouru`);
   assert.equal(new Set(seen).size, seen.length, 'chaque fichier lu une seule fois');
+});
+
+/* 01/11/2026 : deux « setClock » dans main.js, le navigateur refusait tout le fichier (jeu en ligne bloqué au démarrage).
+   main.js et l'interface ne sont chargés par aucun autre test : on vérifie leur syntaxe ici, fichier par fichier. */
+test('boot-check : chaque fichier chargé par le jeu est du JavaScript valide', async () => {
+  const seen = [];
+  await findMissing(MAIN, async url => { seen.push(url); return readUrl(url); });
+  const bad = [];
+  await Promise.all(seen.map(url => promisify(execFile)(process.execPath, ['--check', fileURLToPath(url)])
+    .catch(e => bad.push(`${path.relative(ROOT, fileURLToPath(url))} : ${String(e.stderr).match(/SyntaxError.*/)?.[0] ?? e.message}`))));
+  assert.deepEqual(bad, []);
 });
 
 test('boot-check : nomme le fichier bloqué', async () => {
