@@ -406,7 +406,7 @@ window.MI = instantLobby;                            // pour le débogage depuis
 
 /* plus de session : l'onglet Session affiche « Tu n'es pas en session », le lobby redevient utilisable */
 function showNoSession(){
-  rec = null; G = null; waiting = false; clearTimeout(viewTimer); chat.stop();
+  rec = null; G = null; waiting = false; clearTimeout(viewTimer);
   setsUI.refresh(); sessionFlag();   // sets de nouveau disponibles
   $('run').hidden = true; $('miRun').hidden = true; $('twRun').hidden = true; $('inRun').hidden = true; $('noSession').hidden = !!giantUI?.active();   // une visite au Bloc géant garde l'onglet
   lobby.update({ account:acct.account, offline:acct.offline, info, session:null });
@@ -540,7 +540,6 @@ const focusPanel = setupFocusPanel({
   },
 });
 
-/* chat des joueurs de la session (mine classique) : le serveur vérifie qui écrit, le texte et la cadence */
 /* modération du chat (30/10) : fenêtre d'avertissement, bandeau du joueur banni */
 const onWarning = w => { tell(warningText(w)); if(w.banned) showBan(); };
 async function showBan(){
@@ -548,7 +547,6 @@ async function showBan(){
   catch(e){ console.warn(e); }
 }
 window.addEventListener('dim:banned', showBan);
-const chat = setupChat({ get: after => gameApi.chat(after), post: text => gameApi.say(text), meId: () => acct.account?.id, onWarning });
 /* chat global (28/10 ; permanent depuis le 31/10, src/ui/chat-dock.js) : tous les joueurs, même en session ; pas relu quand il
    est replié ou que la page est cachée */
 const gchatDock = setupChatDock({ dock: $('gchatDock'), edges: $('gchatDock').querySelectorAll('.chatEdge'), fold: $('gchatFold'), onChange: () => { gchat?.toEnd(); if(!gchatDock?.folded) gchat?.poke(); } });
@@ -597,7 +595,6 @@ function enterSession(session){
   renderSpeeds(ui, info, s => setClock({ speed:s }));
   $('seedLbl').textContent = info.dev ? `seed ${session.seed}` : '';
   $('end').hidden = true; $('noSession').hidden = true; $('run').hidden = mi || tw || ins; $('miRun').hidden = !mi; $('twRun').hidden = !tw; $('inRun').hidden = !ins;
-  if(mi || tw || ins) chat.stop(); else chat.start();
   lobby.update({ session:{ id:session.id } });   // lobby en lecture seule
   updatePrisonUI();                              // la session passe devant la prison (mine instantanée)
   pollView();
@@ -815,7 +812,7 @@ async function pollResult(){
 function showResult(st){
   const ended = st.ended;
   setInventory(st.inventory, ended.result.shares.find(p => p.account === acct.account?.id)?.bag);
-  rec = null; G = null; waiting = false; chat.stop();
+  rec = null; G = null; waiting = false;
   setsUI.refresh(); sessionFlag();
   lobby.update({ session:null });            // on peut relancer depuis le lobby pendant qu'on lit le bilan
   setEnergy(st.energy); setPrison(st.prison, { sync:false });
