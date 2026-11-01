@@ -9,6 +9,10 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 01/11/2026 — Geoffrey — Classement : son propre onglet
+- **Pour le joueur** : les classements quittent Social et ont leur onglet **Classement**. Les boutons sont dans l'ordre Classement, Guilde, Social. Touches du clavier : C, G et S.
+- **État** : 🧪 sur la branche `geoffrey/onglet-classement` (pas en ligne)
+
 ## 01/11/2026 — Geoffrey — Guilde : inviter un membre dans son lobby, voir ce qu'il fait
 - **Pour le joueur** : dans l'onglet de sa guilde, chaque membre a un bouton **Inviter** (dans son lobby, même sans être amis), et on voit ce qu'il fait comme dans Social : en ligne, dans le lobby, en session avec le temps restant, en prison, hors ligne.
 - **État** : ✅ en ligne le 01/11

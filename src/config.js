@@ -1856,7 +1856,7 @@ export const NOTIFY = { popupMs:20_000, noticeMs:12_000, flashMs:4000 };   // fl
 /* Guide « Premiers pas » des nouveaux joueurs (src/ui/guide.js, 28/10/2026, Jules) : les objets que visent ses étapes
    (première pioche à crafter, lingot à fondre), et le délai entre deux relectures de l'état du joueur */
 export const GUIDE = { pickaxe:'Pioche en pierre', ingot:'Lingot de fer', ore:'Fer', refreshMs:1500 };
-/* Classements (onglet Social → Classements, 27/10/2026, Geoffrey ; src/meta/leaderboard.js) : top `size` joueurs + sa
+/* Classements (onglet Classement, 27/10/2026, Geoffrey ; src/meta/leaderboard.js) : top `size` joueurs + sa
    propre place ; le navigateur redemande le classement affiché toutes les `refresh` ms (sous-onglet ouvert seulement), le
    serveur recalcule au plus toutes les `cacheMs` ms. teamMax : coéquipiers gardés dans un record de tour.
    hidden : pseudos jamais classés (comptes de l'équipe pour tester, ex. « admin », 27/10). */

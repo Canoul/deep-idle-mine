@@ -832,8 +832,8 @@ body.phone .chatDock .card{background:#0b0806}
 }
 
 /* ---------- onglet Social (src/ui/social.js) ---------- */
-#socialBody{display:flex;flex-direction:column;gap:calc(15*var(--u))}
-#socialBody .invHead{margin-bottom:0}
+#socialBody,#boardBody{display:flex;flex-direction:column;gap:calc(15*var(--u))}
+#socialBody .invHead,#boardBody .invHead{margin-bottom:0}
 .gcols{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:calc(4*var(--u))}
 .gcols>div{display:flex;flex-direction:column;gap:calc(4*var(--u))}
 .gxp{font-size:var(--fs-s);white-space:nowrap}
@@ -869,7 +869,7 @@ button.gopen:active:not(:disabled){transform:none}
 .fbtns{display:flex;gap:calc(2*var(--u));flex-wrap:wrap;justify-content:flex-end}
 .fbtns button{min-height:calc(15*var(--u));font-size:var(--fs-s)}
 .fbtns .x{min-width:calc(15*var(--u));padding:0}
-/* classements (sous-onglet Classements) : rang, pseudo, valeur ; sa propre ligne surlignée */
+/* classements (onglet Classement) : rang, pseudo, valeur ; sa propre ligne surlignée */
 #boardTrees{margin-top:calc(-9*var(--u))}
 .lrank{width:calc(16*var(--u));flex:none;text-align:right;font:400 var(--fs-l)/1 var(--f-title);color:var(--acc)}
 .lval{flex:none;text-align:right;white-space:nowrap}
