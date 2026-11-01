@@ -6225,3 +6225,11 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Simulation** (`npm run simulate:hescoming`, 20 seeds, seul) : fer 1 093 points par visite, acier 1 405, acier + ténacité 50 % 2 230, Arc de l'Admin 4 240. Le Bloc en fer vaut 183 points : avec × 25 (183 × 25 = 4 575), He's coming demandait environ 4 fois plus de visites. Décision Geoffrey : × 8 (paliers 8 000 à 160 000, pépites par 800) : fer ≈ 8 visites pour le 1er palier, 147 pour le dernier (Bloc : 6 et 110).
 - **Points fragiles** : rugissement et autoattaque tombent ensemble toutes les 30 s. Inspiration agit sur la vitesse d'attaque (`S.mineSpeed`), pas sur le minage. Horloge de Lucifer : celle de la salle, qui repart de zéro quand la salle se vide.
 - ⚠️ Pas vu dans un navigateur : carte, salle, onde, fin de visite, téléphone, bascule à trois volets. Pas testé sur PostgreSQL.
+
+## 01/11/2026 — Recherche : pas de doublon immédiat (Geoffrey) — branche `geoffrey/plan-doublon`
+- **Quoi** : `recentPlans`, erreur `too_recent` et champ `at` des entrées de `inv.research` (`src/meta/research.js`, relu par `deserialize`) ;
+  `RESEARCH.recentMs` ; heure du serveur passée par `server/game/service.js`. L'affichage ne change pas : le navigateur ne connaît pas
+  `inv.research`, le compteur de plans possibles inclut donc les plans récents, et le refus arrive au clic.
+- **Tests** : `tests/research.test.js`, `tests/game-service.test.js`, `npm run test:anticheat` ✅ ; ⚠️ pas vu dans un navigateur. Test du recyclage de `game-service` remis à 10-20 parts (il échouait depuis le 30/10).
+- **Point fragile** : `opMemory` (50) peut évincer une entrée récente après 50 recherches ou recyclages en moins de 2 min : le plan
+  redevient possible, sans autre effet.
