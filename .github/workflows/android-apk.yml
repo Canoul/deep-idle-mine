@@ -34,12 +34,10 @@ jobs:
           cache: npm
           cache-dependency-path: mobile/package-lock.json
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '21'
-
-      - uses: android-actions/setup-android@v3
 
       - name: Fichiers du jeu copiés dans l'appli, projet Android à jour
         working-directory: mobile
