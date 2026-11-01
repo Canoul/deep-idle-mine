@@ -38,7 +38,7 @@ Modèle d'entrée :
 ## 01/11/2026 — Geoffrey — Bot Discord : #report se vide des sujets terminés
 - **Pour l'équipe** : `/todo done` efface maintenant le message du sujet dans #report, au lieu d'y mettre ✅. Les sujets ignorés (❌) et les anciens messages avec ✅ restent.
 - **À suivre** : après la mise en ligne, relancer le bot sur le serveur (`sudo systemctl restart deep-mine-bot`).
-- **État** : 🧪 sur la branche `geoffrey/bot-report-done` (pas en ligne)
+- **État** : ✅ code en ligne le 01/11, bot à relancer sur le serveur
 
 ## 01/11/2026 — Geoffrey — Amélioration : autant de cristaux que de plumes
 - **Pour le joueur** : chaque niveau d'amélioration d'une pièce coûte maintenant autant de Cristaux de pleine lune que de Plumes d'ange (6 au +1, 63 au +9). De +0 à +9 sans échec : 256 cristaux au lieu de 129.
