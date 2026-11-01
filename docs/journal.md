@@ -13,6 +13,10 @@ Modèle d'entrée :
 - **Pour le joueur** : le niveau 1 de l'Armurerie demande 500 000 Pierre et celui de la Forge 250 000 Pierre dure, au lieu de 100 000 chacun. Les dons déjà faits restent comptés.
 - **État** : 🧪 sur la branche `geoffrey/armurerie-pierre` (pas en ligne)
 
+## 01/11/2026 — Geoffrey — Shrines : texte d'un shrine éteint
+- **Pour le joueur** : la carte d'un shrine éteint disait « Prix atteint : actif pour 5 mines », comme s'il tournait encore. Elle dit maintenant « Inactif. Une fois payé : actif pour 5 mines. » Le décompte, lui, était juste : 5 mines, puis plus de bonus.
+- **État** : ✅ en ligne le 01/11
+
 ## 01/11/2026 — Geoffrey — Guilde : message après une invitation
 - **Pour le joueur** : inviter un joueur ouvre maintenant une petite fenêtre : « Invitation envoyée à X. », ou « Ce pseudo n'existe pas. » (ou tout autre refus du serveur).
 - **État** : ✅ en ligne le 01/11
