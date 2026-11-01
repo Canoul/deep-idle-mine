@@ -284,6 +284,7 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .inSession .pi{color:var(--acc);margin-right:calc(2*var(--u))}
 .actList{display:flex;flex-direction:column;gap:calc(3*var(--u))}
 .actBtn{width:100%;justify-content:flex-start;gap:calc(6*var(--u));min-height:calc(30*var(--u));padding:calc(3*var(--u)) calc(8*var(--u));text-align:left}
+.actBtn.ready{outline:calc(2*var(--u)) solid var(--gold, #ffd23f);outline-offset:calc(-2*var(--u))}   /* entrée disponible (Bloc géant, He's coming) */
 .actIcon{flex:none;width:calc(16*var(--u));text-align:center;font-size:var(--fs-xl)}
 .actText{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.1}
 .actText b{font:400 var(--fs-xl)/1.1 var(--f-title);color:#ffe6c4}

@@ -384,11 +384,11 @@ const instantLobby = setupInstantLobby({
   onState: st => { if(st.registered && !miModeShown){ miModeShown = true; lobby.update({ mode:'mi' }); } },
   onOpened: () => pollLobby(),                       // mode dev : la session est là, le lobby la voit et bascule
 });
-function startInstant(){ if(acct.account && !acct.offline){ instantLobby.start(); giantUI?.refresh(); hcUI?.refresh(); } else instantLobby.stop(); }
+function startInstant(){ if(acct.account && !acct.offline) instantLobby.start(); else instantLobby.stop(); giantUI?.refresh(); hcUI?.refresh(); }
 
 /* Bloc géant : carte du lobby (« Où miner »), visite dans l'onglet Session, écran de fin (src/ui/giant.js) */
-giantUI = setupGiant({ api: giantApi, nav, onInventory: (inv, bag) => setInventory(inv, bag), session: () => !!rec, me: () => acct.account?.id });
-hcUI = setupGiant({ api: hesComingApi, nav, onInventory: (inv, bag) => setInventory(inv, bag), session: () => !!rec, me: () => acct.account?.id,
+giantUI = setupGiant({ api: giantApi, nav, onInventory: (inv, bag) => setInventory(inv, bag), session: () => !!rec, me: () => acct.account?.id, onReady: on => lobby.update({ giantReady: on }) });
+hcUI = setupGiant({ api: hesComingApi, nav, onInventory: (inv, bag) => setInventory(inv, bag), session: () => !!rec, me: () => acct.account?.id, onReady: on => lobby.update({ hcReady: on }),
                     prefix: 'hc', config: HES_COMING, renderer: createLuciferRenderer,
                     words: { place: HES_COMING.bossName, front: HES_COMING.bossName, title: 'He\'s coming', rate: 'DPS',
                              rules: `Ton mineur frappe ${HES_COMING.bossName} : 1 dégât = 1 point.\nToutes les ${HES_COMING.roar.every} s, il rugit : à ${HES_COMING.roar.radius} cases ou moins, Fear ${HES_COMING.roar.fear} s (ton mineur erre et ne frappe plus).\nToutes les ${HES_COMING.swing.every} s, il projette ceux à son contact.\nLa ténacité résiste aux deux.` } });
