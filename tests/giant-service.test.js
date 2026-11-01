@@ -140,15 +140,15 @@ test('récompense (26/10, ancienne règle : une visite suffit) : jour fini, pali
   clock.now = dayEnd(clock.now) + VISIT + 1;
   const i = await giant.info(A);
   assert.equal(i.rewards.length, 1);
-  assert.deepEqual(i.rewards[0].items, { 'Treasure T1': 2, 'Blueprint parts': 45, 'Treasure T2': 2, [NUGGET]: 2 });
+  assert.deepEqual(i.rewards[0].items, { 'Plume d\'ange': 15, [NUGGET]: 17 });
   assert.deepEqual((await giant.info(B)).rewards, [], 'B n\'est pas venu');
   const r = await giant.claim(A);
-  assert.deepEqual(r.given, { 'Treasure T1': 2, 'Blueprint parts': 45, 'Treasure T2': 2, [NUGGET]: 2 });
+  assert.deepEqual(r.given, { 'Plume d\'ange': 15, [NUGGET]: 17 });
   const a = await inv(store, A.id);
-  assert.equal(countOf(a, NUGGET), 2);
-  assert.equal(countOf(a, 'Treasure T1'), 2); assert.equal(countOf(a, 'Treasure T2'), 2); assert.equal(countOf(a, 'Blueprint parts'), 45);
+  assert.equal(countOf(a, NUGGET), 17);
+  assert.equal(countOf(a, 'Plume d\'ange'), 15); assert.equal(countOf(a, NUGGET), 17);
   assert.deepEqual((await giant.claim(A)).given, {}, 'une seule fois');
-  assert.equal(countOf(await inv(store, A.id), 'Treasure T1'), 2);
+  assert.equal(countOf(await inv(store, A.id), 'Plume d\'ange'), 15);
   assert.equal(countOf(await inv(store, A.id), NUGGET), 2, 'pépites données une seule fois');
   assert.deepEqual((await giant.info(A)).rewards, []);
   assert.deepEqual((await giant.claim(B)).given, {});
@@ -167,11 +167,11 @@ test('récompense à partir du 27/10 : 2 visites au moins dans la journée (une 
   const d = await store.getGiantDay('2026-10-27'); d.total = 1500; d.scores[A.id].points = 99; d.scores[B.id].points = 500;
   await store.putGiantDayAndPlayer(d, A.id, await store.getGiantPlayer(A.id));
   clock.now = dayEnd(clock.now) + VISIT + 1;
-  assert.deepEqual((await giant.info(A)).rewards.map(r => r.items), [{ 'Treasure T1': 1 }], 'A : 2 visites, 99 points = 0 pépite');
+  assert.deepEqual((await giant.info(A)).rewards.map(r => r.items), [{ 'Plume d\'ange': 5 }], 'A : 2 visites, 99 points = 0 pépite');
   assert.deepEqual((await giant.info(B)).rewards, [], 'B : une seule visite (ni palier ni pépite, même avec 500 points)');
   assert.deepEqual((await giant.claim(B)).given, {}, 'B ne peut rien réclamer');
-  assert.equal(countOf(await inv(store, A.id), 'Treasure T1'), 0);
-  assert.deepEqual((await giant.claim(A)).given, { 'Treasure T1': 1 });
+  assert.equal(countOf(await inv(store, A.id), 'Plume d\'ange'), 0);
+  assert.deepEqual((await giant.claim(A)).given, { 'Plume d\'ange': 5 });
 });
 
 test('récompense : sous le premier palier, seulement les pépites d\'argent (rien sous 100 points)', async () => {
