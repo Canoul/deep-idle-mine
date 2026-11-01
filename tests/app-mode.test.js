@@ -102,6 +102,6 @@ test('appli : Mon compte montre les réglages des notifications, transmis à la 
 test("appli : hors session, l'horloge se cale sur l'heure du serveur reçue avec les fours", () => {
   const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
   assert.match(main, /const syncClock = /);
-  assert.match(main, /setClock\(st\.furnaces\?\.now\)/);
-  assert.match(main, /setClock\(r\.furnaces\?\.now\)/);
+  assert.match(main, /syncClock\(st\.furnaces\?\.now\)/);
+  assert.match(main, /syncClock\(r\.furnaces\?\.now\)/);
 });
