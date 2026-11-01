@@ -30,6 +30,10 @@ export function guildNameError(s){
   return null;
 }
 
+/* message de guilde (01/11/2026, Geoffrey) : retours à la ligne gardés (deux lignes vides au plus), autres caractères de
+   contrôle retirés */
+export const cleanGuildMessage = s => String(s ?? '').normalize('NFC').replace(/\r\n?/g, '\n').replace(/[^\P{C}\n]/gu, '').replace(/\n{3,}/g, '\n\n').trim();
+
 /* remplaçant du chef : le plus ancien officier, sinon le plus ancien membre */
 export function nextChief(members){
   const pick = list => list.reduce((best, m) => !best || m.joinedAt < best.joinedAt ? m : best, null);
@@ -91,7 +95,9 @@ export function sanitizeGuilds(raw){
     if(!chief) nextChief(members).rank = RANK.chief;
     members.forEach(m => taken.add(m.id));
     const list = v => uniqueIds(Array.isArray(v) ? v.filter(x => x && isId(x.id)) : []);
+    const msg = g.message;
     guilds[id] = { id, name:g.name, createdAt:when(g.createdAt), rawXp:whole(g.rawXp), members,
+                   message:typeof msg?.text === 'string' && msg.text ? { text:msg.text.slice(0, GUILD.messageMax), by:isId(msg.by) ? msg.by : null, at:when(msg.at) } : null,
                    invites:list(g.invites).map(x => ({ id:x.id, by:isId(x.by) ? x.by : null, at:when(x.at) })).slice(-GUILD.maxInvites),
                    requests:list(g.requests).map(x => ({ id:x.id, at:when(x.at) })).slice(-GUILD.maxRequests),
                    buildings:cleanBuildings(g.buildings), log:whole(g.log),

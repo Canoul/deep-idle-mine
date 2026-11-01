@@ -6441,3 +6441,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Quoi** : `removeReport` remplace `markDone` dans bot/main.js. Aucun droit Discord en plus : le bot efface ses propres messages.
 - **Tests** ✅ tests/bot-todo.test.js (logique et aide), `node --check bot/main.js`. ⚠️ Effacement non essayé sur le vrai Discord : main.js n'a pas de test sans connexion.
 
+## 01/11/2026 — Message de guilde (Geoffrey) — branche `geoffrey/guilde-message`
+- **Quoi** : champ `message { text, by, at }` de la guilde (`sanitizeGuilds` le garde), `setMessage` (`server/guild/service.js`, grade vérifié par `recruiter`), route `POST /api/guild/message`, `messageHTML` (`src/ui/guild.js`), option `multiline` de `askText`. Saisie dans une fenêtre et pas dans la page : la liste des membres est réécrite à chaque relecture et effacerait le texte en cours.
+- **Tests** : `tests/guild-service.test.js`, `tests/guild-ui.test.js`, `tests/dialog.test.js` ; ⚠️ pas vu dans un navigateur.
+- **Point fragile** : mot interdit masqué sans avertissement de modération (`moderate` seul, pas `moderation.warn`).

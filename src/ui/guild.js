@@ -61,11 +61,18 @@ export const bonusLabels = list => list.flatMap(b => GUILD.buildings.find(x => x
 export function peekHTML(p, older){
   return `<h2>${esc(p.name)}</h2><div class="gbList">${p.buildings.map(b => buildingHTML(b)).join('')}</div>${logHTML(p.log, older)}`;
 }
+/* message de guilde (01/11/2026, Geoffrey) : lu par tous les membres, écrit par le chef et les officiers */
+export function messageHTML(g){
+  const m = g.message;
+  return `<div class="card"><h2>Message de guilde</h2>${m ? `<p class="gmsg">${esc(m.text)}</p><p class="mut small">${m.name ? `${esc(m.name)} · ` : ''}${dateOf(m.at)}</p>` : '<p class="mut small">Aucun message pour l\'instant.</p>'}`+
+    (g.canMessage ? `<div class="fbtns"><button data-g="message">${m ? 'Modifier' : 'Écrire'}</button></div>` : '')+`</div>`;
+}
 export function mineHTML(g, older){
   const pct = g.need ? g.into / g.need * 100 : 100;
   const requests = g.requests.length ? `<div class="card"><h2>Demandes reçues</h2>${g.requests.map(r =>
     `<div class="frow"><span class="fname"><b>${esc(r.name)}</b></span><span class="fbtns"><button class="on" data-g="acceptRequest" data-id="${esc(r.id)}">Accepter</button><button data-g="refuseRequest" data-id="${esc(r.id)}">Refuser</button></span></div>`).join('')}</div>` : '';
   return `<div class="gcols"><div>
+    ${messageHTML(g)}
     ${requests}
     <div class="card"><h2>Membres <span class="mut">${g.members.length}/${g.max}</span></h2>${g.members.map(memberRow).join('')}</div>
     <div class="fbtns">${canRecruit(g.rank) ? '<button class="on" data-g="invite">Inviter un joueur</button>' : ''}<button data-g="leave">Quitter la guilde</button></div>
@@ -174,6 +181,11 @@ export function setupGuild({ root, api = guildApi, onChange = () => {} }){
     if(name === 'invite'){
       const who = await askText('Pseudo du joueur à inviter', '', { maxLength:32, ok:'Inviter' });
       if(who?.trim()) await sendInvite(who, { invite:name => api.invite(name), done:quiet, tell });
+      return;
+    }
+    if(name === 'message'){
+      const text = await askText(`Message de guilde (${GUILD.messageMax} caractères au plus). Vide : l'efface.`, st.mine?.message?.text ?? '', { maxLength:GUILD.messageMax, ok:'Publier', multiline:true });
+      if(text !== null && text !== undefined) await run(() => api.message(text));
       return;
     }
     if(name === 'lobbyInvite'){
