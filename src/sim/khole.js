@@ -116,7 +116,8 @@ function buildVeins(G, r, map, k, top){
     if(key && counts[key]) counts[key]--; grid[i] = id; };
   const filler = IDS[Object.keys(map.comp).filter(n => typeOf(IDS[n])==='terrain').sort((a, b) => map.comp[b]-map.comp[a])[0]];
   const L = layout(r, map), taken = L.taken;
-  const dungeons = L.dungeons.map(b => ({ x0: b.x0, ry0: b.ry0, side: r() < 0.5 ? 'L' : 'R',
+  /* entrée à gauche ou à droite ; collé au bord droit, toujours à gauche (sinon elle donne sur la barrière, 01/11) */
+  const dungeons = L.dungeons.map(b => ({ x0: b.x0, ry0: b.ry0, side: r() < 0.5 || b.x0 + DUNGEON.size >= map.w ? 'L' : 'R',
     hry: b.ry0 + DUNGEON.size - 2 - Math.floor(r()*DUNGEON.holeRows) }));
   const traps = L.traps.map(b => ({ x0: b.x0, ry0: b.ry0, mobs: trapMobs(k, r) }));
   for(const p of dungeons) carve(p, put);

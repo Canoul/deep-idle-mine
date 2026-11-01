@@ -6404,3 +6404,16 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **⚠️ À vérifier en vrai** : bulle sur téléphone (tableau T4 haut : ≈ 30 lignes) ; « ? Butin des mobs » dans la ligne
   « Face aux mobs » sur écran étroit.
 
+## 01/11/2026 — K hole Filons : entrée du donjon contre la barrière (Jules) — ✅ en ligne le 01/11
+- **Quoi** : `buildVeins` (src/sim/khole.js) : `placeBox` accepte un donjon jusqu'au bord droit de la carte (x0 = map.w − 10)
+  et le côté de l'entrée était tiré à pile ou face ; côté R au bord, l'entrée (x = 24) donnait sur la barrière (x = 25).
+  Mesuré : 172 donjons sur 2 000 seeds (n = 0). Correctif : le tirage `r()` est gardé (le reste de la dimension ne change
+  pas), mais `x0 + DUNGEON.size >= map.w` force 'L'. Seuls les donjons qui étaient murés changent. Le bord gauche n'a pas
+  le problème (x0 ≥ spawnCols, entrée sur une colonne d'arrivée vide) ; haut et bas non plus (entrée sur les lignes du bas
+  de l'intérieur, jamais sur la ligne du mur).
+- **Repro** : seed 176946784 (k hole sans doute imposé : cette seed n'en tire aucun naturellement) ; seed 2, n = 0, carte
+  Filons : entrée (24, 216) côté R avant le correctif.
+- **Tests** ✅ tests/khole.test.js (nouveau : « l'entrée du donjon donne toujours dans la carte », 300 seeds, échouait
+  avant), tests/admin-khole.test.js (29 au total). ✅ Simulation 3 mineurs × 5 : 0 blocage.
+- **Point fragile** : la mine classique garde 2 cases de marge (`DUNGEON.margin`) ; le k hole n'en garde pas, d'où ce cas.
+  Une autre boîte (piège) collée à l'entrée est exclue par l'écart d'une case de `placeBox`.

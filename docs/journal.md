@@ -16,6 +16,10 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 01/11/2026 — Jules — K hole : le donjon des Filons n'est plus muré
+- **Pour le joueur** : dans la carte « Filons » du k hole, le donjon pouvait être collé au bord droit avec son entrée du côté du mur : impossible d'y entrer (vu sur la seed 176946784). Un donjon collé au bord ouvre maintenant toujours vers l'intérieur. Ça touchait environ 1 Filons sur 12.
+- **État** : ✅ en ligne le 01/11
+
 ## 01/11/2026 — Jules — Bulles « Butin » : le tableau de loot en survol
 - **Pour le joueur** : on voit ce que peut donner une chose avant de l'ouvrir ou de la tenter, dans la bulle habituelle
   (survol à la souris, toucher sur téléphone) :

@@ -100,6 +100,21 @@ test('la dimension : 25 × 25 au fond de la mine, arrivée vide, composition, 1 
   assert.equal(G.unlockedAreas, k + 1);
 });
 
+/* bug du 01/11/2026 (seed 176946784) : un donjon collé au bord droit avait son entrée à droite, contre la barrière */
+test('la dimension : l\'entrée du donjon donne toujours dans la carte, jamais sur la barrière du bord', () => {
+  let edge = 0;
+  for(let seed=1; seed<=300; seed++){
+    const G = newSession(seed, { miners: 1 });
+    buildDimension(G, 0, 4);
+    for(const d of G.dungeons){
+      const fx = d.side === 'L' ? d.hx - 1 : d.hx + 1;
+      assert.ok(fx >= 0 && fx < FIL.w && G.tiles[d.hy][fx] !== BARRIER, `seed ${seed} : entrée (${d.hx},${d.hy}) côté ${d.side}`);
+      if(d.x0 + DUNGEON.size === FIL.w) edge++;
+    }
+  }
+  assert.ok(edge > 0, 'des donjons collés au bord droit ont été essayés');
+});
+
 test('dans la dimension : pas d\'oxygène consommé, pods sans limite (il ne remonte jamais), rien à débloquer, pas d\'autres mobs', () => {
   const { G } = opened();
   run(G, KHOLE.warn + DT);
