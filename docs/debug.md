@@ -6204,3 +6204,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 ## 01/11/2026 — Guilde : fenêtre après une invitation (Geoffrey)
 - **Quoi** : `sendInvite` (src/ui/guild.js) passe par `tell` (src/ui/dialog.js) au lieu de `say`, succès compris. Une invitation déjà envoyée au même joueur dit aussi « envoyée » (le service ne distingue pas ce cas).
 - **Tests** ✅ tests/guild-ui.test.js, guild-service. ⚠️ Fenêtre pas vue dans un navigateur.
+
+## 01/11/2026 — Armurerie de guilde : coût en Pierre (Geoffrey)
+- **Quoi** : `GUILD.buildings` armurerie, Pierre 100 000 → 500 000. Dons gardés (`given`) ; une Armurerie déjà construite reste au niveau 1.
+- **Tests** ✅ tests/guild-buildings.test.js, guild-service.

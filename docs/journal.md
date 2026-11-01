@@ -9,6 +9,10 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 01/11/2026 — Geoffrey — Armurerie de guilde : 500 000 Pierre
+- **Pour le joueur** : le niveau 1 de l'Armurerie demande 500 000 Pierre au lieu de 100 000. Les dons déjà faits restent comptés.
+- **État** : 🧪 sur la branche `geoffrey/armurerie-pierre` (pas en ligne)
+
 ## 01/11/2026 — Geoffrey — Guilde : message après une invitation
 - **Pour le joueur** : inviter un joueur ouvre maintenant une petite fenêtre : « Invitation envoyée à X. », ou « Ce pseudo n'existe pas. » (ou tout autre refus du serveur).
 - **État** : ✅ en ligne le 01/11

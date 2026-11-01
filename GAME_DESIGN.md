@@ -647,7 +647,7 @@ Onglet Guilde : sa guilde (si on en a une), Rechercher, Leaderboard. Dans Recher
 - **Bâtiments** *(01/11/2026, Geoffrey ; `GUILD.buildings`, coûts provisoires)* : à droite de l'onglet de sa guilde. Chaque membre donne les matériaux depuis son inventaire ; un don est **définitif** (rien n'est rendu si on part ou si la guilde disparaît) et ramené à ce qu'il manque. Quand tout est réuni, le **chef ou un officier** lance la construction. Les niveaux suivants s'ajoutent en config, bonus cumulés.
   | Bâtiment | Niveau 1 | Coût |
   |---|---|---|
-  | Armurerie | +2 % de dégâts | 100 000 Pierre, 5 000 Lingot de fer, 2 500 Lingot d'or, 100 Orbe supérieur, 500 Orbe |
+  | Armurerie | +2 % de dégâts | 500 000 Pierre *(01/11 : avant 100 000)*, 5 000 Lingot de fer, 2 500 Lingot d'or, 100 Orbe supérieur, 500 Orbe |
   | Trésorerie | +2 de fortune (points de %, comme l'Anneau de Midas) | 1 000 Shiny iron, 500 Shiny gold, 1 000 Poudre de rêve |
   | Forge | +2 % de vitesse de minage | 100 000 Pierre dure, 5 000 Diamant, 25 Jade inférieur, 25 Rubis inférieur, 25 Saphir inférieur |
   Le bonus vaut pour tous les modes et pour tous les membres dès leur arrivée, figé au lancement (comme le nom de guilde). Il ne touche que son propre mineur.

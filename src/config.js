@@ -1856,7 +1856,7 @@ export const GUILD = { maxMembers:30, xpPct:1, nameMin:3, nameMax:24, maxInvites
   maxGift:1e9, opMemory:50, logPage:100, logShow:50,
   buildings:[
     { id:'armurerie', name:'Armurerie', tex:'guild_armory', levels:[
-      { label:'+2 % de dégâts', mult:{ damage:2 }, cost:{ 'Pierre':100000, 'Lingot de fer':5000, 'Lingot d\'or':2500, 'Orbe supérieur':100, 'Orbe':500 } },
+      { label:'+2 % de dégâts', mult:{ damage:2 }, cost:{ 'Pierre':500000, 'Lingot de fer':5000, 'Lingot d\'or':2500, 'Orbe supérieur':100, 'Orbe':500 } },
     ] },
     { id:'tresorerie', name:'Trésorerie', tex:'guild_treasury', levels:[
       { label:'+2 % de fortune', add:{ fortune:2 }, cost:{ 'Shiny iron':1000, 'Shiny gold':500, 'Poudre de rêve':1000 } },
