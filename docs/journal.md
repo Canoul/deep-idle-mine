@@ -11,7 +11,7 @@ Modèle d'entrée :
 ```
 ## 01/11/2026 — Geoffrey — Guilde : message après une invitation
 - **Pour le joueur** : inviter un joueur ouvre maintenant une petite fenêtre : « Invitation envoyée à X. », ou « Ce pseudo n'existe pas. » (ou tout autre refus du serveur).
-- **État** : 🧪 sur la branche `geoffrey/guilde-invite-msg` (pas en ligne)
+- **État** : ✅ en ligne le 01/11
 
 ## 01/11/2026 — Geoffrey — Guilde : les bâtiments
 - **Pour le joueur** : à droite de l'onglet de sa guilde, trois bâtiments avec leur texture : Armurerie (+2 % de dégâts), Trésorerie (+2 % de fortune), Forge (+2 % de vitesse de minage). Chaque membre donne des matériaux ; quand tout est réuni, le chef ou un officier lance la construction. Le bonus vaut pour tous les membres, dans tous les modes. En dessous, un journal des dons sans limite, jamais effacé.
