@@ -16,6 +16,7 @@ export function guildRoutes(guild){
     'POST /api/guild/log':    async ctx => { needMe(ctx); return guild.log(ctx.me, str(ctx.body?.id), ctx.body?.before); },
     'POST /api/guild/give':   async ctx => { needMe(ctx); return guild.give(ctx.me, ctx.body ?? {}); },
     'POST /api/guild/build':          write(guild.build),
+    'POST /api/guild/message':        write(guild.setMessage, 'text'),
     'POST /api/guild/create':         write(guild.create, 'name'),
     'POST /api/guild/invite':         write(guild.invite, 'name'),
     'POST /api/guild/accept-invite':  write(guild.acceptInvite),

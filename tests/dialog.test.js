@@ -32,3 +32,9 @@ test('bouton dangereux : classe err, sinon bouton principal « on »', () => {
   assert.match(dialogHtml({ kind:'ask', text:'Supprimer ?', ok:'Supprimer', danger:true }), /class="danger" data-dlg="yes"/);
   assert.match(dialogHtml({ kind:'ask', text:'Continuer ?' }), /class="on" data-dlg="yes"[^>]*>OK</);
 });
+
+test('saisie sur plusieurs lignes : zone de texte échappée, limitée', () => {
+  const h = dialogHtml({ kind:'text', text:'x', value:'</textarea><b>', maxLength:500, multiline:true });
+  assert.match(h, /<textarea class="dlgInput"[^>]*maxlength="500"/);
+  assert.ok(h.includes('&lt;/textarea&gt;&lt;b&gt;'));
+});

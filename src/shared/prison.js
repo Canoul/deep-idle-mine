@@ -14,6 +14,7 @@ import { DT, GAME, PRISON } from '../config.js';
 import { minerSpecs } from './game.js';
 import { newPrisonRun, prisonGoal } from '../sim/prison.js';
 import { sanitizeProfile } from '../meta/prison-profile.js';
+import { gearScore, prisonGoblinMul } from '../meta/gearscore.js';
 
 const STATES = ['running', 'waiting', 'done'];
 const isNum = v => typeof v === 'number' && Number.isFinite(v);
@@ -79,7 +80,7 @@ export function buildPrisonRun(rec){
   const a = rec.players[0].account, s = rec.specs || {};
   const miner = minerSpecs({ mode: 'prison', players: rec.players, prefs: { [a]: s.prefs }, looks: { [a]: s.look },
                              gear: { [a]: s.gear }, skills: { [a]: s.skills }, spells: { [a]: s.spells } })[0];
-  return newPrisonRun(rec.seed, { miner, areaMax: rec.areaMax, profile: rec.profile ?? null, run: rec.run, id: rec.id, account: a });
+  return newPrisonRun(rec.seed, { miner, areaMax: rec.areaMax, profile: rec.profile ?? null, run: rec.run, id: rec.id, account: a, goblinMul: prisonGoblinMul(gearScore(s.gear)) });
 }
 
 /* ticks de jeu joués après elapsedMs de temps réel à la vitesse speed (pas de plafond : un run peut durer plus d'une heure) */

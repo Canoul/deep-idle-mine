@@ -1869,7 +1869,7 @@ export const ADMIN_VIEW = { names:['admin'] };
    mineur, cumulés d'un niveau à l'autre : mult = % du total, add = points (la fortune est déjà en %, comme l'Anneau de Midas).
    Ajouter un niveau : une ligne dans levels. logPage : dons par page enregistrée ; logShow : dons par écran du journal. */
 export const GUILD = { maxMembers:30, xpPct:1, nameMin:3, nameMax:24, maxInvites:50, maxRequests:50, maxPendingPerPlayer:5, poll:5000,
-  maxGift:1e9, opMemory:50, logPage:100, logShow:50,
+  maxGift:1e9, opMemory:50, logPage:100, logShow:50, messageMax:500,
   buildings:[
     { id:'armurerie', name:'Armurerie', tex:'guild_armory', levels:[
       { label:'+2 % de dégâts', mult:{ damage:2 }, cost:{ 'Pierre':500000, 'Lingot de fer':5000, 'Lingot d\'or':2500, 'Orbe supérieur':100, 'Orbe':500 } },
@@ -1929,6 +1929,10 @@ export const PRISON = { mobXpMul: 0.5, stunReset: 60, stunGap: 5, width: 25, ore
   fracSalt: 0x5f7a11,   // arrondi au hasard du nombre de cases de minerai d'une carte de prison (30/10/2026, src/sim/world.js fillComp)
   /* 31/10/2026 (Geoffrey) : part maximale d'un minerai dans la répartition des minerais du profil ; le surplus va aux minerais sans plafond */
   oreCap: { cobalt: 0.004, thorium: 0.004 },
+  /* 01/11/2026 (Geoffrey) : un mineur faible se fait voler la moitié de son butin (objectif : 50-60 % de rendement sous
+     2 500 GS). Gobelins × mul à 0 GS, puis en montant régulièrement jusqu'à × 1 à gsMax GS ; leurs apparitions vont aux
+     autres mobs (même nombre de mobs). Progressif pour que gagner du GS n'ajoute jamais d'un coup des gobelins. Provisoire. */
+  lowGs: { gsMax: 2500, goblinMul: 0 },
   /* 31/10/2026 (Geoffrey) : mines jouées avec le focus minerai, retiré du jeu le 30/10 : à partir de focusRef.area débloquées,
      leurs minerais comptent dans le profil pour une répartition de référence (ores : minerais par heure des 10 dernières mines
      de Nbrick, LeTaz et Akake, le 31/10). compoVersion : à monter pour recalculer une fois les compos gardées des joueurs

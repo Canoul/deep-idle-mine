@@ -403,7 +403,15 @@ function tpSpot(G,p){
 const tableOf = k => MOBS.spawnTable[Math.max(0, Math.min(MOBS.spawnTable.length-1, k))];
 /* table d'apparition à la ligne y : celle du contenu de son area (prison : l'area max du joueur) */
 /* prison (29/10) : selon les kills par type des 10 dernières mines du joueur (profile.mobs), sinon la table de l'area */
-export const spawnTableAt = (G, y) => G.prison?.profile?.mobs ?? tableOf(contentAt(G, y));
+export const spawnTableAt = (G, y) => fewerGoblins(G.prison?.profile?.mobs ?? tableOf(contentAt(G, y)), G.prison?.goblinMul ?? 1);
+/* part des gobelins × mul ; ce qu'ils perdent va aux autres mobs, à proportion de leur part (01/11/2026, PRISON.lowGs) */
+export function fewerGoblins(table, mul){
+  const g=table.gobelin ?? 0;
+  if(mul>=1 || !g || g>=1) return table;
+  const out={}, others=(1-g*mul)/(1-g);
+  for(const t of Object.keys(table)) out[t]=t==='gobelin' ? g*mul : table[t]*others;
+  return out;
+}
 export function pickType(table, r){
   let acc=0; const types=Object.keys(table);
   for(const t of types){ acc+=table[t]; if(r<acc) return t; }

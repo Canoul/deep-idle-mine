@@ -5,7 +5,7 @@ import { guildTabs, holdsPanel, mineHTML, listHTML, boardHTML, invitesHTML, send
 import { TABS } from '../src/ui/nav.js';
 
 const NONE = { kick:false, promote:false, demote:false, transfer:false };
-const row = (o = {}) => ({ id:'AAAAAAAA', name:'Zoe', rank:'member', activity:'online', xp:1234, actions:NONE, ...o });
+const row = (o = {}) => ({ id:'AAAAAAAA', name:'Zoe', rank:'member', status:'online', activity:'online', xp:1234, actions:NONE, ...o });
 const mine = (o = {}) => ({ id:'g1', name:'Les Rois', level:3, into:750, need:2250, xp:3250, rank:'chief', max:30, members:[row()], requests:[], buildings:[], owned:{}, canBuild:false, log:{ rows:[], next:0 }, ...o });
 
 test('pas de guilde : pas de sous-onglet à son nom', () => {
@@ -19,10 +19,20 @@ test('avec guilde : sous-onglet au nom de la guilde, échappé', () => {
 });
 
 test('ligne d\'un membre : grade, activité, XP rapportée', () => {
-  const h = mineHTML(mine({ members:[row({ rank:'officer', activity:'session' }), row({ activity:'offline', name:'Max' })] }));
-  assert.match(h, /Officier/); assert.match(h, /En session/); assert.match(h, /Absent/);
+  const h = mineHTML(mine({ members:[row({ rank:'officer', status:'session', leftMs:600_000 }), row({ status:'offline', name:'Max' })] }));
+  assert.match(h, /Officier/); assert.match(h, /En session mine · reste 10 min/); assert.match(h, /Hors ligne/);
   assert.match(h, /1\s234 XP/);
-  assert.match(mineHTML(mine()), /Connecté/);
+  assert.match(mineHTML(mine()), /En ligne/);
+  assert.match(mineHTML(mine({ members:[row({ status:'lobby', size:2, max:3 })] })), /Dans le lobby \(2\/3\)/);
+  assert.match(mineHTML(mine({ members:[row({ status:'session', mode:'prison', online:true })] })), /fdot on.*En ligne - Prison/);
+});
+
+test('bouton Inviter : actif si le serveur le permet, grisé sinon, absent sur sa propre ligne', () => {
+  const on = mineHTML(mine({ members:[row({ canInvite:true, id:'BBBBBBBB', name:'Max' })] }));
+  assert.match(on, /<button data-g="lobbyInvite" data-id="BBBBBBBB" data-name="Max">/);
+  assert.match(mineHTML(mine({ members:[row({ status:'offline' })] })), /data-g="lobbyInvite"[^>]* disabled title="Hors ligne"/);
+  assert.ok(!mineHTML(mine({ members:[row({ me:true })] })).includes('lobbyInvite'));
+  assert.ok(!mineHTML(mine({ members:[row({ canInvite:true, name:'"><img src=x>' })] })).includes('<img src=x'));
 });
 
 test('niveau et barre', () => {
@@ -96,4 +106,13 @@ test('inviter : pseudo inconnu, la fenêtre donne le refus du serveur', async ()
   const told = [];
   await sendInvite('Personne', { invite:async () => { throw new Error('Ce pseudo n\'existe pas.'); }, done:async () => { throw new Error('pas de relecture'); }, tell:async t => told.push(t) });
   assert.deepEqual(told, ['Ce pseudo n\'existe pas.']);
+});
+
+test('message de guilde : échappé, lignes gardées, bouton pour qui peut écrire', () => {
+  const h = mineHTML(mine({ message:{ text:'<b>Salut', name:'Zoe', at:0 }, canMessage:true }));
+  assert.match(h, /Message de guilde/); assert.ok(h.includes('&lt;b&gt;Salut')); assert.match(h, /Zoe · /);
+  assert.match(h, /data-g="message">Modifier/);
+  assert.ok(!mineHTML(mine({ message:{ text:'Salut', name:'Zoe', at:0 } })).includes('data-g="message"'));
+  assert.match(mineHTML(mine()), /Aucun message/);
+  assert.match(mineHTML(mine({ canMessage:true })), /data-g="message">Écrire/);
 });

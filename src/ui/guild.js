@@ -5,10 +5,11 @@ import { RANK_LABEL, canRecruit } from '../shared/guild.js';
 import { ask, askText, tell } from './dialog.js';
 import { guildApi } from '../net/api.js';
 import { rname } from './rarity.js';
+import { statusDot, statusText } from './social.js';
+import { pxi } from './pxicons.js';
 
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
 const fr = n => Math.round(n).toLocaleString('fr-FR');
-const ACTIVITY = { online:{ label:'Connecté', cls:'on' }, session:{ label:'En session', cls:'play' }, offline:{ label:'Absent', cls:'off' } };
 const ACTION_LABEL = { promote:'Passer officier', demote:'Rétrograder', transfer:'Donner ma place de chef', kick:'Exclure' };
 
 /* relecture : une case d'actions ouverte ne doit pas se fermer ; un bouton qui garde le focus après un clic ne retient rien */
@@ -18,9 +19,12 @@ export const holdsPanel = el => !!el?.matches('[data-gact]');
 export const guildTabs = st => [...(st.mine ? [{ id:'mine', label:esc(st.mine.name) }] : []), { id:'search', label:'Rechercher' }, { id:'board', label:'Leaderboard' }];
 
 function memberRow(m){
-  const a = ACTIVITY[m.activity] ?? ACTIVITY.offline, actions = Object.keys(ACTION_LABEL).filter(k => m.actions[k]);
+  const actions = Object.keys(ACTION_LABEL).filter(k => m.actions[k]);
   const box = actions.length ? `<select class="gact" data-gact data-id="${esc(m.id)}" aria-label="Actions sur ${esc(m.name)}"><option value="">Actions</option>${actions.map(k => `<option value="${k}">${ACTION_LABEL[k]}</option>`).join('')}</select>` : '';
-  return `<div class="frow"><span class="fdot ${a.cls}"></span><span class="fname"><b>${esc(m.name)}</b><small class="mut">${RANK_LABEL[m.rank]} · ${a.label}</small></span><span class="gxp">${fr(m.xp)} XP</span>${box}</div>`;
+  /* inviter dans son lobby (01/11/2026, Geoffrey) ; le serveur dit si c'est possible, comme dans Social */
+  const why = m.status === 'session' ? 'En session' : m.status === 'offline' ? 'Hors ligne' : 'Déjà dans ton groupe, ou tu es en session';
+  const invite = m.me ? '' : `<button data-g="lobbyInvite" data-id="${esc(m.id)}" data-name="${esc(m.name)}"${m.canInvite ? '' : ` disabled title="${why}"`}>${pxi('group')}Inviter</button>`;
+  return `<div class="frow"><span class="fdot ${statusDot(m)}"></span><span class="fname"><b>${esc(m.name)}</b><small class="mut">${RANK_LABEL[m.rank]} · ${esc(statusText(m))}</small></span><span class="gxp">${fr(m.xp)} XP</span><span class="fbtns">${invite}${box}</span></div>`;
 }
 /* bâtiments (01/11/2026) : image, niveau, bonus, matériaux du prochain niveau. opts : owned (ce que je possède), canBuild ;
    sans owned, lecture seule (fiche d'une autre guilde) */
@@ -57,11 +61,18 @@ export const bonusLabels = list => list.flatMap(b => GUILD.buildings.find(x => x
 export function peekHTML(p, older){
   return `<h2>${esc(p.name)}</h2><div class="gbList">${p.buildings.map(b => buildingHTML(b)).join('')}</div>${logHTML(p.log, older)}`;
 }
+/* message de guilde (01/11/2026, Geoffrey) : lu par tous les membres, écrit par le chef et les officiers */
+export function messageHTML(g){
+  const m = g.message;
+  return `<div class="card"><h2>Message de guilde</h2>${m ? `<p class="gmsg">${esc(m.text)}</p><p class="mut small">${m.name ? `${esc(m.name)} · ` : ''}${dateOf(m.at)}</p>` : '<p class="mut small">Aucun message pour l\'instant.</p>'}`+
+    (g.canMessage ? `<div class="fbtns"><button data-g="message">${m ? 'Modifier' : 'Écrire'}</button></div>` : '')+`</div>`;
+}
 export function mineHTML(g, older){
   const pct = g.need ? g.into / g.need * 100 : 100;
   const requests = g.requests.length ? `<div class="card"><h2>Demandes reçues</h2>${g.requests.map(r =>
     `<div class="frow"><span class="fname"><b>${esc(r.name)}</b></span><span class="fbtns"><button class="on" data-g="acceptRequest" data-id="${esc(r.id)}">Accepter</button><button data-g="refuseRequest" data-id="${esc(r.id)}">Refuser</button></span></div>`).join('')}</div>` : '';
   return `<div class="gcols"><div>
+    ${messageHTML(g)}
     ${requests}
     <div class="card"><h2>Membres <span class="mut">${g.members.length}/${g.max}</span></h2>${g.members.map(memberRow).join('')}</div>
     <div class="fbtns">${canRecruit(g.rank) ? '<button class="on" data-g="invite">Inviter un joueur</button>' : ''}<button data-g="leave">Quitter la guilde</button></div>
@@ -170,6 +181,17 @@ export function setupGuild({ root, api = guildApi, onChange = () => {} }){
     if(name === 'invite'){
       const who = await askText('Pseudo du joueur à inviter', '', { maxLength:32, ok:'Inviter' });
       if(who?.trim()) await sendInvite(who, { invite:name => api.invite(name), done:quiet, tell });
+      return;
+    }
+    if(name === 'message'){
+      const text = await askText(`Message de guilde (${GUILD.messageMax} caractères au plus). Vide : l'efface.`, st.mine?.message?.text ?? '', { maxLength:GUILD.messageMax, ok:'Publier', multiline:true });
+      if(text !== null && text !== undefined) await run(() => api.message(text));
+      return;
+    }
+    if(name === 'lobbyInvite'){
+      let sent = false;
+      await run(async () => { await api.lobbyInvite(id); sent = true; });
+      if(sent) say(`Invitation envoyée à ${el.dataset.name}.`);
       return;
     }
     if(name === 'leave' && !await ask('Quitter la guilde ?', { danger:true, ok:'Quitter' })) return;

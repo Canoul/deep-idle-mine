@@ -10,12 +10,13 @@
 import crypto from 'node:crypto';
 import { GUILD } from '../../src/config.js';
 import { RANK, canRecruit, canKick, canPromote, canDemote, canTransfer, nextChief, sortMembers, activityOf,
-         cleanGuildName, guildNameKey, guildNameError, sanitizeGuilds, buildingDef, buildingLevel, nextLevel, missing, buildingReady,
+         cleanGuildName, cleanGuildMessage, guildNameKey, guildNameError, sanitizeGuilds, buildingDef, buildingLevel, nextLevel, missing, buildingReady,
          canBuild, guildBonus } from '../../src/shared/guild.js';
 import { guildXpOf, guildLevelOf } from '../../src/meta/level.js';
 import { displayName, formatAccountId, nameKey, parseAccountId } from '../../src/shared/account.js';
 import { nameBanned } from '../moderation/filter.js';
 import { SocialError } from '../social/service.js';
+import { moderate } from '../moderation/filter.js';
 
 const fail = (code, status, message) => { throw new SocialError(code, status, message); };
 const isId = v => typeof v === 'string' && parseAccountId(v) === v;
@@ -23,7 +24,7 @@ const needId = v => { if(!isId(v)) fail('bad_request', 400, 'Joueur inconnu.'); 
 const needGuildId = v => { if(typeof v !== 'string' || !v || v.length > 64) fail('bad_request', 400, 'Guilde inconnue.'); };
 const needName = me => { if(me.guest || !me.name) fail('guest', 403, 'Choisis un pseudo pour rejoindre une guilde.'); };
 
-export function createGuildService({ store, accounts, statusOf, spend = async () => false, counts = async () => ({}), clock = Date.now, makeId = () => crypto.randomUUID() }){
+export function createGuildService({ store, accounts, statusOf, inviteCheck = async () => () => false, spend = async () => false, counts = async () => ({}), clock = Date.now, makeId = () => crypto.randomUUID() }){
   let state = null, byAccount = new Map(), chain = Promise.resolve();
   const pending = new Map();       // 'guilde:bâtiment:objet' → quantité en cours de don
   const giving = new Set();        // opId des dons en cours : la même demande renvoyée pendant ce temps ne compte pas
@@ -66,13 +67,18 @@ export function createGuildService({ store, accounts, statusOf, spend = async ()
 
   async function mineView(me, g){
     const rank = g.members.find(m => m.id === me.id).rank;
-    const rows = await Promise.all(g.members.map(async m => ({ id:m.id, name:await nameOf(m.id), rank:m.rank, xp:guildXpOf(m.rawXp),
-      activity:activityOf((await statusOf(m.id))?.status),
-      actions:m.id === me.id ? { kick:false, promote:false, demote:false, transfer:false }
-        : { kick:canKick(rank, m.rank), promote:canPromote(rank, m.rank), demote:canDemote(rank, m.rank), transfer:canTransfer(rank, m.rank) } })));
+    const invitable = await inviteCheck(me);
+    const rows = await Promise.all(g.members.map(async m => {
+      const st = await statusOf(m.id) ?? { status:'offline' };
+      return { ...st, id:m.id, name:await nameOf(m.id), rank:m.rank, xp:guildXpOf(m.rawXp), activity:activityOf(st.status),
+        me:m.id === me.id, canInvite:m.id !== me.id && invitable(m.id, st),
+        actions:m.id === me.id ? { kick:false, promote:false, demote:false, transfer:false }
+          : { kick:canKick(rank, m.rank), promote:canPromote(rank, m.rank), demote:canDemote(rank, m.rank), transfer:canTransfer(rank, m.rank) } };
+    }));
     const requests = canRecruit(rank) ? await Promise.all(g.requests.map(async r => ({ id:r.id, name:await nameOf(r.id) }))) : [];
     const items = [...new Set(GUILD.buildings.flatMap(b => Object.keys(nextLevel(g, b)?.cost ?? {})))];
     return { id:g.id, name:g.name, ...guildLevelOf(g.rawXp), xp:guildXpOf(g.rawXp), rank, max:GUILD.maxMembers, members:sortMembers(rows), requests,
+             message:g.message ? { text:g.message.text, at:g.message.at, name:g.message.by ? await nameOf(g.message.by) : '' } : null, canMessage:canRecruit(rank),
              buildings:buildingsView(g), canBuild:canBuild(rank), owned:await counts(me.id, items).catch(() => ({})), log:await logRows(g) };
   }
   const invitesFor = id => all().filter(g => g.invites.some(i => i.id === id));
@@ -283,6 +289,12 @@ export function createGuildService({ store, accounts, statusOf, spend = async ()
       const { g } = recruiter(me);
       if(!g.requests.some(r => r.id === id)) return false;
       g.requests = g.requests.filter(r => r.id !== id);
+    }),
+    /* message de guilde (01/11/2026, Geoffrey) : chef et officiers ; vide : l'efface ; mots interdits masqués, comme au chat */
+    setMessage: act((me, text) => {
+      const { g } = recruiter(me), clean = cleanGuildMessage(text);
+      if(clean.length > GUILD.messageMax) fail('bad_request', 400, `Message trop long (${GUILD.messageMax} caractères au plus).`);
+      g.message = clean ? { text:moderate(clean).text, by:me.id, at:clock() } : null;
     }),
     promote: act((me, id) => {
       needId(id);

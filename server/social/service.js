@@ -147,17 +147,27 @@ export function createSocialService({ store, accounts, party, game, clock = Date
     return c.energy ? { energy: c.energy } : {};
   }
 
+  /* qui peut-on inviter dans son lobby (amis, membres de guilde) : (id, statut) → oui / non ; lu une fois pour toute la liste */
+  async function inviteCheck(me){
+    const busy = !!await game.activeSessionId(me.id), mine = party.groupOf(me.id);
+    return (id, st) => {
+      const g = party.groupOf(id);
+      return !busy && canBeInvited(st) && !(g && mine && g.code === mine.code);
+    };
+  }
+
   async function view(me){
     const s = await load(me.id);
     const meBusy = !!await game.activeSessionId(me.id);
     const myGroup = party.groupOf(me.id);
+    const invitable = await inviteCheck(me);
     const friends = [];
     for(const id of s.friends){
       const st = await statusOf(id);
       const g = party.groupOf(id);
       const together = !!(g && myGroup && g.code === myGroup.code);
       friends.push({ id, displayId: formatAccountId(id), name: await nameOf(id), ...st, ...await energyField(id), together,
-                     canInvite: !meBusy && canBeInvited(st) && !together,
+                     canInvite: invitable(id, st),
                      canJoin: !meBusy && (st.status === 'online' || st.status === 'lobby') && !together && !(g && (g.size >= g.max || g.locked)) });
     }
     const order = { lobby: 0, online: 1, session: 2, offline: 3 };
@@ -289,6 +299,16 @@ export function createSocialService({ store, accounts, party, game, clock = Date
       await party.invite(me, f.id);
       return view(me);
     },
+    /* inviter dans son lobby un membre de sa guilde (01/11/2026, Geoffrey) : pas besoin d'être amis */
+    async guildInvite(me, input){
+      const id = parseAccountId(typeof input === 'string' ? input : '');
+      if(!id || !(await guildMembers(me.id)).includes(id)) fail('not_member', 404, 'Ce joueur n\'est pas dans ta guilde.');
+      const m = await accounts.getAccount(id);
+      if(!m) fail('not_found', 404, 'Ce joueur n\'existe plus.');
+      if(!online(id)) fail('friend_offline', 409, `${displayName(m)} est hors ligne.`);
+      await party.invite(me, id);
+      return view(me);
+    },
     async join(me, input){
       const f = await friendOf(me, input);
       if(!online(f.id)) fail('friend_offline', 409, `${displayName(f)} est hors ligne.`);
@@ -349,6 +369,7 @@ export function createSocialService({ store, accounts, party, game, clock = Date
   for(const k of Object.keys(api)){ const fn = api[k]; api[k] = (me, ...rest) => { seen.set(me.id, clock()); lastSeen.set(me.id, clock()); return fn(me, ...rest); }; }
   /* messages du chat global de moins de ms (bulles du Carreau, server/town/service.js) : pas un signe de vie */
   api.statusOf = statusOf;   // présence d'un membre de guilde (server/guild/service.js) : pas un signe de vie
+  api.inviteCheck = inviteCheck;   // bouton Inviter de l'onglet Guilde (server/guild/service.js) : pas un signe de vie
   api.raffleForce = () => raffle.force();   // administration (server/admin/routes.js)
   api.raffleTick = () => raffle.tick();   // boucle du serveur (server/main.js) : pas un signe de vie
   api.recentChat = async ms => { await chatReady(); const now = clock(); return chat.since(GLOBAL, 0).filter(m => !m.to && now - m.at <= ms); };   // jamais un MP ni un message de groupe ou de guilde
