@@ -89,7 +89,10 @@ function stepMiner(G, m){
     return;
   }
   const x = standX(G, m);
-  if(Math.abs(m.x - x) > 1e-6){ walk(G, m, x, `Va vers ${HC.bossName}`); return; }
+  if(Math.abs(m.x - x) > 1e-6){
+    if(!dash(G, m, x) && !ulti(G, m, x)) walk(G, m, x, `Va vers ${HC.bossName}`);
+    return;
+  }
   strike(G, m);
 }
 
@@ -112,21 +115,67 @@ function strike(G, m){
     m.hitAcc -= 1;
     let dmg = hitDamage(G, m);
     if(G.gearRng() * 100 < (m.carac.doubleAttack || 0)) dmg += hitDamage(G, m);
-    m.points += dmg; G.stats.points += dmg;
+    score(G, m, dmg);
     m.stats.hits++; G.stats.hits++;
     m.ox = Math.max(0, m.ox - HC.oxygenPerHit);
   }
 }
 
-/* sorts utiles ici : Inspiration (tous les présents frappent plus vite), Cri de guerre (tous les présents) */
+const score = (G, m, dmg) => { m.points += dmg; G.stats.points += dmg; };
+const ready = (m, id, G) => m.spells.includes(id) && G.t >= (m.spellCd[id] || 0);
+/* distance du mineur à Lucifer, en cases (au contact : 1) */
+const bossDist = (G, m) => gapOf(G, m) + 1;
+
+/* Dash : comme sur le boss d'une tour, il fonce à sa place de frappe s'il en est à portée, et frappe (dmg × ses dégâts,
+   recharge × hitCd). Lucifer n'est pas étourdi. */
+function dash(G, m, x){
+  const S = SPELL.dash, n = Math.abs(x - m.x);
+  if(!ready(m, 'dash', G) || n < S.minCells || n > S.range) return false;
+  m.x = x; m.face = 1; m.status = 'Dash';
+  m.spellCd.dash = G.t + S.cd * S.hitCd;
+  score(G, m, hitDamage(G, m) * S.dmg);
+  log(G, `💨 ${m.name} : Dash sur ${HC.bossName}`);
+  return true;
+}
+/* Ulti shen : il rejoint d'un coup un allié qui frappe Lucifer, plus près que lui. Pas de dégâts : Lucifer n'a pas de PV max. */
+function ulti(G, m, x){
+  if(!ready(m, 'ulti_shen', G)) return false;
+  const o = G.miners.find(o => o !== m && o.status === `Frappe ${HC.bossName}` && Math.abs(o.x - x) + SPELL.dash.minCells <= Math.abs(m.x - x));
+  if(!o) return false;
+  m.x = o.x; m.status = 'Ulti shen';
+  m.spellCd.ulti_shen = G.t + SPELL.ulti_shen.cd;
+  log(G, `🌀 ${m.name} : Ulti shen, rejoint ${o.name}`);
+  return true;
+}
+
+/* sorts lancés en frappant : Inspiration et Cri de guerre (tous les présents), Cleave et Dynamite (dmg × ses dégâts si Lucifer
+   est à leur portée), Bonbonne de zipette (l'allié proche à qui il manque le plus d'oxygène). Sans effet ici : Illumination et
+   Fast learner (pas de bloc), Hand of Justice (Lucifer n'est pas étourdi et ne tacle pas). */
 function castSpells(G, m){
-  const ready = id => m.spells.includes(id) && G.t >= (m.spellCd[id] || 0);
-  if(ready('inspiration') && !inspireOn(G)){
+  if(ready(m, 'cleave', G) && bossDist(G, m) <= SPELL.cleave.radius){
+    m.spellCd.cleave = G.t + SPELL.cleave.cd;
+    score(G, m, hitDamage(G, m) * SPELL.cleave.dmg);
+  }
+  if(ready(m, 'dynamite', G) && bossDist(G, m) <= SPELL.dynamite.reach + SPELL.dynamite.radius){
+    m.spellCd.dynamite = G.t + SPELL.dynamite.cd;
+    score(G, m, hitDamage(G, m) * SPELL.dynamite.dmg);
+    log(G, `🧨 ${m.name} : dynamite sur ${HC.bossName}`);
+  }
+  if(ready(m, 'zipette', G)){
+    const S = SPELL.zipette, ratio = o => o.ox / o.carac.oxygenMax;
+    const o = G.miners.filter(o => o !== m && o.ox < o.carac.oxygenMax && Math.abs(o.x - m.x) <= S.radius).sort((a, b) => ratio(a) - ratio(b))[0];
+    if(o){
+      o.ox = Math.min(o.carac.oxygenMax, o.ox + m.carac.pods * S.podsPct);
+      m.spellCd.zipette = G.t + S.cd;
+      log(G, `🫧 ${m.name} : Bonbonne de zipette pour ${o.name}`);
+    }
+  }
+  if(ready(m, 'inspiration', G) && !inspireOn(G)){
     const S = SPELL.inspiration;
     G.inspire = { until:G.t + S.duration, pct:S.mineSpeed };
     m.spellCd.inspiration = G.inspire.until + S.cd;
   }
-  if(ready('war_cry')){
+  if(ready(m, 'war_cry', G)){
     const S = SPELL.war_cry, until = G.t + S.duration;
     for(const o of G.miners) o.warcry = { until:Math.max(until, o.warcry?.until ?? 0), dmg:S.dmgPct, speed:S.atkSpeed };
     m.spellCd.war_cry = until + S.cd;

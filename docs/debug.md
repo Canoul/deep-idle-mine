@@ -6243,3 +6243,88 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Cause** : `backdrop.switchTab` + `leavePanels` gardent l'onglet Session affiché 450 ms pour la transition de la mine, dès qu'une session ou une prison existe. `.bgLeave` ne bouge que les colonnes : le canvas d'une visite (#cvHc, #cvGt) restait en place, puis disparaissait d'un coup. Sans session ni prison, pas de transition, donc pas de bug.
 - **Quoi** : `transitionGame` (src/ui/backdrop.js) : pas de transition si une visite est à l'écran (`inRoom() && pane !== 'session'`, src/main.js).
 - **Tests** ✅ tests/backdrop.test.js. ⚠️ Cause déduite du code, non reproduite dans un navigateur ; suppose qu'une session ou une prison tournait.
+
+## 01/11/2026 — Administration : prison forcée (Geoffrey) — branche `geoffrey/admin-prison`
+- **Quoi** : `adminPrison` (`server/party/service.js`), route `POST /api/admin/prison`, `scripts/send-to-prison.js`. `state()` renvoie `inPrison` : le
+  navigateur (`pollLobby`) relit la prison lancée sans lui, sinon rien ne s'afficherait avant un rechargement.
+- **Tests** : `tests/admin-prison.test.js` ✅, `tests/party.test.js` ✅ ; ⚠️ script et affichage dans le navigateur pas essayés.
+- **Point fragile** : passe par `prisonStart`, donc sa limite de prisons par heure s'applique.
+
+## 01/11/2026 — Récompenses de palier du Bloc géant et de He's coming (Geoffrey)
+- **Quoi** : `GIANT.tiers` (src/config.js), `HES_COMING.tiers` en dérive. Les pépites des paliers s'ajoutent à celles du score (`playerRewardFor`).
+- **Conséquence** : ces deux modes ne donnent plus de Treasure ni de Blueprint parts.
+- **Incident de mise en ligne** : fusion partie avec un test faux dans tests/giant-service (2 pépites attendues au lieu de 17, jeu non touché) ; corrigé juste après.
+
+## 01/11/2026 — He's coming : sorts de combat (Geoffrey) — branche `geoffrey/hc-sorts`
+- **Cause** : pas un bug, la spec du 01/11 disait « sans effet ». `castSpells` de `src/sim/hescoming/session.js` ne gérait qu'Inspiration
+  et Cri de guerre.
+- **Quoi** : `dash`, `ulti`, Cleave, Dynamite et zipette dans cette même simulation, qui n'utilise pas `src/sim/spells.js`. Déplacements
+  instantanés, comme dans les tours.
+- **Tests** : `tests/hescoming-sim.test.js`, `tests/hescoming-service.test.js`, `tests/anticheat/hescoming.test.js` ✅ ; ⚠️ pas vu dans un navigateur.
+- **Simulation** (dégâts 18, seul, 40 visites, points moyens) : sans sort 1 410, Dash 2 412, Cleave 1 526, Dynamite 1 428, Dash + Cleave + Dynamite + Cri 2 619.
+- ⚠️ **Équilibrage** : le Dash vaut +71 %, car 5 × ses dégâts toutes les 15 s, et les paliers ont été réglés sans lui. Valeur à revoir à l'usage.
+
+## 01/11/2026 — Administration : vitesse d'une session (Geoffrey) — branche `geoffrey/admin-vitesse`
+- **Quoi** : `adminSpeed` (`server/game/service.js`) remet `startedAt` et `finishAt` à l'échelle, sous le verrou `sess:` : le tick cible ne bouge pas.
+  Route `POST /api/admin/session-speed`, `scripts/session-speed.js`. `view` renvoie `speed`, `startedAt`, `finishAt`, repris par `pollView`.
+- **Tests** : `tests/admin-session-speed.test.js` ✅, script compris ; ⚠️ navigateur et vraie partie à ×300 pas essayés (faux moteur).
+- **Point fragile** : l'Historique affiche une durée raccourcie, car `startedAt` recule. ×300 demande 3 000 ticks par seconde, or une session d'1 h à 3 mineurs (36 000 ticks) se calcule en ~19 s sur le poste de Geoffrey, soit ~1 900 ticks/s : la session dépasse `finishAt`, passe par le rattrapage de `pump` (`overdue`, une session à la fois) et l'affichage peut dire « connexion… ».
+
+
+## 28/10/2026 — Jules — Appli mobile : conception (pas de code)
+- **Quoi** : spec `docs/superpowers/specs/2026-10-28-appli-mobile-design.md` (Capacitor 8, jeu chargé depuis
+  deepmineidle.fr par `server.url`, interface téléphone ≤ 700 px, notifications locales puis push, APK par GitHub Actions).
+- **Relevé de l'interface** (playwright, iPhone 15 émulé 393 × 659, serveurs isolés : `PORT=8123 DIM_DATA_DIR=<temp>
+  node server/dev.js` et `PORT=8124 … node server/main.js`, comptes `dev:presets`) : hauteur de page lobby 2794 px (avec
+  le panneau dev), stuff 2636, skills 2564, sorts 1530, session 1808 (mode normal) ; barre des 13 onglets : 5,5 visibles,
+  110 px de haut.
+- ⚠️ **À vérifier sur un vrai téléphone** : en session (mode normal aussi), `#cv` fait 800 × 544 px CSS sur un écran de
+  393 px, `innerWidth` passe à 824, le mineur sort de l'écran. Hypothèse : sur téléphone `#cv` est dans le flux
+  (`src/ui/style.css`, `@media (max-width:700px)`, `#cv{position:static}`), sa largeur intrinsèque (800) élargit `#cvWrap`
+  avant `fitMine` (`src/ui/fit.js`), qui se cale ensuite sur cette largeur. Pas de correctif sur cette branche.
+- **Points fragiles** : `server.url` est déconseillé en production par Capacitor et peut faire refuser l'appli par
+  Apple (plan B dans la spec : fichiers embarqués + mise à jour du code web + API depuis une autre origine).
+
+## 28/10/2026 — Jules — Appli mobile, étape 1 : coque Android (plan `docs/superpowers/plans/2026-10-28-appli-mobile-etape1-coque-android.md`)
+- **Quoi** : `src/app/mode.js` (`nativeStatus(win)` → ok / blocked / web ; `isAppMode`), `src/app/boot.js` (`bootApp`,
+  appelé par `src/main.js` : classe `app` sur `<body>` dans l'appli ou avec `?app`, badge provisoire `#appBadge` dans
+  l'appli ; **sur le site, aucun accès au document**) ; `mobile/` (Capacitor **8.6.0**, `capacitor.config.json` :
+  `server.url` https://deepmineidle.fr, `server.errorPath` offline.html ; projet `android/` généré, minSdk 24,
+  compile/target 36, AGP 8.13.0, Gradle 8.14.3) ; `scripts/gen_app_icon.py` (`npm run app:icon`) ;
+  `.github/workflows/android-apk.yml` (Node 22, Java 21, `assembleDebug`, artefact `deep-mine-idle-apk`, 30 jours).
+- **Tests** ✅ `tests/app-mode.test.js` (8), `tests/mobile-config.test.js` (5 : config, page hors ligne sans script,
+  racine = `pg` seul, mobile/ = Capacitor 8 seul, `publicPaths` sans /mobile), `tests/mobile-icon.test.js` (3),
+  `tests/boot-check.test.js` (retrouve `src/app/*.js`).
+- **Site** ✅ (playwright, serveur isolé en mode normal) : sans `?app`, à 393 × 659 et 1440 × 900 : pas de classe `app`,
+  pas de badge, aucune erreur, pas de défilement horizontal ; seuls `src/app/boot.js` et `mode.js` se chargent (ils ne
+  font rien). Avec `?app` : classe posée, pas de badge (pas de pont).
+- **Fabrication** ✅ GitHub Actions run 40731150919 (commit 9f70bfe) : toutes les étapes vertes, APK 3,7 Mo (zip).
+  Pas téléchargée par Claude (`gh` absent, artefacts réservés aux comptes connectés).
+- **Pont natif et politique de sécurité** : `Bridge.java` (Capacitor 8.6) injecte le pont par
+  `WebViewCompat.addDocumentStartJavaScript` (origine https://deepmineidle.fr) quand la WebView le permet, ce qui ne passe
+  pas par le HTML de la page ; sinon (vieille WebView) il l'insère en script en ligne, bloqué par `script-src 'self'`
+  (`server/config.js`). Le badge le dira : « APPLI ⚠ pont bloqué » = `androidBridge` présent sans `window.Capacitor`,
+  **et** la marque `DeepMineIdleApp` dans l'agent utilisateur (`appendUserAgent` de la coque, `APP_UA` de
+  `src/app/mode.js`) : correctif de la relecture finale, sans elle le navigateur intégré d'une autre appli exposant un
+  `androidBridge` aurait reçu la couche appli (le site aurait changé pour ce visiteur). Test « navigateur intégré
+  d'une AUTRE appli ». Prendre l'APK fabriquée après ce commit.
+- **Bord à bord** : `android.adjustMarginsForEdgeToEdge` (cité par des blogs) n'existe plus en 8.6 ; remplacé par
+  `plugins.SystemBars.insetsHandling` (défaut `css`) : la WebView suit `viewport-fit`, absent de `index.html`, donc pas
+  bord à bord. Rien de réglé.
+- ⚠️ **Reste à vérifier sur un vrai Android** (liste du guide `docs/appli-mobile.md`) : badge, connexion gardée après
+  fermeture (cookie `Max-Age`), page hors ligne, bouton retour et lien Wiki (`target=_blank`), barre d'état.
+- **Points fragiles** : chaque fabrication a une clé de debug différente (désinstaller avant de réinstaller) ;
+  `server.url` déconseillé en production par Capacitor (Apple, plan B dans la spec) ; le badge est provisoire (à retirer
+  à l'étape 2).
+
+## 01/11/2026 — Geoffrey — Appli mobile : reprise, branche remise à jour sur main (en ligne le 01/11)
+- **Quoi** : `geoffrey/appli-mobile` créée depuis `jules/appli-mobile` (branche de Jules intacte), fusion de `origin/main`
+  (673 commits de retard). Conflits : `src/main.js` (imports de main + `bootApp`), journal, debug, état du projet (les deux
+  textes gardés). Spec : Guilde et Chat dans la famille Social, plus de chat dans la session.
+- **Tests** : ✅ `tests/app-mode`, `mobile-config`, `mobile-icon` (18/18) après la fusion. ✅ Serveur local : `/src/app/boot.js` et
+  `mode.js` servis (200), `/mobile/…` et `/.github/…` refusés (404). ✅ APK fabriquée (run 41300583527). Pas de simulation ni
+  d'anti-triche : ni la simulation ni l'économie n'ont bougé.
+- **À vérifier** : ⚠️ jamais essayé sur un vrai Android (pont natif et politique de sécurité : `script-src 'self'`) ;
+  le badge doit maintenant apparaître dans l'appli.
+- **Points fragiles** : le site a maintenant un onglet Chat réservé au téléphone (`CHAT_TAB`, 31/10) et le Carreau en fond :
+  à reprendre dans la navigation de l'appli (étape 2). `gh` absent de ce PC : suivre les fabrications par l'API GitHub.

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<!-- Page locale de la coque, affichée quand deepmineidle.fr ne répond pas (capacitor.config.json, server.errorPath) :
+     pas de réseau, ou serveur en train de redémarrer après une mise en ligne. Sans script : le lien suffit. -->
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Deep Mine Idle</title>
+<style>
+  html,body{margin:0;min-height:100%;background:#191310;color:#f0e0c8;font:16px/1.5 ui-monospace,Consolas,monospace}
+  body{display:flex;align-items:center;justify-content:center;padding:24px;box-sizing:border-box}
+  main{max-width:340px;text-align:center}
+  h1{font-size:20px;color:#ffc27a;margin:0 0 12px}
+  p{margin:0 0 24px;color:#c8b6a0}
+  a{display:inline-block;padding:12px 28px;background:#ff7a2e;color:#1a0f08;font-weight:bold;text-decoration:none;
+    border:3px solid #8f2f0c}
+</style>
+</head>
+<body>
+<main>
+  <h1>Pas de connexion au serveur du jeu.</h1>
+  <p>Vérifie ta connexion internet, puis réessaie. Si le jeu vient d'être mis à jour, il redémarre : réessaie dans une
+    minute.</p>
+  <a href="https://deepmineidle.fr/">Réessayer</a>
+</main>
+</body>
+</html>

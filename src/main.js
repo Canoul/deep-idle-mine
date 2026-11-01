@@ -83,6 +83,10 @@ import { ask, tell } from './ui/dialog.js';
 import { warningText, banBarText } from './shared/moderation-text.js';
 import { energyText, energyPct, prisonBanner, awayText, hasAway, prisonActive, launchPrisonText, prisonPollError, prisonOnScreen } from './ui/prison.js';
 import { prisonLootHtml, showPrisonRecap } from './ui/prison-loot.js';
+import { bootApp } from './app/boot.js';
+
+/* appli mobile (src/app/) : sur le site, ne fait rien */
+bootApp({ doc:document, win:window });
 
 const $ = id => document.getElementById(id);
 const ui = { speed:1, paused:false, follow:null, inv:{ slots:[] }, fresh:new Set(), tab:'lobby' };
@@ -445,6 +449,7 @@ async function pollLobby(){
       endAck?.(); await refresh(); return nav.show('session');
     }
     lobby.update({ party:st.party, invites:st.invites, lfg:st.lfg, shrines:st.shrines ?? [], alwaysReady:st.alwaysReady });
+    if(st.inPrison && !prisonActive(prison)) syncAccount();   // envoyé en prison par l'administration
     setLfgFound(st.lfg?.found);
   } catch(e){ console.warn(e); }
   lobbyTimer = setTimeout(pollLobby, rec ? PARTY.pollInSession : PARTY.poll);
@@ -630,6 +635,7 @@ async function pollView(){
     if(!G || rec?.id !== id || waiting) return;
     clockOffset = r.now - Date.now();
     applyClock(r.clock);
+    Object.assign(rec, { speed:r.speed, startedAt:r.startedAt, finishAt:r.finishAt });   // l'administration peut changer la vitesse en cours de session
     if(r.view?.mode === 'mi'){ G = applyInstantView(r.view, G?.mode === 'mi' ? G : null, performance.now(), viewRate()); G.ready = true; window.G = G; lastView = performance.now(); }
     else if(r.view?.mode === 'instance'){ G = applyInstanceView(r.view, G?.mode === 'instance' ? G : null, performance.now(), viewRate()); G.ready = true; window.G = G; lastView = performance.now(); }
     else if(r.view?.mode === 'tower'){ G = applyTowerView(r.view, G?.mode === 'tower' ? G : null, performance.now(), viewRate()); G.ready = true; window.G = G; lastView = performance.now(); }

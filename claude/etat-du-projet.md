@@ -161,6 +161,10 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   - Lancement forcé (29/10) : `sudo node scripts/launch-lobby.js --name X` (route `/api/admin/party-launch` : le lobby de X
     part dans la mine classique, prêts ou pas).
   - Chef du lobby (29/10) : `sudo node scripts/set-leader.js --name X` (route `/api/admin/party-lead`).
+  - Vitesse d'une session (01/11) : `sudo node scripts/session-speed.js --name X [--speed 300]` (route `/api/admin/session-speed` : tout son lobby suit ;
+    refusé en mine instantanée).
+  - Prison forcée (01/11) : `sudo node scripts/send-to-prison.js --name X` (route `/api/admin/prison` : il quitte son groupe ; refusé s'il est
+    en session ou déjà en prison).
 - **Instances** (27/10, Geoffrey ; spec `docs/superpowers/specs/2026-10-27-instances-design.md`, GAME_DESIGN §6, config
   `INSTANCE`, `src/sim/instance/`, `src/shared/instances.js` + `instances-view.js`, `src/render/instance.js`,
   `src/ui/instance-hud.js`) : « Où miner » → Instances (I et II jouables depuis le 30/10, III « bientôt » ; ancien : II « bientôt »). **Instance I, le roi
@@ -531,6 +535,21 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 
 - Lecture en différé (31/10/2026) : le navigateur affiche la partie 0,4 s en arrière (`FLUID`, src/shared/view.js), envois à rythme fixe, partie avancée toutes les 100 ms. Détails : `docs/debug.md`.
 
+- **Appli mobile** (28/10, Jules ; repris le 01/11 par Geoffrey, **étape 1 en ligne le 01/11**, Android d'abord, iOS plus
+  tard : interface téléphone confirmée, Guilde et Chat dans la famille Social ; spec
+  `docs/superpowers/specs/2026-10-28-appli-mobile-design.md`, guide `docs/appli-mobile.md`) : **Capacitor 8**, le jeu
+  actuel dans une coque native (pas de réécriture), qui **charge deepmineidle.fr** (`server.url` ; plan B si Apple
+  refuse : fichiers dans l'appli + mise à jour du code web). **Le site ne change pas** (décision de Jules, sur PC comme
+  dans le navigateur du téléphone) : l'interface téléphone n'existe que dans l'appli, par une couche `src/app/` activée
+  par le pont natif ou `?app` (aperçu), qui réutilise les modules du jeu (pas de deuxième jeu à maintenir). Choix de
+  Jules sur maquettes : navigation en **5 familles** (Accueil, Session, Sac, Perso, Social), **Accueil** avec Lancer et les
+  rendez-vous ouverts, **session** avec la mine en haut et les infos en petits onglets. Notifications : fin de session,
+  MI dans 5 min (coupée 23 h - 8 h), Bloc géant, four (programmées sur le téléphone), puis tours, invitations, amis
+  (push serveur) ; pas le concasseur. Étapes : 1 coque Android (APK de test par GitHub Actions) → 2 interface → 3
+  notifications programmées → 4 push, iOS, stores (comptes Apple / Google : plus tard, avec un business plan, Geoffrey).
+  **Étape 1 faite le 28/10** : `mobile/`, `src/app/` (classe `app`, badge provisoire « APPLI ✓ / ⚠ pont bloqué »),
+  icône (`npm run app:icon`), `.github/workflows/android-apk.yml` ; reste l'essai sur un vrai Android (Geoffrey).
+
 ## Hébergement
 
 - **Sécurité** : revue du 22/10 (Jules), mémo `docs/securite.md`. Le dépôt GitHub est **public** : jamais de
@@ -540,6 +559,9 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   deepmineidle.fr : `docs/deploiement-ovh.md` et `deploy/ovh/`. Le serveur se met à jour depuis `main` toutes les
   2 min et redémarre à chaque changement ; d'après l'équipe, les parties en cours n'en souffrent pas.
 - Seule dépendance : `pg`, chargée uniquement si `DATABASE_URL` est défini.
+- **Appli mobile** : l'APK Android de test est fabriquée par **GitHub Actions** (artefact à télécharger, voir
+  `docs/appli-mobile.md`). Les dépendances de Capacitor sont dans `mobile/package.json`, jamais installées sur le VPS ;
+  le serveur ne sert pas `mobile/` (liste blanche `publicPaths`).
 - **Ancien** : Render (`docs/archive/deploiement-render.md`).
 
 ## Équipe et méthode
