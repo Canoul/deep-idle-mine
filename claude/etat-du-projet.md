@@ -36,8 +36,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   « Mine / Mine instantanée / tours ouvertes ») et reste visible en **lecture seule** pendant une session ;
   l'onglet **Session** montre la partie puis le bilan, « Tu n'es pas en session » sinon. Au lancement, tout le
   groupe bascule sur Session. **« Prêt tout le temps »** (revu le 31/10) : réglage du compte (`always_ready`), case visible
-  partout, même seul ou en prison ; elle garde prêt celui qui l'est (un clic « Je suis prêt » en entrant dans un groupe),
-  le chef enchaîne sans attendre (ancien : cocher rendait prêt, case réservée à un membre d'un groupe). Le serveur enregistre le type de mine (`mode`) et refuse un type pas prêt.
+  partout, même seul ou en prison ; cochée, prêt d'office en entrant dans un groupe et en sortant de prison, jamais tant que la prison tourne (01/11),
+  le chef enchaîne sans attendre (ancien : un clic à chaque nouveau groupe et au retour de prison ; case réservée à un membre d'un groupe). Le serveur enregistre le type de mine (`mode`) et refuse un type pas prêt.
   (Ancien : un seul onglet « Mine » avec lobby → session → bilan ; `#mine` mène maintenant à Session.)
 
 ## Systèmes en place

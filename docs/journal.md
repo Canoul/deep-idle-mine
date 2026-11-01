@@ -13,6 +13,18 @@ Modèle d'entrée :
 - **Pour le joueur** : nouvelle arme légendaire, portée +8, dégâts +15, recul +2. Le mineur tire des flèches de loin, et continue quand le mob est au contact. On ne peut pas l'obtenir dans le jeu : seule l'administration le donne.
 - **État** : 🧪 sur la branche `geoffrey/arc-admin` (pas en ligne)
 
+## 01/11/2026 — Geoffrey — Guilde : voir les membres depuis la recherche
+- **Pour le joueur** : dans Guilde > Rechercher, un clic sur une guilde déplie ses membres (pseudo, grade, XP rapportée). Un autre clic la replie.
+- **État** : ✅ en ligne le 01/11
+
+## 01/11/2026 — Geoffrey — Prêt tout le temps : prêt d'office au retour de prison
+- **Pour l'équipe** : avec la case cochée, on est prêt sans clic en entrant dans un groupe et en sortant de prison. Avant,
+  la prison obligeait à quitter le groupe, ce qui effaçait « prêt » même si la case restait cochée.
+- **Décision** : tant que la prison tourne, le joueur n'est pas prêt d'office, pour que le chef ne puisse pas la lui terminer
+  sans son accord.
+- **État** : ✅ en ligne le 01/11
+
+
 ## 01/11/2026 — Geoffrey — Trois nouveaux talents (étage 6)
 - **Pour le joueur** : un nouveau talent à 1 point au bout de chaque arbre. **Ivresse Minérale** (Mineur) : chaque minerai ajoute 1 dégât à la prochaine attaque. **Reconnaissance** (Logisticien) : chaque autre mineur dans le seau du treuil lui rend 1 d'oxygène toutes les 2 s. **Saccager** (Barbare) : après 2 critiques d'affilée, la prochaine attaque est double.
 - **Décisions** : Ivresse sans limite de stacks, Reconnaissance cumulable, Saccager remet son compteur à 0. Valeurs provisoires.

@@ -6173,3 +6173,17 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Limites** : ligne droite seulement (`gap` : Infinity en diagonale). Roi Gobelin et Golbute : `inContact`, pas de tir de loin. Un mineur Ignorer/Fuir ne tire pas.
 - **Tests** ✅ tests/bow.test.js, lance, combat, focus, gearscore, rarity, wiki-secret, rune, stuff, instance*, tower* ; simulation 5 sessions OK (3 areas, prof. 189,8, sans arc équipé).
 - ⚠️ Pas vu dans un navigateur : dessin de l'arc, de la flèche, tir vertical. Rendu en tour et Instances non testé (fonction pure seulement). Arc jamais simulé sur une session complète.
+
+## 01/11/2026 — Prêt tout le temps : prêt d'office (Geoffrey) — branche `geoffrey/fix-toujours-pret`
+- **Cause** : la case restait cochée, mais `leave` retire le membre et `newMember` le recréait `ready:false`. La prison étant solo,
+  le retour de prison passait toujours par là. C'était la règle posée le 31/10.
+- **Quoi** (`server/party/service.js`) : `addMember` remplace les 4 `push(newMember)` ; `m.afterPrison` (enregistré) attend la fin de
+  prison, résolu dans `sweep`. `ready()` l'efface. Texte d'aide de la case dans `index.html`.
+- **Tests** : `tests/party.test.js` ✅ (3 nouveaux) ; ⚠️ pas vu dans un navigateur.
+- **Point fragile** : la route `POST /api/game/prison/start` passe `members:null`, donc « solo seulement » n'est vérifié que par le
+  navigateur.
+
+## 01/11/2026 — Guilde : membres visibles depuis Rechercher (Geoffrey)
+- **Quoi** : `guild.members(me, id)` (server/guild/service.js), `POST /api/guild/members`, `guildApi.members`. Renvoie pseudo, grade, XP : ni identifiant de compte ni présence, qui restent réservés aux membres. Dans src/ui/guild.js, `open` = guilde dépliée, relue à chaque relecture ; refermée si elle sort de la liste ou disparaît. `members` garde l'id de sa guilde : une réponse en retard ne s'affiche pas sous une autre.
+- **Tests** ✅ tests/guild-service.test.js, tests/guild-ui.test.js.
+

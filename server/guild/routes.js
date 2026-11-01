@@ -10,6 +10,7 @@ export function guildRoutes(guild){
     'GET /api/guild':       async ctx => { needMe(ctx); return guild.view(ctx.me); },
     'GET /api/guild/board': async ctx => { needMe(ctx); return guild.board(ctx.me); },
     'POST /api/guild/list': async ctx => { needMe(ctx); return guild.list(ctx.me, str(ctx.body?.query)); },
+    'POST /api/guild/members': write(guild.members),
     'POST /api/guild/leave': async ctx => { needMe(ctx); return guild.leave(ctx.me); },
     'POST /api/guild/create':         write(guild.create, 'name'),
     'POST /api/guild/invite':         write(guild.invite, 'name'),
