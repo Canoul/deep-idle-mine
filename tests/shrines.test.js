@@ -164,3 +164,13 @@ test('lobby : carte des shrines (prix, déjà donné, actif)', () => {
   assert.match(shrinesHtml(list, { leaderName: 'Zoe' }), /Shrines de <b>Zoe<\/b>/);
   assert.match(shrinesHtml(publicShrines(sanitizeShrines({ active: { abundance: 3 } }))), /encore <b>3<\/b> sessions/);
 });
+
+test('carte : un shrine éteint le dit, la durée est une promesse ; actif, le chiffre descend', () => {
+  const off = publicShrines(createShrines()).find(s => s.id === 'abundance');
+  const html = shrinesHtml([off]);
+  assert.ok(html.includes('Inactif. Une fois payé : actif pour 5 mines.'));
+  assert.ok(!html.includes('Prix atteint'));
+  assert.ok(shrinesHtml([{ ...off, left:3 }]).includes('encore <b>3</b> sessions'));
+  const stele = publicShrines(createShrines()).find(s => s.id === 'exorcisme');
+  assert.ok(shrinesHtml([stele]).includes('Pas chargée. Une fois payée'));
+});
