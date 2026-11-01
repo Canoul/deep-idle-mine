@@ -649,6 +649,7 @@ Onglet Guilde : sa guilde (si on en a une), Rechercher, Leaderboard. Dans Recher
 - **Sortir** : n'importe qui peut quitter sans restriction. Le chef parti, le plus ancien officier le remplace, sinon le plus ancien membre. Le dernier parti, la guilde disparaît et son nom est libéré.
 - **Niveau** : 1 % de l'XP reçue par un membre (mine, groupe, prison) va à la guilde, même courbe que le niveau du mineur. Pas de rattrapage ; l'XP versée reste à la guilde, mais le compteur d'un membre repart de 0 s'il revient.
 - **Leaderboard** : par niveau, puis par XP de guilde.
+- **Message de guilde** *(01/11/2026, Geoffrey ; `GUILD.messageMax`)* : en haut de l'onglet de sa guilde. Le chef et les officiers l'écrivent, le modifient ou l'effacent (500 caractères, plusieurs lignes, mots interdits masqués). Tous les membres le lisent, avec son auteur et sa date ; les autres joueurs ne le voient pas. Un seul message à la fois.
 - **Bâtiments** *(01/11/2026, Geoffrey ; `GUILD.buildings`, coûts provisoires)* : à droite de l'onglet de sa guilde. Chaque membre donne les matériaux depuis son inventaire ; un don est **définitif** (rien n'est rendu si on part ou si la guilde disparaît) et ramené à ce qu'il manque. Quand tout est réuni, le **chef ou un officier** lance la construction. Les niveaux suivants s'ajoutent en config, bonus cumulés.
   | Bâtiment | Niveau 1 | Coût |
   |---|---|---|

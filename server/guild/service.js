@@ -10,12 +10,13 @@
 import crypto from 'node:crypto';
 import { GUILD } from '../../src/config.js';
 import { RANK, canRecruit, canKick, canPromote, canDemote, canTransfer, nextChief, sortMembers, activityOf,
-         cleanGuildName, guildNameKey, guildNameError, sanitizeGuilds, buildingDef, buildingLevel, nextLevel, missing, buildingReady,
+         cleanGuildName, cleanGuildMessage, guildNameKey, guildNameError, sanitizeGuilds, buildingDef, buildingLevel, nextLevel, missing, buildingReady,
          canBuild, guildBonus } from '../../src/shared/guild.js';
 import { guildXpOf, guildLevelOf } from '../../src/meta/level.js';
 import { displayName, formatAccountId, nameKey, parseAccountId } from '../../src/shared/account.js';
 import { nameBanned } from '../moderation/filter.js';
 import { SocialError } from '../social/service.js';
+import { moderate } from '../moderation/filter.js';
 
 const fail = (code, status, message) => { throw new SocialError(code, status, message); };
 const isId = v => typeof v === 'string' && parseAccountId(v) === v;
@@ -77,6 +78,7 @@ export function createGuildService({ store, accounts, statusOf, inviteCheck = as
     const requests = canRecruit(rank) ? await Promise.all(g.requests.map(async r => ({ id:r.id, name:await nameOf(r.id) }))) : [];
     const items = [...new Set(GUILD.buildings.flatMap(b => Object.keys(nextLevel(g, b)?.cost ?? {})))];
     return { id:g.id, name:g.name, ...guildLevelOf(g.rawXp), xp:guildXpOf(g.rawXp), rank, max:GUILD.maxMembers, members:sortMembers(rows), requests,
+             message:g.message ? { text:g.message.text, at:g.message.at, name:g.message.by ? await nameOf(g.message.by) : '' } : null, canMessage:canRecruit(rank),
              buildings:buildingsView(g), canBuild:canBuild(rank), owned:await counts(me.id, items).catch(() => ({})), log:await logRows(g) };
   }
   const invitesFor = id => all().filter(g => g.invites.some(i => i.id === id));
@@ -296,6 +298,12 @@ export function createGuildService({ store, accounts, statusOf, inviteCheck = as
       const { g } = recruiter(me);
       if(!g.requests.some(r => r.id === id)) return false;
       g.requests = g.requests.filter(r => r.id !== id);
+    }),
+    /* message de guilde (01/11/2026, Geoffrey) : chef et officiers ; vide : l'efface ; mots interdits masqués, comme au chat */
+    setMessage: act((me, text) => {
+      const { g } = recruiter(me), clean = cleanGuildMessage(text);
+      if(clean.length > GUILD.messageMax) fail('bad_request', 400, `Message trop long (${GUILD.messageMax} caractères au plus).`);
+      g.message = clean ? { text:moderate(clean).text, by:me.id, at:clock() } : null;
     }),
     promote: act((me, id) => {
       needId(id);

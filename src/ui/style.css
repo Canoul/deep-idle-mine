@@ -856,6 +856,7 @@ body.phone .chatMore{opacity:1;padding:0 calc(5*var(--u))}
 .glog{max-height:calc(120*var(--u));overflow-y:auto;font-size:var(--fs-s)}
 .glogRow{padding:var(--u) 0;border-bottom:var(--u) solid var(--sep);overflow-wrap:anywhere}
 .gact{max-width:calc(60*var(--u))}
+.gmsg{margin:0 0 var(--u);white-space:pre-wrap;overflow-wrap:anywhere}
 button.gopen{align-items:stretch;gap:0;min-height:0;padding:0;border:0;border-image:none;text-align:left}
 button.gopen:active:not(:disabled){transform:none}
 .gopen:hover b{color:var(--acc)}
@@ -926,6 +927,7 @@ button.gopen:active:not(:disabled){transform:none}
   padding:calc(4*var(--u)) calc(6*var(--u));border-image:url(../../textures/ui/panel_hi.png) 6 fill / calc(6*var(--u)) stretch;animation:obin .2s steps(3)}
 .dlgText{margin:0 0 calc(4*var(--u));line-height:1.35}
 .dlgInput{width:100%;box-sizing:border-box;margin-bottom:calc(4*var(--u))}
+textarea.dlgInput{resize:vertical}
 .dlgBtns{display:flex;justify-content:flex-end;gap:calc(3*var(--u));margin:0}
 .dlgMenu{flex-wrap:wrap}
 .dlgLinks{display:flex;flex-direction:column;gap:var(--u);margin:0 0 calc(4*var(--u))}

@@ -28,6 +28,9 @@ Modèle d'entrée :
 - **Décisions** : on garde les signalements qui le visent et une ligne de journal, rien d'autre. Le script ne supprime qu'avec `--yes`. Une session encore en cours avec d'autres joueurs est nettoyée à sa fin.
 - **À suivre** : cette branche contient la modération, pas encore en ligne (les deux partiront ensemble) ; créer l'adresse contact@deepmineidle.fr ; relire la politique de confidentialité (liste dans `docs/comptes.md`).
 - **État** : 🧪 sur la branche `geoffrey/suppression-compte` (pas en ligne)
+## 01/11/2026 — Geoffrey — Guilde : message de guilde
+- **Pour le joueur** : en haut de l'onglet de sa guilde, une case **Message de guilde**. Le chef et les officiers l'écrivent, tous les membres le lisent.
+- **État** : ✅ en ligne le 01/11
 
 ## 01/11/2026 — Geoffrey — Guilde : inviter un membre dans son lobby, voir ce qu'il fait
 - **Pour le joueur** : dans l'onglet de sa guilde, chaque membre a un bouton **Inviter** (dans son lobby, même sans être amis), et on voit ce qu'il fait comme dans Social : en ligne, dans le lobby, en session avec le temps restant, en prison, hors ligne.
