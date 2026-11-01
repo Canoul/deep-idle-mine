@@ -51,12 +51,12 @@ while :; do
   TRACE="$TRACE $t s=$orange/$colors/$light"
   [ -f "$shot" ] && cp "$shot" sim/ecran.png
   [ "$orange" -gt 2000 ] && { FOUND=$t; break; }
-  if finished && ! alive; then
+  if { finished || [ "$t" -ge "$MAX" ]; } && ! alive; then    # lancement raté, ou resté bloqué sans rendre la main
     [ -z "$(crashes)" ] || { notice Ecran "temps=orange/couleurs/clarté :$TRACE"; stop "l'appli a planté (rapport dans plantages/)"; }
     if [ "$try" = 1 ]; then
       notice Relance "l'appli ne tourne pas, sans rapport de plantage : relancée une fois"
       TRACE="$TRACE relance"
-      try=2; launch 2; START=$(date +%s)
+      kill "$LP" 2>/dev/null; try=2; launch 2; START=$(date +%s)
       sleep 5; continue
     fi
     notice Ecran "temps=orange/couleurs/clarté :$TRACE"
