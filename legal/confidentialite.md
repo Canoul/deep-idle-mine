@@ -39,7 +39,7 @@ Ces traitements sont nécessaires pour vous fournir le jeu que vous avez choisi 
 ## Où sont stockées vos données
 
 - Serveur du jeu : OVHcloud, en France.
-- Base de données : Neon, \[région à vérifier\]. Si elle est hors de l'Union européenne, le transfert est encadré par les clauses contractuelles types de la Commission européenne.
+- Base de données : Neon, à Londres (Royaume-Uni). Ce transfert hors de l'Union européenne repose sur la décision d'adéquation de la Commission européenne pour le Royaume-Uni.
 - Annonces : Discord (États-Unis), uniquement le pseudo et le nom de l'objet ou de l'événement.
 - Modération : un salon Discord privé, réservé à l'équipe, reçoit chaque signalement (pseudos, motif, commentaire et texte signalé).
 
