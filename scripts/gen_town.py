@@ -614,9 +614,165 @@ def slagheap():
     return c.finish()
 
 
+# ---------------------------------------------------------------- maison de guilde (02/11/2026, Jules)
+# Onglet Guilde : la maison au centre (112 × 96) en 4 étapes, qui avance avec les dons ; chaque étape reprend la
+# précédente et l'achève. Les annexes (Armurerie, Trésorerie, Forge) : un chantier commun, puis leur propre bâtiment.
+
+def scaffold(c, x0, x1, y0, y1, step=12):
+    """échafaudage : perches, planchers et croisillons"""
+    for x in (x0, x1):
+        c.rect(x, y0, 2, y1 - y0, WOODL)
+    for y in range(y0 + 4, y1, step):
+        c.rect(x0 - 2, y, x1 - x0 + 6, 2, WOOD)
+    c.line(x0 + 2, y1 - 2, x1, y0 + 4, WOOD2)
+
+
+def hall_base(c, planks):
+    """fondations de pierre ; planks : tas de planches du chantier à gauche"""
+    c.stones(6, 84, 100, 12)
+    c.rect(4, 82, 104, 3, STONEL)
+    for i, w in enumerate((22, 18, 14) if planks else ()):                          # planches empilées à gauche
+        c.rect(0 + i * 2, 94 - i * 3 - 3, w, 3, (WOODL, WOOD, WOODL)[i])
+
+
+def hall_walls(c, top):
+    """rez-de-chaussée de pierre jusqu'à la hauteur top, porte en arc"""
+    c.stones(10, top, 92, 84 - top)
+    for x in (8, 100):
+        c.rect(x, top, 4, 84 - top, STONE2)                        # chaînes d'angle
+    c.arch_door(46, 60, 20, 24)
+
+
+def hall_upper(c, lit):
+    """étage à colombages en surplomb, fenêtres (allumées ou noires)"""
+    c.speckle(6, 30, 100, 24, PLAST, PLAST2)
+    for x in (6, 30, 54, 80, 103):
+        c.rect(x, 30, 3, 24, WOOD)
+    c.rect(4, 52, 104, 4, WOOD2)
+    c.rect(6, 30, 100, 3, WOOD)
+    for x, y in ((16, 36), (40, 36), (64, 36), (88, 36), (20, 64), (82, 64)):   # étage, puis rez
+        if lit:
+            c.window(x, y, 8, 10)
+        else:
+            c.window(x, y, 8, 10, DARK, DARK)
+
+
+def hall_roof(c, half):
+    """toit d'ardoises sur le pignon ; half : seulement la moitié gauche couverte (à droite, les chevrons nus)"""
+    for x in range(8, 104, 8):                                     # chevrons
+        c.line(x, 32, x, max(4, int(34 - min(x, 112 - x) / 56 * 32)), WOOD, 2)
+    c.line(0, 33, 56, 2, WOODL, 2); c.line(56, 2, 111, 33, WOODL, 2)
+    c.shingles([(0, 34), (56, 2), (56, 34)] if half else [(0, 34), (56, 2), (112, 34)], SLATE, SLATE2)
+    c.rect(0, 32, 112, 3, WOOD2)
+
+
+def guild_hall(stage):
+    c = Pix(112, 96, 3100 + stage)
+    hall_base(c, stage < 4)
+    if stage == 1:
+        c.stones(10, 74, 92, 10)                                    # premières assises
+        for x in (10, 50, 98):
+            c.rect(x, 44, 4, 30, WOODL)                             # poteaux plantés
+        c.rect(10, 44, 92, 3, WOOD)
+        c.line(90, 0, 90, 74, WOOD, 3)                              # chèvre de levage
+        c.line(90, 2, 74, 2, WOOD, 2)
+        c.line(76, 3, 76, 30, IRON2)                                # corde et pierre suspendue
+        c.rect(72, 30, 9, 7, STONE)
+        c.rect(66, 76, 3, 8, WOOD); c.rect(60, 66, 18, 11, WOODL)   # panneau du chantier
+        c.poly([(64, 68), (74, 68), (74, 73), (69, 76), (64, 73)], CLOTH2)
+        c.lantern(30, 64)
+    if stage >= 2:
+        hall_walls(c, 56 if stage == 2 else 54)
+    if stage == 2:
+        for x in (6, 30, 80, 103):
+            c.rect(x, 22, 3, 34, WOOD)                              # poteaux de l'étage, nus
+        c.rect(6, 30, 100, 3, WOOD)
+        scaffold(c, 2, 106, 18, 84)
+        c.window(20, 64, 8, 10, DARK, DARK); c.window(82, 64, 8, 10, DARK, DARK)
+        c.lantern(70, 66)
+    if stage >= 3:
+        hall_upper(c, stage == 4)
+        hall_roof(c, stage == 3)
+    if stage == 3:
+        scaffold(c, 84, 108, 10, 84)
+        c.lantern(70, 66)
+    if stage == 4:
+        c.bricks(80, 4, 10, 20)                                     # cheminée
+        c.rect(78, 2, 14, 3, BRICK2)
+        for x in (34, 72):                                          # bannières de la guilde
+            c.rect(x - 1, 56, 8, 2, IRON)
+            c.poly([(x, 58), (x + 6, 58), (x + 6, 74), (x + 3, 71), (x, 74)], CLOTH2)
+            c.rect(x + 2, 62, 2, 5, LIT2)
+        c.set(62, 74, LIT2)
+    return c.finish()
+
+
+def guild_site():
+    """chantier d'une annexe (48 × 40) : dalle, échafaudage, planches, seau"""
+    c = Pix(48, 40, 3110)
+    c.stones(2, 32, 44, 8)
+    c.stones(6, 24, 14, 8)
+    scaffold(c, 4, 40, 4, 32, 10)
+    c.rect(26, 26, 16, 3, WOODL); c.rect(28, 23, 12, 3, WOOD)
+    c.rect(22, 27, 4, 5, IRON)
+    return c.finish()
+
+
+def wing_armory():
+    """Armurerie de guilde (48 × 64) : pierre, toit d'ardoise, grand écu sur la façade, râtelier d'armes"""
+    c = Pix(48, 64, 3111)
+    c.stones(4, 26, 40, 38)
+    c.shingles([(0, 30), (24, 6), (48, 30)], SLATE, SLATE2)
+    c.poly([(16, 32), (32, 32), (32, 42), (24, 48), (16, 42)], CLOTH2)   # écu
+    c.line(24, 33, 24, 46, IRON2); c.line(18, 37, 30, 37, IRON2)
+    c.arch_door(18, 50, 12, 14)
+    c.rect(36, 50, 10, 2, WOOD)                                     # râtelier
+    for x in (38, 41, 44):
+        c.line(x, 44, x, 63, IRON2)
+    c.window(7, 36, 6, 8)
+    return c.finish()
+
+
+def wing_treasury():
+    """Trésorerie de guilde (40 × 72) : tour trapue, dôme doré, porte de fer cloutée, pièce frappée"""
+    c = Pix(40, 72, 3112)
+    c.stones(6, 24, 28, 48, STONE2, STONE)
+    c.rect(4, 22, 32, 4, STONEL)
+    c.poly([(6, 22), (10, 10), (20, 4), (30, 10), (34, 22)], H('#a8782a'))
+    c.recolor(6, 4, 30, 18, H('#a8782a'), H('#e8b93c'), 3, 'x')
+    c.rect(19, 0, 2, 5, H('#f2cc4a'))
+    c.disc(20, 34, 6, H('#e8b93c'))                                 # pièce frappée
+    c.ring(20, 34, 6, H('#a8782a'), 1)
+    c.rect(19, 31, 2, 6, H('#a8782a'))
+    c.rect(13, 50, 14, 22, IRON)                                    # porte de fer
+    for y in (54, 62):
+        for x in (15, 19, 23):
+            c.set(x, y, IRON2)
+    c.rect(24, 58, 2, 3, LIT2)
+    return c.finish()
+
+
+def wing_forge():
+    """Forge de guilde (48 × 64) : briques, haute cheminée, gueule du four allumée, enclume devant"""
+    c = Pix(48, 64, 3113)
+    c.bricks(4, 28, 34, 36)
+    c.shingles([(0, 32), (20, 16), (42, 32)], ROOF, ROOF2)
+    c.bricks(30, 0, 10, 30)                                         # cheminée
+    c.rect(28, 0, 14, 3, BRICK2)
+    c.poly([(10, 64), (10, 48), (16, 42), (24, 42), (30, 48), (30, 64)], DARK)
+    c.poly([(12, 64), (12, 50), (17, 46), (23, 46), (28, 50), (28, 64)], LIT)
+    c.rect(15, 54, 10, 10, LIT2); c.rect(18, 58, 4, 6, LIT3)
+    c.rect(36, 52, 12, 4, IRON2)                                    # enclume
+    c.rect(39, 56, 6, 4, IRON); c.rect(37, 60, 10, 4, IRON)
+    return c.finish()
+
+
 def town():
     """toutes les textures du Carreau : { nom: (largeur, hauteur, pixels) }"""
     return {
+        'guild_hall_1': guild_hall(1), 'guild_hall_2': guild_hall(2), 'guild_hall_3': guild_hall(3),
+        'guild_hall_4': guild_hall(4), 'guild_site': guild_site(), 'guild_wing_armory': wing_armory(),
+        'guild_wing_treasury': wing_treasury(), 'guild_wing_forge': wing_forge(),
         'town_tavern': tavern(), 'town_archives': archives(), 'town_library': library(), 'town_training': training(),
         'town_mage_tower': mage_tower(), 'town_armory': armory(), 'town_warehouse': warehouse(),
         'town_headframe': headframe(), 'town_foundry': foundry(), 'town_crusher': crusher(),

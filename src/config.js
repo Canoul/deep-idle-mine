@@ -1886,7 +1886,28 @@ export const GUILD = { maxMembers:30, xpPct:1, nameMin:3, nameMax:24, maxInvites
     { id:'forge', name:'Forge', tex:'guild_forge', levels:[
       { label:'+2 % de vitesse de minage', mult:{ mineSpeed:2 }, cost:{ 'Pierre dure':250000, 'Diamant':5000, 'Jade inférieur':25, 'Rubis inférieur':25, 'Saphir inférieur':25 } },
     ] },
-  ] };
+  ],
+  /* Maison de guilde (02/11/2026, Jules ; src/shared/guild-house.js, sprites de scripts/gen_town.py) : purement visuelle.
+     Points = niveaux construits + part déjà donnée du prochain niveau de chaque bâtiment (moyenne des matériaux, 0 à 1) ;
+     ils ne baissent jamais (un don est définitif). stages[n] : points pour atteindre l'étape n + 1 (seuils absolus : un
+     niveau ajouté en config ne fait pas reculer une maison) ; tex : sprite de l'étape. Les annexes : terrain vide → chantier
+     (site, dès un premier don) → construite (built, niveau 1). Scène en pixels : w × h, x de chaque sprite (posé sur le sol),
+     w = largeur de son PNG (le chantier garde la sienne, même sur la place plus étroite de la Trésorerie). */
+  house:{
+    stages:[
+      { at:0,    name:'Fondations',          tex:'guild_hall_1' },
+      { at:0.75, name:'Les murs montent',    tex:'guild_hall_2' },
+      { at:1.75, name:'Charpente et toiture', tex:'guild_hall_3' },
+      { at:3,    name:'Maison achevée',      tex:'guild_hall_4' },
+    ],
+    w:272, h:112, ground:12, hall:{ x:56, w:112 },
+    site:{ tex:'guild_site', w:48 },
+    annexes:{
+      armurerie: { x:4,   w:48, tex:'guild_wing_armory' },
+      tresorerie:{ x:172, w:40, tex:'guild_wing_treasury' },
+      forge:     { x:220, w:48, tex:'guild_wing_forge' },
+    },
+  } };
 
 export const LEADERBOARD = { size:50, refresh:30_000, cacheMs:15_000, teamMax:3, hidden:['admin'] };
 

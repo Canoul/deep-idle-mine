@@ -46,6 +46,21 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 02/11/2026 — Jules — Maison de guilde qui se construit avec les dons
+- **Pour le joueur** : en haut à droite de l'onglet de sa guilde (et dans la fiche « Voir » des autres guildes), une
+  scène dessinée : la **maison de guilde** au centre, en 4 étapes (Fondations → Les murs montent → Charpente et toiture
+  → Maison achevée), et ses **3 annexes** : Armurerie, Trésorerie, Forge. Chaque don fait avancer la maison (petite barre
+  jusqu'à l'étape suivante) ; une annexe passe du terrain vide au **chantier** dès le premier don, puis apparaît
+  **construite** quand le chef ou un officier lance sa construction. La maison est achevée quand les 3 bâtiments sont
+  construits. Rien ne change aux bonus ni aux coûts : c'est seulement visuel.
+- **Décisions** : « option 2 allégée » (une scène composée : 4 sprites de maison + 1 chantier commun + 3 annexes), plutôt
+  que 4 sprites de maison seuls : celui qui donne à la Forge voit *sa* Forge avancer. Chaque matériau compte autant dans
+  l'avancement (sinon les 500 000 Pierre écraseraient les 25 Jade). Les seuils d'étape sont fixes : ajouter des niveaux
+  de bâtiments plus tard ne fera jamais reculer une maison.
+- **À suivre** : seuils provisoires (`GUILD.house.stages` : 0 ; 0,75 ; 1,75 ; 3). Idées pour plus tard : la maison de sa
+  guilde dans le Carreau ; un décor de plus à chaque niveau 2, 3… des annexes quand ils existeront.
+- **État** : 🧪 sur la branche `jules/maison-guilde` (pas en ligne)
+
 ## 01/11/2026 — Geoffrey — Classement : son propre onglet
 - **Pour le joueur** : les classements quittent Social et ont leur onglet **Classement**. Les boutons sont dans l'ordre Classement, Guilde, Social. Touches du clavier : C, G et S.
 - **État** : ✅ en ligne le 01/11
