@@ -13,6 +13,7 @@ from gen_town import town   # le Carreau, ville du spawn (scripts/gen_town.py, 2
 from gen_bosses import bosses, tower_mobs   # boss et mobs des tours du Jugement (scripts/gen_bosses.py, 30/10/2026)
 from gen_lucifer import lucifer_textures   # Lucifer et son portail, He's coming (scripts/gen_lucifer.py, 01/11/2026)
 from gen_giant import giant_block, giant_fountain, giant_torch   # le Bloc géant, « Géode éventrée », sa fontaine et sa torche (scripts/gen_giant.py, 02/11/2026)
+from gen_worm import worm_textures   # le ver de terre, cuirassé (scripts/gen_worm.py, 03/11/2026)
 from gen_flesh import flesh_wall, flesh_icon   # le mur de chair (scripts/gen_flesh.py, 03/11/2026)
 from gen_golbute import golbute, golem   # le Golbute de l'Instance II (et sa forme cristallisée) et le golem (scripts/gen_golbute.py, 30/10/2026)
 
@@ -390,24 +391,10 @@ def main():
     rect(dog, 6, 9, 1, 1, lava_l); rect(dog, 9, 9, 1, 1, lava_l)
     tex['magma_dog'] = dog
 
-    # Vers de terre (31/10) : anneaux roses, tête à gueule ronde, queue qui dépasse d'un bloc (fond transparent)
-    pink, pink_d, pink_l, maw = hexc('#c9787a'), hexc('#8f4c52'), hexc('#e8a8a4'), hexc('#3a1216')
-    wh = blank()
-    rect(wh, 2, 2, 12, 12, pink); rect(wh, 2, 2, 12, 2, pink_l); rect(wh, 2, 12, 12, 2, pink_d)
-    rect(wh, 5, 5, 6, 6, maw)
-    for x, y in [(5, 5), (10, 5), (5, 10), (10, 10), (7, 5), (8, 10)]:
-        rect(wh, x, y, 1, 1, hexc('#f4f1e8'))
-    tex['worm_head'] = wh
-    wb = blank()
-    rect(wb, 2, 1, 12, 14, pink)
-    for y in (3, 7, 11):
-        rect(wb, 2, y, 12, 1, pink_d); rect(wb, 2, y + 1, 12, 1, pink_l)
-    tex['worm_body'] = wb
-    wt = blank()
-    rect(wt, 5, 8, 6, 8, pink); rect(wt, 6, 4, 4, 4, pink); rect(wt, 7, 1, 2, 3, pink_l)
-    for y in (6, 10, 13):
-        rect(wt, 5, y, 6, 1, pink_d)
-    tex['worm_tail'] = wt
+    # Vers de terre (31/10) : tête, anneau, queue dessinés par scripts/gen_worm.py depuis le 03/11/2026 (ver cuirassé, gueule
+    # en pétales ; ancien : anneaux roses en rectangles) ; pink : la chair de vers (butin, plus bas)
+    pink, pink_d, pink_l = hexc('#c9787a'), hexc('#8f4c52'), hexc('#e8a8a4')
+    tex.update(worm_textures())
 
     # butins : peau noire veinée de lave, morceau de chair rose
     hide = blank()

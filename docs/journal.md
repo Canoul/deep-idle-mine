@@ -16,6 +16,12 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 03/11/2026 — Jules — Ver de terre redessiné (remise à niveau des sprites, 3/4)
+- **Pour le joueur** : le ver de terre de l'area 7 est maintenant un **ver cuirassé** : des plaques de chitine couleur de sable, usées et fendues, qui se chevauchent comme des écailles, avec de la chair rose entre elles. Sa tête est une gueule ronde grande ouverte, avec des pétales à pointes, deux couronnes de dents en aiguilles et une braise au fond de la gorge. Surtout, **il regarde où il va** : la tête et chaque anneau pivotent dans le sens de la marche (avant, toutes les cases étaient dessinées pareil). Sa queue coincée sort d'une fente de la roche, pointe recourbée.
+- **Décisions** (Jules) : choisi parmi 3 prototypes (lamproie rose, ver cuirassé, ver pâle), le cuirassé, plus détaillé, inspiration Dune. Le rose est laissé au mur de chair, juste avant (area 6).
+- **À suivre** : le voir dans une vraie partie (area 7+) ; dernier sprite du chantier : le roi gobelin.
+- **État** : 🧪 sur la branche `jules/sprite-ver-de-terre` (pas en ligne)
+
 ## 03/11/2026 — Jules — Mur de chair redessiné (remise à niveau des sprites, 2/4)
 - **Pour le joueur** : le mur de chair n'est plus une bande de bourrelets rouges. De haut en bas : un grand œil de braise injecté de sang qui regarde le mineur, une côte qui perce la chair, deux petits yeux dans les plis, une **gueule verticale** (lèvres épaisses, crocs, langue, filets de bave), une autre côte et un œil mi-clos, sur des cordes de muscle strié avec des veines et des pustules. Son icône (lobby, wiki) est maintenant le grand œil.
 - **Décisions** (Jules) : un mélange des prototypes « mur aux yeux » et « gueule verticale », mi-Terraria (couleurs franches, contours nets, ombres en trame) mi-Darkest Dungeon (chair sombre et humide, gros trait d'encre). Composition à nous, pas celle du boss de Terraria.
