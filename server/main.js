@@ -62,7 +62,7 @@ const giant = createGiantService({ store: gameStore, game, dev: GAME_SERVER.dev 
 /* He's coming : le même service, sa partie et ses fiches */
 const hescoming = createGiantService({ store: gameStore, game, dev: GAME_SERVER.dev, config: HES_COMING, sim: luciferSim, key: 'Hc', mode: 'hescoming', place: HES_COMING.bossName });
 /* le Carreau : la ville du spawn (joueurs en ligne hors session, leur place, bulles du chat global) */
-const town = createTownService({ accounts: store, game, party, recentChat: ms => social.recentChat(ms), blockedOf: id => social.blockedOf(id), guildNameOf: id => guild.nameOf(id) });
+const town = createTownService({ accounts: store, game, party, recentChat: ms => social.recentChat(ms), blockedOf: id => social.blockedOf(id), guildNameOf: id => guild.nameOf(id), guildHouseOf: id => guild.houseOf(id) });
 /* suppression d'un compte (01/11) : Mon compte et scripts/delete-account.js */
 const eraser = createAccountEraser({ accounts: store, gameStore, game, party, instant, social, guild, giants: [giant, hescoming], town });
 const server = http.createServer(createApp({ store, service, game, party, instant, social, guild, giant, hescoming, town, moderation, reports, eraser, root: ROOT }));

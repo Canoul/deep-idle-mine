@@ -905,12 +905,33 @@ def wing_forge():
     return c.finish()
 
 
+def guild_lot():
+    """terrain de la maison de guilde, pour un joueur sans guilde (80 × 56) : piquets et corde, panneau à l'emblème
+    effacé, fanion déchiré, tas de moellons qui attend"""
+    c = Pix(80, 56, 3114)
+    for x in (2, 26, 52, 76):
+        c.rect(x, 40, 3, 16, WOOD)
+        c.poly([(x, 40), (x + 1, 37), (x + 3, 40)], WOODL)
+    for x0, x1 in ((4, 27), (28, 53), (54, 77)):
+        for x in range(x0, x1):
+            c.set(x, 43 + round(math.sin((x - x0) / (x1 - x0) * math.pi) * 3), STRAW2)
+    c.rect(36, 14, 3, 42, WOOD)                                      # panneau
+    c.rect(24, 14, 28, 18, WOODL)
+    c.rect(24, 14, 28, 2, WOOD2); c.rect(24, 30, 28, 2, WOOD2)
+    emblem_picks(c, 38, 23, WOOD2)
+    c.rect(64, 6, 2, 50, WOOD)                                       # fanion déchiré
+    c.poly([(66, 7), (78, 9), (74, 12), (78, 16), (66, 17)], WAR2)
+    c.stones(8, 48, 14, 8, BSTONE, BSTONE2)
+    c.stones(11, 44, 8, 4, BSTONE2, BSTONE)
+    return c.finish()
+
+
 def town():
     """toutes les textures du Carreau : { nom: (largeur, hauteur, pixels) }"""
     return {
         'guild_hall_1': guild_hall(1), 'guild_hall_2': guild_hall(2), 'guild_hall_3': guild_hall(3),
         'guild_hall_4': guild_hall(4), 'guild_site': guild_site(), 'guild_wing_armory': wing_armory(),
-        'guild_wing_treasury': wing_treasury(), 'guild_wing_forge': wing_forge(),
+        'guild_wing_treasury': wing_treasury(), 'guild_wing_forge': wing_forge(), 'guild_lot': guild_lot(),
         'town_tavern': tavern(), 'town_archives': archives(), 'town_library': library(), 'town_training': training(),
         'town_mage_tower': mage_tower(), 'town_armory': armory(), 'town_warehouse': warehouse(),
         'town_headframe': headframe(), 'town_foundry': foundry(), 'town_crusher': crusher(),

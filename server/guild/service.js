@@ -13,6 +13,7 @@ import { RANK, canRecruit, canKick, canPromote, canDemote, canTransfer, nextChie
          cleanGuildName, cleanGuildMessage, guildNameKey, guildNameError, sanitizeGuilds, buildingDef, buildingLevel, nextLevel, missing, buildingReady,
          canBuild, guildBonus } from '../../src/shared/guild.js';
 import { guildXpOf, guildLevelOf } from '../../src/meta/level.js';
+import { houseState } from '../../src/shared/guild-house.js';
 import { displayName, formatAccountId, nameKey, parseAccountId } from '../../src/shared/account.js';
 import { nameBanned } from '../moderation/filter.js';
 import { SocialError } from '../social/service.js';
@@ -165,6 +166,15 @@ export function createGuildService({ store, accounts, statusOf, inviteCheck = as
     },
     /* bonus des bâtiments de la guilde d'un joueur, null sans guilde ou sans bâtiment (figé au lancement) */
     async bonusOf(id){ await load(); return guildBonus(guildOf(id)); },
+    /* maison de guilde du Carreau (02/11/2026) : { stage, annexes } de la guilde du joueur, la même pour tous ses membres ;
+       null sans guilde */
+    async houseOf(id){
+      await load();
+      const g = guildOf(id);
+      if(!g) return null;
+      const h = houseState(buildingsView(g));
+      return { stage:h.stage, annexes:h.annexes };
+    },
     /* don d'un membre : réservé dans la file, retiré de l'inventaire hors de la file, compté ensuite. La quantité est
        ramenée à ce qu'il manque. Un don renvoyé (même opId) ne compte qu'une fois. */
     async give(me, { building, item, qty, opId }){

@@ -6661,3 +6661,27 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   scène `GUILD.house` 372 × 168, sol 14. `npm run textures` : seuls les 8 PNG de guilde changent. ✅ guild-house et
   guild-ui 26/26 (le test des largeurs PNG / config a suivi) ; les 4 étapes vues dans Chromium avec la CSS du jeu.
 - ✅ En ligne le 02/11 (⚠️ toujours pas vu avec une vraie guilde ni sur téléphone).
+
+## 02/11/2026 — Jules — Maison de guilde dans le Carreau
+- **Demande** : la maison doit être un bâtiment de la ville, synchronisé pour tous les membres d'une guilde (la scène
+  seule dans l'onglet Guilde était un malentendu ; elle reste, l'appli mobile n'a pas de Carreau).
+- **Serveur** : `server/guild/service.js` `houseOf(id)` → `{ stage, annexes }` (houseState sur buildingsView, null sans
+  guilde) ; `server/town/service.js` paramètre `guildHouseOf`, champ `house` de la réponse du ping ; branché dans
+  `server/main.js`. Pas de cache : la fiche des guildes est en mémoire. Rien d'économique.
+- **Ville** : `TOWN.buildings` entrée `{ tab:'guilde', kind:'guild', w:23, h:10, doorAt:10 }` entre Armurerie et Taverne ;
+  `doorAt` (nouveau, `src/shared/town.js` townLayout) met la porte devant le portail de la maison (sinon le milieu, côté
+  Trésorerie). `src/ui/nav.js` : `noBuilding` retiré de Guilde. `src/render/town.js` : `guildPieces(house)` (même
+  composition que l'onglet, `GUILD.house` en pixels), `drawGuild`, halos et fumée sortis en `drawGlows` / `drawSmoke`,
+  halo `red` ; le nom affiché est `< nom de ma guilde >` (`scene.guild`). `src/ui/town.js` : `myHouse` lu au ping (toutes
+  les TOWN.poll ms), passé à `draw`. Nouveau sprite `guild_lot` (80 × 56 : piquets, corde, panneau, fanion).
+  `GUILD.house` : w 368 (= 23 cases), `glows` par étape et par annexe, `smoke` de la Forge, `lot`. Les 9 textures de la
+  maison ajoutées à `TEXTURES` (chargées par le canvas).
+- **Tests** ✅ 136/136 : tests/guild-house (bâtiment, porte devant le portail, halos dans les sprites, textures chargées),
+  tests/guild-buildings (houseOf : null sans guilde, identique pour deux membres, chantier puis annexe construite),
+  tests/town (réponse `house`, réponse de la route avec `house: null`, bâtiment sans sprite comme la place), nav, guild,
+  guild-ui, guild-service, anticheat/guild-buildings, boot-check, main-module, app-families.
+- **Vérifié** ✅ les 5 états (sans guilde, étapes 1 à 4) dessinés par le vrai `createTownRenderer` dans Chromium (page de
+  test hors dépôt). ⚠️ Pas vu dans le jeu lancé avec deux comptes d'une même guilde.
+- **Point fragile** : `doorAt: 10` suppose le portail à x 72 + 78..102 px du domaine ; un test le vérifie si on déplace
+  la maison dans `GUILD.house`.
+- ✅ En ligne le 02/11 (⚠️ toujours pas vu avec deux comptes d'une même guilde).
