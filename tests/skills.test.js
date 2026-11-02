@@ -17,10 +17,10 @@ let n = 0; const id = () => 'op-sk-' + (++n);
 const learnAll = (st, nodes, points = 99) => { for(const x of nodes) assert.ok(skillOp(st, { action:'learn', node:x, opId:id() }, points).ok, x); return st; };
 const fullTree = tree => SKILLS.trees.find(t => t.id === tree).nodes.flatMap(n => Array(n.max).fill(n.id));
 
-test('arbres demandés : 3 étages (3 / 1 / 5 rangs, + au 4e : Braum 3 pour le Barbare, Légende de la flemme 1 pour le Mineur, Mule 1 pour le Logisticien) ; Logisticien : Échelle de 2 et Treuil côte à côte au 2e étage', () => {
+test('arbres demandés : 3 étages (3 / 1 / 5 rangs, + au 4e : Garde du corps 3 pour le Barbare, Légende de la flemme 1 pour le Mineur, Mule 1 pour le Logisticien) ; Logisticien : Échelle de 2 et Treuil côte à côte au 2e étage', () => {
   assert.deepEqual(SKILLS.trees.map(t => t.label), ['Mineur', 'Logisticien', 'Barbare']);
   for(const t of SKILLS.trees) for(const r of [1, 2, 3]) assert.ok(t.nodes.some(n => n.row === r), `${t.id} étage ${r}`);
-  for(const t of SKILLS.trees) assert.deepEqual(t.nodes.map(n => n.max), { mineur:[3, 1, 5, 1, 3, 1], logisticien:[3, 1, 1, 5, 1, 3, 1], barbare:[3, 1, 5, 3, 3, 1] }[t.id]);   // 5e étage : maîtrises (28/10) ; 4e étage : Braum (Barbare), Légende de la flemme (Mineur), Mule (Logisticien)
+  for(const t of SKILLS.trees) assert.deepEqual(t.nodes.map(n => n.max), { mineur:[3, 1, 5, 1, 3, 1], logisticien:[3, 1, 1, 5, 1, 3, 1], barbare:[3, 1, 5, 3, 3, 1] }[t.id]);   // 5e étage : maîtrises (28/10) ; 4e étage : Garde du corps (Barbare), Légende de la flemme (Mineur), Mule (Logisticien)
   const lg = SKILLS.trees.find(t => t.id === 'logisticien').nodes;
   assert.deepEqual(lg.map(n => [n.id, n.row]), [['travel_rush', 1], ['tall_ladder', 2], ['winch', 2], ['winch_speed', 3], ['mule', 4], ['bench_mastery', 5], ['recon', 6]]);   // 23/10 soir : Bâtisseur supprimé
   for(const t of SKILLS.trees) for(const n of t.nodes) assert.ok(n.name && n.icon, n.id);
@@ -167,11 +167,11 @@ test('Barbare : butin des mobs +3 %/rang = 3 % de chance par rang pour 1 butin e
   m.skill.loot = 1.5; assert.ok(Math.abs(perMob() - 1.5 - 1.5) < 0.03, '150 % : +1 sûr, et +1 encore une fois sur deux');
 });
 
-test('Barbare : Braum à l\'étage 4 (Pillage au max d\'abord), marche et montée +10 %/rang seulement quand il aide', () => {
+test('Barbare : Garde du corps à l\'étage 4 (Pillage au max d\'abord), marche et montée +10 %/rang seulement quand il aide', () => {
   const b = SKILLS.trees.find(t => t.id === 'barbare').nodes.find(n => n.id === 'braum');
   assert.deepEqual([b.row, b.max, b.per], [4, 3, 0.1]);
   assert.deepEqual(sanitizeSkills({ tree:'barbare', ranks:{ damage:3, taunt:1, loot:4, braum:3 } }, 99).ranks,
-    { damage:3, taunt:1, loot:4 }, 'Pillage pas au max : pas de Braum');
+    { damage:3, taunt:1, loot:4 }, 'Pillage pas au max : pas de Garde du corps');
   assert.equal(skillEffects(sanitizeSkills({ tree:'barbare', ranks:{ damage:3, taunt:1, loot:5, braum:3 } }, 99)).braum, 0.3);
   const G = worldFrom(['', '@']), m = G.miners[0];
   m.skill.braum = 0.3;

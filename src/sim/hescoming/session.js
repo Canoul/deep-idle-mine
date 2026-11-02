@@ -137,14 +137,14 @@ function dash(G, m, x){
   log(G, `💨 ${m.name} : Dash sur ${HC.bossName}`);
   return true;
 }
-/* Ulti shen : il rejoint d'un coup un allié qui frappe Lucifer, plus près que lui. Pas de dégâts : Lucifer n'a pas de PV max. */
+/* Ralliement : il rejoint d'un coup un allié qui frappe Lucifer, plus près que lui. Pas de dégâts : Lucifer n'a pas de PV max. */
 function ulti(G, m, x){
   if(!ready(m, 'ulti_shen', G)) return false;
   const o = G.miners.find(o => o !== m && o.status === `Frappe ${HC.bossName}` && Math.abs(o.x - x) + SPELL.dash.minCells <= Math.abs(m.x - x));
   if(!o) return false;
-  m.x = o.x; m.status = 'Ulti shen';
+  m.x = o.x; m.status = 'Ralliement';
   m.spellCd.ulti_shen = G.t + SPELL.ulti_shen.cd;
-  log(G, `🌀 ${m.name} : Ulti shen, rejoint ${o.name}`);
+  log(G, `🌀 ${m.name} : Ralliement, rejoint ${o.name}`);
   return true;
 }
 

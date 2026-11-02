@@ -141,7 +141,7 @@ test('stats des glyphes : en session (glyphes figés) et dans l\'onglet Stuff', 
   assert.equal(shown.total, m.carac.pods);
 });
 
-/* ---------- effets en partie : Second souffle, Ruée, Navette, Échelle de 2, Pillage, Braum ---------- */
+/* ---------- effets en partie : Second souffle, Ruée, Navette, Échelle de 2, Pillage, Garde du corps ---------- */
 
 const hold = m => { m.action = { type:'wait', dur:1e9, t:0, data:{} }; };
 const coalScene = skill => { const G = worldFrom(['', '', '  @c']), m = G.miners[0]; Object.assign(m.skill, skill); return { G, m }; };
@@ -195,7 +195,7 @@ test('Pillage : chaque mob tué ajoute 1 % aux dégâts, au plus 25 %', () => {
   assert.equal(n.pillage ?? 0, 0, 'sans glyphe : rien');
 });
 
-test('Braum : +30 % de l\'oxygène max à chaque entrée dans un donjon ; rester dedans ne recharge pas', () => {
+test('Garde du corps : +30 % de l\'oxygène max à chaque entrée dans un donjon ; rester dedans ne recharge pas', () => {
   const rows = ['', ...Array(24).fill('#'.repeat(W))];
   const G = worldFrom(rows), m = G.miners[0];
   const d = addDungeon(G, { x0:5, y0:6, side:'R', hy:13 });

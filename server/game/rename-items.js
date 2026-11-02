@@ -1,9 +1,11 @@
-/* Renommage d'objets (01/11/2026, Geoffrey : les stores refusent les noms de marques). Le nom d'un objet sert de clé partout (sac,
+/* Renommage d'objets (01/11/2026, Geoffrey : les stores refusent les noms de marques ; 02/11, Jules : noms venus de
+   League of Legends, vérification Google Play). Le nom d'un objet sert de clé partout (sac,
    pièces portées, sets, plans, wiki, sessions) : une pièce au nom inconnu serait écartée à la relecture. migrateItemNames passe donc
    au démarrage, AVANT tout service (server/main.js). Sans rien à faire, elle n'écrit rien : on peut la laisser en place.
    Une chaîne contient un ancien nom : il est remplacé (les plans « … BP » suivent). Le reste de la pièce ne bouge pas.
    Jamais touchés : signalements et journal (preuves), chat global (les mots des joueurs, effacés en 18 h). */
-export const ITEM_RENAMES = { 'Lunettes Gucci': 'Lunettes de luxe', 'Doc Martins': 'Bottes de chantier' };
+export const ITEM_RENAMES = { 'Lunettes Gucci': 'Lunettes de luxe', 'Doc Martins': 'Bottes de chantier',
+  'Parchemin « Ulti shen »': 'Parchemin « Ralliement »', 'Glyphe Braum': 'Glyphe Garde du corps' };
 const SKIP = ['report', 'mod_log', 'chat_global'];
 
 const OLD = Object.keys(ITEM_RENAMES);

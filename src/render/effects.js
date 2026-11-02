@@ -3,7 +3,7 @@
    l'horloge de la page (now, ms), donc fluide entre deux envois du serveur.
    - contrôles et debuffs : étoiles qui tournent (étourdi), botte barrée (taclé), bulles (asphyxie), pièce qui
      s'envole (vol), « ! » qui tremble (effroi), crochets rouges (ciblé par le boss) ;
-   - buffs : lueur au sol (Cri de guerre), notes (Inspiration), traits de vitesse (Ruée, Navette, Braum) ;
+   - buffs : lueur au sol (Cri de guerre), notes (Inspiration), traits de vitesse (Ruée, Navette, Garde du corps) ;
    - sorts : une onde qui s'élargit et l'icône du sort qui monte, au moment où il part (sa recharge repart) ;
    - mobs : petites icônes au-dessus de leur barre de vie (étoiles pour l'étourdissement). */
 import { EFFECTS, SPELLS } from '../config.js';

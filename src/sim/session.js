@@ -97,7 +97,7 @@ function stepMiner(G,m){
    (36 000 additions de 0,1 donnent 3599,9999999978 : la session ne se terminait jamais au dernier tick) */
 export const SESSION_TICKS = Math.round(SESSION_LEN/DT);
 
-/* Glyphe Braum : à chaque entrée (dehors → dedans) dans la salle d'un piège ou un donjon (seuil compris), il regagne
+/* Glyphe Garde du corps : à chaque entrée (dehors → dedans) dans la salle d'un piège ou un donjon (seuil compris), il regagne
    GLYPHS.braumOxygen de son oxygène max (plafonné). m.braumIn : où il était au tick d'avant (rester dedans : rien). */
 function braumGlyph(G){
   for(const m of G.miners){
@@ -140,9 +140,9 @@ export function tick(G){
     { const k=timeClass(m.action), tt=(m.stats.time??={}); tt[k]=(tt[k]||0)+DT; }   // temps par action (30/10, tableau de la prison)
     stepMiner(G,m);
   }
-  braumGlyph(G);   // Glyphe Braum : oxygène en entrant dans un piège ou un donjon
+  braumGlyph(G);   // Glyphe Garde du corps : oxygène en entrant dans un piège ou un donjon
   reconnaissance(G);
-  updateSpells(G);  // sorts : Illumination, Inspiration, Ulti shen
+  updateSpells(G);  // sorts : Illumination, Inspiration, Ralliement
   updateTraps(G);   // un bloc de paroi de piège a disparu : le piège s'ouvre
   updateMobs(G);
   updateThralls(G);   // gobelins asservis (Couronne du Roi Gobelin) : ils minent pour le coffre commun

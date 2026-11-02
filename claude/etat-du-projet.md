@@ -308,7 +308,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - **Roi Gobelin : coffre et objets** (27/10, Geoffrey ; `GOBLIN_KING`, `src/meta/loot.js` openGoblinChest,
   `src/sim/thrall.js`, GAME_DESIGN « Roi Gobelin ») : le boss est celui de l'Instance I ; son « Coffre du Roi
   Gobelin R1-R7 » (Unique, un par joueur présent à la victoire) : lingots de graphite 5-15 + Tainted iron 10-20 + peaux toujours (29/10 ; ancien : Graphite ore 20-40), un objet rare au plus (Couronne 1 %,
-  Four en or BP 2 %, Masse 2 %, Cape royale 2 %), Recette : Chitine 5 % (si pas apprise), un parchemin de sort au plus (Ulti shen 1 %, Fast learner 0,5 %, Cleave 1 %,
+  Four en or BP 2 %, Masse 2 %, Cape royale 2 %), Recette : Chitine 5 % (si pas apprise), un parchemin de sort au plus (Ralliement 1 %, Fast learner 0,5 %, Cleave 1 %,
   Hand of Justice 1 %, jamais un sort appris), gemmes 1 % ; le stuff sort
   identifié à la qualité du coffre. **Couronne** (casque, légendaire) : fortune +10, **gobelins asservis** (nés à 10 cases
   du porteur : 30 s à miner pour le coffre commun, ligne « Gobelins asservis » du coffre). **Four en or** = 3e four ×1,5.
@@ -409,7 +409,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - **Spécialisation** : arbres de skills Mineur (4e étage **Légende de la flemme** depuis le 23/10 : 5 % de se téléporter au coffre à chaque remontée, sauf en fin de session), Logisticien (refait le 23/10 au soir : Navette 3, Échelle de 2 + Treuil, **Escalateur** 5 =
   seau +5 %/rang pour tout le groupe, Mule ; ancien : Bâtisseur 3 en étage 1, Navette 5 en étage 3 ; treuil : seau à 0,85 × la vitesse de montée ;
   ×2 essayé le 22/10 puis retiré, décision Geoffrey et Jules), Barbare (provocation : interrompt la canalisation de l'occultiste sans l'empêcher de relancer, depuis le 21/10 ;
-  4e étage **Braum** depuis le 22/10 : marche et montée +10 %/rang quand il va aider) ;
+  4e étage **Garde du corps** (ancien nom : Braum, renommé le 02/11, glyphe compris) depuis le 22/10 : marche et montée +10 %/rang quand il va aider) ;
   spécialisation choisie dans le lobby. Dans le périmètre du jeu.
 - **Maîtrises, 5e étage des skills** (28/10, Geoffrey ; GAME_DESIGN §3) : 0/3, après l'étage 4 au max. Maîtrise de la
   pioche (Mineur) et de l'épée (Barbare) : stats de la pièce +5 %/rang ; Maîtrise du bench (Logisticien) : torse +3 %/rang.
@@ -421,7 +421,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - **Sorts** (24/10, Geoffrey ; `SPELLS` en config, `src/meta/spells.js` règles du compte, `src/sim/spells.js` effets,
   `src/ui/spells.js` onglet, GAME_DESIGN §3 « Sorts ») : onglet Sorts, 4 emplacements dont 2 ouverts (les 2 autres
   verrouillés, règle à décider). Dash (Barbare spé 5), Illumination (Mineur spé 5), Inspiration (Logisticien spé 5),
-  Dynamite (Mineur spé 10), Ulti shen et Fast learner (parchemins à apprendre, **pas encore de source** : à décider).
+  Dynamite (Mineur spé 10), Ralliement (ancien nom : Ulti shen, renommé le 02/11) et Fast learner (parchemins à apprendre, **pas encore de source** : à décider).
   **27/10 (Geoffrey)** : **Bonbonne d'oxygène** (ancien nom : Bonbonne de zipette, renommée le 02/11 pour la vérification Google Play ; Logisticien spé 10 : allié à 3 cases qui travaille, +20 % des pods du
   logisticien en oxygène, 180 s), **Cri de guerre** (Barbare spé 10 : en combat, lui et les mineurs à 10 cases +10 % dégâts,
   +5 % vitesse d'attaque, 30 s, recharge après l'effet, 180 s), **Cleave** et **Hand of Justice** (parchemins, sans source :
@@ -511,7 +511,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   `docs/superpowers/specs/2026-10-28-buffs-debuffs-design.md`, `EFFECTS`, `src/sim/effects.js`, `src/ui/effects.js`,
   `src/render/effects.js`) : en haut à droite de la mine (et tours, instance, MI), les états de **son propre mineur** avec
   le temps restant ou les stacks (rouge : étourdi, taclé, enfermé, effroi, asphyxie, vol, mur de chair, ciblé par le boss,
-  dans le noir ; vert : Cri de guerre, Inspiration, Ruée, Navette, Braum, Glyphe Pillage, Fast learner, **Couronne du Roi
+  dans le noir ; vert : Cri de guerre, Inspiration, Ruée, Navette, Garde du corps, Glyphe Pillage, Fast learner, **Couronne du Roi
   Gobelin** chez son porteur seul, depuis le 29/10) et **une seule icône « Bonus de
   session »** (anneaux du groupe, shrines, Escalateur ; ancien, 28/10 : la Couronne y était, chez son porteur seul). Animations sur le perso (étoiles,
   botte barrée, bulles…, onde quand un sort part) ; icônes des mobs et boss au-dessus de leur barre de vie. Affichage

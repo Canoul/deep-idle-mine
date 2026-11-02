@@ -46,7 +46,7 @@ export function effectTip(e){
     case 'inspiration': L.push(`Vitesse de minage +${pct(SPELL.inspiration.mineSpeed)} pour tout le groupe`, 'Sort du logisticien'); break;
     case 'ore_rush': L.push(`Vitesse de marche +${pct(e.value || 0)} après un minerai`, 'Skill Ruée'); break;
     case 'travel_rush': L.push(`Vitesse de marche +${pct(e.value || 0)} quand il remonte ou redescend au front`, 'Skill Navette'); break;
-    case 'braum': L.push(`Marche et montée +${pct(e.value || 0)} quand il va aider un allié`, 'Skill Braum'); break;
+    case 'braum': L.push(`Marche et montée +${pct(e.value || 0)} quand il va aider un allié`, 'Skill Garde du corps'); break;
     case 'pillage': L.push(`Dégâts +${num(e.value || 0)} % (${GLYPHS.killDamagePct} % par mob tué, ${GLYPHS.killDamageMax} % au plus)`, 'Glyphe Pillage, jusqu\'à la fin de la session'); break;
     case 'fast_learner': L.push(`${e.stacks} type${e.stacks > 1 ? 's' : ''} de bloc appris : +${pct(SPELL.fast_learner.bonus)} de minage chacun`, 'Jusqu\'à la fin de la session'); break;
     case 'crown': L.push(`Un gobelin qui naît à ${e.value} cases ou moins de lui devient asservi : il mine ${GOBLIN_KING.thrall.life} s pour le coffre au lieu d'attaquer`,

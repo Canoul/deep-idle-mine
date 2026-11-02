@@ -8,9 +8,10 @@ import { createMemoryGameStore, GAME_NS } from '../server/game/store.js';
 import { migrateItemNames, ITEM_RENAMES, renameText, countOldNames } from '../server/game/rename-items.js';
 
 const OLD_G = 'Lunettes Gucci', OLD_D = 'Doc Martins', NEW_G = 'Lunettes de luxe', NEW_D = 'Bottes de chantier';
+const OLD_U = 'Parchemin « Ulti shen »', NEW_U = 'Parchemin « Ralliement »', OLD_B = 'Glyphe Braum', NEW_B = 'Glyphe Garde du corps';
 
 test('table : les nouveaux noms existent dans le jeu, les anciens n\'y sont plus', () => {
-  assert.deepEqual(ITEM_RENAMES, { [OLD_G]: NEW_G, [OLD_D]: NEW_D });
+  assert.deepEqual(ITEM_RENAMES, { [OLD_G]: NEW_G, [OLD_D]: NEW_D, [OLD_U]: NEW_U, [OLD_B]: NEW_B });
   for(const n of [NEW_G, NEW_D, `${NEW_G} BP`, `${NEW_D} BP`]) assert.ok(ITEMS[n], n);
   for(const n of [OLD_G, OLD_D, `${OLD_G} BP`, `${OLD_D} BP`]) assert.equal(ITEMS[n], undefined, n);
   assert.ok(STUFF.items[NEW_G] && STUFF.items[NEW_D]);
@@ -67,4 +68,16 @@ test('toute sorte de données est couverte, y compris les prochaines', () => {
   assert.deepEqual([...store.nsList()].sort(), [...GAME_NS].sort());
   assert.equal(renameText(`${OLD_G} BP`), `${NEW_G} BP`);
   assert.equal(renameText('Charbon'), 'Charbon');
+});
+
+test('02/11 : parchemin « Ulti shen » et Glyphe Braum (League of Legends) : dans le jeu sous leur nouveau nom, convertis dans le sac', async () => {
+  for(const n of [NEW_U, NEW_B]) assert.ok(ITEMS[n], n);
+  for(const n of [OLD_U, OLD_B]) assert.equal(ITEMS[n], undefined, n);
+  assert.ok(!JSON.stringify([ITEMS, RECIPES, WIKI]).match(/Ulti shen|Braum/), 'plus aucun nom affiché');
+  const store = createMemoryGameStore({ inventories: { A: { slots: [{ item: OLD_U, qty: 1 }, { item: OLD_B, qty: 2 }], known: [OLD_B], credited: [] } } });
+  await migrateItemNames(store);
+  const inv = await store.getInventory('A');
+  assert.deepEqual(inv.slots.map(s => [s.item, s.qty]), [[NEW_U, 1], [NEW_B, 2]]);
+  assert.deepEqual(inv.known, [NEW_B]);
+  assert.equal(countOldNames(store).total, 0);
 });

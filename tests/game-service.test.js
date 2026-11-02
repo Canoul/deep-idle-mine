@@ -687,7 +687,7 @@ test('sorts par le serveur : parchemin appris (consommé, une fois), équiper v�
   const { createInventory, addItem, serialize } = await import('../src/meta/inventory.js');
   const store = createMemoryGameStore();
   const game = createGameService({ store, liveRunner:fakeLive(rec => ({ id:rec.id, shares:[] })), clock:() => 1_000_000, randomSeed:() => 4242 });
-  const A = { id:'AAAA1111', name:'Zoe' }, SCROLL = 'Parchemin « Ulti shen »';
+  const A = { id:'AAAA1111', name:'Zoe' }, SCROLL = 'Parchemin « Ralliement »';
   await assert.rejects(game.spells(A, { action:'equip', spell:'dash', slot:0, opId:'short' }), { code:'bad_request' });
   await assert.rejects(game.spells(A, { action:'learn', item:SCROLL, opId:'op-spell-01' }), { code:'not_owned' });
   const inv = createInventory(); addItem(inv, SCROLL, 1);

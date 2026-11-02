@@ -572,12 +572,12 @@ export const CAMERA = { top:-3, margin:4, ease:0.15, wheelRows:3, keyRows:4,
    chance qu'un minerai rende une torche (jamais au-delà du max) ; rushTime : Ruée, durée du bonus (s) ; Navette : pas
    d'oxygène consommé en redescendant au front ; ladderMult : Échelle de 2, temps de pose × ; oxygenToSpeed : Mule, marche
    et montée × (1 + oxygenToSpeed × oxygène max) ; damageToPods : Force brute, pods += × dégâts (totaux) ;
-   killDamagePct / killDamageMax : Pillage, dégâts % par mob tué, plafond ; braumOxygen : Braum, part de l'oxygène max
+   killDamagePct / killDamageMax : Pillage, dégâts % par mob tué, plafond ; braumOxygen : Garde du corps, part de l'oxygène max
    regagnée à chaque entrée dans un piège ou un donjon. */
 export const GLYPHS = {
   items: { mine_speed:'Glyphe Pioche aiguisée', ore_oxygen:'Glyphe Second souffle', ore_rush:'Glyphe Ruée',
            travel_rush:'Glyphe Navette', tall_ladder:'Glyphe Échelle de 2', mule:'Glyphe Mule', damage:'Glyphe Force brute',
-           loot:'Glyphe Pillage', braum:'Glyphe Braum', winch:'Glyphe Treuil' },
+           loot:'Glyphe Pillage', braum:'Glyphe Garde du corps', winch:'Glyphe Treuil' },
   attackToMine:0.1, torchChance:0.05, rushTime:5, ladderMult:0.5, oxygenToSpeed:0.0003, damageToPods:3,
   killDamagePct:1, killDamageMax:25, braumOxygen:0.3, rarity:'epique', tex:'glyph',
   /* Glyphe Treuil (étape 2) : un ascenseur liftSpeed × plus rapide que le treuil (Escalateur compris), posé / prolongé
@@ -646,7 +646,7 @@ export const SKILLS = {
       { id:'damage',      row:1, max:3, per:0.05, icon:'🪓', name:'Force brute',     desc:'Dégâts infligés +{v}, ténacité +{tenacity}, dégâts de zone {aoe} (mobs à 1 case de sa cible)', adds:{ tenacity:5 }, aoe:0.02 },   // zone : 23/10 (Geoffrey)
       { id:'taunt',       row:2, max:1, per:1,    icon:'😤', name:'Provocation',     desc:'Le mob qu\'il frappe lâche les autres mineurs et ne peut plus tacler que lui ; ses coups interrompent la canalisation d\'un occultiste' },
       { id:'loot',        row:3, max:5, per:0.03, icon:'💰', name:'Pillage',         desc:'Butin des mobs +{v}' },
-      { id:'braum',       row:4, max:3, per:0.1,  icon:'🛡', name:'Braum',           desc:'Vitesse de marche et de montée (échelle, seau) +{v} quand il va aider un allié (tacle, donjon, piège) et pendant ce combat' },
+      { id:'braum',       row:4, max:3, per:0.1,  icon:'🛡', name:'Garde du corps',  desc:'Vitesse de marche et de montée (échelle, seau) +{v} quand il va aider un allié (tacle, donjon, piège) et pendant ce combat' },
       { id:'sword_mastery', row:5, max:3, per:0.05, slot:'epee', icon:'⚔', name:'Maîtrise de l\'épée', desc:'Les stats données par l\'épée +{v}' },
       { id:'ravage',      row:6, max:1, per:1,    icon:'🩸', name:'Saccager',        desc:'Après 2 critiques d\'affilée, sa prochaine attaque est une double attaque' },
     ]},
@@ -698,7 +698,7 @@ export const SPELLS = {
       desc:'Tous les mineurs minent 10 % plus vite pendant 60 s (la recharge commence à la fin de l\'effet)' },
     /* quand un autre mineur du groupe se bat (frappe ou est taclé) : téléporté sur sa case, inflige hpPct des PV max du
        mob (bossPct sur un boss : minotaure, Gallianix) */
-    { id:'ulti_shen', name:'Ulti shen', icon:'🌀', px:'shield', short:'Rejoint d\'un coup un allié en combat', unlock:{ scroll:'Parchemin « Ulti shen »' }, cd:180,
+    { id:'ulti_shen', name:'Ralliement', icon:'🌀', px:'shield', short:'Rejoint d\'un coup un allié en combat', unlock:{ scroll:'Parchemin « Ralliement »' }, cd:180,
       hpPct:0.20, bossPct:0.05,
       desc:'Quand un allié se bat : se téléporte à lui et inflige 20 % des PV max du mob (5 % sur un boss)' },
     /* le prochain bloc miné (pas de la terre ni un trésor) est « appris » : ce type de bloc se mine bonus plus vite
@@ -767,7 +767,7 @@ export const EFFECTS = {
     inspiration:  { kind:'buff',    name:'Inspiration',         icon:'note',      color:'#6fc2ff' },
     ore_rush:     { kind:'buff',    name:'Ruée',                icon:'rocket',    color:'#6fc24a' },
     travel_rush:  { kind:'buff',    name:'Navette',             icon:'updown',    color:'#6fc24a' },
-    braum:        { kind:'buff',    name:'Braum',               icon:'shield',    color:'#6fc2ff' },
+    braum:        { kind:'buff',    name:'Garde du corps',      icon:'shield',    color:'#6fc2ff' },
     pillage:      { kind:'buff',    name:'Pillage (glyphe)',    icon:'sword',     color:'#e5534b' },
     fast_learner: { kind:'buff',    name:'Fast learner',        icon:'book',      color:'#b06bff' },
     /* bonus de session (une seule icône, le détail dans sa bulle) */
@@ -975,7 +975,7 @@ export const GOBLIN_KING = {
       { family:'recipe', items:[ { item:'Recette : Chitine', chance:0.05, learnOnce:true } ] },
       /* 27/10/2026 (Geoffrey) : parchemins de sort, au plus un ; spellOnce : un sort déjà appris ne sort pas */
       { family:'scroll', items:[
-        { item:'Parchemin « Ulti shen »',       chance:0.01,  spellOnce:true },
+        { item:'Parchemin « Ralliement »',      chance:0.01,  spellOnce:true },
         { item:'Parchemin « Fast learner »',    chance:0.005, spellOnce:true },
         { item:'Parchemin « Cleave »',          chance:0.01,  spellOnce:true },
         { item:'Parchemin « Hand of Justice »', chance:0.01,  spellOnce:true },
@@ -1014,7 +1014,7 @@ export const GOLBUTE = {
         { item:'Âme du Golbute',        chance:0.02 },
       ]},
       { family:'scroll', items:[
-        { item:'Parchemin « Ulti shen »',       chance:0.01,  spellOnce:true },
+        { item:'Parchemin « Ralliement »',      chance:0.01,  spellOnce:true },
         { item:'Parchemin « Fast learner »',    chance:0.005, spellOnce:true },
         { item:'Parchemin « Cleave »',          chance:0.01,  spellOnce:true },
         { item:'Parchemin « Hand of Justice »', chance:0.01,  spellOnce:true },

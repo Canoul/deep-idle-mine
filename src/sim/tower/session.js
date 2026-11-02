@@ -459,7 +459,7 @@ const torchByOther = (G, m) => G.miners.some(o => o !== m && o.action?.type === 
 
 export function decide(G, m){
   if(!towerSupported(G, m.x, m.y)) return act(m, 'move', fallT(), { x: m.x, y: m.y + 1, fall: true }, 'Tombe');
-  if(m.spells.length && supportSpells(G, m)) return act(m, 'wait', DT, {}, m.status);   // Ulti shen : il vient d'arriver
+  if(m.spells.length && supportSpells(G, m)) return act(m, 'wait', DT, {}, m.status);   // Ralliement : il vient d'arriver
   /* treuil à installer (logisticien tombé au pied de la tour) : contre le mur, de son côté, puis TOWER.winch.setup s */
   if(m.winchJob){
     const tx = m.winchJob === 'L' ? G.x0 - 1 : G.x1 + 1;
@@ -791,8 +791,8 @@ function combatSpells(G, m, target){
   else if(target !== G.boss && ready(G, m, 'dynamite') && blastFoes(G, target.x, target.y).length >= SPELL.dynamite.fightFoes) blast(G, m, target.x, target.y);
 }
 /* à chaque décision : Illumination (cases inconnues de la tour à son rayon), Hand of Justice (un mob qui tacle un allié,
-   puis lui, à sa portée : étourdi), Ulti shen (un allié taclé, ou au contact du boss : il se téléporte à lui et frappe).
-   Renvoie true si Ulti shen l'a déplacé. */
+   puis lui, à sa portée : étourdi), Ralliement (un allié taclé, ou au contact du boss : il se téléporte à lui et frappe).
+   Renvoie true si Ralliement l'a déplacé. */
 function supportSpells(G, m){
   if(ready(G, m, 'illumination')){
     const R = SPELL.illumination.radius, cells = [];
@@ -813,7 +813,7 @@ function supportSpells(G, m){
       cast(G, m, 'ulti_shen'); stopAction(m); m.action = null; m.x = to.x; m.y = to.y; m.kx = 0; m.ky = 0;
       if(ally) damageMob(G, m, tackler(G, ally), tackler(G, ally).maxhp * S.hpPct);
       else damageBoss(G, m, G.boss.maxhp * S.bossPct);
-      log(G, `🌀 ${m.name} : Ulti shen auprès de ${to.name}`);
+      log(G, `🌀 ${m.name} : Ralliement auprès de ${to.name}`);
       return true;
     }
   }

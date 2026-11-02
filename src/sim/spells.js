@@ -5,7 +5,7 @@
    Trois moments :
    - afterDecide : l'IA vient de choisir une action ; un pas de marche peut devenir un Dash, un coup de pioche une
      Dynamite ;
-   - updateSpells : à chaque tick, Illumination, Inspiration, Ulti shen, Cri de guerre, Cleave, Hand of Justice,
+   - updateSpells : à chaque tick, Illumination, Inspiration, Ralliement, Cri de guerre, Cleave, Hand of Justice,
      Bonbonne d'oxygène ;
    - learnOnMine : un bloc miné (Fast learner). */
 import { W, IDS, DUCK, BLOCKS, CFG } from '../config.js';
@@ -226,7 +226,7 @@ function inspire(G,m){
 }
 export const inspireBonus = G => G.inspire && G.t < G.inspire.until ? G.inspire.pct : 0;
 
-/* Ulti shen : un autre mineur du groupe se bat (il frappe un mob, ou un mob le tacle) → téléporté sur sa case, il
+/* Ralliement : un autre mineur du groupe se bat (il frappe un mob, ou un mob le tacle) → téléporté sur sa case, il
    inflige hpPct des PV max du mob (bossPct sur un boss), puis se bat à ses côtés. Seulement quand il travaille (pas
    en remontée, pas pendant un chantier de treuil, la Mule, une chute ou un étourdissement) ; jamais dans un donjon interdit. */
 function ulti(G,m){
@@ -243,7 +243,7 @@ function ulti(G,m){
     if(!G.khole && m.y>m.stats.maxDepth) m.stats.maxDepth = m.y;
     cast(G,m,'ulti_shen');
     foe.hp -= foe.maxhp*(isBoss(foe) ? S.bossPct : S.hpPct);
-    log(G, `🌀 ${m.name} : Ulti shen, rejoint ${o.name} contre un ${foe.type}`);
+    log(G, `🌀 ${m.name} : Ralliement, rejoint ${o.name} contre un ${foe.type}`);
     if(foe.hp<=0) killMob(G,m,foe);
     else { m.foe = foe.id; m.foeHit = G.t; }
     return;

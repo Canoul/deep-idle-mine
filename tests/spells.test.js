@@ -1,5 +1,5 @@
 /* Sorts : déblocage, équipement, parchemins (règles du compte) et effets en session (Dash, Illumination, Inspiration,
-   Ulti shen, Fast learner, Dynamite). GAME_DESIGN §3 « Sorts ». */
+   Ralliement, Fast learner, Dynamite). GAME_DESIGN §3 « Sorts ». */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { SPELLS, STATS, IDS, BRIDGE } from '../src/config.js';
@@ -13,7 +13,7 @@ import { finishAction, mineBlock } from '../src/sim/actions.js';
 import { afterDecide, updateSpells } from '../src/sim/spells.js';
 import { newSession, tick } from '../src/sim/session.js';
 
-const SCROLL = 'Parchemin « Ulti shen »';
+const SCROLL = 'Parchemin « Ralliement »';
 const BARB5 = { tree:'barbare', spec:{ barbare:5 } };
 
 /* ---------- compte ---------- */
@@ -205,7 +205,7 @@ test('Inspiration : +10 % de minage pour tous pendant 60 s, recharge à la fin d
   assert.ok(Math.abs(mineT(G, b, IDS.stone) - before / 1.1) < 1e-9);
 });
 
-test('Ulti shen : un allié se bat → téléporté sur sa case, 20 % des PV max du mob (5 % sur un boss)', () => {
+test('Ralliement : un allié se bat → téléporté sur sa case, 20 % des PV max du mob (5 % sur un boss)', () => {
   const G = worldFrom(['', '#@          #', '#'.repeat(50)], { miners:2 }), [a, b] = G.miners;
   a.spells = ['ulti_shen'];
   b.x = 10;

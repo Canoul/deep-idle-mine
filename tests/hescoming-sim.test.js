@@ -230,7 +230,7 @@ test('Bonbonne de zipette : l\'allié proche qui manque d\'oxygène, jamais lui-
   assert.ok(a.spellCd.zipette);
 });
 
-test('Ulti shen : rejoint un allié qui frappe, sans dégâts ; seul, il marche', () => {
+test('Ralliement : rejoint un allié qui frappe, sans dégâts ; seul, il marche', () => {
   const G = newLucifer(1), a = joinLucifer(G, { ...spec(), spells:['ulti_shen'] }), b = joinLucifer(G, { ...spec(), account:'B' });
   b.x = G.contact; a.x = 1; b.status = `Frappe ${HC.bossName}`;
   tickLucifer(G);
