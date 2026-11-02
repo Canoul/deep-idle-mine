@@ -363,7 +363,9 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   area 6+, 2 / 5 / 8 % en areas 6 / 7 / 8+ pris sur le gobelin, **1 × 6 cases**, 200 PV, naît dans la roche à 8-12
   colonnes, avance seulement à l'horizontale sans rien casser ; ses cases sont un **mur** (ni entrée ni minage, `G.flesh`,
   `world.isAir`) ; −10 % de vitesse d'attaque par stack toutes les 2 s à 1,5 case, 9 au plus, 10 s, perdus hors du rayon ;
-  Rotten flesh 1-3, chitine 1-5, 40 XP ; `MOBS.chair`, `src/sim/flesh.js`). PV ×5 à ×10 (k = area où naît le mob),
+  Rotten flesh 1-3, chitine 1-5, 40 XP ; `MOBS.chair`, `src/sim/flesh.js` ; sprite du 03/11, Jules, remise à niveau des
+  sprites 2/4 : `scripts/gen_flesh.py`, grand œil, côtes, gueule verticale à crocs, œil mi-clos, icône = le grand œil ;
+  ancien : bourrelets rouges au hasard). PV ×5 à ×10 (k = area où naît le mob),
   table d'apparition par area, mimics créés en jeu (un minerai devient mimic) et jamais minés.
   **Combat dynamique** (25/10, Geoffrey ; en ligne le 25/10) : portée 0,5 bord à bord (sans diagonale),
   chaque coup du mineur repousse le mob de 0,25 (`src/sim/knock.js`, `COMBAT`), minotaure et mobs / boss des tours
