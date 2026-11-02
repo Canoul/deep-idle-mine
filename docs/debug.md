@@ -6588,6 +6588,46 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   type de couleur 2), store-art, mobile-config : 25/25. ⚠️ Icône Capacitor pas encore vue sur un vrai téléphone (APK et
   TestFlight suivants). `mobile/store/` inchangé (même `icon()`).
 
+## 02/11/2026 — Minotaure : Charge et Rage visibles à l'écran (Jules, branche jules/fix-minotaure-visible)
+- **Signalement** : Geoffrey n'a vu ni la Charge ni la Rage du minotaure en jouant (lieu inconnu : donjon ou Arène).
+- **Enquête** : rien de cassé dans la partie. `tests/minotaur.test.js` 8/8 ; code en ligne identique (config, mobs.js,
+  canvas.js relus sur deepmineidle.fr). Scène du donjon de `tests/dungeon.test.js` avec `minerSpecs` presets
+  barbare/mineur/logisticien (script hors dépôt) : mort en 29 s, 3 préparations, 2 encornés, rage à 20,7 s ; dégâts ×2 :
+  17 s, 1 charge, rage ; ×3 : 12 s, 1 préparation, rage. Arène (presets, 2 seeds) : brun 1 charge, noir enrage à 17 s.
+  Cause : l'affichage. Préparation = 1,5 s de partie, soit 0,75 s à ×2, avec un tremblement de ±1 px
+  (`Math.round(Math.sin(now/30))`) et l'icône « ! » 8 px ; rage = icône feu 8 px seulement. La course (12 cases/s) glisse
+  (`playedPos`) jusqu'à 6 cases, au-delà elle saute (`FLUID.teleport` 0,8 case/tick).
+- **Quoi** : `src/render/minotaur.js` (nouveau) : `minoLook(fx, now)` → `{ shake, aura, label }` (pur), `drawMinoAura`
+  (dégradé radial rouge sous le sprite), `drawMinoLabel` (« CHARGE ! » au-dessus des icônes d'état). `MINO_FX` en config
+  (shake 2 px, période 25 ms, aura 0,35 à 0,75, période 180 ms). `canvas.js` : branche minotaure. Simulation et serveur
+  inchangés. Wiki : une phrase pour chacun, date 02/11/2026.
+- **Tests** ✅ `tests/minotaur-fx.test.js` (nouveau, 4), minotaur, boot-check, view. ✅ Vu en capture (page de test hors
+  dépôt, texture du minotaure sur la pierre : normal, gratte le sol, enragé, les deux). ⚠️ Pas vu dans une vraie partie.
+- ✅ En ligne le 02/11.
+
+## 02/11/2026 — Golems tournés vers leur proie ; « anciens sprites du Golbute » non trouvés (Jules)
+- **Symptôme 1** : les golems ne se tournent pas vers le joueur. Deux causes. Mine : le golem n'avait pas de sens
+  (`o.face` jamais écrit, `mobView` ne l'envoyait pas, `canvas.js` le dessinait toujours vers la droite). Division
+  (Instance II) : `stepGolems` n'écrivait `o.face` qu'en faisant un pas ; né à `face: -1`, un golem au contact (ou
+  bloqué par un voisin) ne se retournait jamais.
+- **Correctif** : `faceTo(o, m)` (`src/sim/golem.js`, même côté que `golemStep` : `sideOf`), appelé dans `updateGolem`
+  (`src/sim/mobs.js`) dès qu'il a une proie qu'il poursuit ou tacle, avant le test de portée ; juste au-dessus ou
+  au-dessous de lui, il garde son sens. `mobView` (`src/shared/view.js`) envoie `face`. `canvas.js` : sprite retourné
+  autour de son centre (sueur comprise) si `face < 0`. `stepGolems` (`src/sim/instance/golbute.js`) : `o.face` vers la
+  proie à chaque tick, avant le contact. Rien dans la simulation ne lit `face` des golems : affichage seulement.
+- **Tests** ✅ tests/golem (+1 : gauche, contact à droite, contact à gauche, envoyé par la vue), golbute (+1 : né à
+  gauche, contact à droite puis à gauche), view, golbute-sprite, mobs, instance-sim, instance-server : 96/96.
+  Simulation 3 × 5 : 0 blocage (elle n'atteint que l'area 3, les golems sont à l'area 5+ : non exercés).
+  ⚠️ Pas vu en partie réelle.
+- **Symptôme 2** : « les anciens sprites du Golbute sont toujours en jeu ». **Non reproduit** : `main` et le site en
+  ligne servent les mêmes `golbute*.png` et `golem.png` (empreintes identiques), tous au style du 30/10 ; le rendu
+  n'utilise que `golbute_body`/`golbute_arm` (+ `_crystal`), `golem` et `golbute_rock`, tous dans `TEXTURES` ; le
+  serveur sert les fichiers en `no-store` (pas de cache navigateur). Aucune autre image du Golbute sur les branches, en
+  local ou en remise. Les icônes d'objets (coffre, jambières, âme, clé II) restent au format 16 × 16 des autres icônes.
+  ✅ Jules (02/11) : les bons sprites sont ceux déjà en jeu (golbute, golbute_crystal, golbute_body/_arm et leurs
+  `_crystal`, golem) ; rien à changer. Sans doute une capture ou une version antérieure au 30/10.
+- ✅ En ligne le 02/11.
+
 ## 02/11/2026 — Jules — Maison de guilde (scène qui évolue avec les dons)
 - **Quoi** : scène purement visuelle dans l'onglet Guilde (carte « Maison de guilde » en tête de la colonne de droite) et
   dans la fiche d'une autre guilde (`peekHTML`). Rien côté serveur : tout est calculé dans le navigateur depuis
@@ -6620,3 +6660,4 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   `LIGHTS`). Tailles : maison 160 × 150, chantier 64 × 48, Armurerie 64 × 88, Trésorerie 56 × 104, Forge 64 × 104 ;
   scène `GUILD.house` 372 × 168, sol 14. `npm run textures` : seuls les 8 PNG de guilde changent. ✅ guild-house et
   guild-ui 26/26 (le test des largeurs PNG / config a suivi) ; les 4 étapes vues dans Chromium avec la CSS du jeu.
+- ✅ En ligne le 02/11 (⚠️ toujours pas vu avec une vraie guilde ni sur téléphone).

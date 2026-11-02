@@ -531,6 +531,11 @@ export const MULE = { capacityPct:2, depositTime:1, pickTime:1, pickBelow:10 };
    coup (s de partie) pour l'afficher (évite de rejouer de vieux coups à la reconnexion). Affichage seulement. */
 export const FX = { splashMs:1200, splashRise:10, splashGame:3 };
 
+/* Minotaure à l'écran (src/render/minotaur.js, 02/11/2026, Jules : Geoffrey ne voyait ni la Charge ni la Rage) : quand il
+   gratte le sol, il tremble de shake pixels (période shakeMs, ms) sous la bulle chargeLabel ; enragé, une aura rouge
+   (auraColor, r,g,b) pulse derrière lui, d'opacité auraMin à auraMax (période auraMs). Affichage seulement. */
+export const MINO_FX = { shake:2, shakeMs:25, chargeLabel:'CHARGE !', chargeColor:'#ff8c1a', auraMin:0.35, auraMax:0.75, auraMs:180, auraColor:'229,40,30' };
+
 /* Lecture en différé (31/10/2026, Geoffrey ; src/shared/view.js) : le navigateur affiche la partie bufferMs en arrière, en
    se calant sur les ticks : un envoi en retard ne se voit pas. catchUp : part de vitesse en plus ou en moins pour revenir à
    ce retard ; catchUpMs : écart (ms) qui donne ce maximum ; resetMs : au-delà de ce retard en plus, la lecture saute

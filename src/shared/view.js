@@ -37,8 +37,8 @@ export function minerView(G, m){
     action: a ? { type: a.type, t: a.t, dur: a.dur, data: { x: d.x, y: d.y, fx: d.fx, fy: d.fy, down: d.down, fall: d.fall, winch: d.winch, cause: d.cause, aim: d.mob ? { x: d.mob.x, y: d.mob.y } : undefined } } : null,   // aim : case du mob visé (flèche de l'arc)
   };
 }
-/* channel : id du mineur sur lequel un occultiste canalise (rayon noir) ; grab : mineur taclé */
-const mobView = (G, o) => ({ id: o.id, type: o.type, x: o.x, y: o.y, kx: o.kx || 0, ky: o.ky || 0, hp: o.hp, maxhp: o.maxhp, h: o.h, revealed: o.revealed, ore: o.ore, name: o.name, hop: o.hop, variant: o.variant,
+/* channel : id du mineur sur lequel un occultiste canalise (rayon noir) ; grab : mineur taclé ; face : sens du golem */
+const mobView = (G, o) => ({ id: o.id, type: o.type, x: o.x, y: o.y, kx: o.kx || 0, ky: o.ky || 0, hp: o.hp, maxhp: o.maxhp, h: o.h, revealed: o.revealed, ore: o.ore, name: o.name, hop: o.hop, variant: o.variant, face: o.face,
   channel: o.channel ? o.channel.target : null, grab: o.grab ?? null, splash: o.splash ?? null, fx: mobEffects(G, o) });   // fx : états (étourdi, provoqué…)   // splash : dégâts de zone reçus
 
 /* ---------- serveur ---------- */
