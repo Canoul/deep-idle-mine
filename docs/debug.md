@@ -6603,3 +6603,4 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   inchangés. Wiki : une phrase pour chacun, date 02/11/2026.
 - **Tests** ✅ `tests/minotaur-fx.test.js` (nouveau, 4), minotaur, boot-check, view. ✅ Vu en capture (page de test hors
   dépôt, texture du minotaure sur la pierre : normal, gratte le sol, enragé, les deux). ⚠️ Pas vu dans une vraie partie.
+- ✅ En ligne le 02/11.

@@ -16,7 +16,7 @@ Modèle d'entrée :
   petites icônes. Maintenant, quand il gratte le sol, il tremble nettement et **« CHARGE ! »** s'affiche au-dessus de
   lui ; enragé, une **aura rouge** pulse autour de lui. Les règles et l'équilibrage ne changent pas.
 - **À suivre** : le faire confirmer par Geoffrey en jeu.
-- **État** : 🧪 sur la branche `jules/fix-minotaure-visible` (pas en ligne)
+- **État** : ✅ en ligne le 02/11
 
 ## 01/11/2026 — Geoffrey — Contrôle iPhone plus solide
 - **Pour le joueur** : rien, c'est un outil de l'équipe.
