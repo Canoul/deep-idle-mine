@@ -20,7 +20,7 @@ export const TABS = [
   { id:'sorts',      label:'Sorts',      icon:'radiance',  ready:true  },   // sorts équipés (déclenchés tout seuls en session)
   { id:'historique', label:'Historique', icon:'hourglass', ready:true  },   // sessions passées : seed et butin
   { id:'classement', label:'Classement', icon:'trophy',    ready:true, noBuilding:true },   // classements des joueurs ; pas de bâtiment dans le Carreau pour l'instant
-  { id:'guilde',     label:'Guilde',     icon:'shield',    ready:true, noBuilding:true },   // sa guilde, recherche, classement ; pas de bâtiment dans le Carreau pour l'instant
+  { id:'guilde',     label:'Guilde',     icon:'shield',    ready:true  },   // sa guilde, recherche, classement ; la maison de guilde dans le Carreau (02/11)
   { id:'social',     label:'Social',     icon:'group',     ready:true  },   // amis : présence, inviter, rejoindre
 ];
 

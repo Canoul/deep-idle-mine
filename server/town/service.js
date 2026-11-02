@@ -28,8 +28,9 @@ export class TownError extends Error {
 /* accounts : { getAccount(id), findAccountByName?(clé) } ;
    game : { playersInSession(), lookFor(id), aurasFor(id), levelFor(id), skillTreeOf(id), gsFor(id), leaderboardData() } ;
    party : { groupOf(id) → { code, size, max } | null, searching(id) } ;
-   recentChat(ms) : messages du chat global de moins de ms ([{ account, text, at }], du plus ancien au plus récent) */
-export function createTownService({ accounts, game, party = null, recentChat = async () => [], guildNameOf = async () => null, blockedOf = async () => new Set(), clock = Date.now, config = TOWN_SERVER }){
+   recentChat(ms) : messages du chat global de moins de ms ([{ account, text, at }], du plus ancien au plus récent) ;
+   guildHouseOf(id) : maison de sa guilde (server/guild/service.js, houseOf) */
+export function createTownService({ accounts, game, party = null, recentChat = async () => [], guildNameOf = async () => null, guildHouseOf = async () => null, blockedOf = async () => new Set(), clock = Date.now, config = TOWN_SERVER }){
   const here = new Map();       // compte → { spot, x, at }
   const faces = new Map();      // compte → { name, look, auras, level, tree, gs, at }
   const emotes = new Map();     // compte → { id, at }
@@ -77,7 +78,8 @@ export function createTownService({ accounts, game, party = null, recentChat = a
 
   return {
     /* me : compte connecté ; body : { spot, x? }. Renvoie { players: [{ id, name, spot, x, look, auras, level, tree,
-       gs, say, emote, group, lfg }], say, group, statue } (say / group : les miens). */
+       gs, say, emote, group, lfg }], say, group, guild, house, statue } (say / group / guild : les miens ; house : la maison
+       de ma guilde dans le Carreau, { stage, annexes } ou null, 02/11/2026). */
     async ping(me, body){
       const p = cleanTownPing(body);
       if(!p) throw new TownError('bad_request', 400, 'Place invalide.');
@@ -102,7 +104,7 @@ export function createTownService({ accounts, game, party = null, recentChat = a
       /* repères des groupes disparus : oubliés (la Map ne grossit pas) */
       if(party?.groupOf){ const live = new Set([...here.keys()].map(id => party.groupOf(id)?.code).filter(Boolean));
         for(const code of tags.keys()) if(!live.has(code)) tags.delete(code); }
-      return { players, say: said.get(me.id) ?? null, group: groupOf(me.id), guild: await guildNameOf(me.id), statue: await statueOf(now) };
+      return { players, say: said.get(me.id) ?? null, group: groupOf(me.id), guild: await guildNameOf(me.id), house: await guildHouseOf(me.id), statue: await statueOf(now) };
     },
     /* émote : id de TOWN.emotes ; trop tôt après la précédente : 429 */
     emote(me, id){

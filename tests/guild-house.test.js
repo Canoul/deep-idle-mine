@@ -89,3 +89,31 @@ test('la scène est dans l\'onglet de sa guilde et dans la fiche d\'une autre gu
   assert.match(mineHTML(g), /ghouse/);
   assert.match(peekHTML({ id:'g2', name:'Y', buildings:empty(), log:{ rows:[], next:0 } }), /ghouse/);
 });
+
+/* Carreau (02/11/2026) : la maison de guilde est un bâtiment de la ville */
+test('Carreau : bâtiment de l\'onglet Guilde, aussi large que la scène, porte devant le portail', async () => {
+  const { buildingOf } = await import('../src/shared/town.js');
+  const { TEXTURES } = await import('../src/config.js');
+  const b = buildingOf('guilde'), H = GUILD.house;
+  assert.equal(b.kind, 'guild');
+  assert.equal(b.w * 16, H.w);
+  const portal = (b.door - b.x) * 16 - H.hall.x;                 // portail : x 78 à 102 du sprite de la maison
+  assert.ok(portal >= 78 && portal <= 102, `porte à ${portal} px`);
+  const texs = [...H.stages.map(s => s.tex), H.site.tex, H.lot.tex, ...Object.values(H.annexes).map(a => a.tex)];
+  for(const t of texs) assert.ok(TEXTURES.includes(t), `${t} absent de TEXTURES`);
+});
+
+test('Carreau : halos et fumée dans leur sprite, terrain vide à sa largeur', () => {
+  const H = GUILD.house, size = tex => { const d = readFileSync(new URL(`../textures/${tex}.png`, import.meta.url)); return { w:d.readUInt32BE(16), h:d.readUInt32BE(20) }; };
+  const all = [...H.stages, ...Object.values(H.annexes)];
+  for(const p of all){
+    const s = size(p.tex);
+    for(const [x, y, r, kind] of p.glows ?? []){
+      assert.ok(x >= 0 && x < s.w && y >= 0 && y < s.h && r > 0, `${p.tex} : halo hors du sprite`);
+      assert.ok(kind === undefined || kind === 'red');
+    }
+    if(p.smoke) assert.ok(p.smoke[0] >= 0 && p.smoke[0] < s.w && p.smoke[1] >= 0 && p.smoke[1] < s.h);
+  }
+  assert.equal(size(H.lot.tex).w, H.lot.w);
+  assert.ok(size(H.lot.tex).h <= H.h - H.ground);
+});

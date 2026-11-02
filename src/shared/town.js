@@ -4,10 +4,11 @@
    le premier et après le dernier. Coordonnées en cases ; x d'un joueur = milieu de son corps. */
 import { TOWN } from '../config.js';
 
-/* bâtiments avec leur place : { …b, x (bord gauche), door (milieu de la porte) } ; width : largeur de la ville */
+/* bâtiments avec leur place : { …b, x (bord gauche), door (milieu de la porte : b.doorAt cases après le bord gauche,
+   sinon le milieu) } ; width : largeur de la ville */
 export function townLayout(cfg = TOWN){
   let x = cfg.margin;
-  const buildings = cfg.buildings.map(b => { const o = { ...b, x, door: x + b.w / 2 }; x += b.w + cfg.gap; return o; });
+  const buildings = cfg.buildings.map(b => { const o = { ...b, x, door: x + (b.doorAt ?? b.w / 2) }; x += b.w + cfg.gap; return o; });
   return { buildings, width: x - cfg.gap + cfg.margin };
 }
 const LAYOUT = townLayout();

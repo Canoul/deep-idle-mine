@@ -55,6 +55,16 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 02/11/2026 — Jules — La maison de guilde dans le Carreau
+- **Pour le joueur** : la maison de guilde devient un vrai bâtiment du Carreau, entre l'Armurerie et la Taverne, comme
+  le Concasseur ou la Fonderie. Chacun y voit **la maison de sa guilde**, au stade où elle en est : tous les membres voient
+  exactement la même, avec le nom de la guilde au-dessus, et elle avance dans les secondes qui suivent un don ou une
+  construction. Vitraux et braseros rougeoient, la forge fume. Sans guilde : un terrain vide avec un panneau. Entrer
+  dans le bâtiment ouvre l'onglet Guilde, qui garde aussi sa scène (seule vue dans l'appli mobile, qui n'a pas de Carreau).
+- **Décisions** : chacun voit sa propre maison ; les joueurs d'autres guildes qui ont l'onglet Guilde ouvert se tiennent
+  devant la mienne (chez eux, c'est la leur). Le domaine fait 23 cases de large : c'est le plus grand bâtiment de la ville.
+- **État** : 🧪 sur la branche `jules/maison-guilde-carreau` (pas en ligne)
+
 ## 02/11/2026 — Jules — Maison de guilde qui se construit avec les dons
 - **Pour le joueur** : en haut à droite de l'onglet de sa guilde (et dans la fiche « Voir » des autres guildes), une
   scène dessinée : la **maison de guilde** au centre, en 4 étapes (Fondations → Les murs montent → Charpente et toiture

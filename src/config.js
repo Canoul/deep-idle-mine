@@ -796,6 +796,7 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'lamp_incandescent','pickaxe_steel','sword_steel','helmet_steel','chest_steel','legs_steel','boots_steel','chest_balance',
   'gloves_tactical','gloves_worker','cape_naingui','straps_goblin','hood_dark','cloud_magic','belt_giant','dark_cloth','gas_vesicle','slippery_stone','dungeon_brick','minotaur','minotaur_black','moon_crystal','orb','orb_superior','pick_goblin','kilt_dark','hat_naab','sword_cardboard','key_instance_1','key_instance_2','angel_feather','angel_feathers',
   'guild_armory','guild_treasury','guild_forge',
+  'guild_hall_1','guild_hall_2','guild_hall_3','guild_hall_4','guild_site','guild_wing_armory','guild_wing_treasury','guild_wing_forge','guild_lot',
   'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon','giant_block','lucifer','lucifer_portal','giant_fountain','giant_torch','instance_spawner','instance_cage','goblin_king','golbute','golbute_crystal','golbute_body','golbute_body_crystal','golbute_arm','golbute_arm_crystal','golbute_rock','chest_golbute',
   'brick_angel','brick_angel_hard','brick_demon','brick_demon_hard','boss_angel','boss_demon','seraph','imp',
   'crown_goblin_king','mace_goblin_king','cape_goblin_royal','furnace_gold','recipe_chitin','chest_goblin_king','nugget_silver','ingot_silver','shrine_abundance',
@@ -1848,6 +1849,11 @@ export const TOWN = {
     { tab:'sorts',        name:'Tour du mage',         kind:'house', w:4, h:11, sprite:'town_mage_tower',
       glows:[[33, 94, 18, 'magic'], [31, 122, 18, 'magic']] },
     { tab:'stuff',        name:'Armurerie',            kind:'house', w:6, h:6,  sprite:'town_armory', smoke:[77, 0], glows:[[65, 86, 34]] },
+    /* maison de guilde (02/11/2026, Jules) : chaque joueur y voit celle de SA guilde, à l'étape où elle en est (GUILD.house,
+       la même pour tous les membres) ; sans guilde, un terrain vide. kind 'guild' : dessinée pièce par pièce
+       (src/render/town.js), sans sprite à elle. doorAt : porte à doorAt cases de son bord gauche (le portail de la
+       maison, pas le milieu du domaine ; sinon la porte est au milieu) */
+    { tab:'guilde',       name:'Maison de guilde',     kind:'guild', w:23, h:10, doorAt:10 },
     { tab:'social',       name:'Taverne',              kind:'house', w:7, h:8,  sprite:'town_tavern',  smoke:[89, 0],
       glows:[[20, 57, 14], [57, 55, 14], [92, 55, 14], [86, 103, 16], [28, 103, 16]] },
     { tab:'lobby',        name:'Place du Carreau',     kind:'place', w:11, h:3 },
@@ -1900,17 +1906,21 @@ export const GUILD = { maxMembers:30, xpPct:1, nameMin:3, nameMax:24, maxInvites
      w = largeur de son PNG (le chantier garde la sienne, même sur la place plus étroite de la Trésorerie). */
   house:{
     stages:[
-      { at:0,    name:'Fondations',          tex:'guild_hall_1' },
-      { at:0.75, name:'Les murs montent',    tex:'guild_hall_2' },
-      { at:1.75, name:'Charpente et toiture', tex:'guild_hall_3' },
-      { at:3,    name:'Maison achevée',      tex:'guild_hall_4' },
+      { at:0,    name:'Fondations',           tex:'guild_hall_1', glows:[[87, 128, 12]] },
+      { at:0.75, name:'Les murs montent',     tex:'guild_hall_2', glows:[[113, 128, 12]] },
+      { at:1.75, name:'Charpente et toiture', tex:'guild_hall_3', glows:[[113, 128, 12], [23, 88, 8], [23, 118, 8]] },
+      { at:3,    name:'Maison achevée',       tex:'guild_hall_4',
+        glows:[[90, 106, 28, 'red'], [23, 51, 12, 'red'], [68, 121, 14, 'red'], [112, 121, 14, 'red'], [23, 88, 8], [23, 118, 8], [148, 100, 8]] },
     ],
-    w:372, h:168, ground:14, hall:{ x:72, w:160 },
+    /* scène en pixels (onglet Guilde ; dans le Carreau, le domaine fait w / 16 cases) ; glows : halos du Carreau
+       [x, y, rayon, 'red' (rouge) ou rien (orange)] en pixels du sprite ; smoke : haut de la cheminée. lot : terrain
+       d'un joueur sans guilde (Carreau seulement), posé à la place de la maison */
+    w:368, h:168, ground:14, hall:{ x:72, w:160 }, lot:{ tex:'guild_lot', w:80 },
     site:{ tex:'guild_site', w:64 },
     annexes:{
-      armurerie: { x:4,   w:64, tex:'guild_wing_armory' },
-      tresorerie:{ x:236, w:56, tex:'guild_wing_treasury' },
-      forge:     { x:304, w:64, tex:'guild_wing_forge' },
+      armurerie: { x:4,   w:64, tex:'guild_wing_armory', glows:[[32, 84, 8, 'red'], [12, 44, 6, 'red'], [51, 44, 6, 'red']] },
+      tresorerie:{ x:236, w:56, tex:'guild_wing_treasury', glows:[[28, 59, 14], [28, 6, 8]] },
+      forge:     { x:304, w:64, tex:'guild_wing_forge', glows:[[28, 88, 26]], smoke:[47, 2] },
     },
   } };
 
