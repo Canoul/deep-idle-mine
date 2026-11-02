@@ -81,12 +81,25 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 01/11/2026 — Jules — Fiches des stores : nouvelle icône et bannière
+- **Pour le joueur** : l'appli change d'icône : **une lampe de mine allumée** remplace la pioche, sur Android et sur
+  iPhone, et l'écran de démarrage la montre aussi (sur le téléphone après avoir réinstallé l'appli). Les images des futures fiches Google Play et App Store sont prêtes, dans `mobile/store/` :
+  cette icône en 512 × 512 pour Google et en 1024 × 1024 sans transparence pour Apple, et la bannière Google
+  (1024 × 500) : le titre en lettres pixel et une mine en coupe avec une session à 3.
+- **Décisions** : icône et bannière validées par Jules. Les captures d'écran attendent la version tactile ; scènes
+  choisies : une session à 3, le Bloc géant, une tour, le Carreau. Ordre, légendes et tailles dans `docs/fiches-stores.md`.
+- **Décisions (02/11)** : appli **iPhone seule**, donc pas de captures iPad. L'appli iPhone installée par TestFlight
+  marche sur l'iPhone de Jules. Interface tactile : plus tard (Jules ou Geoffrey) ; textes légaux : Geoffrey.
+- **À suivre** : valider les légendes ; une 5e capture « Stuff / Craft » pour montrer la progression ?
+- **État** : ✅ en ligne le 02/11
+
 ## 01/11/2026 — Geoffrey — Modération pour Google Play et l'App Store
 - **Pour le joueur** : un bouton ⋮ sur chaque message et sur chaque joueur (Online, Classements, amis, fiche du Carreau) permet de **signaler** ou de **bloquer**. Un joueur bloqué : plus de messages, plus de bulle, plus d'invitations ni de demandes d'ami, et il n'est pas prévenu ; la liste « Joueurs bloqués » est dans Social. À la création d'un compte, invité compris, il faut cocher les conditions d'utilisation ; les comptes existants les acceptent à leur premier message. Le filtre connaît maintenant les termes sexuels et haineux.
 - **Pour l'équipe** : cinq nouveaux outils sur le VPS, `reports.js`, `delete-message.js`, `mute.js`, `ban.js`, `rename.js`, et un journal de ce qui a été fait (`reports.js --log`). Chaque signalement arrive aussi sur un salon Discord privé.
 - **Décisions** : on garde les avertissements et le ban auto de 24 h ; `ban.js` est une sanction à part (connexion refusée). Les jurons d'humeur (putain, merde, fuck) restent permis. Un bloqué n'est pas chassé du Carreau, seule sa bulle disparaît.
 - **À suivre** : les pages https://deepmineidle.fr/conditions et /confidentialite **n'existent pas encore** (404) ; il faut les publier avant la soumission aux stores. Créer le salon privé et régler `DIM_DISCORD_MOD_WEBHOOK` sur le VPS.
 - **État** : ✅ en ligne le 01/11
+
 ## 01/11/2026 — Geoffrey — Prison : des runs ne donnaient aucune XP
 - **Pour le joueur** : depuis le 31/10, environ 4 runs de prison sur 10 ne rapportaient aucune XP à cause d'un arrondi. Chaque run donne maintenant son XP. L'XP perdue avant la correction n'est pas rendue.
 - **État** : ✅ en ligne le 01/11

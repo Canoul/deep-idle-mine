@@ -6537,7 +6537,8 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Signature** : `xcodebuild archive` avec `CODE_SIGNING_ALLOWED=NO`, puis `-exportArchive -allowProvisioningUpdates` avec la clé (`signingStyle: automatic`, cloud signing) : une archive signée demanderait un certificat de développement et un appareil enregistré, absents du Mac de GitHub. Il faut le rôle **Admin**. Envoi : `altool --upload-app`, pour garder l'IPA. `macos-26`, pas `macos-latest` : SDK d'iOS 26 exigé par Apple.
 - **Changements** : iPhone seul (`TARGETED_DEVICE_FAMILY = 1`), `PrivacyInfo.xcprivacy` (UserID, GameplayContent, OtherUserContent, UserDefaults CA92.1, sans suivi), `MainViewController` (`bounces = false`, pincement coupé ; pas de `scrollEnabled: false` : le jeu défile sur la page), `@capacitor/keyboard` (`resize: native`), `#gchatInput` à 16 px, numéro de build = exécution × 100 + essai. `backButton` n'est jamais émis sur iOS, rien n'en dépend. Notifications locales : pas d'entitlement.
 - **Tests** ✅ tests/mobile-config, app-mode, app-device, app-native, app-origin. ✅ GitHub Actions, commit 628a1f5, run 41339218128 : compilation Release, bibliothèques, manifeste, icône sans transparence ; simulateur : appli vivante, **84 953 pixels du bouton Se connecter** sur la capture, donc jeu démarré et serveur joint depuis `capacitor://localhost`. La console ne donne que 2 lignes : « 0 erreur JavaScript » ne prouve rien seul, l'écran si. ✅ Android vert avec le plugin clavier (86f631e).
-- **Pas vérifié** ⚠️ : tout ce qui demande la clé (cloud signing, `altool`, TestFlight) : aucun secret à ce jour. Vrai iPhone : encoche, clavier, Safari, notifications, stockage du jeton.
+- **Vérifié le 02/11** ✅ (ajout de Jules) : TestFlight : run 41350722773 (main, 01/11, `testflight`, signature dans le cloud par la clé d'API de Geoffrey) vert ; Jules invité sur App Store Connect et TestFlight, appli installée et essayée sur son iPhone le 02/11.
+- **Pas vérifié** ⚠️ (01/11, avant l'essai ci-dessus) : tout ce qui demande la clé (cloud signing, `altool`, TestFlight) : aucun secret à ce jour. Vrai iPhone : encoche, clavier, Safari, notifications, stockage du jeton.
 - **Point fragile** : un titre d'étape YAML ne doit pas contenir `: ` (workflow invalide, aucune tâche lancée, 86f631e).
 
 ## 01/11/2026 — Contrôle iPhone : échec dans le simulateur, capture trop tôt (Geoffrey)
@@ -6546,3 +6547,43 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Cause, par les mesures** : run 41343755804 : à 2 s écran de démarrage (0 orange, 41 teintes), bouton visible à **55 s**, la commande de capture elle-même mettant une cinquantaine de secondes à revenir. L'ancien contrôle photographiait à 40 s fixes : il réussissait ou échouait selon la charge du Mac de GitHub. Serveur à 0,57 s : pas en cause. C'est un premier lancement à froid du simulateur, ça ne mesure pas un vrai iPhone.
 - **Correctif** : `.github/workflows/ios.yml` attend le bouton, 120 s au plus, une capture toutes les 5 s, toutes gardées dans l'artefact ; seuil inchangé (2 000 pixels), `mobile/scripts/ios-screen.cjs` ; annotations avec orange / teintes / clarté à chaque capture, temps de réponse du serveur.
 - **Tests** ✅ tests/mobile-config.test.js. ✅ Exécutions `controle` par push sur la branche (le déclenchement à la main demande une authentification) : 41343755804 (bouton à 55 s) et 41344246150 (bouton à 31 s), verts. L'écart autour de 40 s explique les réussites et les échecs de l'ancien contrôle.
+
+## 01/11/2026 — Visuels des fiches des stores (Jules) — branche `jules/visuels-stores`
+- **Quoi** : `scripts/gen_store_art.py` (`npm run store:art`, Python + Pillow) écrit `mobile/store/` :
+  `icon-google-512.png` (RGBA opaque), `icon-apple-1024.png` (RGB, sans alpha), `banner-google-1024x500.png` (RGB).
+  Les icônes réutilisent `centered()` de `scripts/gen_app_icon.py` (même pioche que l'icône de l'appli). La bannière est
+  composée à l'échelle de l'art (256 × 125, cases de 16) puis agrandie ×4 au plus proche voisin : mine écrite en texte
+  (`MINE`), rendu repris de `src/render/canvas.js` (assombrissement 0,72 × (1 − lumière) par case, cases jamais vues en
+  `#060608`, halo des torches en 4 paliers au lieu du dégradé), mineurs de `src/skins.js` (pioche 13 × 13 tournée autour
+  du pivot (11, 10) comme `miner-sprite.js`), ciel en bandes de `TOWN.sky`, titre en glyphes pixel 7 de haut (`GLYPHS`).
+  Aucun hasard : relancer le script redonne les mêmes fichiers.
+- **Workflow** : `android-apk.yml` ignore `mobile/store/**` (ajouté en dernier dans `paths`, après `mobile/**`).
+  ⚠️ `ios-ipa.yml` (branche `jules/appli-ios`) doit l'ignorer aussi : le test ci-dessous échoue sinon après la fusion.
+- **Tests** ✅ tests/store-art.test.js (tailles, type de couleur 2 = RVB sans alpha et pas de bloc tRNS pour Apple et la
+  bannière, exclusion dans chaque workflow qui suit `mobile/**`) ; tests/mobile-icon.test.js, tests/mobile-config.test.js
+  inchangés et verts.
+- **Reste à faire** : captures d'écran (plan dans `docs/fiches-stores.md`) quand l'interface tactile existera. iPad :
+  tranché le 02/11, iPhone seul (`TARGETED_DEVICE_FAMILY = 1`), pas de captures iPad.
+- **Point fragile** : si l'icône de l'appli change (`gen_app_icon.py`), relancer aussi `npm run store:art` : les stores
+  veulent la même icône sur la fiche et sur le téléphone.
+- **Nouvelle icône (même jour)** : lampe de mine choisie par Jules, image Gemini 640 × 640 (icône dans un carré arrondi de
+  384 px, x et y de 128 à 511). Grille mesurée sur les bords (profil des écarts de couleur) : 60 cases de 6,4 px, phase 0.
+  Une couleur par case = médiane des pixels du centre de la case (les bords sont flous) ; pas de réduction de palette
+  (à 32 couleurs, la lueur orange et les paillettes disparaissaient). Coins arrondis : les cases couleur du fond extérieur
+  prennent la couleur de la première case de roche vers le centre. Bord de 2 cases recopié (la chaîne monte jusqu'en
+  haut) → `mobile/assets/icon-art.png`, 64 × 64, ×16 = 1024. `gen_app_icon.py` lit cette source : agrandissement entier
+  au plus proche voisin puis réduction BOX si la taille n'est pas un multiple de 64 ; avant-plan adaptatif = icône
+  entière sur les 72 px visibles sur 108, fond = couleur médiane du bord (`#100c0b`) ; écrit l'icône iOS seulement si
+  le projet iOS est là. ✅ tests/mobile-icon.test.js (source 64 × 64, fond sombre), tests/store-art.test.js ; vu en
+  aperçu à toutes les tailles Android, en rond et en carré. ✅ 02/11 : lampe vue par Jules sur son téléphone (APK de la
+  branche, avant la fusion ci-dessous).
+- **Fusion avec main (02/11)** : entre-temps `main` fabrique les icônes avec Capacitor Assets (`cd mobile && npm run
+  assets`, Geoffrey : icônes Android avec `ldpi` et fond en PNG, icône iPhone, écrans de démarrage) depuis
+  `mobile/assets/logo.png` (la pioche, provisoire). Gardé : son outil, seul à écrire `mobile/android` et `mobile/ios`.
+  `gen_app_icon.py` n'écrit plus que `logo.png` (lampe ×16 au plus proche voisin, RVB) et garde `icon(size)` pour
+  `gen_store_art.py`. `mobile/assets/icon-1024.png` retiré (plus personne ne le lit), `values/ic_launcher_background.xml`
+  remis comme sur main (`#191310`, l'icône adaptative lit `@mipmap/ic_launcher_background`). Rendu vérifié en aperçu :
+  icône classique (lampe dans une petite marge sombre), adaptative avec l'encart de 16,7 % (lampe entière dans le
+  rond), iPhone 1024 RVB plein cadre, écrans de démarrage (petite lampe au centre). ✅ tests/mobile-icon (logo 1024,
+  type de couleur 2), store-art, mobile-config : 25/25. ⚠️ Icône Capacitor pas encore vue sur un vrai téléphone (APK et
+  TestFlight suivants). `mobile/store/` inchangé (même `icon()`).
