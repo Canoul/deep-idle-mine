@@ -6587,3 +6587,20 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   rond), iPhone 1024 RVB plein cadre, écrans de démarrage (petite lampe au centre). ✅ tests/mobile-icon (logo 1024,
   type de couleur 2), store-art, mobile-config : 25/25. ⚠️ Icône Capacitor pas encore vue sur un vrai téléphone (APK et
   TestFlight suivants). `mobile/store/` inchangé (même `icon()`).
+
+## 02/11/2026 — Minotaure : Charge et Rage visibles à l'écran (Jules, branche jules/fix-minotaure-visible)
+- **Signalement** : Geoffrey n'a vu ni la Charge ni la Rage du minotaure en jouant (lieu inconnu : donjon ou Arène).
+- **Enquête** : rien de cassé dans la partie. `tests/minotaur.test.js` 8/8 ; code en ligne identique (config, mobs.js,
+  canvas.js relus sur deepmineidle.fr). Scène du donjon de `tests/dungeon.test.js` avec `minerSpecs` presets
+  barbare/mineur/logisticien (script hors dépôt) : mort en 29 s, 3 préparations, 2 encornés, rage à 20,7 s ; dégâts ×2 :
+  17 s, 1 charge, rage ; ×3 : 12 s, 1 préparation, rage. Arène (presets, 2 seeds) : brun 1 charge, noir enrage à 17 s.
+  Cause : l'affichage. Préparation = 1,5 s de partie, soit 0,75 s à ×2, avec un tremblement de ±1 px
+  (`Math.round(Math.sin(now/30))`) et l'icône « ! » 8 px ; rage = icône feu 8 px seulement. La course (12 cases/s) glisse
+  (`playedPos`) jusqu'à 6 cases, au-delà elle saute (`FLUID.teleport` 0,8 case/tick).
+- **Quoi** : `src/render/minotaur.js` (nouveau) : `minoLook(fx, now)` → `{ shake, aura, label }` (pur), `drawMinoAura`
+  (dégradé radial rouge sous le sprite), `drawMinoLabel` (« CHARGE ! » au-dessus des icônes d'état). `MINO_FX` en config
+  (shake 2 px, période 25 ms, aura 0,35 à 0,75, période 180 ms). `canvas.js` : branche minotaure. Simulation et serveur
+  inchangés. Wiki : une phrase pour chacun, date 02/11/2026.
+- **Tests** ✅ `tests/minotaur-fx.test.js` (nouveau, 4), minotaur, boot-check, view. ✅ Vu en capture (page de test hors
+  dépôt, texture du minotaure sur la pierre : normal, gratte le sol, enragé, les deux). ⚠️ Pas vu dans une vraie partie.
+- ✅ En ligne le 02/11.
