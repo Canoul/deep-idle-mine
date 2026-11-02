@@ -27,5 +27,11 @@ body.app{touch-action:pan-x pan-y;-webkit-tap-highlight-color:transparent}
 /* pas de connexion (src/app/device.js) : par-dessus tout, jamais de page blanche */
 #appOffline{position:fixed;inset:0;z-index:9000;display:flex;align-items:center;justify-content:center;padding:24px;background:#191310;color:#f0e0c8;font:20px/1.4 'VT323',monospace;text-align:center}
 #appOffline[hidden]{display:none}
+/* mises à jour à chaud (src/app/updater.js) : « Mise à jour du jeu… », ou « Mets à jour l'appli » (block : rien derrière) */
+#appUpdate{position:fixed;inset:0;z-index:9500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:24px;background:rgba(25,19,16,.92);color:#f0e0c8;font:20px/1.4 'VT323',monospace;text-align:center}
+#appUpdate.block{background:#191310}
+#appUpdate[hidden]{display:none}
+#appUpdate p{margin:0}
+#appUpdate button{margin-top:16px;padding:8px 20px;font:inherit;color:#1a0f08;background:#ff7a2e;border:0;border-radius:4px}
 /* iPhone : un champ sous 16 px fait zoomer Safari quand on le touche */
 body.app #gchatInput{font-size:16px}

@@ -31,5 +31,7 @@ export function bootApp({ doc, win }){
   }
   /* téléphone seulement : bouton retour, liens, écran « Pas de connexion ». Prêt avant le premier appel au serveur */
   if(status !== 'ok') return { status, app };
-  return { status, app, native: import('./device.js').then(m => m.startNative({ doc, win })).catch(e => { console.warn(e); return null; }) };
+  return { status, app, native: import('./device.js').then(m => m.startNative({ doc, win })).catch(e => { console.warn(e); return null; }),
+    /* mises à jour à chaud (02/11/2026) : dernière version du jeu avant l'écran de connexion (src/app/updater.js) */
+    update: win.DIM_APP ? import('./updater.js').then(m => m.startUpdater({ doc, win })).catch(e => { console.warn(e); }) : null };
 }

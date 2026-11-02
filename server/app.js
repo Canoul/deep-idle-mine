@@ -21,17 +21,19 @@ import { guildRoutes } from './guild/routes.js';
 import { giantRoutes } from './giant/routes.js';
 import { townRoutes } from './town/routes.js';
 import { adminRoutes } from './admin/routes.js';
+import { appUpdateRoutes, serveBundleFile } from './app-update/routes.js';
 
 /* game : service des sessions de jeu (server/game/service.js) ; sans lui, seules les routes de comptes existent.
    party : service des groupes (server/party/service.js) ; il prend en charge « Lancer la session ».
    instant : inscriptions à la mine instantanée (server/instant/service.js) ; social : amis (server/social/service.js) ;
-   giant : Bloc géant (server/giant/service.js) ; hescoming : He's coming, même service ; town : le Carreau, ville du spawn (server/town/service.js). */
-export function createApp({ store, root, config = SERVER, service, game, party, instant, social, guild, giant, hescoming, town, moderation, reports, eraser } = {}){
+   giant : Bloc géant (server/giant/service.js) ; hescoming : He's coming, même service ; town : le Carreau, ville du spawn (server/town/service.js).
+   appUpdate : paquet du jeu publié aux applis mobiles (server/app-update/routes.js, mises à jour à chaud). */
+export function createApp({ store, root, config = SERVER, service, game, party, instant, social, guild, giant, hescoming, town, moderation, reports, eraser, appUpdate } = {}){
   const accounts = service ?? createAccountService({ store });
   /* les futures routes (sauvegarde…) s'ajoutent ici, chacune dans son module */
   const routes = { ...accountRoutes(accounts, { onRename: (id, name) => party?.rename(id, name), suspendedText: async id => moderation?.suspendedText(id) ?? null, eraser }), ...(game ? gameRoutes(game) : {}), ...(party ? partyRoutes(party) : {}),
                    ...(instant ? instantRoutes(instant) : {}), ...(social ? socialRoutes(social) : {}), ...(guild ? guildRoutes(guild) : {}), ...(giant ? giantRoutes(giant) : {}), ...(hescoming ? giantRoutes(hescoming, '/api/hescoming') : {}),
-                   ...(town ? townRoutes(town) : {}), ...(reports ? reportRoutes(reports) : {}),
+                   ...(town ? townRoutes(town) : {}), ...(reports ? reportRoutes(reports) : {}), ...(appUpdate ? appUpdateRoutes(appUpdate) : {}),
                    /* administration : depuis le serveur lui-même, avec la clé DIM_ADMIN_TOKEN (server/admin/routes.js) */
                    ...(game && store ? adminRoutes({ accounts: store, service: accounts, game, party, moderation, social, reports, eraser, token: config.adminToken }) : {}),
                    /* modération du chat (30/10) : ses avertissements et son ban, vus par le joueur */
@@ -120,6 +122,12 @@ export function createApp({ store, root, config = SERVER, service, game, party, 
           }
         }
         return await handleApi(req, res, pathname);
+      }
+      /* fichiers du paquet de l'appli : CORS pour ses origines, comme l'API */
+      if(appUpdate && pathname.startsWith('/app-bundle/')){
+        res.setHeader('Vary', 'Origin');
+        if(appOrigin(req, pathname)) res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
+        return serveBundleFile(req, res, appUpdate, pathname);
       }
       return await serveStatic(req, res, root, config.publicPaths, config.pages);
     } catch(e){

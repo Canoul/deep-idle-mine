@@ -8,6 +8,8 @@ import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 import { SERVER } from '../server/config.js';
 import { APP_UA } from '../src/app/mode.js';
+import { APP_UPDATE } from '../src/config.js';
+import { cmpVersion } from '../src/app/update.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = f => fs.readFileSync(path.join(ROOT, f), 'utf8');
@@ -27,17 +29,18 @@ test('appli : la coque ajoute la marque que src/app/mode.js reconnaît', () => {
 });
 
 test('appli : la page copiée dans l\'appli vise le serveur en https', () => {
-  assert.match(read('mobile/scripts/copy-web.js'), /API_URL = 'https:\/\/deepmineidle\.fr'/);
+  assert.match(read('server/app-update/bundle.js'), /API_URL = 'https:\/\/deepmineidle\.fr'/);
 });
 
 test('appli : la racine garde pg comme seule dépendance', () => {
   assert.deepEqual(Object.keys(json('package.json').dependencies), ['pg']);
 });
 
-test('appli : mobile/ ne dépend que de Capacitor 8 et de ses plugins officiels', () => {
+test('appli : mobile/ ne dépend que de Capacitor 8 et de ses plugins officiels, ceux de la coque déclarée (APP_UPDATE.nativePlugins)', () => {
   const p = json('mobile/package.json');
   for(const [name, v] of Object.entries(p.dependencies ?? {})){
-    assert.ok(['@capacitor/core', '@capacitor/android', '@capacitor/local-notifications', '@capacitor/app', '@capacitor/app-launcher', '@capacitor/preferences', '@capacitor/ios', '@capacitor/keyboard'].includes(name), name);
+    assert.ok(['@capacitor/core', '@capacitor/android', '@capacitor/ios', ...APP_UPDATE.nativePlugins].includes(name),
+      `nouveau plugin ${name} : nouvelle version des stores, l'ajouter à APP_UPDATE.nativePlugins ET monter APP_UPDATE.minNative`);
     assert.match(v, /^\^8\./, name);
   }
   for(const [name, v] of Object.entries(p.devDependencies ?? {})){
@@ -60,12 +63,20 @@ const plistArray = key => [...(plist.match(new RegExp(`<key>${key}</key>\\s*<arr
   .matchAll(/<string>([^<]*)<\/string>/g)].map(m => m[1]);
 const plistValue = key => plist.match(new RegExp(`<key>${key}</key>\\s*<(?:string>([^<]*)</string|(true|false)/)>`))?.slice(1).find(v => v !== undefined);
 
-test('appli iOS : même identité que capacitor.config.json, version 1.0.0', () => {
+test('appli iOS : même identité que capacitor.config.json, même version qu\'Android', () => {
   const c = json('mobile/capacitor.config.json');
   const ids = [...pbx.matchAll(/PRODUCT_BUNDLE_IDENTIFIER = ([^;]+);/g)].map(m => m[1]);
   assert.deepEqual(ids, [c.appId, c.appId]);
   assert.equal(plistValue('CFBundleDisplayName'), c.appName);
-  assert.deepEqual([...new Set([...pbx.matchAll(/MARKETING_VERSION = ([^;]+);/g)].map(m => m[1]))], ['1.0.0']);
+  assert.deepEqual([...new Set([...pbx.matchAll(/MARKETING_VERSION = ([^;]+);/g)].map(m => m[1]))], [read('mobile/android/app/build.gradle').match(/versionName "([^"]+)"/)[1]]);
+});
+
+test('mises à jour à chaud : la coque est au moins la version minimale, avec tous les plugins déclarés', () => {
+  const version = read('mobile/android/app/build.gradle').match(/versionName "([^"]+)"/)[1];
+  assert.ok(cmpVersion(version, APP_UPDATE.minNative) >= 0, `appli ${version} < minNative ${APP_UPDATE.minNative}`);
+  const deps = Object.keys(json('mobile/package.json').dependencies);
+  for(const name of APP_UPDATE.nativePlugins) assert.ok(deps.includes(name), name);
+  assert.match(read('mobile/android/capacitor.settings.gradle'), /capacitor-filesystem/);
 });
 
 test('appli iOS : iPhone seul, écran vertical', () => {

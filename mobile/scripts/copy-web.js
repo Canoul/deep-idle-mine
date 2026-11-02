@@ -1,34 +1,25 @@
 /* Copie les fichiers du jeu DANS l'appli (mobile/www) : l'appli s'ouvre sans réseau et seuls les appels au serveur y passent.
-   Le site n'est pas touché : la page de l'appli est une copie de index.html, réécrite ici. Fichier généré, jamais dans git.
+   Le contenu vient de server/app-update/bundle.js, la recette que le serveur utilise aussi pour publier les mises à jour à chaud :
+   l'appli fabriquée et le serveur du même commit ont la même version du jeu. Fichier généré, jamais dans git.
 
      node scripts/copy-web.js                    pour l'appli (serveur : https://deepmineidle.fr)
      node scripts/copy-web.js --api http://…     autre serveur (essais)   ·  --out dossier : autre destination */
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { API_URL, MANIFEST, bundleFiles, manifestOf } from '../../server/app-update/bundle.js';
 
-const HERE = path.dirname(fileURLToPath(import.meta.url)), MOBILE = path.resolve(HERE, '..'), ROOT = path.resolve(MOBILE, '..');
-export const API_URL = 'https://deepmineidle.fr';
-
-/* page de l'appli : polices dans l'appli (pas de Google Fonts au démarrage), pas de zoom, bord à bord, adresse du serveur avant le jeu */
-export function appIndex(html){
-  return html
-    .replace(/<link[^>]*fonts\.(googleapis|gstatic)\.com[^>]*>\n?/g, '')
-    .replace('<link rel="stylesheet" href="src/ui/style.css">', '<link rel="stylesheet" href="fonts/fonts.css">\n<link rel="stylesheet" href="src/ui/style.css">')
-    .replace(/<meta name="viewport"[^>]*>/, '<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">')
-    .replace(/<title>[^<]*<\/title>/, '<title>Deep Mine Idle MMO</title>')
-    .replace('<script src="src/boot-check.js"></script>', '<script src="app-config.js"></script>\n<script src="src/boot-check.js"></script>');
-}
+export { API_URL, appIndex } from '../../server/app-update/bundle.js';
+const MOBILE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 export function copyWeb({ out = path.join(MOBILE, 'www'), api = API_URL } = {}){
   fs.rmSync(out, { recursive: true, force: true });
-  fs.mkdirSync(out, { recursive: true });
-  /* src/wiki : le wiki s'ouvre dans le navigateur du téléphone */
-  fs.cpSync(path.join(ROOT, 'src'), path.join(out, 'src'), { recursive: true, filter: f => !f.includes(`${path.sep}src${path.sep}wiki`) });
-  fs.cpSync(path.join(ROOT, 'textures'), path.join(out, 'textures'), { recursive: true });
-  fs.cpSync(path.join(MOBILE, 'assets', 'fonts'), path.join(out, 'fonts'), { recursive: true });
-  fs.writeFileSync(path.join(out, 'index.html'), appIndex(fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8')));
-  fs.writeFileSync(path.join(out, 'app-config.js'), `/* écrit par mobile/scripts/copy-web.js */\nwindow.DIM_APP = { api: ${JSON.stringify(api)} };\n`);
+  const files = bundleFiles({ api });
+  for(const [rel, data] of files){
+    fs.mkdirSync(path.dirname(path.join(out, rel)), { recursive: true });
+    fs.writeFileSync(path.join(out, rel), data);
+  }
+  fs.writeFileSync(path.join(out, MANIFEST), JSON.stringify(manifestOf(files)));
   return out;
 }
 
