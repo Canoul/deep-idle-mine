@@ -6720,3 +6720,11 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Pas vérifié** ⚠️ vu dans le navigateur (case cochée / décochée en session et dans la ville).
 - **Applis** : rien de natif ; nouveau fichier dans `src/`, copié par `server/app-update/bundle.js` (tout `src/`).
 - ✅ En ligne le 02/11.
+
+## 02/11/2026 — Jules — Bloc géant : nouveau sprite « Géode éventrée » (branche jules/sprite-bloc-geant)
+- **Quoi** : `scripts/gen_giant.py` (nouveau, stdlib) : `giant_block()` → 80 × 80 RGBA. Toile `_Cv` (couleur + z ; `ink()` encre le bord extérieur et tout pixel voisin d'un pixel de z plus grand), roche en facettes de Voronoï (`_rock`, graine 2610, joints sombres en bas / à droite), fissures, paillettes de minerai, entailles de pioche (face gauche, y 43 à 71), fente `GASH` (distance au bord `_depth` → bandes d'agate, druse, creux), cristaux `_crystal` (3 faces, pointe, arêtes ; `dim` pour ceux du fond ; z croissant = devant), éclats au pied, puis encre, lueur colorée sur la roche (`_glow`, z 0 seulement) et étincelles. `scripts/gen_textures.py` `giant()` prend `giant_block()` (fontaine et torche inchangées). `npm run textures` ne change que `textures/giant_block.png`.
+- **Tests** ✅ tests/giant-sprite (nouveau : taille = `GIANT.block` × 16, dans `TEXTURES`, < 3 % de pixels transparents, dernière ligne pleine, ≥ 6 teintes vives) + giant-rules, giant-service, giant-sim : 43/43.
+- **Vérifié** ✅ vu dans la vraie salle (`npm run dev`, Test_Mineur, 4 captures du canvas `cvGt`) : bloc posé au sol, halo `shadowBlur` qui change de teinte et voile blanc de la pulsation sans défaut, le mineur frappe devant les entailles.
+- **Point fragile** : le voile blanc de la pulsation (`drawBlock`, src/render/giant.js) couvre tout le rectangle, y compris les ~130 pixels transparents des coins ébréchés (invisible à l'œil ; à revoir si la silhouette devient plus découpée).
+- **Applis** : rien de natif ; seulement une texture et un script Python.
+

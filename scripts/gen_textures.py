@@ -12,6 +12,7 @@ import zlib
 from gen_town import town   # le Carreau, ville du spawn (scripts/gen_town.py, 29/10/2026)
 from gen_bosses import bosses, tower_mobs   # boss et mobs des tours du Jugement (scripts/gen_bosses.py, 30/10/2026)
 from gen_lucifer import lucifer_textures   # Lucifer et son portail, He's coming (scripts/gen_lucifer.py, 01/11/2026)
+from gen_giant import giant_block   # le Bloc géant, « Géode éventrée » (scripts/gen_giant.py, 02/11/2026)
 from gen_golbute import golbute, golem   # le Golbute de l'Instance II (et sa forme cristallisée) et le golem (scripts/gen_golbute.py, 30/10/2026)
 
 S = 16
@@ -1713,8 +1714,9 @@ def flesh_wall():
 
 
 def giant():
-    """Bloc géant (26/10) : le bloc (5 × 5 cases, 80 × 80 pixels) en minerai de toutes les couleurs, sa fontaine à
-    oxygène (1 × 2 cases) et la grande torche qui éclaire la salle (1 × 2 cases). Le jeu fait pulser le bloc."""
+    """Bloc géant (26/10) : le bloc (5 × 5 cases, 80 × 80 pixels ; dessiné par scripts/gen_giant.py depuis le 02/11/2026,
+    « Géode éventrée » ; ancien : roche violette couverte de carrés de couleur), sa fontaine à oxygène (1 × 2 cases) et
+    la grande torche qui éclaire la salle (1 × 2 cases). Le jeu fait pulser le bloc."""
     def canvas(w, h):
         return [(0, 0, 0, 0)] * (w * h)
 
@@ -1724,22 +1726,8 @@ def giant():
                 if 0 <= xx < w and 0 <= yy < h:
                     px[yy * w + xx] = c
 
-    # le bloc : roche sombre, filons de toutes les couleurs, bord biseauté
     W = H = 80
-    rnd = random.Random(2610)
-    blk = [shade(hexc('#2b2436'), 1 + (rnd.random() - 0.5) * 0.25) for _ in range(W * H)]
-    colors = ['#ff3b3b', '#ff8a1f', '#ffd23f', '#5be35b', '#2fe0d0', '#3d8bff', '#9b5bff', '#ff5bd2', '#ffffff']
-    for i in range(130):
-        c = hexc(colors[i % len(colors)])
-        x, y, sz = rnd.randrange(3, W - 8), rnd.randrange(3, H - 8), rnd.choice([3, 4, 4, 5, 6])
-        r(blk, W, H, x, y, sz, sz, c)
-        r(blk, W, H, x, y, sz, 1, shade(c, 1.25))
-        r(blk, W, H, x, y + sz - 1, sz, 1, shade(c, 0.7))
-    for k in range(3):
-        r(blk, W, H, k, k, W - 2 * k, 1, shade(hexc('#8a7aa8'), 1 - k * 0.2))
-        r(blk, W, H, k, k, 1, H - 2 * k, shade(hexc('#8a7aa8'), 1 - k * 0.2))
-        r(blk, W, H, k, H - 1 - k, W - 2 * k, 1, shade(hexc('#120e18'), 1))
-        r(blk, W, H, W - 1 - k, k, 1, H - 2 * k, shade(hexc('#120e18'), 1))
+    blk = giant_block()
 
     # la fontaine : vasque de pierre, jet d'eau bleue
     fw, fh = 16, 32

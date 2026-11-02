@@ -222,6 +222,11 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   100 points personnels** (27/10, `GIANT.nugget`), qui se fond au four : 10 pépites + 10 charbon → 1 **Barre d'argent** (sans usage pour l'instant). Salle calculée
   dans le fil principal du serveur ; visites reprises après un redémarrage (points enregistrés toutes les 10 s).
   Repères (15 × 7) : ≈ 146 points par visite sans stuff, ≈ 184 en fer (`npm run simulate:giant`).
+  **Sprite** (02/11, Jules ; chantier de remise à niveau des sprites, 1er des 4 : Bloc géant, mur de chair, ver de terre, roi
+  gobelin) : « Géode éventrée » dans la DA du Golbute (trait d'encre, facettes, une lumière dominante), `scripts/gen_giant.py` :
+  roche noire et violette fendue, bandes d'agate, grappe de cristaux aux couleurs des minerais, entailles de pioche sur la face
+  gauche ; ancien : roche violette couverte de carrés de couleur. Écartés : monolithe scellé (fer, chaînes, gemmes serties),
+  filon-mère martelé (pioches cassées plantées). Fontaine et torche de la salle pas encore refaites.
 - **Anneaux** (23/10, Geoffrey ; GAME_DESIGN §6 « Stuff », config `RINGS`) : 2 cases d'anneau dans le Stuff (12 cases),
   8 anneaux (6 rares à +3 %, Midas et Bouffon épiques à +2 %). Effet pour **tout le groupe** de la session, une fois
   par anneau différent, jamais deux fois le même sur un joueur ; en MI, porteur seul. Sauf l'**Anneau du nerd** (XP) :
