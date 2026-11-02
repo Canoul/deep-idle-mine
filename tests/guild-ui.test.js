@@ -60,7 +60,7 @@ test('sans bâtiment ni don : textes d\'attente', () => {
 
 test('pseudos et noms échappés partout', () => {
   assert.ok(!mineHTML(mine({ name:'<i>', members:[row({ name:'<i>' })] })).includes('<i>x'));
-  assert.ok(!mineHTML(mine({ members:[row({ name:'<img src=x>' })] })).includes('<img'));
+  assert.ok(!mineHTML(mine({ members:[row({ name:'<img src=x>' })] })).includes('<img src=x'));   // la maison de guilde a ses propres <img>
   const g = { id:'"g', name:'<img src=x>', level:1, members:1, max:30, chief:'<img src=x>', xp:0 };
   for(const h of [listHTML([g], { mine:false, requests:[] }), boardHTML([{ ...g, rank:1 }]), invitesHTML([g])]) assert.ok(!h.includes('<img'));
 });

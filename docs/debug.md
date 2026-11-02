@@ -6627,3 +6627,37 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   ✅ Jules (02/11) : les bons sprites sont ceux déjà en jeu (golbute, golbute_crystal, golbute_body/_arm et leurs
   `_crystal`, golem) ; rien à changer. Sans doute une capture ou une version antérieure au 30/10.
 - ✅ En ligne le 02/11.
+
+## 02/11/2026 — Jules — Maison de guilde (scène qui évolue avec les dons)
+- **Quoi** : scène purement visuelle dans l'onglet Guilde (carte « Maison de guilde » en tête de la colonne de droite) et
+  dans la fiche d'une autre guilde (`peekHTML`). Rien côté serveur : tout est calculé dans le navigateur depuis
+  `buildingsView` (déjà envoyé : `{ id, level, materials:[{ item, need, have }] }`). Aucun chemin de ressources touché →
+  pas d'anticheat à compléter.
+- **Fichiers** : `src/shared/guild-house.js` (logique pure : `givenPart` = moyenne des `min(have/need, 1)` des matériaux
+  du prochain niveau, `housePoints` = niveaux construits + `givenPart` par bâtiment, `houseStage` = dernier seuil
+  `GUILD.house.stages[].at` atteint, `annexState` = empty / site / built), `src/config.js` (`GUILD.house` : seuils,
+  textures, scène 272 × 112 px, sol 12 px, x et largeur de chaque sprite), `src/ui/guild.js` (`houseHTML` : `<img>`
+  positionnées en % de la scène, `aspect-ratio`, elle suit la largeur de la colonne), `src/ui/style.css` (`.ghouse` :
+  ciel de crépuscule du Carreau, sol en `::before`), `scripts/gen_town.py` (`guild_hall(1..4)` 112 × 96, `guild_site`
+  48 × 40, `wing_armory` 48 × 64, `wing_treasury` 40 × 72, `wing_forge` 48 × 64), 8 PNG dans `textures/`.
+- **Points monotones** : un don est définitif et un niveau construit fait +1 pendant que sa part repart de 0 (≤ 1) →
+  les points ne baissent jamais. Seuils absolus (pas en % du total) : ajouter un niveau en config ne fait pas reculer
+  une maison. L'étape 4 (seuil 3) = les 3 bâtiments actuels construits ; à revoir si on ajoute des bâtiments.
+- **Tests** ✅ `tests/guild-house.test.js` (parts, points, seuils, annexes, monotonie, sprites présents à la largeur de la
+  config et pas plus hauts que la scène, scène dans mineHTML et peekHTML) ; `tests/guild-ui.test.js` : le test
+  d'échappement cherchait « aucun `<img` » dans l'onglet, il vise maintenant `<img src=x` (la scène a ses propres
+  images) ; guild, guild-buildings, anticheat/guild-buildings, boot-check, main-module : 58/58.
+- **Vérifié** ✅ rendu des 4 étapes en aperçu (planche composée par Pillow, puis la vraie CSS du jeu dans Chromium à deux
+  largeurs de colonne). `npm run textures` ne change aucune autre texture.
+- **Reste à vérifier** ⚠️ pas encore vu dans le jeu lancé avec une vraie guilde (`npm run dev`), ni sur téléphone.
+- **Point fragile** : la largeur d'un sprite est écrite deux fois (PNG et `GUILD.house`) ; le test des largeurs le
+  rattrape si on redessine un sprite sans changer la config.
+- **Nouvelle DA, même jour** : premiers sprites jugés trop génériques par Jules. Prototypes dans un script à part
+  (A Darkest Dungeon poussé / B camp de guerre façon Horde, puis 3 déclinaisons de A), choix : V1 « Cathédrale noire ».
+  `scripts/gen_town.py`, section maison de guilde réécrite : palette `BSTONE`, `WAR`, lumières `L_RED` / `L_ORANGE` /
+  `L_NONE` (vitraux pas posés), aides `flame`, `brazier` (h = 0 : éteint), `crest`, `emblem_picks`, `war_banner`,
+  `gothic_window`, `spire`, `hoist`, `portal`, `roof`, `dim` (ombre du clocher, sans toucher aux lumières, liste
+  `LIGHTS`). Tailles : maison 160 × 150, chantier 64 × 48, Armurerie 64 × 88, Trésorerie 56 × 104, Forge 64 × 104 ;
+  scène `GUILD.house` 372 × 168, sol 14. `npm run textures` : seuls les 8 PNG de guilde changent. ✅ guild-house et
+  guild-ui 26/26 (le test des largeurs PNG / config a suivi) ; les 4 étapes vues dans Chromium avec la CSS du jeu.
+- ✅ En ligne le 02/11 (⚠️ toujours pas vu avec une vraie guilde ni sur téléphone).

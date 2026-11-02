@@ -2,6 +2,7 @@
    viennent de ce qu'il renvoie (actions d'un membre, demandes), et il revérifie tout. */
 import { GUILD, ITEMS } from '../config.js';
 import { RANK_LABEL, canRecruit } from '../shared/guild.js';
+import { houseState } from '../shared/guild-house.js';
 import { ask, askText, tell } from './dialog.js';
 import { guildApi } from '../net/api.js';
 import { rname } from './rarity.js';
@@ -46,6 +47,22 @@ export function buildingHTML(b, { owned = null, canBuild = false } = {}){
     : '<p class="mut small">Tout est réuni : le chef ou un officier peut lancer la construction.</p>';
   return `<div class="gbuilding">${head}<p class="small">Niveau ${b.level + 1} : ${esc(next.label)}</p>${b.materials.map(m => materialRow(b, m, owned)).join('')}${state}</div>`;
 }
+/* maison de guilde (02/11/2026, Jules) : la maison au centre avance avec tous les dons, chaque annexe passe du terrain vide
+   au chantier puis au bâtiment construit ; positions en % de la scène (GUILD.house), elle suit la largeur de la colonne */
+export function houseHTML(rows){
+  const H = GUILD.house, st = houseState(rows), stage = H.stages[st.stage];
+  const pct = v => `${(v * 100).toFixed(2)}%`;
+  const img = (tex, x, w, title) => `<img src="textures/${tex}.png" alt="${esc(title)}" title="${esc(title)}" style="left:${pct(x / H.w)};width:${pct(w / H.w)}">`;
+  const annexes = GUILD.buildings.map(b => {
+    const a = H.annexes[b.id], state = st.annexes[b.id];
+    if(!a || state === 'empty') return '';
+    return state === 'built' ? img(a.tex, a.x, a.w, `${b.name} : construite`) : img(H.site.tex, a.x, H.site.w, `${b.name} : en chantier`);
+  }).join('');
+  const into = st.next === null ? 1 : (st.points - stage.at) / (st.next - stage.at);
+  return `<div class="ghouse" style="aspect-ratio:${H.w} / ${H.h};--ground:${pct(H.ground / H.h)}">${img(stage.tex, H.hall.x, H.hall.w, `Maison de guilde : ${stage.name}`)}${annexes}</div>`+
+    `<p class="small">Étape ${st.stage + 1} / ${st.stages} : ${esc(stage.name)}</p>`+
+    (st.next === null ? '' : `<div class="bar"><i style="width:${Math.min(100, Math.max(0, into * 100)).toFixed(1)}%"></i></div><p class="mut small">Chaque don fait avancer le chantier ; chaque bâtiment construit ajoute son annexe.</p>`);
+}
 const logLine = r => {
   const name = esc(GUILD.buildings.find(b => b.id === r.building)?.name ?? '');
   return `<div class="glogRow"><span class="mut">${dateOf(r.at)}</span> <b>${esc(r.name)}</b> ${r.kind === 'build'
@@ -59,7 +76,7 @@ export const logHTML = (log, older = []) => {
 };
 export const bonusLabels = list => list.flatMap(b => GUILD.buildings.find(x => x.id === b.id).levels.slice(0, b.level).map(l => l.label));
 export function peekHTML(p, older){
-  return `<h2>${esc(p.name)}</h2><div class="gbList">${p.buildings.map(b => buildingHTML(b)).join('')}</div>${logHTML(p.log, older)}`;
+  return `<h2>${esc(p.name)}</h2>${houseHTML(p.buildings)}<div class="gbList">${p.buildings.map(b => buildingHTML(b)).join('')}</div>${logHTML(p.log, older)}`;
 }
 /* message de guilde (01/11/2026, Geoffrey) : lu par tous les membres, écrit par le chef et les officiers */
 export function messageHTML(g){
@@ -77,6 +94,7 @@ export function mineHTML(g, older){
     <div class="card"><h2>Membres <span class="mut">${g.members.length}/${g.max}</span></h2>${g.members.map(memberRow).join('')}</div>
     <div class="fbtns">${canRecruit(g.rank) ? '<button class="on" data-g="invite">Inviter un joueur</button>' : ''}<button data-g="leave">Quitter la guilde</button></div>
   </div><div>
+    <div class="card"><h2>Maison de guilde</h2>${houseHTML(g.buildings)}</div>
     <div class="card"><h2>Niveau ${g.level}</h2><div class="bar"><i style="width:${pct}%"></i></div><p class="mut small">${g.need ? `${fr(g.into)} / ${fr(g.need)} XP` : 'Niveau maximum'} · ${fr(g.xp)} XP au total</p></div>
     <div class="card"><h2>Bonus actifs</h2>${bonusLabels(g.buildings).map(l => `<p class="small">${esc(l)}</p>`).join('') || '<p class="mut small">Aucun bonus pour l\'instant.</p>'}</div>
     <div class="card"><h2>Bâtiments</h2><div class="gbList">${g.buildings.map(b => buildingHTML(b, { owned:g.owned, canBuild:g.canBuild })).join('')}</div></div>
