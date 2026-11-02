@@ -118,6 +118,7 @@ function stepGolems(G){
     const taunt = byId(G, o.taunt);
     const prey = taunt && !taunt.dead ? taunt : alive(G).sort((a, c) => manh(o, a) - manh(o, c))[0];
     if(!prey){ o.grab = null; continue; }
+    o.face = Math.sign(prey.x - o.x) || o.face;   // tourné vers sa proie, au contact aussi (02/11/2026)
     if(near(o, prey) && grounded(G, prey)){
       o.grab = prey.id;
       o.hit -= DT;
@@ -133,7 +134,7 @@ function stepGolems(G){
     if(o.moveCd > 1e-9) continue;
     o.moveCd = S.step;
     const dir = Math.sign(prey.x - o.x);
-    if(dir && golOpen(G, o.x + dir, o.y)){ o.x += dir; o.face = dir; }
+    if(dir && golOpen(G, o.x + dir, o.y)) o.x += dir;
   }
   if(G.boss.state === 'split' && !liveGolems(G).length){
     G.golems = [];

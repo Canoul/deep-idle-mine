@@ -6546,3 +6546,24 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Cause, par les mesures** : run 41343755804 : à 2 s écran de démarrage (0 orange, 41 teintes), bouton visible à **55 s**, la commande de capture elle-même mettant une cinquantaine de secondes à revenir. L'ancien contrôle photographiait à 40 s fixes : il réussissait ou échouait selon la charge du Mac de GitHub. Serveur à 0,57 s : pas en cause. C'est un premier lancement à froid du simulateur, ça ne mesure pas un vrai iPhone.
 - **Correctif** : `.github/workflows/ios.yml` attend le bouton, 120 s au plus, une capture toutes les 5 s, toutes gardées dans l'artefact ; seuil inchangé (2 000 pixels), `mobile/scripts/ios-screen.cjs` ; annotations avec orange / teintes / clarté à chaque capture, temps de réponse du serveur.
 - **Tests** ✅ tests/mobile-config.test.js. ✅ Exécutions `controle` par push sur la branche (le déclenchement à la main demande une authentification) : 41343755804 (bouton à 55 s) et 41344246150 (bouton à 31 s), verts. L'écart autour de 40 s explique les réussites et les échecs de l'ancien contrôle.
+
+## 02/11/2026 — Golems tournés vers leur proie ; « anciens sprites du Golbute » non trouvés (Jules)
+- **Symptôme 1** : les golems ne se tournent pas vers le joueur. Deux causes. Mine : le golem n'avait pas de sens
+  (`o.face` jamais écrit, `mobView` ne l'envoyait pas, `canvas.js` le dessinait toujours vers la droite). Division
+  (Instance II) : `stepGolems` n'écrivait `o.face` qu'en faisant un pas ; né à `face: -1`, un golem au contact (ou
+  bloqué par un voisin) ne se retournait jamais.
+- **Correctif** : `faceTo(o, m)` (`src/sim/golem.js`, même côté que `golemStep` : `sideOf`), appelé dans `updateGolem`
+  (`src/sim/mobs.js`) dès qu'il a une proie qu'il poursuit ou tacle, avant le test de portée ; juste au-dessus ou
+  au-dessous de lui, il garde son sens. `mobView` (`src/shared/view.js`) envoie `face`. `canvas.js` : sprite retourné
+  autour de son centre (sueur comprise) si `face < 0`. `stepGolems` (`src/sim/instance/golbute.js`) : `o.face` vers la
+  proie à chaque tick, avant le contact. Rien dans la simulation ne lit `face` des golems : affichage seulement.
+- **Tests** ✅ tests/golem (+1 : gauche, contact à droite, contact à gauche, envoyé par la vue), golbute (+1 : né à
+  gauche, contact à droite puis à gauche), view, golbute-sprite, mobs, instance-sim, instance-server : 96/96.
+  Simulation 3 × 5 : 0 blocage (elle n'atteint que l'area 3, les golems sont à l'area 5+ : non exercés).
+  ⚠️ Pas vu en partie réelle.
+- **Symptôme 2** : « les anciens sprites du Golbute sont toujours en jeu ». **Non reproduit** : `main` et le site en
+  ligne servent les mêmes `golbute*.png` et `golem.png` (empreintes identiques), tous au style du 30/10 ; le rendu
+  n'utilise que `golbute_body`/`golbute_arm` (+ `_crystal`), `golem` et `golbute_rock`, tous dans `TEXTURES` ; le
+  serveur sert les fichiers en `no-store` (pas de cache navigateur). Aucune autre image du Golbute sur les branches, en
+  local ou en remise. Les icônes d'objets (coffre, jambières, âme, clé II) restent au format 16 × 16 des autres icônes.
+  ⚠️ En attente : où et quoi exactement (capture).
