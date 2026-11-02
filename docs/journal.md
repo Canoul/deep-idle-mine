@@ -9,6 +9,19 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## JJ/MM/AAAA — Prénom — Titre court
+- **Pour le joueur** : ce qui change en jeu (ou « rien, c'est de l'organisation »).
+- **Décisions** : choix de design ou d'équilibrage tranchés (s'il y en a).
+- **À suivre** : ce qui reste à faire ou à vérifier.
+- **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
+```
+
+## 02/11/2026 — Jules — Lucifer redessiné et animé
+- **Pour le joueur** : Lucifer a un nouveau look, dans le style des boss récents (comme le Golbute) : un « roi déchu » cramoisi, couronné, cornes ornées d'or, grand col dressé, fers brisés aux poignets, griffes plantées dans le bord du portail et sourire en coin. Il **bouge** : juste avant chaque rugissement, il lève la main et une flamme violette s'y allume. Tu vois venir le Fear. Le portail de lave est redessiné aussi.
+- **Décisions** (Jules, validé avec Geoffrey) : c'est le boss final du raid, il doit avoir un charisme fou. Choisi parmi plusieurs prototypes (obsidienne façon Golbute, silhouette noire ailée, version Darkest Dungeon en clair-obscur). On pourra le retravailler plus tard.
+- **À suivre** : le voir dans la vraie salle avec des joueurs. Idées si besoin : une respiration au repos, affiner le bras pendant qu'il le lève.
+- **État** : ✅ en ligne le 02/11
+
 ## 02/11/2026 — Jules — Mises à jour à chaud des applis : construites
 - **Pour le joueur** : rien sur le site. Dans l'appli (à partir de la version 1.1.0), le jeu se met à jour tout seul à l'ouverture, comme le site : un petit écran « Mise à jour du jeu… » quelques secondes, puis le jeu. Si une nouvelle version plante, l'appli revient toute seule à la précédente. Une appli trop ancienne affiche « Mets à jour l'appli » avec le lien du store.
 - **Décisions** (Jules) : chaque mise en ligne qui change le jeu part dans l'appli ; on applique au démarrage, avant l'écran de connexion, si ça prend moins de 10 s (sinon à la prochaine ouverture ou au retour après 5 min), jamais pendant le jeu ; les testeurs ont le même canal que les joueurs. Outil maison plutôt que Capgo ou Capawesome : aucun service extérieur, aucun code natif à écrire, seuls les fichiers modifiés sont téléchargés.
@@ -61,12 +74,6 @@ Modèle d'entrée :
 - **Décisions** : on garde les signalements qui le visent et une ligne de journal, rien d'autre. Le script ne supprime qu'avec `--yes`. Une session encore en cours avec d'autres joueurs est nettoyée à sa fin.
 - **À suivre** : cette branche contient la modération, pas encore en ligne (les deux partiront ensemble) ; créer l'adresse contact@deepmineidle.fr ; relire la politique de confidentialité (liste dans `docs/comptes.md`).
 - **État** : ✅ en ligne le 01/11
-## JJ/MM/AAAA — Prénom — Titre court
-- **Pour le joueur** : ce qui change en jeu (ou « rien, c'est de l'organisation »).
-- **Décisions** : choix de design ou d'équilibrage tranchés (s'il y en a).
-- **À suivre** : ce qui reste à faire ou à vérifier.
-- **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
-```
 
 ## 02/11/2026 — Jules — La maison de guilde dans le Carreau
 - **Pour le joueur** : la maison de guilde devient un vrai bâtiment du Carreau, entre l'Armurerie et la Taverne, comme
@@ -133,13 +140,6 @@ Modèle d'entrée :
 ## 01/11/2026 — Geoffrey — Guilde : inviter un membre dans son lobby, voir ce qu'il fait
 - **Pour le joueur** : dans l'onglet de sa guilde, chaque membre a un bouton **Inviter** (dans son lobby, même sans être amis), et on voit ce qu'il fait comme dans Social : en ligne, dans le lobby, en session avec le temps restant, en prison, hors ligne.
 - **État** : ✅ en ligne le 01/11
-
-## JJ/MM/AAAA — Prénom — Titre court
-- **Pour le joueur** : ce qui change en jeu (ou « rien, c'est de l'organisation »).
-- **Décisions** : choix de design ou d'équilibrage tranchés (s'il y en a).
-- **À suivre** : ce qui reste à faire ou à vérifier.
-- **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
-```
 
 ## 01/11/2026 — Jules — Fiches des stores : nouvelle icône et bannière
 - **Pour le joueur** : l'appli change d'icône : **une lampe de mine allumée** remplace la pioche, sur Android et sur
