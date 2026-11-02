@@ -164,12 +164,16 @@ export function createRenderer(cv){
         }
         else if(o.type==='mephite') blit('mephite',px,py+Math.round(Math.sin(frameNow/250+o.id)),'#6f9a3a');   // il flotte (affichage seulement)
         else if(o.type==='golem'){
-          /* golem : 2 × 2 cases, (x, y) = sa case du bas à gauche ; une goutte de sueur blanche tombe en boucle */
+          /* golem : 2 × 2 cases, (x, y) = sa case du bas à gauche ; une goutte de sueur blanche tombe en boucle. Le sprite
+             regarde à droite : retourné, sueur comprise, quand sa proie est à gauche (o.face, 02/11/2026) */
           const i=TEX.golem, gy=py-TILE;
+          ctx.save();
+          if(o.face<0){ ctx.translate(px*2+TILE*2,0); ctx.scale(-1,1); }
           if(i && i.complete && i.naturalWidth) ctx.drawImage(i,px,gy,TILE*2,TILE*2);
           else { ctx.fillStyle='#80868f'; ctx.fillRect(px,gy,TILE*2,TILE*2); }
           const k=((frameNow/900+o.id*0.37)%1);
           ctx.fillStyle='#f4f1e8'; ctx.fillRect(px+TILE*0.62,gy+TILE*(0.8+k*1.1),1,2);
+          ctx.restore();
           if(o.hp<o.maxhp){ ctx.fillStyle='#400'; ctx.fillRect(px,gy-3,TILE*2,2); ctx.fillStyle='#e5534b'; ctx.fillRect(px,gy-3,TILE*2*o.hp/o.maxhp,2); }
           drawSplash(ctx,o,G.t,frameNow,px+TILE/2,gy,TILE);
           drawMobFx(ctx,o.fx,px+TILE,gy-3,TILE*2,frameNow);

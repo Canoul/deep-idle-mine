@@ -6604,3 +6604,26 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** ✅ `tests/minotaur-fx.test.js` (nouveau, 4), minotaur, boot-check, view. ✅ Vu en capture (page de test hors
   dépôt, texture du minotaure sur la pierre : normal, gratte le sol, enragé, les deux). ⚠️ Pas vu dans une vraie partie.
 - ✅ En ligne le 02/11.
+
+## 02/11/2026 — Golems tournés vers leur proie ; « anciens sprites du Golbute » non trouvés (Jules)
+- **Symptôme 1** : les golems ne se tournent pas vers le joueur. Deux causes. Mine : le golem n'avait pas de sens
+  (`o.face` jamais écrit, `mobView` ne l'envoyait pas, `canvas.js` le dessinait toujours vers la droite). Division
+  (Instance II) : `stepGolems` n'écrivait `o.face` qu'en faisant un pas ; né à `face: -1`, un golem au contact (ou
+  bloqué par un voisin) ne se retournait jamais.
+- **Correctif** : `faceTo(o, m)` (`src/sim/golem.js`, même côté que `golemStep` : `sideOf`), appelé dans `updateGolem`
+  (`src/sim/mobs.js`) dès qu'il a une proie qu'il poursuit ou tacle, avant le test de portée ; juste au-dessus ou
+  au-dessous de lui, il garde son sens. `mobView` (`src/shared/view.js`) envoie `face`. `canvas.js` : sprite retourné
+  autour de son centre (sueur comprise) si `face < 0`. `stepGolems` (`src/sim/instance/golbute.js`) : `o.face` vers la
+  proie à chaque tick, avant le contact. Rien dans la simulation ne lit `face` des golems : affichage seulement.
+- **Tests** ✅ tests/golem (+1 : gauche, contact à droite, contact à gauche, envoyé par la vue), golbute (+1 : né à
+  gauche, contact à droite puis à gauche), view, golbute-sprite, mobs, instance-sim, instance-server : 96/96.
+  Simulation 3 × 5 : 0 blocage (elle n'atteint que l'area 3, les golems sont à l'area 5+ : non exercés).
+  ⚠️ Pas vu en partie réelle.
+- **Symptôme 2** : « les anciens sprites du Golbute sont toujours en jeu ». **Non reproduit** : `main` et le site en
+  ligne servent les mêmes `golbute*.png` et `golem.png` (empreintes identiques), tous au style du 30/10 ; le rendu
+  n'utilise que `golbute_body`/`golbute_arm` (+ `_crystal`), `golem` et `golbute_rock`, tous dans `TEXTURES` ; le
+  serveur sert les fichiers en `no-store` (pas de cache navigateur). Aucune autre image du Golbute sur les branches, en
+  local ou en remise. Les icônes d'objets (coffre, jambières, âme, clé II) restent au format 16 × 16 des autres icônes.
+  ✅ Jules (02/11) : les bons sprites sont ceux déjà en jeu (golbute, golbute_crystal, golbute_body/_arm et leurs
+  `_crystal`, golem) ; rien à changer. Sans doute une capture ou une version antérieure au 30/10.
+- ✅ En ligne le 02/11.

@@ -87,6 +87,21 @@ test('Division : à 3 min, 10 golems de l\'area 8, boss absent (ni coups ni mur)
   assert.equal(G.boss.hp, G.boss.maxhp, 'il revient avec ses PV');
 });
 
+test('Division : un golem se tourne vers le mineur qu\'il vise, même au contact sans faire un pas (02/11/2026)', () => {
+  const G = newGolbute(5, { miners: idle(1) });
+  G.next.avalanche = Infinity;
+  run(G, C.split.every + DT);
+  const m = G.miners[0], o = G.golems[G.golems.length - 1];
+  assert.equal(o.face, -1, 'né tourné vers la gauche');
+  m.x = o.x + 1; m.action = null;               // au contact, à sa droite : il ne bouge pas, il tacle
+  run(G, DT);
+  assert.equal(o.grab, m.id);
+  assert.equal(o.face, 1, 'tourné vers le mineur');
+  m.x = o.x - 1; m.action = null;
+  run(G, DT);
+  assert.equal(o.face, -1, 'le mineur passe à gauche : il se retourne');
+});
+
 test('cristal à 66 % et 33 % : insensible aux coups, il se mine ; enrage après le 2e (attaque + 50 %, propulsion 65 %, avalanche − 25 %)', () => {
   const G = newGolbute(6, { miners: [{ name: 'Fort', account: 'A', carac: { damage: 1e6, mineSpeed: 0 } }] });
   G.next.split = Infinity; G.next.avalanche = Infinity;

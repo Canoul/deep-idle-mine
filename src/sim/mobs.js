@@ -12,7 +12,7 @@ import { dungeonAt, inRoom, interior, noEntry } from './dungeon.js';
 import { veiled } from './trap.js';
 import { spawnDucks, updateDuck, duckCanEnter } from './duck.js';
 import { inReach, push, recenter, driftsAway, gap, nearCell } from './knock.js';
-import { fitsAt, clearAt, golemCanEnter, golemFalls, golemStep, quake } from './golem.js';
+import { fitsAt, clearAt, golemCanEnter, golemFalls, golemStep, faceTo, quake } from './golem.js';
 import { thrallOwner, enslave } from './thrall.js';
 import { isFlesh, fleshSpot, fleshStep, fleshAura, syncFlesh } from './flesh.js';
 import { addBleed, tickBleed } from './bleed.js';
@@ -155,6 +155,7 @@ function updateGolem(G,o){
   o.cd=(o.cd||0)-DT; o.dig=(o.dig||0)-DT;
   const m=byId(G,o.grab) ?? preyOf(G,o); if(!m) return;
   if(o.grab==null && !inChase(o,m)) return;
+  faceTo(o,m);
   if(inReach(G,o,m)) return;
   golemStep(G,o,m,stepOf(o));
 }
