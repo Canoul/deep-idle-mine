@@ -38,6 +38,13 @@ expliquant en une phrase ce que tu fais.
   et les autres voient le chantier ; **rien n'est mis en ligne**.
 - Chaque message de commit finit par une ligne `Par : <prénom>` (les sessions Claude dans le cloud signent
   « Claude », on perdrait qui a demandé quoi).
+- **Avant chaque commit, vérifie si ça risque de casser les applis iOS / Android** (Jules, 02/11) et, si oui,
+  **préviens la personne avant de commiter**, en une phrase : ce qui risque de casser et quoi faire. Chaque mise en
+  ligne part dans les applis par mise à jour à chaud, sans repasser par les stores. Cas à signaler : nouveau plugin
+  ou code natif (= nouvelle version des stores et `APP_UPDATE.minNative` à monter) ; changement de `mobile/`,
+  `.github/workflows/`, `src/app/` ou `server/app-update/` ; nouveau fichier ou dossier que la page charge mais que
+  `mobile/scripts/copy-web.js` ne copie pas ; changement de la connexion (jeton `Authorization`, CORS
+  `SERVER.appOrigins`) ou des adresses de l'API. Rien de tout ça : ne dis rien.
 
 **Simple changement de valeur** (Geoffrey, 30/10) : quand on demande juste de changer la valeur d'une variable de
 réglage, **ni tests, ni simulation, ni anticheat** : on change la valeur, une ligne au journal, et on met en ligne
