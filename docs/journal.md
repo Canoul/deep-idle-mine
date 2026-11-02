@@ -61,7 +61,7 @@ Modèle d'entrée :
   (Instance II) ne se tournaient qu'en faisant un pas : ils naissaient tournés à gauche et, une fois au contact, ne se
   retournaient plus. Ils font maintenant face à leur cible, même au contact. Rien ne change dans le combat.
 - **À suivre** : à regarder dans une vraie partie (area 5+ et Division du Golbute).
-- **État** : 🧪 sur la branche `jules/fix-golems` (pas en ligne)
+- **État** : ✅ en ligne le 02/11
 
 ## 01/11/2026 — Geoffrey — Classement : son propre onglet
 - **Pour le joueur** : les classements quittent Social et ont leur onglet **Classement**. Les boutons sont dans l'ordre Classement, Guilde, Social. Touches du clavier : C, G et S.

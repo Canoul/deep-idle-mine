@@ -6626,3 +6626,4 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   local ou en remise. Les icônes d'objets (coffre, jambières, âme, clé II) restent au format 16 × 16 des autres icônes.
   ✅ Jules (02/11) : les bons sprites sont ceux déjà en jeu (golbute, golbute_crystal, golbute_body/_arm et leurs
   `_crystal`, golem) ; rien à changer. Sans doute une capture ou une version antérieure au 30/10.
+- ✅ En ligne le 02/11.
