@@ -79,12 +79,12 @@ Sur l'iPhone, il faut l'appli **TestFlight** (gratuite, sur l'App Store). Ouvrir
 - Réglages communs : `mobile/capacitor.config.json`. Propres à iOS : `mobile/ios/App/App/Info.plist`.
 - Manifeste de confidentialité : `mobile/ios/App/App/PrivacyInfo.xcprivacy`. À tenir à jour si l'appli collecte autre chose ; il doit dire la même chose que `legal/confidentialite.md` et que la page « App Privacy » d'App Store Connect.
 - Nouveau plugin : `cd mobile && npm install && npm run sync`, puis commiter `mobile/ios/App/CapApp-SPM/Package.swift` (`tests/mobile-config.test.js` le vérifie).
-- Icône et écran de démarrage : `cd mobile && npm run assets` (Android et iOS, depuis `mobile/assets/logo.png`).
+- Icône et écran de démarrage : `npm run app:icon` puis `cd mobile && npm run assets` (Android et iOS, depuis `mobile/assets/logo.png` ; voir `docs/app-android.md`).
 - Rebond et zoom : `MainViewController` dans `SceneDelegate.swift`. Clavier : `plugins.Keyboard` dans `capacitor.config.json`.
 
 ## Liste d'essais sur un vrai iPhone
 
-1. Installation par TestFlight : icône pioche, écran de démarrage sombre.
+1. Installation par TestFlight : icône lampe de mine (pioche jusqu'au 02/11), écran de démarrage sombre.
 2. Connexion avec un compte existant ; fermer l'appli et la rouvrir : toujours connecté.
 3. Lancer une session : la mine tourne.
 4. L'encoche ne cache pas la barre du haut ; la barre des 5 boutons est au-dessus du trait du bas ; l'heure et la batterie sont lisibles.

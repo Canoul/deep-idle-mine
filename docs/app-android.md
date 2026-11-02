@@ -82,15 +82,19 @@ GitHub ne les montre plus jamais une fois enregistrés, et les masque dans les j
 
 ## Icône et écran de démarrage
 
-Source : `mobile/assets/logo.png` (1024 × 1024, la pioche d'acier du jeu, provisoire tant qu'il n'y a pas de vrai logo). Après l'avoir changée :
+Source : `mobile/assets/icon-art.png`, la lampe de mine en pixel art (64 × 64, choix de Jules le 01/11 ; ancien : la pioche
+d'acier). `npm run app:icon` l'agrandit sans flou en `mobile/assets/logo.png` (1024 × 1024, sans transparence), dont
+Capacitor Assets tire les icônes et les écrans de démarrage. Après avoir changé `icon-art.png` :
 
 ```
+npm run app:icon
 cd mobile
 npm install
 npm run assets
 ```
 
-puis commiter ce qui change dans `mobile/android`.
+puis commiter ce qui change dans `mobile/assets`, `mobile/android` et `mobile/ios`, et relancer `npm run store:art`
+(la même icône sur les fiches des stores, `docs/fiches-stores.md`).
 
 ## Modifier l'appli
 

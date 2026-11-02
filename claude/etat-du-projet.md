@@ -542,7 +542,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 
 - Lecture en différé (31/10/2026) : le navigateur affiche la partie 0,4 s en arrière (`FLUID`, src/shared/view.js), envois à rythme fixe, partie avancée toutes les 100 ms. Détails : `docs/debug.md`.
 
-- **Appli iPhone pour TestFlight** (01/11, Geoffrey, repris de `jules/appli-ios` ; en ligne le 01/11, TestFlight à lancer ; guide `docs/app-ios.md`) : mêmes choix qu'Android (jeu copié dans l'appli, jeton, `capacitor://localhost`). iPhone seul, portrait. Workflow `ios.yml` : `controle` (sans clé, simulateur), `ipa`, `testflight` ; signature par clé d'API Admin seule (archive non signée, Apple signe à l'export), secrets `ASC_KEY_ID`, `ASC_ISSUER_ID`, `ASC_KEY_P8`, `IOS_TEAM_ID`. Numéro de build : exécution × 100 + essai. Notifications locales, pas d'entitlement push. Manifeste `PrivacyInfo.xcprivacy`. Plugin clavier `@capacitor/keyboard` (`resize: native`).
+- **Appli iPhone pour TestFlight** (01/11, Geoffrey, repris de `jules/appli-ios` ; en ligne le 01/11 ; **TestFlight vérifié le 02/11** : installée et essayée sur l'iPhone de Jules ; guide `docs/app-ios.md`) : mêmes choix qu'Android (jeu copié dans l'appli, jeton, `capacitor://localhost`). iPhone seul, portrait. Workflow `ios.yml` : `controle` (sans clé, simulateur), `ipa`, `testflight` ; signature par clé d'API Admin seule (archive non signée, Apple signe à l'export), secrets `ASC_KEY_ID`, `ASC_ISSUER_ID`, `ASC_KEY_P8`, `IOS_TEAM_ID`. Numéro de build : exécution × 100 + essai. Notifications locales, pas d'entitlement push. Manifeste `PrivacyInfo.xcprivacy`. Plugin clavier `@capacitor/keyboard` (`resize: native`).
 - **Appli Android pour Google Play** (01/11, Geoffrey ; en ligne le 01/11 côté serveur, pas encore sur Google Play ; guide `docs/app-android.md`) : nom « Deep Mine Idle MMO », `fr.deepmineidle.app`. **Fichiers du jeu dans l'appli** (`mobile/scripts/copy-web.js`, ancien : `server.url` vers le site, donc « une mise en ligne arrive dans l'appli » ne vaut plus : **client figé jusqu'à la mise à jour Play**, aucune vérification de version pour l'instant). Connexion de l'appli par jeton `Authorization` et CORS limité à `SERVER.appOrigins` ; le site garde son cookie. `src/app/device.js` : bouton retour, liens externes, « Pas de connexion ». Portrait, permission INTERNET seule. Workflow `android-apk.yml` : APK de test, AAB signé par les secrets `ANDROID_UPLOAD_*`.
 - **Notifications de l'appli** (01/11, Geoffrey) : locales, calculées sur le téléphone (`src/app/notifs.js`, `native.js`,
   `APP_NOTIFS`) : session finie, mine instantanée 5 min avant (pas de 23 h à 8 h), Bloc géant, four. Interrupteur général et
@@ -561,6 +561,13 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   notifications programmées → 4 push, iOS, stores (comptes Apple / Google : plus tard, avec un business plan, Geoffrey).
   **Étape 1 faite le 28/10** : `mobile/`, `src/app/` (classe `app`, badge provisoire « APPLI ✓ / ⚠ pont bloqué »),
   icône (`npm run app:icon`), `.github/workflows/android-apk.yml` ; **APPLI ✓ confirmé sur un vrai Android le 01/11** (Geoffrey). **Étape 2 en 5 morceaux** : navigation (**en ligne le 01/11**, plan `2026-11-01-appli-mobile-etape2a-navigation.md`, `src/app/families.js`, `bar.js`, `main.js`, `app.css` : 5 familles, Guilde et Chat dans Social, Historique hors session, pas de Carreau, Geoffrey) → session → Accueil → Stuff et Skills → gestes au doigt.
+  **Visuels des stores** (01/11, Jules, branche `jules/visuels-stores`) : **icône = lampe de mine** (source unique
+  `mobile/assets/icon-art.png`, 64 × 64 ; ancien : la pioche en acier) → `npm run app:icon` → `mobile/assets/logo.png` →
+  `cd mobile && npm run assets` (icônes Android et iPhone, écrans de démarrage) ; `mobile/store/` (icônes Google 512 et
+  Apple 1024 sans transparence, bannière Google 1024 × 500), `npm run store:art`. **iPhone seul** (Jules, 02/11) : pas de
+  captures iPad. Captures d'écran à faire avec l'interface tactile (session à 3, Bloc géant, tour, Carreau), plan dans
+  `docs/fiches-stores.md`. Qui fait quoi (02/11) : interface tactile plus tard (Jules ou Geoffrey), textes légaux :
+  Geoffrey.
 
 ## Hébergement
 
