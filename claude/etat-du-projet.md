@@ -226,7 +226,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   gobelin) : « Géode éventrée » dans la DA du Golbute (trait d'encre, facettes, une lumière dominante), `scripts/gen_giant.py` :
   roche noire et violette fendue, bandes d'agate, grappe de cristaux aux couleurs des minerais, entailles de pioche sur la face
   gauche ; ancien : roche violette couverte de carrés de couleur. Écartés : monolithe scellé (fer, chaînes, gemmes serties),
-  filon-mère martelé (pioches cassées plantées). Fontaine et torche de la salle pas encore refaites.
+  filon-mère martelé (pioches cassées plantées). Fontaine et torche de la salle (aussi celle de He's coming) redessinées
+  pixel par pixel dans le même style (ancien : rectangles).
 - **Anneaux** (23/10, Geoffrey ; GAME_DESIGN §6 « Stuff », config `RINGS`) : 2 cases d'anneau dans le Stuff (12 cases),
   8 anneaux (6 rares à +3 %, Midas et Bouffon épiques à +2 %). Effet pour **tout le groupe** de la session, une fois
   par anneau différent, jamais deux fois le même sur un joueur ; en MI, porteur seul. Sauf l'**Anneau du nerd** (XP) :

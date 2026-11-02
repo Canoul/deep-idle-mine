@@ -6726,5 +6726,6 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** ✅ tests/giant-sprite (nouveau : taille = `GIANT.block` × 16, dans `TEXTURES`, < 3 % de pixels transparents, dernière ligne pleine, ≥ 6 teintes vives) + giant-rules, giant-service, giant-sim : 43/43.
 - **Vérifié** ✅ vu dans la vraie salle (`npm run dev`, Test_Mineur, 4 captures du canvas `cvGt`) : bloc posé au sol, halo `shadowBlur` qui change de teinte et voile blanc de la pulsation sans défaut, le mineur frappe devant les entailles.
 - **Point fragile** : le voile blanc de la pulsation (`drawBlock`, src/render/giant.js) couvre tout le rectangle, y compris les ~130 pixels transparents des coins ébréchés (invisible à l'œil ; à revoir si la silhouette devient plus découpée).
-- **Applis** : rien de natif ; seulement une texture et un script Python.
+- **Fontaine et torche** (même jour) : `giant_fountain()`, `giant_torch()` dans gen_giant.py, dessinées en texte (`FOUNTAIN`, `TORCH` : 32 lignes de 16 caractères, palettes `STONE_F` + `WATER`, `IRON` + `FIRE`) ; `_sheet` pose l'encre autour du fer et de la pierre seulement. `giant()` de gen_textures.py ne fait plus que les appeler. Test ajouté (16 × 32, posées au sol) : 44/44. Vues en aperçu dans la salle (jeu pas relancé : même rendu, mêmes tailles).
+- **Applis** : rien de natif ; seulement des textures et un script Python.
 
