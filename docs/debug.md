@@ -6746,4 +6746,4 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** ✅ tests/worm-sprite (nouveau : tailles, `TEXTURES`, icône `MOB_INFO.ver`, anneau qui touche les deux bords, braise de la gueule, `dirTo`, `wormCells` en ligne droite / virage / sans corps / cases confondues, `drawTurned` sur un faux contexte) + mobs-a7, mobs, mob-drops : 45/45.
 - **Vérifié** ✅ simulation réelle d'un ver pendant 40 s (`addWorm` + `updateWorms`, galerie de tests/mobs-a7) : 1 945 liens tête → queue, tous entre cases voisines ; 8 images dessinées avec les sprites pivotés : tête vers le haut, le bas, la gauche, la droite, virages corrects. ⚠️ Pas vu dans le navigateur (le ver ne vient qu'en area 7, pas d'outil dev pour le faire apparaître) ; `canvas.js` se charge (import Node).
 - **Applis** : rien de natif ; nouveau fichier `src/render/worm.js`, copié avec tout `src/`.
-
+- ✅ En ligne le 03/11 (validé par Jules sur les images).
