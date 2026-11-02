@@ -703,7 +703,7 @@ Modèle d'entrée :
 ## 30/10/2026 — Geoffrey — Prison : 8 d'énergie par heure de jeu (avant 4)
 
 ## 02/11/2026 — Geoffrey — Ténacité à rendement décroissant
-- **Pour le joueur** : cumuler la ténacité rapporte de moins en moins. 10 % de ténacité donnent 8,9 % de chance d'ignorer une mécanique de mob, 30 % → 22 %, 50 % → 32 %, 100 % → 50 % (plafond 75 %). L'onglet Stuff affiche la valeur effective à côté de la ténacité.
+- **Pour le joueur** : cumuler la ténacité rapporte de moins en moins. 10 % de ténacité donnent 8,9 % de chance d'ignorer une mécanique de mob, 30 % → 22 %, 50 % → 32 %, 100 % → 50 % (plafond 75 %). L'onglet Stuff affiche la valeur effective à côté de la ténacité. **Pénétration** : certains mobs retirent des points de ténacité avant ce calcul (golem et minotaure 10, boss des tours et Golbute 20 : valeurs provisoires) ; un joueur à 20 de ténacité n'esquive plus rien face à une pénétration de 20.
 - **État** : 🧪 sur la branche `geoffrey/tenacite-log` (pas en ligne)
 
 ## 30/10/2026 — Geoffrey — Coffre du Golbute : son butin et 5 nouveaux objets

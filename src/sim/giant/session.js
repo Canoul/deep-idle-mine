@@ -142,7 +142,7 @@ function mine(G, m){
 function knock(G, m){
   const K = GIANT.knock;
   const base = K.min + Math.floor(G.rng() * (K.max - K.min + 1));
-  if(G.rng() < tenacityOf(m) / 100){ m.stats.ignored++; G.stats.ignored++; return; }
+  if(G.rng() < tenacityOf(m, 'giant') / 100){ m.stats.ignored++; G.stats.ignored++; return; }
   const n = Math.max(K.min, Math.round(knockOf(m, base)));
   const to = Math.max(0, m.x - n);
   m.fly = { from: m.x, to, t: 0, dur: K.flight, n };

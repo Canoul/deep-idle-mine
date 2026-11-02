@@ -155,7 +155,7 @@ const slamEvery = G => C.slam.every / (G.boss.rage ? 1 + C.rage.atkSpeed : 1);
 const avalancheEvery = G => C.avalanche.every * (G.boss.rage ? 1 + C.rage.avalancheCd : 1);
 /* chance d'être propulsé : chance × (1 − recul %) × (1 − ténacité %) */
 export const slamChance = (G, m) => (G.boss.rage ? C.rage.chance : C.slam.chance)
-  * (1 - Math.min(100, Math.max(0, m.carac.knockRes || 0)) / 100) * (1 - tenacityOf(m) / 100);
+  * (1 - Math.min(100, Math.max(0, m.carac.knockRes || 0)) / 100) * (1 - tenacityOf(m, 'golbute') / 100);
 
 function slam(G){
   const b = G.boss;
@@ -181,7 +181,7 @@ function avalanche(G){
   const hit = [], dodged = [];
   for(const m of alive(G)){
     G.rocks.push({ x: m.x, at: G.ticks });
-    if(chance(G, tenacityOf(m))){ dodged.push(m.name); G.stats.dodges++; continue; }
+    if(chance(G, tenacityOf(m, 'golbute'))){ dodged.push(m.name); G.stats.dodges++; continue; }
     if(G.t > m.dazedUntil + 1e-9) m.dazed = 0;
     m.dazed++; m.dazedUntil = G.t + A.dazed; m.stats.dazed++;
     hit.push(m);

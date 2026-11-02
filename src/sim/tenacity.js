@@ -8,5 +8,7 @@ export function effectiveTenacity(raw){
   if(t <= 0) return 0;
   return Math.min(TENACITY.max, TENACITY.k * Math.log1p(t / TENACITY.k));
 }
-/* ténacité effective d'un mineur (sa caractéristique brute m.carac.tenacity) */
-export const tenacityOf = m => effectiveTenacity(m?.carac?.tenacity);
+/* ténacité effective d'un mineur face à une mécanique src (clé de TENACITY.pen) : sa ténacité brute moins la
+   pénétration de la source (02/11), puis la courbe */
+export const penOf = src => (src && TENACITY.pen?.[src]) || 0;
+export const tenacityOf = (m, src = null) => effectiveTenacity((Number(m?.carac?.tenacity) || 0) - penOf(src));

@@ -993,7 +993,7 @@ function landBoss(G, n = B.jumpKnock){
   const b = G.boss;
   b.air = null; b.lift = 0; b.cd = B.hitEvery; b.moveCd = 0;
   log(G, n > B.jumpKnock ? `💥 ${G.boss.name} s'écrase sur le toit !` : `💥 ${G.boss.name} retombe sur le toit !`);
-  const resists = m => tenacityOf(m) > 0 && G.fightRng() * 100 < tenacityOf(m);   // ténacité effective (02/11)
+  const resists = m => tenacityOf(m, 'towerBoss') > 0 && G.fightRng() * 100 < tenacityOf(m, 'towerBoss');   // ténacité effective (02/11)
   for(const m of [...G.miners]){
     if(!onTop(G, m)) continue;
     if(n > B.jumpKnock && resists(m)){ log(G, `💪 ${m.name} résiste à l'écrasement`); continue; }   // stèle : la ténacité évite la projection (30/10)

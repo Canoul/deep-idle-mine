@@ -50,7 +50,7 @@ function roar(G){
   log(G, `😈 ${HC.bossName} rugit !`);
   for(const m of G.miners){
     if(gapOf(G, m) > HC.roar.radius + 1e-9 || feared(G, m)) continue;
-    if(resists(G, m)){ m.stats.ignored++; continue; }
+    if(resists(G, m, 'hescoming')){ m.stats.ignored++; continue; }
     m.fearUntil = G.t + HC.roar.fear;
     m.wanderUntil = 0;
   }
@@ -62,7 +62,7 @@ function swing(G){
   const K = HC.swing;
   for(const m of G.miners){
     if(m.fly || gapOf(G, m) > COMBAT.reach + 1e-9) continue;
-    if(resists(G, m)){ m.stats.ignored++; continue; }
+    if(resists(G, m, 'hescoming')){ m.stats.ignored++; continue; }
     const n = Math.max(1, Math.round(knockOf(m, K.knock)));
     m.fly = { from:m.x, to:Math.max(0, m.x - n), t:0, dur:K.flight, n, high:K.high };
     m.stats.knocks++; G.stats.knocks++;

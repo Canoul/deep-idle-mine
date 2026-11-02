@@ -115,7 +115,7 @@ export function quake(G, o, resists){
     for(const m of G.miners){
       if(m.y <= 0) continue;
       const c = nearCell(o, m);
-      if(Math.hypot(c.x - m.x, c.y - m.y) > C.stunRadius + 1e-9 || resists(G, m)) continue;
+      if(Math.hypot(c.x - m.x, c.y - m.y) > C.stunRadius + 1e-9 || resists(G, m, 'golem')) continue;
       m.quakeUntil = G.t + C.stunTime; hit.push(m.name);
       m.stats.quaked = (m.stats.quaked || 0) + 1; G.stats.quaked = (G.stats.quaked || 0) + 1;
     }
