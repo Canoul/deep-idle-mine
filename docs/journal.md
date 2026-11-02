@@ -22,7 +22,7 @@ Modèle d'entrée :
   instances, tours…), ni de nom sur la maison de guilde et la statue du Carreau. Pratique pour les captures d'écran
   des fiches Google Play / App Store. Le choix est gardé sur cet appareil.
 - **À suivre** : le bandeau en haut à gauche et les listes (groupe, amis, chat) montrent toujours les pseudos.
-- **État** : 🧪 sur la branche `jules/option-pseudos` (pas en ligne)
+- **État** : ✅ en ligne le 02/11
 
 ## 02/11/2026 — Jules — Claude prévient quand un commit peut casser les applis
 - **Pour le joueur** : rien, c'est de l'organisation.

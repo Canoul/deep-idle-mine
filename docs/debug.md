@@ -6719,3 +6719,4 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** ✅ tests/names (nouveau : défaut, enregistrement, `label` n'écrit rien quand caché), town, backdrop : 36/36.
 - **Pas vérifié** ⚠️ vu dans le navigateur (case cochée / décochée en session et dans la ville).
 - **Applis** : rien de natif ; nouveau fichier dans `src/`, copié par `server/app-update/bundle.js` (tout `src/`).
+- ✅ En ligne le 02/11.
