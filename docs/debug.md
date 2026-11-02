@@ -6738,4 +6738,4 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** ✅ tests/flesh-sprite (nouveau : tailles, `TEXTURES`, `MOB_INFO.chair.tex`, chaque ligne pleine à 12 pixels au moins, icône = un morceau du mur avec du blanc d'œil et de la braise) + flesh, mobs : 34/34.
 - **Pas vérifié** ⚠️ dans une vraie partie (area 6+, 2 à 8 % des mobs) ; vu dans une maquette de galerie (textures stone, hardstone, tunnel). Le rendu (`src/render/canvas.js`, type `chair`) n'a pas changé : même taille, même pulsation horizontale.
 - **Applis** : rien de natif ; seulement des textures et un script Python.
-
+- ✅ En ligne le 03/11 (validé par Jules sur les images).
