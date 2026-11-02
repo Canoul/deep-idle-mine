@@ -16,6 +16,12 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 02/11/2026 — Jules — Bloc géant redessiné (remise à niveau des sprites, 1/4)
+- **Pour le joueur** : le Bloc géant n'est plus un carré violet couvert de confettis. C'est une **géode éventrée** : un bloc de roche noire et violette fendu de haut en bas, avec à l'intérieur une grappe de cristaux aux couleurs des minerais du jeu (diamant, thorium, cobalt, or, fer, mithril… plus rubis, améthyste et rose) qui éclairent les bords de la fente. Sur la face gauche, là où tout le monde frappe, des entailles de pioche ; au pied, quelques éclats tombés. Il pulse toujours avec son halo arc-en-ciel. La **fontaine** (vasque de la même pierre, deux arcs d'eau, bulles d'oxygène qui montent) et la **torche** (brasero de fer forgé, grande flamme, trépied) de la salle sont redessinées dans le même style ; elles servent aussi dans la salle de He's coming.
+- **Décisions** (Jules) : chantier de remise à niveau des sprites, un par un (Bloc géant, puis mur de chair, ver de terre, roi gobelin), dans le style du Golbute et de Lucifer. Choisi parmi 3 prototypes (géode, monolithe scellé de fer et de chaînes, filon-mère avec des pioches cassées plantées), avec plus de détails.
+- **À suivre** : prochain sprite : le mur de chair.
+- **État** : ✅ en ligne le 03/11
+
 ## 02/11/2026 — Jules — Option pour cacher les pseudos
 - **Pour le joueur** : dans **Mon compte** (clic sur le pseudo en haut à gauche), nouvelle case **« Afficher les
   pseudos »**, cochée de base. Décochée : plus de pseudos ni de noms de guilde au-dessus des mineurs (mine, ville,
