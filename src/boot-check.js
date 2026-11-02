@@ -35,6 +35,7 @@
 
   let box = null;
   function show(title, lines){
+    api.failed = api.failed || title;   // appli : une nouvelle version qui plante revient à la précédente (src/app/guard.js)
     if(!box){
       box = document.createElement('div');
       box.id = 'bootError';

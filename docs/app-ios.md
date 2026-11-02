@@ -7,7 +7,7 @@ Pas besoin de Mac : GitHub compile tout sur un de ses Mac (onglet **Actions**, �
 ## Comment ça marche
 
 - C'est **la même appli qu'Android** (`docs/app-android.md`) : les fichiers du jeu sont copiés dans l'appli, seuls les appels au serveur passent par le réseau, la connexion se fait par un jeton. Sur iPhone, l'appli tourne sur `capacitor://localhost`, que le serveur accepte (`SERVER.appOrigins`).
-- ⚠️ **Le code du jeu est figé dans l'appli**, comme sur Android : une mise en ligne sur `main` ne change pas l'appli des joueurs. En plus, **Apple relit chaque mise à jour** de l'App Store (souvent 1 à 2 jours).
+- **Mises à jour à chaud** (depuis la 1.1.0), comme sur Android (`docs/app-android.md`, « Mises à jour à chaud ») : une mise en ligne sur `main` arrive dans l'appli sans repasser par Apple. Une nouvelle version sur l'App Store reste nécessaire quand la coque change (plugin, permission, icône…) ; **Apple relit chaque version** (souvent 1 à 2 jours). Sur iPhone, les versions téléchargées sont rangées dans `Library/NoCloud/ionic_built_snapshots/` (imposé par Capacitor).
 - **iPhone seulement, écran vertical.** Sur iPad, elle s'ouvre en mode iPhone agrandi.
 - **Notifications** : locales, programmées par le téléphone (`src/app/native.js`). Aucune configuration Apple : la case Push Notifications cochée sur l'App ID ne gêne pas, l'appli ne s'en sert pas.
 
@@ -71,7 +71,7 @@ Sur l'iPhone, il faut l'appli **TestFlight** (gratuite, sur l'App Store). Ouvrir
 
 ## Monter la version
 
-- Ce que voient les joueurs : `MARKETING_VERSION` dans `mobile/ios/App/App.xcodeproj/project.pbxproj` (2 lignes, la même valeur). Garder la même que le `versionName` d'Android (`1.0.0`, puis `1.0.1`, `1.1.0`…).
+- Ce que voient les joueurs : `MARKETING_VERSION` dans `mobile/ios/App/App.xcodeproj/project.pbxproj` (2 lignes, la même valeur). Garder la même que le `versionName` d'Android (`tests/mobile-config.test.js` le vérifie), au moins `APP_UPDATE.minNative`.
 - Le numéro de build est **automatique** : numéro de la fabrication × 100 + numéro de l'essai. Il ne sert jamais deux fois, même en relançant.
 
 ## Modifier l'appli

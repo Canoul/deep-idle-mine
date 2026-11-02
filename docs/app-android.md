@@ -11,7 +11,25 @@ Pas besoin d'Android Studio : GitHub compile tout (onglet **Actions**, « Appli 
 - Seuls les appels au serveur passent par le réseau, vers `https://deepmineidle.fr`.
 - L'appli tourne sur `https://localhost`, une autre origine que le site. Le cookie de connexion n'y passe pas : le serveur lui donne un **jeton**, rangé dans le stockage de l'appli et envoyé dans l'en-tête `Authorization`. Seules les origines de l'appli reçoivent ce jeton et le CORS (`SERVER.appOrigins`).
 
-> ⚠️ **Le code du jeu est figé dans l'appli.** Une mise en ligne sur `main` change le serveur en 2 minutes, mais pas l'appli des joueurs : elle garde ses fichiers jusqu'à la mise à jour sur Google Play. Un nouvel objet, une nouvelle route ou un équilibrage côté navigateur peuvent donc la casser. Avant de changer ce que le serveur envoie, se demander si l'ancienne appli comprendra encore.
+## Mises à jour à chaud (depuis la 1.1.0)
+
+Une mise en ligne sur `main` arrive aussi dans l'appli, **sans passer par Google Play** :
+
+- Le serveur publie le paquet du jeu de son commit (`server/app-update/`). Sa version est l'empreinte de son contenu : un commit qui ne touche que la doc ou le serveur ne déclenche rien.
+- Au démarrage, avant l'écran de connexion, l'appli demande la dernière version (3 s au plus). Si elle est plus récente : « Mise à jour du jeu… », seuls les fichiers modifiés sont téléchargés, chaque empreinte est vérifiée, puis l'appli se recharge dedans. Si c'est trop long (plus de 10 s), le jeu démarre et la version s'applique au lancement suivant ou au retour après 5 min en arrière-plan. Jamais pendant que le joueur joue.
+- **Retour en arrière** : une nouvelle version n'est gardée qu'une fois que le jeu a démarré. Si elle plante (ou ne démarre pas en 60 s), l'appli revient à la précédente, ne la réessaie jamais, et le serveur l'écrit dans son journal (« Appli : retour en arrière … », `journalctl -u deep-idle-mine`).
+- Réglages : `APP_UPDATE` dans `src/config.js`. Code : `src/app/update.js`, `updater.js`, `guard.js`.
+- Les versions 1.0.0 n'ont pas ce système : elles restent figées et doivent être remplacées par la 1.1.0.
+
+### Quand faut-il quand même une nouvelle version sur Google Play ?
+
+Quand la **coque** change : un nouveau plugin Capacitor, une permission, une nouvelle version de Capacitor, l'icône, l'écran de démarrage, le nom. Et tout ce qui touche à l'argent (achats intégrés). Dans ce cas :
+
+1. Ajouter le plugin dans `APP_UPDATE.nativePlugins` (le test `tests/mobile-config.test.js` le réclame) **et** monter `APP_UPDATE.minNative` à la nouvelle version.
+2. Monter la version de l'appli (ci-dessous), Android et iPhone ensemble.
+3. Les applis plus anciennes affichent alors « Mets à jour l'appli » avec un lien vers le store au lieu de recevoir du code qu'elles ne savent pas faire tourner.
+
+Les règles des stores : le code téléchargé tourne dans le moteur web de l'appli et ne doit pas changer sa nature (nouveaux objets, modes, équilibrage, corrections : oui ; une autre appli, une boutique : non).
 
 ## Tester sur un téléphone (APK)
 
@@ -32,8 +50,8 @@ L'APK parle au **vrai serveur** : il ne marche que si le serveur a déjà la par
 Dans `mobile/android/app/build.gradle` :
 
 ```
-versionCode 1          // +1 à CHAQUE envoi à Google, jamais réutilisé (2, 3, 4…)
-versionName "1.0.0"    // ce que voient les joueurs : 1.0.1 pour un correctif, 1.1.0 pour une nouveauté
+versionCode 2          // +1 à CHAQUE envoi à Google, jamais réutilisé (3, 4, 5…)
+versionName "1.1.0"    // ce que voient les joueurs ; même valeur que MARKETING_VERSION de l'iPhone
 ```
 
 Google refuse un envoi dont le `versionCode` a déjà servi, même après un retrait.

@@ -168,12 +168,13 @@ src/ui/               un module par onglet / panneau (nav, lobby, hud, inventory
                       research, skills, history, account, orbs…) + style.css (pixel art « Forge noire ») + pxicons.js
 src/wiki/             tableaux du wiki (data.js : logique pure, wiki.js : affichage)
 src/main.js           lobby → session (reçoit la partie du serveur, aucune simulation dans le navigateur) → bilan
-src/app/              couche de l'appli mobile (détection : pont natif ou ?app) ; sur le site, ne fait rien
+src/app/              couche de l'appli mobile (détection : pont natif ou ?app ; mises à jour à chaud : update, updater, guard) ;
+                      sur le site, ne fait rien
 mobile/               appli mobile (Capacitor) : config, projets android/ et ios/, copie du jeu (scripts/copy-web.js), icône
 .github/workflows/    fabrication des applis Android et iPhone (GitHub Actions)
 server/               serveur Node : app (routeur), http/, accounts/, game/ (sessions qui font foi, partie en
                       direct dans un fil d'exécution), party/ (groupes), social/ (amis), instant/ (mine
-                      instantanée), db/ (PostgreSQL)
+                      instantanée), db/ (PostgreSQL), app-update/ (paquet du jeu publié aux applis)
 bot/                  bot Discord de l'équipe (reports, /todo), service à part avec son package.json : docs/bot-discord.md
 tests/                un fichier de test par sujet + helpers (mines dessinées en texte) ; tests/anticheat/
 scripts/              simulate.js, weights.js, stat-values.js, gen_textures.py

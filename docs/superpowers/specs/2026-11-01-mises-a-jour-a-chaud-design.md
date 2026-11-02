@@ -1,6 +1,6 @@
 # Mises à jour à chaud des applis mobiles — conception
 
-*Discussion de Geoffrey avec Claude (claude.ai), 01/11/2026. Rien n'est codé. Les choix marqués « (Claude) » sont des
+*Discussion de Geoffrey avec Claude (claude.ai), 01/11/2026 ; décisions et construction par Jules le 02/11/2026 (« Réponses de Jules », « Ce qui a été construit »). Les choix marqués « (Claude) » sont des
 choix techniques à contester si besoin. Rien ici ne change les règles du jeu.*
 
 ## En une phrase
@@ -68,6 +68,21 @@ vérification d'empreinte, retour en arrière, licence compatible avec un dépô
    démarrage avant la connexion (le joueur a toujours la dernière version). Pendant une session : jamais.
 3. **Mises à jour des testeurs** (TestFlight, test fermé Google) : même canal que les joueurs, ou un canal à part ?
 
+### Réponses de Jules (02/11/2026)
+
+1. **Chaque mise en ligne qui change le jeu part dans l'appli** (A). La version est l'empreinte du contenu du paquet : les commits de doc ou de serveur seul ne déclenchent rien.
+2. **Hybride** (C) : au démarrage (et au retour après 5 min en arrière-plan), l'appli demande la dernière version en 3 s au plus ; si le téléchargement finit en 10 s, elle bascule avant l'écran de connexion (« Mise à jour du jeu… »), sinon le jeu démarre et la version s'applique à la prochaine occasion. Jamais pendant que le joueur a le jeu sous les yeux (la session, elle, tourne sur le serveur : recharger l'appli ne la coupe pas).
+3. **Testeurs sur le même canal que les joueurs** (A).
+
+## Ce qui a été construit (02/11/2026, Jules avec Claude)
+
+- **Plugin maison**, sans code natif : `WebView.setServerBasePath` / `persistServerBasePath` (cœur de Capacitor, iOS et Android) et `@capacitor/filesystem` (plugin officiel). Comparé à `@capgo/capacitor-updater` (MPL-2.0, contacte `plugin.capgo.app` par défaut, mise à jour fichier par fichier non documentée en auto-hébergé, numéros de version imposés) et `@capawesome/capacitor-live-update` (MIT, retour en arrière natif, mais zip complet à chaque fois en auto-hébergé). Plan B si le gardien en JavaScript ne suffit pas : Capawesome, le serveur change peu.
+- **Paquet** : `server/app-update/bundle.js`, la même recette que la copie embarquée (`mobile/scripts/copy-web.js`). Manifeste `bundle.json` rangé avec les fichiers.
+- **Serveur** : `GET /api/app/update?have=`, `GET /app-bundle/<version>/<chemin>` (en mémoire, version en cours seulement), `POST /api/app/rollback` (journal plafonné).
+- **Appli** : `src/app/update.js` (logique pure), `updater.js` (fichiers inchangés recopiés de la version qui tourne, les autres téléchargés, SHA-256 vérifié avant d'écrire, `bundle.json` écrit en dernier), `guard.js` (chargé avant le jeu ; la nouvelle version n'est gardée par Capacitor qu'après `DIM_BOOT.started`, sinon retour à la précédente ou à la copie embarquée, version refusée pour toujours ; un essai jamais confirmé est refusé au lancement suivant).
+- **Coque 1.1.0** = `APP_UPDATE.minNative`. Écran « Mets à jour l'appli » en dessous.
+- **Signature du manifeste : pas faite.** Pour signer à chaque mise en ligne, la clé privée serait sur le serveur : un serveur piraté signerait aussi. HTTPS et l'adresse du serveur dans la coque suffisent contre un intermédiaire. À reprendre seulement si on signe ailleurs (GitHub Actions).
+- Adresse du serveur : lue dans `app-config.js` du paquet (`window.DIM_APP.api`), écrit par le serveur lui-même ; un serveur d'essai la change avec `DIM_APP_API`.
 ## Quand
 
 Avant d'ouvrir l'appli aux joueurs (lien TestFlight public, test fermé Google à 12 testeurs pendant 14 jours) :

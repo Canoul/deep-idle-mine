@@ -9,12 +9,18 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 02/11/2026 — Jules — Mises à jour à chaud des applis : construites
+- **Pour le joueur** : rien sur le site. Dans l'appli (à partir de la version 1.1.0), le jeu se met à jour tout seul à l'ouverture, comme le site : un petit écran « Mise à jour du jeu… » quelques secondes, puis le jeu. Si une nouvelle version plante, l'appli revient toute seule à la précédente. Une appli trop ancienne affiche « Mets à jour l'appli » avec le lien du store.
+- **Décisions** (Jules) : chaque mise en ligne qui change le jeu part dans l'appli ; on applique au démarrage, avant l'écran de connexion, si ça prend moins de 10 s (sinon à la prochaine ouverture ou au retour après 5 min), jamais pendant le jeu ; les testeurs ont le même canal que les joueurs. Outil maison plutôt que Capgo ou Capawesome : aucun service extérieur, aucun code natif à écrire, seuls les fichiers modifiés sont téléchargés.
+- **Pour l'équipe** : **ajouter un plugin à l'appli = une nouvelle version des stores**, et monter `APP_UPDATE.minNative` (`docs/app-android.md`, « Quand faut-il quand même une nouvelle version »). Le reste (objets, modes, équilibrage, corrections) arrive dans l'appli à chaque mise en ligne.
+- **À suivre** : mettre le serveur en ligne d'abord (sans effet sur le site), puis essayer un APK 1.1.0 sur un vrai téléphone (mise à jour, retour en arrière, mode avion), puis envoyer la 1.1.0 sur Google Play et TestFlight à la place des 1.0.0. Remplir le lien App Store (`APP_UPDATE.store.ios`) quand l'appli aura sa fiche.
+- **État** : 🧪 sur la branche `geoffrey/spec-maj-a-chaud` (pas en ligne)
 ## 01/11/2026 — Geoffrey — Mises à jour à chaud des applis : conception
 - **Pour le joueur** : rien pour l'instant, rien n'est codé.
 - **Pour l'équipe** : l'appli embarque une copie du jeu figée à sa fabrication ; avec ~50 commits par jour, elle se casserait entre deux versions des stores. Proposition : à chaque lancement, l'appli récupère la dernière version du jeu publiée par deepmineidle.fr (empreintes vérifiées, retour en arrière si elle ne démarre pas, message « Mets à jour l'appli » si la coque native est trop ancienne). Autorisé par Apple et Google tant que le code tourne dans le moteur web et ne change pas la nature de l'appli. Détail : `docs/superpowers/specs/2026-11-01-mises-a-jour-a-chaud-design.md`.
 - **À décider** : chaque mise en ligne part dans l'appli ou seulement certaines ; appliquer au lancement suivant ou avant la connexion ; canal à part pour les testeurs.
 - **À suivre** : à faire avant d'ouvrir l'appli aux joueurs (lien TestFlight public, test fermé Google).
-- **État** : 📝 conception, branche `geoffrey/spec-maj-a-chaud`
+- **État** : 📝 conception → construit le 02/11 (entrée au-dessus)
 
 ## 02/11/2026 — Jules — Correctif : on voit enfin la Charge et la Rage du minotaure
 - **Pour le joueur** : Geoffrey n'avait vu ni la Charge ni la Rage du minotaure. Elles marchaient (vérifié en simulation :

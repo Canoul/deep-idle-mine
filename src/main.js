@@ -914,6 +914,7 @@ async function refresh(waited){
 }
 
 /* ---------- démarrage ---------- */
+await appBoot.update;                      // appli : dernière version du jeu d'abord (la page peut se recharger dedans)
 await appBoot.native;
 Object.assign(acct, await bootAccount(accountUI));
 window.dimBootOffline = acct.offline;      // appli : parti sans serveur, src/app/device.js recharge quand il revient
