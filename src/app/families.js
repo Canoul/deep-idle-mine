@@ -7,7 +7,7 @@ export const FAMILIES = [
   { id:'session', label:'Session', icon:'pickaxe', tabs:['session', 'historique'] },
   { id:'sac',     label:'Sac',     icon:'bag',     tabs:['inventaire', 'four', 'concasseur', 'craft', 'recherche'] },
   { id:'perso',   label:'Perso',   icon:'helmet',  tabs:['stuff', 'amelioration', 'skills', 'sorts'] },
-  { id:'social',  label:'Social',  icon:'group',   tabs:['social', 'guilde', 'chat'] },
+  { id:'social',  label:'Social',  icon:'group',   tabs:['classement', 'guilde', 'social', 'chat'] },
 ];
 
 export const familyOf = tab => FAMILIES.find(f => f.tabs.includes(tab))?.id ?? null;

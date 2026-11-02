@@ -1,5 +1,5 @@
-/* Icône de l'appli mobile (scripts/gen_app_icon.py → mobile/) : source en pixel art, tailles Android attendues et couleur
-   de fond. */
+/* Icône de l'appli mobile : source en pixel art (scripts/gen_app_icon.py → mobile/assets/logo.png), puis icônes Android
+   et iPhone tirées du logo (cd mobile && npm run assets) : tailles attendues et couleur de fond. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -29,8 +29,9 @@ test('icône : la source est une grille de 64 × 64 pixels', () => {
   assert.deepEqual(pngSize('mobile/assets/icon-art.png'), [64, 64]);
 });
 
-test('icône : grande image pour iOS et les stores', () => {
-  assert.deepEqual(pngSize('mobile/assets/icon-1024.png'), [1024, 1024]);
+test('icône : logo 1024 × 1024 sans transparence, source des icônes Android et iPhone', () => {
+  assert.deepEqual(pngSize('mobile/assets/logo.png'), [1024, 1024]);
+  assert.equal(fs.readFileSync(path.join(ROOT, 'mobile/assets/logo.png'))[25], 2);   // type de couleur 2 : RVB, sans alpha
 });
 
 test('icône : fond de l’icône adaptative sombre, comme le bord de l’icône', () => {

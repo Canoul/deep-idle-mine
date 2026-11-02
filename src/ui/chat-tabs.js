@@ -28,7 +28,9 @@ export function chatLine(m, me){
   if(m.system) return `<div class="chSystem"><time>${hhmm(m.at)}</time>${esc(m.text)}</div>`;   // message du jeu (Raffle, 31/10)
   const ch =chatChannel(m.channel), start = esc(chatPrefix(m, me));
   const shown = m.leader && ch.id === 'group' ? start.replace(LEADER_TAG, `<span class="chLead">${LEADER_TAG}</span>`) : start;
-  return `<div class="ch-${ch.id}"><time>${hhmm(m.at)}</time>${shown} : ${chatBody(m)}</div>`;
+  /* message d'un autre joueur : son menu Signaler / Bloquer (01/11/2026, src/ui/moderate.js) */
+  const more = m.account === me ? '' : `<button type="button" class="chatMore" data-msg="${esc(m.id)}" title="Signaler ou bloquer" aria-label="Signaler ou bloquer">⋮</button>`;
+  return `<div class="ch-${ch.id}"><time>${hhmm(m.at)}</time>${shown} : ${chatBody(m)}${more}</div>`;
 }
 
 export function setupChatTabs({ bar, panel, select, save, onChange }){

@@ -9,6 +9,63 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 01/11/2026 — Geoffrey — Contrôle iPhone plus solide
+- **Pour le joueur** : rien, c'est un outil de l'équipe.
+- **Pour l'équipe** : le contrôle de l'appli iPhone échouait parfois sans raison : il photographiait l'écran à 40 s, alors que le simulateur met de 31 à 55 s à afficher le jeu. Il attend maintenant le bouton, 2 minutes au plus.
+- **État** : ✅ en ligne le 01/11
+
+## 01/11/2026 — Geoffrey — Appli iPhone prête pour TestFlight, sans Mac
+- **Pour le joueur** : rien sur le site. L'appli iPhone « Deep Mine Idle MMO » est la même que sur Android : jeu dans l'appli, encoche gérée, clavier qui ne cache pas le chat, liens dans Safari, notifications sur le téléphone.
+- **Décisions** : projet repris de `jules/appli-ios`. iPhone seul, écran vertical (Jules visait aussi l'iPad). Signature par la clé d'API seule, sans certificat ni profil.
+- **À suivre** : mettre le workflow sur `main` (sans ça, pas de bouton « Run workflow »), créer les 4 secrets, lancer `testflight`, essayer sur un vrai iPhone.
+- **État** : ✅ en ligne le 01/11
+
+## 01/11/2026 — Geoffrey — Appli Android prête pour Google Play
+- **Pour le joueur** : rien sur le site. L'appli « Deep Mine Idle MMO » contient maintenant le jeu : elle s'ouvre même avec un réseau lent, gère l'encoche, le bouton retour Android (fenêtre, onglet précédent, confirmation pour quitter), affiche « Pas de connexion, nouvelle tentative… », et ouvre Discord, le wiki et les pages légales dans le navigateur du téléphone.
+- **Décisions** : fichiers du jeu dans l'appli (ancien : l'appli ouvrait le site à distance). Connexion par jeton dans un en-tête pour l'appli seulement, le site garde son cookie. Écran vertical, à confirmer. Icône provisoire : la pioche d'acier.
+- **Attention** : le code est figé dans l'appli. Une mise en ligne ne change plus l'appli des joueurs, il faut une mise à jour sur Google Play ; une ancienne appli peut casser si le serveur change trop.
+- **À suivre** : mettre la branche en ligne d'abord (le serveur doit connaître le jeton), créer la clé d'envoi et les 4 secrets GitHub, tester l'APK sur un vrai téléphone.
+- **État** : ✅ en ligne le 01/11
+
+## 01/11/2026 — Geoffrey — Stores : noms de marques retirés, pages légales préparées
+- **Pour le joueur** : les Lunettes Gucci deviennent les **Lunettes de luxe**, les Doc Martins les **Bottes de chantier**, plans et images compris. Personne ne perd rien : qualité, amélioration et rune restent. Des liens vers Confidentialité, Mentions légales, Conditions et Suppression du compte apparaissent sur l'écran d'accueil, à la création de compte et dans Mon compte.
+- **Décisions** : les noms sont écrits sans crochets, comme tous les objets du jeu. Le renommage se fait tout seul au démarrage du serveur. Signalements, journal et messages du chat gardent l'ancien nom : ce sont des preuves ou les mots des joueurs.
+- **À suivre** : les trois textes sont publiés sur la branche (`legal/`, `npm run legal` après chaque retouche) ; compléter les passages entre crochets et choisir l'option des mentions légales. Avant la mise en ligne, lancer `scripts/migrate-item-names.js` sur le VPS. Autres noms à examiner : Braum, Ulti shen (League of Legends).
+- **État** : ✅ en ligne le 01/11
+
+## 01/11/2026 — Geoffrey — Supprimer son compte (Google Play, App Store)
+- **Pour le joueur** : dans « Mon compte », un bouton **Supprimer mon compte**, dans une zone rouge à part. Le jeu dit ce qui sera perdu, puis demande le pseudo et le mot de passe (ou le mot SUPPRIMER pour un invité). Une page publique https://deepmineidle.fr/suppression-compte explique tout, et donne l'adresse contact@deepmineidle.fr pour qui n'a plus accès au jeu.
+- **Pour l'équipe** : `scripts/delete-account.js` traite les demandes reçues par mail. Le compte et ses données partent d'un coup. Dans les records et l'historique des coéquipiers, son pseudo devient « Joueur supprimé » ; les statistiques du tableau de bord restent, sous un compte anonyme.
+- **Décisions** : on garde les signalements qui le visent et une ligne de journal, rien d'autre. Le script ne supprime qu'avec `--yes`. Une session encore en cours avec d'autres joueurs est nettoyée à sa fin.
+- **À suivre** : cette branche contient la modération, pas encore en ligne (les deux partiront ensemble) ; créer l'adresse contact@deepmineidle.fr ; relire la politique de confidentialité (liste dans `docs/comptes.md`).
+- **État** : ✅ en ligne le 01/11
+## JJ/MM/AAAA — Prénom — Titre court
+- **Pour le joueur** : ce qui change en jeu (ou « rien, c'est de l'organisation »).
+- **Décisions** : choix de design ou d'équilibrage tranchés (s'il y en a).
+- **À suivre** : ce qui reste à faire ou à vérifier.
+- **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
+```
+
+## 01/11/2026 — Geoffrey — Classement : son propre onglet
+- **Pour le joueur** : les classements quittent Social et ont leur onglet **Classement**. Les boutons sont dans l'ordre Classement, Guilde, Social. Touches du clavier : C, G et S.
+- **État** : ✅ en ligne le 01/11
+
+## 01/11/2026 — Jules — Correctif : le jeu ne démarrait plus
+- **Pour le joueur** : depuis la mise en ligne des notifications de l'appli (01/11 au soir), le jeu s'arrêtait au
+  démarrage sur « Le jeu a planté au démarrage — Identifier 'setClock' has already been declared », pour tout le monde.
+  Deux morceaux du jeu portaient le même nom ; l'un est renommé, le jeu démarre de nouveau. Rien n'est perdu : les
+  sessions tournent sur le serveur, seul l'affichage était bloqué.
+- **À suivre** : un nouveau test vérifie maintenant que chaque fichier chargé par le jeu est lisible par le navigateur ;
+  ce genre d'erreur sera arrêté par les tests avant la mise en ligne.
+- **État** : ✅ en ligne le 01/11
+
+## 01/11/2026 — Geoffrey — Appli mobile : notifications
+- **Pour le joueur** : rien sur le site. L'appli Android prévient, même fermée : session terminée, mine instantanée dans
+  5 min (sauf de 23 h à 8 h), Bloc géant accessible, four terminé. Toucher la notification ouvre le bon écran. Dans Mon
+  compte → Options : un interrupteur général et un par type, tous activés par défaut, propres à chaque compte.
+- **Limite** : une session lancée depuis le PC n'est connue qu'à la prochaine ouverture de l'appli.
+- **État** : ✅ en ligne le 01/11, nouvelle APK à installer
+
 ## 01/11/2026 — Geoffrey — Guilde : message de guilde
 - **Pour le joueur** : en haut de l'onglet de sa guilde, une case **Message de guilde**. Le chef et les officiers l'écrivent, tous les membres le lisent.
 - **État** : ✅ en ligne le 01/11
@@ -25,15 +82,23 @@ Modèle d'entrée :
 ```
 
 ## 01/11/2026 — Jules — Fiches des stores : nouvelle icône et bannière
-- **Pour le joueur** : l'appli change d'icône : **une lampe de mine allumée** remplace la pioche (sur le téléphone après
-  avoir réinstallé l'appli). Les images des futures fiches Google Play et App Store sont prêtes, dans `mobile/store/` :
+- **Pour le joueur** : l'appli change d'icône : **une lampe de mine allumée** remplace la pioche, sur Android et sur
+  iPhone, et l'écran de démarrage la montre aussi (sur le téléphone après avoir réinstallé l'appli). Les images des futures fiches Google Play et App Store sont prêtes, dans `mobile/store/` :
   cette icône en 512 × 512 pour Google et en 1024 × 1024 sans transparence pour Apple, et la bannière Google
   (1024 × 500) : le titre en lettres pixel et une mine en coupe avec une session à 3.
 - **Décisions** : icône et bannière validées par Jules. Les captures d'écran attendent la version tactile ; scènes
   choisies : une session à 3, le Bloc géant, une tour, le Carreau. Ordre, légendes et tailles dans `docs/fiches-stores.md`.
+- **Décisions (02/11)** : appli **iPhone seule**, donc pas de captures iPad. L'appli iPhone installée par TestFlight
+  marche sur l'iPhone de Jules. Interface tactile : plus tard (Jules ou Geoffrey) ; textes légaux : Geoffrey.
 - **À suivre** : valider les légendes ; une 5e capture « Stuff / Craft » pour montrer la progression ?
-  L'appli iPhone est déclarée aussi pour iPad : Apple demandera alors des captures iPad (à trancher : iPhone seulement ?).
 - **État** : 🧪 sur la branche `jules/visuels-stores` (pas en ligne)
+
+## 01/11/2026 — Geoffrey — Modération pour Google Play et l'App Store
+- **Pour le joueur** : un bouton ⋮ sur chaque message et sur chaque joueur (Online, Classements, amis, fiche du Carreau) permet de **signaler** ou de **bloquer**. Un joueur bloqué : plus de messages, plus de bulle, plus d'invitations ni de demandes d'ami, et il n'est pas prévenu ; la liste « Joueurs bloqués » est dans Social. À la création d'un compte, invité compris, il faut cocher les conditions d'utilisation ; les comptes existants les acceptent à leur premier message. Le filtre connaît maintenant les termes sexuels et haineux.
+- **Pour l'équipe** : cinq nouveaux outils sur le VPS, `reports.js`, `delete-message.js`, `mute.js`, `ban.js`, `rename.js`, et un journal de ce qui a été fait (`reports.js --log`). Chaque signalement arrive aussi sur un salon Discord privé.
+- **Décisions** : on garde les avertissements et le ban auto de 24 h ; `ban.js` est une sanction à part (connexion refusée). Les jurons d'humeur (putain, merde, fuck) restent permis. Un bloqué n'est pas chassé du Carreau, seule sa bulle disparaît.
+- **À suivre** : les pages https://deepmineidle.fr/conditions et /confidentialite **n'existent pas encore** (404) ; il faut les publier avant la soumission aux stores. Créer le salon privé et régler `DIM_DISCORD_MOD_WEBHOOK` sur le VPS.
+- **État** : ✅ en ligne le 01/11
 
 ## 01/11/2026 — Geoffrey — Prison : des runs ne donnaient aucune XP
 - **Pour le joueur** : depuis le 31/10, environ 4 runs de prison sur 10 ne rapportaient aucune XP à cause d'un arrondi. Chaque run donne maintenant son XP. L'XP perdue avant la correction n'est pas rendue.

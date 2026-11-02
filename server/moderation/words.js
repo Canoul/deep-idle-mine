@@ -10,7 +10,7 @@
    Les jurons d'humeur (putain, merde, fuck, shit, damn) ne sont pas dans la liste : ils ne visent personne. */
 
 const RACE = 'Injure raciste', HOMO = 'Injure homophobe ou transphobe', INSULT = 'Insulte', HARM = 'Incitation au suicide ou menace',
-      SEX = 'Insulte sexiste', HANDI = 'Insulte validiste';
+      SEX = 'Insulte sexiste', HANDI = 'Insulte validiste', HATE = 'Contenu haineux', SEXUAL = 'Contenu sexuel';
 
 export const STRICT = [
   { re: 'nigger', motif: RACE }, { re: 'nigga', motif: RACE }, { re: 'negresse', motif: RACE },
@@ -30,18 +30,28 @@ export const WORD = [
   /* homophobie, transphobie */
   { re: 'fag', motif: HOMO }, { re: 'pede', motif: HOMO }, { re: 'pd', motif: HOMO }, { re: 'tapette', motif: HOMO },
   { re: 'tranny', motif: HOMO }, { re: 'dyke', motif: HOMO },
+  /* haine */
+  { re: 'heil hitler', motif: HATE }, { re: 'sieg heil', motif: HATE }, { re: 'white power', motif: HATE }, { re: 'gas the jews', motif: HATE },
   /* insultes */
   { re: 'connard', motif: INSULT }, { re: 'connasse', motif: INSULT }, { re: 'conasse', motif: INSULT },
   { re: 'fdp', motif: INSULT }, { re: 'ntm', motif: INSULT }, { re: 'tg', motif: INSULT }, { re: 'batard', motif: INSULT },
   { re: 'enfoire', motif: INSULT }, { re: 'trou du cul', motif: INSULT }, { re: 'cunt', motif: INSULT },
   { re: 'asshole', motif: INSULT }, { re: 'dickhead', motif: INSULT }, { re: 'fils de (pute|chienne)', motif: INSULT },
+  { re: 'fuck (you|off|u)', motif: INSULT }, { re: 'va te faire foutre', motif: INSULT },
   { re: '(nique|niquer) (ta|sa|ta grand|ta race|tes morts)( mere| race| morts)?', motif: INSULT },
   /* sexisme */
   { re: 'salope', motif: SEX }, { re: 'pute', motif: SEX }, { re: 'whore', motif: SEX },
   { re: 'slut', motif: SEX }, { re: 'bitch', motif: SEX }, { re: 'chienne', motif: SEX },
+  /* contenu sexuel (01/11/2026, exigence des stores) : pas « chatte », « pipe », « bite » seul (anglais), « râpe », « sexe » */
+  { re: '(ma|ta|sa|grosse|petite) bite', motif: SEXUAL }, { re: 'suce (moi|ma|mon|ta)', motif: SEXUAL }, { re: 'suceuse', motif: SEXUAL },
+  { re: 'branleur', motif: SEXUAL }, { re: 'branleuse', motif: SEXUAL }, { re: 'partouze', motif: SEXUAL }, { re: 'sodomie', motif: SEXUAL },
+  { re: 'sodomiser', motif: SEXUAL }, { re: 'porno', motif: SEXUAL }, { re: 'porn', motif: SEXUAL }, { re: 'blowjob', motif: SEXUAL },
+  { re: 'handjob', motif: SEXUAL }, { re: 'cumshot', motif: SEXUAL }, { re: 'pussy', motif: SEXUAL }, { re: 'dick', motif: SEXUAL },
+  { re: 'cock', motif: SEXUAL }, { re: 'tits', motif: SEXUAL }, { re: 'boobs', motif: SEXUAL }, { re: 'pedophile', motif: SEXUAL }, { re: 'pedo', motif: SEXUAL },
+  { re: 'je vais te violer', motif: SEXUAL }, { re: 'rapist', motif: SEXUAL },
   /* validisme */
-  { re: 'retarded', motif: HANDI },   // pas « retard » : « je suis en retard » { re: 'mongol', motif: HANDI }, { re: 'triso', motif: HANDI },
-  { re: 'trisomique', motif: HANDI },
+  { re: 'retarded', motif: HANDI },   // pas « retard » : « je suis en retard »
+  { re: 'mongol', motif: HANDI }, { re: 'triso', motif: HANDI }, { re: 'trisomique', motif: HANDI },
   /* menaces, suicide */
   { re: 'kys', motif: HARM }, { re: 'kill (yourself|urself|ur self)', motif: HARM }, { re: 'va (te|te faire) (pendre|suicider)', motif: HARM },
   { re: 'suicide toi', motif: HARM }, { re: 'je vais te (tuer|buter|crever)', motif: HARM },

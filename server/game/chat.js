@@ -42,6 +42,31 @@ export function createChat({ clock = Date.now, gapMs = CHAT.gapMs, ttlMs = CHAT.
       r.at = now; lastBy.set(account, now);
       return { msg, hits: mod.hits, original: t };
     },
+    /* message retiré par les créateurs (scripts/delete-message.js, 01/11/2026) : il disparaît pour tous ; son numéro reste dans
+       removed, les navigateurs ouverts l'effacent à la relecture suivante. Renvoie le message, ou null. */
+    remove(roomId, id){
+      const r = rooms.get(roomId), i = r ? r.msgs.findIndex(m => m.id === id) : -1;
+      if(i < 0) return null;
+      const [m] = r.msgs.splice(i, 1);
+      r.removed = [...(r.removed ?? []), id].slice(-keep);
+      return m;
+    },
+    removed: roomId => rooms.get(roomId)?.removed ?? [],
+    /* compte supprimé (01/11/2026) : ses messages et les MP qu'il a reçus partent ; il sort des lecteurs des autres ; son pseudo sort des
+       annonces du jeu. who : { id, names } ; replace : son remplaçant dans ces textes */
+    removeAccount(roomId, who, replace){
+      const r = rooms.get(roomId);
+      if(!r) return;
+      const gone = r.msgs.filter(m => m.account === who.id || (m.channel === 'mp' && m.to?.includes(who.id))).map(m => m.id);
+      r.msgs = r.msgs.filter(m => !gone.includes(m.id)).map(m => {
+        const n = { ...m };
+        if(n.to) n.to = n.to.filter(a => a !== who.id);
+        if(n.winner === who.id) delete n.winner;
+        if(n.system) for(const name of who.names) n.text = n.text.replaceAll(name, replace);
+        return n;
+      });
+      r.removed = [...(r.removed ?? []), ...gone].slice(-keep * 2);
+    },
     /* message du jeu (Raffle, 31/10/2026) : public, sans cadence ni modération ; extra : { winner } pour le gagnant */
     system(roomId, name, text, channel, extra = {}){
       const now = clock();
@@ -65,7 +90,7 @@ export function createChat({ clock = Date.now, gapMs = CHAT.gapMs, ttlMs = CHAT.
     /* ce qu'il faut enregistrer d'un salon (null : aucun message) */
     room(roomId){
       const r = rooms.get(roomId);
-      return r ? { next: r.next, msgs: freshMessages(r.msgs, clock()).map(m => ({ ...m })) } : null;
+      return r ? { next: r.next, msgs: freshMessages(r.msgs, clock()).map(m => ({ ...m })), removed: r.removed ?? [] } : null;
     },
     /* reprend un salon enregistré, revérifié message par message (numéros croissants, texte valide) */
     restore(roomId, raw){
@@ -82,7 +107,8 @@ export function createChat({ clock = Date.now, gapMs = CHAT.gapMs, ttlMs = CHAT.
         last = m.id;
       }
       const next = Math.max(last + 1, Number.isSafeInteger(raw.next) ? raw.next : 1);
-      rooms.set(roomId, { next, msgs: freshMessages(msgs, clock()).slice(-keep), at: msgs.at(-1)?.at ?? clock() });
+      const removed = Array.isArray(raw.removed) ? raw.removed.filter(Number.isSafeInteger).slice(-keep) : [];
+      rooms.set(roomId, { next, msgs: freshMessages(msgs, clock()).slice(-keep), at: msgs.at(-1)?.at ?? clock(), removed });
     },
   };
 }

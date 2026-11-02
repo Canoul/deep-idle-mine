@@ -73,14 +73,16 @@ import { fillHelp } from './ui/help.js';
 import { setupGuide } from './ui/guide.js';
 import { setupSocial } from './ui/social.js';
 import { setupGuild } from './ui/guild.js';
+import { setupLeaderboard } from './ui/leaderboard.js';
 import { setupJudgment } from './ui/judgment.js';
 import { setupNotify } from './ui/notify.js';
 import { setupObtained } from './ui/obtained.js';
 import { recipeOf } from './meta/craft.js';
 import { createAccountUI, bootAccount, renderNavAccount } from './ui/account.js';
-import { gameApi, partyApi, instantApi, socialApi, guildApi, giantApi, hesComingApi, townApi, ApiError, moderationApi } from './net/api.js';
+import { gameApi, partyApi, instantApi, socialApi, guildApi, giantApi, hesComingApi, townApi, ApiError, moderationApi, accountApi } from './net/api.js';
 import { ask, tell } from './ui/dialog.js';
 import { warningText, banBarText } from './shared/moderation-text.js';
+import { setupModeration, askRules } from './ui/moderate.js';
 import { energyText, energyPct, prisonBanner, awayText, hasAway, prisonActive, launchPrisonText, prisonPollError, prisonOnScreen } from './ui/prison.js';
 import { prisonLootHtml, showPrisonRecap } from './ui/prison-loot.js';
 import { bootApp, dropApp } from './app/boot.js';
@@ -103,6 +105,9 @@ let waitingFor = null;     // … celui de cette session (id)
 let prison = null, PG = null, prisonViewAt = 0;
 let pendingJoin = joinCodeFromHash(location.hash);   // lien d'invitation (#rejoindre=CODE), lu avant que la barre change l'adresse
 const serverNow = () => Date.now() + clockOffset;
+/* hors session : l'heure du serveur reçue avec les fours (notifications de l'appli).
+   Pas « setClock » : c'est déjà la vitesse / pause du mode dev (plus bas). */
+const syncClock = t => { if(!rec && Number.isFinite(t)) clockOffset = t - Date.now(); };
 const renderer = createRenderer($('cv'));
 const miRenderer = createInstantRenderer($('cvMi'));
 const isMi = () => rec?.mode === 'mi';
@@ -121,6 +126,8 @@ const town = setupTown($('bgTown'), {
   /* fiche d'un joueur dans la ville : demande d'ami (par ID : un invité n'a pas de pseudo), invitation dans mon groupe */
   friend: async id => setSocial(await socialApi.request(id)),
   invite: async id => { await partyApi.invite(id); pollLobby(); },
+  report: p => moderate.reportPlayer(p),
+  block: p => moderate.block(p),
   /* recherche de groupe depuis la ville (30/10) : celle du Lobby (lobby est créé plus bas, appelé seulement ensuite) */
   lfg: { view: () => lobby.lfgView(), toggle: () => lobby.toggleLfg() },
 });
@@ -229,7 +236,7 @@ const furnace = setupFurnace({
   onOp: async op => {
     const r = await gameApi.furnace({ ...op, opId: newOpId() });
     setInventory(r.inventory);
-    furnace.set(r.furnaces);
+    furnace.set(r.furnaces); syncClock(r.furnaces?.now); appLayer?.refreshNotifs();
     return r;
   },
 });
@@ -280,7 +287,7 @@ fillHelp();        // « ? » d'aide des pages (src/ui/help.js)
 
 /* ---------- navigation ---------- */
 const historyTab = setupHistory({ load: () => gameApi.history() });
-let guildTab = null;   // créé plus bas ; l'onglet peut s'ouvrir dès setupNav
+let guildTab = null, boardTab = null;   // créés plus bas ; un onglet peut s'ouvrir dès setupNav
 let nav;   // l'onglet de départ est ouvert pendant setupNav, avant que nav soit assigné
 let giantUI = null, hcUI = null;   // Bloc géant, He's coming (créés plus bas) : leur visite occupe l'onglet Session
 const inRoom = () => !!giantUI?.active() || !!hcUI?.active();
@@ -298,6 +305,7 @@ nav = setupNav($('nav'), $('views'), id => {
   if(id==='skills') skills?.refresh();   // le bouton reset suit la session en cours
   if(id==='historique') historyTab?.refresh();
   if(id==='guilde') guildTab?.open();
+  if(id==='classement') boardTab?.open();
   if(nav && (from==='chat' || id==='chat')) gchatDock.refresh();   // téléphone : le chat a son onglet (pas au tout début : il n'est pas encore créé, et il se règle tout seul)
   if(id==='session' && prisonActive(prison)) kickPrison();   // on regarde la prison : envois rapprochés tout de suite
   guide?.refresh();                      // « Regarde ton butin » : l'inventaire vient d'être ouvert
@@ -306,8 +314,9 @@ nav = setupNav($('nav'), $('views'), id => {
   appLayer?.onTab(id);
 });
 /* appli mobile : barre des familles ; shown : l'onglet Session a-t-il quelque chose à montrer (partie, prison, bilan) ? */
-if(appBoot.app) import('./app/main.js').then(m => { appLayer = m.startApp({ doc:document, win:window, nav,
-  shown: () => !!rec || inRoom() || prisonShown() || !$('end').hidden }); }).catch(e => { console.warn(e); dropApp(document); });
+if(appBoot.app) import('./app/main.js').then(async m => { appLayer = m.startApp({ doc:document, win:window, nav,
+  shown: () => !!rec || inRoom() || prisonShown() || !$('end').hidden,
+  notifData: () => ({ now:serverNow(), offset:clockOffset, sessionEnd:rec?.finishAt ?? null, furnaces:furnace.state().list, giantNext:giantUI?.nextEntry() ?? null, account:acct.account?.id ?? null }) });  (await appBoot.native)?.attach(appLayer); }).catch(e => { console.warn(e); dropApp(document); });
 
 /* orbes de la barre d'action : temps de session et XP ; pendant une session, oxygène et pods du mineur suivi */
 const orbs = setupOrbs($('orbL'), $('orbR'));
@@ -326,14 +335,15 @@ function updateOrbs(shown, mi, len = mi ? INSTANT_MINE.duration : SESSION_LEN){
 
 /* ---------- compte ---------- */
 const accountUI = createAccountUI($('account'), acct, {
-  onChange: () => { renderNavAccount($('navAccount'), acct); lobby.update({ account:acct.account }); startInstant(); pollSocial(); pollJudgment(); },
+  onChange: () => { renderNavAccount($('navAccount'), acct); lobby.update({ account:acct.account }); startInstant(); pollSocial(); pollJudgment(); appLayer?.refreshNotifs(); },
   confirmLeave: () => ask([
     acct.account?.guest && 'Compte invité : sans pseudo ni mot de passe, tu ne pourras plus jamais y revenir.',
     G && !G.over && 'Ta session continue sur le serveur : tu la retrouveras en te reconnectant.',
     'Se déconnecter quand même ?'].filter(Boolean).join('\n'), { ok:'Se déconnecter' }),
   options: () => [{ key:'bgSession', label:'Session en cours en fond d\'écran', title:'Pendant une session, la mine s\'affiche en fond, assombrie, derrière les autres onglets.', on: backdrop.on },
-                   ...(appBoot.app ? [] : [{ key:'bgTown', label:'Le Carreau (la ville) en fond d\'écran', title:'Hors session, la ville du spawn s\'affiche en fond, avec les autres joueurs en ligne ; l\'onglet Session sans session permet de s\'y promener.', on: town.on }])],
-  setOption: (key, v) => { if(key === 'bgSession') backdrop.set(v); if(key === 'bgTown') town.set(v); },
+                   ...(appBoot.app ? [] : [{ key:'bgTown', label:'Le Carreau (la ville) en fond d\'écran', title:'Hors session, la ville du spawn s\'affiche en fond, avec les autres joueurs en ligne ; l\'onglet Session sans session permet de s\'y promener.', on: town.on }]),
+                   ...(appLayer?.notifOptions() ?? [])],
+  setOption: (key, v) => { if(key === 'bgSession') backdrop.set(v); if(key === 'bgTown') town.set(v); if(key.startsWith('notif_')) appLayer?.setNotif(key.slice(6), v); },
 });
 
 /* ---------- lobby ---------- */
@@ -514,6 +524,7 @@ async function joinParty(fn){
   nav.show('lobby'); pollLobby(); pollSocial();
   return r;
 }
+boardTab = setupLeaderboard({ root: document.querySelector('.view[data-view="classement"]'), load: board => socialApi.leaderboard(board), moderate: p => moderate.playerMenu(p) });
 guildTab = setupGuild({ root: document.querySelector('.view[data-view="guilde"]'), onChange: () => { pollSocial(); pollLobby(); } });
 const social = setupSocial({
   request: async name => setSocial(await socialApi.request(name)),
@@ -524,7 +535,8 @@ const social = setupSocial({
   join:    id => joinParty(() => socialApi.join(id)),
   profile: id => socialApi.profile(id),
   online:  () => socialApi.online(),
-  leaderboard: board => socialApi.leaderboard(board),
+  moderate: p => moderate.playerMenu(p),
+  unblock: async id => setSocial(await socialApi.unblock(id)),
 });
 
 /* ---------- Jugement (dans le Lobby, « Où miner ») : jauges Ange / Démon (communes à tous) ----------
@@ -572,11 +584,19 @@ const gchatDock = setupChatDock({ dock: $('gchatDock'), edges: $('gchatDock').qu
 const gchatTabs = setupChatTabs({ bar: $('gchatTabs'), panel: $('gchatPanel'), select: $('gchatChan'),
                                   save: p => socialApi.chatPrefsSave(p).catch(console.warn), onChange: () => gchat?.refresh() });
 const gchat = setupChat({ prefix:'gchat', get: after => socialApi.chat(after), post: msg => socialApi.say(msg), meId: () => acct.account?.id, onWarning,
+                          onRules: () => askRules(() => accountApi.acceptRules()),
                           paused: () => document.hidden || gchatDock.folded, time: true,
                           show: gchatTabs.show, line: chatLine, sent: gchatTabs.sent,
                           /* gagnant d'un raffle : son lot est sur le serveur, à relire tout de suite */
                           fresh: list => { if(list.some(m => m.winner && m.winner === acct.account?.id)) gameApi.state().then(st => { setInventory(st.inventory); setEnergy(st.energy); }).catch(() => {}); },
                           parse: text => { const msg = parseChatInput(text, gchatTabs.channel(), gchatTabs.target()); return msg.lobby ? { ...msg, lobby: lobby.pubContext() } : msg; } });
+/* signaler, bloquer (01/11/2026) : fiche d'un joueur, menu d'un message */
+const moderate = setupModeration({ report: body => moderationApi.report(body),
+                                   block: async p => { setSocial(await socialApi.block(p.id)); gchat.forget(p.id); } });
+$('gchatLog').addEventListener('click', e => {
+  const b = e.target.closest?.('[data-msg]'), m = b && gchat.find(+b.dataset.msg);
+  if(m) moderate.messageMenu(m);
+});
 /* groupes en formation (31/10/2026) : la liste se relit toute seule tant que la fenêtre est ouverte */
 const forming = setupForming({ list: () => partyApi.forming(), team: () => lobby.team(),
                                join: async code => { await partyApi.join(code); await pollLobby(); },
@@ -604,6 +624,7 @@ function enterSession(session){
   rec = session; waiting = false;
   setsUI.refresh(); sessionFlag();   // sets indisponibles pendant la session
   clockOffset = session.now - Date.now();
+  appLayer?.refreshNotifs();
   const mi = session.mode === 'mi', tw = isTowerMode(session.mode), ins = isInstanceMode(session.mode);
   G = mi ? { mode:'mi', ready:false, miners:[] } : tw ? { mode:'tower', ready:false, miners:[] } : ins ? { mode:'instance', ready:false, miners:[] } : emptyView();   // MI et tour : remplacées en entier à chaque envoi
   window.G = G;                             // pour le débogage depuis la console (F12)
@@ -878,7 +899,8 @@ async function refresh(waited){
   showBan();
   setInventory(st.inventory);
   if(!st.ended || st.session) setProgress(st.progress);
-  furnace.set(st.furnaces);
+  furnace.set(st.furnaces); syncClock(st.furnaces?.now);
+  appLayer?.refreshNotifs();
   crusher.set(st.crusher);
   stuff.set(st.stuff);
   skills.set(st.skills);
@@ -892,7 +914,9 @@ async function refresh(waited){
 }
 
 /* ---------- démarrage ---------- */
+await appBoot.native;
 Object.assign(acct, await bootAccount(accountUI));
+window.dimBootOffline = acct.offline;      // appli : parti sans serveur, src/app/device.js recharge quand il revient
 renderNavAccount($('navAccount'), acct);
 lobby.update({ account:acct.account, offline:acct.offline });   // tout de suite : une page ouverte pendant une session ne passe par showNoSession qu'en quittant le bilan (27/10)
 $('navAccount').onclick = () => accountUI.openProfile();

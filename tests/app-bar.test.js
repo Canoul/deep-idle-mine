@@ -18,7 +18,7 @@ test('sous-onglets : rien pour une famille d\'un seul onglet', () => {
 
 test('sous-onglets : la pastille est sur le bon onglet', () => {
   const h = subHtml({ family:'social', current:'social', marks:new Set(['guilde']), inSession:false });
-  assert.equal(h.match(/data-subtab=/g).length, 3);
+  assert.equal(h.match(/data-subtab=/g).length, 4);
   assert.match(h, /data-subtab="guilde"[\s\S]*class="dot"/);
 });
 

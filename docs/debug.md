@@ -6441,10 +6441,112 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Quoi** : `removeReport` remplace `markDone` dans bot/main.js. Aucun droit Discord en plus : le bot efface ses propres messages.
 - **Tests** ✅ tests/bot-todo.test.js (logique et aide), `node --check bot/main.js`. ⚠️ Effacement non essayé sur le vrai Discord : main.js n'a pas de test sans connexion.
 
+
+## 01/11/2026 — Modération exigée par les stores : filtre, signaler, bloquer, outils admin, règles (Geoffrey)
+- **Déjà là, gardé** : `server/moderation/filter.js` (casse, accents, leet, répétitions, mot coupé), `service.js` (3 avertissements → ban 24 h), pseudos refusés. Ajouté : termes sexuels et haineux dans `words.js`. **Bug corrigé** : `mongol` et `triso` étaient pris dans un commentaire `//` et ne filtraient rien depuis le 30/10.
+- **Signalements** : `server/moderation/reports.js`, `routes.js` (`POST /api/moderation/report`), ns `report`. Le serveur relit le message (`social.findMessage`, `game.chatFind`) : l'auteur et le texte ne viennent jamais du navigateur, et on ne signale que ce qu'on peut lire (un MP d'autrui répond 404). Limite comptée sur les signalements enregistrés, pas sur un limiteur en mémoire : elle survit à un redémarrage. Doublon par compte et par message : `{ ok, already }`. Texte du signalement = texte **publié** (masqué) ; l'original d'un message averti est dans la fiche `scripts/moderation.js`.
+- **Blocage** : champ `blocked` du ns `social`, relu par `sanitizeSocial`. Filtré à la lecture dans `social.chatGet` et `game.chatGet` ; bulle : `town.ping` (param `blockedOf`) ; groupe : `party.invite` (param `blockedBy`, sortie silencieuse) et `dropInvites` (invitations posées avec `fromId` ; celles d'avant la mise à jour n'en ont pas, elles expirent seules) ; demande d'ami : reste dans `outgoing` de l'expéditeur, jamais dans `incoming`.
+- **Mute, suspension, journal** : `mutedUntil`, `suspended` dans le ns `moderation`, `chatRefusal` et `suspendedText` ; ns `mod_log`. `suspended` est distinct de `bannedUntil` : le ban auto laisse voir le jeu, la suspension coupe tout sauf `/api/account/*` ; `GET /api/account/me` répond `{ account: null, suspended }`. Le cookie est gardé : un invité suspendu retrouve son compte quand la suspension est levée.
+- **Suppression** : `chat.remove` ; `removed` (numéros) est enregistré avec le salon et renvoyé par `chatGet`, les pages ouvertes l'appliquent.
+- **Règles** : `RULES` en config, `rulesVersion` et `rulesAt` sur le compte. Exigé par les **routes** (`acceptRules`), pas par le service : `scripts/create-account.js` et `dev-presets` créent des comptes sans accord, ils sont simplement redemandés au premier message. `moderation.chatRefusal` passe avant la cadence.
+- **Outils** : `/api/admin/reports|chat-recent|chat-delete|mute|ban|rename|mod-log` ; `--name` accepte l'ID de compte d'un invité.
+- **Tests** ✅ tests/moderation-filter, moderation, moderation-report, moderation-block, moderation-admin, moderation-ui, pseudo-banword, dialog, account-client, account-http, social, party, proxy, security, chat*, town*, admin*, guild*. ✅ Serveur réel : les 5 scripts essayés de bout en bout. ✅ Vrai Chrome piloté par script (13 étapes, aucune erreur JavaScript) : case des règles, invité, ⋮, Signaler, Bloquer, liste, Débloquer, règles au premier message.
+- **Pas vérifié** ⚠️ : envoi sur un vrai salon Discord (testé avec un faux envoi) ; PostgreSQL (mêmes écritures `changed` que les autres ns, ns ajoutés à `db.load`, non essayé sur une vraie base) ; dans le navigateur : fiche du Carreau, ⋮ d'Online et des Classements (seul le HTML est testé), retour à l'écran de connexion d'un joueur suspendu page ouverte ; appli Capacitor : ouverture des liens `target="_blank"`.
+- **Déjà cassé, sans lien** ❌ : tests/leaderboard : « roi gobelin : record revérifié » échoue aussi sur `main` sans ce chantier.
+- **Points fragiles** : le chat de session n'a plus de panneau depuis le 01/11 : le serveur le gère (mute, blocage, signalement `source: 'session'`), mais aucun bouton ne s'affiche tant que le panneau ne revient pas. Un mot ajouté à `words.js` s'applique aussi aux pseudos existants : un compte déjà nommé ainsi (ex. « Dick ») doit changer de pseudo à sa prochaine action. Les noms de guilde sont filtrés, les autres textes libres non vérifiés un par un. Suspendre un invité ne l'empêche pas d'en recréer un.
+
+## 01/11/2026 — Suppression de compte : deleteAccount, page web, script admin (Geoffrey)
+- **Quoi** : `server/accounts/erase.js` (`createAccountEraser`, `deleteAccount`), route `POST /api/account/delete` (`service.checkDeletion` : pseudo + mot de passe, mêmes limites que la connexion, ou `confirm: 'SUPPRIMER'`), `POST /api/admin/delete-account`, `scripts/delete-account.js` (`--yes`), `suppression-compte.html` (adresse sans extension : `SERVER.pages`), fenêtre `askFields`. La branche part de `geoffrey/moderation`, pas de `main` (blocage, signalements, journal).
+- **Déroulé** : chaque service a `eraseAccount(id, who)` (`who` = { id, names, anon }) pour vider sa mémoire ; puis `gameStore.eraseAccount` et `accounts.eraseAccount` modifient la mémoire et **renvoient** les changements sans les écrire : une seule écriture. Sur PostgreSQL, `store.db` commun, et `apply` passe par `pool.connect` + BEGIN / COMMIT quand une écriture mêle effacements et mises à jour (avant : ni l'un ni l'autre n'était groupé).
+- **Classement** : `GAME_NS`, `ACCOUNT_NS`, `SHARED_NS`, `KEPT_NS`, `FREE_NS` dans server/game/store.js ; un test échoue si une nouvelle sorte de données n'est pas classée. `scrub` remplace l'identifiant partout (valeurs et clés) mais le pseudo seulement dans `name`, `toName`, `byName`, `targetName`, `from`, `team` : un joueur peut s'appeler comme un objet.
+- **Écritures tardives** : `game.eraseAccount` quitte la session puis attend `settling` ; `steleOwner` retiré, sinon la fin de session réécrirait ses shrines. Session en cours d'autres joueurs : `rec.erased` (contient l'identifiant et le pseudo jusqu'à la fin), `store.scrubSession` à la fin du versement.
+- **Tests** ✅ tests/account-delete.test.js (12 ; le test central cherche l'identifiant et le pseudo dans tout le stockage), postgres, account*, moderation*, social, party, guild*, admin*, chat*, town*, instant*. ✅ Vrai Chrome (compte à mot de passe, mauvais mot de passe, invité, page web), `delete-account.js` sur un vrai serveur local.
+- **Pas vérifié** ⚠️ : la transaction sur une vraie base PostgreSQL (testée avec une fausse) ; suppression pendant une visite réelle du Bloc géant ou une prison en cours (`stopPrisonOf` et `exitRoom` appelés, pas de test bout en bout) ; appli Capacitor.
+- **Hors de portée** ⚠️ : annonces déjà postées sur Discord (pseudo), journaux système (`journalctl`, lignes « Admin : … »), sauvegardes de la base. Les branches `rejeu-*`, `stats-prison`, `appli-notifs` peuvent ajouter des données : leur ns devra être classé à la fusion (le test le rappelle) ; les jetons de notification, s'ils arrivent, aussi.
+- **Déjà cassé, sans lien** ❌ : tests/leaderboard « roi gobelin : record revérifié », comme sur `main`.
+
+## 01/11/2026 — Marques retirées, migration des noms, pages légales (Geoffrey)
+- **Quoi** : `ITEM_RENAMES` (server/game/rename-items.js), appelée dans server/main.js **avant tout service** : `sanitizePiece` écarte une pièce au nom inconnu, et une session en cours relit `rec.gear`. `store.rewrite` parcourt toutes les sortes (`nsList` = `GAME_NS`, testé), clés comprises (`discovered` a le nom pour clé), en une écriture ; rien à faire = rien d'écrit. Exclus : `report`, `mod_log`, `chat_global`. Textures renommées (`glasses_dandy`, `boots_rangers`, `skins/dandy_glasses`). L'ancien nom reste dans docs/debug.md et docs/journal.md : historique.
+- **Vérifié** ✅ tests/item-rename.test.js ; ✅ copie de data/ de F:\dim-prison (9 inventaires, 5 stuffs, 44 sessions), anciens noms ajoutés : migration seule identique à la référence, gear score identique (3402), 2e passage sans écriture ; vrai démarrage OK. Les données locales n'avaient aucune de ces pièces. ⚠️ **Pas sur les données en ligne** : `scripts/migrate-item-names.js` les compte sans écrire.
+- **Attention** : après un démarrage complet sur une copie, `inventories`, `progress`, `energies`, `prisons` diffèrent : ce sont les prisons qui reprennent, pas la migration (la comparaison isolée ne montre aucune différence).
+- **Pages légales** : `scripts/build-legal.js` (`npm run legal`, `legal/<page>.md` → `<page>.html`), Markdown simple, aucun HTML interprété, crochets listés. Routes prêtes (`SERVER.pages`), liens `legalLinks()`. ❌ Les trois textes n'ont pas été reçus : pages absentes, 404. Rendu essayé avec un texte d'essai (retiré) en 390 px.
+- **Déjà cassés, sans lien** ❌ : tests/tier4 « recettes du T4 », tests/prison-server « une tour et une instance lancées terminent la prison » (échouent aussi sur la base du chantier), tests/leaderboard « roi gobelin ».
+
+## 01/11/2026 — Appli Android : fichiers dans l'appli, jeton, CORS, AAB signé (Geoffrey)
+- **Changement d'architecture** : `server.url` retiré de `capacitor.config.json` ; `mobile/scripts/copy-web.js` copie `src/` (sauf `src/wiki`), `textures/`, les polices (`mobile/assets/fonts`, OFL) et réécrit une copie de `index.html`. `mobile/www` est généré, ignoré par git. Origine : `https://localhost` (Android), `capacitor://localhost` (iOS).
+- **Connexion** : `SameSite=Strict` + origine différente = cookie jamais envoyé. Serveur : `Authorization: Bearer` lu dans `handleApi` (jamais sur `/api/admin`, où il porte la clé d'admin), même empreinte de jeton que le cookie ; `ctx.login` renvoie `token` dans le JSON et aucun cookie si l'origine est dans `SERVER.appOrigins`. CORS exact, sans `Allow-Credentials`, fait dans server/app.js (rien à changer dans Caddy). Navigateur : `src/net/base.js` (`API_BASE`, jeton dans Preferences). **Exception au principe n° 6 de CLAUDE.md** (« aucun secret côté navigateur ») : pour l'appli seulement ; `allowBackup=false` pour que le jeton ne parte pas dans les sauvegardes Android. Site : `DIM_APP` absent, chemin d'avant.
+- **Natif** : `src/app/device.js` (`backStep`, `externalUrl`, écran hors ligne sur l'événement `dim:offline`), chargé si le pont est là, attendu avant `bootAccount`. `window.Capacitor.Plugins` : pas de bundler. Barres : `SystemBars` de Capacitor 8 (`insetsHandling: css`), `EdgeToEdge.enable` dans `MainActivity`.
+- **Tests** ✅ tests/app-origin.test.js, tests/app-device.test.js. ✅ Vrai Chrome en 390 px, autre origine, faux pont (23 étapes) : CORS, jeton, rechargement, polices locales, bouton retour, liens, serveur coupé et rendu, démarrage sans serveur, déconnexion, puis site au cookie.
+- **Points fragiles** : **client figé** : aucune vérification de version entre appli et serveur ; une nouveauté serveur peut casser une vieille appli. `src/config.js` est aussi dans l'appli. Le nom de fichier `android-apk.yml` doit rester, GitHub ne lance à la main que les workflows connus de `main`. `jules/appli-ios` touche `mobile/` et `src/app/mode.js` : à refaire partir d'ici.
+## 01/11/2026 — Onglet Classement (Geoffrey) — branche `geoffrey/onglet-classement`
+- **Quoi** : code des classements déplacé de `src/ui/social.js` vers `src/ui/leaderboard.js` (mêmes logiques, route serveur inchangée), section `classement` dans `index.html`, `TABS` et `TAB_KEYS` (c, g, s ; ² retiré), famille Social de l'appli.
+- **Tests** : `tests/nav.test.js`, `tests/app-families.test.js`, `tests/app-bar.test.js`, `tests/leaderboard.test.js`, `tests/town.test.js` ; ⚠️ pas vu dans un navigateur (15 boutons dans la barre).
+- **Point fragile** : pas de bâtiment au Carreau pour Classement (`noBuilding`, comme Guilde).
+- **Déjà cassé avant ce chantier** : `tests/leaderboard.test.js`, « roi gobelin : record revérifié », échoue aussi sur `main` (il attend un refus de `instance_2`, prête depuis le 30/10). Pas touché.
+
 ## 01/11/2026 — Message de guilde (Geoffrey) — branche `geoffrey/guilde-message`
 - **Quoi** : champ `message { text, by, at }` de la guilde (`sanitizeGuilds` le garde), `setMessage` (`server/guild/service.js`, grade vérifié par `recruiter`), route `POST /api/guild/message`, `messageHTML` (`src/ui/guild.js`), option `multiline` de `askText`. Saisie dans une fenêtre et pas dans la page : la liste des membres est réécrite à chaque relecture et effacerait le texte en cours.
 - **Tests** : `tests/guild-service.test.js`, `tests/guild-ui.test.js`, `tests/dialog.test.js` ; ⚠️ pas vu dans un navigateur.
 - **Point fragile** : mot interdit masqué sans avertissement de modération (`moderate` seul, pas `moderation.warn`).
+
+## 01/11/2026 — Appli mobile : notifications programmées (Geoffrey) — branche `geoffrey/appli-notifs`
+- **Quoi** : `src/app/notifs.js` (calcul pur, réglages par compte), `src/app/native.js` (seul accès au plugin, par
+  `window.Capacitor.Plugins`, assemblage `startNotifs`), `APP_NOTIFS` dans `src/config.js`, `nextEntry()` dans `setupGiant`,
+  `@capacitor/local-notifications` 8.3 dans `mobile/` seulement. Serveur inchangé.
+- **Tests** : ✅ `app-notifs`, `app-native`, `app-mode`, `app-families`, `app-bar`, `mobile-config`. ✅ APK fabriquée par GitHub.
+  ✅ Chrome `?app` avec un faux plugin : rappels de mine programmés, options dans Mon compte, tout couper / rallumer, toucher → Four.
+  ⚠️ « Session terminée » pas vue en navigateur (invité neuf : `no_energy` ; mode dev : `finishAt` nul). ⚠️ Rien d'essayé sur un vrai téléphone.
+- **Points fragiles** : `isExactNotification:false` est obligatoire, sinon le plugin ouvre l'écran système des alarmes à
+  chaque `schedule` (Android 12+) ; ne jamais appeler `schedule` sans autorisation, il la redemande tout seul. Alarmes
+  donc inexactes (quelques minutes de retard possibles). Heures calmes testées sur l'heure de la notification : celle de
+  la mine de 8 h (7 h 55) ne sonne pas. Identifiant de mine lié à l'heure du créneau.
+- **Relecture indépendante** : ✅ corrigés : tout était reprogrammé à chaque synchro en session (`clockOffset` bouge de quelques ms, tolérance `syncTolerance`) ; horloge non recalée hors session (`setClock`, avec l'heure des fours).
+
+## 01/11/2026 — Noms définitifs des objets, pages légales publiées (Geoffrey)
+- **Noms** : Lunettes de luxe et Bottes de chantier (remplacent Lunettes du Dandy et Rangers ferrées, jamais en ligne ; les entrées ci-dessus gardent ces noms). Migration inchangée : depuis Lunettes Gucci et Doc Martins. Textures : `glasses_luxury`, `boots_worksite`, `skins/luxury_glasses`.
+- **Pages** : `legal/*.md` reçus, `npm run legal` ; `\[` lu comme `[` par `scripts/build-legal.js`. ⚠️ Passages entre crochets encore visibles, et écarts entre la politique et le code : voir docs/journal.md.
+- **❌ 01/11 (Jules)** : ce `const setClock` doublonnait `async function setClock` (vitesse / pause du mode dev) dans
+  src/main.js → SyntaxError, jeu en ligne bloqué au démarrage. Renommé `syncClock` : voir l'entrée suivante.
+
+## 01/11/2026 — Jeu bloqué au démarrage : `setClock` déclaré deux fois (Jules) — branche `jules/fix-setclock`
+- **Symptôme** (remonté par plusieurs joueurs, Chrome 156) : cadre « Le jeu a planté au démarrage », `Uncaught SyntaxError:
+  Identifier 'setClock' has already been declared — /src/main.js:593:1`. Le navigateur refuse tout le module : rien ne
+  se lance (site et appli, qui charge le site).
+- **Cause** : commit 1d28f9d (`geoffrey/appli-notifs`, en ligne le 01/11) ajoute `const setClock = t => …` (horloge hors
+  session, heure des fours) ligne 107, alors que `async function setClock(opts)` (horloge dev : vitesse / pause, envoyée au
+  serveur) existe depuis le 20/10 ligne 593. Deux déclarations du même nom dans un module = erreur de syntaxe au chargement.
+  Pas vu par les tests : main.js n'est importé par aucun test (DOM), et `tests/app-mode.test.js` vérifiait le texte du
+  fichier (`/const setClock = /`), pas qu'il se charge.
+- **Correctif** : la nouvelle fonction devient `syncClock` (définition + 2 appels : `refresh` et `furnace.onOp`). `setClock`
+  reste celle du dev (`onClock` de `setupRunControls`, `renderSpeeds`). Test texte d'app-mode mis au nouveau nom.
+- **Garde-fou** : `tests/boot-check.test.js`, « chaque fichier chargé par le jeu est du JavaScript valide » : parcourt les
+  imports depuis main.js (`findMissing` de src/boot-check.js) et passe `node --check` sur chacun (en parallèle, ~3 s).
+  Échouait avant le correctif avec l'erreur exacte du joueur.
+- **Tests** ✅ boot-check, app-mode, app-native, app-notifs, controls (63). ✅ Chromium sur `npm start` : écran de connexion,
+  puis « Jouer en invité » → `DIM_BOOT.started` vrai, 0 erreur console.
+- **Point fragile** : `node --check` ne voit que la syntaxe ; une erreur à l'exécution (variable inconnue, import d'un nom
+  qui n'existe pas) passe encore. Les imports nommés absents sont, eux, une erreur de liaison du navigateur, pas de
+  `node --check`.
+
+## 01/11/2026 — Mise en ligne groupée : modération, suppression de compte, marques et pages légales, appli Android (Geoffrey)
+- **Tests** : `npm test` complet : 8 échecs, les mêmes que sur `main` juste avant (comparaison des deux suites) : energyOfTicks, fortune, boîte de mesures, lobby mode dev, recettes du T4, recycle, roi gobelin, tour et instance terminent la prison. ❌ À regarder, sans lien avec ces chantiers. `test:anticheat` 152/152, simulation 3 mineurs × 5 sans blocage.
+- **Fusion** : classements déplacés par `geoffrey/onglet-classement` dans src/ui/leaderboard.js : le bouton ⋮ y a été remis.
+
+## 01/11/2026 — Appli iPhone : signature par clé d'API, simulateur (Geoffrey, repris de jules/appli-ios)
+- **Repris de Jules** : `mobile/ios` (Capacitor 8, Swift Package Manager), icônes, `src/app/mode.js`, base du workflow et du guide. **Pas repris** : `ios-signature.sh`, certificat et profil manuels. Sa branche reste intacte.
+- **Signature** : `xcodebuild archive` avec `CODE_SIGNING_ALLOWED=NO`, puis `-exportArchive -allowProvisioningUpdates` avec la clé (`signingStyle: automatic`, cloud signing) : une archive signée demanderait un certificat de développement et un appareil enregistré, absents du Mac de GitHub. Il faut le rôle **Admin**. Envoi : `altool --upload-app`, pour garder l'IPA. `macos-26`, pas `macos-latest` : SDK d'iOS 26 exigé par Apple.
+- **Changements** : iPhone seul (`TARGETED_DEVICE_FAMILY = 1`), `PrivacyInfo.xcprivacy` (UserID, GameplayContent, OtherUserContent, UserDefaults CA92.1, sans suivi), `MainViewController` (`bounces = false`, pincement coupé ; pas de `scrollEnabled: false` : le jeu défile sur la page), `@capacitor/keyboard` (`resize: native`), `#gchatInput` à 16 px, numéro de build = exécution × 100 + essai. `backButton` n'est jamais émis sur iOS, rien n'en dépend. Notifications locales : pas d'entitlement.
+- **Tests** ✅ tests/mobile-config, app-mode, app-device, app-native, app-origin. ✅ GitHub Actions, commit 628a1f5, run 41339218128 : compilation Release, bibliothèques, manifeste, icône sans transparence ; simulateur : appli vivante, **84 953 pixels du bouton Se connecter** sur la capture, donc jeu démarré et serveur joint depuis `capacitor://localhost`. La console ne donne que 2 lignes : « 0 erreur JavaScript » ne prouve rien seul, l'écran si. ✅ Android vert avec le plugin clavier (86f631e).
+- **Vérifié le 02/11** ✅ (ajout de Jules) : TestFlight : run 41350722773 (main, 01/11, `testflight`, signature dans le cloud par la clé d'API de Geoffrey) vert ; Jules invité sur App Store Connect et TestFlight, appli installée et essayée sur son iPhone le 02/11.
+- **Pas vérifié** ⚠️ (01/11, avant l'essai ci-dessus) : tout ce qui demande la clé (cloud signing, `altool`, TestFlight) : aucun secret à ce jour. Vrai iPhone : encoche, clavier, Safari, notifications, stockage du jeton.
+- **Point fragile** : un titre d'étape YAML ne doit pas contenir `: ` (workflow invalide, aucune tâche lancée, 86f631e).
+
+## 01/11/2026 — Contrôle iPhone : échec dans le simulateur, capture trop tôt (Geoffrey)
+- **Symptôme** : run 41342225719 (main, ae5527e) en échec, 0 pixel du bouton ; run 41341219019, même commit, réussi avec 84 953 pixels. Appli vivante dans les deux.
+- **Limite** : artefact et journaux illisibles sans authentification (401, 403), `gh` absent de ce poste : `ecran.png` de l'échec **non vu**. Indice : artefact de 8,7 Ko contre 211 Ko, donc image presque unie.
+- **Cause, par les mesures** : run 41343755804 : à 2 s écran de démarrage (0 orange, 41 teintes), bouton visible à **55 s**, la commande de capture elle-même mettant une cinquantaine de secondes à revenir. L'ancien contrôle photographiait à 40 s fixes : il réussissait ou échouait selon la charge du Mac de GitHub. Serveur à 0,57 s : pas en cause. C'est un premier lancement à froid du simulateur, ça ne mesure pas un vrai iPhone.
+- **Correctif** : `.github/workflows/ios.yml` attend le bouton, 120 s au plus, une capture toutes les 5 s, toutes gardées dans l'artefact ; seuil inchangé (2 000 pixels), `mobile/scripts/ios-screen.cjs` ; annotations avec orange / teintes / clarté à chaque capture, temps de réponse du serveur.
+- **Tests** ✅ tests/mobile-config.test.js. ✅ Exécutions `controle` par push sur la branche (le déclenchement à la main demande une authentification) : 41343755804 (bouton à 55 s) et 41344246150 (bouton à 31 s), verts. L'écart autour de 40 s explique les réussites et les échecs de l'ancien contrôle.
 
 ## 01/11/2026 — Visuels des fiches des stores (Jules) — branche `jules/visuels-stores`
 - **Quoi** : `scripts/gen_store_art.py` (`npm run store:art`, Python + Pillow) écrit `mobile/store/` :
@@ -6460,8 +6562,8 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** ✅ tests/store-art.test.js (tailles, type de couleur 2 = RVB sans alpha et pas de bloc tRNS pour Apple et la
   bannière, exclusion dans chaque workflow qui suit `mobile/**`) ; tests/mobile-icon.test.js, tests/mobile-config.test.js
   inchangés et verts.
-- **Reste à faire** : captures d'écran (plan dans `docs/fiches-stores.md`) quand l'interface tactile existera ; trancher
-  iPhone seul ou iPhone + iPad (`TARGETED_DEVICE_FAMILY = "1,2"` dans le projet iOS : captures iPad 13" exigées).
+- **Reste à faire** : captures d'écran (plan dans `docs/fiches-stores.md`) quand l'interface tactile existera. iPad :
+  tranché le 02/11, iPhone seul (`TARGETED_DEVICE_FAMILY = 1`), pas de captures iPad.
 - **Point fragile** : si l'icône de l'appli change (`gen_app_icon.py`), relancer aussi `npm run store:art` : les stores
   veulent la même icône sur la fiche et sur le téléphone.
 - **Nouvelle icône (même jour)** : lampe de mine choisie par Jules, image Gemini 640 × 640 (icône dans un carré arrondi de
@@ -6473,6 +6575,15 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   au plus proche voisin puis réduction BOX si la taille n'est pas un multiple de 64 ; avant-plan adaptatif = icône
   entière sur les 72 px visibles sur 108, fond = couleur médiane du bord (`#100c0b`) ; écrit l'icône iOS seulement si
   le projet iOS est là. ✅ tests/mobile-icon.test.js (source 64 × 64, fond sombre), tests/store-art.test.js ; vu en
-  aperçu à toutes les tailles Android, en rond et en carré. ⚠️ Pas encore vu sur un vrai téléphone.
-  ⚠️ À la fusion avec `jules/appli-ios` : conflit attendu dans `gen_app_icon.py` (garder cette version, qui écrit déjà
-  l'icône iOS), puis relancer `npm run app:icon` pour réécrire `AppIcon-512@2x.png`.
+  aperçu à toutes les tailles Android, en rond et en carré. ✅ 02/11 : lampe vue par Jules sur son téléphone (APK de la
+  branche, avant la fusion ci-dessous).
+- **Fusion avec main (02/11)** : entre-temps `main` fabrique les icônes avec Capacitor Assets (`cd mobile && npm run
+  assets`, Geoffrey : icônes Android avec `ldpi` et fond en PNG, icône iPhone, écrans de démarrage) depuis
+  `mobile/assets/logo.png` (la pioche, provisoire). Gardé : son outil, seul à écrire `mobile/android` et `mobile/ios`.
+  `gen_app_icon.py` n'écrit plus que `logo.png` (lampe ×16 au plus proche voisin, RVB) et garde `icon(size)` pour
+  `gen_store_art.py`. `mobile/assets/icon-1024.png` retiré (plus personne ne le lit), `values/ic_launcher_background.xml`
+  remis comme sur main (`#191310`, l'icône adaptative lit `@mipmap/ic_launcher_background`). Rendu vérifié en aperçu :
+  icône classique (lampe dans une petite marge sombre), adaptative avec l'encart de 16,7 % (lampe entière dans le
+  rond), iPhone 1024 RVB plein cadre, écrans de démarrage (petite lampe au centre). ✅ tests/mobile-icon (logo 1024,
+  type de couleur 2), store-art, mobile-config : 25/25. ⚠️ Icône Capacitor pas encore vue sur un vrai téléphone (APK et
+  TestFlight suivants). `mobile/store/` inchangé (même `icon()`).

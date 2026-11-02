@@ -55,11 +55,11 @@ test('anti-triche : changer le début de X-Forwarded-For ne contourne pas la lim
   const base = `http://127.0.0.1:${server.address().port}`;
   try {
     const guest = fake => fetch(base + '/api/account/guest', { method: 'POST',
-      headers: { 'content-type': 'application/json', 'x-forwarded-for': `${fake}, 81.2.3.4` }, body: '{}' });
+      headers: { 'content-type': 'application/json', 'x-forwarded-for': `${fake}, 81.2.3.4` }, body: '{"acceptRules":true}' });
     for(let i = 0; i < 10; i++) assert.equal((await guest(`6.6.6.${i}`)).status, 201);
     assert.equal((await guest('7.7.7.7')).status, 429, 'même vraie adresse : limite atteinte');
     const other = await fetch(base + '/api/account/guest', { method: 'POST',
-      headers: { 'content-type': 'application/json', 'x-forwarded-for': '81.2.3.5' }, body: '{}' });
+      headers: { 'content-type': 'application/json', 'x-forwarded-for': '81.2.3.5' }, body: '{"acceptRules":true}' });
     assert.equal(other.status, 201, 'un autre joueur n\'est pas bloqué');
   } finally { server.close(); }
 });

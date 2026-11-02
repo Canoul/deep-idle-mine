@@ -89,8 +89,8 @@ test('stuff : T4 = 650 x (mithril, pièces spéciales), T4.5 = 750 x (thorium, c
     assert.equal(Object.keys(STUFF.items[name].stats).length, 2, `${name} : deux stats`);
     assert.equal(STUFF.items[name].slot, STUFF.items[`${p} en mithril`].slot);
   }
-  assert.equal(STUFF.items['Lunettes Gucci'].slot, 'casque');
-  assert.equal(STUFF.items['Lunettes Gucci'].stats.discoverMax, 1);
+  assert.equal(STUFF.items['Lunettes de luxe'].slot, 'casque');
+  assert.equal(STUFF.items['Lunettes de luxe'].stats.discoverMax, 1);
   assert.equal(tierOf('Jambières titanesques'), 4.5);
   assert.equal(Object.keys(STUFF.items['Jambières titanesques'].stats).length, 4);
 });
@@ -113,7 +113,7 @@ test('craft : Casque en thorium consomme le Casque en mithril le plus simple (pa
 test('recettes du T4 : clé d\'instance, gemmes, pièces spéciales (valeurs du créateur)', () => {
   assert.deepEqual(RECIPES['Clé d\'instance I'].cost, { 'Peau de gobelin':250, 'Pierre glissante':20, 'Tissu sombre':50, 'Barre d\'argent':1 });
   for(const g of ['Saphir', 'Rubis', 'Jade']) assert.deepEqual(RECIPES[g].cost, { 'Diamant':50, [`${g} inférieur`]:3 });
-  assert.deepEqual(RECIPES['Doc Martins'].cost, { 'Cuir de minotaure':50, 'Thorium ingot':4, 'Tissu sombre':100 });
+  assert.deepEqual(RECIPES['Bottes de chantier'].cost, { 'Cuir de minotaure':50, 'Thorium ingot':4, 'Tissu sombre':100 });
   assert.deepEqual(RECIPES['Gants de boucher'].cost, { 'Rotten flesh':50, 'Mithril ingot':15, 'Peau de gobelin':500 });
   for(const [name, r] of Object.entries(RECIPES)) for(const k of Object.keys(r.cost)) assert.ok(ITEMS[k], `${name} : ${k}`);
 });

@@ -1,7 +1,7 @@
 /* Couche appli (src/app/) : détection de l'appli (pont natif ou ?app), et rien du tout sur le site. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { nativeStatus, isAppMode } from '../src/app/mode.js';
+import { nativeStatus, isAppMode, APP_UA } from '../src/app/mode.js';
 import { readFileSync } from 'node:fs';
 import { bootApp, dropApp } from '../src/app/boot.js';
 
@@ -90,4 +90,24 @@ test('appli : le Carreau ne tourne pas dans l’appli (ni dessin ni appels au se
 test('appli : pas de transition entre les onglets', () => {
   const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
   assert.match(main, /if\(!appBoot\.app && backdrop\.switchTab\(/);
+});
+
+test('appli : Mon compte montre les réglages des notifications, transmis à la couche appli', () => {
+  const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  assert.match(main, /appLayer\?\.notifOptions\(\) \?\? \[\]/);
+  assert.match(main, /key\.startsWith\('notif_'\)\) appLayer\?\.setNotif\(key\.slice\(6\), v\)/);
+  assert.match(main, /notifData: \(\) =>/);
+});
+
+test("appli : hors session, l'horloge se cale sur l'heure du serveur reçue avec les fours", () => {
+  const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  assert.match(main, /const syncClock = /);
+  assert.match(main, /syncClock\(st\.furnaces\?\.now\)/);
+  assert.match(main, /syncClock\(r\.furnaces\?\.now\)/);
+});
+
+test('iPhone : pont bloqué dans notre appli (canal natif de WebKit), rien dans une autre appli', () => {
+  const channel = { webkit: { messageHandlers: { bridge: {} } } };
+  assert.equal(nativeStatus({ ...channel, navigator: { userAgent: 'iPhone ' + APP_UA } }), 'blocked');
+  assert.equal(nativeStatus({ ...channel, navigator: { userAgent: 'iPhone' } }), 'web');
 });

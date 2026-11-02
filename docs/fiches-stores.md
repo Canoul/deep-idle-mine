@@ -19,7 +19,8 @@ Apple n'a pas de bannière.
 - **Icône** : une lampe de mine allumée dans la roche, avec des paillettes d'or et de diamant (choix de Jules, 01/11).
   Image faite avec Gemini, puis remise sur une vraie grille de pixels (64 × 64) : `mobile/assets/icon-art.png`, la seule
   source de l'icône. C'est la même sur le téléphone et sur les fiches, comme le demandent les stores : pour la changer,
-  remplacer `icon-art.png` puis lancer `npm run app:icon` et `npm run store:art`. Pistes écartées le 01/11 : la pioche
+  remplacer `icon-art.png` puis lancer `npm run app:icon` (écrit `mobile/assets/logo.png`), `cd mobile && npm run assets`
+  (icônes Android et iPhone, écrans de démarrage) et `npm run store:art`. Pistes écartées le 01/11 : la pioche
   seule (l'ancienne icône) et ses variantes, un portrait de mineur.
 - **Bannière** : le titre « DEEP MINE IDLE » en lettres pixel à gauche, dans le noir des cases jamais vues ; à droite une
   mine en coupe dessinée comme en session : le ciel du crépuscule du Carreau, le coffre en surface, le puits et son
@@ -62,10 +63,9 @@ d'abord, le spectacle ensuite.
   capture brute d'un téléphone récent (1080 × 2400) est trop allongée ; la recadrer en 1080 × 1920 ou 1080 × 2160.
 - **App Store** : 1 à 10 captures en **iPhone 6,9 pouces** : **1290 × 2796** (ou 1320 × 2868, 1260 × 2736). Apple les
   réduit lui-même pour les petits iPhone.
-- **iPad** : Apple exige en plus des captures iPad 13 pouces (2064 × 2752) **si l'appli tourne sur iPad**. Le projet iOS
-  (branche `jules/appli-ios`) est déclaré iPhone **et** iPad (`TARGETED_DEVICE_FAMILY = "1,2"`). Décision à prendre :
-  appli iPhone seulement (pas de captures iPad ; l'iPad l'ouvre quand même, en format iPhone agrandi) ou interface iPad
-  à soigner et à capturer.
+- **iPad** : Apple exige des captures iPad 13 pouces (2064 × 2752) seulement si l'appli est déclarée pour iPad.
+  **Décision de Jules (02/11) : iPhone seul** (`TARGETED_DEVICE_FAMILY = 1`), donc **pas de captures iPad** ; l'iPad
+  ouvre quand même l'appli, en format iPhone agrandi.
 - Sans téléphone sous la main : Chrome, outils de développement, mode appareil, appareil personnalisé **430 × 932 à
   ×3** (donne 1290 × 2796) ou **360 × 640 à ×3** (1080 × 1920), adresse avec `?app`, puis « Capture screenshot ».
 

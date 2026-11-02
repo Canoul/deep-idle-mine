@@ -7,7 +7,7 @@ import { checkForm } from '../src/ui/account.js';
 test('formulaires : erreurs avant envoi, mêmes règles que le serveur', () => {
   assert.equal(checkForm('login', { name: 'Zoé', password: 'x' }), null);
   assert.match(checkForm('login', { name: ' ', password: 'x' }), /requis/);
-  assert.equal(checkForm('register', { name: 'Zoé', password: 'motdepasse', confirm: 'motdepasse' }), null);
+  assert.equal(checkForm('register', { name: 'Zoé', password: 'motdepasse', confirm: 'motdepasse', acceptRules: 'on' }), null);
   assert.match(checkForm('register', { name: 'Zoé', password: 'motdepasse', confirm: 'motdepasso' }), /identiques/);
   assert.match(checkForm('claim', { name: 'a b', password: 'motdepasse', confirm: 'motdepasse' }), /lettres/);
   assert.match(checkForm('recover', { name: 'Zoé', code: 'ABCD', password: 'motdepasse', confirm: 'motdepasse' }), /16 caractères/);

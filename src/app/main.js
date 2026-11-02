@@ -2,14 +2,18 @@
    (nav.show) sans la remplacer. */
 import { barHtml, subHtml } from './bar.js';
 import { familyOf, targetTab, sessionRedirect } from './families.js';
+import { startNotifs } from './native.js';
 
 const KEY = 'deepIdleMine.appFamilyTab';   // dernier sous-onglet ouvert, par famille
 const load = win => { try { return JSON.parse(win.localStorage.getItem(KEY)) ?? {}; } catch(e){ return {}; } };
 const save = (win, v) => { try { win.localStorage.setItem(KEY, JSON.stringify(v)); } catch(e){} };
+const HOME = 'lobby', TRAIL = 20;          // écran d'accueil ; onglets retenus pour le bouton retour
 
-export function startApp({ doc, win, nav, shown }){
+export function startApp({ doc, win, nav, shown, notifData }){
   const remembered = load(win);
   let marks = new Set(), wasShown = false, drawn = '';
+  const trail = [];                        // onglets précédents (bouton retour Android)
+  let last = nav.current(), goingBack = false;
   const bar = doc.createElement('nav'), sub = doc.createElement('div');
   bar.id = 'appBar'; sub.id = 'appSub';
   doc.body.append(sub, bar);
@@ -41,12 +45,22 @@ export function startApp({ doc, win, nav, shown }){
   sync();
   /* aucun événement commun à la mine, la mine instantanée, les tours, l'instance, le Bloc géant et la prison */
   win.setInterval(sync, 1000);
+  const notifs = startNotifs({ win, doc, data:notifData, open:tab => nav.show(tab) });
 
   return {
+    notifOptions: notifs.options,
+    setNotif: notifs.set,
+    refreshNotifs: notifs.refresh,
     onTab(id){
+      if(id !== last && !goingBack){ trail.push(last); if(trail.length > TRAIL) trail.shift(); }
+      last = id; goingBack = false;
       const f = familyOf(id);
       if(f){ remembered[f] = id; save(win, remembered); }
       sync();
     },
+    canGoBack: () => trail.length > 0,
+    goBack(){ goingBack = true; nav.show(trail.pop()); },
+    atHome: () => nav.current() === HOME,
+    goHome(){ nav.show(HOME); },
   };
 }

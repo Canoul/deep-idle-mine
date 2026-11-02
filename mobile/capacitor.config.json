@@ -1,10 +1,20 @@
 {
   "appId": "fr.deepmineidle.app",
-  "appName": "Deep Mine Idle",
+  "appName": "Deep Mine Idle MMO",
   "webDir": "www",
   "appendUserAgent": "DeepMineIdleApp",
-  "server": {
-    "url": "https://deepmineidle.fr",
-    "errorPath": "offline.html"
-  }
+  "android": {
+    "allowMixedContent": false
+  },
+  "plugins": {
+    "SystemBars": {
+      "insetsHandling": "css",
+      "style": "DARK"
+    },
+    "Keyboard": {
+      "resize": "native",
+      "style": "DARK"
+    }
+  },
+  "backgroundColor": "#191310"
 }

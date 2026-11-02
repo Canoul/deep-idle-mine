@@ -91,5 +91,7 @@ export function createInstantService({ game, party = null, store, clock = Date.n
     },
     drop,
     count: () => signups.size,
+    /* compte supprimé : inscription annulée */
+    eraseAccount: id => drop([id]),
   };
 }

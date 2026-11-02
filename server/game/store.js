@@ -26,9 +26,35 @@
    Chat global (ns chat_global, clé 'state', 28/10/2026) : { next, msgs:[{ id, at, account, name, text, channel, to?, toName? }] }, les CHAT.keep
    derniers messages, gardés pour survivre aux redémarrages (server/social/service.js).
    Modération (ns moderation, clé = compte, 30/10/2026) : { warnings:[{ at, channel, motif, words, text, masked, with }],
-   bans:[{ at, until, motif }], bannedUntil, countFrom } (server/moderation/service.js). */
+   bans:[{ at, until, motif }], bannedUntil, countFrom, mutedUntil, suspended:{ at, until, reason } } (server/moderation/service.js).
+   Signalements (ns report, clé = numéro, 01/11/2026) : voir server/moderation/reports.js. Journal des actions admin (ns mod_log, clé = numéro) :
+   { id, at, by, action, target, detail } ; jamais effacés. */
 import fs from 'node:fs/promises';
 import path from 'node:path';
+
+/* toutes les sortes de données du jeu (chargées au démarrage) */
+export const GAME_NS = ['inventory', 'furnace', 'crusher', 'stuff', 'prefs', 'progress', 'skills', 'spells', 'sets', 'game_session', 'party', 'always_ready', 'mi_signup', 'social', 'judgment', 'giant_day', 'giant_player', 'hc_day', 'hc_player', 'discovered', 'session_stat', 'tower_record', 'instance_record', 'shrine', 'energy', 'prison', 'prison_compo', 'chat_global', 'chat_prefs', 'moderation', 'report', 'mod_log', 'raffle', 'guilds', 'guild_log'];
+/* Suppression d'un compte (01/11/2026, server/accounts/erase.js) : toute nouvelle sorte de données doit dire ici ce qu'elle devient
+   (tests/account-delete.test.js échoue sinon).
+   ACCOUNT_NS : une ligne par compte, effacée (clé = compte, ou « compte#niveau » pour les records). SHARED_NS : données communes,
+   nettoyées (identifiant et pseudo retirés). KEPT_NS : gardées exprès (signalements, journal). FREE_NS : aucun compte dedans. */
+export const ACCOUNT_NS = ['inventory', 'furnace', 'crusher', 'stuff', 'prefs', 'progress', 'skills', 'spells', 'sets', 'shrine', 'always_ready', 'mi_signup',
+                           'giant_player', 'hc_player', 'tower_record', 'instance_record', 'energy', 'prison', 'prison_compo', 'chat_prefs'];
+export const SHARED_NS = ['social', 'moderation', 'game_session', 'party', 'giant_day', 'hc_day', 'session_stat', 'judgment', 'guilds', 'guild_log', 'chat_global', 'raffle'];
+export const KEPT_NS = ['report', 'mod_log'];
+export const FREE_NS = ['discovered'];
+export const DELETED_NAME = 'Joueur supprimé';
+
+/* copie de v où ce compte n'apparaît plus : son identifiant devient anon (valeurs et clés, y compris « compte#2 » et « session:compte »),
+   son pseudo devient DELETED_NAME, seulement là où un pseudo est rangé : jamais dans les objets (un joueur peut s'appeler Charbon) */
+const NAME_FIELDS = new Set(['name', 'toName', 'byName', 'targetName', 'from']);
+export function scrub(v, who, field = null){
+  const id = s => s.includes(who.id) ? s.replaceAll(who.id, who.anon) : s;
+  if(typeof v === 'string') return (NAME_FIELDS.has(field) || field === 'team') && who.names.includes(v) ? DELETED_NAME : id(v);
+  if(Array.isArray(v)) return v.map(x => scrub(x, who, field));
+  if(v && typeof v === 'object') return Object.fromEntries(Object.entries(v).map(([k, x]) => [id(k), scrub(x, who, k)]));
+  return v;
+}
 
 export function createMemoryGameStore(initial = {}){
   const inventories = new Map(Object.entries(initial.inventories ?? {}));
@@ -63,8 +89,14 @@ export function createMemoryGameStore(initial = {}){
   const guildLogs = new Map(Object.entries(initial.guildLogs ?? {}));   // journal des bâtiments, jamais effacé : 'guilde:page' → lignes
   const alwaysReady = new Map(Object.entries(initial.alwaysReady ?? {}));   // comptes qui ont coché « Prêt tout le temps »
   const chatPrefs = new Map(Object.entries(initial.chatPrefs ?? {}));   // réglages du chat par compte (31/10/2026)
+  const reports = new Map(Object.entries(initial.reports ?? {}));
+  const modLogs = new Map(Object.entries(initial.modLogs ?? {}));
   const moderations = new Map(Object.entries(initial.moderations ?? {}));   // modération du chat, par compte (server/moderation/, 30/10)         // chat global du lobby, clé 'state'
   const copy = o => o && structuredClone(o);
+  const allMaps = () => ({ inventory: inventories, furnace: furnaces, crusher: crushers, stuff, prefs, progress, skills, spells, sets, game_session: sessions, party: parties,
+                           always_ready: alwaysReady, mi_signup: signups, social: socials, judgment: judgments, giant_day: giantDays, giant_player: giantPlayers, hc_day: hcDays, hc_player: hcPlayers,
+                           discovered, session_stat: sessionStats, tower_record: towerRecords, instance_record: instanceRecords, shrine: shrines, energy: energies, prison: prisons, prison_compo: prisonCompos,
+                           chat_global: chats, chat_prefs: chatPrefs, moderation: moderations, report: reports, mod_log: modLogs, raffle: raffles, guilds, guild_log: guildLogs });
 
   const store = {
     async getInventory(accountId){ return copy(inventories.get(accountId)) ?? null; },
@@ -197,6 +229,11 @@ export function createMemoryGameStore(initial = {}){
     async getModeration(accountId){ return copy(moderations.get(accountId)) ?? null; },
     async listModerations(){ return [...moderations.entries()].map(([account, m]) => ({ account, value: copy(m) })); },
     async putModeration(accountId, m){ moderations.set(accountId, copy(m)); await store.changed([{ ns: 'moderation', key: accountId, value: m }]); },
+    /* signalements et journal des actions admin (01/11/2026) */
+    async listReports(){ return [...reports.values()].map(copy).sort((a, b) => a.id - b.id); },
+    async putReport(r){ reports.set(String(r.id), copy(r)); await store.changed([{ ns: 'report', key: String(r.id), value: r }]); },
+    async listModLog(){ return [...modLogs.values()].map(copy).sort((a, b) => a.id - b.id); },
+    async addModLog(entry){ const e = { id: modLogs.size + 1, ...entry }; modLogs.set(String(e.id), copy(e)); await store.changed([{ ns: 'mod_log', key: String(e.id), value: e }]); return e; },
 
     /* tableau de bord : lignes de stats ; une ligne déjà écrite n'est jamais remplacée (fin de session rejouée) */
     async putSessionStats(rows){
@@ -268,6 +305,83 @@ export function createMemoryGameStore(initial = {}){
     /* renvoie true si c'est la première fois (annonce Discord d'un BP, 27/10), false si l'objet était déjà trouvé */
     async putDiscovered(item, v){ if(discovered.has(item)) return false; discovered.set(item, copy(v)); await store.changed([{ ns: 'discovered', key: item, value: v }]); return true; },
 
+    /* toutes les sortes de données (renommage d'objets, server/game/rename-items.js) */
+    nsList: () => Object.keys(allMaps()),
+    eachRow(fn){ for(const [ns, map] of Object.entries(allMaps())) for(const [k, v] of map) fn(ns, k, v); },
+    /* réécrit clés et valeurs (sauf les sortes de skip) ; met la mémoire à jour et renvoie les changements, sans les écrire */
+    rewrite(keyFn, valueFn, skip = []){
+      const out = [];
+      for(const [ns, map] of Object.entries(allMaps())){
+        if(skip.includes(ns)) continue;
+        for(const [k, v] of [...map]){
+          const nk = keyFn(k), nv = valueFn(v);
+          if(nk === k && nv === v) continue;
+          if(nk !== k){ map.delete(k); out.push({ ns, key: k, value: null }); }
+          map.set(nk, nv);
+          out.push({ ns, key: nk, value: copy(nv) });
+        }
+      }
+      return out;
+    },
+
+    /* Suppression d'un compte : met tout à jour en mémoire et renvoie les changements, SANS les écrire : l'appelant les écrit en une
+       fois avec ceux du compte. who : { id, names, anon } ; line : la ligne du journal, seule trace gardée. */
+    eraseAccount(who, line){
+      const out = [];
+      const drop = (map, ns, key) => { if(map.delete(key)) out.push({ ns, key, value: null }); };
+      const put = (map, ns, key, value) => { map.set(key, value); out.push({ ns, key, value }); };
+      const owned = k => k === who.id || k.startsWith(who.id + '#');
+      /* ses lignes */
+      const mine = { inventory: inventories, furnace: furnaces, crusher: crushers, stuff, prefs, progress, skills, spells, sets, shrine: shrines, always_ready: alwaysReady,
+                     mi_signup: signups, giant_player: giantPlayers, hc_player: hcPlayers, tower_record: towerRecords, instance_record: instanceRecords, energy: energies,
+                     prison: prisons, prison_compo: prisonCompos, chat_prefs: chatPrefs, social: socials, moderation: moderations };
+      for(const [ns, map] of Object.entries(mine)) for(const k of [...map.keys()]) if(owned(k)) drop(map, ns, k);
+      /* amis, demandes et blocages des autres : il en sort */
+      for(const [k, s] of socials){
+        const next = { ...s, friends: (s.friends ?? []).filter(x => x !== who.id), incoming: (s.incoming ?? []).filter(r => r.from !== who.id),
+                       outgoing: (s.outgoing ?? []).filter(r => r.to !== who.id), blocked: (s.blocked ?? []).filter(x => x !== who.id) };
+        if(JSON.stringify(next) !== JSON.stringify(s)) put(socials, 'social', k, next);
+      }
+      /* scores du jour (Bloc géant, He's coming) : sa ligne part, le total reste : les récompenses des autres ne bougent pas */
+      for(const [ns, map] of [['giant_day', giantDays], ['hc_day', hcDays]]) for(const [k, d] of map) if(d.scores?.[who.id]){
+        const { [who.id]: _gone, ...scores } = d.scores;
+        put(map, ns, k, { ...d, scores });
+      }
+      /* sessions : celle où il était seul part ; une session en cours d'autres joueurs est notée, nettoyée à sa fin (service de jeu) */
+      for(const [k, rec] of sessions) if(rec.players?.some(p => p.account === who.id)){
+        if(rec.players.length === 1) drop(sessions, 'game_session', k);
+        else if(rec.status !== 'done') put(sessions, 'game_session', k, { ...rec, erased: [...(rec.erased ?? []), who] });
+      }
+      /* statistiques : gardées, sous un faux compte ; la clé contient le compte */
+      for(const [k, v] of [...sessionStats]) if(k.includes(who.id)){
+        drop(sessionStats, 'session_stat', k);
+        put(sessionStats, 'session_stat', k.replaceAll(who.id, who.anon), scrub(v, who));
+      }
+      /* tout le reste de ce qui est commun : relu valeur par valeur, rien n'y échappe (un champ ajouté demain non plus) */
+      const shared = { game_session: sessions, party: parties, giant_day: giantDays, hc_day: hcDays, judgment: judgments, guilds, guild_log: guildLogs, chat_global: chats, raffle: raffles,
+                       moderation: moderations, tower_record: towerRecords, instance_record: instanceRecords };
+      for(const [ns, map] of Object.entries(shared)) for(const [k, v] of map){
+        if(ns === 'game_session' && v.status !== 'done') continue;
+        const next = scrub(v, who), a = JSON.stringify(v), b = JSON.stringify(next);
+        if(a !== b) put(map, ns, k, next);
+      }
+      /* signalements : ceux qui le visent restent entiers (sécurité des joueurs) ; ceux qu'il a envoyés perdent son nom */
+      for(const [k, r] of reports) if(r.by === who.id) put(reports, 'report', k, { ...r, by: who.anon, byName: DELETED_NAME });
+      /* journal : plus son pseudo dans les lignes d'avant ; une dernière ligne, sans autre donnée */
+      for(const [k, l] of modLogs) if(who.names.includes(l.target) || who.names.some(n => l.detail?.includes(n)))
+        put(modLogs, 'mod_log', k, { ...l, target: who.names.includes(l.target) ? DELETED_NAME : l.target, detail: who.names.reduce((d, n) => d.replaceAll(n, DELETED_NAME), l.detail ?? '') });
+      const e = { id: modLogs.size + 1, ...line };
+      put(modLogs, 'mod_log', String(e.id), e);
+      return out.map(c => ({ ...c, value: copy(c.value) ?? null }));
+    },
+    /* session terminée : elle peut enfin perdre les joueurs supprimés pendant la partie */
+    scrubSession(rec){
+      let out = rec;
+      for(const who of rec.erased ?? []) out = scrub(out, who);
+      const { erased: _gone, ...clean } = out;
+      return clean;
+    },
+
     /* changements [{ ns, key, value (null = supprimé) }] : voir server/accounts/store.js */
     async changed(changes){},
     async close(){},
@@ -280,7 +394,7 @@ export function createMemoryGameStore(initial = {}){
                          signups: Object.fromEntries(signups), socials: Object.fromEntries(socials),
                          judgments: Object.fromEntries(judgments), discovered: Object.fromEntries(discovered),
                          giantDays: Object.fromEntries(giantDays), giantPlayers: Object.fromEntries(giantPlayers), hcDays: Object.fromEntries(hcDays), hcPlayers: Object.fromEntries(hcPlayers), sessionStats: Object.fromEntries(sessionStats),
-                         towerRecords: Object.fromEntries(towerRecords), instanceRecords: Object.fromEntries(instanceRecords), energies: Object.fromEntries(energies), alwaysReady: Object.fromEntries(alwaysReady), chatPrefs: Object.fromEntries(chatPrefs), prisons: Object.fromEntries(prisons), prisonCompos: Object.fromEntries(prisonCompos), chats: Object.fromEntries(chats), raffles: Object.fromEntries(raffles), guilds: Object.fromEntries(guilds), guildLogs: Object.fromEntries(guildLogs), moderations: Object.fromEntries(moderations) }; },
+                         towerRecords: Object.fromEntries(towerRecords), instanceRecords: Object.fromEntries(instanceRecords), energies: Object.fromEntries(energies), alwaysReady: Object.fromEntries(alwaysReady), chatPrefs: Object.fromEntries(chatPrefs), prisons: Object.fromEntries(prisons), prisonCompos: Object.fromEntries(prisonCompos), chats: Object.fromEntries(chats), raffles: Object.fromEntries(raffles), guilds: Object.fromEntries(guilds), guildLogs: Object.fromEntries(guildLogs), moderations: Object.fromEntries(moderations), reports: Object.fromEntries(reports), modLogs: Object.fromEntries(modLogs) }; },
   };
   return store;
 }
@@ -310,14 +424,15 @@ export async function createFileGameStore(dir){
 
 /* PostgreSQL (en ligne) : db ouverte par server/db/postgres.js, partagée avec les comptes */
 export async function createPgGameStore(db){
-  const rows = await db.load(['inventory', 'furnace', 'crusher', 'stuff', 'prefs', 'progress', 'skills', 'spells', 'sets', 'game_session', 'party', 'always_ready', 'mi_signup', 'social', 'judgment', 'giant_day', 'giant_player', 'hc_day', 'hc_player', 'discovered', 'session_stat', 'tower_record', 'instance_record', 'shrine', 'energy', 'prison', 'prison_compo', 'chat_global', 'chat_prefs', 'moderation', 'raffle', 'guilds', 'guild_log']);
+  const rows = await db.load(GAME_NS);
   const store = createMemoryGameStore({ guildLogs: rows.guild_log, inventories: rows.inventory, furnaces: rows.furnace, crushers: rows.crusher, stuff: rows.stuff, prefs: rows.prefs,
                                         progress: rows.progress, skills: rows.skills, spells: rows.spells, sets: rows.sets,
                                         sessions: rows.game_session, parties: rows.party, signups: rows.mi_signup, socials: rows.social,
                                         judgments: rows.judgment, giantDays: rows.giant_day, giantPlayers: rows.giant_player, hcDays: rows.hc_day, hcPlayers: rows.hc_player, discovered: rows.discovered, sessionStats: rows.session_stat,
-                                        towerRecords: rows.tower_record, instanceRecords: rows.instance_record, shrines: rows.shrine, energies: rows.energy, alwaysReady: rows.always_ready, chatPrefs: rows.chat_prefs, prisons: rows.prison, prisonCompos: rows.prison_compo, chats: rows.chat_global, raffles: rows.raffle, guilds: rows.guilds, moderations: rows.moderation });
+                                        towerRecords: rows.tower_record, instanceRecords: rows.instance_record, shrines: rows.shrine, energies: rows.energy, alwaysReady: rows.always_ready, chatPrefs: rows.chat_prefs, prisons: rows.prison, prisonCompos: rows.prison_compo, chats: rows.chat_global, raffles: rows.raffle, guilds: rows.guilds, moderations: rows.moderation, reports: rows.report, modLogs: rows.mod_log });
   store.changed = changes => db.write(changes);
   store.close = () => db.flush();
   store.file = 'PostgreSQL';
+  store.db = db;       // base partagée avec les comptes : une suppression de compte y écrit tout en une fois
   return store;
 }

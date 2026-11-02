@@ -6,6 +6,8 @@
      [statut, obj]  → ce statut + JSON (obj absent = corps vide) */
 import { nameBanned } from './moderation/filter.js';
 import { MODERATION } from '../src/config.js';
+import { parisDate } from './moderation/service.js';
+import { reportRoutes } from './moderation/routes.js';
 import { SERVER } from './config.js';
 import { HttpError, sendJson, sendError, readJson, parseCookies, sessionCookie, clientIp } from './http/http.js';
 import { serveStatic } from './http/static.js';
@@ -24,18 +26,14 @@ import { adminRoutes } from './admin/routes.js';
    party : service des groupes (server/party/service.js) ; il prend en charge « Lancer la session ».
    instant : inscriptions à la mine instantanée (server/instant/service.js) ; social : amis (server/social/service.js) ;
    giant : Bloc géant (server/giant/service.js) ; hescoming : He's coming, même service ; town : le Carreau, ville du spawn (server/town/service.js). */
-/* « 31/10 à 14:05 », heure de Paris */
-const banDate = t => new Intl.DateTimeFormat('fr-FR', { timeZone: 'Europe/Paris', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
-  .format(new Date(t)).replace(' ', ' à ');
-
-export function createApp({ store, root, config = SERVER, service, game, party, instant, social, guild, giant, hescoming, town, moderation } = {}){
+export function createApp({ store, root, config = SERVER, service, game, party, instant, social, guild, giant, hescoming, town, moderation, reports, eraser } = {}){
   const accounts = service ?? createAccountService({ store });
   /* les futures routes (sauvegarde…) s'ajoutent ici, chacune dans son module */
-  const routes = { ...accountRoutes(accounts, { onRename: (id, name) => party?.rename(id, name) }), ...(game ? gameRoutes(game) : {}), ...(party ? partyRoutes(party) : {}),
+  const routes = { ...accountRoutes(accounts, { onRename: (id, name) => party?.rename(id, name), suspendedText: async id => moderation?.suspendedText(id) ?? null, eraser }), ...(game ? gameRoutes(game) : {}), ...(party ? partyRoutes(party) : {}),
                    ...(instant ? instantRoutes(instant) : {}), ...(social ? socialRoutes(social) : {}), ...(guild ? guildRoutes(guild) : {}), ...(giant ? giantRoutes(giant) : {}), ...(hescoming ? giantRoutes(hescoming, '/api/hescoming') : {}),
-                   ...(town ? townRoutes(town) : {}),
+                   ...(town ? townRoutes(town) : {}), ...(reports ? reportRoutes(reports) : {}),
                    /* administration : depuis le serveur lui-même, avec la clé DIM_ADMIN_TOKEN (server/admin/routes.js) */
-                   ...(game && store ? adminRoutes({ accounts: store, game, party, moderation, social, token: config.adminToken }) : {}),
+                   ...(game && store ? adminRoutes({ accounts: store, service: accounts, game, party, moderation, social, reports, eraser, token: config.adminToken }) : {}),
                    /* modération du chat (30/10) : ses avertissements et son ban, vus par le joueur */
                    ...(moderation ? { 'GET /api/moderation/me': async ctx => ctx.me ? moderation.status(ctx.me.id) : { warnings: 0, max: 0, bannedUntil: 0 } } : {}) };
   let proxyChecked = !config.logProxyCheck;
@@ -48,6 +46,9 @@ export function createApp({ store, root, config = SERVER, service, game, party, 
                 `· relais de confiance ${config.trustProxy}`);
   }
 
+  /* origine de l'appli ? Jamais l'administration */
+  const appOrigin = (req, pathname) => !pathname.startsWith('/api/admin') && (config.appOrigins ?? []).includes(req.headers.origin);
+
   async function handleApi(req, res, pathname){
     const route = routes[`${req.method} ${pathname}`];
     if(!route){
@@ -56,31 +57,43 @@ export function createApp({ store, root, config = SERVER, service, game, party, 
                     : sendError(res, 404, 'not_found', 'Route inconnue.');
     }
     const cookies = [];
-    const token = parseCookies(req.headers.cookie)[config.cookie.name];
-    const auth = token ? await accounts.authenticate(token) : null;
-    if(token && !auth) cookies.push(sessionCookie(config.cookie, '', 0));                      // jeton périmé : on l'efface
-    if(auth?.renewed) cookies.push(sessionCookie(config.cookie, token, auth.renewed));          // connexion prolongée
+    const cookieToken = parseCookies(req.headers.cookie)[config.cookie.name];
+    /* appli mobile (01/11/2026) : jeton dans Authorization (sauf /api/admin, où cet en-tête porte la clé d'administration). Un mauvais
+       en-tête ne connecte personne et n'efface aucun cookie */
+    const header = pathname.startsWith('/api/admin') ? null : /^Bearer (\S+)$/.exec(String(req.headers.authorization ?? ''))?.[1];
+    const byHeader = header ? await accounts.authenticate(header) : null;
+    const token = byHeader ? header : cookieToken;
+    const auth = byHeader ?? (cookieToken ? await accounts.authenticate(cookieToken) : null);
+    if(!byHeader && cookieToken && !auth) cookies.push(sessionCookie(config.cookie, '', 0));    // jeton périmé : on l'efface
+    if(!byHeader && auth?.renewed) cookies.push(sessionCookie(config.cookie, token, auth.renewed));   // connexion prolongée
+    const fromApp = appOrigin(req, pathname);
+    let appToken = null;                                                                        // nouvelle connexion de l'appli
 
     const ip = clientIp(req, config.trustProxy);
     logProxyCheck(req, ip);
     const ctx = {
       req, ip, me: auth?.account ?? null, body: {},
-      login: r => { cookies.length = 0; cookies.push(sessionCookie(config.cookie, r.token, r.maxAge)); },
+      login: r => { if(fromApp){ appToken = r.token; return; } cookies.length = 0; cookies.push(sessionCookie(config.cookie, r.token, r.maxAge)); },
       logout: async () => { await accounts.logout(token); cookies.length = 0; cookies.push(sessionCookie(config.cookie, '', 0)); },
     };
     try {
+      /* compte suspendu (scripts/ban.js, 01/11) : plus rien, même lire ; seules les routes de compte restent (se connecter à un autre
+         compte, se déconnecter) ; GET /api/account/me dit pourquoi */
+      ctx.suspended = moderation && ctx.me ? await moderation.suspendedText(ctx.me.id) : null;
+      if(ctx.suspended && !pathname.startsWith('/api/account/') && !pathname.startsWith('/api/admin/')) throw new HttpError(403, 'suspended', ctx.suspended);
       /* joueur banni (modération du chat, 30/10) : plus aucune action (POST), sauf son compte (connexion, déconnexion…) et
          l'administration ; lire reste permis (le jeu s'affiche, avec le message du ban) */
       if(moderation && ctx.me && req.method === 'POST' && !pathname.startsWith('/api/account/') && !pathname.startsWith('/api/admin/')){
         const until = await moderation.bannedUntil(ctx.me.id);
-        if(until) throw new HttpError(403, 'banned', `Tu es banni du jeu jusqu'au ${banDate(until)} (${MODERATION.warnings} avertissements pour langage interdit dans le chat).`);
+        if(until) throw new HttpError(403, 'banned', `Tu es banni du jeu jusqu'au ${parisDate(until)} (${MODERATION.warnings} avertissements pour langage interdit dans le chat).`);
       }
       /* pseudo interdit (31/10/2026) : plus aucune action tant qu'il n'est pas changé ; lire reste permis */
       if(ctx.me && req.method === 'POST' && !pathname.startsWith('/api/account/') && !pathname.startsWith('/api/admin/') && nameBanned(ctx.me.name))
         throw new HttpError(403, 'must_rename', 'Change ton pseudo pour continuer.');
       if(req.method === 'POST') ctx.body = await readJson(req, config.maxBodyBytes);
       const out = await route(ctx);
-      const [status, data] = Array.isArray(out) ? out : [200, out];
+      const [status, body] = Array.isArray(out) ? out : [200, out];
+      const data = appToken ? { ...body, token: appToken } : body;
       const headers = cookies.length ? { 'Set-Cookie': cookies } : {};
       if(data === undefined){ res.writeHead(status, { 'Cache-Control':'no-store', ...headers }); return res.end(); }
       sendJson(res, status, data, headers);
@@ -95,8 +108,20 @@ export function createApp({ store, root, config = SERVER, service, game, party, 
     if(config.cookie?.secure && config.hsts) res.setHeader('Strict-Transport-Security', config.hsts);
     const pathname = req.url.split('?')[0];
     try {
-      if(pathname === '/api' || pathname.startsWith('/api/')) return await handleApi(req, res, pathname);
-      return await serveStatic(req, res, root, config.publicPaths);
+      if(pathname === '/api' || pathname.startsWith('/api/')){
+        /* CORS de l'appli : cette origine exacte, sans cookies (Allow-Credentials n'est jamais envoyé) */
+        res.setHeader('Vary', 'Origin');
+        if(appOrigin(req, pathname)){
+          res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
+          res.setHeader('Access-Control-Expose-Headers', 'Retry-After');
+          if(req.method === 'OPTIONS'){
+            res.writeHead(204, { 'Access-Control-Allow-Methods': 'GET, POST', 'Access-Control-Allow-Headers': 'Authorization, Content-Type', 'Access-Control-Max-Age': '600' });
+            return res.end();
+          }
+        }
+        return await handleApi(req, res, pathname);
+      }
+      return await serveStatic(req, res, root, config.publicPaths, config.pages);
     } catch(e){
       if(res.headersSent) return res.end();
       if(e instanceof AccountError || e instanceof HttpError || e.status){

@@ -367,8 +367,8 @@ test('HTTP : Zoé crée, Max rejoint par le code, Zoé lance, les deux sont dans
   try {
     const zoe = browser(), max = browser();
     assert.equal((await zoe('GET', '/api/party')).status, 401, 'connexion exigée');
-    await zoe('POST', '/api/account/register', { name:'Zoé', password:'motdepasse' });
-    const maxAcc = (await max('POST', '/api/account/guest', {})).data.account;
+    await zoe('POST', '/api/account/register', { acceptRules: true, name:'Zoé', password:'motdepasse' });
+    const maxAcc = (await max('POST', '/api/account/guest', { acceptRules: true })).data.account;
     const { code } = (await zoe('POST', '/api/party/create', {})).data.party;
     assert.equal((await max('POST', '/api/party/join', { code })).status, 200);
     assert.equal((await max('POST', '/api/game/start', {})).data.error.code, 'not_leader');

@@ -12,7 +12,7 @@ import { SOCIAL_SERVER } from '../server/config.js';
 import { realDurationMs } from '../src/shared/game.js';
 import { fakeLive } from './helpers.js';
 import { nameKey } from '../src/shared/account.js';
-import { BOARD_INFO, towerDetail, instanceDetail, rankText, boardSubs } from '../src/ui/social.js';
+import { BOARD_INFO, towerDetail, instanceDetail, rankText, boardSubs } from '../src/ui/leaderboard.js';
 import { createInventory, addItem, serialize } from '../src/meta/inventory.js';
 import { instanceDurationMs } from '../src/shared/instances.js';
 

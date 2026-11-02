@@ -197,7 +197,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   `FURNACE`, `STUFF.items`, `UPGRADE.tiers` 4 et '4.5', `src/recipes.js`) : Treasure T4 en areas 7 et 8 (le T3 s'arrête à
   l'area 6) ; four : Mithril ingot, Refined cobalt / thorium (`ore:5` par fournée), alliages Cobalt / Thorium ingot ; armures
   en mithril (650 x), thorium et cobalt (750 x, faites à partir de la pièce en mithril : l'exemplaire le plus simple est
-  consommé, `plainestFirst` dans `src/meta/craft.js`) ; Lunettes Gucci, Doc Martins, Ceinture golémique, Gants de
+  consommé, `plainestFirst` dans `src/meta/craft.js`) ; Lunettes de luxe, Bottes de chantier, Ceinture golémique, Gants de
   boucher, Jambières titanesques ; gemmes Topaze / Saphir / Rubis / Jade ; BP Clé d'instance I ; Cuir de minotaure (1 à 3
   par minotaure, `DUNGEON.leather`) ; Rotten flesh (sans source). T4 des runes : 650 x (Couronne comprise, ancien : 600 x).
   Pas d'épée, lance ni pioche de ces métaux (pas de recette) ; pas de tier 4 à la Table de recherche.
@@ -244,13 +244,16 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   formé d'un coup (3 solos → chez le premier ; groupe de 2 prioritaire), « Lancer dès que plein » au choix du chef.
 - **Chat de session** (**ancien** : panneau retiré de l'onglet Session le 01/11, Geoffrey ; les routes `/api/game/chat` restent sur le serveur, sans page qui les appelle ; 22/10, Jules) : panneau dans l'onglet Session (mine classique), joueurs de la session
   seulement, en mémoire du serveur (`server/game/chat.js`, jamais en base), effacé à la fin ; réglages `CHAT`.
+- **Stores, marques et pages légales** (01/11, Geoffrey ; en ligne le 01/11) : Lunettes de luxe et Bottes de chantier (**ancien** : Lunettes Gucci, Doc Martins), migration au démarrage (`server/game/rename-items.js`, à garder tant que des données anciennes peuvent exister ; contrôle : `scripts/migrate-item-names.js`). Pages : `legal/*.md` → `npm run legal` → `/confidentialite`, `/mentions-legales`, `/conditions` ; liens `legalLinks()`. Textes dans `legal/`.
+- **Suppression de compte** (01/11, Geoffrey ; en ligne le 01/11) : bouton dans Mon compte, page `/suppression-compte` (`suppression-compte.html`), `scripts/delete-account.js --name X --yes` ; une seule fonction `deleteAccount` (`server/accounts/erase.js`), une écriture, transaction sur PostgreSQL. Toute nouvelle sorte de données doit être classée dans `server/game/store.js` (`ACCOUNT_NS`, `SHARED_NS`, `KEPT_NS`, `FREE_NS`). Pseudo remplacé par `DELETED_NAME` (« Joueur supprimé »). Gardés : signalements qui le visent, ligne de journal, statistiques anonymes. Détail : `docs/comptes.md`.
+- **Modération pour les stores** (01/11, Geoffrey ; en ligne le 01/11 ; `MODERATION`, `RULES`) : **Signaler** (⋮ sur un message ou un joueur, ns `report`, 10 / h, un par message, salon Discord privé `DIM_DISCORD_MOD_WEBHOOK`, `server/moderation/reports.js`) ; **Bloquer** (champ `blocked` du ns `social`, filtré par le serveur, liste dans Social, l'autre n'est pas prévenu) ; **outils** `scripts/reports.js` (`--open`, `--name`, `--close`, `--log`), `delete-message.js`, `mute.js`, `ban.js` (suspension, distincte du ban auto de 24 h), `rename.js`, journal ns `mod_log` ; **règles** acceptées à la création du compte et au premier message des anciens comptes (`rulesVersion`, `rulesAt`). Le chat de session n'ayant plus de panneau, seuls ses côtés serveur sont couverts.
 - **Modération du chat** (30/10, Geoffrey, en ligne) : mots interdits masqués (global et session,
   même déguisés ou coupés sur plusieurs messages / joueurs), avertissement avec motif, 3 → ban 24 h (plus aucune action
   de jeu, prison arrêtée). Liste : `server/moderation/words.js`. Outil : `scripts/moderation.js` (fiche, recent, unban, forgive).
 - **Chat global** (28/10, Jules, en ligne) : carte du **Lobby**, tous les comptes
   (invités compris), en session ou non ; un message / 3 s (`CHAT.globalGapMs`), 50 derniers gardés **en base** (ns
   `chat_global`, survit aux redémarrages) ; `server/social/service.js` (`chatPost` / `chatGet`, `/api/social/chat`), même
-  module d'affichage que le chat de session (`src/ui/chat.js`), relu seulement Lobby ouvert. **Pas de modération.**
+  module d'affichage que le chat de session (`src/ui/chat.js`), relu seulement Lobby ouvert. Modération : voir plus haut (**ancien** : aucune).
 - **Social** (21/10, Geoffrey ; fusionné par Jules) : amis par pseudo (ou ID pour un invité), demandes à accepter,
   présence (hors ligne, en ligne, en session, dans le lobby x/3), Inviter / Rejoindre, notifications en pop-up en haut
   à gauche (GAME_DESIGN §6). **Sous-onglets Amis / Online** (26/10, Geoffrey) : Online = compteur et liste de tous les
@@ -258,7 +261,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   demandée seulement quand le sous-onglet est ouvert). Serveur : `server/social/`, stockage `social` dans PostgreSQL. **Voir le stuff d'un ami**
   (22/10, Jules) : bouton « Stuff » → niveau, spécialisation, pièces portées et stats, en lecture seule
   (`POST /api/social/profile`, réservé aux amis, jamais l'inventaire).
-  **Sous-onglet Classements** (27/10, Geoffrey) : Gear score, Niveau, Spécialisation (un par arbre), Tour céleste et Tour céleste II
+  **Onglet Classement** (27/10, Geoffrey ; son propre onglet et `src/ui/leaderboard.js` depuis le 01/11, ancien : sous-onglet de Social ; route toujours `/api/social/leaderboard`) : Gear score, Niveau, Spécialisation (un par arbre), Tour céleste et Tour céleste II
   (29/10 : un par niveau de tour, records du niveau 2 sous la clé `compte#2` du ns tower_record, champ `level`)
   (meilleur temps par joueur, Ange et Démon confondus, avec l'équipe) ; top 50 + sa place (`LEADERBOARD`,
   `src/meta/leaderboard.js`, `POST /api/social/leaderboard`). Records de tour dans le ns `tower_record` (sans limite).
@@ -539,6 +542,11 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 
 - Lecture en différé (31/10/2026) : le navigateur affiche la partie 0,4 s en arrière (`FLUID`, src/shared/view.js), envois à rythme fixe, partie avancée toutes les 100 ms. Détails : `docs/debug.md`.
 
+- **Appli iPhone pour TestFlight** (01/11, Geoffrey, repris de `jules/appli-ios` ; en ligne le 01/11 ; **TestFlight vérifié le 02/11** : installée et essayée sur l'iPhone de Jules ; guide `docs/app-ios.md`) : mêmes choix qu'Android (jeu copié dans l'appli, jeton, `capacitor://localhost`). iPhone seul, portrait. Workflow `ios.yml` : `controle` (sans clé, simulateur), `ipa`, `testflight` ; signature par clé d'API Admin seule (archive non signée, Apple signe à l'export), secrets `ASC_KEY_ID`, `ASC_ISSUER_ID`, `ASC_KEY_P8`, `IOS_TEAM_ID`. Numéro de build : exécution × 100 + essai. Notifications locales, pas d'entitlement push. Manifeste `PrivacyInfo.xcprivacy`. Plugin clavier `@capacitor/keyboard` (`resize: native`).
+- **Appli Android pour Google Play** (01/11, Geoffrey ; en ligne le 01/11 côté serveur, pas encore sur Google Play ; guide `docs/app-android.md`) : nom « Deep Mine Idle MMO », `fr.deepmineidle.app`. **Fichiers du jeu dans l'appli** (`mobile/scripts/copy-web.js`, ancien : `server.url` vers le site, donc « une mise en ligne arrive dans l'appli » ne vaut plus : **client figé jusqu'à la mise à jour Play**, aucune vérification de version pour l'instant). Connexion de l'appli par jeton `Authorization` et CORS limité à `SERVER.appOrigins` ; le site garde son cookie. `src/app/device.js` : bouton retour, liens externes, « Pas de connexion ». Portrait, permission INTERNET seule. Workflow `android-apk.yml` : APK de test, AAB signé par les secrets `ANDROID_UPLOAD_*`.
+- **Notifications de l'appli** (01/11, Geoffrey) : locales, calculées sur le téléphone (`src/app/notifs.js`, `native.js`,
+  `APP_NOTIFS`) : session finie, mine instantanée 5 min avant (pas de 23 h à 8 h), Bloc géant, four. Interrupteur général et
+  un par type dans Mon compte, par compte. Push serveur : plus tard.
 - **Appli mobile** (28/10, Jules ; repris le 01/11 par Geoffrey, **étape 1 en ligne le 01/11**, Android d'abord, iOS plus
   tard : interface téléphone confirmée, Guilde et Chat dans la famille Social ; spec
   `docs/superpowers/specs/2026-10-28-appli-mobile-design.md`, guide `docs/appli-mobile.md`) : **Capacitor 8**, le jeu
@@ -554,9 +562,12 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   **Étape 1 faite le 28/10** : `mobile/`, `src/app/` (classe `app`, badge provisoire « APPLI ✓ / ⚠ pont bloqué »),
   icône (`npm run app:icon`), `.github/workflows/android-apk.yml` ; **APPLI ✓ confirmé sur un vrai Android le 01/11** (Geoffrey). **Étape 2 en 5 morceaux** : navigation (**en ligne le 01/11**, plan `2026-11-01-appli-mobile-etape2a-navigation.md`, `src/app/families.js`, `bar.js`, `main.js`, `app.css` : 5 familles, Guilde et Chat dans Social, Historique hors session, pas de Carreau, Geoffrey) → session → Accueil → Stuff et Skills → gestes au doigt.
   **Visuels des stores** (01/11, Jules, branche `jules/visuels-stores`) : **icône = lampe de mine** (source unique
-  `mobile/assets/icon-art.png`, 64 × 64 ; ancien : la pioche en acier), `mobile/store/` (icônes Google 512 et Apple 1024
-  sans transparence, bannière Google 1024 × 500), `npm run store:art` ; captures d'écran à faire avec l'interface
-  tactile (session à 3, Bloc géant, tour, Carreau), plan dans `docs/fiches-stores.md`.
+  `mobile/assets/icon-art.png`, 64 × 64 ; ancien : la pioche en acier) → `npm run app:icon` → `mobile/assets/logo.png` →
+  `cd mobile && npm run assets` (icônes Android et iPhone, écrans de démarrage) ; `mobile/store/` (icônes Google 512 et
+  Apple 1024 sans transparence, bannière Google 1024 × 500), `npm run store:art`. **iPhone seul** (Jules, 02/11) : pas de
+  captures iPad. Captures d'écran à faire avec l'interface tactile (session à 3, Bloc géant, tour, Carreau), plan dans
+  `docs/fiches-stores.md`. Qui fait quoi (02/11) : interface tactile plus tard (Jules ou Geoffrey), textes légaux :
+  Geoffrey.
 
 ## Hébergement
 
@@ -568,7 +579,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   2 min et redémarre à chaque changement ; d'après l'équipe, les parties en cours n'en souffrent pas.
 - Seule dépendance : `pg`, chargée uniquement si `DATABASE_URL` est défini.
 - **Appli mobile** : l'APK Android de test est fabriquée par **GitHub Actions** (artefact à télécharger, voir
-  `docs/appli-mobile.md`). Les dépendances de Capacitor sont dans `mobile/package.json`, jamais installées sur le VPS ;
+  `docs/app-android.md`). Les dépendances de Capacitor sont dans `mobile/package.json`, jamais installées sur le VPS ;
   le serveur ne sert pas `mobile/` (liste blanche `publicPaths`).
 - **Ancien** : Render (`docs/archive/deploiement-render.md`).
 

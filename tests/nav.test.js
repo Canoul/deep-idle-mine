@@ -5,8 +5,16 @@ import { readFileSync } from 'node:fs';
 import { TABS, pickTab, escapeTab, OVERLAYS } from '../src/ui/nav.js';
 
 test('les onglets sont dans l\'ordre voulu, Lobby puis Session en premier', () => {
-  assert.deepEqual(TABS.map(t => t.label), ['Lobby','Session','Inventaire','Stuff','Craft','Four','Concasseur','Amélioration','Recherche','Skills','Sorts','Historique','Social','Guilde']);
+  assert.deepEqual(TABS.map(t => t.label), ['Lobby','Session','Inventaire','Stuff','Craft','Four','Concasseur','Amélioration','Recherche','Skills','Sorts','Historique','Classement','Guilde','Social']);
   assert.equal(new Set(TABS.map(t => t.id)).size, TABS.length, 'identifiants uniques');
+});
+
+test('Classement : son onglet, plus dans Social ; touches C, G, S', async () => {
+  const { readFileSync } = await import('node:fs'), { TAB_KEYS } = await import('../src/ui/nav.js');
+  const html = readFileSync('index.html', 'utf8'), start = html.indexOf('data-view="classement"'), social = html.indexOf('data-view="social"');
+  assert.ok(start > 0 && start < html.indexOf('id="boardPick"') && html.indexOf('id="boardList"') < social);
+  assert.ok(!html.includes('data-stab="board"') && !html.includes('socialBoardTab'));
+  assert.deepEqual(TAB_KEYS.slice(-3), ['c', 'g', 's']);
 });
 
 test('onglet par défaut : Lobby', () => {

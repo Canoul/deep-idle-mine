@@ -46,13 +46,17 @@ server/accounts/
 
 ## API
 
+Appli mobile : même API, depuis une origine de `SERVER.appOrigins`. Connexion, création et changement de mot de passe répondent en plus `token`, sans cookie ; il s'envoie ensuite dans `Authorization: Bearer`.
+
 Toutes les réponses sont en JSON ; une erreur = `{ error: { code, message } }` avec un message prêt à afficher.
 
 | Route | Corps | Réponse |
 |---|---|---|
-| `GET /api/account/me` | | `{ account }` (`null` si personne n'est connecté) |
-| `POST /api/account/guest` | `{}` | 201 `{ account }` |
-| `POST /api/account/register` | `{ name, password }` | 201 `{ account, recoveryCode }` |
+| `GET /api/account/me` | | `{ account }` (`null` si personne n'est connecté) ; compte suspendu : `{ account: null, suspended: texte }` |
+| `POST /api/account/guest` | `{ acceptRules: true }` | 201 `{ account }` ; 400 `rules_required` sans la case |
+| `POST /api/account/register` | `{ name, password, acceptRules: true }` | 201 `{ account, recoveryCode }` ; 400 `rules_required` sans la case |
+| `POST /api/account/delete` | `{ name, password }`, invité : `{ confirm: 'SUPPRIMER' }` | `{ deleted: true }`, connexion coupée ; 401 `bad_credentials`, 400 `bad_confirm`, 429 |
+| `POST /api/account/rules` | `{ accept: true }` (connecté) | `{ ok, version }` : compte existant ou conditions changées |
 | `POST /api/account/login` | `{ name, password }` | `{ account }` |
 | `POST /api/account/logout` | `{}` | 204 |
 | `POST /api/account/claim` | `{ name, password }` (invité connecté) | `{ account, recoveryCode }` |
@@ -62,7 +66,7 @@ Toutes les réponses sont en JSON ; une erreur = `{ error: { code, message } }` 
 `account` = `{ id, displayId, name, displayName, guest, createdAt }` — jamais d'empreinte ni de secret.
 
 Codes d'erreur : `invalid_name`, `invalid_password`, `name_taken`, `bad_credentials`, `bad_recovery`,
-`not_authenticated`, `not_guest`, `guest`, `rate_limited` (+ en-tête `Retry-After`), `bad_request`, `not_found`.
+`not_authenticated`, `not_guest`, `guest`, `rules_required`, `suspended`, `rate_limited` (+ en-tête `Retry-After`), `bad_request`, `not_found`.
 
 ## Sécurité (choix et pourquoi)
 
@@ -131,6 +135,32 @@ session (`game.lastEndedAt`). `party.members[].playing` : membre encore en sessi
 | `POST /api/party/decline` | `{ code }` | `{ ok }` |
 | `POST /api/party/leave` | `{}` | `{ party: null }` |
 | `POST /api/party/kick` | `{ id }` | `{ party }` (chef seulement) |
+
+## Suppression d'un compte (`server/accounts/erase.js`)
+
+Une seule fonction, `deleteAccount`, pour le bouton de Mon compte et pour `scripts/delete-account.js`. Les services font sortir le joueur, puis tout le stockage part en une écriture (transaction sur PostgreSQL). Une nouvelle sorte de données doit être classée dans `server/game/store.js`, sinon `tests/account-delete.test.js` échoue.
+
+| Où | Ce qui devient |
+|---|---|
+| `account`, `session` (connexions) | effacés, pseudo de nouveau libre |
+| `inventory`, `furnace`, `crusher`, `stuff`, `prefs`, `progress`, `skills` (glyphes compris), `spells`, `sets`, `shrine`, `energy`, `prison`, `prison_compo`, `chat_prefs`, `always_ready` | effacés |
+| `mi_signup`, `giant_player`, `hc_player` | effacés, visite et inscription annulées |
+| `tower_record`, `instance_record` (clés `compte` et `compte#niveau`) | les siens effacés ; `team` des autres : « Joueur supprimé » |
+| `social` | le sien effacé ; retiré des amis, demandes et blocages des autres |
+| `moderation` | sa fiche effacée ; `with` des fiches des autres anonymisé |
+| `chat_global` | ses messages et les MP reçus effacés ; retiré des lecteurs ; pseudo retiré des annonces du raffle |
+| `game_session` | seul : effacée ; à plusieurs : identifiant et pseudo remplacés dans tous les champs (`players`, `leaves`, `seen`, `looks`, `gear`, `skills`, `statsAt`, `result`…), à la fin si elle tourne encore |
+| `session_stat` | gardée sous un faux compte `anon-…`, le même pour toutes ses lignes, clé comprise |
+| `giant_day`, `hc_day` | sa ligne de score effacée, le total du jour ne bouge pas |
+| `party` | il sort ; le suivant devient chef ; invitations reçues et envoyées retirées |
+| `guilds`, `guild_log` | il sort ; le suivant devient chef ; guilde vide dissoute ; invitations et demandes retirées ; dons du journal anonymisés |
+| `judgment` (`done.accounts`), `raffle` (participants, gagnant) | retiré ou anonymisé |
+| `report` | **gardés** ceux qui le visent (identifiant, pseudo, texte) ; ceux qu'il a envoyés perdent son nom |
+| `mod_log` | son pseudo retiré des anciennes lignes ; **une ligne gardée** : « compte <id> supprimé le <date> » |
+| `discovered` | aucun compte dedans |
+| En mémoire | présence, énergie, Carreau, statue, salle du Bloc géant et de He's coming, file LFG, chat de session, raffle |
+
+Non effaçable depuis le serveur : les annonces déjà postées sur Discord, les journaux système, les sauvegardes de la base.
 
 ## Évolutions prévues par l'architecture
 

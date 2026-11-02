@@ -8,6 +8,8 @@ import { leftText, statusText } from './social.js';
 import { canBeInvited } from '../shared/party.js';
 import { GAME, PREF_OPTIONS, MOB_INFO, DEV_TUNABLES, DEV_TARGETS, DEV_SPEC, SESSION_LEN, SKILLS, MINE_MODES, TOWER, INSTANCE, SHRINES } from '../config.js';
 import { joinLink } from '../shared/party.js';
+import { inLocalApp } from '../net/base.js';
+import { SITE } from '../config.js';
 import { presetName, copyPresetId, copyName } from '../shared/dev-presets.js';
 import { queueTime } from '../shared/lfg.js';
 import { pxi } from './pxicons.js';
@@ -457,7 +459,7 @@ export function setupLobby(h){
     if(box.dataset.key === key) return;
     box.dataset.key = key;
     if(!st.inviteOpen) return;
-    const link = p ? joinLink(location.href, p.code) : '';
+    const link = p ? joinLink(inLocalApp ? SITE.url : location.href, p.code) : '';   // appli : l'adresse du site, pas https://localhost
     box.innerHTML = (p ? `<div class="irow"><span>Code du groupe</span><b class="code" data-copy="${esc(p.code)}" title="Copier">${esc(p.code)}</b>
         <button data-copy="${esc(link)}">🔗 Copier le lien</button></div>
         <p class="mut small">Envoie le lien (ou le code) : ton ami clique, se connecte, et prend une place.</p>`
