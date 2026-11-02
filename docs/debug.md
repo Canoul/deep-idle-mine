@@ -6739,3 +6739,34 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Pas vérifié** ⚠️ dans une vraie partie (area 6+, 2 à 8 % des mobs) ; vu dans une maquette de galerie (textures stone, hardstone, tunnel). Le rendu (`src/render/canvas.js`, type `chair`) n'a pas changé : même taille, même pulsation horizontale.
 - **Applis** : rien de natif ; seulement des textures et un script Python.
 - ✅ En ligne le 03/11 (validé par Jules sur les images).
+
+## 03/11/2026 — Jules — Appli mobile : interface téléphone, étape 1 (branche jules/appli-ux)
+- **Quoi** : audit de l'appli (`?app`, 393 × 760) avec les skills `ss-audit` et `playwright-cli` :
+  `docs/superpowers/specs/2026-11-03-appli-ux-audit.md`. Corrections, toutes derrière `body.app` (le site ne change pas) :
+  - `src/app/app.css` (bloc « étape 1 ») : `.invHead h1` à `font-size:0` (restent `.qhelp` et les boutons de la ligne ;
+    `.invHead` sans aide ni autre enfant caché), `.lobbyWrap>h1` caché ; `.invTabs` et `.seg` en `nowrap` +
+    `overflow-x:auto` ; `.lrow` / `.gmem` sans retour à la ligne (annule pour eux la règle du site
+    `@media (max-width:700px){.frow{flex-wrap:wrap}.fbtns{width:100%}}`) ; `button{min-height:44px}` ; `.navLen` et
+    `.navLevel>span` cachés ; guide replié : `.gLbl`, `.gCur`, `.gArrow` cachés, `.views` plus bas de 60 px quand le
+    guide est là, guide caché sur l'onglet Chat (il couvrirait « Envoyer »).
+  - `src/app/families.js` : Sac = inventaire, craft, four, concasseur, recherche.
+  - `src/ui/inventory.js` : `fmtQty(n, { short })` (4 caractères au plus, arrondi vers le bas : 2,2k, 12k, 1,2M ; le
+    format du site ne change pas), `inApp()`, « Touche un objet… » dans l'appli.
+  - `src/ui/hud.js` : `#navTimer` en `innerHTML`, durée totale dans `<span class="navLen">` (`fmt` ne rend que des chiffres).
+  - `src/ui/guide.js` : titre replié découpé en `.gLbl` / `<b>` / `.gCur`. `src/ui/guild.js` : classe `gmem` sur les
+    lignes de membres.
+- **Tests** ✅ app-families (ordre du Sac, rouge puis vert), inventory (« affichage court », rouge puis vert) ; fichiers
+  liés (app-bar, app-families, craft, guide, guild-*, help, inventory, leaderboard, spells, stuff, world) : 174/175.
+  ❌ `leaderboard.test.js` « roi gobelin : record revérifié » échoue **aussi sur main** (avant ce chantier) : le test
+  attend `null` pour `instance: 'instance_2'`, que `sanitizeInstanceRecord` accepte depuis l'Instance II (Golbute). Pas
+  corrigé ici ; à trancher par qui connaît les records d'instance (Geoffrey).
+- **Vérifié** ✅ captures avant / après dans l'aperçu (Test_Mineur) : titres, filtres qui défilent, classement sur une
+  ligne, pastille du guide, barre du haut en session simulée (pseudo de 7 lettres entier avec « 93 / 100 »). Lignes de
+  membres de guilde vérifiées avec des lignes injectées (le compte de test n'a pas de guilde).
+- **Pas vérifié** ⚠️ sur un vrai téléphone ; écran de session en cours (chantier `geoffrey/appli-session`) ; un pseudo
+  long (11 lettres) finit par « … » en session.
+- **Points fragiles** : `button{min-height:44px}` vaut pour tous les boutons de l'appli (relire un nouvel écran en
+  `?app`) ; `:has()` demande Android WebView 105+ / iOS 15.4+ (déjà utilisé par app.css) ; les filtres qui défilent
+  peuvent cacher la dernière option (seule une option coupée le signale).
+- **Applis** : pas de plugin ni de code natif ; `src/app/` change, donc part dans les applis par mise à jour à chaud à
+  la mise en ligne.

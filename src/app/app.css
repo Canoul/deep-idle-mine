@@ -35,3 +35,33 @@ body.app{touch-action:pan-x pan-y;-webkit-tap-highlight-color:transparent}
 #appUpdate button{margin-top:16px;padding:8px 20px;font:inherit;color:#1a0f08;background:#ff7a2e;border:0;border-radius:4px}
 /* iPhone : un champ sous 16 px fait zoomer Safari quand on le touche */
 body.app #gchatInput{font-size:16px}
+
+/* ---------- interface téléphone, étape 1 (03/11/2026, Jules ; audit du 02/11 : docs/journal.md) ---------- */
+/* titre de page : le sous-onglet dit déjà où on est ; restent l'aide « ? » et les boutons de la ligne (Trier…) */
+body.app .lobbyWrap>h1{display:none}
+body.app .invHead{align-items:center;margin-bottom:calc(5*var(--u))}
+body.app .invHead h1{font-size:0;gap:0}
+body.app .invHead h1>i:has(>.pi){display:none}
+body.app .invHead:not(:has(.qhelp)):not(:has(>:not(h1))){display:none}
+/* filtres sur une seule rangée qui défile (ancien : retour à la ligne, une icône seule sur la 2e ligne) */
+body.app .invTabs,body.app .seg{display:flex;flex-wrap:nowrap;max-width:100%;overflow-x:auto;scrollbar-width:none}
+body.app .invTabs::-webkit-scrollbar,body.app .seg::-webkit-scrollbar{display:none}
+body.app .invTabs>*,body.app .seg>*{flex:none}
+/* classement et membres de guilde : le bouton reste sur la ligne du joueur (ancien : une ligne de plus par joueur) */
+body.app :is(.lrow,.gmem){flex-wrap:nowrap}
+body.app :is(.lrow,.gmem) .fname{flex:1;min-width:0}
+body.app :is(.lrow,.gmem) .fbtns{width:auto;flex:none;flex-wrap:nowrap}
+body.app .gmem .fbtns button[data-g="lobbyInvite"]{font-size:0;gap:0;min-width:44px}   /* « Inviter » : l'icône seule */
+/* au doigt : 44 px au moins (ancien : boutons de 36 px, puces du chat de 22 px) */
+body.app button{min-height:44px}
+body.app :is(.chatTabs,.chatPanel) button{height:auto}
+body.app .fbtns .x{min-width:44px}
+/* barre du haut en session : le chrono sans la durée totale et le niveau sans son % d'XP (il reste dans Perso → Stuff),
+   pour que le pseudo ne soit plus coupé à une lettre (ancien : « L Niv. 11 47 % 53:46 / 60:00 ») */
+body.app .navLen,body.app .navLevel>span{display:none}
+/* guide « Premiers pas » replié : une pastille « 📜 5/7 » en bas à droite (ancien : une barre sur toute la largeur) */
+body.app .guide:has(.gHead[aria-expanded="false"]){width:auto}
+body.app .gHead[aria-expanded="false"] :is(.gLbl,.gCur,.gArrow){display:none}
+body.app .gHead[aria-expanded="false"]{min-height:44px;font-size:var(--fs)}
+body.app:has(.guide:not([hidden])) .views{padding-bottom:calc(var(--dock-h) + 60px)}
+body.app:has(section[data-view="chat"]:not([hidden])) .guide{display:none}

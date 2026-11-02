@@ -16,6 +16,19 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 03/11/2026 — Jules — Appli mobile : audit de l'interface et premières corrections
+- **Pour le joueur** : rien sur le site. Dans l'appli : plus de gros titre en haut de chaque page (le sous-onglet dit
+  déjà où on est) ; les filtres (inventaire, classement…) tiennent sur une rangée qu'on fait défiler au doigt ; dans le
+  classement et la liste des membres de guilde, chaque joueur tient sur une ligne ; des boutons plus grands, faciles à
+  toucher ; le guide « Premiers pas » replié devient une petite pastille « 📜 5/7 » ; en session, le pseudo n'est plus
+  coupé à une lettre dans la barre du haut ; les grosses quantités s'écrivent « 2,2k » dans les cases ; le Sac est dans
+  l'ordre Inventaire, Craft, Four, Concasseur, Recherche.
+- **Décisions** (Jules) : on refait l'interface de l'**appli d'abord**, le site PC plus tard. L'audit (ce qui ne va pas,
+  écran par écran, et l'ordre des prochains chantiers) est dans `docs/superpowers/specs/2026-11-03-appli-ux-audit.md`.
+- **À suivre** : l'étape 2, sur maquettes à comparer : Accueil, puis Perso (sets, stuff, skills, sorts), Historique,
+  Guilde, Classement. À voir avec Geoffrey : l'écran Session hors session et qui fait quels écrans.
+- **État** : 🧪 sur la branche `jules/appli-ux` (pas en ligne)
+
 ## 03/11/2026 — Jules — Mur de chair redessiné (remise à niveau des sprites, 2/4)
 - **Pour le joueur** : le mur de chair n'est plus une bande de bourrelets rouges. De haut en bas : un grand œil de braise injecté de sang qui regarde le mineur, une côte qui perce la chair, deux petits yeux dans les plis, une **gueule verticale** (lèvres épaisses, crocs, langue, filets de bave), une autre côte et un œil mi-clos, sur des cordes de muscle strié avec des veines et des pustules. Son icône (lobby, wiki) est maintenant le grand œil.
 - **Décisions** (Jules) : un mélange des prototypes « mur aux yeux » et « gueule verticale », mi-Terraria (couleurs franches, contours nets, ombres en trame) mi-Darkest Dungeon (chair sombre et humide, gros trait d'encre). Composition à nous, pas celle du boss de Terraria.
