@@ -6684,3 +6684,4 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   test hors dépôt). ⚠️ Pas vu dans le jeu lancé avec deux comptes d'une même guilde.
 - **Point fragile** : `doorAt: 10` suppose le portail à x 72 + 78..102 px du domaine ; un test le vérifie si on déplace
   la maison dans `GUILD.house`.
+- ✅ En ligne le 02/11 (⚠️ toujours pas vu avec deux comptes d'une même guilde).

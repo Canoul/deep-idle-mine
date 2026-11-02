@@ -63,7 +63,7 @@ Modèle d'entrée :
   dans le bâtiment ouvre l'onglet Guilde, qui garde aussi sa scène (seule vue dans l'appli mobile, qui n'a pas de Carreau).
 - **Décisions** : chacun voit sa propre maison ; les joueurs d'autres guildes qui ont l'onglet Guilde ouvert se tiennent
   devant la mienne (chez eux, c'est la leur). Le domaine fait 23 cases de large : c'est le plus grand bâtiment de la ville.
-- **État** : 🧪 sur la branche `jules/maison-guilde-carreau` (pas en ligne)
+- **État** : ✅ en ligne le 02/11
 
 ## 02/11/2026 — Jules — Maison de guilde qui se construit avec les dons
 - **Pour le joueur** : en haut à droite de l'onglet de sa guilde (et dans la fiche « Voir » des autres guildes), une
