@@ -6566,4 +6566,5 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   n'utilise que `golbute_body`/`golbute_arm` (+ `_crystal`), `golem` et `golbute_rock`, tous dans `TEXTURES` ; le
   serveur sert les fichiers en `no-store` (pas de cache navigateur). Aucune autre image du Golbute sur les branches, en
   local ou en remise. Les icônes d'objets (coffre, jambières, âme, clé II) restent au format 16 × 16 des autres icônes.
-  ⚠️ En attente : où et quoi exactement (capture).
+  ✅ Jules (02/11) : les bons sprites sont ceux déjà en jeu (golbute, golbute_crystal, golbute_body/_arm et leurs
+  `_crystal`, golem) ; rien à changer. Sans doute une capture ou une version antérieure au 30/10.
