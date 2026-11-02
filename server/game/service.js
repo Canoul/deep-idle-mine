@@ -1813,6 +1813,15 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     /* administration : toutes les lignes du tableau de bord (route /api/admin/stats, scripts/dashboard.js) */
     adminStats: () => store.allSessionStats(),
     /* tableau de bord de la prison (30/10/2026) : une ligne par compte qui a une prison (server/admin/prison-dashboard.js) */
+    /* enregistrement de la prison du joueur dont le pseudo (figé à l'entrée) est name (02/11) ; null s'il n'y en a pas */
+    async adminPrisonRecord(name){
+      const key = String(name).trim().toLowerCase();
+      for(const { value } of await store.listPrisons()){
+        const p = sanitizePrison(value);
+        if(p && String(p.specs?.name ?? '').trim().toLowerCase() === key) return { prison: p };
+      }
+      return { prison: null };
+    },
     async adminPrisonStats(){
       const rows = [];
       for(const { account, value } of await store.listPrisons()){
