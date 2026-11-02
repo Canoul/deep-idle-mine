@@ -702,6 +702,10 @@ Modèle d'entrée :
 
 ## 30/10/2026 — Geoffrey — Prison : 8 d'énergie par heure de jeu (avant 4)
 
+## 02/11/2026 — Geoffrey — Ténacité à rendement décroissant
+- **Pour le joueur** : cumuler la ténacité rapporte de moins en moins. 10 % de ténacité donnent 8,9 % de chance d'ignorer une mécanique de mob, 30 % → 22 %, 50 % → 32 %, 100 % → 50 % (plafond 75 %). L'onglet Stuff affiche la valeur effective à côté de la ténacité.
+- **État** : 🧪 sur la branche `geoffrey/tenacite-log` (pas en ligne)
+
 ## 30/10/2026 — Geoffrey — Coffre du Golbute : son butin et 5 nouveaux objets
 - **Pour le joueur** : le Coffre du Golbute s'ouvre. Toujours des lingots de mithril, du thorium et du cobalt raffinés, des pierres glissantes ; parfois un objet du Golbute : Némésis du Golbute (pioche légendaire, 1 %), Torse de Gollex (3 %), Jambières du Golbute (3 %), Âme du Golbute (torche épique, 2 %), Anneau en pierre (2 %), un parchemin de sort, la Recette : Chitine ou une gemme.
 - **État** : ✅ en ligne le 30/10

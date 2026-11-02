@@ -85,6 +85,12 @@ export const DEFAULT_MINERS = 3;
      mineur taclé n'a pas frappé ce mob depuis tackleGiveUp s, ou si le mob est à plus de tackleLeash cases (Manhattan).
    Valeurs provisoires. Les mobs poussent avec MOBS.knock (0 de base). */
 export const COMBAT = { reach:0.5, knock:0.25, tackleGiveUp:5, tackleLeash:6 };
+/* Ténacité (02/11/2026, Geoffrey) : rendement décroissant (logarithme). La ténacité affichée (stuff, skills, anneaux,
+   runes) est la ténacité BRUTE ; la chance d'ignorer une mécanique de mob est la ténacité EFFECTIVE :
+     effective = k × ln(1 + brute / k), plafonnée à max (en %)
+   k = 40 : 10 → 8,9 % · 20 → 16,2 % · 30 → 22,4 % · 50 → 32,4 % · 75 → 42,9 % · 100 → 50,1 % (avant : effective = brute).
+   Petites valeurs presque intactes, gros cumuls fortement réduits. Valeurs provisoires (équilibrage). */
+export const TENACITY = { k:40, max:75 };
 
 export const PREFS = { priority:'minerais', fightMobs:true, helpAllies:false, helpIgnore:[] };
 /* Aider allié : il ne part aider que si le mob est à helpRange cases ou moins (Manhattan). Au-delà, le combat est fini

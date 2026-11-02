@@ -1,5 +1,6 @@
 /* Bloc géant : simulation (src/sim/giant/session.js) et salle commune (src/shared/giant-room.js). */
 import { test } from 'node:test';
+import './helpers.js';   // ténacité linéaire (TENACITY, 02/11)
 import assert from 'node:assert/strict';
 import { GIANT, STATS, DT } from '../src/config.js';
 import { newGiant, joinGiant, leaveGiant, tickGiant, runGiant, giantRate, VISIT_TICKS } from '../src/sim/giant/session.js';

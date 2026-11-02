@@ -6685,3 +6685,8 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Point fragile** : `doorAt: 10` suppose le portail à x 72 + 78..102 px du domaine ; un test le vérifie si on déplace
   la maison dans `GUILD.house`.
 - ✅ En ligne le 02/11 (⚠️ toujours pas vu avec deux comptes d'une même guilde).
+
+### 02/11/2026 — Ténacité à rendement décroissant (branche geoffrey/tenacite-log)
+- `TENACITY = { k:40, max:75 }` (config) ; `src/sim/tenacity.js` : `effectiveTenacity(brute) = min(max, k·log1p(brute/k))`, `tenacityOf(m)`. Branché partout où la ténacité était lue : `resists` (src/sim/mobs.js, donc gobelin, occultiste, méphite, chien, ver, minotaure, golem, mur de chair, Il arrive), Bloc géant (recul), tours (`resists` local), Golbute (slamChance et esquive de l'avalanche). Onglet Stuff : « → X % effectifs ».
+- Tests : tests/tenacity.test.js (courbe). `tests/helpers.js` rend la courbe linéaire (k 1e12, max 100) pour les tests de mécaniques qui écrivent « ténacité 100 % = tout ignoré » ; helpers importé en plus par giant-sim, golbute, hescoming-sim, tower-boss. ✅ 279 tests liés.
+- ⚠️ Un mineur sans ténacité garde exactement le même hasard (pas de tirage). Pénétration de ténacité des mobs : proposée, pas codée.

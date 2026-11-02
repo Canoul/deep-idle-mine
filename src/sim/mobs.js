@@ -4,6 +4,7 @@
    frapper (25/10, avant : immobilisé). Recul et portée : src/sim/knock.js. Le gobelin vole des minerais ; l'occultiste se téléporte et étourdit sa cible ; le méphite
    vole (pas de gravité) et asphyxie le mineur qu'il tacle. Le golem (2 × 2) casse les blocs et ébranle la mine
    (src/sim/golem.js). */
+import { tenacityOf } from './tenacity.js';
 import { W, DT, CFG, MOBS, BLOCKS, DUCK, COMBAT, PRISON, mobHp } from '../config.js';
 import { maxRow, isAir, isOre, supported, contentAt, contentOf } from './world.js';
 import { log } from './log.js';
@@ -49,7 +50,7 @@ export function provoke(G,o,m){
 /* ténacité : le mineur ignore-t-il ce sort ? un tirage par sort (hasard « live ») ; sans ténacité, aucun tirage
    (les parties sans ténacité gardent exactement le même hasard) */
 export function resists(G,m){
-  const t=m.carac?.tenacity || 0;
+  const t=tenacityOf(m);   // ténacité effective (rendement décroissant, 02/11)
   if(t<=0 || !(G.rng()*100 < t)) return false;
   m.stats.resisted=(m.stats.resisted||0)+1; G.stats.resisted=(G.stats.resisted||0)+1;
   return true;
