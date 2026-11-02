@@ -66,6 +66,7 @@ import { setupCraft } from './ui/craft.js';
 import { setupStuff } from './ui/stuff.js';
 import { setupUpgrade } from './ui/upgrade.js';
 import { createBackdrop, enterPanels, leavePanels, transitionGame } from './ui/backdrop.js';
+import { namesShown, setNamesShown } from './render/names.js';
 import { setupTown, townWalks } from './ui/town.js';
 import { setupTooltips } from './ui/tooltip.js';
 import { createEffectsBar, placeEffectsBar, focusedMiner } from './ui/effects.js';
@@ -342,8 +343,9 @@ const accountUI = createAccountUI($('account'), acct, {
     'Se déconnecter quand même ?'].filter(Boolean).join('\n'), { ok:'Se déconnecter' }),
   options: () => [{ key:'bgSession', label:'Session en cours en fond d\'écran', title:'Pendant une session, la mine s\'affiche en fond, assombrie, derrière les autres onglets.', on: backdrop.on },
                    ...(appBoot.app ? [] : [{ key:'bgTown', label:'Le Carreau (la ville) en fond d\'écran', title:'Hors session, la ville du spawn s\'affiche en fond, avec les autres joueurs en ligne ; l\'onglet Session sans session permet de s\'y promener.', on: town.on }]),
+                   { key:'names', label:'Afficher les pseudos', title:'Décoché : ni pseudos ni noms de guilde au-dessus des mineurs (pratique pour les captures d\'écran).', on: namesShown() },
                    ...(appLayer?.notifOptions() ?? [])],
-  setOption: (key, v) => { if(key === 'bgSession') backdrop.set(v); if(key === 'bgTown') town.set(v); if(key.startsWith('notif_')) appLayer?.setNotif(key.slice(6), v); },
+  setOption: (key, v) => { if(key === 'bgSession') backdrop.set(v); if(key === 'bgTown') town.set(v); if(key === 'names') setNamesShown(v); if(key.startsWith('notif_')) appLayer?.setNotif(key.slice(6), v); },
 });
 
 /* ---------- lobby ---------- */

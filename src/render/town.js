@@ -8,6 +8,7 @@
 import { TOWN, JUDGMENT, GUILD } from '../config.js';
 import { loadTextures } from './textures.js';
 import { LABEL_GUILD_H, createMinerSprite } from './miner-sprite.js';
+import { namesShown } from './names.js';
 import { townBuildings, TOWN_WIDTH, hash01, emoteOf } from '../shared/town.js';
 
 export const TOWN_TILE = 16;
@@ -182,7 +183,7 @@ export function createTownRenderer(cv){
      plus proche à moins de 1,8 case), au-dessus des têtes, pour ne pas couvrir les joueurs de la place */
   function drawPlaceLabels(b, camX, scene){
     const items = [];
-    if(scene.statue) items.push({ cx: b.x + TOWN.place.statue + 1, text: `🏆 ${scene.statue.name} · n°1 · ${Math.round(scene.statue.value)} GS`, color: LABEL });
+    if(scene.statue) items.push({ cx: b.x + TOWN.place.statue + 1, text: namesShown() ? `🏆 ${scene.statue.name} · n°1 · ${Math.round(scene.statue.value)} GS` : `🏆 n°1 · ${Math.round(scene.statue.value)} GS`, color: LABEL });
     for(const side of ['angel', 'demon']){
       const j = scene.judgment?.[side];
       if(j) items.push({ cx: b.x + TOWN.place[side] + 0.5, color: j.open ? HINT : LABEL,
@@ -206,7 +207,7 @@ export function createTownRenderer(cv){
     const bob = p.walking && Math.floor(now / 110 + hash01(p.id ?? '') * 4) % 2 ? -1 : 0;
     const py = (G - 1) * T + bob + hop, cx = Math.round(px + T / 2);
     sprite({ id: 0, face: p.face, look: p.look ?? {}, auras: p.auras ?? {}, name: p.name, guild: p.guild, action: null }, Math.round(px), Math.round(py), p.me, now);
-    let top = py - 11 - (p.guild ? LABEL_GUILD_H : 0);
+    let top = namesShown() ? py - 11 - (p.guild ? LABEL_GUILD_H : 0) : py - 2;   // pseudos cachés : rien entre la tête et ce qui s'empile
     ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
     if(p.group){
       const txt = `${p.group.size}/${p.group.max}`;
@@ -246,7 +247,7 @@ export function createTownRenderer(cv){
   function drawLabel(b, camX, hint, scene){
     const i = b.kind === 'guild' ? ok(guildPieces(scene.house)[0].tex) : b.sprite ? ok(b.sprite) : null;
     const top = i ? G - i.naturalHeight / T : b.kind === 'place' ? G - 4 : G - b.h;
-    const name = b.kind === 'guild' && scene.guild ? `< ${scene.guild} >` : b.name;   // ma guilde : son nom au-dessus de sa maison
+    const name = b.kind === 'guild' && scene.guild && namesShown() ? `< ${scene.guild} >` : b.name;   // ma guilde : son nom au-dessus de sa maison (sauf pseudos cachés)
     const lines = [name, hint].filter(Boolean), cx = (b.door - camX) * T;
     const y0 = Math.max(9, top * T - 2 - (lines.length - 1) * 9);
     ctx.font = `11px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';

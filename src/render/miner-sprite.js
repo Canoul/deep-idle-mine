@@ -5,6 +5,7 @@ import { BOW_SHOT } from '../config.js';
 import { bowShot } from './bow.js';
 import { drawAura } from './aura.js';
 import { drawMinerFx, createCastWatch } from './effects.js';
+import { namesShown } from './names.js';
 
 /* ctx : contexte canvas ; TEX : textures chargées ; TILE : taille d'une case (px) */
 /* texte au-dessus de la tête : le pseudo, et dessous le nom de guilde en plus petit (31/10/2026, Geoffrey). dy : décalage de la
@@ -69,7 +70,7 @@ export function createMinerSprite(ctx, TEX, TILE){
   }
   /* pseudo : petit, contour sombre pour rester lisible sur la roche comme sur le ciel ; aussi seul (mineur couché, 31/10) */
   function label(name,px,py,focused,guild){
-    if(!name) return;
+    if(!name || !namesShown()) return;   // pseudos cachés (option de « Mon compte », src/render/names.js)
     ctx.textAlign='center'; ctx.textBaseline='bottom'; ctx.lineWidth=3; ctx.strokeStyle='rgba(0,0,0,.85)';
     for(const l of labelLines(name,guild)){
       ctx.font=l.font;

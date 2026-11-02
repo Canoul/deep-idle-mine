@@ -16,6 +16,14 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 02/11/2026 — Jules — Option pour cacher les pseudos
+- **Pour le joueur** : dans **Mon compte** (clic sur le pseudo en haut à gauche), nouvelle case **« Afficher les
+  pseudos »**, cochée de base. Décochée : plus de pseudos ni de noms de guilde au-dessus des mineurs (mine, ville,
+  instances, tours…), ni de nom sur la maison de guilde et la statue du Carreau. Pratique pour les captures d'écran
+  des fiches Google Play / App Store. Le choix est gardé sur cet appareil.
+- **À suivre** : le bandeau en haut à gauche et les listes (groupe, amis, chat) montrent toujours les pseudos.
+- **État** : ✅ en ligne le 02/11
+
 ## 02/11/2026 — Jules — Claude prévient quand un commit peut casser les applis
 - **Pour le joueur** : rien, c'est de l'organisation.
 - **Décisions** : avant chaque commit, Claude vérifie si le changement risque de casser les applis iOS / Android

@@ -6713,3 +6713,10 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Vérifié** ✅ images regardées une à une ; `npm run textures` ne change que les textures de Lucifer. ✅ Vu dans la vraie salle (`npm run dev`, compte Test_Barbare, captures du canvas toutes les 0,25 s pendant 22 s) : deux rugissements à ~14 s d'écart (30 s de jeu à ×2), à chaque fois main qui se lève, flamme ~1,5 s, onde violette, main qui redescend ; le recul de l'autoattaque se combine sans souci.
 - ✅ En ligne le 02/11.
 - **Point fragile** : le geste suppose des rugissements à heure fixe (`nextRoar += every`, src/sim/hescoming/session.js) ; si le rugissement devient aléatoire, il faudra que le serveur envoie le temps avant le prochain.
+
+## 02/11/2026 — Jules — Option « Afficher les pseudos » (Mon compte)
+- **Quoi** : `src/render/names.js` (`namesShown`, `setNamesShown`, localStorage `dim.showNames`, '0' = cachés, défaut affichés). Lu par `label()` de `src/render/miner-sprite.js` (pseudo + guilde de tous les canvas : mine, ville, instance, géant, tours, MI) et par `src/render/town.js` (nom de ma guilde sur sa maison → nom du bâtiment, nom de la statue retiré de la plaque, marques de groupe / émotes posées juste au-dessus de la tête). Case dans les options de `createAccountUI` (`src/main.js`, clé `names`). Le canard Gallianix garde son nom (PNJ).
+- **Tests** ✅ tests/names (nouveau : défaut, enregistrement, `label` n'écrit rien quand caché), town, backdrop : 36/36.
+- **Pas vérifié** ⚠️ vu dans le navigateur (case cochée / décochée en session et dans la ville).
+- **Applis** : rien de natif ; nouveau fichier dans `src/`, copié par `server/app-update/bundle.js` (tout `src/`).
+- ✅ En ligne le 02/11.
