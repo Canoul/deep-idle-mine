@@ -20,7 +20,7 @@ Modèle d'entrée :
 - **Pour le joueur** : Lucifer a un nouveau look, dans le style des boss récents (comme le Golbute) : un « roi déchu » cramoisi, couronné, cornes ornées d'or, grand col dressé, fers brisés aux poignets, griffes plantées dans le bord du portail et sourire en coin. Il **bouge** : juste avant chaque rugissement, il lève la main et une flamme violette s'y allume. Tu vois venir le Fear. Le portail de lave est redessiné aussi.
 - **Décisions** (Jules, validé avec Geoffrey) : c'est le boss final du raid, il doit avoir un charisme fou. Choisi parmi plusieurs prototypes (obsidienne façon Golbute, silhouette noire ailée, version Darkest Dungeon en clair-obscur). On pourra le retravailler plus tard.
 - **À suivre** : le voir dans la vraie salle avec des joueurs. Idées si besoin : une respiration au repos, affiner le bras pendant qu'il le lève.
-- **État** : 🚧 branche `jules/lucifer-sprite`, pas en ligne
+- **État** : ✅ en ligne le 02/11
 
 ## 02/11/2026 — Jules — Mises à jour à chaud des applis : construites
 - **Pour le joueur** : rien sur le site. Dans l'appli (à partir de la version 1.1.0), le jeu se met à jour tout seul à l'ouverture, comme le site : un petit écran « Mise à jour du jeu… » quelques secondes, puis le jeu. Si une nouvelle version plante, l'appli revient toute seule à la précédente. Une appli trop ancienne affiche « Mets à jour l'appli » avec le lien du store.
