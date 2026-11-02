@@ -730,6 +730,10 @@ Modèle d'entrée :
 
 ## 30/10/2026 — Geoffrey — Prison : 8 d'énergie par heure de jeu (avant 4)
 
+## 02/11/2026 — Geoffrey — Commande admin : donner de l'énergie
+- **Pour nous** : sur le serveur, `sudo node /opt/deep-idle-mine/scripts/give-energy.js --name PSEUDO --amount 50` donne de l'énergie à un joueur (1 à 100, plafonnée au max de la jauge), sans redémarrer.
+- **État** : ✅ en ligne le 02/11
+
 ## 02/11/2026 — Geoffrey — Rejouer la prison d'un joueur (outil admin)
 - **Pour nous** : dans le tableau « Rendement de la prison » (compte admin), un 📥 à côté de chaque pseudo télécharge l'enregistrement de sa prison ; donné à Claude, il rejoue ses runs à l'identique (`scripts/replay-prison.js`) pour trouver un bug (ex. mineur qui tourne en rond chez minologue, seed 1686922429).
 - **État** : ✅ en ligne le 02/11

@@ -112,3 +112,20 @@ test('quality : une pièce de stuff déjà identifiée dans cette qualité ; ref
   }
   assert.equal((await pieces()).length, 2);
 });
+
+/* énergie (02/11/2026, scripts/give-energy.js) */
+const giveEnergy = (body, headers = {}) => fetch(base + '/api/admin/give-energy', { method: 'POST',
+  headers: { 'content-type': 'application/json', authorization: `Bearer ${TOKEN}`, ...headers }, body: JSON.stringify(body) })
+  .then(async r => ({ status: r.status, data: await r.json().catch(() => null) }));
+test('énergie : +40 pour crousti, plafonnée à 100 ; montant invalide, compte inconnu, sans clé : refusés', async () => {
+  await gameStore.putEnergy('C1', { value: 10, keys: [], at: Date.now() });
+  let r = await giveEnergy({ name: 'crousti', amount: 40 });
+  assert.equal(r.status, 200, JSON.stringify(r.data));
+  assert.equal(r.data.account, 'Crousti'); assert.equal(r.data.after, 50);
+  assert.equal((await gameStore.getEnergy('C1')).value, 50);
+  r = await giveEnergy({ name: 'crousti', amount: 100 });
+  assert.equal(r.data.after, 100, 'plafond');
+  for(const amount of [0, -5, 101, 'x', null]) assert.equal((await giveEnergy({ name: 'crousti', amount })).status, 400, String(amount));
+  assert.equal((await giveEnergy({ name: 'personne', amount: 10 })).status, 404);
+  assert.notEqual((await giveEnergy({ name: 'crousti', amount: 10 }, { authorization: 'Bearer faux' })).status, 200);
+});

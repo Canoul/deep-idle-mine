@@ -249,6 +249,17 @@ export function adminRoutes({ accounts, service = null, game, party = null, mode
       }
       throw new HttpError(400, 'bad_request', 'action : show, unban, forgive ou recent.');
     },
+    /* énergie (02/11/2026, scripts/give-energy.js) */
+    'POST /api/admin/give-energy': async ctx => {
+      guard(ctx);
+      const { name } = ctx.body ?? {}, amount = Number(ctx.body?.amount);
+      if(typeof name !== 'string' || !name.trim()) throw new HttpError(400, 'bad_request', 'name : le pseudo du joueur.');
+      const acc = await accounts.findAccountByName(nameKey(name));
+      if(!acc) throw new HttpError(404, 'no_account', `Aucun compte « ${name} ».`);
+      const r = await game.adminGiveEnergy(acc.id, amount);
+      console.log(`Admin : +${r.amount} énergie pour ${acc.name} (${acc.id}) : ${r.before} → ${r.after}`);
+      return { account: acc.name, ...r };
+    },
     'POST /api/admin/take': async ctx => {
       guard(ctx);
       const { name } = ctx.body ?? {}, qty = ctx.body?.qty ?? 1;
