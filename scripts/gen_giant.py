@@ -303,3 +303,112 @@ def giant_block():
         for dx, dy in ((0, 0), (1, 0), (-1, 0), (0, 1), (0, -1)):
             cv.put(x + dx, y + dy, (255, 255, 255) if (dx, dy) == (0, 0) else (220, 235, 255))
     return [(*c, 255) if c else (0, 0, 0, 0) for row in cv.px for c in row]
+
+
+# ---- la salle : grande torche et fontaine à oxygène (1 × 2 cases, 16 × 32 pixels ; 02/11/2026, Jules ; ancien : dessins
+# en rectangles de gen_textures.py giant() du 26/10). Dessinées pixel par pixel ; l'encre est posée ensuite tout autour
+# du fer et de la pierre (pas autour des flammes, de l'eau ni des bulles).
+
+def _sheet(rows, pal, inked):
+    """rows : 32 lignes de 16 caractères ('.' = vide) ; pal : caractère → couleur ; inked : caractères cerclés d'encre"""
+    w, h = len(rows[0]), len(rows)
+    assert all(len(r) == w for r in rows), [len(r) for r in rows]
+    px = [[pal[c] if c != '.' else None for c in r] for r in rows]
+    for y in range(h):
+        for x in range(w):
+            if px[y][x] is None and any(0 <= x + dx < w and 0 <= y + dy < h and rows[y + dy][x + dx] in inked
+                                        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))):
+                px[y][x] = INK
+    return [(*c, 255) if c else (0, 0, 0, 0) for r in px for c in r]
+
+
+IRON = {'1': hx('#25262a'), '2': hx('#3d3f45'), '3': hx('#5c5f66'), '4': hx('#9a9ca3'), 'G': hx('#d8783a')}
+FIRE = {'R': hx('#8e1a0c'), 'r': hx('#d43a12'), 'o': hx('#ff7a1a'), 'y': hx('#ffc23f'), 'w': hx('#fff0a0'),
+        'W': hx('#ffffff'), 'c': hx('#3a1208'), 'e': hx('#ff5a1a'), 'a': hx('#8a3010')}
+
+TORCH = [
+    '.......R........',
+    '.......rR...R...',
+    '...R..Rrr..Rr...',
+    '...rR.rorR.rr...',
+    '...rrRroorRro...',
+    '..RrorrooyrroR..',
+    '..rooroyyyoorr..',
+    '..rooyyywyyoor..',
+    '.Rroyyywwyyyor..',
+    '.rroyywwwwyyorR.',
+    '..roywwWWwwyor..',
+    '..eoywwWWwwyoe..',
+    '..ceaeceecaecc..',
+    '.4G4G4G44G4G4G4.',
+    '.33333332222211.',
+    '..333322222111..',
+    '...3322221111...',
+    '.....322211.....',
+    '.......41.......',
+    '.......31.......',
+    '.......13.......',
+    '.......12.......',
+    '.....433221.....',
+    '.......41.......',
+    '.......31.......',
+    '.......13.......',
+    '.......12.......',
+    '......4321......',
+    '.....3.32.1.....',
+    '....3..32..1....',
+    '...3...32...1...',
+    '..433..432..211.',
+]
+
+
+def giant_torch():
+    """grande torche : brasero de fer forgé à bords crénelés (reflets de braise), braises, grande flamme en langues,
+    fût torsadé avec une bague, trépied"""
+    return _sheet(TORCH, {**IRON, **FIRE}, set('1234Gcea'))
+
+
+STONE_F = {'a': STONE[2], 'b': STONE[3], 'c': STONE[4], 'd': STONE[5], 'e': STONE[6], 'f': STONE[7]}
+WATER = {'1': hx('#123a7a'), '2': hx('#1f62c8'), '3': hx('#3d8bff'), '4': hx('#8fc8ff'), '5': hx('#e6f6ff'),
+         'o': hx('#bfe9ff'), 'O': hx('#ffffff')}
+
+FOUNTAIN = [
+    '................',
+    '..o..........o..',
+    '.o.o...55...o.o.',
+    '..o...4554...o..',
+    '.....345543.....',
+    '....34.44.43....',
+    '...34..44..43...',
+    '..34.feeddc.43..',
+    '..3...edcb...3..',
+    '..4...dcbb...4..',
+    '..3...dcba...3..',
+    '......dcba......',
+    '.4....dcba....4.',
+    '.3...edcbba...3.',
+    '.3..feddccba..3.',
+    'f4feeddccbbaa4a.',
+    'e45444444444335.',
+    'ed3333333332222a',
+    '.edd2222211ccba.',
+    '..edddcccbbbaa..',
+    '...eeddccbbaa...',
+    '.....eddcba.....',
+    '......dcba......',
+    '......ecba......',
+    '......dcba......',
+    '.....fdcbaa.....',
+    '....feddccba....',
+    '...feedddccba...',
+    '..ffeeddccbbaa..',
+    '..eeddccbbbaaa..',
+    '.feeddccbbbaaaa.',
+    '.edddccccbbbaaa.',
+]
+
+
+def giant_fountain():
+    """fontaine à oxygène : vasque de pierre (la pierre du Bloc géant), pilier central d'où jaillit l'eau, deux nappes
+    qui retombent dans la vasque, socle à gradins ; bulles d'oxygène qui montent"""
+    return _sheet(FOUNTAIN, {**STONE_F, **WATER}, set('abcdef'))

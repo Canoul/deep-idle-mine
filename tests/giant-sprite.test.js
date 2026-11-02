@@ -45,3 +45,14 @@ test('Bloc géant : des cristaux de couleur (géode), pas un bloc de pierre gris
   }
   assert.ok(hues.size >= 6, `${hues.size} teintes vives`);
 });
+
+test('fontaine et torche de la salle : 1 × 2 cases (16 × 32), posées au sol', () => {
+  for(const name of ['giant_fountain', 'giant_torch']){
+    const g = readPng(name);
+    assert.deepEqual([g.w, g.h], [16, 32], name);
+    assert.ok(TEXTURES.includes(name), name);
+    let ground = 0;
+    for(let x = 0; x < g.w; x++) if(g.px(x, g.h - 1)[3]) ground++;
+    assert.ok(ground >= 6, `${name} : ${ground} pixels sur la dernière ligne`);
+  }
+});
