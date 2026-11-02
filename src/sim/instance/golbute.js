@@ -13,7 +13,7 @@
    Golbute mort = réussite ; temps écoulé ou tout le monde mort = échec.
 
    Sorts : Cri de guerre, Cleave, Dash, Hand of Justice et Ulti shen en combat ; Dynamite sur le boss, les golems et le
-   cristal ; Inspiration et Fast learner sur le cristal ; Illumination et Bonbonne de zipette : sans effet. */
+   cristal ; Inspiration et Fast learner sur le cristal ; Illumination et Bonbonne d'oxygène : sans effet. */
 import { tenacityOf } from '../tenacity.js';
 import { INSTANCE, DT, STATS, CFG } from '../../config.js';
 import { mulberry32 } from '../../core/rng.js';

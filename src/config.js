@@ -720,7 +720,7 @@ export const SPELLS = {
        remontée ni en descente depuis la surface) et à qui il manque de l'oxygène, regagne podsPct des pods max DU
        LOGISTICIEN en oxygène (sans dépasser son max). Jamais sur lui-même. La recharge commence une fois l'oxygène
        donné. Plusieurs alliés à portée : celui qui a le moins d'oxygène (en % de son max ; choix de Claude) */
-    { id:'zipette', name:'Bonbonne de zipette', icon:'🫧', px:'bubbles', short:'Redonne de l\'oxygène à un allié', unlock:{ tree:'logisticien', level:10 }, needTree:'logisticien', cd:180,
+    { id:'zipette', name:'Bonbonne d\'oxygène', icon:'🫧', px:'bubbles', short:'Redonne de l\'oxygène à un allié', unlock:{ tree:'logisticien', level:10 }, needTree:'logisticien', cd:180,
       radius:3, podsPct:0.20,
       desc:'Le prochain allié croisé à 3 cases ou moins, qui travaille dans la mine et à qui il manque de l\'oxygène, regagne 20 % des pods max du logisticien en oxygène (pas sur lui-même ; la recharge commence une fois l\'oxygène donné)' },
     /* 27/10/2026 (Geoffrey) : dès que le barbare entre en combat (il frappe un mob ou un mob le tacle), lui et les

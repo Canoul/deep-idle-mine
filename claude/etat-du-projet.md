@@ -422,13 +422,13 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   `src/ui/spells.js` onglet, GAME_DESIGN §3 « Sorts ») : onglet Sorts, 4 emplacements dont 2 ouverts (les 2 autres
   verrouillés, règle à décider). Dash (Barbare spé 5), Illumination (Mineur spé 5), Inspiration (Logisticien spé 5),
   Dynamite (Mineur spé 10), Ulti shen et Fast learner (parchemins à apprendre, **pas encore de source** : à décider).
-  **27/10 (Geoffrey)** : **Bonbonne de zipette** (Logisticien spé 10 : allié à 3 cases qui travaille, +20 % des pods du
+  **27/10 (Geoffrey)** : **Bonbonne d'oxygène** (ancien nom : Bonbonne de zipette, renommée le 02/11 pour la vérification Google Play ; Logisticien spé 10 : allié à 3 cases qui travaille, +20 % des pods du
   logisticien en oxygène, 180 s), **Cri de guerre** (Barbare spé 10 : en combat, lui et les mineurs à 10 cases +10 % dégâts,
   +5 % vitesse d'attaque, 30 s, recharge après l'effet, 180 s), **Cleave** et **Hand of Justice** (parchemins, sans source :
   50 % des dégâts à 2 cases, 10 s ; étourdit 3 s un mob qui se bat à 3 cases, 30 s). Mine classique (et k hole) seulement.
   Figés au lancement, déclenchés tout seuls dès que la recharge est finie et qu'ils servent ; barre des sorts en
   session (29/10 : aussi dans les tours, l'instance et le Bloc géant ; ancien : mine classique seulement).
-  **Joués aussi dans les tours du Jugement** (28/10, Geoffrey ; zipette exceptée). **Dynamite** (rework 28/10) : blocs de
+  **Joués aussi dans les tours du Jugement** (28/10, Geoffrey ; Bonbonne d'oxygène exceptée). **Dynamite** (rework 28/10) : blocs de
   dureté < 3 × vitesse de minage, 50 % des dégâts aux mobs du rayon (boss compris dans la tour). Simulation : `--spells id,id`.
   **Onglet refait le 28/10 (Jules, piste A « la barre de sorts »)** : la barre de sorts en grand en haut (comme en
   session), dessous le grimoire (tuiles filtrées par spé / parchemins, état de chaque sort) et la fiche du sort choisi

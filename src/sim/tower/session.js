@@ -726,7 +726,7 @@ function damageMob(G, m, o, dmg){
 
 /* ---------- sorts (28/10/2026, Geoffrey : joués dans les tours du Jugement) ----------
    Comme dans la mine et l'instance : chaque sort équipé (figé au lancement) part tout seul dès que sa recharge est finie
-   et qu'il sert. Bonbonne de zipette : pas d'oxygène dans la tour, elle ne part jamais. */
+   et qu'il sert. Bonbonne d'oxygène : pas d'oxygène dans la tour, elle ne part jamais. */
 const ready = (G, m, id) => m.spells.includes(id) && G.t + 1e-9 >= (m.spellCd[id] || 0);
 const cast = (G, m, id, cdFrom = G.t, mul = 1) => { m.spellCd[id] = cdFrom + SPELL[id].cd * mul; m.stats.spells++; };
 /* mob vivant réveillé dont une des 2 cases est à R cases ou moins de (x, y), en cercle */

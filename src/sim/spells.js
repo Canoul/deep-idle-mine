@@ -6,7 +6,7 @@
    - afterDecide : l'IA vient de choisir une action ; un pas de marche peut devenir un Dash, un coup de pioche une
      Dynamite ;
    - updateSpells : à chaque tick, Illumination, Inspiration, Ulti shen, Cri de guerre, Cleave, Hand of Justice,
-     Bonbonne de zipette ;
+     Bonbonne d'oxygène ;
    - learnOnMine : un bloc miné (Fast learner). */
 import { W, IDS, DUCK, BLOCKS, CFG } from '../config.js';
 import { SPELL } from '../meta/spells.js';
@@ -314,7 +314,7 @@ function handOfJustice(G,m){
   log(G, `⚖️ ${m.name} : Hand of Justice, ${o.type} étourdi ${S.stun} s`);
 }
 
-/* Bonbonne de zipette : le prochain allié à radius cases ou moins, qui travaille dans la mine (pas en remontée, pas en
+/* Bonbonne d'oxygène : le prochain allié à radius cases ou moins, qui travaille dans la mine (pas en remontée, pas en
    descente depuis la surface, pas à la surface) et à qui il manque de l'oxygène, regagne podsPct des pods max du
    logisticien (sans dépasser son max) ; s'il y en a plusieurs, celui qui en a le moins (en %). Jamais sur lui-même. La
    recharge commence une fois l'oxygène donné. */
@@ -328,5 +328,5 @@ function zipette(G,m){
   const gain = Math.min(m.carac.pods*S.podsPct, o.carac.oxygenMax-o.ox);
   o.ox += gain;
   cast(G,m,'zipette');
-  log(G, `🫧 ${m.name} : Bonbonne de zipette, ${o.name} +${Math.round(gain)} d'oxygène`);
+  log(G, `🫧 ${m.name} : Bonbonne d'oxygène, ${o.name} +${Math.round(gain)} d'oxygène`);
 }

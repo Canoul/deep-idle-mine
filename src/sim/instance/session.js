@@ -13,7 +13,7 @@
    Combat (portée, recul, tacle) : comme dans les tours (src/sim/knock.js). Sorts : Inspiration, Fast learner et
    Dynamite sur les spawners et les cages (Dynamite = INSTANCE.spawner.dynamite coups sur un spawner, casse les blocs de
    cage à son rayon) ; Cri de guerre, Cleave, Hand of Justice, Dash et Ulti shen contre les gobelins (Ulti shen et Cleave
-   aussi sur le roi) ; Illumination et Bonbonne de zipette : sans effet (tout est éclairé, pas d'oxygène). */
+   aussi sur le roi) ; Illumination et Bonbonne d'oxygène : sans effet (tout est éclairé, pas d'oxygène). */
 import { INSTANCE, DT, STATS, CFG, COMBAT } from '../../config.js';
 import { mulberry32 } from '../../core/rng.js';
 import { SPELL } from '../../meta/spells.js';

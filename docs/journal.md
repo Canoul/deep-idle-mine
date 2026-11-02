@@ -9,6 +9,10 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 02/11/2026 — Jules — « Bonbonne de zipette » renommée « Bonbonne d'oxygène »
+- **Pour le joueur** : le sort du Logisticien (spé 10) s'appelle maintenant **Bonbonne d'oxygène** (barre des sorts, arbre, journal de partie, wiki). Il fait exactement la même chose ; les joueurs qui l'avaient équipé le gardent.
+- **Pourquoi** : « zipette » désigne le protoxyde d'azote (gaz hilarant) ; on passe à de vrais noms pour la vérification Google Play.
+- **État** : en cours (branche jules/nom-bonbonne-oxygene)
 ## 02/11/2026 — Jules — Mises à jour à chaud des applis : construites
 - **Pour le joueur** : rien sur le site. Dans l'appli (à partir de la version 1.1.0), le jeu se met à jour tout seul à l'ouverture, comme le site : un petit écran « Mise à jour du jeu… » quelques secondes, puis le jeu. Si une nouvelle version plante, l'appli revient toute seule à la précédente. Une appli trop ancienne affiche « Mets à jour l'appli » avec le lien du store.
 - **Décisions** (Jules) : chaque mise en ligne qui change le jeu part dans l'appli ; on applique au démarrage, avant l'écran de connexion, si ça prend moins de 10 s (sinon à la prochaine ouverture ou au retour après 5 min), jamais pendant le jeu ; les testeurs ont le même canal que les joueurs. Outil maison plutôt que Capgo ou Capawesome : aucun service extérieur, aucun code natif à écrire, seuls les fichiers modifiés sont téléchargés.
