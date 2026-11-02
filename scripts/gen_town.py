@@ -615,11 +615,109 @@ def slagheap():
 
 
 # ---------------------------------------------------------------- maison de guilde (02/11/2026, Jules)
-# Onglet Guilde : la maison au centre (112 × 96) en 4 étapes, qui avance avec les dons ; chaque étape reprend la
-# précédente et l'achève. Les annexes (Armurerie, Trésorerie, Forge) : un chantier commun, puis leur propre bâtiment.
+# Onglet Guilde : direction « Cathédrale noire » (variante V1 choisie par Jules le 02/11, poussée depuis le Darkest
+# Dungeon du Carreau ; ancien : petite maison à colombages). Pierre noire, lumière rouge (vitraux, braseros), bannières
+# de guerre aux pioches croisées, clocher dans l'ombre à gauche. La maison (160 × 150) en 4 étapes, chacune reprend la
+# précédente et l'achève ; les annexes (Armurerie, Trésorerie, Forge) : un chantier commun, puis leur propre bâtiment.
+
+BSTONE, BSTONE2 = H('#2e2a34'), H('#24202a')
+WAR, WAR2 = H('#8a1a12'), H('#5e0f0a')
+GOLD, GOLD2 = H('#e8b93c'), H('#a8782a')
+EMBER = H('#ff5a1a')
+VOID = H('#0c0a10')
+L_ORANGE = (LIT, LIT2, LIT3)
+L_RED = (H('#c8281e'), H('#ff6a4a'), H('#ffc0a0'))
+L_NONE = (DARK, H('#1e1410'), DARK)                               # vitraux pas encore posés
+LIGHTS = [*L_ORANGE, *L_RED, EMBER, GOLD, MAGIC, MAGIC2]
+
+
+def flame(c, x, y, h, L=L_ORANGE):
+    """flamme : base large, coeur clair, pointe de braise ; x = centre, y = base"""
+    for i in range(h):
+        w = max(1, round((h - i) / h * 6 + math.sin(i * .9) * 1.2))
+        c.rect(x - w // 2 + round(math.sin(i * .5) * 1.5), y - i, w, 1, EMBER if i > h * .75 else L[0])
+    c.rect(x - 2, y - h // 2, 4, h // 2, L[1])
+    c.rect(x - 1, y - h // 3, 2, h // 3, L[2])
+
+
+def brazier(c, x, y, h=16, L=L_RED):
+    c.rect(x - 1, y - 14, 3, 14, IRON)
+    c.rect(x - 4, y - 2, 9, 2, IRON)
+    c.poly([(x - 7, y - 20), (x + 8, y - 20), (x + 5, y - 14), (x - 4, y - 14)], IRON)
+    c.rect(x - 7, y - 21, 16, 2, IRON2)
+    for k in (-6, 6):
+        c.poly([(x + k, y - 21), (x + k + 1, y - 25), (x + k + 2, y - 21)], IRON2)
+    if h:
+        flame(c, x, y - 21, h, L)
+
+
+def crest(c, x0, y0, x1, y1, step=6, h=3):
+    """épis de fer le long d'une pente de toit"""
+    n = int(math.hypot(x1 - x0, y1 - y0) // step)
+    for i in range(1, n):
+        x, y = x0 + (x1 - x0) * i / n, y0 + (y1 - y0) * i / n
+        c.rect(x, y - h, 1, h, IRON2)
+        c.set(x, y - h - 1, IRON2)
+
+
+def emblem_picks(c, cx, cy, col):
+    """emblème de guilde : deux pioches croisées"""
+    c.line(cx - 6, cy + 6, cx + 6, cy - 6, col, 2)
+    c.line(cx + 6, cy + 6, cx - 6, cy - 6, col, 2)
+    c.line(cx + 2, cy - 8, cx + 9, cy - 3, col, 2)
+    c.line(cx - 2, cy - 8, cx - 9, cy - 3, col, 2)
+
+
+def war_banner(c, x, y, w, h):
+    """bannière de guerre rouge, bas en pointes, pioches dorées"""
+    c.rect(x - 2, y - 2, w + 4, 2, IRON2)
+    c.rect(x, y, w, h, WAR)
+    c.rect(x, y, 2, h, WAR2)
+    for i in range(0, w, 4):
+        c.poly([(x + i, y + h), (x + i + 2, y + h + 4), (x + i + 4, y + h)], WAR)
+    emblem_picks(c, x + w // 2, y + h // 3, GOLD)
+
+
+def gothic_window(c, x, y, w, h, L, frame=STONEL):
+    """fenêtre en arc brisé : meneau, traverses, remplage en rosace si elle est large"""
+    pts = lambda m: [(x + m, y + h), (x + m, y + w // 2), (x + w / 2, y + m), (x + w - m, y + w // 2), (x + w - m, y + h)]
+    c.poly(pts(-1), frame)
+    c.poly(pts(1), L[0])
+    c.rect(x + 2, y + w // 2 + 2, w - 4, (h - w // 2) // 2, L[1])
+    c.rect(x + w // 2, y + 2, 1, h - 2, frame)
+    if w >= 14:
+        c.ring(x + w / 2, y + w / 2 + 1, w / 4, frame, 1)
+        c.disc(x + w / 2, y + w / 2 + 1, 1.5, L[2])
+        for k in (w // 4, 3 * w // 4):
+            c.rect(x + k, y + w // 2 + 4, 1, h - w // 2 - 4, frame)
+    for yy in range(y + w // 2 + 8, y + h, 8):
+        c.rect(x + 1, yy, w - 2, 1, frame)
+
+
+def spire(c, cx, base, hw, h):
+    """flèche d'ardoise, bague de fer, croix de fer au sommet"""
+    c.poly([(cx - hw, base), (cx, base - h), (cx + hw, base)], SLATE)
+    c.recolor(cx - hw, base - h, 2 * hw, h, SLATE, SLATE2, 3, 'x')
+    c.rect(cx - hw - 1, base - 2, 2 * hw + 2, 3, IRON)
+    c.rect(cx, base - h - 5, 1, 6, IRON2)
+    c.rect(cx - 2, base - h - 3, 5, 1, IRON2)
+
+
+def crow(c, x, y):
+    c.rect(x, y, 3, 2, INK); c.set(x + 3, y, INK); c.set(x - 1, y + 1, INK); c.set(x + 1, y + 2, INK)
+
+
+def dim(c, x, y, w, h, k):
+    """assombrit une zone (le côté à l'ombre), sans toucher aux lumières"""
+    for yy in range(int(y), int(y + h)):
+        for xx in range(int(x), int(x + w)):
+            p = c.get(xx, yy)
+            if p[3] and p not in LIGHTS and p != INK:
+                c.set(xx, yy, (int(p[0] * k), int(p[1] * k), int(p[2] * k), 255))
+
 
 def scaffold(c, x0, x1, y0, y1, step=12):
-    """échafaudage : perches, planchers et croisillons"""
+    """échafaudage : perches, planchers et croisillon"""
     for x in (x0, x1):
         c.rect(x, y0, 2, y1 - y0, WOODL)
     for y in range(y0 + 4, y1, step):
@@ -627,143 +725,183 @@ def scaffold(c, x0, x1, y0, y1, step=12):
     c.line(x0 + 2, y1 - 2, x1, y0 + 4, WOOD2)
 
 
-def hall_base(c, planks):
-    """fondations de pierre ; planks : tas de planches du chantier à gauche"""
-    c.stones(6, 84, 100, 12)
-    c.rect(4, 82, 104, 3, STONEL)
-    for i, w in enumerate((22, 18, 14) if planks else ()):                          # planches empilées à gauche
-        c.rect(0 + i * 2, 94 - i * 3 - 3, w, 3, (WOODL, WOOD, WOODL)[i])
+def hoist(c, x, top, bottom, arm):
+    """chèvre de levage : mât, bras, corde et bloc de pierre suspendu"""
+    c.line(x, top, x, bottom, WOOD, 3)
+    c.line(x, top + 2, x - arm, top + 2, WOOD, 2)
+    c.line(x - arm + 2, top + 3, x - arm + 2, top + 30, IRON2)
+    c.rect(x - arm - 2, top + 30, 9, 7, BSTONE)
 
 
-def hall_walls(c, top):
-    """rez-de-chaussée de pierre jusqu'à la hauteur top, porte en arc"""
-    c.stones(10, top, 92, 84 - top)
-    for x in (8, 100):
-        c.rect(x, top, 4, 84 - top, STONE2)                        # chaînes d'angle
-    c.arch_door(46, 60, 20, 24)
+def portal(c):
+    """portail en arc brisé, porte cloutée, lueur rouge au seuil"""
+    c.poly([(78, 150), (78, 136), (90, 128), (102, 136), (102, 150)], STONEL)
+    c.poly([(80, 150), (80, 137), (90, 130), (100, 137), (100, 150)], VOID)
+    for y in (138, 145):
+        for x in range(82, 100, 4):
+            c.set(x, y, IRON2)
+    c.rect(81, 149, 18, 1, L_RED[0])
 
 
-def hall_upper(c, lit):
-    """étage à colombages en surplomb, fenêtres (allumées ou noires)"""
-    c.speckle(6, 30, 100, 24, PLAST, PLAST2)
-    for x in (6, 30, 54, 80, 103):
-        c.rect(x, 30, 3, 24, WOOD)
-    c.rect(4, 52, 104, 4, WOOD2)
-    c.rect(6, 30, 100, 3, WOOD)
-    for x, y in ((16, 36), (40, 36), (64, 36), (88, 36), (20, 64), (82, 64)):   # étage, puis rez
-        if lit:
-            c.window(x, y, 8, 10)
-        else:
-            c.window(x, y, 8, 10, DARK, DARK)
-
-
-def hall_roof(c, half):
-    """toit d'ardoises sur le pignon ; half : seulement la moitié gauche couverte (à droite, les chevrons nus)"""
-    for x in range(8, 104, 8):                                     # chevrons
-        c.line(x, 32, x, max(4, int(34 - min(x, 112 - x) / 56 * 32)), WOOD, 2)
-    c.line(0, 33, 56, 2, WOODL, 2); c.line(56, 2, 111, 33, WOODL, 2)
-    c.shingles([(0, 34), (56, 2), (56, 34)] if half else [(0, 34), (56, 2), (112, 34)], SLATE, SLATE2)
-    c.rect(0, 32, 112, 3, WOOD2)
+def roof(c, half):
+    """toit de la nef ; half : moitié gauche couverte, chevrons nus à droite"""
+    for x in range(42, 140, 8):
+        c.line(x, 76, x, round(78 - 52 * (1 - abs(x - 90) / 56)) + 1, WOOD, 2)
+    c.line(34, 77, 90, 26, WOODL, 2); c.line(90, 26, 146, 77, WOODL, 2)
+    c.poly([(34, 78), (90, 26), (90, 78)] if half else [(34, 78), (90, 26), (146, 78)], SLATE)
+    c.recolor(34, 26, 112, 52, SLATE, SLATE2, 3)
+    c.rect(34, 76, 112, 3, IRON)
+    crest(c, 36, 76, 89, 28)
+    if not half:
+        crest(c, 91, 28, 144, 76)
 
 
 def guild_hall(stage):
-    c = Pix(112, 96, 3100 + stage)
-    hall_base(c, stage < 4)
+    """maison de guilde, étape 1 (fondations) à 4 (achevée)"""
+    c = Pix(160, 150, 3100 + stage)
+    c.stones(4, 140, 152, 10, BSTONE, BSTONE2)                       # fondations
+    c.rect(2, 138, 156, 3, STONEL)
     if stage == 1:
-        c.stones(10, 74, 92, 10)                                    # premières assises
-        for x in (10, 50, 98):
-            c.rect(x, 44, 4, 30, WOODL)                             # poteaux plantés
-        c.rect(10, 44, 92, 3, WOOD)
-        c.line(90, 0, 90, 74, WOOD, 3)                              # chèvre de levage
-        c.line(90, 2, 74, 2, WOOD, 2)
-        c.line(76, 3, 76, 30, IRON2)                                # corde et pierre suspendue
-        c.rect(72, 30, 9, 7, STONE)
-        c.rect(66, 76, 3, 8, WOOD); c.rect(60, 66, 18, 11, WOODL)   # panneau du chantier
-        c.poly([(64, 68), (74, 68), (74, 73), (69, 76), (64, 73)], CLOTH2)
-        c.lantern(30, 64)
-    if stage >= 2:
-        hall_walls(c, 56 if stage == 2 else 54)
+        c.stones(6, 122, 34, 18, BSTONE2, BSTONE)                    # premières assises du clocher et de la nef
+        c.stones(40, 132, 100, 6, BSTONE, BSTONE2)
+        for x in (44, 90, 136):
+            c.rect(x, 98, 4, 34, WOODL)                              # poteaux plantés
+        c.rect(44, 98, 96, 3, WOOD)
+        hoist(c, 122, 20, 132, 22)
+        for i, w in enumerate((24, 20, 16)):                         # planches empilées
+            c.rect(52 + i * 2, 135 - i * 3 - 3, w, 3, (WOODL, WOOD, WOODL)[i])
+        c.rect(28, 76, 2, 62, WOOD)                                  # bannière plantée : la guilde prend la place
+        war_banner(c, 30, 78, 12, 26)
+        c.lantern(84, 124)
+        brazier(c, 150, 138, 0)
     if stage == 2:
-        for x in (6, 30, 80, 103):
-            c.rect(x, 22, 3, 34, WOOD)                              # poteaux de l'étage, nus
-        c.rect(6, 30, 100, 3, WOOD)
-        scaffold(c, 2, 106, 18, 84)
-        c.window(20, 64, 8, 10, DARK, DARK); c.window(82, 64, 8, 10, DARK, DARK)
-        c.lantern(70, 66)
+        c.stones(6, 70, 34, 70, BSTONE2, BSTONE)                     # clocher à mi-hauteur
+        c.stones(40, 100, 100, 40, BSTONE, BSTONE2)                  # murs de la nef
+        c.stones(140, 112, 16, 28, BSTONE2, BSTONE)
+        c.rect(76, 104, 28, 24, VOID)                                # baie de la verrière, vide
+        for x in (83, 90, 97):
+            c.rect(x, 104, 1, 24, STONEL)
+        gothic_window(c, 18, 108, 10, 20, L_NONE)
+        portal(c)
+        scaffold(c, 2, 42, 56, 140)
+        scaffold(c, 44, 136, 86, 100, 8)
+        hoist(c, 92, 40, 100, 20)
+        c.lantern(110, 124)
+        brazier(c, 68, 138, 0)
     if stage >= 3:
-        hall_upper(c, stage == 4)
-        hall_roof(c, stage == 3)
+        c.stones(6, 34, 34, 106, BSTONE2, BSTONE)                    # clocher à pleine hauteur
+        for x in range(4, 42, 6):
+            c.rect(x, 28, 4, 6, BSTONE)
+        c.stones(40, 72, 100, 68, BSTONE, BSTONE2)                   # nef
+        c.stones(140, 64, 16, 76, BSTONE2, BSTONE)                   # tourelle
+        roof(c, stage == 3)
+        portal(c)
     if stage == 3:
-        scaffold(c, 84, 108, 10, 84)
-        c.lantern(70, 66)
+        c.rect(138, 62, 20, 3, IRON)
+        scaffold(c, 6, 38, 4, 30, 8)                                 # la flèche n'est pas encore posée
+        gothic_window(c, 15, 40, 16, 22, L_NONE)
+        for y in (78, 108):
+            gothic_window(c, 18, y, 10, 20, L_ORANGE)
+        gothic_window(c, 74, 86, 32, 40, L_NONE)
+        scaffold(c, 112, 150, 32, 138)
+        c.lantern(110, 124)
+        brazier(c, 68, 138, 0)
     if stage == 4:
-        c.bricks(80, 4, 10, 20)                                     # cheminée
-        c.rect(78, 2, 14, 3, BRICK2)
-        for x in (34, 72):                                          # bannières de la guilde
-            c.rect(x - 1, 56, 8, 2, IRON)
-            c.poly([(x, 58), (x + 6, 58), (x + 6, 74), (x + 3, 71), (x, 74)], CLOTH2)
-            c.rect(x + 2, 62, 2, 5, LIT2)
-        c.set(62, 74, LIT2)
+        spire(c, 23, 30, 19, 30)
+        spire(c, 148, 66, 10, 34)
+        gothic_window(c, 15, 40, 16, 22, L_RED)                      # beffroi rouge
+        for y in (78, 108):
+            gothic_window(c, 18, y, 10, 20, L_ORANGE)
+        c.rect(146, 82, 4, 10, LIT); c.rect(146, 110, 4, 10, LIT)
+        gothic_window(c, 74, 86, 32, 40, L_RED)                      # grande verrière
+        war_banner(c, 48, 86, 12, 44)
+        war_banner(c, 120, 86, 12, 44)
+        c.line(40, 66, 54, 66, IRON, 2)                              # potence et cage de gibet
+        c.rect(53, 66, 1, 6, IRON2)
+        for x in range(49, 59, 3):
+            c.rect(x, 72, 1, 12, IRON2)
+        c.rect(48, 72, 11, 1, IRON); c.rect(48, 83, 11, 1, IRON)
+        c.poly([(34, 78), (28, 74), (31, 70), (38, 74)], BSTONE)     # gargouilles
+        c.poly([(146, 78), (152, 74), (149, 70), (142, 74)], BSTONE)
+        brazier(c, 68, 150, 16); brazier(c, 112, 150, 16)
+        crow(c, 21, 6); crow(c, 140, 30)
+    dim(c, 0, 0, 40, 150, .72)                                       # le clocher dans l'ombre
     return c.finish()
 
 
 def guild_site():
-    """chantier d'une annexe (48 × 40) : dalle, échafaudage, planches, seau"""
-    c = Pix(48, 40, 3110)
-    c.stones(2, 32, 44, 8)
-    c.stones(6, 24, 14, 8)
-    scaffold(c, 4, 40, 4, 32, 10)
-    c.rect(26, 26, 16, 3, WOODL); c.rect(28, 23, 12, 3, WOOD)
-    c.rect(22, 27, 4, 5, IRON)
+    """chantier d'une annexe (64 × 48) : dalle de pierre noire, échafaudage, planches, caisse"""
+    c = Pix(64, 48, 3110)
+    c.stones(2, 40, 60, 8, BSTONE, BSTONE2)
+    c.stones(6, 28, 20, 12, BSTONE2, BSTONE)
+    scaffold(c, 4, 54, 4, 40, 10)
+    c.rect(30, 34, 18, 3, WOODL); c.rect(32, 31, 14, 3, WOOD)
+    c.rect(48, 30, 10, 10, WOOD); c.line(48, 30, 57, 39, WOOD2); c.line(57, 30, 48, 39, WOOD2)
     return c.finish()
 
 
 def wing_armory():
-    """Armurerie de guilde (48 × 64) : pierre, toit d'ardoise, grand écu sur la façade, râtelier d'armes"""
-    c = Pix(48, 64, 3111)
-    c.stones(4, 26, 40, 38)
-    c.shingles([(0, 30), (24, 6), (48, 30)], SLATE, SLATE2)
-    c.poly([(16, 32), (32, 32), (32, 42), (24, 48), (16, 42)], CLOTH2)   # écu
-    c.line(24, 33, 24, 46, IRON2); c.line(18, 37, 30, 37, IRON2)
-    c.arch_door(18, 50, 12, 14)
-    c.rect(36, 50, 10, 2, WOOD)                                     # râtelier
-    for x in (38, 41, 44):
-        c.line(x, 44, x, 63, IRON2)
-    c.window(7, 36, 6, 8)
+    """Armurerie de guilde (64 × 88) : bastion crénelé, grand écu aux pioches, râteliers de lances, fanion"""
+    c = Pix(64, 88, 3111)
+    c.stones(8, 34, 48, 54, BSTONE, BSTONE2)
+    c.rect(4, 30, 56, 6, STONEL)
+    for x in range(4, 60, 8):
+        c.rect(x, 22, 5, 8, BSTONE)
+    c.poly([(22, 42), (42, 42), (42, 56), (32, 66), (22, 56)], WAR)
+    c.poly([(24, 44), (40, 44), (40, 55), (32, 63), (24, 55)], WAR2)
+    emblem_picks(c, 32, 52, GOLD)
+    c.arch_door(25, 70, 14, 18, VOID)
+    c.rect(27, 87, 10, 1, L_RED[0])
+    for x in (10, 48):
+        for k in range(3):
+            c.line(x + k * 3, 88, x + k * 3, 60, IRON2)
+            c.poly([(x + k * 3 - 1, 60), (x + k * 3, 55), (x + k * 3 + 2, 60)], IRON2)
+    c.rect(28, 8, 2, 14, IRON2); c.poly([(30, 8), (44, 11), (30, 15)], WAR)
+    c.rect(11, 40, 3, 8, L_RED[0]); c.rect(50, 40, 3, 8, L_RED[0])
+    dim(c, 0, 0, 20, 88, .8)
     return c.finish()
 
 
 def wing_treasury():
-    """Trésorerie de guilde (40 × 72) : tour trapue, dôme doré, porte de fer cloutée, pièce frappée"""
-    c = Pix(40, 72, 3112)
-    c.stones(6, 24, 28, 48, STONE2, STONE)
-    c.rect(4, 22, 32, 4, STONEL)
-    c.poly([(6, 22), (10, 10), (20, 4), (30, 10), (34, 22)], H('#a8782a'))
-    c.recolor(6, 4, 30, 18, H('#a8782a'), H('#e8b93c'), 3, 'x')
-    c.rect(19, 0, 2, 5, H('#f2cc4a'))
-    c.disc(20, 34, 6, H('#e8b93c'))                                 # pièce frappée
-    c.ring(20, 34, 6, H('#a8782a'), 1)
-    c.rect(19, 31, 2, 6, H('#a8782a'))
-    c.rect(13, 50, 14, 22, IRON)                                    # porte de fer
-    for y in (54, 62):
-        for x in (15, 19, 23):
+    """Trésorerie de guilde (56 × 104) : tour cerclée de fer, flèche dorée, or qui luit derrière les barreaux"""
+    c = Pix(56, 104, 3112)
+    c.stones(12, 34, 32, 70, BSTONE2, BSTONE)
+    for y in (46, 70, 94):
+        c.rect(10, y, 36, 3, IRON)
+        for x in range(12, 46, 6):
+            c.set(x, y + 1, IRON2)
+    c.poly([(8, 36), (28, 2), (48, 36)], GOLD2)
+    c.recolor(8, 2, 40, 34, GOLD2, GOLD, 3, 'x')
+    c.disc(28, 6, 3, LIT3)
+    c.rect(18, 52, 20, 14, GOLD); c.rect(20, 56, 16, 8, LIT3)
+    for x in range(19, 38, 4):
+        c.rect(x, 52, 1, 14, IRON)
+    c.rect(20, 78, 16, 26, IRON)
+    c.rect(26, 88, 4, 4, GOLD)
+    for y in (82, 98):
+        for x in (22, 28, 34):
             c.set(x, y, IRON2)
-    c.rect(24, 58, 2, 3, LIT2)
+    dim(c, 0, 0, 20, 104, .8)
     return c.finish()
 
 
 def wing_forge():
-    """Forge de guilde (48 × 64) : briques, haute cheminée, gueule du four allumée, enclume devant"""
-    c = Pix(48, 64, 3113)
-    c.bricks(4, 28, 34, 36)
-    c.shingles([(0, 32), (20, 16), (42, 32)], ROOF, ROOF2)
-    c.bricks(30, 0, 10, 30)                                         # cheminée
-    c.rect(28, 0, 14, 3, BRICK2)
-    c.poly([(10, 64), (10, 48), (16, 42), (24, 42), (30, 48), (30, 64)], DARK)
-    c.poly([(12, 64), (12, 50), (17, 46), (23, 46), (28, 50), (28, 64)], LIT)
-    c.rect(15, 54, 10, 10, LIT2); c.rect(18, 58, 4, 6, LIT3)
-    c.rect(36, 52, 12, 4, IRON2)                                    # enclume
-    c.rect(39, 56, 6, 4, IRON); c.rect(37, 60, 10, 4, IRON)
+    """Forge de guilde (64 × 104) : pierre noire, haute cheminée de briques qui crache des braises, four béant, rigole de
+    métal en fusion, enclume"""
+    c = Pix(64, 104, 3113)
+    c.stones(6, 46, 46, 58, BSTONE, BSTONE2)
+    c.poly([(2, 50), (26, 30), (54, 50)], SLATE)
+    c.recolor(2, 30, 52, 20, SLATE, SLATE2, 3)
+    c.bricks(40, 4, 14, 44, BRICK2, BRICK)
+    c.rect(38, 2, 18, 3, IRON)
+    for x, y in ((44, 0), (50, 2), (36, 4), (54, 8), (46, 12)):
+        c.set(x, y, EMBER); c.set(x + 1, y + 2, LIT2)
+    c.poly([(10, 104), (10, 76), (20, 64), (36, 64), (46, 76), (46, 104)], DARK)
+    c.poly([(13, 104), (13, 78), (21, 68), (35, 68), (43, 78), (43, 104)], LIT)
+    c.rect(18, 82, 20, 22, LIT2); c.rect(23, 90, 10, 14, LIT3)
+    c.rect(48, 96, 16, 3, LIT2); c.rect(48, 99, 16, 5, EMBER)
+    c.rect(52, 86, 12, 4, IRON2); c.rect(55, 90, 6, 6, IRON)
+    dim(c, 0, 30, 10, 74, .8)
     return c.finish()
 
 

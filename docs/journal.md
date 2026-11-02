@@ -53,6 +53,11 @@ Modèle d'entrée :
   jusqu'à l'étape suivante) ; une annexe passe du terrain vide au **chantier** dès le premier don, puis apparaît
   **construite** quand le chef ou un officier lance sa construction. La maison est achevée quand les 3 bâtiments sont
   construits. Rien ne change aux bonus ni aux coûts : c'est seulement visuel.
+- **Direction artistique** : « Cathédrale noire », choisie par Jules parmi 3 déclinaisons du style Darkest Dungeon du
+  Carreau (cathédrale noire, bastion des profondeurs, manoir occulte ; le style « camp de guerre » façon Horde a été
+  écarté). Pierre noire, lumière rouge (grande verrière, beffroi, braseros), bannières de guerre aux pioches croisées
+  dorées, clocher à flèche dans l'ombre, tourelle, gargouilles, cage de gibet, corbeaux. Les étapes montrent le chantier :
+  bannière plantée sur les fondations, échafaudages et chèvre de levage, toit à moitié couvert et vitraux pas encore posés.
 - **Décisions** : « option 2 allégée » (une scène composée : 4 sprites de maison + 1 chantier commun + 3 annexes), plutôt
   que 4 sprites de maison seuls : celui qui donne à la Forge voit *sa* Forge avancer. Chaque matériau compte autant dans
   l'avancement (sinon les 500 000 Pierre écraseraient les 25 Jade). Les seuils d'étape sont fixes : ajouter des niveaux

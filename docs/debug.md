@@ -6612,3 +6612,11 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Reste à vérifier** ⚠️ pas encore vu dans le jeu lancé avec une vraie guilde (`npm run dev`), ni sur téléphone.
 - **Point fragile** : la largeur d'un sprite est écrite deux fois (PNG et `GUILD.house`) ; le test des largeurs le
   rattrape si on redessine un sprite sans changer la config.
+- **Nouvelle DA, même jour** : premiers sprites jugés trop génériques par Jules. Prototypes dans un script à part
+  (A Darkest Dungeon poussé / B camp de guerre façon Horde, puis 3 déclinaisons de A), choix : V1 « Cathédrale noire ».
+  `scripts/gen_town.py`, section maison de guilde réécrite : palette `BSTONE`, `WAR`, lumières `L_RED` / `L_ORANGE` /
+  `L_NONE` (vitraux pas posés), aides `flame`, `brazier` (h = 0 : éteint), `crest`, `emblem_picks`, `war_banner`,
+  `gothic_window`, `spire`, `hoist`, `portal`, `roof`, `dim` (ombre du clocher, sans toucher aux lumières, liste
+  `LIGHTS`). Tailles : maison 160 × 150, chantier 64 × 48, Armurerie 64 × 88, Trésorerie 56 × 104, Forge 64 × 104 ;
+  scène `GUILD.house` 372 × 168, sol 14. `npm run textures` : seuls les 8 PNG de guilde changent. ✅ guild-house et
+  guild-ui 26/26 (le test des largeurs PNG / config a suivi) ; les 4 étapes vues dans Chromium avec la CSS du jeu.

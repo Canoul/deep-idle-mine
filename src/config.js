@@ -1891,7 +1891,7 @@ export const GUILD = { maxMembers:30, xpPct:1, nameMin:3, nameMax:24, maxInvites
      Points = niveaux construits + part déjà donnée du prochain niveau de chaque bâtiment (moyenne des matériaux, 0 à 1) ;
      ils ne baissent jamais (un don est définitif). stages[n] : points pour atteindre l'étape n + 1 (seuils absolus : un
      niveau ajouté en config ne fait pas reculer une maison) ; tex : sprite de l'étape. Les annexes : terrain vide → chantier
-     (site, dès un premier don) → construite (built, niveau 1). Scène en pixels : w × h, x de chaque sprite (posé sur le sol),
+     (site, dès un premier don) → construite (built, niveau 1). Direction « Cathédrale noire » (V1, choisie par Jules le 02/11). Scène en pixels : w × h, x de chaque sprite (posé sur le sol),
      w = largeur de son PNG (le chantier garde la sienne, même sur la place plus étroite de la Trésorerie). */
   house:{
     stages:[
@@ -1900,12 +1900,12 @@ export const GUILD = { maxMembers:30, xpPct:1, nameMin:3, nameMax:24, maxInvites
       { at:1.75, name:'Charpente et toiture', tex:'guild_hall_3' },
       { at:3,    name:'Maison achevée',      tex:'guild_hall_4' },
     ],
-    w:272, h:112, ground:12, hall:{ x:56, w:112 },
-    site:{ tex:'guild_site', w:48 },
+    w:372, h:168, ground:14, hall:{ x:72, w:160 },
+    site:{ tex:'guild_site', w:64 },
     annexes:{
-      armurerie: { x:4,   w:48, tex:'guild_wing_armory' },
-      tresorerie:{ x:172, w:40, tex:'guild_wing_treasury' },
-      forge:     { x:220, w:48, tex:'guild_wing_forge' },
+      armurerie: { x:4,   w:64, tex:'guild_wing_armory' },
+      tresorerie:{ x:236, w:56, tex:'guild_wing_treasury' },
+      forge:     { x:304, w:64, tex:'guild_wing_forge' },
     },
   } };
 
