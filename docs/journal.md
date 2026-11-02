@@ -21,7 +21,7 @@ Modèle d'entrée :
 - **Décisions** : avant chaque commit, Claude vérifie si le changement risque de casser les applis iOS / Android
   (nouveau plugin, dossier `mobile/`, workflows GitHub, connexion de l'appli…) et prévient avant de commiter. Règle
   écrite dans `CLAUDE.md`, donc appliquée dans toutes les discussions.
-- **État** : 🧪 sur la branche `jules/claude-md-alerte-mobile` (pas en ligne)
+- **État** : ✅ en ligne le 02/11
 
 ## 02/11/2026 — Jules — Lucifer redessiné et animé
 - **Pour le joueur** : Lucifer a un nouveau look, dans le style des boss récents (comme le Golbute) : un « roi déchu » cramoisi, couronné, cornes ornées d'or, grand col dressé, fers brisés aux poignets, griffes plantées dans le bord du portail et sourire en coin. Il **bouge** : juste avant chaque rugissement, il lève la main et une flamme violette s'y allume. Tu vois venir le Fear. Le portail de lave est redessiné aussi.
