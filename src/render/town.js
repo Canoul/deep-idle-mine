@@ -5,14 +5,14 @@
    (src/render/miner-sprite.js) avec leur bulle de chat. LIT la scène, ne la modifie jamais.
    Le canvas fait TOWN.rows cases de haut ; sa largeur (en cases) suit la forme de la fenêtre (setCols). Il est dessiné
    en résolution × HIRES : les textures restent en gros pixels, les textes (noms, bulles) sont plus nets. */
-import { TOWN, JUDGMENT } from '../config.js';
+import { TOWN, JUDGMENT, GUILD } from '../config.js';
 import { loadTextures } from './textures.js';
 import { LABEL_GUILD_H, createMinerSprite } from './miner-sprite.js';
 import { townBuildings, TOWN_WIDTH, hash01, emoteOf } from '../shared/town.js';
 
 export const TOWN_TILE = 16;
 const T = TOWN_TILE, HIRES = 2;
-const GLOW = { lit: [255, 150, 60], magic: [90, 255, 140] };
+const GLOW = { lit: [255, 150, 60], magic: [90, 255, 140], red: [255, 60, 40] };   // red : vitraux et braseros de la maison de guilde
 /* police des textes de la ville : celle du jeu (VT323 depuis le 29/10 ; ancien : Jersey 10, plus chargée) */
 const FONT = '"VT323", sans-serif';
 /* couleurs des textes de la ville : celles de l'interface (style.css) ; noms des bâtiments, statue, bannières en jaune
@@ -80,6 +80,25 @@ export function createTownRenderer(cv){
       }
     });
   }
+  /* halos de lumière [x, y, rayon, sorte] en pixels d'un sprite posé en (sx, sy) ; ils respirent doucement */
+  function drawGlows(sx, sy, glows, now){
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    for(const [gx, gy, r, kind] of glows ?? []){
+      const [cr, cg, cb] = GLOW[kind ?? 'lit'] ?? GLOW.lit, a = 0.3 + 0.05 * Math.sin(now / 300 + gx);
+      const g = ctx.createRadialGradient(sx + gx, sy + gy, 1, sx + gx, sy + gy, r);
+      g.addColorStop(0, `rgba(${cr},${cg},${cb},${a})`); g.addColorStop(1, `rgba(${cr},${cg},${cb},0)`);
+      ctx.fillStyle = g; ctx.fillRect(sx + gx - r, sy + gy - r, 2 * r, 2 * r);
+    }
+    ctx.restore();
+  }
+  /* fumée : carrés qui montent, grossissent et pâlissent, depuis [x, y] du sprite posé en (sx, sy) */
+  function drawSmoke(sx, sy, smoke, now){
+    for(let k = 0; k < 4; k++){
+      const p = ((now / 2600) + k / 4) % 1, s = 4 + p * 8;
+      ctx.fillStyle = `rgba(60,40,40,${0.6 * (1 - p)})`;
+      ctx.fillRect(Math.round(sx + smoke[0] + Math.sin(p * 6 + k) * 3 - s / 2 + p * 12), Math.round(sy + smoke[1] - 4 - p * 44), Math.round(s), Math.round(s));
+    }
+  }
   /* bâtiment : son sprite posé sur le sol, centré sur sa place ; halos de lumière (TOWN.buildings[].glows), fumée */
   function drawBuilding(b, X, now){
     const i = ok(b.sprite);
@@ -87,18 +106,32 @@ export function createTownRenderer(cv){
     const sx = Math.round(X + (b.w * T - i.naturalWidth) / 2), sy = G * T - i.naturalHeight;
     if(b.kind === 'headframe') for(let y = G; y < TOWN.rows; y++) blit('tunnel', X + T, y * T);   // le puits
     ctx.drawImage(i, sx, sy);
-    ctx.save(); ctx.globalCompositeOperation = 'lighter';
-    for(const [gx, gy, r, kind] of b.glows ?? []){
-      const [cr, cg, cb] = GLOW[kind ?? 'lit'] ?? GLOW.lit, a = 0.3 + 0.05 * Math.sin(now / 300 + gx);
-      const g = ctx.createRadialGradient(sx + gx, sy + gy, 1, sx + gx, sy + gy, r);
-      g.addColorStop(0, `rgba(${cr},${cg},${cb},${a})`); g.addColorStop(1, `rgba(${cr},${cg},${cb},0)`);
-      ctx.fillStyle = g; ctx.fillRect(sx + gx - r, sy + gy - r, 2 * r, 2 * r);
+    drawGlows(sx, sy, b.glows, now);
+    if(b.smoke) drawSmoke(sx, sy, b.smoke, now);
+  }
+  /* maison de guilde (02/11/2026) : celle de MA guilde (scene.house : { stage, annexes }, envoyée par le serveur, la même
+     pour tous les membres), pièce par pièce comme dans l'onglet Guilde (GUILD.house, en pixels depuis le bord gauche du
+     domaine) ; sans guilde : le terrain vide, à la place de la maison */
+  function guildPieces(house){
+    const H = GUILD.house;
+    if(!house) return [{ tex: H.lot.tex, x: H.hall.x + (H.hall.w - H.lot.w) / 2 }];
+    const stage = H.stages[Math.min(H.stages.length - 1, Math.max(0, house.stage | 0))];
+    const out = [{ tex: stage.tex, x: H.hall.x, glows: stage.glows }];
+    for(const [id, a] of Object.entries(H.annexes)){
+      const st = house.annexes?.[id];
+      if(st === 'built') out.push({ tex: a.tex, x: a.x, glows: a.glows, smoke: a.smoke });
+      else if(st === 'site') out.push({ tex: H.site.tex, x: a.x });
     }
-    ctx.restore();
-    if(b.smoke) for(let k = 0; k < 4; k++){                // fumée : carrés qui montent, grossissent et pâlissent
-      const p = ((now / 2600) + k / 4) % 1, s = 4 + p * 8;
-      ctx.fillStyle = `rgba(60,40,40,${0.6 * (1 - p)})`;
-      ctx.fillRect(Math.round(sx + b.smoke[0] + Math.sin(p * 6 + k) * 3 - s / 2 + p * 12), Math.round(sy + b.smoke[1] - 4 - p * 44), Math.round(s), Math.round(s));
+    return out;
+  }
+  function drawGuild(X, now, house){
+    for(const p of guildPieces(house)){
+      const i = ok(p.tex);
+      if(!i) continue;
+      const sx = Math.round(X + p.x), sy = G * T - i.naturalHeight;
+      ctx.drawImage(i, sx, sy);
+      drawGlows(sx, sy, p.glows, now);
+      if(p.smoke) drawSmoke(sx, sy, p.smoke, now);
     }
   }
   /* statue : le mineur en pierre (×2), dessiné à part avec son filtre, gardé et refait toutes les 2 s au plus (le temps
@@ -210,10 +243,11 @@ export function createTownRenderer(cv){
     lines.forEach((l, i) => ctx.fillText(l, x + w / 2, y + 2 + (i + 1) * 9));
   }
   /* nom du bâtiment (et « E : entrer » devant sa porte) au-dessus de son sprite, sans sortir du haut du canvas */
-  function drawLabel(b, camX, hint){
-    const i = b.sprite ? ok(b.sprite) : null;
+  function drawLabel(b, camX, hint, scene){
+    const i = b.kind === 'guild' ? ok(guildPieces(scene.house)[0].tex) : b.sprite ? ok(b.sprite) : null;
     const top = i ? G - i.naturalHeight / T : b.kind === 'place' ? G - 4 : G - b.h;
-    const lines = [b.name, hint].filter(Boolean), cx = (b.door - camX) * T;
+    const name = b.kind === 'guild' && scene.guild ? `< ${scene.guild} >` : b.name;   // ma guilde : son nom au-dessus de sa maison
+    const lines = [name, hint].filter(Boolean), cx = (b.door - camX) * T;
     const y0 = Math.max(9, top * T - 2 - (lines.length - 1) * 9);
     ctx.font = `11px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
     lines.forEach((l, k) => {
@@ -228,7 +262,8 @@ export function createTownRenderer(cv){
     /* largeur du canvas en cases (selon la forme de la fenêtre) */
     setCols(n){ n = Math.max(8, Math.min(TOWN_WIDTH, Math.ceil(n))); if(n !== cols){ cols = n; resize(); } },
     /* scene : { camX (bord gauche, en cases), players, labels: bool (noms des bâtiments), near: bâtiment devant moi, hint,
-       statue: { name, look, value } | null, judgment: { angel: { count, cap, open }, demon: … } | null, meX : ma place } */
+       statue: { name, look, value } | null, judgment: { angel: { count, cap, open }, demon: … } | null, meX : ma place,
+       house : maison de ma guilde ({ stage, annexes } ou null), guild : nom de ma guilde (ou null) } */
     draw(scene, now = performance.now()){
       const camX = scene.camX;
       drawSky(camX);
@@ -249,7 +284,7 @@ export function createTownRenderer(cv){
       for(const b of townBuildings()){
         const X = (b.x - camX) * T;
         if(X > cols * T + T || X + (b.w + 2) * T < -T) continue;
-        if(b.kind === 'place') drawPlace(b, X, now, scene); else drawBuilding(b, X, now);
+        if(b.kind === 'place') drawPlace(b, X, now, scene); else if(b.kind === 'guild') drawGuild(X, now, scene.house); else drawBuilding(b, X, now);
       }
       /* brume orangée au ras du sol */
       const fog = ctx.createLinearGradient(0, (G - 2) * T, 0, (G + 0.6) * T);
@@ -260,7 +295,7 @@ export function createTownRenderer(cv){
       const ps = [...scene.players].sort((a, b) => (a.me ? 1 : 0) - (b.me ? 1 : 0));   // moi par-dessus les autres
       for(const p of ps) drawPlayer(p, camX, now);
       if(scene.labels) for(const b of townBuildings()){
-        drawLabel(b, camX, b === scene.near ? scene.hint : null);
+        drawLabel(b, camX, b === scene.near ? scene.hint : null, scene);
         if(b.kind === 'place') drawPlaceLabels(b, camX, scene);
       }
     },

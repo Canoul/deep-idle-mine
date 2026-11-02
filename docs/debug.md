@@ -6537,7 +6537,8 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Signature** : `xcodebuild archive` avec `CODE_SIGNING_ALLOWED=NO`, puis `-exportArchive -allowProvisioningUpdates` avec la clé (`signingStyle: automatic`, cloud signing) : une archive signée demanderait un certificat de développement et un appareil enregistré, absents du Mac de GitHub. Il faut le rôle **Admin**. Envoi : `altool --upload-app`, pour garder l'IPA. `macos-26`, pas `macos-latest` : SDK d'iOS 26 exigé par Apple.
 - **Changements** : iPhone seul (`TARGETED_DEVICE_FAMILY = 1`), `PrivacyInfo.xcprivacy` (UserID, GameplayContent, OtherUserContent, UserDefaults CA92.1, sans suivi), `MainViewController` (`bounces = false`, pincement coupé ; pas de `scrollEnabled: false` : le jeu défile sur la page), `@capacitor/keyboard` (`resize: native`), `#gchatInput` à 16 px, numéro de build = exécution × 100 + essai. `backButton` n'est jamais émis sur iOS, rien n'en dépend. Notifications locales : pas d'entitlement.
 - **Tests** ✅ tests/mobile-config, app-mode, app-device, app-native, app-origin. ✅ GitHub Actions, commit 628a1f5, run 41339218128 : compilation Release, bibliothèques, manifeste, icône sans transparence ; simulateur : appli vivante, **84 953 pixels du bouton Se connecter** sur la capture, donc jeu démarré et serveur joint depuis `capacitor://localhost`. La console ne donne que 2 lignes : « 0 erreur JavaScript » ne prouve rien seul, l'écran si. ✅ Android vert avec le plugin clavier (86f631e).
-- **Pas vérifié** ⚠️ : tout ce qui demande la clé (cloud signing, `altool`, TestFlight) : aucun secret à ce jour. Vrai iPhone : encoche, clavier, Safari, notifications, stockage du jeton.
+- **Vérifié le 02/11** ✅ (ajout de Jules) : TestFlight : run 41350722773 (main, 01/11, `testflight`, signature dans le cloud par la clé d'API de Geoffrey) vert ; Jules invité sur App Store Connect et TestFlight, appli installée et essayée sur son iPhone le 02/11.
+- **Pas vérifié** ⚠️ (01/11, avant l'essai ci-dessus) : tout ce qui demande la clé (cloud signing, `altool`, TestFlight) : aucun secret à ce jour. Vrai iPhone : encoche, clavier, Safari, notifications, stockage du jeton.
 - **Point fragile** : un titre d'étape YAML ne doit pas contenir `: ` (workflow invalide, aucune tâche lancée, 86f631e).
 
 ## 01/11/2026 — Contrôle iPhone : échec dans le simulateur, capture trop tôt (Geoffrey)
@@ -6546,3 +6547,151 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Cause, par les mesures** : run 41343755804 : à 2 s écran de démarrage (0 orange, 41 teintes), bouton visible à **55 s**, la commande de capture elle-même mettant une cinquantaine de secondes à revenir. L'ancien contrôle photographiait à 40 s fixes : il réussissait ou échouait selon la charge du Mac de GitHub. Serveur à 0,57 s : pas en cause. C'est un premier lancement à froid du simulateur, ça ne mesure pas un vrai iPhone.
 - **Correctif** : `.github/workflows/ios.yml` attend le bouton, 120 s au plus, une capture toutes les 5 s, toutes gardées dans l'artefact ; seuil inchangé (2 000 pixels), `mobile/scripts/ios-screen.cjs` ; annotations avec orange / teintes / clarté à chaque capture, temps de réponse du serveur.
 - **Tests** ✅ tests/mobile-config.test.js. ✅ Exécutions `controle` par push sur la branche (le déclenchement à la main demande une authentification) : 41343755804 (bouton à 55 s) et 41344246150 (bouton à 31 s), verts. L'écart autour de 40 s explique les réussites et les échecs de l'ancien contrôle.
+
+## 01/11/2026 — Visuels des fiches des stores (Jules) — branche `jules/visuels-stores`
+- **Quoi** : `scripts/gen_store_art.py` (`npm run store:art`, Python + Pillow) écrit `mobile/store/` :
+  `icon-google-512.png` (RGBA opaque), `icon-apple-1024.png` (RGB, sans alpha), `banner-google-1024x500.png` (RGB).
+  Les icônes réutilisent `centered()` de `scripts/gen_app_icon.py` (même pioche que l'icône de l'appli). La bannière est
+  composée à l'échelle de l'art (256 × 125, cases de 16) puis agrandie ×4 au plus proche voisin : mine écrite en texte
+  (`MINE`), rendu repris de `src/render/canvas.js` (assombrissement 0,72 × (1 − lumière) par case, cases jamais vues en
+  `#060608`, halo des torches en 4 paliers au lieu du dégradé), mineurs de `src/skins.js` (pioche 13 × 13 tournée autour
+  du pivot (11, 10) comme `miner-sprite.js`), ciel en bandes de `TOWN.sky`, titre en glyphes pixel 7 de haut (`GLYPHS`).
+  Aucun hasard : relancer le script redonne les mêmes fichiers.
+- **Workflow** : `android-apk.yml` ignore `mobile/store/**` (ajouté en dernier dans `paths`, après `mobile/**`).
+  ⚠️ `ios-ipa.yml` (branche `jules/appli-ios`) doit l'ignorer aussi : le test ci-dessous échoue sinon après la fusion.
+- **Tests** ✅ tests/store-art.test.js (tailles, type de couleur 2 = RVB sans alpha et pas de bloc tRNS pour Apple et la
+  bannière, exclusion dans chaque workflow qui suit `mobile/**`) ; tests/mobile-icon.test.js, tests/mobile-config.test.js
+  inchangés et verts.
+- **Reste à faire** : captures d'écran (plan dans `docs/fiches-stores.md`) quand l'interface tactile existera. iPad :
+  tranché le 02/11, iPhone seul (`TARGETED_DEVICE_FAMILY = 1`), pas de captures iPad.
+- **Point fragile** : si l'icône de l'appli change (`gen_app_icon.py`), relancer aussi `npm run store:art` : les stores
+  veulent la même icône sur la fiche et sur le téléphone.
+- **Nouvelle icône (même jour)** : lampe de mine choisie par Jules, image Gemini 640 × 640 (icône dans un carré arrondi de
+  384 px, x et y de 128 à 511). Grille mesurée sur les bords (profil des écarts de couleur) : 60 cases de 6,4 px, phase 0.
+  Une couleur par case = médiane des pixels du centre de la case (les bords sont flous) ; pas de réduction de palette
+  (à 32 couleurs, la lueur orange et les paillettes disparaissaient). Coins arrondis : les cases couleur du fond extérieur
+  prennent la couleur de la première case de roche vers le centre. Bord de 2 cases recopié (la chaîne monte jusqu'en
+  haut) → `mobile/assets/icon-art.png`, 64 × 64, ×16 = 1024. `gen_app_icon.py` lit cette source : agrandissement entier
+  au plus proche voisin puis réduction BOX si la taille n'est pas un multiple de 64 ; avant-plan adaptatif = icône
+  entière sur les 72 px visibles sur 108, fond = couleur médiane du bord (`#100c0b`) ; écrit l'icône iOS seulement si
+  le projet iOS est là. ✅ tests/mobile-icon.test.js (source 64 × 64, fond sombre), tests/store-art.test.js ; vu en
+  aperçu à toutes les tailles Android, en rond et en carré. ✅ 02/11 : lampe vue par Jules sur son téléphone (APK de la
+  branche, avant la fusion ci-dessous).
+- **Fusion avec main (02/11)** : entre-temps `main` fabrique les icônes avec Capacitor Assets (`cd mobile && npm run
+  assets`, Geoffrey : icônes Android avec `ldpi` et fond en PNG, icône iPhone, écrans de démarrage) depuis
+  `mobile/assets/logo.png` (la pioche, provisoire). Gardé : son outil, seul à écrire `mobile/android` et `mobile/ios`.
+  `gen_app_icon.py` n'écrit plus que `logo.png` (lampe ×16 au plus proche voisin, RVB) et garde `icon(size)` pour
+  `gen_store_art.py`. `mobile/assets/icon-1024.png` retiré (plus personne ne le lit), `values/ic_launcher_background.xml`
+  remis comme sur main (`#191310`, l'icône adaptative lit `@mipmap/ic_launcher_background`). Rendu vérifié en aperçu :
+  icône classique (lampe dans une petite marge sombre), adaptative avec l'encart de 16,7 % (lampe entière dans le
+  rond), iPhone 1024 RVB plein cadre, écrans de démarrage (petite lampe au centre). ✅ tests/mobile-icon (logo 1024,
+  type de couleur 2), store-art, mobile-config : 25/25. ⚠️ Icône Capacitor pas encore vue sur un vrai téléphone (APK et
+  TestFlight suivants). `mobile/store/` inchangé (même `icon()`).
+
+## 02/11/2026 — Minotaure : Charge et Rage visibles à l'écran (Jules, branche jules/fix-minotaure-visible)
+- **Signalement** : Geoffrey n'a vu ni la Charge ni la Rage du minotaure en jouant (lieu inconnu : donjon ou Arène).
+- **Enquête** : rien de cassé dans la partie. `tests/minotaur.test.js` 8/8 ; code en ligne identique (config, mobs.js,
+  canvas.js relus sur deepmineidle.fr). Scène du donjon de `tests/dungeon.test.js` avec `minerSpecs` presets
+  barbare/mineur/logisticien (script hors dépôt) : mort en 29 s, 3 préparations, 2 encornés, rage à 20,7 s ; dégâts ×2 :
+  17 s, 1 charge, rage ; ×3 : 12 s, 1 préparation, rage. Arène (presets, 2 seeds) : brun 1 charge, noir enrage à 17 s.
+  Cause : l'affichage. Préparation = 1,5 s de partie, soit 0,75 s à ×2, avec un tremblement de ±1 px
+  (`Math.round(Math.sin(now/30))`) et l'icône « ! » 8 px ; rage = icône feu 8 px seulement. La course (12 cases/s) glisse
+  (`playedPos`) jusqu'à 6 cases, au-delà elle saute (`FLUID.teleport` 0,8 case/tick).
+- **Quoi** : `src/render/minotaur.js` (nouveau) : `minoLook(fx, now)` → `{ shake, aura, label }` (pur), `drawMinoAura`
+  (dégradé radial rouge sous le sprite), `drawMinoLabel` (« CHARGE ! » au-dessus des icônes d'état). `MINO_FX` en config
+  (shake 2 px, période 25 ms, aura 0,35 à 0,75, période 180 ms). `canvas.js` : branche minotaure. Simulation et serveur
+  inchangés. Wiki : une phrase pour chacun, date 02/11/2026.
+- **Tests** ✅ `tests/minotaur-fx.test.js` (nouveau, 4), minotaur, boot-check, view. ✅ Vu en capture (page de test hors
+  dépôt, texture du minotaure sur la pierre : normal, gratte le sol, enragé, les deux). ⚠️ Pas vu dans une vraie partie.
+- ✅ En ligne le 02/11.
+
+## 02/11/2026 — Golems tournés vers leur proie ; « anciens sprites du Golbute » non trouvés (Jules)
+- **Symptôme 1** : les golems ne se tournent pas vers le joueur. Deux causes. Mine : le golem n'avait pas de sens
+  (`o.face` jamais écrit, `mobView` ne l'envoyait pas, `canvas.js` le dessinait toujours vers la droite). Division
+  (Instance II) : `stepGolems` n'écrivait `o.face` qu'en faisant un pas ; né à `face: -1`, un golem au contact (ou
+  bloqué par un voisin) ne se retournait jamais.
+- **Correctif** : `faceTo(o, m)` (`src/sim/golem.js`, même côté que `golemStep` : `sideOf`), appelé dans `updateGolem`
+  (`src/sim/mobs.js`) dès qu'il a une proie qu'il poursuit ou tacle, avant le test de portée ; juste au-dessus ou
+  au-dessous de lui, il garde son sens. `mobView` (`src/shared/view.js`) envoie `face`. `canvas.js` : sprite retourné
+  autour de son centre (sueur comprise) si `face < 0`. `stepGolems` (`src/sim/instance/golbute.js`) : `o.face` vers la
+  proie à chaque tick, avant le contact. Rien dans la simulation ne lit `face` des golems : affichage seulement.
+- **Tests** ✅ tests/golem (+1 : gauche, contact à droite, contact à gauche, envoyé par la vue), golbute (+1 : né à
+  gauche, contact à droite puis à gauche), view, golbute-sprite, mobs, instance-sim, instance-server : 96/96.
+  Simulation 3 × 5 : 0 blocage (elle n'atteint que l'area 3, les golems sont à l'area 5+ : non exercés).
+  ⚠️ Pas vu en partie réelle.
+- **Symptôme 2** : « les anciens sprites du Golbute sont toujours en jeu ». **Non reproduit** : `main` et le site en
+  ligne servent les mêmes `golbute*.png` et `golem.png` (empreintes identiques), tous au style du 30/10 ; le rendu
+  n'utilise que `golbute_body`/`golbute_arm` (+ `_crystal`), `golem` et `golbute_rock`, tous dans `TEXTURES` ; le
+  serveur sert les fichiers en `no-store` (pas de cache navigateur). Aucune autre image du Golbute sur les branches, en
+  local ou en remise. Les icônes d'objets (coffre, jambières, âme, clé II) restent au format 16 × 16 des autres icônes.
+  ✅ Jules (02/11) : les bons sprites sont ceux déjà en jeu (golbute, golbute_crystal, golbute_body/_arm et leurs
+  `_crystal`, golem) ; rien à changer. Sans doute une capture ou une version antérieure au 30/10.
+- ✅ En ligne le 02/11.
+
+## 02/11/2026 — Jules — Maison de guilde (scène qui évolue avec les dons)
+- **Quoi** : scène purement visuelle dans l'onglet Guilde (carte « Maison de guilde » en tête de la colonne de droite) et
+  dans la fiche d'une autre guilde (`peekHTML`). Rien côté serveur : tout est calculé dans le navigateur depuis
+  `buildingsView` (déjà envoyé : `{ id, level, materials:[{ item, need, have }] }`). Aucun chemin de ressources touché →
+  pas d'anticheat à compléter.
+- **Fichiers** : `src/shared/guild-house.js` (logique pure : `givenPart` = moyenne des `min(have/need, 1)` des matériaux
+  du prochain niveau, `housePoints` = niveaux construits + `givenPart` par bâtiment, `houseStage` = dernier seuil
+  `GUILD.house.stages[].at` atteint, `annexState` = empty / site / built), `src/config.js` (`GUILD.house` : seuils,
+  textures, scène 272 × 112 px, sol 12 px, x et largeur de chaque sprite), `src/ui/guild.js` (`houseHTML` : `<img>`
+  positionnées en % de la scène, `aspect-ratio`, elle suit la largeur de la colonne), `src/ui/style.css` (`.ghouse` :
+  ciel de crépuscule du Carreau, sol en `::before`), `scripts/gen_town.py` (`guild_hall(1..4)` 112 × 96, `guild_site`
+  48 × 40, `wing_armory` 48 × 64, `wing_treasury` 40 × 72, `wing_forge` 48 × 64), 8 PNG dans `textures/`.
+- **Points monotones** : un don est définitif et un niveau construit fait +1 pendant que sa part repart de 0 (≤ 1) →
+  les points ne baissent jamais. Seuils absolus (pas en % du total) : ajouter un niveau en config ne fait pas reculer
+  une maison. L'étape 4 (seuil 3) = les 3 bâtiments actuels construits ; à revoir si on ajoute des bâtiments.
+- **Tests** ✅ `tests/guild-house.test.js` (parts, points, seuils, annexes, monotonie, sprites présents à la largeur de la
+  config et pas plus hauts que la scène, scène dans mineHTML et peekHTML) ; `tests/guild-ui.test.js` : le test
+  d'échappement cherchait « aucun `<img` » dans l'onglet, il vise maintenant `<img src=x` (la scène a ses propres
+  images) ; guild, guild-buildings, anticheat/guild-buildings, boot-check, main-module : 58/58.
+- **Vérifié** ✅ rendu des 4 étapes en aperçu (planche composée par Pillow, puis la vraie CSS du jeu dans Chromium à deux
+  largeurs de colonne). `npm run textures` ne change aucune autre texture.
+- **Reste à vérifier** ⚠️ pas encore vu dans le jeu lancé avec une vraie guilde (`npm run dev`), ni sur téléphone.
+- **Point fragile** : la largeur d'un sprite est écrite deux fois (PNG et `GUILD.house`) ; le test des largeurs le
+  rattrape si on redessine un sprite sans changer la config.
+- **Nouvelle DA, même jour** : premiers sprites jugés trop génériques par Jules. Prototypes dans un script à part
+  (A Darkest Dungeon poussé / B camp de guerre façon Horde, puis 3 déclinaisons de A), choix : V1 « Cathédrale noire ».
+  `scripts/gen_town.py`, section maison de guilde réécrite : palette `BSTONE`, `WAR`, lumières `L_RED` / `L_ORANGE` /
+  `L_NONE` (vitraux pas posés), aides `flame`, `brazier` (h = 0 : éteint), `crest`, `emblem_picks`, `war_banner`,
+  `gothic_window`, `spire`, `hoist`, `portal`, `roof`, `dim` (ombre du clocher, sans toucher aux lumières, liste
+  `LIGHTS`). Tailles : maison 160 × 150, chantier 64 × 48, Armurerie 64 × 88, Trésorerie 56 × 104, Forge 64 × 104 ;
+  scène `GUILD.house` 372 × 168, sol 14. `npm run textures` : seuls les 8 PNG de guilde changent. ✅ guild-house et
+  guild-ui 26/26 (le test des largeurs PNG / config a suivi) ; les 4 étapes vues dans Chromium avec la CSS du jeu.
+- ✅ En ligne le 02/11 (⚠️ toujours pas vu avec une vraie guilde ni sur téléphone).
+
+## 02/11/2026 — Jules — Maison de guilde dans le Carreau
+- **Demande** : la maison doit être un bâtiment de la ville, synchronisé pour tous les membres d'une guilde (la scène
+  seule dans l'onglet Guilde était un malentendu ; elle reste, l'appli mobile n'a pas de Carreau).
+- **Serveur** : `server/guild/service.js` `houseOf(id)` → `{ stage, annexes }` (houseState sur buildingsView, null sans
+  guilde) ; `server/town/service.js` paramètre `guildHouseOf`, champ `house` de la réponse du ping ; branché dans
+  `server/main.js`. Pas de cache : la fiche des guildes est en mémoire. Rien d'économique.
+- **Ville** : `TOWN.buildings` entrée `{ tab:'guilde', kind:'guild', w:23, h:10, doorAt:10 }` entre Armurerie et Taverne ;
+  `doorAt` (nouveau, `src/shared/town.js` townLayout) met la porte devant le portail de la maison (sinon le milieu, côté
+  Trésorerie). `src/ui/nav.js` : `noBuilding` retiré de Guilde. `src/render/town.js` : `guildPieces(house)` (même
+  composition que l'onglet, `GUILD.house` en pixels), `drawGuild`, halos et fumée sortis en `drawGlows` / `drawSmoke`,
+  halo `red` ; le nom affiché est `< nom de ma guilde >` (`scene.guild`). `src/ui/town.js` : `myHouse` lu au ping (toutes
+  les TOWN.poll ms), passé à `draw`. Nouveau sprite `guild_lot` (80 × 56 : piquets, corde, panneau, fanion).
+  `GUILD.house` : w 368 (= 23 cases), `glows` par étape et par annexe, `smoke` de la Forge, `lot`. Les 9 textures de la
+  maison ajoutées à `TEXTURES` (chargées par le canvas).
+- **Tests** ✅ 136/136 : tests/guild-house (bâtiment, porte devant le portail, halos dans les sprites, textures chargées),
+  tests/guild-buildings (houseOf : null sans guilde, identique pour deux membres, chantier puis annexe construite),
+  tests/town (réponse `house`, réponse de la route avec `house: null`, bâtiment sans sprite comme la place), nav, guild,
+  guild-ui, guild-service, anticheat/guild-buildings, boot-check, main-module, app-families.
+- **Vérifié** ✅ les 5 états (sans guilde, étapes 1 à 4) dessinés par le vrai `createTownRenderer` dans Chromium (page de
+  test hors dépôt). ⚠️ Pas vu dans le jeu lancé avec deux comptes d'une même guilde.
+- **Point fragile** : `doorAt: 10` suppose le portail à x 72 + 78..102 px du domaine ; un test le vérifie si on déplace
+  la maison dans `GUILD.house`.
+- ✅ En ligne le 02/11 (⚠️ toujours pas vu avec deux comptes d'une même guilde).
+
+### 02/11/2026 — Ténacité à rendement décroissant (branche geoffrey/tenacite-log)
+- `TENACITY = { k:40, max:75 }` (config) ; `src/sim/tenacity.js` : `effectiveTenacity(brute) = min(max, k·log1p(brute/k))`, `tenacityOf(m)`. Branché partout où la ténacité était lue : `resists` (src/sim/mobs.js, donc gobelin, occultiste, méphite, chien, ver, minotaure, golem, mur de chair, Il arrive), Bloc géant (recul), tours (`resists` local), Golbute (slamChance et esquive de l'avalanche). Onglet Stuff : « → X % effectifs ».
+- Tests : tests/tenacity.test.js (courbe). `tests/helpers.js` rend la courbe linéaire (k 1e12, max 100) pour les tests de mécaniques qui écrivent « ténacité 100 % = tout ignoré » ; helpers importé en plus par giant-sim, golbute, hescoming-sim, tower-boss. ✅ 279 tests liés.
+- ⚠️ Un mineur sans ténacité garde exactement le même hasard (pas de tirage). Pénétration de ténacité des mobs : proposée, pas codée.
+- Pénétration (02/11, Geoffrey : « en points, retirés de la brute avant la courbe ») : `TENACITY.pen` { source: points }, `tenacityOf(m, src)` = courbe(max(0, brute − pen)), `resists(G, m, src)`. Sources passées partout : gobelin, occultiste, mephite, chien, ver, chair, golem, minotaure, hescoming, giant, towerBoss, golbute. Valeurs provisoires : golem 10, minotaure 10, towerBoss 20, golbute 20, le reste 0. helpers.js met `pen = {}`. ✅ tenacity.test (pénétration) + 218 tests liés.
+
+### 02/11/2026 — Mineur « qui tourne en rond » en prison (minologue, seed 1686922429) : outil pour rejouer 🧪
+- Non reproduit : seed 1686922429 en mine (1 et 3 mineurs de base, stuff de canoul), en prison (80 runs avec le stuff et l'historique de canoul du 30/10, 25 avec Mus, 15 avec un mineur de base en area 2) : aucun circuit (détecteur : 30 changements de case sans miner ni tuer sur moins de la moitié de cases différentes, ou 150 s sans miner ni tuer). Il faut SON mineur et SON profil.
+- Outil : `GET /api/game/admin/prison/record?name=<pseudo>` (comptes ADMIN_VIEW, service `adminPrisonRecord`), lien 📥 dans le tableau de bord ; `node scripts/replay-prison.js --file prison-<pseudo>.json [--from] [--to] [--trace N]` rejoue avec `buildPrisonRun(runRecord(...))` (partie identique au serveur). ✅ test prison-server « admin : enregistrement », essai sur une prison locale.

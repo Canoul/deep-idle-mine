@@ -16,6 +16,15 @@ Modèle d'entrée :
 - **À suivre** : à faire avant d'ouvrir l'appli aux joueurs (lien TestFlight public, test fermé Google).
 - **État** : 📝 conception, branche `geoffrey/spec-maj-a-chaud`
 
+## 02/11/2026 — Jules — Correctif : on voit enfin la Charge et la Rage du minotaure
+- **Pour le joueur** : Geoffrey n'avait vu ni la Charge ni la Rage du minotaure. Elles marchaient (vérifié en simulation :
+  au donjon, 1 à 3 charges et la rage dans un combat, même avec une équipe 3 fois plus forte ; dans l'Arène, le brun
+  charge et le noir enrage), mais à l'écran presque rien ne se voyait : un tremblement d'1 pixel pendant 0,75 s et deux
+  petites icônes. Maintenant, quand il gratte le sol, il tremble nettement et **« CHARGE ! »** s'affiche au-dessus de
+  lui ; enragé, une **aura rouge** pulse autour de lui. Les règles et l'équilibrage ne changent pas.
+- **À suivre** : le faire confirmer par Geoffrey en jeu.
+- **État** : ✅ en ligne le 02/11
+
 ## 01/11/2026 — Geoffrey — Contrôle iPhone plus solide
 - **Pour le joueur** : rien, c'est un outil de l'équipe.
 - **Pour l'équipe** : le contrôle de l'appli iPhone échouait parfois sans raison : il photographiait l'écran à 40 s, alors que le simulateur met de 31 à 55 s à afficher le jeu. Il attend maintenant le bouton, 2 minutes au plus.
@@ -53,6 +62,44 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 02/11/2026 — Jules — La maison de guilde dans le Carreau
+- **Pour le joueur** : la maison de guilde devient un vrai bâtiment du Carreau, entre l'Armurerie et la Taverne, comme
+  le Concasseur ou la Fonderie. Chacun y voit **la maison de sa guilde**, au stade où elle en est : tous les membres voient
+  exactement la même, avec le nom de la guilde au-dessus, et elle avance dans les secondes qui suivent un don ou une
+  construction. Vitraux et braseros rougeoient, la forge fume. Sans guilde : un terrain vide avec un panneau. Entrer
+  dans le bâtiment ouvre l'onglet Guilde, qui garde aussi sa scène (seule vue dans l'appli mobile, qui n'a pas de Carreau).
+- **Décisions** : chacun voit sa propre maison ; les joueurs d'autres guildes qui ont l'onglet Guilde ouvert se tiennent
+  devant la mienne (chez eux, c'est la leur). Le domaine fait 23 cases de large : c'est le plus grand bâtiment de la ville.
+- **État** : ✅ en ligne le 02/11
+
+## 02/11/2026 — Jules — Maison de guilde qui se construit avec les dons
+- **Pour le joueur** : en haut à droite de l'onglet de sa guilde (et dans la fiche « Voir » des autres guildes), une
+  scène dessinée : la **maison de guilde** au centre, en 4 étapes (Fondations → Les murs montent → Charpente et toiture
+  → Maison achevée), et ses **3 annexes** : Armurerie, Trésorerie, Forge. Chaque don fait avancer la maison (petite barre
+  jusqu'à l'étape suivante) ; une annexe passe du terrain vide au **chantier** dès le premier don, puis apparaît
+  **construite** quand le chef ou un officier lance sa construction. La maison est achevée quand les 3 bâtiments sont
+  construits. Rien ne change aux bonus ni aux coûts : c'est seulement visuel.
+- **Direction artistique** : « Cathédrale noire », choisie par Jules parmi 3 déclinaisons du style Darkest Dungeon du
+  Carreau (cathédrale noire, bastion des profondeurs, manoir occulte ; le style « camp de guerre » façon Horde a été
+  écarté). Pierre noire, lumière rouge (grande verrière, beffroi, braseros), bannières de guerre aux pioches croisées
+  dorées, clocher à flèche dans l'ombre, tourelle, gargouilles, cage de gibet, corbeaux. Les étapes montrent le chantier :
+  bannière plantée sur les fondations, échafaudages et chèvre de levage, toit à moitié couvert et vitraux pas encore posés.
+- **Décisions** : « option 2 allégée » (une scène composée : 4 sprites de maison + 1 chantier commun + 3 annexes), plutôt
+  que 4 sprites de maison seuls : celui qui donne à la Forge voit *sa* Forge avancer. Chaque matériau compte autant dans
+  l'avancement (sinon les 500 000 Pierre écraseraient les 25 Jade). Les seuils d'étape sont fixes : ajouter des niveaux
+  de bâtiments plus tard ne fera jamais reculer une maison.
+- **À suivre** : seuils provisoires (`GUILD.house.stages` : 0 ; 0,75 ; 1,75 ; 3). Idées pour plus tard : la maison de sa
+  guilde dans le Carreau ; un décor de plus à chaque niveau 2, 3… des annexes quand ils existeront.
+- **État** : ✅ en ligne le 02/11
+
+## 02/11/2026 — Jules — Les golems se tournent vers le joueur
+- **Pour le joueur** : le golem des mines regardait toujours vers la droite, même avec le mineur à sa gauche. Il se
+  tourne maintenant vers le mineur qu'il poursuit, sa goutte de sueur comprise. Les petits golems de la Division
+  (Instance II) ne se tournaient qu'en faisant un pas : ils naissaient tournés à gauche et, une fois au contact, ne se
+  retournaient plus. Ils font maintenant face à leur cible, même au contact. Rien ne change dans le combat.
+- **À suivre** : à regarder dans une vraie partie (area 5+ et Division du Golbute).
+- **État** : ✅ en ligne le 02/11
+
 ## 01/11/2026 — Geoffrey — Classement : son propre onglet
 - **Pour le joueur** : les classements quittent Social et ont leur onglet **Classement**. Les boutons sont dans l'ordre Classement, Guilde, Social. Touches du clavier : C, G et S.
 - **État** : ✅ en ligne le 01/11
@@ -88,12 +135,25 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 01/11/2026 — Jules — Fiches des stores : nouvelle icône et bannière
+- **Pour le joueur** : l'appli change d'icône : **une lampe de mine allumée** remplace la pioche, sur Android et sur
+  iPhone, et l'écran de démarrage la montre aussi (sur le téléphone après avoir réinstallé l'appli). Les images des futures fiches Google Play et App Store sont prêtes, dans `mobile/store/` :
+  cette icône en 512 × 512 pour Google et en 1024 × 1024 sans transparence pour Apple, et la bannière Google
+  (1024 × 500) : le titre en lettres pixel et une mine en coupe avec une session à 3.
+- **Décisions** : icône et bannière validées par Jules. Les captures d'écran attendent la version tactile ; scènes
+  choisies : une session à 3, le Bloc géant, une tour, le Carreau. Ordre, légendes et tailles dans `docs/fiches-stores.md`.
+- **Décisions (02/11)** : appli **iPhone seule**, donc pas de captures iPad. L'appli iPhone installée par TestFlight
+  marche sur l'iPhone de Jules. Interface tactile : plus tard (Jules ou Geoffrey) ; textes légaux : Geoffrey.
+- **À suivre** : valider les légendes ; une 5e capture « Stuff / Craft » pour montrer la progression ?
+- **État** : ✅ en ligne le 02/11
+
 ## 01/11/2026 — Geoffrey — Modération pour Google Play et l'App Store
 - **Pour le joueur** : un bouton ⋮ sur chaque message et sur chaque joueur (Online, Classements, amis, fiche du Carreau) permet de **signaler** ou de **bloquer**. Un joueur bloqué : plus de messages, plus de bulle, plus d'invitations ni de demandes d'ami, et il n'est pas prévenu ; la liste « Joueurs bloqués » est dans Social. À la création d'un compte, invité compris, il faut cocher les conditions d'utilisation ; les comptes existants les acceptent à leur premier message. Le filtre connaît maintenant les termes sexuels et haineux.
 - **Pour l'équipe** : cinq nouveaux outils sur le VPS, `reports.js`, `delete-message.js`, `mute.js`, `ban.js`, `rename.js`, et un journal de ce qui a été fait (`reports.js --log`). Chaque signalement arrive aussi sur un salon Discord privé.
 - **Décisions** : on garde les avertissements et le ban auto de 24 h ; `ban.js` est une sanction à part (connexion refusée). Les jurons d'humeur (putain, merde, fuck) restent permis. Un bloqué n'est pas chassé du Carreau, seule sa bulle disparaît.
 - **À suivre** : les pages https://deepmineidle.fr/conditions et /confidentialite **n'existent pas encore** (404) ; il faut les publier avant la soumission aux stores. Créer le salon privé et régler `DIM_DISCORD_MOD_WEBHOOK` sur le VPS.
 - **État** : ✅ en ligne le 01/11
+
 ## 01/11/2026 — Geoffrey — Prison : des runs ne donnaient aucune XP
 - **Pour le joueur** : depuis le 31/10, environ 4 runs de prison sur 10 ne rapportaient aucune XP à cause d'un arrondi. Chaque run donne maintenant son XP. L'XP perdue avant la correction n'est pas rendue.
 - **État** : ✅ en ligne le 01/11
@@ -648,6 +708,14 @@ Modèle d'entrée :
 - **État** : ✅ en ligne le 30/10
 
 ## 30/10/2026 — Geoffrey — Prison : 8 d'énergie par heure de jeu (avant 4)
+
+## 02/11/2026 — Geoffrey — Rejouer la prison d'un joueur (outil admin)
+- **Pour nous** : dans le tableau « Rendement de la prison » (compte admin), un 📥 à côté de chaque pseudo télécharge l'enregistrement de sa prison ; donné à Claude, il rejoue ses runs à l'identique (`scripts/replay-prison.js`) pour trouver un bug (ex. mineur qui tourne en rond chez minologue, seed 1686922429).
+- **État** : ✅ en ligne le 02/11
+
+## 02/11/2026 — Geoffrey — Ténacité à rendement décroissant
+- **Pour le joueur** : cumuler la ténacité rapporte de moins en moins. 10 % de ténacité donnent 8,9 % de chance d'ignorer une mécanique de mob, 30 % → 22 %, 50 % → 32 %, 100 % → 50 % (plafond 75 %). L'onglet Stuff affiche la valeur effective à côté de la ténacité. **Pénétration** : certains mobs retirent des points de ténacité avant ce calcul (golem et minotaure 10, boss des tours et Golbute 20 : valeurs provisoires) ; un joueur à 20 de ténacité n'esquive plus rien face à une pénétration de 20.
+- **État** : ✅ en ligne le 02/11
 
 ## 30/10/2026 — Geoffrey — Coffre du Golbute : son butin et 5 nouveaux objets
 - **Pour le joueur** : le Coffre du Golbute s'ouvre. Toujours des lingots de mithril, du thorium et du cobalt raffinés, des pierres glissantes ; parfois un objet du Golbute : Némésis du Golbute (pioche légendaire, 1 %), Torse de Gollex (3 %), Jambières du Golbute (3 %), Âme du Golbute (torche épique, 2 %), Anneau en pierre (2 %), un parchemin de sort, la Recette : Chitine ou une gemme.

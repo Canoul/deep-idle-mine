@@ -30,7 +30,7 @@ const pngSize = file => { const d = readFileSync(file); return [d.readUInt32BE(1
 
 test('sprites des bâtiments : chacun existe, chargé par le jeu, tient dans sa place (w × h cases), halos et fumée dedans', () => {
   for(const b of townBuildings()){
-    if(b.kind === 'place'){ assert.equal(b.sprite, undefined); continue; }
+    if(b.kind === 'place' || b.kind === 'guild'){ assert.equal(b.sprite, undefined); continue; }   // la maison de guilde : tests/guild-house.test.js
     assert.ok(TEXTURES.includes(b.sprite), `${b.sprite} absent de TEXTURES`);
     const [w, h] = pngSize(new URL(`../textures/${b.sprite}.png`, import.meta.url));
     assert.ok(w <= b.w * 16, `${b.sprite} : ${w} px de large pour ${b.w} cases`);
@@ -42,7 +42,7 @@ test('sprites des bâtiments : chacun existe, chargé par le jeu, tient dans sa 
     if(b.smoke) assert.ok(b.smoke[0] >= 0 && b.smoke[0] < w && b.smoke[1] >= 0 && b.smoke[1] < h);
   }
   const silhouettes = new Set(townBuildings().filter(b => b.sprite).map(b => b.sprite));
-  assert.equal(silhouettes.size, townBuildings().length - 1, 'un sprite différent par bâtiment');
+  assert.equal(silhouettes.size, townBuildings().filter(b => b.sprite).length, 'un sprite différent par bâtiment');
   for(const n of ['town_lamppost', 'town_campfire', 'town_pedestal', 'town_banner_angel', 'town_banner_demon', 'town_cobble', 'town_cloud'])
     assert.ok(TEXTURES.includes(n) && existsSync(new URL(`../textures/${n}.png`, import.meta.url)), n);
 });
@@ -220,7 +220,7 @@ test('service : place invalide refusée (400), rien d\'enregistré ; route sans 
   assert.equal(s.town.count(), 0);
   const route = townRoutes(s.town)['POST /api/town'];
   await assert.rejects(route({ me: null, body: { spot: 'lobby' } }), e => e.status === 401);
-  assert.deepEqual(await route({ me: me('AAAA1111'), body: { spot: 'lobby' } }), { players: [], say: null, group: null, guild: null, statue: null });
+  assert.deepEqual(await route({ me: me('AAAA1111'), body: { spot: 'lobby' } }), { players: [], say: null, group: null, guild: null, house: null, statue: null });
   await assert.rejects(route({ me: me('AAAA1111'), body: ['lobby'] }), e => e.status === 400);
 });
 
@@ -322,4 +322,15 @@ test('statue de la place (31/10) : un clic dessus ne mène pas au Lobby, le rest
   assert.equal(onStatue(place, sx + 2, TOWN.ground - 1), false, 'à droite');
   assert.equal(onStatue(townBuildings().find(b => b.kind !== 'place'), sx + 1, TOWN.ground - 1), false, 'autre bâtiment');
   assert.equal(onStatue(null, sx + 1, TOWN.ground - 1), false);
+});
+
+/* maison de guilde (02/11/2026) : le serveur renvoie la maison de MA guilde, telle que le service de guilde la donne */
+test('service : la maison de ma guilde dans la réponse (null sans guilde)', async () => {
+  const house = { stage:2, annexes:{ armurerie:'built', tresorerie:'site', forge:'empty' } };
+  const game = { playersInSession: async () => [] };
+  const accounts = { getAccount: async id => ({ id, name: id === 'AAAAAAAA' ? 'Zoe' : 'Max' }) };
+  const town = createTownService({ accounts, game, guildHouseOf: async id => id === 'AAAAAAAA' ? house : null });
+  assert.deepEqual((await town.ping({ id:'AAAAAAAA' }, { spot:'guilde' })).house, house);
+  assert.equal((await town.ping({ id:'BBBBBBBB' }, { spot:'social' })).house, null);
+  assert.equal((await createTownService({ accounts, game }).ping({ id:'AAAAAAAA' }, { spot:'guilde' })).house, null);
 });

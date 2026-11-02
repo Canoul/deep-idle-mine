@@ -144,7 +144,7 @@ export function setupTown(root, { ping, emote, me, onEnter, friend, invite, repo
     try {
       const res = await ping({ spot: free ? 'session' : tab, x: free ? Math.round(x * 100) / 100 : null });
       others = mergeOthers(others, res?.players ?? [], performance.now());
-      mySay = res?.say ?? null; myGuild = res?.guild ?? null; statue = res?.statue ?? null;
+      mySay = res?.say ?? null; myGuild = res?.guild ?? null; myHouse = res?.house ?? null; statue = res?.statue ?? null;
       const g = res?.group ?? null;
       if((g?.tag ?? null) !== (myGroup?.tag ?? null) && !free){ myGroup = g; go(restX(tab, m.id, g?.tag)); }
       myGroup = g;
@@ -271,7 +271,7 @@ export function setupTown(root, { ping, emote, me, onEnter, friend, invite, repo
     door.style.top = Math.round(hint.getBoundingClientRect().bottom + 12) + 'px'; door.style.bottom = 'auto'; door.style.left = '';
   }
   /* joueurs affichés, moi en dernier (dessiné par-dessus) */
-  let walking = false, myGuild = null;
+  let walking = false, myGuild = null, myHouse = null;   // myHouse : maison de ma guilde (02/11/2026)
   function shownPlayers(){
     const m = me(), list = [...others.values()];
     if(m && x !== null){
@@ -313,7 +313,7 @@ export function setupTown(root, { ping, emote, me, onEnter, friend, invite, repo
     const b = free ? near() : null;
     if(b !== enterFor){ enterFor = b; enterBtn.hidden = !b; if(b) enterBtn.textContent = enterLabel(b); }
     renderLfg(b);
-    r.draw({ camX, players: shownPlayers(), labels: free, near: b, statue, judgment, meX: x,
+    r.draw({ camX, players: shownPlayers(), labels: free, near: b, statue, judgment, meX: x, house: myHouse, guild: myGuild,
              /* « E : … » sous le nom du bâtiment, sauf au téléphone (pas de clavier : le bouton suffit) */
              hint: b && !portrait ? (b.tab === 'session' || b.tab === 'lobby' ? 'E : préparer une session' : 'E : entrer') : null }, now);
   }

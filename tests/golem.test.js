@@ -10,6 +10,7 @@ import { killMob } from '../src/sim/actions.js';
 import { trapTable } from '../src/sim/trap.js';
 import { inReach } from '../src/sim/knock.js';
 import { fitsAt, clearAt, breakable } from '../src/sim/golem.js';
+import { createViewer } from '../src/shared/view.js';
 import { worldFrom, run } from './helpers.js';
 
 const golem = (G, o) => { const x = { id: G.mobId++, type: 'golem', hp: 1e9, maxhp: 1e9, cd: 0, size: 2, knockRes: 100, speed: MOBS.speed.golem, ...o }; G.mobs.push(x); return x; };
@@ -55,6 +56,21 @@ test('il casse un bloc toutes les 2 s pour avancer ; les blocs sont perdus ; il 
   assert.equal(G.stats.mined, 0, 'rien n\'est miné par un mineur');
   assert.equal(JSON.stringify(m.inv), inv, 'rien dans le sac');
   assert.equal(tackler(G, m), o);
+});
+
+test('il se tourne vers sa proie, en marchant comme au contact, et la vue l\'envoie au navigateur (02/11/2026)', () => {
+  const G = worldFrom(['', 'd'.repeat(50), '#' + ' '.repeat(20) + '#', '#@' + ' '.repeat(19) + '#', '#'.repeat(50)]);
+  const m = G.miners[0]; busy(m); m.ox = 1e6;
+  const o = golem(G, { x: 10, y: 3 });          // cases (10..11, 2..3)
+  run(G, 1);
+  assert.equal(o.face, -1, 'le mineur est à gauche');
+  m.x = o.x + 2;                                // au contact, à sa droite : il ne bouge plus
+  run(G, 1);
+  assert.equal(o.face, 1);
+  m.x = o.x - 1;                                // au contact, à sa gauche
+  run(G, 1);
+  assert.equal(o.face, -1);
+  assert.equal(createViewer(G)().mobs.find(x => x.id === o.id).face, -1, 'envoyé au navigateur');
 });
 
 test('il ne casse ni un treasure, ni une passerelle : bloqué derrière', () => {

@@ -90,7 +90,7 @@ function gore(G, o, m, resists){
   const C = MINOTAUR.charge;
   if(!m.fall){ stopAction(m); push(m, o, C.knock, (x, y) => isAir(G, x, y) && !noEntry(G, m, x, y)); }
   m.stats.gored = (m.stats.gored || 0) + 1; G.stats.gored = (G.stats.gored || 0) + 1;
-  if(resists(G, m)){ log(G, `💪 ${m.name} encaisse la charge du ${nameOf(o)} sans être étourdi`); return; }
+  if(resists(G, m, 'minotaure')){ log(G, `💪 ${m.name} encaisse la charge du ${nameOf(o)} sans être étourdi`); return; }
   m.goredUntil = G.t + C.stun;
   log(G, `🐂 Le ${nameOf(o)} encorne ${m.name} : projeté et étourdi ${C.stun} s`);
 }

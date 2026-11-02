@@ -66,13 +66,18 @@ export function golemFalls(G, o){
   return true;
 }
 
+/* côté du mineur m : −1 à sa gauche, 1 à sa droite, 0 au-dessus ou au-dessous de ses deux colonnes */
+const sideOf = (o, m) => m.x < o.x ? -1 : m.x > o.x + 1 ? 1 : 0;
+/* il se tourne vers sa proie (o.face, lu par le rendu, 02/11/2026) ; juste au-dessus ou au-dessous, il garde son sens */
+export function faceTo(o, m){ o.face = sideOf(o, m) || o.face || 1; }
+
 /* un pas vers le mineur m. Plus haut que lui : une marche en escalier vers lui, ou tout droit s'il est juste dessous ;
    sans appui (grande salle), il avance dans une direction gardée (o.stair) jusqu'à la roche, et ne fait demi-tour que
    contre un bord ou un bloc qu'il ne casse pas. À côté : à l'horizontale ; plus bas, une fois au-dessus : il creuse
    sous lui et descend. Chaque bloc sur le chemin est cassé, un toutes les MOBS.golem.dig s (o.dig) ; le pas lui-même
    attend sa cadence (o.cd, step s). Renvoie false s'il ne peut rien faire (bloqué). */
 export function golemStep(G, o, m, step){
-  const dx = m.x < o.x ? -1 : m.x > o.x + 1 ? 1 : 0, up = m.y < o.y - 1, down = m.y > o.y;
+  const dx = sideOf(o, m), up = m.y < o.y - 1, down = m.y > o.y;
   let moves;
   if(up){
     o.stair ||= dx || (o.x + 2 < W ? 1 : -1);
@@ -110,7 +115,7 @@ export function quake(G, o, resists){
     for(const m of G.miners){
       if(m.y <= 0) continue;
       const c = nearCell(o, m);
-      if(Math.hypot(c.x - m.x, c.y - m.y) > C.stunRadius + 1e-9 || resists(G, m)) continue;
+      if(Math.hypot(c.x - m.x, c.y - m.y) > C.stunRadius + 1e-9 || resists(G, m, 'golem')) continue;
       m.quakeUntil = G.t + C.stunTime; hit.push(m.name);
       m.stats.quaked = (m.stats.quaked || 0) + 1; G.stats.quaked = (G.stats.quaked || 0) + 1;
     }

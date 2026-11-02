@@ -141,7 +141,8 @@ Tout ce qui existe aujourd'hui (systèmes, hébergement, équipe, chantiers en a
 - **Appli mobile** (`mobile/`, guides `docs/app-android.md` et `docs/app-ios.md`) : le jeu est copié dans l'appli ;
   GitHub (onglet Actions) fabrique l'APK / l'AAB Android et l'appli iPhone (envoyée sur TestFlight), sans Mac.
   `cd mobile && npm install && npm run sync` (Android et iOS) après un changement de sa config ou des plugins ;
-  `cd mobile && npm run assets` : icône et écran de démarrage. Aperçu de la couche appli dans un navigateur : `?app`.
+  `npm run app:icon` puis `cd mobile && npm run assets` : icône et écran de démarrage ; `npm run store:art` : icônes et
+  bannière des fiches des stores (`mobile/store/`, `docs/fiches-stores.md`). Aperçu de la couche appli dans un navigateur : `?app`.
   **Le site ne change pas** : la couche appli (`src/app/`) ne fait rien sans l'appli ou `?app`.
 
 ## 7. Structure

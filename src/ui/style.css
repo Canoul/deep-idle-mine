@@ -862,6 +862,11 @@ button.gopen:active:not(:disabled){transform:none}
 .gopen:hover b{color:var(--acc)}
 .gfold{margin:0 0 calc(3*var(--u)) calc(5*var(--u));padding-left:calc(3*var(--u));border-left:var(--u) solid var(--sep)}
 #guildQuery{width:100%;margin-bottom:calc(3*var(--u))}
+/* maison de guilde (02/11/2026, Jules) : ciel de crépuscule du Carreau, sol, sprites posés dessus (src/ui/guild.js, houseHTML) */
+.ghouse{position:relative;width:100%;overflow:hidden;margin-bottom:calc(2*var(--u));border:var(--u) solid var(--line);
+  background:linear-gradient(#16070a,#3e140f 45%,#7a2e18 80%,#b45a2c)}
+.ghouse::before{content:'';position:absolute;left:0;right:0;bottom:0;height:var(--ground);background:linear-gradient(#3a2a20,#1d1410)}
+.ghouse img{position:absolute;bottom:var(--ground);height:auto}
 @media (max-width:700px){.gcols{grid-template-columns:minmax(0,1fr)}}
 .sadd{display:flex;align-items:center;gap:calc(3*var(--u));flex-wrap:wrap}
 .sadd input{flex:1;min-width:calc(70*var(--u))}

@@ -2,6 +2,7 @@
    projection de 4 cases à 25 / 10 % (rage 35 / 20 %), saut à chaque tranche de 25 % de PV (intouchable, atterrissage qui étourdit
    et projette ceux qui sont dessous), étages de blocs à vider entièrement, mobs qui partagent une case, affichage fluide. */
 import { test } from 'node:test';
+import './helpers.js';   // ténacité linéaire (TENACITY, 02/11)
 import assert from 'node:assert/strict';
 import { TOWER, DT } from '../src/config.js';
 import { newTower, tickTower, contactCells, sealedFloor, blockCells } from '../src/sim/tower/session.js';

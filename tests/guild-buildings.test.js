@@ -160,3 +160,21 @@ test('coût : Armurerie 500 000 Pierre, Forge 250 000 Pierre dure (01/11/2026, G
   assert.equal(GUILD.buildings.find(b => b.id === 'armurerie').levels[0].cost['Pierre'], 500000);
   assert.equal(GUILD.buildings.find(b => b.id === 'forge').levels[0].cost['Pierre dure'], 250000);
 });
+
+/* maison de guilde du Carreau (02/11/2026) : la même pour tous les membres, qui suit les dons et la construction */
+test('maison du Carreau : null sans guilde, la même pour chaque membre, chantier puis annexe construite', async () => {
+  const { guild } = setup({ [ZOE.id]:fullBag() });
+  assert.equal(await guild.houseOf(ZOE.id), null);
+  await guild.create(ZOE, 'Les Mineurs');
+  const id = (await guild.view(ZOE)).mine.id;
+  await guild.invite(ZOE, 'Max'); await guild.acceptInvite(MAX, id);
+  assert.deepEqual(await guild.houseOf(ZOE.id), { stage:0, annexes:{ armurerie:'empty', tresorerie:'empty', forge:'empty' } });
+  await guild.give(ZOE, { building:'forge', item:'Diamant', qty:1, opId:op() });
+  assert.equal((await guild.houseOf(MAX.id)).annexes.forge, 'site');
+  await fill(guild, ZOE);
+  await guild.build(ZOE, 'forge');
+  const a = await guild.houseOf(ZOE.id), b = await guild.houseOf(MAX.id);
+  assert.deepEqual(a, b);
+  assert.equal(a.annexes.forge, 'built'); assert.equal(a.stage, 1);
+  assert.equal(await guild.houseOf(LEA.id), null);
+});

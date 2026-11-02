@@ -17,6 +17,7 @@ on:
       - 'mobile/**'
       - '!mobile/ios/**'
       - '.github/workflows/android-apk.yml'
+      - '!mobile/store/**'
 
 permissions:
   contents: read

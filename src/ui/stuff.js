@@ -1,6 +1,7 @@
 /* Onglet Stuff : une case par pièce d'équipement. Un clic sur une case ouvre la liste des pièces de l'inventaire
    qui y vont (et « Retirer » si la case est occupée). Ne modifie rien lui-même : chaque action est demandée au
    serveur (onOp), qui renvoie l'inventaire et le stuff à jour. */
+import { effectiveTenacity } from '../sim/tenacity.js';
 import { STUFF } from '../config.js';
 import { piecesFor, statsText, minerStats, rawDps, statNum } from '../meta/stuff.js';
 import { sanitizeSkills, skillEffects } from '../meta/skills.js';
@@ -44,6 +45,7 @@ export function statsHTML(worn, effects){
       (s.mult !== 1 ? `${s.bonus ? ')' : ''} <span class="skillStats" title="skills : multiplicateur">×${fr(s.mult)}</span>` : '')+
       `${s.bonus && s.mult !== 1 ? '' : ')'}</small>` : '')+
     (s.ring ? ` <small class="ringStats" title="anneaux (pour tout le groupe)">+${n(s.ring)}${u}</small>` : '')+
+    (s.key === 'tenacity' && s.total > 0 ? ` <small class="mut" title="Chance réelle d'ignorer une mécanique de mob : la ténacité a un rendement décroissant (02/11)">→ ${fr(Math.round(effectiveTenacity(s.total) * 10) / 10)} % effectifs</small>` : '')+
     `</span></div>`); }).join('');
   const gs = `<div class="row" title="Gear score : ce que ton stuff porté ajoute aux stats de base, en x (stats, identification, rune, amélioration ; sans skills ni anneaux)"><span><b>Gear score</b></span><span><b>${gearScore(worn).toLocaleString('fr-FR')} GS</b></span></div>`;
   /* DPS brut (28/10) : stuff, skills et anneaux compris (les totaux affichés) ; sur cible immobile, sans recul */
