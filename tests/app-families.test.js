@@ -8,7 +8,7 @@ test('familles : les 5 de la spec, dans l\'ordre', () => {
   assert.deepEqual(FAMILIES.map(f => [f.id, f.tabs]), [
     ['accueil', ['lobby']],
     ['session', ['session', 'historique']],
-    ['sac', ['inventaire', 'four', 'concasseur', 'craft', 'recherche']],
+    ['sac', ['inventaire', 'craft', 'four', 'concasseur', 'recherche']],   // ordre de Jules, 03/11
     ['perso', ['stuff', 'amelioration', 'skills', 'sorts']],
     ['social', ['classement', 'guilde', 'social', 'chat']],
   ]);
