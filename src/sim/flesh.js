@@ -72,7 +72,7 @@ export function fleshAura(G, resists){
     m.fleshTick = (m.fleshTick || 0) + DT;
     if(m.fleshTick < C.every - 1e-9) continue;
     m.fleshTick -= C.every;
-    if(resists(G, m)) continue;
+    if(resists(G, m, 'chair')) continue;
     m.fleshStacks = Math.min(C.maxStacks, (m.fleshStacks || 0) + 1);
     m.fleshUntil = G.t + C.last;
     m.stats.fleshed = (m.stats.fleshed || 0) + 1; G.stats.fleshed = (G.stats.fleshed || 0) + 1;

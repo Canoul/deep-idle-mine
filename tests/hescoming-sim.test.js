@@ -1,5 +1,6 @@
 /* He's coming : la salle de Lucifer (src/sim/hescoming/session.js). Mêmes visites que le Bloc géant, mais on frappe, et le boss répond. */
 import { test } from 'node:test';
+import './helpers.js';   // ténacité linéaire (TENACITY, 02/11)
 import assert from 'node:assert/strict';
 import { HES_COMING as HC, GIANT, STATS, DT, CFG } from '../src/config.js';
 import { newLucifer, joinLucifer, tickLucifer, standX, luciferDps } from '../src/sim/hescoming/session.js';

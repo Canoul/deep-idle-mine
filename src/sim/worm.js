@@ -64,9 +64,9 @@ function hitMiners(G, w, resists){
   for(const m of G.miners){
     if(m.y <= 0 || manhattan(w, m) > C.hitDist || w.charge.hit.includes(m.id)) continue;
     w.charge.hit.push(m.id);
-    if(resists(G, m)) log(G, `💪 ${m.name} résiste à la charge du vers de terre`);
+    if(resists(G, m, 'ver')) log(G, `💪 ${m.name} résiste à la charge du vers de terre`);
     else { m.wormUntil = G.t + C.stun; log(G, `🪱 Le vers de terre traverse ${m.name} (étourdi ${C.stun} s)`); }
-    if(!resists(G, m)) addBleed(G, m);
+    if(!resists(G, m, 'ver')) addBleed(G, m);
   }
 }
 

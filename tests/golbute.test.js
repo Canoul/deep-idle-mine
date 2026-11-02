@@ -1,6 +1,7 @@
 /* Instance II, le Golbute (30/10/2026) : arène, autoattack (propulsion + chute qui étourdit), avalanche (Sonné, mort à
    6 stacks, ténacité), Division (golems, boss absent), cristal (minage), enrage, fin (victoire, temps, tous morts). */
 import { test } from 'node:test';
+import './helpers.js';   // ténacité linéaire (TENACITY, 02/11)
 import assert from 'node:assert/strict';
 import { INSTANCE, DT, CFG, mobHp } from '../src/config.js';
 import { newGolbute, tickGolbute, golOpen, slamChance, endGolbute, leaveGolbute, GOLBUTE_TICKS } from '../src/sim/instance/golbute.js';

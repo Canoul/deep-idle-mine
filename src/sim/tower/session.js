@@ -10,6 +10,7 @@
    Pods (26/10/2026, Geoffrey) : chaque stonebrick minée va dans le sac du mineur (m.inv, m.load) ; plein, il redescend au
    coffre commun (TOWER.chest, au milieu de l'étage 0) le vider dans G.chest. Victoire : summary.loot = coffre + sacs des
    présents ; le serveur le partage en parts égales et ajoute les trésors (server/game/service.js). */
+import { tenacityOf } from '../tenacity.js';
 import { TOWER, DT, STATS, BLOCKS, CFG, COMBAT, WINCH, SHRINES } from '../../config.js';
 import { mulberry32 } from '../../core/rng.js';
 import { aoeOf } from '../../meta/skills.js';
@@ -992,7 +993,7 @@ function landBoss(G, n = B.jumpKnock){
   const b = G.boss;
   b.air = null; b.lift = 0; b.cd = B.hitEvery; b.moveCd = 0;
   log(G, n > B.jumpKnock ? `💥 ${G.boss.name} s'écrase sur le toit !` : `💥 ${G.boss.name} retombe sur le toit !`);
-  const resists = m => (m.carac.tenacity || 0) > 0 && G.fightRng() * 100 < m.carac.tenacity;
+  const resists = m => tenacityOf(m, 'towerBoss') > 0 && G.fightRng() * 100 < tenacityOf(m, 'towerBoss');   // ténacité effective (02/11)
   for(const m of [...G.miners]){
     if(!onTop(G, m)) continue;
     if(n > B.jumpKnock && resists(m)){ log(G, `💪 ${m.name} résiste à l'écrasement`); continue; }   // stèle : la ténacité évite la projection (30/10)

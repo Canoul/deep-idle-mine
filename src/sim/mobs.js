@@ -4,6 +4,7 @@
    frapper (25/10, avant : immobilisé). Recul et portée : src/sim/knock.js. Le gobelin vole des minerais ; l'occultiste se téléporte et étourdit sa cible ; le méphite
    vole (pas de gravité) et asphyxie le mineur qu'il tacle. Le golem (2 × 2) casse les blocs et ébranle la mine
    (src/sim/golem.js). */
+import { tenacityOf } from './tenacity.js';
 import { W, DT, CFG, MOBS, BLOCKS, DUCK, COMBAT, PRISON, mobHp } from '../config.js';
 import { maxRow, isAir, isOre, supported, contentAt, contentOf } from './world.js';
 import { log } from './log.js';
@@ -48,8 +49,8 @@ export function provoke(G,o,m){
 
 /* ténacité : le mineur ignore-t-il ce sort ? un tirage par sort (hasard « live ») ; sans ténacité, aucun tirage
    (les parties sans ténacité gardent exactement le même hasard) */
-export function resists(G,m){
-  const t=m.carac?.tenacity || 0;
+export function resists(G,m,src=null){   // src : la mécanique (pénétration, TENACITY.pen, 02/11)
+  const t=tenacityOf(m,src);   // ténacité effective (rendement décroissant, 02/11)
   if(t<=0 || !(G.rng()*100 < t)) return false;
   m.stats.resisted=(m.stats.resisted||0)+1; G.stats.resisted=(G.stats.resisted||0)+1;
   return true;
@@ -286,7 +287,7 @@ function dogBite(G,o){
   o.bite=(o.bite||0)+DT;
   if(o.bite<MOBS.chien.every-1e-9) return;
   o.bite-=MOBS.chien.every;
-  if(resists(G,m)) log(G, `💪 ${m.name} résiste à la morsure du chien de magma`);
+  if(resists(G,m,'chien')) log(G, `💪 ${m.name} résiste à la morsure du chien de magma`);
   else addBleed(G,m);
 }
 
@@ -302,7 +303,7 @@ function goblinSteal(G,o){
   const ores=Object.keys(m.inv).filter(k=>ORE_W.has(k) && m.inv[k]>0);
   const total=ores.reduce((s,k)=>s+m.inv[k],0);
   if(!total) return;
-  if(resists(G,m)){ log(G, `💪 ${m.name} résiste au vol du gobelin`); return; }
+  if(resists(G,m,'gobelin')){ log(G, `💪 ${m.name} résiste au vol du gobelin`); return; }
   let r=Math.floor(G.rng()*total), name=ores[0];
   for(const k of ores){ if(r<m.inv[k]){ name=k; break; } r-=m.inv[k]; }
   uncollect(m,name,ORE_W.get(name),1);
@@ -340,7 +341,7 @@ function asphyxia(G){
     m.choke=(m.choke||0)+DT;
     if(m.choke < C.every-1e-9) continue;
     m.choke-=C.every;
-    if(resists(G,m)) continue;
+    if(resists(G,m,'mephite')) continue;
     m.ox=Math.max(0, m.ox-C.oxygen);
     m.stats.choked=(m.stats.choked||0)+1; G.stats.choked=(G.stats.choked||0)+1;
   }
@@ -365,7 +366,7 @@ function occult(G,o){
   const spot=tpSpot(G,p); if(!spot) return false;   // pas de case possible : il réessaie au tick suivant
   o.x=spot.x; o.y=spot.y; o.fall=0; o.grab=null; o.cd=stepOf(o);
   o.cast=C.cooldown;
-  if(resists(G,p)){ log(G, `💪 ${p.name} résiste à la canalisation de l'occultiste`); return false; }   // téléporté, sort perdu
+  if(resists(G,p,'occultiste')){ log(G, `💪 ${p.name} résiste à la canalisation de l'occultiste`); return false; }   // téléporté, sort perdu
   o.channel={ target:p.id, left:C.channel };
   p.stats.hexed=(p.stats.hexed||0)+1; G.stats.hexed=(G.stats.hexed||0)+1;
   log(G, `🌑 Un occultiste se téléporte et canalise sur ${p.name} (étourdi ${C.channel} s)`);
