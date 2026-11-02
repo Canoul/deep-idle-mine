@@ -6720,3 +6720,6 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Pas vérifié** ⚠️ vu dans le navigateur (case cochée / décochée en session et dans la ville).
 - **Applis** : rien de natif ; nouveau fichier dans `src/`, copié par `server/app-update/bundle.js` (tout `src/`).
 - ✅ En ligne le 02/11.
+
+### 02/11/2026 — Commande admin give-energy
+- `scripts/give-energy.js` → `POST /api/admin/give-energy { name, amount }` (server/admin/routes.js, garde du jeton admin) → service `adminGiveEnergy` : `loadEnergy` (repos compté), `creditEnergy` avec une clé `admin:<uuid>` (plafond ENERGY.max), verrou `energy:<compte>`. Montant 1 à 100. ✅ tests/admin.test.js (énergie).

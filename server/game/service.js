@@ -1379,6 +1379,17 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       });
     },
 
+    /* don d'énergie (02/11/2026, scripts/give-energy.js) : + amount (1 à ENERGY.max), plafonné à ENERGY.max ; repos
+       compté jusqu'ici (loadEnergy) ; clé unique : un don n'est jamais compté deux fois */
+    adminGiveEnergy(accountId, amount){
+      if(typeof amount !== 'number' || !Number.isFinite(amount) || amount <= 0 || amount > ENERGY.max) fail('bad_request', 400, `amount : un nombre de 1 à ${ENERGY.max}.`);
+      return withLock('energy:' + accountId, async () => {
+        const e = await loadEnergy(accountId), before = e.value;
+        creditEnergy(e, 'admin:' + crypto.randomUUID(), amount);
+        await store.putEnergy(accountId, e);
+        return { amount, before: Math.round(before * 10) / 10, after: Math.round(e.value * 10) / 10, max: ENERGY.max };
+      });
+    },
     /* Raffle (31/10/2026, server/social/raffle.js) : verse le lot une seule fois par raffle (id), même rejoué ; true si versé.
        Rune : ses lignes sont tirées ici, comme à l'ouverture d'un coffre ; énergie : plafonnée à ENERGY.max */
     raffleGive(accountId, id, lot){
