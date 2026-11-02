@@ -1540,12 +1540,13 @@ export const APP_NOTIFS = { miBefore:300, quietFrom:23, quietTo:8, miAhead:24, s
      ici ET monter minNative (et la version de l'appli), sinon une ancienne coque recevrait du code qui appelle un plugin absent.
    checkTimeout : s pour demander la dernière version au démarrage ; applyWithin : s de téléchargement avant l'écran de
    connexion (au-delà, le jeu démarre et la version s'applique à la prochaine occasion) ; resumeAfter : s en arrière-plan
-   avant de revérifier au retour ; readyTimeout : s pour qu'une nouvelle version démarre, sinon retour à la précédente ;
+   avant de revérifier au retour ; applyWait : s pour que la page se recharge dans la nouvelle version (sinon elle est refusée) ;
+   readyTimeout : s pour qu'une nouvelle version démarre, sinon retour à la précédente ;
    keepBad : versions refusées retenues ; rollbacksPerHour : retours en arrière notés dans le journal du serveur, au plus. */
 export const APP_UPDATE = {
   minNative:'1.1.0',
   nativePlugins:['@capacitor/app', '@capacitor/app-launcher', '@capacitor/filesystem', '@capacitor/keyboard', '@capacitor/local-notifications', '@capacitor/preferences'],
-  checkTimeout:3, applyWithin:10, resumeAfter:300, readyTimeout:60, keepBad:20, rollbacksPerHour:100,
+  checkTimeout:3, applyWithin:10, resumeAfter:300, applyWait:5, readyTimeout:60, keepBad:20, rollbacksPerHour:100,
   store:{ android:'https://play.google.com/store/apps/details?id=fr.deepmineidle.app', ios:'' },
 };
 

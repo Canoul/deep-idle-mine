@@ -235,14 +235,14 @@ test('gardien : essai jamais confirmé avant que l\'appli soit fermée → refus
 test('démarrage complet : en essai, pas de vérification ; retour au premier plan après un moment : nouvelle vérification', async () => {
   const t = phone({ local: R, localV: V2, remote: R, state: { trying: { v: V2, at: 0 }, bad: [] } });
   const g = await guardStart(t.io, { boot: { started: true }, poll: 5 });
-  await startUpdater({ doc: null, win: {}, io: t.io, guard: Promise.resolve(g), limits: fast });
+  await startUpdater({ doc: null, win: {}, io: t.io, guard: Promise.resolve(g), limits: fast, ui: ui() });
   await g.outcome;
   assert.deepEqual(t.calls, [['persist']]);
 
   const t2 = phone({ local: L, remote: R, down: true });
   let now = 0, checks = 0; t2.io.now = () => now;
   const f = t2.io.fetch; t2.io.fetch = (url, o) => { if(url.includes('/api/app/update')) checks++; return f(url, o); };
-  await startUpdater({ doc: null, win: {}, io: t2.io, guard: Promise.resolve({ trial: false }), limits: fast });
+  await startUpdater({ doc: null, win: {}, io: t2.io, guard: Promise.resolve({ trial: false }), limits: fast, ui: ui() });
   assert.equal(checks, 1, 'au démarrage');
   t2.listeners.pause(); now = 10e3; t2.listeners.resume();
   await new Promise(r => setTimeout(r, 20));
@@ -250,6 +250,26 @@ test('démarrage complet : en essai, pas de vérification ; retour au premier pl
   t2.listeners.pause(); now += fast.resumeAfter * 1000; t2.listeners.resume();
   await new Promise(r => setTimeout(r, 20));
   assert.equal(checks, 2, 'après un moment en arrière-plan');
+});
+
+test('serveur qui répond à temps : aucune erreur non gérée plus tard (boot-check la prendrait pour un plantage)', async () => {
+  const seen = [], on = e => seen.push(e);
+  process.on('unhandledRejection', on);
+  try {
+    const t = phone({ local: L, localV: V2, remote: R });
+    assert.equal(await check(t.io, ui(), { limits: { ...fast, checkTimeout: 0.05 } }), 'continue');
+    await new Promise(r => setTimeout(r, 120));
+    assert.deepEqual(seen, []);
+  } finally { process.off('unhandledRejection', on); }
+});
+
+test('la page ne se recharge pas dans la nouvelle version : refusée, l\'écran s\'en va, le jeu démarre', async () => {
+  const t = phone({ local: L, remote: R }), u = ui();
+  await startUpdater({ doc: null, win: {}, io: t.io, guard: Promise.resolve({ trial: false }), limits: { ...fast, applyWait: 0.05 }, ui: u }).then(() => {}, () => {});
+  const s = { ...t.state() };
+  assert.equal(s.trying, null);
+  assert.deepEqual(s.bad, [V2]);
+  assert.deepEqual(u.seen, ['updating', 'hide']);
 });
 
 test('hors de l\'appli (site, ?app dans un navigateur, coque 1.0.0 sans les plugins) : rien', async () => {

@@ -29,7 +29,11 @@ export function ioOf(win){
 }
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-const within = (p, ms) => Promise.race([p, sleep(ms).then(() => { throw new Error('délai dépassé'); })]);
+/* délai sans promesse rejetée qui traîne : boot-check prendrait une erreur non gérée pour un plantage du démarrage */
+const within = (p, ms) => new Promise((ok, ko) => {
+  const t = setTimeout(() => ko(new Error('délai dépassé')), ms);
+  p.then(v => { clearTimeout(t); ok(v); }, e => { clearTimeout(t); ko(e); });
+});
 const encodePath = p => p.split('/').map(encodeURIComponent).join('/');
 const dirOf = v => `${SNAPSHOTS}/${v}`;
 
@@ -207,9 +211,8 @@ export async function check(io, ui, { limits = APP_UPDATE } = {}){
 }
 
 /* src/app/boot.js : la promesse rendue se résout quand le jeu peut démarrer (jamais si la page bascule ou si la coque est trop ancienne) */
-export async function startUpdater({ doc, win, io = ioOf(win), guard = win.dimUpdateGuard, limits = APP_UPDATE }){
+export async function startUpdater({ doc, win, io = ioOf(win), guard = win.dimUpdateGuard, limits = APP_UPDATE, ui = io && screens(doc, io) }){
   if(!io) return;
-  const ui = screens(doc, io);
   const g = await (guard ?? guardStart(io)).catch(() => null);
   /* au retour au premier plan après un moment : même vérification (le joueur vient de revenir, il ne joue pas encore) */
   let pausedAt = null;
@@ -217,9 +220,18 @@ export async function startUpdater({ doc, win, io = ioOf(win), guard = win.dimUp
   io.app.addListener('resume', () => {
     if(pausedAt === null || io.now() - pausedAt < limits.resumeAfter * 1000 || readState(io.store).trying) return;
     pausedAt = null;
-    check(io, ui, { limits }).catch(console.warn);
+    check(io, ui, { limits }).then(w => w === 'applying' && notReloaded(io, ui, limits)).catch(console.warn);
   });
   if(g?.trial) return;                                   // version en essai : on la laisse démarrer
   const what = await check(io, ui, { limits }).catch(e => { console.warn(e); return 'continue'; });
-  if(what !== 'continue') await new Promise(() => {});   // la page se recharge, ou le joueur doit mettre l'appli à jour
+  if(what === 'tooOld') await new Promise(() => {});     // le joueur doit mettre l'appli à jour
+  if(what === 'applying') await notReloaded(io, ui, limits);
+}
+
+/* la page devait se recharger dans la nouvelle version : toujours là au bout de applyWait s (dossier introuvable pour Capacitor),
+   la version est refusée et le jeu démarre comme avant */
+export async function notReloaded(io, ui, limits = APP_UPDATE){
+  await sleep(limits.applyWait * 1000);
+  writeState(io.store, failTrial(readState(io.store)));
+  ui.hide();
 }
