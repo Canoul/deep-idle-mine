@@ -522,6 +522,9 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - **Fond : la session en cours** (28/10, Geoffrey ; `src/ui/backdrop.js`) : pendant une session, hors onglet Session, la
   mine (dessin seul, sans panneaux) remplace le mur du fond, assombrie (CSS `.bgSession`). Option « Session en cours en
   fond d'écran » dans « Mon compte » (clic sur le pseudo), activée par défaut, gardée dans le navigateur (localStorage).
+  Option « Afficher les pseudos » (02/11/2026, Jules ; `src/render/names.js`, clé `dim.showNames`) : décochée, aucun
+  pseudo ni guilde au-dessus des mineurs dans les canvas, ni nom de ma guilde sur sa maison, ni nom sur la statue
+  (captures d'écran des stores). Affichage seul, rien côté serveur.
   Plein écran sur les autres onglets ; **transition avec l'onglet Session** (28/10) : zoom linéaire du plein écran à la
   place de la mine de la session (relevée sur l'onglet Session, gardée dans le navigateur avec la taille de la
   fenêtre), panneaux qui glissent depuis les bords au même rythme ; l'inverse en sortant (l'onglet Session reste affiché
