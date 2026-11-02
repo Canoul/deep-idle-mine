@@ -734,3 +734,13 @@ test('compos : actuelle / ancienne / enregistrée ; enregistrer puis lancer avec
   assert.equal((await prisonOf(store, A.id)).areaMax, 2);
   assert.equal((await game.prisonProfile(A)).saved.area, 2, 'gardée après le lancement');
 });
+
+test('admin : enregistrement de la prison d\'un joueur par pseudo (rejouable à l\'identique) ; inconnu : null', async () => {
+  const { game, store } = setup();
+  await game.prisonStart(A);
+  const { prison } = await game.adminPrisonRecord('zoe');
+  assert.equal(prison.account, A.id); assert.equal(prison.run, 1);
+  assert.equal((await game.adminPrisonRecord('personne')).prison, null);
+  const a = replayRun(prison), b = replayRun(await prisonOf(store, A.id));
+  assert.equal(a.ticks, b.ticks, 'même partie');
+});

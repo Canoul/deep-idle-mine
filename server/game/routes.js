@@ -39,6 +39,12 @@ export function gameRoutes(game){
     'GET /api/game/admin/prison':  async ctx => { needMe(ctx);
       if(ctx.me.guest || !ADMIN_VIEW.names.some(n => nameKey(n) === nameKey(String(ctx.me.name ?? '')))) throw new GameError('not_found', 404, 'Route inconnue.');
       return { rows: await game.adminPrisonStats() }; },
+    /* enregistrement de la prison d'un joueur (02/11/2026) : de quoi rejouer ses runs à l'identique (seed, run, mineur figé,
+       profil) avec scripts/replay-prison.js ; mêmes comptes que le tableau de bord */
+    'GET /api/game/admin/prison/record': async ctx => { needMe(ctx);
+      if(ctx.me.guest || !ADMIN_VIEW.names.some(n => nameKey(n) === nameKey(String(ctx.me.name ?? '')))) throw new GameError('not_found', 404, 'Route inconnue.');
+      const name = new URL(ctx.req.url, 'http://x').searchParams.get('name') ?? '';
+      return game.adminPrisonRecord(name); },
     'GET /api/game/prison':        async ctx => { needMe(ctx);
       const since = new URL(ctx.req.url, 'http://x').searchParams.get('since');
       return game.prisonView(ctx.me, since === null || since === '' ? null : Number(since)); },
