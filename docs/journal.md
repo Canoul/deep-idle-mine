@@ -16,6 +16,10 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 02/11/2026 — Jules — Wiki : le butin du Golbute
+- **Pour le joueur** : le wiki disait « Pas encore obtenable » pour les objets du Golbute (Némésis, Torse de Gollex, Jambières, Âme, Anneau en pierre) et « son butin arrive bientôt » pour son coffre. Faux : tout sort du Coffre du Golbute. Le wiki donne maintenant les chances et ce que contient le coffre.
+- **État** : 🧪 sur la branche `jules/wiki-golbute` (pas en ligne)
+
 ## 02/11/2026 — Jules — Option pour cacher les pseudos
 - **Pour le joueur** : dans **Mon compte** (clic sur le pseudo en haut à gauche), nouvelle case **« Afficher les
   pseudos »**, cochée de base. Décochée : plus de pseudos ni de noms de guilde au-dessus des mineurs (mine, ville,

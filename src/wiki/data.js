@@ -1,7 +1,7 @@
 /* Données du wiki du joueur, tirées de la config du jeu (logique pure, sans DOM : testable dans Node).
    Le wiki affiche toujours les valeurs actuelles : rien n'est recopié à la main. */
 import { STATS, CFG, BLOCKS, IDS, AREAS, AREA_H, W, TREASURE, LOOT, RESEARCH, MOBS, XP, SKILLS, FURNACE, CRUSHER, SHINY,
-         STUFF, ITEMS, RARITY, DUCK, mobHp, MOB_INFO as MOB_LOOK, HELP, DUNGEON, TRAP, UPGRADE, INSTANT_MINE, JUDGMENT, TOWER, RUNE, RINGS, SPELLS, COMBAT, GLYPHS, MOB_DROPS, GOBLIN_KING , WIKI, GIANT, MINOTAUR } from '../config.js';
+         STUFF, ITEMS, RARITY, DUCK, mobHp, MOB_INFO as MOB_LOOK, HELP, DUNGEON, TRAP, UPGRADE, INSTANT_MINE, JUDGMENT, TOWER, RUNE, RINGS, SPELLS, COMBAT, GLYPHS, MOB_DROPS, GOBLIN_KING, GOLBUTE, WIKI, GIANT, MINOTAUR } from '../config.js';
 import { mobLoot } from '../meta/loot-table.js';
 import { RECIPES } from '../recipes.js';
 import { rarityOf } from '../meta/rarity.js';
@@ -125,10 +125,12 @@ export function sourcesOf(item){
   else if(chest?.side === 'golbute') out.push(`Instance II : un coffre pour chaque joueur encore là quand le Golbute tombe (qualité R${chest.q} : ${fmt(pct(UPGRADE.qualities.find(q => q.q === chest.q)?.chance ?? 0))} % de chance)`);
   else if(chest) out.push(`${TOWER.sides[chest.side].tower} : un trésor pour chaque joueur présent quand le boss tombe (qualité R${chest.q} : ${fmt(pct(UPGRADE.qualities.find(q => q.q === chest.q)?.chance ?? 0))} % de chance)`);
   /* coffre du Roi Gobelin (GOBLIN_KING, 27/10) */
-  { const l = GOBLIN_KING.loot, a = l.always.find(x => x.item === item);
-    if(a) out.push(`Coffre du Roi Gobelin : ${a.min} à ${a.max}, toujours`);
+  /* coffre du Golbute (GOLBUTE, 30/10) : même format */
+  for(const [name, l] of [['Coffre du Roi Gobelin', GOBLIN_KING.loot], ['Coffre du Golbute', GOLBUTE.loot]]){
+    const a = l.always.find(x => x.item === item);
+    if(a) out.push(`${name} : ${a.min} à ${a.max}, toujours`);
     for(const f of l.oneOf){ const i = f.items.find(x => x.item === item);
-      if(i) out.push(`Coffre du Roi Gobelin : ${fmt(pct(i.chance))} % de chance${i.learnOnce ? ' (seulement si la recette n\'est pas encore apprise)' : i.spellOnce ? ' (seulement si le sort n\'est pas encore appris)' : ''}${isStuffItem(item) ? ', déjà identifiée à la qualité du coffre' : ''}`); } }
+      if(i) out.push(`${name} : ${fmt(pct(i.chance))} % de chance${i.learnOnce ? ' (seulement si la recette n\'est pas encore apprise)' : i.spellOnce ? ' (seulement si le sort n\'est pas encore appris)' : ''}${isStuffItem(item) && !Object.hasOwn(RINGS.items, item) ? ', déjà identifiée à la qualité du coffre' : ''}`); } }
   if(item === RUNE.item) out.push('En ouvrant un trésor angélique ou démoniaque (rune de la même qualité que le trésor)',
     `Craft : ${RECIPES[RUNE.item].cost[RUNE.dust.item]} ${RUNE.dust.item}, qualité tirée à la fabrication (${Object.entries(RUNE.craftChances).map(([q, c]) => `R${q} ${fmt(pct(c))} %`).join(', ')})`);
   if(item === RUNE.fragment.item) out.push('En retirant une rune d\'une pièce (onglet Amélioration, gratuit) : ses % comptent pour moitié');
@@ -170,7 +172,7 @@ export function usesOf(item){
   else if(d?.cat === 'stuff') out.push(`S'équipe (case ${SLOT_LABEL[d.slot]?.toLowerCase() ?? d.slot})`, 'S\'identifie et s\'améliore (onglet Amélioration)');
   if(UPGRADE.levels.some(l => Object.hasOwn(l.cost, item)))
     out.push(`Amélioration : ${UPGRADE.levels.map((l, i) => `${l.cost[item]} pour +${i + 1}`).join(', ')}`);
-  if(d?.cat === 'treasure') out.push(d.chest?.side === 'golbute' ? 'Son butin arrive bientôt : il ne s\'ouvre pas encore (garde-le)'
+  if(d?.cat === 'treasure') out.push(d.chest?.side === 'golbute' ? `S'ouvre dans l'inventaire : minerais raffinés, pierre glissante, et une chance de pièce du Golbute, anneau, parchemin, recette ou gemme (une pièce de stuff arrive identifiée R${d.chest.q})`
     : d.chest?.side === 'goblin' ? `S'ouvre dans l'inventaire : graphite, peaux de gobelin, et une chance de couronne, masse, cape ou plan du four en or (une pièce de stuff arrive identifiée R${d.chest.q})`
     : d.chest ? `S'ouvre dans l'inventaire : donne une Rune R${d.chest.q}` : 'S\'ouvre dans l\'inventaire (bouton « Ouvrir »)');
   const side = Object.values(JUDGMENT.sides).find(s => s.item === item);

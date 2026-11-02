@@ -6720,3 +6720,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Pas vérifié** ⚠️ vu dans le navigateur (case cochée / décochée en session et dans la ville).
 - **Applis** : rien de natif ; nouveau fichier dans `src/`, copié par `server/app-update/bundle.js` (tout `src/`).
 - ✅ En ligne le 02/11.
+
+## 02/11/2026 — Wiki : butin du Golbute absent (Jules ; branche jules/wiki-golbute)
+- **Quoi** : `sourcesOf` (`src/wiki/data.js`) ne lisait que `GOBLIN_KING.loot` ; boucle maintenant aussi sur `GOLBUTE.loot` (« Coffre du Golbute : x % de chance »). Anneaux : pas de « déjà identifiée ». `usesOf` : texte « butin arrive bientôt » remplacé (le coffre s'ouvre depuis le 30/10).
+- **Tests** ✅ tests/wiki (+1, 12/12). ⚠️ Pas vu dans le navigateur.

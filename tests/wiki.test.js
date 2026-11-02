@@ -144,3 +144,11 @@ test('wiki : source des glyphes lue dans GLYPHS.drop (par spécialisation)', () 
   assert.match(braum.sources.join(' '), /0,0335 % de chance par mob/);
   assert.match(rush.sources.join(' '), /≈ 1 % par session/);   // 27/10 (avant 3 %)
 });
+
+test('sourcesOf : le butin du Coffre du Golbute est listé (plus « Pas encore obtenable »)', async () => {
+  const { sourcesOf, usesOf } = await import('../src/wiki/data.js');
+  for(const it of ['Némésis du Golbute', 'Torse de Gollex', 'Jambières du Golbute', 'Âme du Golbute', 'Anneau en pierre'])
+    assert.ok(sourcesOf(it).some(s => s.startsWith('Coffre du Golbute')), it);
+  assert.ok(!sourcesOf('Anneau en pierre').join().includes('identifiée'));
+  assert.ok(!usesOf('Coffre du Golbute R3').join().includes('bientôt'));
+});
