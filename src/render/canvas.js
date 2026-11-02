@@ -10,6 +10,7 @@ import { torchTexOf } from '../skins.js';
 import { createCamera, followedMiner } from './camera.js';
 import { drawSplash } from './splash.js';
 import { drawMobFx } from './effects.js';
+import { minoLook, drawMinoAura, drawMinoLabel } from './minotaur.js';
 
 export const TILE=16, VIEW_ROWS=34;
 
@@ -155,9 +156,11 @@ export function createRenderer(cv){
         else if(o.type==='chien') blit('magma_dog',px,py,'#c8451b');
         else if(o.type==='ver') blit('worm_tail',px,py,'#b56a6a');   // coincé : sa queue, par-dessus le bloc qui touche le vide
         else if(o.type==='occultiste') blit('occultist',px,py,'#3b2550');
-        else if(o.type==='minotaure'){   // boss du donjon, minotaures de l'Arène (variante : texture) ; il tremble quand il gratte le sol
-          const tex=(MINOTAUR.variants[o.variant] ?? MINOTAUR.variants.donjon).tex, shake=o.fx?.includes('charge') ? Math.round(Math.sin(frameNow/30)) : 0;
-          blit(tex,px+shake,py,o.variant==='noir' ? '#1c1714' : '#6b4226');
+        else if(o.type==='minotaure'){   // boss du donjon, minotaures de l'Arène (variante : texture) ; Charge et Rage bien visibles (src/render/minotaur.js)
+          const tex=(MINOTAUR.variants[o.variant] ?? MINOTAUR.variants.donjon).tex, look=minoLook(o.fx,frameNow);
+          drawMinoAura(ctx,look,px,py,TILE);
+          blit(tex,px+look.shake,py,o.variant==='noir' ? '#1c1714' : '#6b4226');
+          drawMinoLabel(ctx,look,px+TILE/2,py-3);
         }
         else if(o.type==='mephite') blit('mephite',px,py+Math.round(Math.sin(frameNow/250+o.id)),'#6f9a3a');   // il flotte (affichage seulement)
         else if(o.type==='golem'){

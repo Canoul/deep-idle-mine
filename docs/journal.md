@@ -9,6 +9,15 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 02/11/2026 — Jules — Correctif : on voit enfin la Charge et la Rage du minotaure
+- **Pour le joueur** : Geoffrey n'avait vu ni la Charge ni la Rage du minotaure. Elles marchaient (vérifié en simulation :
+  au donjon, 1 à 3 charges et la rage dans un combat, même avec une équipe 3 fois plus forte ; dans l'Arène, le brun
+  charge et le noir enrage), mais à l'écran presque rien ne se voyait : un tremblement d'1 pixel pendant 0,75 s et deux
+  petites icônes. Maintenant, quand il gratte le sol, il tremble nettement et **« CHARGE ! »** s'affiche au-dessus de
+  lui ; enragé, une **aura rouge** pulse autour de lui. Les règles et l'équilibrage ne changent pas.
+- **À suivre** : le faire confirmer par Geoffrey en jeu.
+- **État** : 🧪 sur la branche `jules/fix-minotaure-visible` (pas en ligne)
+
 ## 01/11/2026 — Geoffrey — Contrôle iPhone plus solide
 - **Pour le joueur** : rien, c'est un outil de l'équipe.
 - **Pour l'équipe** : le contrôle de l'appli iPhone échouait parfois sans raison : il photographiait l'écran à 40 s, alors que le simulateur met de 31 à 55 s à afficher le jeu. Il attend maintenant le bouton, 2 minutes au plus.
