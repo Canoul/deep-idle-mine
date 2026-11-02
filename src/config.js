@@ -1533,6 +1533,22 @@ export const GAME = { speed:2, devSpeeds:[1,2,5,20,60,300], maxPlayers:3 };
    syncTolerance : s d'écart d'heure en dessous duquel une notification reste telle quelle. */
 export const APP_NOTIFS = { miBefore:300, quietFrom:23, quietTo:8, miAhead:24, syncEvery:30, syncTolerance:5 };
 
+/* Appli mobile, mises à jour à chaud (02/11/2026, docs/superpowers/specs/2026-11-01-mises-a-jour-a-chaud-design.md) : l'appli
+   récupère le paquet du jeu publié par le serveur (server/app-update/), sans repasser par les stores.
+   minNative : version minimale de la coque (versionName Android = MARKETING_VERSION iOS) ; en dessous, « Mets à jour l'appli ».
+   nativePlugins : plugins de cette coque. En ajouter un dans mobile/package.json = une nouvelle version des stores : l'ajouter
+     ici ET monter minNative (et la version de l'appli), sinon une ancienne coque recevrait du code qui appelle un plugin absent.
+   checkTimeout : s pour demander la dernière version au démarrage ; applyWithin : s de téléchargement avant l'écran de
+   connexion (au-delà, le jeu démarre et la version s'applique à la prochaine occasion) ; resumeAfter : s en arrière-plan
+   avant de revérifier au retour ; readyTimeout : s pour qu'une nouvelle version démarre, sinon retour à la précédente ;
+   keepBad : versions refusées retenues ; rollbacksPerHour : retours en arrière notés dans le journal du serveur, au plus. */
+export const APP_UPDATE = {
+  minNative:'1.1.0',
+  nativePlugins:['@capacitor/app', '@capacitor/app-launcher', '@capacitor/filesystem', '@capacitor/keyboard', '@capacitor/local-notifications', '@capacitor/preferences'],
+  checkTimeout:3, applyWithin:10, resumeAfter:300, readyTimeout:60, keepBad:20, rollbacksPerHour:100,
+  store:{ android:'https://play.google.com/store/apps/details?id=fr.deepmineidle.app', ios:'' },
+};
+
 /* ---- Mine instantanée (MI, GAME_DESIGN §6 « Mine instantanée ») *(décisions du créateur, 21/10/2026 ; valeurs
    provisoires)* ----
    Toutes les everyHours heures pile, heure de Paris (0 h, 2 h, 4 h…), une mine commune s'ouvre aux inscrits du lobby

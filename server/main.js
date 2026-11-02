@@ -27,6 +27,7 @@ import { createModerationService } from './moderation/service.js';
 import { createReportService } from './moderation/reports.js';
 import { createAccountEraser } from './accounts/erase.js';
 import { migrateItemNames } from './game/rename-items.js';
+import { createAppUpdate } from './app-update/routes.js';
 
 const port = +(process.argv[2] || SERVER.port);
 /* stockage : PostgreSQL si DATABASE_URL est défini (en ligne), sinon fichiers dans data/ (en local) */
@@ -65,7 +66,14 @@ const hescoming = createGiantService({ store: gameStore, game, dev: GAME_SERVER.
 const town = createTownService({ accounts: store, game, party, recentChat: ms => social.recentChat(ms), blockedOf: id => social.blockedOf(id), guildNameOf: id => guild.nameOf(id), guildHouseOf: id => guild.houseOf(id) });
 /* suppression d'un compte (01/11) : Mon compte et scripts/delete-account.js */
 const eraser = createAccountEraser({ accounts: store, gameStore, game, party, instant, social, guild, giants: [giant, hescoming], town });
-const server = http.createServer(createApp({ store, service, game, party, instant, social, guild, giant, hescoming, town, moderation, reports, eraser, root: ROOT }));
+/* paquet du jeu des applis mobiles (mises à jour à chaud, 02/11) : lu une fois ici. DIM_APP_API : adresse du serveur écrite dans le paquet,
+   pour un serveur d'essai (par défaut https://deepmineidle.fr). Un raté ne doit pas empêcher le jeu de démarrer : l'appli garde sa version. */
+let appUpdate = null;
+try {
+  appUpdate = createAppUpdate({ api: process.env.DIM_APP_API || undefined });
+  console.log(`Paquet de l'appli : version ${appUpdate.manifest.version} (${Object.keys(appUpdate.manifest.files).length} fichiers)`);
+} catch(e){ console.error('Paquet de l\'appli indisponible :', e); }
+const server = http.createServer(createApp({ store, service, game, party, instant, social, guild, giant, hescoming, town, moderation, reports, eraser, appUpdate, root: ROOT }));
 
 /* sessions de jeu : le serveur les fait tourner en direct (reprises au démarrage), puis les fait avancer en continu ;
    chacune se termine et se partage d'elle-même au dernier tick, joueurs présents ou non */
