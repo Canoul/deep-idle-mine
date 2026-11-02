@@ -91,7 +91,7 @@ Modèle d'entrée :
 - **Décisions (02/11)** : appli **iPhone seule**, donc pas de captures iPad. L'appli iPhone installée par TestFlight
   marche sur l'iPhone de Jules. Interface tactile : plus tard (Jules ou Geoffrey) ; textes légaux : Geoffrey.
 - **À suivre** : valider les légendes ; une 5e capture « Stuff / Craft » pour montrer la progression ?
-- **État** : 🧪 sur la branche `jules/visuels-stores` (pas en ligne)
+- **État** : ✅ en ligne le 02/11
 
 ## 01/11/2026 — Geoffrey — Modération pour Google Play et l'App Store
 - **Pour le joueur** : un bouton ⋮ sur chaque message et sur chaque joueur (Online, Classements, amis, fiche du Carreau) permet de **signaler** ou de **bloquer**. Un joueur bloqué : plus de messages, plus de bulle, plus d'invitations ni de demandes d'ami, et il n'est pas prévenu ; la liste « Joueurs bloqués » est dans Social. À la création d'un compte, invité compris, il faut cocher les conditions d'utilisation ; les comptes existants les acceptent à leur premier message. Le filtre connaît maintenant les termes sexuels et haineux.
