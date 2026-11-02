@@ -807,7 +807,7 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'gloves_tactical','gloves_worker','cape_naingui','straps_goblin','hood_dark','cloud_magic','belt_giant','dark_cloth','gas_vesicle','slippery_stone','dungeon_brick','minotaur','minotaur_black','moon_crystal','orb','orb_superior','pick_goblin','kilt_dark','hat_naab','sword_cardboard','key_instance_1','key_instance_2','angel_feather','angel_feathers',
   'guild_armory','guild_treasury','guild_forge',
   'guild_hall_1','guild_hall_2','guild_hall_3','guild_hall_4','guild_site','guild_wing_armory','guild_wing_treasury','guild_wing_forge','guild_lot',
-  'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon','giant_block','lucifer','lucifer_portal','giant_fountain','giant_torch','instance_spawner','instance_cage','goblin_king','golbute','golbute_crystal','golbute_body','golbute_body_crystal','golbute_arm','golbute_arm_crystal','golbute_rock','chest_golbute',
+  'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon','giant_block','lucifer','lucifer_portal','lucifer_roar1','lucifer_roar2','lucifer_roar3','lucifer_roar4','lucifer_roar5','lucifer_roar6','giant_fountain','giant_torch','instance_spawner','instance_cage','goblin_king','golbute','golbute_crystal','golbute_body','golbute_body_crystal','golbute_arm','golbute_arm_crystal','golbute_rock','chest_golbute',
   'brick_angel','brick_angel_hard','brick_demon','brick_demon_hard','boss_angel','boss_demon','seraph','imp',
   'crown_goblin_king','mace_goblin_king','cape_goblin_royal','furnace_gold','recipe_chitin','chest_goblin_king','nugget_silver','ingot_silver','shrine_abundance',
   'ingot_mithril','refined_cobalt','refined_thorium','ingot_cobalt','ingot_thorium','minotaur_leather','rotten_flesh','treasure_t4',
@@ -1817,7 +1817,11 @@ export const GIANT = {
 /* tiers : Cristaux de pleine lune à la place des Plumes d'ange du Bloc géant, mêmes quantités (01/11/2026, Geoffrey) */
 export const HES_COMING = { ...GIANT, bossName:'Lucifer',
   tiers: GIANT.tiers.map(({ min, items:{ 'Plume d\'ange':n, ...items } }) => ({ min:min * 8, items:n ? { 'Cristal de pleine lune':n, ...items } : items })), nugget: { ...GIANT.nugget, per:GIANT.nugget.per * 8 },
-  roar: { every:30, radius:3, fear:15, wander:1 }, swing: { every:5, knock:4, high:2, flight:0.6 } };
+  roar: { every:30, radius:3, fear:15, wander:1 }, swing: { every:5, knock:4, high:2, flight:0.6 },
+  /* animation du rugissement (02/11/2026, Jules ; src/render/hescoming.js luciferFrame, images de scripts/gen_lucifer.py),
+     en secondes de jeu : la main se lève en 3 images de `step` avant le rugissement, la flamme vacille (une image par
+     `flicker`) jusqu'à `hold` après, puis la main redescend (3 images de `step`) */
+  anim: { step:0.2, flicker:0.24, hold:2.5 } };
 
 /* onglet Social : le navigateur redemande la liste d'amis et les notifications toutes les `poll` ms (onglet visible),
    `hiddenPoll` ms quand l'onglet est caché (ça reste un signe de vie : l'ami apparaît en ligne) */
