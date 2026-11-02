@@ -20,7 +20,7 @@ Modèle d'entrée :
 - **Pour le joueur** : le Bloc géant n'est plus un carré violet couvert de confettis. C'est une **géode éventrée** : un bloc de roche noire et violette fendu de haut en bas, avec à l'intérieur une grappe de cristaux aux couleurs des minerais du jeu (diamant, thorium, cobalt, or, fer, mithril… plus rubis, améthyste et rose) qui éclairent les bords de la fente. Sur la face gauche, là où tout le monde frappe, des entailles de pioche ; au pied, quelques éclats tombés. Il pulse toujours avec son halo arc-en-ciel. La **fontaine** (vasque de la même pierre, deux arcs d'eau, bulles d'oxygène qui montent) et la **torche** (brasero de fer forgé, grande flamme, trépied) de la salle sont redessinées dans le même style ; elles servent aussi dans la salle de He's coming.
 - **Décisions** (Jules) : chantier de remise à niveau des sprites, un par un (Bloc géant, puis mur de chair, ver de terre, roi gobelin), dans le style du Golbute et de Lucifer. Choisi parmi 3 prototypes (géode, monolithe scellé de fer et de chaînes, filon-mère avec des pioches cassées plantées), avec plus de détails.
 - **À suivre** : prochain sprite : le mur de chair.
-- **État** : 🧪 sur la branche `jules/sprite-bloc-geant` (pas en ligne)
+- **État** : ✅ en ligne le 03/11
 
 ## 02/11/2026 — Jules — Option pour cacher les pseudos
 - **Pour le joueur** : dans **Mon compte** (clic sur le pseudo en haut à gauche), nouvelle case **« Afficher les
@@ -735,6 +735,10 @@ Modèle d'entrée :
 - **État** : ✅ en ligne le 30/10
 
 ## 30/10/2026 — Geoffrey — Prison : 8 d'énergie par heure de jeu (avant 4)
+
+## 02/11/2026 — Geoffrey — Commande admin : donner de l'énergie
+- **Pour nous** : sur le serveur, `sudo node /opt/deep-idle-mine/scripts/give-energy.js --name PSEUDO --amount 50` donne de l'énergie à un joueur (1 à 100, plafonnée au max de la jauge), sans redémarrer.
+- **État** : ✅ en ligne le 02/11
 
 ## 02/11/2026 — Geoffrey — Rejouer la prison d'un joueur (outil admin)
 - **Pour nous** : dans le tableau « Rendement de la prison » (compte admin), un 📥 à côté de chaque pseudo télécharge l'enregistrement de sa prison ; donné à Claude, il rejoue ses runs à l'identique (`scripts/replay-prison.js`) pour trouver un bug (ex. mineur qui tourne en rond chez minologue, seed 1686922429).

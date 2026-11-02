@@ -6721,6 +6721,9 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Applis** : rien de natif ; nouveau fichier dans `src/`, copié par `server/app-update/bundle.js` (tout `src/`).
 - ✅ En ligne le 02/11.
 
+### 02/11/2026 — Commande admin give-energy
+- `scripts/give-energy.js` → `POST /api/admin/give-energy { name, amount }` (server/admin/routes.js, garde du jeton admin) → service `adminGiveEnergy` : `loadEnergy` (repos compté), `creditEnergy` avec une clé `admin:<uuid>` (plafond ENERGY.max), verrou `energy:<compte>`. Montant 1 à 100. ✅ tests/admin.test.js (énergie).
+
 ## 02/11/2026 — Jules — Bloc géant : nouveau sprite « Géode éventrée » (branche jules/sprite-bloc-geant)
 - **Quoi** : `scripts/gen_giant.py` (nouveau, stdlib) : `giant_block()` → 80 × 80 RGBA. Toile `_Cv` (couleur + z ; `ink()` encre le bord extérieur et tout pixel voisin d'un pixel de z plus grand), roche en facettes de Voronoï (`_rock`, graine 2610, joints sombres en bas / à droite), fissures, paillettes de minerai, entailles de pioche (face gauche, y 43 à 71), fente `GASH` (distance au bord `_depth` → bandes d'agate, druse, creux), cristaux `_crystal` (3 faces, pointe, arêtes ; `dim` pour ceux du fond ; z croissant = devant), éclats au pied, puis encre, lueur colorée sur la roche (`_glow`, z 0 seulement) et étincelles. `scripts/gen_textures.py` `giant()` prend `giant_block()` (fontaine et torche inchangées). `npm run textures` ne change que `textures/giant_block.png`.
 - **Tests** ✅ tests/giant-sprite (nouveau : taille = `GIANT.block` × 16, dans `TEXTURES`, < 3 % de pixels transparents, dernière ligne pleine, ≥ 6 teintes vives) + giant-rules, giant-service, giant-sim : 43/43.
@@ -6728,4 +6731,4 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Point fragile** : le voile blanc de la pulsation (`drawBlock`, src/render/giant.js) couvre tout le rectangle, y compris les ~130 pixels transparents des coins ébréchés (invisible à l'œil ; à revoir si la silhouette devient plus découpée).
 - **Fontaine et torche** (même jour) : `giant_fountain()`, `giant_torch()` dans gen_giant.py, dessinées en texte (`FOUNTAIN`, `TORCH` : 32 lignes de 16 caractères, palettes `STONE_F` + `WATER`, `IRON` + `FIRE`) ; `_sheet` pose l'encre autour du fer et de la pierre seulement. `giant()` de gen_textures.py ne fait plus que les appeler. Test ajouté (16 × 32, posées au sol) : 44/44. Vues en aperçu dans la salle (jeu pas relancé : même rendu, mêmes tailles).
 - **Applis** : rien de natif ; seulement des textures et un script Python.
-
+- ✅ En ligne le 03/11.
