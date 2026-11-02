@@ -11,6 +11,7 @@ import { createCamera, followedMiner } from './camera.js';
 import { drawSplash } from './splash.js';
 import { drawMobFx } from './effects.js';
 import { minoLook, drawMinoAura, drawMinoLabel } from './minotaur.js';
+import { wormCells, drawTurned } from './worm.js';
 
 export const TILE=16, VIEW_ROWS=34;
 
@@ -102,11 +103,14 @@ export function createRenderer(cv){
     }
     /* gobelins asservis (Couronne du Roi Gobelin, 27/10) : gobelin doré, petite couronne, pas de barre de vie ; il
        frappe le bloc qu'il mine (petit éclat) */
-    /* vers de terre qui navigue : sa file de cases, par-dessus la roche, seulement à portée de vue d'un mineur */
+    /* vers de terre qui navigue : sa file de cases, par-dessus la roche, seulement à portée de vue d'un mineur ; chaque
+       case pivote dans le sens de la marche (src/render/worm.js, 03/11/2026) */
     for(const w of G.worms || []){
-      for(const [i, [x, y]] of [[w.x, w.y], ...(w.trail || [])].entries()){
-        if(!G.miners.some(m=>Math.hypot(x-m.x,y-m.y)<=lightR(G,m)+0.5)) continue;
-        blit(i ? 'worm_body' : 'worm_head',x*TILE,sy(y),'#b56a6a');
+      for(const c of wormCells(w)){
+        if(!G.miners.some(m=>Math.hypot(c.x-m.x,c.y-m.y)<=lightR(G,m)+0.5)) continue;
+        const i=TEX[c.tex];
+        if(i && i.complete && i.naturalWidth) drawTurned(ctx,i,c.x*TILE,sy(c.y),c.dir,TILE);
+        else { ctx.fillStyle='#a07a46'; ctx.fillRect(c.x*TILE,sy(c.y),TILE,TILE); }
       }
     }
     for(const o of G.thralls || []){
@@ -154,7 +158,7 @@ export function createRenderer(cv){
         if(!seen && lightShown(G,o.x,o.y)<CFG.darkLum) continue;
         if(o.type==='gobelin') blit('goblin',px,py,'#4f9d3a');
         else if(o.type==='chien') blit('magma_dog',px,py,'#c8451b');
-        else if(o.type==='ver') blit('worm_tail',px,py,'#b56a6a');   // coincé : sa queue, par-dessus le bloc qui touche le vide
+        else if(o.type==='ver') blit('worm_tail',px,py,'#a07a46');   // coincé : sa queue, par-dessus le bloc qui touche le vide
         else if(o.type==='occultiste') blit('occultist',px,py,'#3b2550');
         else if(o.type==='minotaure'){   // boss du donjon, minotaures de l'Arène (variante : texture) ; Charge et Rage bien visibles (src/render/minotaur.js)
           const tex=(MINOTAUR.variants[o.variant] ?? MINOTAUR.variants.donjon).tex, look=minoLook(o.fx,frameNow);
