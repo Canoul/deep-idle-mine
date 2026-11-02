@@ -6732,3 +6732,10 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Fontaine et torche** (même jour) : `giant_fountain()`, `giant_torch()` dans gen_giant.py, dessinées en texte (`FOUNTAIN`, `TORCH` : 32 lignes de 16 caractères, palettes `STONE_F` + `WATER`, `IRON` + `FIRE`) ; `_sheet` pose l'encre autour du fer et de la pierre seulement. `giant()` de gen_textures.py ne fait plus que les appeler. Test ajouté (16 × 32, posées au sol) : 44/44. Vues en aperçu dans la salle (jeu pas relancé : même rendu, mêmes tailles).
 - **Applis** : rien de natif ; seulement des textures et un script Python.
 - ✅ En ligne le 03/11.
+
+## 03/11/2026 — Jules — Mur de chair : nouveau sprite (branche jules/sprite-mur-de-chair)
+- **Quoi** : `scripts/gen_flesh.py` (nouveau, stdlib) : `flesh_wall()` → 16 × 96 RGBA, `flesh_icon(px)` → lignes `ICON_Y` à `ICON_Y + 15` (le grand œil ; avant : lignes 40 à 55). Fond calculé : cordes de muscle strié (`_muscle`, trame 2 × 2 `BAYER`), bourrelets qui débordent en haut et en bas, côtes (`_rib`, y 24 et 70), veines, pustules, puis encre (`_Cv.ink` : autour de ce qui a un z plus grand d'au moins 1). Dessinés à la main par-dessus, avec leur propre encre : `EYE_BIG` (y 6), deux `EYE_SMALL` (y 29-30), la gueule `_maw` (y 37 à 64 : `MAW_OPEN` demi-ouverture par ligne, `MAW_FANGS` crocs, langue), `EYE_HALF` (y 78) ; bave et coulures en dernier. Les yeux regardent à gauche (le rendu ne retourne pas le mur). `flesh_wall()` retiré de gen_textures.py, qui importe gen_flesh. `npm run textures` ne change que `flesh_wall.png` et `flesh_icon.png`.
+- **Tests** ✅ tests/flesh-sprite (nouveau : tailles, `TEXTURES`, `MOB_INFO.chair.tex`, chaque ligne pleine à 12 pixels au moins, icône = un morceau du mur avec du blanc d'œil et de la braise) + flesh, mobs : 34/34.
+- **Pas vérifié** ⚠️ dans une vraie partie (area 6+, 2 à 8 % des mobs) ; vu dans une maquette de galerie (textures stone, hardstone, tunnel). Le rendu (`src/render/canvas.js`, type `chair`) n'a pas changé : même taille, même pulsation horizontale.
+- **Applis** : rien de natif ; seulement des textures et un script Python.
+
