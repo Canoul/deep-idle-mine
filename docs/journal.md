@@ -9,6 +9,14 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 03/11/2026 — Geoffrey — Dash : 300 %, recharge entière sur les boss
+- **Pour le joueur** : le Dash frappe à **300 %** des dégâts (avant 500 %). Sa recharge n'est plus divisée par deux quand
+  il touche un **boss** (Lucifer, boss des tours, roi gobelin, Golbute, minotaure, Gallianix) ; sur un mob normal, elle
+  l'est toujours. À He's coming, le Dash rapporte environ **+32 %** de points à un barbare au lieu de +63 %.
+- **Pourquoi** : enquête sur les points d'Infernatiwar à He's coming : le recul de Lucifer (4 cases) le remettait à
+  chaque fois à portée de Dash, environ 12 Dash à 500 % par visite.
+- **État** : 🧪 sur la branche `geoffrey/dash-boss` (pas en ligne)
+
 ## JJ/MM/AAAA — Prénom — Titre court
 - **Pour le joueur** : ce qui change en jeu (ou « rien, c'est de l'organisation »).
 - **Décisions** : choix de design ou d'équilibrage tranchés (s'il y en a).

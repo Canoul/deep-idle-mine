@@ -690,8 +690,10 @@ export const SPELLS = {
        garde. Mob heurté : dmg × ses dégâts, recharge × hitCd, sa canalisation coupée, étourdi stun s (25/10/2026,
        Geoffrey ; avant : ligne droite seulement, sans étourdissement) */
     { id:'dash', name:'Dash', icon:'💨', px:'arrow', short:'Fonce sur un mob et l\'étourdit', unlock:{ tree:'barbare', level:5 }, needTree:'barbare', cd:30,
-      range:6, speed:6, dmg:5, hitCd:0.5, minCells:2, stun:2,
-      desc:'Fonce de 6 cases au plus (600 % de vitesse) en suivant le terrain : il descend et saute un bloc. Vise d\'abord un mob qui tacle un allié ; en route vers un mob, il attend d\'être à portée. Mob heurté : 500 % de ses dégâts, recharge réduite de moitié, son sort est coupé et il est étourdi 2 s' },
+      /* 03/11/2026 (Geoffrey) : dmg 3 (avant 5) ; recharge × hitCd seulement sur un mob, jamais sur un boss (minotaure,
+         Gallianix, boss des tours, roi gobelin, Golbute, Lucifer) */
+      range:6, speed:6, dmg:3, hitCd:0.5, minCells:2, stun:2,
+      desc:'Fonce de 6 cases au plus (600 % de vitesse) en suivant le terrain : il descend et saute un bloc. Vise d\'abord un mob qui tacle un allié ; en route vers un mob, il attend d\'être à portée. Mob heurté : 300 % de ses dégâts, recharge réduite de moitié (pas sur un boss), son sort est coupé et il est étourdi 2 s' },
     /* révèle les blocs à radius cases (cercle) ; part s'il en reste au moins un inconnu */
     { id:'illumination', name:'Illumination', icon:'💡', px:'sun', short:'Révèle les blocs autour de lui', unlock:{ tree:'mineur', level:5 }, needTree:'mineur', cd:90,
       radius:5,
