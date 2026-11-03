@@ -378,7 +378,7 @@ function dashBoss(G, m){
   if(!ready(G, m, 'dash') || !bossHere(G) || m.y !== G.floorY) return false;
   const tx = contactX(G, m), S = SPELL.dash, dir = Math.sign(tx - m.x), n = Math.abs(tx - m.x);
   if(!dir || n < S.minCells || n > S.range) return false;
-  cast(G, m, 'dash', G.t, S.hitCd);
+  cast(G, m, 'dash', G.t);   // boss : recharge entière (03/11 ; avant × hitCd)
   m.x = tx; m.kx = 0; m.face = dir;
   log(G, `💨 ${m.name} : Dash sur le ${G.boss.name}`);
   damageBoss(G, m, strikeDmg(G, m) * S.dmg);

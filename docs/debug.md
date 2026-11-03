@@ -6922,3 +6922,19 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   8 tuiles sur 10 sans défiler (817 / 760). Site PC inchangé (fiche à côté du grimoire, pas de `#spSheet`).
 - **Pas vérifié** ⚠️ Mettre dans la barre / Apprendre à l'écran (même `infoClick` que le site) ; vrai téléphone.
 - **Applis** : pas de plugin ni de code natif ; `src/app/` change (mise à jour à chaud à la mise en ligne).
+
+## 03/11/2026 — Dash : 300 %, recharge entière sur les boss (Geoffrey)
+- Enquête : Infernatiwar (barbare, Dash + Cri de guerre) très au-dessus des autres à He's coming. Pas de bug de comptage
+  (1 dégât = 1 point). Cause : l'autoattaque projette de 4 cases → le Dash (2 à 6 cases) part après chaque recul, recharge 15 s,
+  ≈ 12 Dash à 500 % par visite. Simulation (40 visites, barbare 3/3 acier) : sans Dash 2 153, avec 3 500 (+63 %).
+  Point fragile repéré, non corrigé : portée en plus > 0,5 = jamais d'autoattaque, > 3 = jamais de Fear (seul l'Arc de l'Admin, +8).
+- Changement : `SPELLS` dash `dmg` 5 → 3. Recharge × `hitCd` retirée sur les boss : `finishDash` (mine, `isBoss`),
+  `dashBoss` de la tour, de l'Instance I et du Golbute, `dash` de He's coming. Les Dash sur des mobs gardent × 0,5.
+- Après : sans Dash 2 153, avec 2 834 (+32 %) ; profil type Infernatiwar (ténacité 44, crit 20) 4 608 → 3 779.
+- Tests : spells (nouveau test boss), hescoming-sim, instance-sim, tower*, golbute*, wiki 210/210 ✅. Pas resimulé : tours et
+  instances (le Dash pèse moins sur leurs boss).
+- Même branche, 03/11 : Force brute (`SKILLS.trees` barbare, nœud `damage`) sans `adds.tenacity` (avant +5 par rang) ni
+  « ténacité » dans `desc`. Test `skills.test.js` mis à jour. Tests skills, minotaur, hescoming*, golbute*, tower*, instance*,
+  stuff*, tenacity*, wiki 229/229 ✅. ⚠️ Repères du Golbute et de la tour à +25 / +50 % de ténacité « en plus » : la base barbare
+  baisse de 15, à resimuler si besoin.
+

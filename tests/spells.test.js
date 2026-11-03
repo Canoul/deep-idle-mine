@@ -105,14 +105,25 @@ test('Dash : un pas de marche devient une course de 6 cases à 600 % ; recharge 
   assert.equal(m.action.type, 'move', 'en recharge : un pas normal');
 });
 
-test('Dash : s\'arrête devant un mob et le frappe (500 % des dégâts, recharge ÷ 2) ; devant un trou ; pas pour 1 case', () => {
+/* 03/11/2026 (Geoffrey) : sur un boss (minotaure du donjon, Gallianix), la recharge reste entière */
+test('Dash sur un boss (03/11) : 300 % des dégâts, recharge entière', () => {
+  const G = corridor(), m = G.miners[0];
+  m.spells = ['dash'];
+  G.mobs.push({ id:98, type:'minotaure', dungeon:0, x:5, y:1, hp:1000, maxhp:1000, cd:1 });
+  startAction(m, 'move', moveT(G, m), { x:2, y:1, fx:1, fy:1 });
+  afterDecide(G, m);
+  if(m.action?.type === 'dash'){ finishAction(G, m, m.action); assert.equal(m.spellCd.dash, G.t + 30, 'recharge entière'); }
+  else assert.ok(!m.spellCd.dash, 'pas de dash sur un boss hors combat');
+});
+
+test('Dash : s\'arrête devant un mob et le frappe (300 % des dégâts depuis le 03/11, recharge ÷ 2) ; devant un trou ; pas pour 1 case', () => {
   let G = corridor(), m = G.miners[0];
   m.spells = ['dash'];
   G.mobs.push({ id:99, type:'bestiole', x:5, y:1, hp:1000, maxhp:1000, cd:1 });
   startAction(m, 'move', moveT(G, m), { x:2, y:1, fx:1, fy:1 });
   afterDecide(G, m); finishAction(G, m, m.action);
   assert.equal(m.x, 4);
-  assert.equal(G.mobs[0].hp, 1000 - STATS.damage * 5);
+  assert.equal(G.mobs[0].hp, 1000 - STATS.damage * 3);
   assert.equal(m.spellCd.dash, G.t + 15);
   G = worldFrom(['', '#@          ####', '#'.repeat(50), '#'.repeat(50), '#'.repeat(50)]); m = G.miners[0]; m.spells = ['dash'];
   G.tiles[2][5] = 0; G.tiles[3][5] = 0;                // trou de 2 en x = 5 (25/10 : un trou de 1 se descend)
