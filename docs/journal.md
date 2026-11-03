@@ -16,15 +16,13 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
-<<<<<<< HEAD
 ## 03/11/2026 — Geoffrey — Concasseur : minerai d'or
 - **Pour le joueur** : le concasseur accepte le minerai d'or, par lots de 100 ; un lot donne 1 Terre.
 - **État** : ✅ en ligne le 03/11
-=======
+
 ## 03/11/2026 — Geoffrey — Mine instantanée : le Coup unique marche
 - **Pour le joueur** : en mine instantanée, le Coup unique casse maintenant un bloc tout de suite (avant, la stat n'y servait à rien).
 - **État** : ✅ en ligne le 03/11
->>>>>>> origin/main
 
 ## 03/11/2026 — Jules — Ménage du dépôt
 - **Pour le joueur** : rien, c'est de l'organisation.
