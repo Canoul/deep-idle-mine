@@ -28,7 +28,7 @@ Modèle d'entrée :
   un écran d'iPhone). Choix de Claude validés : ville fixe (pas les autres joueurs), Bloc géant / mine instantanée ouverts
   dans le Lobby plutôt qu'en un toucher, rien quand on touche un coéquipier. Conception : `docs/superpowers/specs/2026-11-03-appli-accueil-design.md`.
 - **À suivre** : l'essayer sur un vrai téléphone et en groupe de 3 ; la suite de l'étape 2 (Perso : sets, stuff, skills, sorts).
-- **État** : 🧪 sur la branche `jules/appli-ux` (pas en ligne)
+- **État** : ✅ en ligne le 03/11
 
 ## 03/11/2026 — Jules — Appli mobile : audit de l'interface et premières corrections
 - **Pour le joueur** : rien sur le site. Dans l'appli : plus de gros titre en haut de chaque page (le sous-onglet dit
@@ -41,7 +41,7 @@ Modèle d'entrée :
   écran par écran, et l'ordre des prochains chantiers) est dans `docs/superpowers/specs/2026-11-03-appli-ux-audit.md`.
 - **À suivre** : l'étape 2, sur maquettes à comparer : Accueil, puis Perso (sets, stuff, skills, sorts), Historique,
   Guilde, Classement. À voir avec Geoffrey : l'écran Session hors session et qui fait quels écrans.
-- **État** : 🧪 sur la branche `jules/appli-ux` (pas en ligne)
+- **État** : ✅ en ligne le 03/11
 
 ## 03/11/2026 — Geoffrey — Appli Android : plus de bandeau « Deep Mine Idle MMO »
 - **Pour le joueur** : sur Android, un bandeau noir avec le nom de l'appli cachait le haut du jeu (portrait, « Mon compte », « Se déconnecter »). Le thème de l'appli n'a plus de barre de titre. Il faut la nouvelle appli (1.1.1, fabriquée par GitHub Actions) : une mise à jour à chaud ne peut pas changer ça.

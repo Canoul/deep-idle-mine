@@ -576,7 +576,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   notifications programmées → 4 push, iOS, stores (comptes Apple / Google : plus tard, avec un business plan, Geoffrey).
   **Étape 1 faite le 28/10** : `mobile/`, `src/app/` (classe `app`, badge provisoire « APPLI ✓ / ⚠ pont bloqué »),
   icône (`npm run app:icon`), `.github/workflows/android-apk.yml` ; **APPLI ✓ confirmé sur un vrai Android le 01/11** (Geoffrey). **Étape 2 en 5 morceaux** : navigation (**en ligne le 01/11**, plan `2026-11-01-appli-mobile-etape2a-navigation.md`, `src/app/families.js`, `bar.js`, `main.js`, `app.css` : 5 familles, Guilde et Chat dans Social, Historique hors session, pas de Carreau, Geoffrey) → session → Accueil → Stuff et Skills → gestes au doigt.
-  **Interface téléphone** (03/11, Jules ; 🧪 branche `jules/appli-ux`) : **l'appli d'abord, le site PC plus tard** (décision
+  **Interface téléphone** (03/11, Jules ; étape 1 et Accueil en ligne le 03/11) : **l'appli d'abord, le site PC plus tard** (décision
   de Jules). Audit écran par écran et ordre des chantiers : `docs/superpowers/specs/2026-11-03-appli-ux-audit.md`.
   Étape 1 faite (tout derrière `body.app`) : pas de titre de page, filtres sur une rangée qui défile, une ligne par joueur
   (classement, membres de guilde), boutons de 44 px, guide replié en pastille « 📜 5/7 », pseudo entier en session,

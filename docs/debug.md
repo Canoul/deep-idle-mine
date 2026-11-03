@@ -6725,7 +6725,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Applis** : rien de natif ; seulement des textures et un script Python.
 - ✅ En ligne le 03/11 (validé par Jules sur les images).
 
-## 03/11/2026 — Jules — Appli mobile : interface téléphone, étape 1 (branche jules/appli-ux)
+## 03/11/2026 — Jules — Appli mobile : interface téléphone, étape 1 (✅ en ligne le 03/11)
 - **Quoi** : audit de l'appli (`?app`, 393 × 760) avec les skills `ss-audit` et `playwright-cli` :
   `docs/superpowers/specs/2026-11-03-appli-ux-audit.md`. Corrections, toutes derrière `body.app` (le site ne change pas) :
   - `src/app/app.css` (bloc « étape 1 ») : `.invHead h1` à `font-size:0` (restent `.qhelp` et les boutons de la ligne ;
@@ -6756,7 +6756,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Applis** : pas de plugin ni de code natif ; `src/app/` change, donc part dans les applis par mise à jour à chaud à
   la mise en ligne.
 
-## 03/11/2026 — Jules — Appli mobile : écran d'Accueil (branche jules/appli-ux)
+## 03/11/2026 — Jules — Appli mobile : écran d'Accueil (✅ en ligne le 03/11)
 - **Quoi** : spec `docs/superpowers/specs/2026-11-03-appli-accueil-design.md`, plan `docs/superpowers/plans/2026-11-03-appli-accueil.md`.
   - `src/ui/lobby.js` : `launchFor(st)` (pur, exporté : le calcul du bouton `#launchBtn`, prison / tour / instance, déplacé
     tel quel ; le Lobby l'appelle avec `{ ...st, mode: def?.id }` pour garder le comportement du menu) ; le clic devient
