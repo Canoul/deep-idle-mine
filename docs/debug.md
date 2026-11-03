@@ -6972,3 +6972,6 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   l'était déjà sur main. ⚠️ Pas essayé sur un vrai téléphone ; valeur de `exact_alarm` (« granted ») prise de la doc du plugin.
 - Même branche : toutes les notifications passent par `toPlugin` (exactes si autorisé). Ajout du type `hescoming` (id 4, `hcNext` =
   `hcUI.nextEntry()` dans `notifData`, src/main.js), réglage `notif_hescoming`. Tests app-notifs (+1), app-native ✅.
+
+### 03/11/2026 — Bulle de butin : noms des qualités
+- `src/ui/loot-tip.js` `rowHtml` : une ligne de qualité affiche `r.label` (Utile… Légendaire) dans sa couleur, « R4 » en bulle (avant : « R4 », nom en bulle). ✅ loot-table.
