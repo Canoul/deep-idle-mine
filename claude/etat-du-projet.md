@@ -7,7 +7,7 @@ hébergement, question tranchée). Ce qui est remplacé est marqué « ancien »
 Ce fichier peut aussi être ajouté tel quel aux connaissances d'un projet claude.ai.
 Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md`.
 
-*Dernière mise à jour : 30/10/2026 (prison et énergie en ligne ; voir aussi les entrées du 30/10).*
+*Dernière mise à jour : 03/11/2026 (chantier du jeu en anglais) ; avant : 30/10/2026 (prison et énergie en ligne ; voir aussi les entrées du 30/10).*
 
 ---
 
@@ -621,6 +621,10 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 
 ## En attente / hors périmètre
 
+- **Chantier : le jeu en anglais (03/11/2026, Geoffrey)**, branche `geoffrey/traduction-anglais`, plan et décisions dans
+  `docs/traduction-anglais.md`. Langue retenue sur le compte, choix « Français / English » dans « Mon compte », **caché aux
+  joueurs** (`I18N.open: false`) jusqu'à la fin. Le français reste la langue d'écriture et des identifiants (`t()`, `tn()`,
+  `src/i18n/`). Étape 1 (socle) faite ; glossaire des 413 noms en relecture par Geoffrey avant l'étape 2.
 - **Prison et énergie EN LIGNE (30/10/2026, Geoffrey)** : ancien chantier `geoffrey/prison`, fusionné. Énergie : départ **0**
   pour tous (`ENERGY.start`), mine classique 6 à 12, refus sous 6 ; recharge **seulement en prison, 4 par heure de jeu** (8 par
   heure réelle à ×2 ; ancien 8). Prison : contenu d'après les 10 dernières mines, `oreMul` **0,24** (51 % des minerais de
