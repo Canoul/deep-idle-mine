@@ -36,10 +36,39 @@ const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&
 const NODE = 58, ROW_H = 112;   // diamètre d'une case, hauteur d'un étage (px)
 const WHY = { other_tree:'Autre arbre choisi', needs_previous:'Étape précédente au max d\'abord', no_points:'Plus de points', maxed:'Rang max' };
 
+/* ---------- appli (03/11/2026, spec docs/superpowers/specs/2026-11-03-appli-skills-design.md) ---------- */
+const nodeOf = id => SKILLS.trees.flatMap(t => t.nodes.map(n => ({ ...n, tree:t }))).find(n => n.id === id);
+/* état du glyphe dans la fiche (au doigt : pas de « Clic : », le bouton dit l'action) */
+const GLYPH_SHEET = { empty:'Se pose quand le skill est au rang max', can_pose:'Tu as ce glyphe : tu peux le poser', posed:'Posé', inactive:'Inactif : le skill doit être au rang max' };
+/* onglets de classe : view = l'arbre montré, chosen = sa classe (st.tree), spec = niveaux de spécialisation par arbre */
+export function skillTabsHtml(view, { chosen = null, spec = {} } = {}){
+  return SKILLS.trees.map(t => `<button data-sktab="${t.id}"${t.id === view ? ' class="on"' : ''}>${TREE_PX[t.id] ? pxi(TREE_PX[t.id]) : t.icon}<b>${esc(t.label)}</b>`+
+    `<small>${t.id === chosen ? '★ ta classe · ' : ''}SP ${spec[t.id]?.level ?? 1}</small></button>`).join('');
+}
+/* fiche d'un skill (panneau du bas) : effet maintenant et au rang suivant, glyphe, puis Apprendre ou la raison du blocage */
+export function skillSheetHtml(st, id, { inv = { slots:[] }, busy = false, session = false } = {}){
+  const n = nodeOf(id);
+  if(!n) return '';
+  const r = rankOf(st, id), why = blockedReason(st, id, st.points);
+  const g = glyphSlot(st, id, inv), gact = g === 'can_pose' ? 'glyph_pose' : g === 'posed' || g === 'inactive' ? 'glyph_remove' : null;
+  const glyph = g === 'none' ? '' : `<div class="skGl"><span class="skGlyph g-${g}">${g === 'posed' || g === 'inactive' ? '<img src="textures/glyph.png" alt="">' : ''}</span>`+
+    `<span><b>${esc(glyphOf(id))}</b><br><small class="mut">${esc(gact && session ? 'Poser ou retirer : après la session' : GLYPH_SHEET[g])}</small></span>`+
+    (gact && !session && !busy ? `<button data-glyph="${id}" data-gact="${gact}">${gact === 'glyph_pose' ? 'Poser' : 'Retirer'}</button>` : '')+`</div>`;
+  return `<div class="skShHead"><span class="skOrb">${NODE_PX[id] ? pxi(NODE_PX[id]) : n.icon}</span><div><h3>${esc(n.name)}</h3>`+
+    `<span class="mut">${esc(n.tree.label)} · étage ${n.row} · rang ${r} / ${n.max}</span></div><button class="x" data-act="close" aria-label="Fermer">✕</button></div>`+
+    `<div class="skLines"><div><i>Maintenant</i><span>${r ? esc(nodeText(id, r)) : 'Pas encore appris'}</span></div>`+
+    (r < n.max ? `<div><i>Au rang suivant</i><span class="ok">${esc(nodeText(id, r + 1))}</span></div>` : '')+`</div>`+
+    glyph+
+    (why ? `<p class="skWhy">🔒 ${esc(WHY[why] ?? '')}</p>` : `<button class="on skLearn" data-learn="${id}"${busy ? ' disabled' : ''}>APPRENDRE · 1 POINT</button>`);
+}
+
 /* onOp({ action:'learn', node } | { action:'reset' }) → promesse ; inSession() : une session est en cours */
 export function setupSkills({ onOp, inSession, onChange = () => {}, inventory = () => ({ slots:[] }) }){
   let st = { tree:null, ranks:{}, points:0, spent:0, glyphs:{} }, busy = false, msg = '';
   let spec = {};   // niveaux de spécialisation (progress.spec du serveur), un par arbre
+  /* appli (03/11/2026) : view = l'arbre montré (sa classe au départ), sheet = le skill dont la fiche est ouverte */
+  let view = null, sheet = null;
+  const app = () => document.body.classList.contains('app');
 
   function render(){
     const free = st.points - st.spent, session = inSession();
@@ -48,7 +77,30 @@ export function setupSkills({ onOp, inSession, onChange = () => {}, inventory = 
       ` <button id="skillReset"${st.spent && !session && !busy ? '' : ' disabled'} title="${session ? 'Impossible pendant une session' : 'Gratuit : tous les points sont rendus'}">↺ Reset</button>`+
       (session ? ' <span class="mut small">(reset possible après la session)</span>' : '')+
       (msg ? ` <span class="err">${esc(msg)}</span>` : '');
-    $('skillTrees').innerHTML = SKILLS.trees.map(t => treeHtml(t)).join('');
+    if(!app()){ $('skillTrees').innerHTML = SKILLS.trees.map(t => treeHtml(t)).join(''); return; }
+    const v = view ?? st.tree ?? SKILLS.trees[0].id;
+    $('skillTrees').innerHTML = `<div class="skTabs">${skillTabsHtml(v, { chosen:st.tree, spec })}</div>` + treeHtml(SKILLS.trees.find(t => t.id === v));
+    renderSheet();
+  }
+  /* fiche d'un skill (appli) : un toucher sur le fond, ✕ ou le bouton retour d'Android (src/app/device.js) la ferme */
+  function sheetEl(){
+    let el = $('skSheet');
+    if(!el){
+      el = document.createElement('div'); el.id = 'skSheet'; el.hidden = true; el.innerHTML = '<div class="box"></div>'; document.body.append(el);
+      el.onclick = e => {
+        if(e.target === el || e.target.closest('[data-act="close"]')){ sheet = null; return renderSheet(); }
+        const l = e.target.closest('[data-learn]'), g = e.target.closest('[data-glyph]');
+        if(l && !l.disabled) send({ action:'learn', node:l.dataset.learn });
+        else if(g) send({ action:g.dataset.gact, node:g.dataset.glyph });
+      };
+    }
+    return el;
+  }
+  function renderSheet(){
+    if(!app()) return;
+    const el = sheetEl();
+    el.hidden = !sheet;
+    if(sheet) el.firstChild.innerHTML = skillSheetHtml(st, sheet, { inv:inventory(), busy, session:inSession() }) + (msg ? `<p class="err">${esc(msg)}</p>` : '');
   }
 
   /* un arbre façon RPG : des cases rondes par étage (côte à côte si plusieurs), reliées par des lignes à celles de
@@ -71,9 +123,12 @@ export function setupSkills({ onOp, inSession, onChange = () => {}, inventory = 
       const state = r >= n.max ? 'max' : can ? 'can' : r ? 'some' : 'off';
       const tip = [n.name, nodeText(n.id, r), `Rang ${r} / ${n.max}`,
                    can ? 'Clic : apprendre un rang (1 point)' : why && why !== 'maxed' ? '🔒 ' + (WHY[why] ?? '') : ''].filter(Boolean).join('\n');
-      return `<div class="skNode ${state}" style="left:${pos[n.id].x}%;top:${pos[n.id].y}px"${can ? ` data-node="${n.id}" role="button" tabindex="0"` : ''} data-tip="${esc(tip)}">`+
+      /* appli (03/11/2026) : lk = un maillon vers l'étage du dessus (lk-on : chemin ouvert), duo = étage à deux skills */
+      const parents = parentsOf(n.id), duo = t.nodes.filter(x => x.row === n.row).length > 1 ? ' duo' : '';
+      const lk = parents.length ? (parents.every(p => rankOf(st, p.id) >= p.max) ? ' lk lk-on' : ' lk') : '';
+      return `<div class="skNode ${state}${lk}${duo}" data-nid="${n.id}" style="left:${pos[n.id].x}%;top:${pos[n.id].y}px"${can ? ` data-node="${n.id}" role="button" tabindex="0"` : ''} data-tip="${esc(tip)}">`+
              `<span class="skOrb">${NODE_PX[n.id] ? pxi(NODE_PX[n.id]) : n.icon}</span><b class="skRank">${r}/${n.max}</b>${can ? '<i class="skPlus">+</i>' : ''}`+
-             `<span class="skName">${esc(n.name)}</span>${glyphHtml(n)}</div>`;
+             `<span class="skName">${esc(n.name)}</span><span class="skTxt">${esc(nodeText(n.id, Math.max(r, 1)))}</span>${glyphHtml(n)}</div>`;
     }).join('');
     return `<div class="skTree${locked ? ' locked' : ''}${chosen ? ' chosen' : ''}"><h3>${TREE_PX[t.id] ? pxi(TREE_PX[t.id]) : t.icon} ${esc(t.label)}`+
       `${chosen ? ' <span class="mut small">· choisi</span>' : locked ? ' <span class="mut small">· 🔒 bloqué</span>' : ''}</h3>`+
@@ -101,6 +156,12 @@ export function setupSkills({ onOp, inSession, onChange = () => {}, inventory = 
   }
 
   $('skillTrees').onclick = e => {
+    if(app()){
+      const t = e.target.closest('[data-sktab]'), n = e.target.closest('[data-nid]');
+      if(t){ view = t.dataset.sktab; render(); }
+      else if(n){ sheet = n.dataset.nid; renderSheet(); }
+      return;
+    }
     const g = e.target.closest('[data-glyph]');
     if(g){ e.stopPropagation(); send({ action:g.dataset.gact, node:g.dataset.glyph }); return; }
     const b = e.target.closest('[data-node]'); if(b) send({ action:'learn', node:b.dataset.node });

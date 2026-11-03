@@ -6884,3 +6884,23 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 
 - **Relevé 13 h 56 – 14 h 15** : S22 (Android 14), Pixel 10 (Android 17) et OnePlus 8 Pro (Android 11) reçoivent « mise à jour proposée » pour `a9f83fc6…`, et **aucun fichier `/app-bundle` n'est jamais demandé, par aucun téléphone**. Le S22 montre l'écran « Mise à jour du jeu… » une fraction de seconde : `build()` échoue avant la première requête au serveur (copie / mkdir / relecture des fichiers de la version qui tourne), pour tous les Android essayés. Le OnePlus annonçait `a18b1fe…` : vraisemblablement la copie embarquée de son APK, pas une mise à jour réussie. **Les mises à jour à chaud n'ont donc jamais marché sur un vrai téléphone.** Cause exacte inconnue : l'échec n'était pas signalé.
 - Branche `geoffrey/fix-maj-appli` : (1) `fileSteps` ne réutilise jamais un `.html` ; (2) un fichier relu sur le téléphone sans son empreinte est repris du serveur ; (3) le paquet publié a un `index.html` marqué (`PUBLISHED_MARK`, toujours téléchargé) ; (4) **l'échec du téléchargement est signalé** (`report` why `telechargement` + `detail` = message d'erreur, et `pas-recharge` si la page ne se recharge pas), affiché dans le relevé ; (5) appli 1.1.2 (versionCode 4) : seule une nouvelle coque embarque ce code. ✅ app-bundle, app-update, app-update-server (37).
+
+## 03/11/2026 — Jules — Appli mobile : Skills, une classe à la fois et fiche d'un skill (✅ en ligne le 03/11)
+- **Quoi** : spec `docs/superpowers/specs/2026-11-03-appli-skills-design.md`, plan `docs/superpowers/plans/2026-11-03-appli-skills.md`.
+  - `src/ui/skills.js` : `skillTabsHtml(view, { chosen, spec })` et `skillSheetHtml(st, id, { inv, busy, session })` (purs) ;
+    `treeHtml` : chaque case porte `data-nid`, `lk` / `lk-on` (maillon vers l'étage du dessus, ouvert si tous les parents
+    sont au max), `duo` (étage à deux skills) et `<span class="skTxt">` (effet au rang actuel, rang 1 si non appris ; caché
+    sur le site) ; dans l'appli, `render()` dessine les onglets et l'arbre `view` seul (sa classe au départ), un toucher sur
+    une case ouvre `#skSheet` (jamais d'apprentissage direct), Apprendre / glyphe passent par `send` (même `onOp`), la fiche
+    reste ouverte et se redessine. Textes du glyphe pour le doigt (`GLYPH_SHEET`, « après la session » en session).
+  - `src/app/app.css` : bloc « Skills » (onglets, arbre en liste, maillons `::before`, glyphe à droite, fiche) ;
+    `src/app/device.js` : `skSheet` dans `PANELS` ; `src/ui/style.css` : `.skTxt` caché.
+- **Tests** ✅ app-skills (nouveau, 4 tests), skills, glyphs, app-device : 54/54.
+- **Vérifié** ✅ aperçu `?app` 393 × 760 (Test_Mineur) : 3 onglets, arbre entier hors session et sans guide = 760 / 760 ;
+  fiche de Ruée (5/5 : « Rang max », glyphe posé) ; onglet Logisticien grisé, fiche de Navette « Autre arbre choisi ».
+  Site PC sans `?app` inchangé (3 arbres, lignes SVG, panneau des sets).
+- **Pas vérifié** ⚠️ « Apprendre » à l'écran (le compte de test a son arbre au max et une session en cours empêche le
+  reset ; même `send` que le site, couvert par les tests de la fiche) ; vrai téléphone ; bouton retour Android sur la fiche.
+- **Points fragiles** : en session, la note du haut fait défiler (≈ 40 px) ; `.skNode` du site est en position absolue :
+  l'appli annule `left` / `top` en `!important`.
+- **Applis** : pas de plugin ni de code natif ; `src/app/` change (mise à jour à chaud à la mise en ligne).

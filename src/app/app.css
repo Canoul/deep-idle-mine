@@ -170,3 +170,58 @@ body.app #spick{align-items:flex-end;justify-content:stretch;padding:0}
 body.app #spick .box{width:100%;max-width:none;max-height:85%}
 /* un panneau ouvert (choix d'une pièce, menu des sets, butin…) : la pastille du guide ne passe pas par-dessus ses boutons */
 body.app:has(#spick:not([hidden]),#setsSheet:not([hidden]),#loot:not([hidden]),#fpick:not([hidden]),#cpick:not([hidden]),#fview:not([hidden])) .guide{display:none}
+
+/* ---------- Skills (03/11/2026, Jules ; spec 2026-11-03-appli-skills-design.md) : une classe à la fois (onglets), chaque skill
+   avec son effet, un maillon entre deux étages (jamais un trait sur une case), fiche qui monte du bas (ancien : 3 arbres
+   empilés ≈ 4,2 écrans, un toucher apprenait un rang) ---------- */
+body.app .skHead{flex-wrap:nowrap;margin:0 0 6px}
+body.app .skHead>*{white-space:nowrap}
+body.app .skHead>.mut{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+body.app .skHead #skillReset{margin-left:auto}
+body.app section[data-view="skills"] .setLay{gap:8px}
+body.app section[data-view="skills"] .furnWrap{padding:6px 8px 8px}
+body.app .skTrees{display:block}
+body.app .skTabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin:0 0 8px}
+body.app .skTabs button{display:grid;grid-template-columns:auto auto;justify-content:center;align-items:center;gap:1px 4px;min-height:48px;padding:3px 2px;white-space:normal;font-size:14px}
+body.app .skTabs button small{grid-column:1/3;text-align:center}
+body.app .skTabs button .pi{width:18px;height:18px}
+body.app .skTabs button b{font:400 17px/1 var(--f-title)}
+body.app .skTabs button small{font-size:12px;line-height:1.1;color:var(--mut)}
+body.app .skTabs button.on small{color:#4a1e08}
+body.app #skillTrees .skTree{border:0;border-image:none;padding:0;background:none}
+body.app #skillTrees .skTree>h3,body.app #skillTrees .skTree .specLvl,body.app #skillTrees .skLinks{display:none}
+body.app #skillTrees .skGraph{height:auto!important;display:grid;grid-template-columns:1fr 1fr;gap:14px 8px;margin:0;padding:2px 0}
+body.app #skillTrees .skNode{position:relative;left:auto!important;top:auto!important;transform:none;width:auto;grid-column:1/3;
+  display:grid;grid-template-columns:50px minmax(0,1fr) auto;grid-template-rows:auto auto;column-gap:10px;align-items:center;text-align:left}
+body.app #skillTrees .skNode.duo{grid-column:auto}
+body.app #skillTrees .skOrb{position:relative;z-index:1;grid-row:1/3;width:50px;height:50px}
+body.app #skillTrees .skOrb .pi{width:26px;height:26px}
+body.app #skillTrees .skRank{top:auto;bottom:-6px;left:28px;transform:none;z-index:2}
+body.app #skillTrees .skPlus{top:-4px;left:38px;transform:none;z-index:2}
+body.app #skillTrees .skName{grid-column:2;align-self:end;padding:0;background:none;font:400 18px/1.05 var(--f-title);color:#ffe6c4}
+body.app #skillTrees .skNode.off .skName{color:var(--mut);opacity:1}
+body.app #skillTrees .skTxt{grid-column:2;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;align-self:start;font-size:14px;line-height:1.15;color:var(--mut)}
+body.app #skillTrees .skGlyph{grid-column:3;grid-row:1/3}   /* glyphe à droite du skill, pas sur sa case */
+body.app #skillTrees .skNode{cursor:pointer}
+/* maillon vers l'étage du dessus : entre les cases, sous elles */
+body.app #skillTrees .skNode.lk::before{content:"";position:absolute;left:22px;top:-14px;width:6px;height:14px;background:var(--line);box-shadow:0 0 0 2px #000}
+body.app #skillTrees .skNode.lk-on::before{background:var(--acc)}
+/* fiche d'un skill */
+body.app #skSheet{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;background:rgba(5,3,2,.62)}
+body.app #skSheet[hidden]{display:none}
+body.app #skSheet .box{width:100%;max-height:calc(100dvh - var(--top-h) - var(--dock-h));margin-bottom:var(--dock-h);overflow:auto;padding:2px 6px 10px;
+  border:12px solid transparent;border-image:url(../../textures/ui/panel.png) 6 fill / 12px stretch}
+body.app #skSheet .skShHead{display:flex;align-items:center;gap:12px}
+body.app #skSheet .skShHead>div{flex:1;min-width:0}
+body.app #skSheet .skShHead .skOrb{width:50px;height:50px}
+body.app #skSheet h3{margin:0;font:400 26px/1 var(--f-title);color:#ffe6c4}
+body.app #skSheet .skLines{margin:10px 0;font-size:16px;line-height:1.25}
+body.app #skSheet .skLines>div{display:flex;gap:8px;padding:4px 0;border-top:2px solid var(--sep)}
+body.app #skSheet .skLines>div:first-child{border-top:0}
+body.app #skSheet .skLines i{flex:none;width:86px;font-style:normal;color:var(--mut)}
+body.app #skSheet .skLines .ok{color:var(--ok)}
+body.app #skSheet .skGl{display:flex;align-items:center;gap:8px;margin:0 0 10px}
+body.app #skSheet .skGl>span:nth-child(2){flex:1}
+body.app #skSheet .skLearn{width:100%;min-height:56px;font:400 26px/1 var(--f-title)}
+body.app #skSheet .skWhy{margin:4px 0;text-align:center;color:var(--mut)}
+body.app:has(#skSheet:not([hidden])) .guide{display:none}

@@ -587,7 +587,10 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   (le Lobby complet, retour « ← Accueil »), rendez-vous (Bloc géant, He's coming, tour, MI, four, invitation), gros bouton
   = `lobby.launch()` (même fonction que `#launchBtn`). **Sets et Stuff** (03/11, en ligne le 03/11 ; spec
   `2026-11-03-appli-perso-sets-stuff-design.md`) : sets = une ligne « Set : x ▾ » + menu du bas (`setsBarHtml`, `setsSheetHtml`,
-  `#setsSheet`) ; Stuff = mannequin + onglets Équipement | Stats (`src/app/perso.js`). Étape 2 sur maquettes : Accueil (fait) → Perso (sets en menu,
+  `#setsSheet`) ; Stuff = mannequin + onglets Équipement | Stats (`src/app/perso.js`). **Skills** (03/11, en ligne le
+  03/11 ; spec `2026-11-03-appli-skills-design.md`) : onglets de classe (`skillTabsHtml`), un arbre à la fois
+  avec l'effet de chaque skill, maillons entre les cases, fiche `#skSheet` (`skillSheetHtml`) : dans l'appli un toucher
+  n'apprend plus directement (ancien : un clic = un rang). Étape 2 sur maquettes : Accueil (fait) → Perso (sets en menu,
   stuff en mannequin, un seul arbre de skills, fiche de sort en panneau du bas) → Historique compact → Guilde en
   onglets → Classement.
   **Visuels des stores** (01/11, Jules, branche `jules/visuels-stores`) : **icône = lampe de mine** (source unique
