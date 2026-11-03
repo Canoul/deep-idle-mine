@@ -16,6 +16,10 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 03/11/2026 — Geoffrey — Appli Android 1.1.3 : le bandeau « Deep Mine Idle MMO » pour de bon
+- **Pour le joueur** : la 1.1.2 avait encore le bandeau noir au nom de l'appli en haut de l'écran (vu sur Samsung). La 1.1.1 avait corrigé le mauvais thème : la fenêtre est créée avec celui de l'écran de lancement, qui gardait sa barre de titre. Corrigé dans la 1.1.3 (nouvelle appli à installer, pas une mise à jour à chaud).
+- **État** : ✅ dans main le 03/11 (AAB 1.1.3, code de version 5, à envoyer sur Google Play) ; bandeau pas encore vérifié sur un téléphone
+
 ## 03/11/2026 — Geoffrey — Appli : « Nouvelle version de l'appli » au démarrage
 - **Pour le joueur** : quand une nouvelle appli est sortie sur Google Play, l'appli le dit à l'ouverture : « Nouvelle version de l'appli : 1.1.2 (tu as la 1.1.0) », avec **Mettre à jour** (ouvre la fiche Google Play) ou **Plus tard** (reproposé le lendemain). Rien sur le site. Le jeu lui-même continue de se mettre à jour tout seul : ceci ne concerne que les nouvelles versions de l'appli.
 - **Pour nous** : à chaque nouvelle appli **en ligne** sur Google Play, monter `APP_UPDATE.latest.android` (aujourd'hui 1.1.2). iPhone : rien tant qu'il n'a pas de fiche App Store.
