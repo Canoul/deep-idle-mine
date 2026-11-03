@@ -6915,4 +6915,8 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - Après : sans Dash 2 153, avec 2 834 (+32 %) ; profil type Infernatiwar (ténacité 44, crit 20) 4 608 → 3 779.
 - Tests : spells (nouveau test boss), hescoming-sim, instance-sim, tower*, golbute*, wiki 210/210 ✅. Pas resimulé : tours et
   instances (le Dash pèse moins sur leurs boss).
+- Même branche, 03/11 : Force brute (`SKILLS.trees` barbare, nœud `damage`) sans `adds.tenacity` (avant +5 par rang) ni
+  « ténacité » dans `desc`. Test `skills.test.js` mis à jour. Tests skills, minotaur, hescoming*, golbute*, tower*, instance*,
+  stuff*, tenacity*, wiki 229/229 ✅. ⚠️ Repères du Golbute et de la tour à +25 / +50 % de ténacité « en plus » : la base barbare
+  baisse de 15, à resimuler si besoin.
 

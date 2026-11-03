@@ -16,13 +16,18 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 03/11/2026 — Geoffrey — Force brute ne donne plus de ténacité
+- **Pour le joueur** : le 1er skill du Barbare (Force brute) donne toujours +5 % de dégâts et 2 % de dégâts de zone par
+  rang, mais **plus les +5 % de ténacité** par rang (15 % à 3/3). La ténacité ne vient plus que du stuff.
+- **État** : ✅ en ligne le 03/11
+
 ## 03/11/2026 — Geoffrey — Dash : 300 %, recharge entière sur les boss
 - **Pour le joueur** : le Dash frappe à **300 %** des dégâts (avant 500 %). Sa recharge n'est plus divisée par deux quand
   il touche un **boss** (Lucifer, boss des tours, roi gobelin, Golbute, minotaure, Gallianix) ; sur un mob normal, elle
   l'est toujours. À He's coming, le Dash rapporte environ **+32 %** de points à un barbare au lieu de +63 %.
 - **Pourquoi** : enquête sur les points d'Infernatiwar à He's coming : le recul de Lucifer (4 cases) le remettait à
   chaque fois à portée de Dash, environ 12 Dash à 500 % par visite.
-- **État** : 🧪 sur la branche `geoffrey/dash-boss` (pas en ligne)
+- **État** : ✅ en ligne le 03/11
 
 ## 03/11/2026 — Jules — Appli mobile : les Skills, une classe à la fois
 - **Pour le joueur** : rien sur le site. Dans l'appli, l'onglet Skills montre **un seul arbre** : trois onglets en haut
