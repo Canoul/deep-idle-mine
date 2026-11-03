@@ -16,6 +16,10 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 03/11/2026 — Geoffrey — Tableaux de butin : noms des raretés
+- **Pour le joueur** : dans la bulle de butin d'un coffre (inventaire), les qualités s'affichent par leur nom (Utile, Bon, Haute qualité, Excellent, Antique, Mystérieux, Légendaire) au lieu de « R1 » à « R7 », et le titre de la bulle donne le nom du coffre (« Excellent Trésor angélique », plus « Trésor angélique R4 »). Le Coffre du Roi Gobelin II garde son « II ».
+- **État** : ✅ en ligne le 03/11
+
 ## 03/11/2026 — Geoffrey — Appli : notifications à l'heure (MI en retard)
 - **Pour le joueur** : sur Android, la notification de la mine instantanée arrivait ≈ 15 min en retard : l'appli
   demandait à Android une alarme « approximative » qu'il regroupe pour économiser la batterie. Avec l'appli **1.1.5**, les
