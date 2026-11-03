@@ -6938,3 +6938,10 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   stuff*, tenacity*, wiki 229/229 ✅. ⚠️ Repères du Golbute et de la tour à +25 / +50 % de ténacité « en plus » : la base barbare
   baisse de 15, à resimuler si besoin.
 
+### 03/11/2026 — Appli : fenêtre « Nouvelle version de l'appli » (Geoffrey) 🧪
+- Constat (Geoffrey) : coque 1.1.0 ouverte normalement alors que la 1.1.2 était sur Google Play (test interne) ; rien ne le disait, il a fallu aller sur la fiche. `minNative` est le seul avertissement existant, et il bloque.
+- `APP_UPDATE.latest` ({ android:'1.1.2', ios:'1.1.0' }) et `nudgeEvery` (86 400 s) ; `storeNudge()` (src/app/update.js, pur : version à proposer ou null ; rien sans fiche du store, version inconnue ou coque déjà à jour) ; `src/app/store-nudge.js` (App.getInfo, `ask` de src/ui/dialog.js 2 s après le démarrage, `AppLauncher.openUrl` vers `storeUrl`, mémo `dim.storeNudge` = { v, at } posé à l'affichage) ; lancé par `startApp` (src/app/main.js). Plugins déjà dans la 1.1.0 : pas de `minNative` à monter.
+- Tests : `tests/app-update.test.js` (storeNudge) ✅ ; vu dans Chromium avec `?app` et un faux pont (coque 1.1.0) : fenêtre affichée, « Mettre à jour » ouvre la fiche Google Play, pas de 2e fenêtre au rechargement. ⚠️ Pas vu sur un téléphone.
+- ⚠️ Limite : une coque ne voit la fenêtre qu'après avoir reçu ce code par mise à jour à chaud. Les Samsung en 1.1.0, qui ne recevaient jamais les mises à jour à chaud (entrée du 03/11, relevé), ne la verront pas ; pour eux, seul `minNative` (écran bloquant, lu dans la réponse du serveur sans rien télécharger) agit.
+- ⚠️ `tests/mobile-config.test.js` « même version qu'Android » : déjà rouge sur main (iOS 1.1.0, Android 1.1.2).
+
