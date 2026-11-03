@@ -317,7 +317,9 @@ nav = setupNav($('nav'), $('views'), id => {
 /* appli mobile : barre des familles ; shown : l'onglet Session a-t-il quelque chose à montrer (partie, prison, bilan) ? */
 if(appBoot.app) import('./app/main.js').then(async m => { appLayer = m.startApp({ doc:document, win:window, nav,
   shown: () => !!rec || inRoom() || prisonShown() || !$('end').hidden,
-  notifData: () => ({ now:serverNow(), offset:clockOffset, sessionEnd:rec?.finishAt ?? null, furnaces:furnace.state().list, giantNext:giantUI?.nextEntry() ?? null, account:acct.account?.id ?? null }) });  (await appBoot.native)?.attach(appLayer); }).catch(e => { console.warn(e); dropApp(document); });
+  notifData: () => ({ now:serverNow(), offset:clockOffset, sessionEnd:rec?.finishAt ?? null, furnaces:furnace.state().list, giantNext:giantUI?.nextEntry() ?? null, account:acct.account?.id ?? null }),
+  /* Accueil de l'appli (src/app/home-ui.js, 03/11/2026) : le Lobby (lu à chaque fois : il est créé plus bas) et l'heure du serveur */
+  home: { lobby: () => lobby, data: () => ({ now:serverNow(), sessionTimes: rec?.finishAt ? { startedAt:rec.startedAt, finishAt:rec.finishAt } : null, furnaces:furnace.state().list }) } });  (await appBoot.native)?.attach(appLayer); }).catch(e => { console.warn(e); dropApp(document); });
 
 /* orbes de la barre d'action : temps de session et XP ; pendant une session, oxygène et pods du mineur suivi */
 const orbs = setupOrbs($('orbL'), $('orbR'));

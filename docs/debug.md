@@ -6770,3 +6770,34 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   peuvent cacher la dernière option (seule une option coupée le signale).
 - **Applis** : pas de plugin ni de code natif ; `src/app/` change, donc part dans les applis par mise à jour à chaud à
   la mise en ligne.
+
+## 03/11/2026 — Jules — Appli mobile : écran d'Accueil (branche jules/appli-ux)
+- **Quoi** : spec `docs/superpowers/specs/2026-11-03-appli-accueil-design.md`, plan `docs/superpowers/plans/2026-11-03-appli-accueil.md`.
+  - `src/ui/lobby.js` : `launchFor(st)` (pur, exporté : le calcul du bouton `#launchBtn`, prison / tour / instance, déplacé
+    tel quel ; le Lobby l'appelle avec `{ ...st, mode: def?.id }` pour garder le comportement du menu) ; le clic devient
+    `async function launch()` (`#launchBtn.onclick = launch`) ; l'objet de `setupLobby` gagne `homeSnapshot()` (état + places
+    avec `look` / `auras` + `launch: launchFor(st)` + `dev`), `launch`, `openMenu()`, `openInvite()` (clique le vrai `#inviteBtn`).
+  - `src/main.js` : `miRegistered` passé au Lobby (onState de la mine instantanée, seulement quand il change) ; `startApp`
+    reçoit `home: { lobby: () => lobby, data: () => ({ now, sessionTimes, furnaces }) }`.
+  - `src/app/home.js` (pur) : `rendezVous`, `mainButton`, `sceneTeam`, `activityLine`, `homeView(snap, data, expanded)`.
+    `src/app/home-ui.js` : `homeHtml(view, { expanded })` (pur), `startHome` (insère `#appHome` + `#appHomeBack` dans la
+    section Lobby, `body.appHomeOn`, portraits par `drawPortrait`, redessin seulement si le HTML change).
+  - `src/app/main.js` : `home.render()` dans le `sync` d'une seconde ; famille Accueil → `home.show()` ; `atHome` / `goHome`
+    tiennent compte de l'Accueil caché (bouton retour Android). `src/app/app.css` : bloc « Accueil ». `src/config.js` : `APP_HOME`.
+- **Décisions de construction** : gros bouton en majuscules seulement quand il agit (« Pas prêt : Brakk » garde sa casse) ;
+  « la session » retirée du texte du Lobby (LANCER, LANCER À 3) ; coût d'énergie caché en mode dev comme le Lobby ; prison
+  en cours → « VOIR LA PRISON » quel que soit le mode choisi ; bouton Inviter en haut à gauche du ciel (en bas à droite, il
+  couvrait la 3e place) ; guide replié rangé dans le ciel (il couvrait le gros bouton).
+- **Tests** ✅ app-home (nouveau, 12), lobby (+1 : launchFor), app-families, app-bar, guide, prison-ui : 74/74 ; app-bundle,
+  app-update, app-mode, app-device : 46/46.
+- **Vérifié** ✅ aperçu `?app` 393 × 760 (Test_Mineur, mode dev) : Accueil sans défiler (760/760), Taverne / Chevalement /
+  Fonderie, places libres « ? », rendez-vous Bloc géant et He's coming ; Changer ▸ → Lobby + « ← Accueil » → retour ;
+  LANCER lance une session et l'Accueil passe en « VOIR LA SESSION », équipe partie ; « Entrer » (Bloc géant) ouvre sa carte
+  dans le Lobby. Aucune erreur dans la console.
+- **Pas vérifié** ⚠️ en groupe de 3 (chef / membre) à l'écran (couvert par les tests) ; compte à rebours et barre de la carte
+  de session (en mode dev la session n'a pas de `finishAt`) ; prison en cours ; mine instantanée proche et four fini à
+  l'écran ; vrai téléphone (encoche, `100dvh`).
+- **Points fragiles** : `startHome` lit `lobby()` au démarrage de la couche appli (import dynamique, après la création du
+  Lobby : pas d'`await` de haut niveau avant `setupLobby` dans main.js) ; `nav.show('lobby')` venu d'ailleurs garde l'état
+  montré / caché de l'Accueil.
+- **Applis** : pas de plugin ni de code natif ; `src/app/` change (mise à jour à chaud à la mise en ligne).

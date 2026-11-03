@@ -16,6 +16,20 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 03/11/2026 — Jules — Appli mobile : nouvel écran d'Accueil
+- **Pour le joueur** : rien sur le site. Dans l'appli, le premier écran n'est plus le Lobby. En haut, une bande du
+  **Carreau** (la Taverne, le Chevalement, la Fonderie) où ton équipe attend devant le chevalement, avec « ✓ Prêt » ou
+  « pas prêt » au-dessus de chacun ; une place libre est un « ? » doré qu'on touche pour inviter. En dessous : l'activité
+  choisie (« Mine classique · Minerais · Combattre ») avec **Changer ▸**, qui ouvre le Lobby complet ; les **rendez-vous**
+  ouverts (Bloc géant, He's coming, tour ouverte, mine instantanée bientôt, four fini, invitation), deux visibles et le
+  reste dépliable ; et un gros bouton **LANCER** sous le pouce (« JE SUIS PRÊT » pour un membre, la raison quand on ne peut
+  pas lancer). En session, l'équipe a quitté la place, la carte montre la session et le bouton devient « VOIR LA SESSION ».
+- **Décisions** (Jules) : mélange des maquettes « tableau de bord » et « Carreau », avec une ville bien visible (320 px sur
+  un écran d'iPhone). Choix de Claude validés : ville fixe (pas les autres joueurs), Bloc géant / mine instantanée ouverts
+  dans le Lobby plutôt qu'en un toucher, rien quand on touche un coéquipier. Conception : `docs/superpowers/specs/2026-11-03-appli-accueil-design.md`.
+- **À suivre** : l'essayer sur un vrai téléphone et en groupe de 3 ; la suite de l'étape 2 (Perso : sets, stuff, skills, sorts).
+- **État** : 🧪 sur la branche `jules/appli-ux` (pas en ligne)
+
 ## 03/11/2026 — Jules — Appli mobile : audit de l'interface et premières corrections
 - **Pour le joueur** : rien sur le site. Dans l'appli : plus de gros titre en haut de chaque page (le sous-onglet dit
   déjà où on est) ; les filtres (inventaire, classement…) tiennent sur une rangée qu'on fait défiler au doigt ; dans le

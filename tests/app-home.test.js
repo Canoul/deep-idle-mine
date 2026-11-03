@@ -101,3 +101,25 @@ test('homeView : hors ligne → rien d\'actif ; 2 rendez-vous visibles et le res
   assert.equal(s.left, 'fin dans 06:14'); assert.ok(s.pct > 0.8 && s.pct < 0.85);
   assert.equal(homeView(solo({ prison:{ state:'running', run:3 } }), data()).session.title, 'Prison · run 3');
 });
+
+/* ---------- affichage (src/app/home-ui.js) ---------- */
+import { homeHtml } from '../src/app/home-ui.js';
+
+test('écran : bouton grisé avec sa raison lisible ; pas de carte de rendez-vous vide ; « + 3 rendez-vous »', () => {
+  const p = { code:'K7Q4P2', leader:'AAAA1111', invited:[], members:[{ account:'AAAA1111', name:'Zoe' }, { account:'BBBB2222', name:'Brakk' }] };
+  const html = homeHtml(homeView(solo({ party:p, launch:launchState({ account:me, party:p }) }), data()));
+  assert.match(html, /data-h="main"[^>]*disabled/);
+  assert.match(html, /Pas prêt : Brakk/);
+  assert.doesNotMatch(html, /class="card hRdv"/);
+  const v = homeView(solo({ giantReady:true }), data());
+  assert.match(homeHtml({ ...v, more:3 }), /\+ 3 rendez-vous/);
+});
+
+test('écran : les pseudos sont échappés ; déplié, tous les rendez-vous et « Replier »', () => {
+  const slots = [{ kind:'member', account:'X', name:'<b>Zoé</b>', me:true, leader:false, look:{}, auras:{} }, { kind:'free' }, { kind:'free' }];
+  assert.doesNotMatch(homeHtml(homeView(solo({ slots }), data())), /<b>Zoé<\/b>/);
+  const judgment = { sides:{ demon:{ open:true, done:false, openUntil: NOW + 3600e3 }, angel:{ open:true, done:false, openUntil: NOW + 7200e3 } } };
+  const all = homeView(solo({ giantReady:true, hcReady:true, judgment }), data(), true);
+  assert.equal(all.rdv.length, 4); assert.equal(all.more, 0);
+  assert.match(homeHtml(all, { expanded:true }), /Replier/);
+});

@@ -579,7 +579,11 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   Étape 1 faite (tout derrière `body.app`) : pas de titre de page, filtres sur une rangée qui défile, une ligne par joueur
   (classement, membres de guilde), boutons de 44 px, guide replié en pastille « 📜 5/7 », pseudo entier en session,
   quantités courtes « 2,2k » (`fmtQty(n, { short })`), Sac = Inventaire, Craft, Four, Concasseur, Recherche
-  (ancien : Inventaire, Four, Concasseur, Craft, Recherche). Étape 2 sur maquettes : Accueil → Perso (sets en menu,
+  (ancien : Inventaire, Four, Concasseur, Craft, Recherche). **Accueil** (03/11, fait ; spec
+  `2026-11-03-appli-accueil-design.md`, `src/app/home.js` + `home-ui.js`, `APP_HOME`) : premier écran de l'appli à la place du
+  Lobby (ancien : le Lobby du site) : bande du Carreau (Taverne, Chevalement, Fonderie) avec l'équipe, activité + Changer ▸
+  (le Lobby complet, retour « ← Accueil »), rendez-vous (Bloc géant, He's coming, tour, MI, four, invitation), gros bouton
+  = `lobby.launch()` (même fonction que `#launchBtn`). Étape 2 sur maquettes : Accueil (fait) → Perso (sets en menu,
   stuff en mannequin, un seul arbre de skills, fiche de sort en panneau du bas) → Historique compact → Guilde en
   onglets → Classement.
   **Visuels des stores** (01/11, Jules, branche `jules/visuels-stores`) : **icône = lampe de mine** (source unique

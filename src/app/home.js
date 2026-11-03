@@ -82,9 +82,10 @@ function sessionCard(snap, { now, sessionTimes }){
 }
 
 /* ---------- tout l'écran ---------- */
-export function homeView(snap, data){
+/* expanded : « + N rendez-vous » déplié, tous les rendez-vous sont montrés */
+export function homeView(snap, data, expanded = false){
   const offline = snap.offline || !snap.account;
-  const rdv = offline ? [] : rendezVous(snap, data);
+  const rdv = offline ? [] : rendezVous(snap, data), shown = expanded ? rdv.length : APP_HOME.rdvShown;
   return { team:sceneTeam(snap), activity:activityLine(snap), session:sessionCard(snap, data),
-           rdv:rdv.slice(0, APP_HOME.rdvShown), more:Math.max(0, rdv.length - APP_HOME.rdvShown), main:mainButton(snap) };
+           rdv:rdv.slice(0, shown), more:Math.max(0, rdv.length - shown), main:mainButton(snap) };
 }
