@@ -26,7 +26,7 @@ Modèle d'entrée :
   `docs/superpowers/specs/2026-11-03-appli-perso-sets-stuff-design.md`.
 - **À suivre** : en session, la note « ce que tu équipes comptera à la prochaine session » fait défiler un peu le Stuff ;
   prochains morceaux : Skills (un seul arbre) et Sorts (fiche du sort en bas).
-- **État** : 🧪 sur la branche `jules/appli-perso` (pas en ligne)
+- **État** : ✅ en ligne le 03/11
 
 ## 03/11/2026 — Geoffrey — Mises à jour automatiques de l'appli : diagnostic et appli 1.1.2
 - **Pour nous** : le relevé admin montre qu'aucun téléphone n'a jamais téléchargé une mise à jour (S22, Pixel 10, OnePlus) : l'appli échoue juste avant, sans rien dire. L'appli 1.1.2 signale maintenant l'erreur exacte au serveur (visible dans le relevé, « Retours en arrière ») et corrige les causes probables. Le serveur publie aussi la page du jeu de façon à ce qu'elle soit toujours téléchargée. À envoyer sur Google Play (test interne pour l'avoir tout de suite).

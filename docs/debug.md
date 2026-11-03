@@ -6860,7 +6860,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Relevé du 03/11, 13 h 47 – 13 h 49** : 3 téléphones. OnePlus 8 Pro (Android 11, WebView 90) annonce `a18b1fe1794d8ed5` = version publiée → **à jour** (les mises à jour à chaud marchent chez lui). Deux Samsung (SM-S901U Android 14, SM-S911U1 Android 16, WebView 156) annoncent `0723525a6c884f72` ; le serveur propose la mise à jour à chaque démarrage, **aucun fichier n'est téléchargé**. Lecture la plus probable : `decide()` répond 'bad' (la version est dans `bad` du téléphone : un essai de cette version a échoué avant 13 h 37, retour en arrière signalé mais perdu au redémarrage du serveur), donc ni écran ni téléchargement. Une version refusée n'est jamais réessayée : la prochaine version publiée sera retentée → regarder « Retours en arrière » (raison : erreur / délai / relance) pour savoir ce qui casse sur ces Samsung (WebView récente, Android 14+).
 - Page du relevé : « [object Object] fichiers » (le compteur était écrasé par `trace.files`) → `fileCount`.
 
-## 03/11/2026 — Jules — Appli mobile : Sets en une ligne, Stuff en mannequin (branche jules/appli-perso)
+## 03/11/2026 — Jules — Appli mobile : Sets en une ligne, Stuff en mannequin (✅ en ligne le 03/11)
 - **Quoi** : spec `docs/superpowers/specs/2026-11-03-appli-perso-sets-stuff-design.md`, plan `docs/superpowers/plans/2026-11-03-appli-perso-sets-stuff.md`.
   - `src/ui/sets.js` : `setsBarHtml(current)`, `setsSheetHtml(st, { current, locked, busy, msg, more })` (purs) ; dans
     l'appli (`body.app`), `setupSets` met la ligne dans les 4 hôtes et le menu dans `#setsSheet` (créé une fois, fond =
