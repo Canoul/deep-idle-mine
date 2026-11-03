@@ -38,4 +38,6 @@ test('fiche : glyphe posable hors session, pas pendant une session', () => {
   const full = { ...st, ranks:{ ...st.ranks, ore_rush:5 } }, inv = { slots:[{ item:g, qty:1 }] };
   assert.match(skillSheetHtml(full, 'ore_rush', { inv }), /data-gact="glyph_pose"/);
   assert.doesNotMatch(skillSheetHtml(full, 'ore_rush', { inv, session:true }), /data-gact=/);
+  assert.match(skillSheetHtml(full, 'ore_rush', { inv, session:true }), /après la session/, 'pas de « Clic : » sans bouton');
+  assert.doesNotMatch(skillSheetHtml(full, 'ore_rush', { inv }), /Clic/);
 });

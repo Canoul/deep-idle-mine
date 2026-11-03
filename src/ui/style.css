@@ -750,6 +750,7 @@ body.phone .chatMore{opacity:1;padding:0 calc(5*var(--u))}
 .skOrb{width:58px;height:58px;display:grid;place-items:center;color:var(--mut);
   border:calc(3*var(--u)) solid transparent;border-image:url(../../textures/ui/slot_n.png) 3 fill / calc(3*var(--u)) stretch}
 .skOrb .pi{width:calc(16*var(--u));height:calc(16*var(--u))}
+.skTxt{display:none}   /* effet du skill : appli seulement (src/app/app.css) */
 .skName{font-size:var(--fs-s);line-height:1.1;color:var(--mut);background:var(--panel);padding:0 calc(2*var(--u));position:relative}
 .skRank{position:absolute;top:40px;left:50%;transform:translateX(4px);font-size:var(--fs-s);font-weight:400;background:var(--void);box-shadow:0 0 0 var(--u) var(--line);padding:0 calc(2*var(--u))}
 .skPlus{position:absolute;top:-4px;left:50%;transform:translateX(14px);width:calc(10*var(--u));height:calc(10*var(--u));display:grid;place-items:center;font-style:normal;

@@ -16,6 +16,18 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 03/11/2026 — Jules — Appli mobile : les Skills, une classe à la fois
+- **Pour le joueur** : rien sur le site. Dans l'appli, l'onglet Skills montre **un seul arbre** : trois onglets en haut
+  (Mineur, Logisticien, Barbare, avec « ★ ta classe » et le niveau de spécialisation), et chaque skill avec **son nom et
+  son effet écrits à côté**. Entre deux étages, un petit maillon (orange quand le chemin est ouvert) au lieu d'un trait qui
+  traversait les cases. **Toucher un skill ouvre sa fiche** en bas de l'écran (ce qu'il fait maintenant et au rang
+  suivant, son glyphe) avec un gros bouton « APPRENDRE · 1 POINT » : on ne dépense plus un point par erreur. Tout l'arbre
+  tient sur un écran (avant : environ 4 écrans).
+- **Décisions** (Jules) : maquette A (onglets de classe) + la fiche ; les liens entre skills, jamais par-dessus une case.
+  Conception : `docs/superpowers/specs/2026-11-03-appli-skills-design.md`.
+- **À suivre** : Sorts (fiche du sort en bas) ; en session, la note du haut fait défiler un peu.
+- **État** : 🧪 sur la branche `jules/appli-skills` (pas en ligne)
+
 ## 03/11/2026 — Jules — Appli mobile : les Sets en une ligne, le Stuff en mannequin
 - **Pour le joueur** : rien sur le site. Dans l'appli, en haut de Stuff, Skills et Sorts, le gros bloc des sets devient une
   seule ligne **« Set : barb ▾ »** ; la toucher ouvre un menu qui monte du bas : « Équiper » pour chaque set, « ⋯ » pour
