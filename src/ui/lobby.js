@@ -562,12 +562,12 @@ export function setupLobby(h){
   $('lobbyPubBtn').onclick = () => h.onPub?.(pubContext());
   $('formingBtn').onclick = () => h.onForming?.();
   $('partyLockBtn').onclick = () => act(() => h.party.lock(!st.party?.locked));
-  function pick(mode){ st.screen = 'stage'; st.view = null; st.mode = mode; render(); scrollTo(0, 0); h.onMode?.(st.mode); }
-  function showJudgment(){ st.screen = 'stage'; st.view = 'jugement'; render(); scrollTo(0, 0); h.onJudgment?.(); }
+  function pick(mode){ st.screen = 'stage'; st.view = null; st.mode = mode; render(); scrollTo(0, 0); h.onMode?.(st.mode); h.onActivity?.(); }
+  function showJudgment(){ st.screen = 'stage'; st.view = 'jugement'; render(); scrollTo(0, 0); h.onJudgment?.(); h.onActivity?.(); }
   /* retour : d'une tour au Jugement, sinon au menu */
   $('lobbyBack').onclick = () => {
     if(MINE_MODES.find(m => m.id === st.mode)?.tower && st.view !== 'jugement') return showJudgment();
-    st.screen = 'menu'; st.view = null; render(); scrollTo(0, 0);
+    st.screen = 'menu'; st.view = null; render(); scrollTo(0, 0); h.onActivity?.();
   };
 
   /* carte des instances : la liste (les pas prêtes grisées) et les clés du joueur pour l'instance choisie */
@@ -783,7 +783,7 @@ export function setupLobby(h){
     },
     launch,
     /* l'Accueil passe la main au Lobby : le menu des activités, ou l'invitation (dans l'activité, avec l'équipe) */
-    openMenu(){ st.screen = 'menu'; st.view = null; render(); scrollTo(0, 0); },
+    openMenu(){ st.screen = 'menu'; st.view = null; render(); scrollTo(0, 0); h.onActivity?.(); },
     openInvite(){ if(st.screen === 'menu') pick(st.mode); if(!st.inviteOpen) $('inviteBtn').click(); },
     update(patch){
       const { lfg, ...rest } = patch;
@@ -797,8 +797,10 @@ export function setupLobby(h){
     /* afficher les jauges du Jugement (ancien onglet, lien #jugement) */
     showJudgment,
     /* retour au menu en cliquant sur l'onglet Lobby */
-    showMenu(){ st.screen = 'menu'; st.view = null; render(); scrollTo(0, 0); },
+    showMenu(){ st.screen = 'menu'; st.view = null; render(); scrollTo(0, 0); h.onActivity?.(); },
     /* choisir un type de mine (ex. la tour ouverte, depuis le Jugement) s'il est proposé et pas déjà fait */
+    /* activité ouverte (03/11/2026, sets par activité) : son mode, 'tower_angel' pour le Jugement, null sur le menu */
+    activity: () => st.screen !== 'stage' ? null : st.view === 'jugement' ? 'tower_angel' : st.mode,
     pickMode(mode){ if(mineModes(st.mode, !!st.session, st.judgment, !!st.info?.dev, 1, st.myLevel ?? null).some(m => m.id === mode && !m.disabled)) pick(mode); },
     /* recherche de groupe depuis le Carreau (30/10, Jules) : l'état comme si la mine classique était choisie (lfgState),
        le nombre de joueurs en recherche et le début de la sienne */

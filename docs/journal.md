@@ -16,6 +16,12 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 03/11/2026 — Geoffrey — Un set par activité
+- **Pour le joueur** : dans le Lobby, quand une activité est ouverte, la carte des sets propose « Set défini pour … ».
+  Le set choisi est équipé tout seul à chaque lancement de cette activité (ou à l'entrée au Bloc géant, à He's coming,
+  à l'ouverture de la Mine instantanée). Les instances partagent un set, les deux tours aussi ; en groupe, chacun le sien.
+- **État** : 🧪 sur la branche `geoffrey/set-par-activite` (pas en ligne)
+
 ## 03/11/2026 — Geoffrey — Niveau requis : Mine instantanée 3, Bloc géant et He's coming 10
 - **Pour le joueur** : en dessous du niveau, l'activité est **scellée** dans le Lobby (cadenas, grisée, « niveau 10
   requis ») et le serveur refuse l'entrée ou l'inscription. Tout le reste est ouvert dès le niveau 1.

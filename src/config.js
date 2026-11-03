@@ -677,7 +677,15 @@ export const SKILLS = {
 /* Sets (onglets Stuff, Skills et Sorts, 24/10/2026, Geoffrey) : un set enregistre le stuff porté, les skills et les
    sorts ; « Équiper » remet tout d'un coup (hors session). Pas de limite voulue pour le joueur : max est un garde-fou
    (taille de la sauvegarde). nameMax : longueur d'un nom. Valeurs provisoires. */
-export const SETS = { max:20, nameMax:24, opMemory:50 };
+/* activities (03/11/2026, Geoffrey : « devoir changer de set à chaque mode c'est chiant ») : un set peut être associé à
+   chaque activité (ligne « Set défini pour … » de la carte des sets du Lobby) ; il est équipé tout seul quand on lance ou
+   qu'on entre dans l'activité (src/meta/sets.js setActivity, server/game/service.js autoEquip). */
+export const SETS = { max:20, nameMax:24, opMemory:50,
+  activities: [
+    { id:'mine', label:'la Mine' }, { id:'prison', label:'la Prison' }, { id:'mi', label:'la Mine instantanée' },
+    { id:'giant', label:'le Bloc géant' }, { id:'hescoming', label:'He\'s coming' }, { id:'instances', label:'les Instances' },
+    { id:'towers', label:'les tours du Jugement' },
+  ] };
 
 export const SPELLS = {
   /* par sort : icon (emoji, wiki), px (icône pixel de src/ui/pxicons.js : onglet Sorts et barre en session), short (une

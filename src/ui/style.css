@@ -1186,6 +1186,9 @@ button.danger{color:var(--bad)}
 
 /* sets : ligne « Set équipé » et set équipé marqué (29/10/2026) */
 .setCur{margin:0 0 calc(2*var(--u))}
+/* set par activité (03/11/2026) : « Set défini pour … : [▾] » en haut de la carte des sets du Lobby */
+.setFor{display:flex;flex-wrap:wrap;align-items:center;gap:var(--u) calc(2*var(--u));margin:0 0 calc(3*var(--u));padding:calc(2*var(--u));background:var(--chip);color:var(--acc-lt)}
+.setFor select{flex:1 1 calc(60*var(--u));min-width:0;font-size:16px}
 .setRow.on b{color:var(--ok)}
 /* onglet Stuff (31/10/2026, Geoffrey) : les sets en bandeau au-dessus, la largeur va aux noms des pièces */
 @media (min-width:701px){

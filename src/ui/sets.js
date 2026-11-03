@@ -3,7 +3,8 @@
    « + Nouveau set » enregistre l'équipement actuel. Pendant une session : tout reste permis
    (28/10/2026) ; ce qu'on équipe compte pour la prochaine session (le serveur vérifie tout, onOp). */
 import { ask, askText } from './dialog.js';
-import { equippedSet } from '../meta/sets.js';
+import { equippedSet, setActivity } from '../meta/sets.js';
+import { SETS } from '../config.js';
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const HOSTS = ['setsStuff', 'setsSkills', 'setsSpells', 'setsLobby'];
 
@@ -21,6 +22,18 @@ export function setsHtml({ list = [], max = 20 }, { locked = false, busy = false
     (list.length < max ? `<button class="setNew" data-act="create"${off}>+ Nouveau set</button>` : '')+
     (locked ? '<p class="mut small">Session en cours : un set équipé maintenant compte dès la prochaine session.</p>' : '')+
     (msg ? `<p class="small err">${esc(msg)}</p>` : '');
+}
+
+/* Set par activité (03/11/2026, Geoffrey) : « Set défini pour le Bloc géant : [aucun ▾] » en haut de la carte des sets du
+   Lobby, quand une activité est ouverte (mode : son mode de lancement). Il est équipé tout seul au lancement ou à l'entrée
+   (serveur). byActivity : { activité: id du set } */
+export function activityLineHtml({ list = [], byActivity = {} }, mode, { busy = false } = {}){
+  const a = setActivity(mode), def = SETS.activities.find(x => x.id === a);
+  if(!def) return '';
+  const cur = byActivity?.[a] ?? null;
+  return `<p class="setFor small"><span>Set défini pour ${esc(def.label)} :</span> <select data-act="assign" data-activity="${a}"${busy ? ' disabled' : ''} title="Équipé tout seul quand tu lances (ou entres dans) cette activité">`+
+    `<option value=""${cur == null ? ' selected' : ''}>aucun</option>`+
+    list.map(s => `<option value="${s.id}"${s.id === cur ? ' selected' : ''}>${esc(s.name)}</option>`).join('')+`</select></p>`;
 }
 
 /* appli (03/11/2026, spec docs/superpowers/specs/2026-11-03-appli-perso-sets-stuff-design.md) : une ligne « Set : x ▾ »
@@ -52,7 +65,7 @@ export function equippedText(name, missing = 0, inSession = false){
    onLoadout(réponse) : l'équipement a peut-être changé ; inSession() : une session est en cours ;
    current() : l'équipement actuel { worn, skills, spells } (pour le set équipé ; refresh() quand il change) ;
    onDone(texte) : la pop-up de confirmation */
-export function setupSets({ onOp, onLoadout = () => {}, inSession = () => false, current = () => null, onDone = () => {} }){
+export function setupSets({ onOp, onLoadout = () => {}, inSession = () => false, current = () => null, onDone = () => {}, activity = () => null }){
   let st = { list:[], max:20 }, busy = false, msg = '', sheet = false, more = null;
   const $ = id => document.getElementById(id);
   const app = () => document.body.classList.contains('app');
@@ -66,7 +79,8 @@ export function setupSets({ onOp, onLoadout = () => {}, inSession = () => false,
   function render(){
     const c = current(), cur = c ? equippedSet(st.list, c.worn, c.skills, c.spells) : null;
     const html = app() ? setsBarHtml(cur) : setsHtml(st, { locked:inSession(), busy, msg, current:cur });
-    for(const h of HOSTS){ const el = $(h); if(el && el._html !== html){ el.innerHTML = html; el._html = html; } }
+    const line = st.list.length ? activityLineHtml(st, activity(), { busy }) : '';   // Lobby seulement (03/11)
+    for(const h of HOSTS){ const el = $(h), x = h === 'setsLobby' ? line + html : html; if(el && el._html !== x && !el.contains(document.activeElement?.closest?.('select'))){ el.innerHTML = x; el._html = x; } }
     if(!app()) return;
     const el = sheetEl(), box = el.firstChild, sh = setsSheetHtml(st, { current:cur, locked:inSession(), busy, msg, more });
     el.hidden = !sheet;
@@ -95,6 +109,12 @@ export function setupSets({ onOp, onLoadout = () => {}, inSession = () => false,
     else if(act === 'delete'){ if(await ask(`Supprimer « ${set.name} » ?`, { ok:'Supprimer', danger:true })) send({ action:'delete', id }); }
   }
   for(const h of HOSTS) if($(h)) $(h).onclick = onClick;
+  /* set par activité : le choix part au serveur tout de suite */
+  const onPick = e => { const s = e.target.closest('select[data-act="assign"]'); if(!s) return;
+    const id = s.value === '' ? null : +s.value, name = st.list.find(x => x.id === id)?.name;
+    s.blur();
+    send({ action:'assign', activity:s.dataset.activity, id }, () => id == null ? 'Plus de set associé à cette activité' : `« ${name} » sera équipé à chaque lancement de cette activité`); };
+  if($('setsLobby')) $('setsLobby').onchange = onPick;
 
   render();
   /* setsOf(uid) : noms des sets qui retiennent cette pièce (elle ne se recycle pas) */
