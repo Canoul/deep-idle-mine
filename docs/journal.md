@@ -26,7 +26,7 @@ Modèle d'entrée :
 - **Décisions** (Jules) : maquette A (onglets de classe) + la fiche ; les liens entre skills, jamais par-dessus une case.
   Conception : `docs/superpowers/specs/2026-11-03-appli-skills-design.md`.
 - **À suivre** : Sorts (fiche du sort en bas) ; en session, la note du haut fait défiler un peu.
-- **État** : 🧪 sur la branche `jules/appli-skills` (pas en ligne)
+- **État** : ✅ en ligne le 03/11
 
 ## 03/11/2026 — Jules — Appli mobile : les Sets en une ligne, le Stuff en mannequin
 - **Pour le joueur** : rien sur le site. Dans l'appli, en haut de Stuff, Skills et Sorts, le gros bloc des sets devient une
