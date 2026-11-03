@@ -51,7 +51,7 @@ export function appUpdateRoutes(update, { log = console.log, now = Date.now, per
     'GET /api/app/update/trace': async ctx => {
       if(!isAdmin(ctx)){ const e = new Error('Route inconnue.'); e.status = 404; e.code = 'not_found'; throw e; }
       const { version, minNative } = update.manifest;
-      return { version, minNative, files: Object.keys(update.manifest.files).length, ...(update.trace ?? {}) };
+      return { version, minNative, fileCount: Object.keys(update.manifest.files).length, ...(update.trace ?? {}) };
     },
   };
 }

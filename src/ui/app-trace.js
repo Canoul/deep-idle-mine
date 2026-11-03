@@ -14,7 +14,7 @@ export function renderAppTrace(t){
 <style>body{font:14px/1.4 system-ui,sans-serif;margin:16px;background:#191310;color:#eee}table{border-collapse:collapse;width:100%;margin:8px 0 20px}
 td,th{border:1px solid #444;padding:4px 6px;text-align:left;vertical-align:top}th{background:#2a201a}code{color:#ffd27a}.ua{font-size:11px;color:#aaa}</style></head><body>
 <h2>Mises à jour de l'appli</h2>
-<p>Version publiée par le serveur : <code>${esc(t.version)}</code> (${t.files ?? '?'} fichiers) · coque minimale ${esc(t.minNative)} · relevé depuis le ${t.since ? when(t.since) : '—'} (remis à zéro à chaque redémarrage du serveur)</p>
+<p>Version publiée par le serveur : <code>${esc(t.version)}</code> (${t.fileCount ?? '?'} fichiers) · coque minimale ${esc(t.minNative)} · relevé depuis le ${t.since ? when(t.since) : '—'} (remis à zéro à chaque redémarrage du serveur)</p>
 <h3>Demandes de version (les plus récentes d'abord)</h3>
 <p>« Version de l'appli » = celle que le téléphone annonce. Si elle est égale à la version publiée, il est à jour.</p>
 <table><tr><th>Quand</th><th>Version de l'appli</th><th>Réponse</th><th>Origine</th><th>Appareil</th></tr>${checks}</table>
