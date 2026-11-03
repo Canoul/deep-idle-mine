@@ -162,13 +162,10 @@ function ulti(G, m, x){
 }
 
 /* sorts lancés en frappant : Inspiration et Cri de guerre (tous les présents), Cleave et Dynamite (dmg × ses dégâts si Lucifer
-   est à leur portée), Bonbonne de zipette (l'allié proche à qui il manque le plus d'oxygène). Sans effet ici : Illumination et
+   est à leur portée), Bonbonne de zipette (l'allié proche à qui il manque le plus d'oxygène). Sans effet ici : Cleave (une seule cible, 03/11), Illumination et
    Fast learner (pas de bloc), Hand of Justice (Lucifer n'est pas étourdi et ne tacle pas). */
 function castSpells(G, m){
-  if(ready(m, 'cleave', G) && bossDist(G, m) <= SPELL.cleave.radius){
-    m.spellCd.cleave = G.t + SPELL.cleave.cd;
-    score(G, m, hitDamage(G, m) * SPELL.cleave.dmg);
-  }
+  /* Cleave : sans effet depuis le 03/11 (il ne touche que d'AUTRES cibles que la sienne ; Lucifer est seul). Ancien : 50 % de ses dégâts. */
   if(ready(m, 'dynamite', G) && bossDist(G, m) <= SPELL.dynamite.reach + SPELL.dynamite.radius){
     m.spellCd.dynamite = G.t + SPELL.dynamite.cd;
     score(G, m, hitDamage(G, m) * SPELL.dynamite.dmg);

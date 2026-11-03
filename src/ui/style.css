@@ -312,6 +312,12 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .actList{display:flex;flex-direction:column;gap:calc(3*var(--u))}
 .actBtn{width:100%;justify-content:flex-start;gap:calc(6*var(--u));min-height:calc(30*var(--u));padding:calc(3*var(--u)) calc(8*var(--u));text-align:left}
 .actBtn.ready{outline:calc(2*var(--u)) solid var(--gold, #ffd23f);outline-offset:calc(-2*var(--u))}   /* entrée disponible (Bloc géant, He's coming) */
+/* activité scellée (03/11/2026, Geoffrey) : niveau requis pas atteint ; chaînes en travers, cadenas doré à la place de l'icône */
+.actBtn.sealed{opacity:1;filter:grayscale(.85) brightness(.75);
+  background-image:repeating-linear-gradient(135deg,rgba(0,0,0,0) 0 calc(10*var(--u)),rgba(201,162,39,.22) calc(10*var(--u)) calc(12*var(--u)))}
+.actBtn.sealed .actIcon{filter:none;color:#ffd23f}
+.actBtn.sealed .actIcon .pi{width:calc(14*var(--u));height:calc(14*var(--u))}
+.actBtn.sealed small{color:#e0c060}
 .actIcon{flex:none;width:calc(16*var(--u));text-align:center;font-size:var(--fs-xl)}
 .actText{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.1}
 .actText b{font:400 var(--fs-xl)/1.1 var(--f-title);color:#ffe6c4}
@@ -1180,6 +1186,13 @@ button.danger{color:var(--bad)}
 
 /* sets : ligne « Set équipé » et set équipé marqué (29/10/2026) */
 .setCur{margin:0 0 calc(2*var(--u))}
+/* set par activité (03/11/2026) : « Set défini pour … : [▾] » en haut de la carte des sets du Lobby */
+.setFor{display:flex;flex-wrap:wrap;align-items:center;gap:var(--u) calc(2*var(--u));margin:0 0 calc(3*var(--u));padding:calc(2*var(--u));background:var(--chip);color:var(--acc-lt)}
+.setFor .setPick{position:relative;flex:1 1 calc(60*var(--u));min-width:0;display:flex}
+/* un vrai menu déroulant (03/11) : on voit la flèche, ça ne ressemble plus à un champ où l'on tape */
+.setFor select{flex:1;min-width:0;font-size:16px;cursor:pointer;-webkit-appearance:none;appearance:none;padding-right:calc(14*var(--u));
+  border-image-source:url(../../textures/ui/slot_sel.png);color:var(--acc-lt)}
+.setFor .setPick::after{content:'▾';position:absolute;right:calc(4*var(--u));top:50%;transform:translateY(-50%);pointer-events:none;color:var(--acc-lt)}
 .setRow.on b{color:var(--ok)}
 /* onglet Stuff (31/10/2026, Geoffrey) : les sets en bandeau au-dessus, la largeur va aux noms des pièces */
 @media (min-width:701px){

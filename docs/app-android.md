@@ -44,6 +44,10 @@ L'APK parle au **vrai serveur** : il ne marche que si le serveur a déjà la par
 1. Monter la version (ci-dessous) et commiter.
 2. **Run workflow** → `aab`. Sans les secrets, la compilation s'arrête avec « Secrets manquants ».
 3. Télécharger **deep-mine-idle-aab**, dézipper, envoyer `app-release.aab` dans la Play Console.
+4. **Quand la version est en ligne sur Google Play** (pas seulement envoyée en revue) : passer `APP_UPDATE.latest.android`
+   (src/config.js) à ce numéro et mettre en ligne. Les applis plus anciennes affichent alors au démarrage « Nouvelle version
+   de l'appli » (Mettre à jour → la fiche Google Play ; Plus tard, reproposé le lendemain). Sans ça, rien ne prévient les
+   joueurs : Google Play met les applis à jour tout seul, mais quand il veut (souvent la nuit, en Wi-Fi).
 
 ## Monter la version
 

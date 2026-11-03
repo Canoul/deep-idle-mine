@@ -21,7 +21,8 @@ export function lootTableFor(key){
 }
 
 function rowHtml(r){
-  if(r.q) return `<div class="ltRow" title="${esc(r.label)}"><span style="color:${esc(r.color)}">R${r.q}</span><b>${pctText(r.chance)}</b></div>`;
+  /* qualité d'une rune ou d'un coffre : son nom (« Excellent »), plus « R4 » (03/11/2026, Geoffrey : le nom, pas « Rx ») */
+  if(r.q) return `<div class="ltRow" title="R${r.q}"><span style="color:${esc(r.color)}">${esc(r.label)}</span><b>${pctText(r.chance)}</b></div>`;
   const val = r.chance != null ? pctText(r.chance) : qty(r);
   return `<div class="ltRow">${ico(r.item)}<span>${rname(r.item)}${r.note ? ` <small>(${esc(r.note)})</small>` : ''}</span><b>${val}</b></div>`;
 }

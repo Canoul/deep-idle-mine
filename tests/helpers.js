@@ -2,13 +2,16 @@
    Légende : ' ' vide · '#' pierre · 'h' pierre dure · 'd' terre · 'c' charbon · 'T' coffre au trésor · 'H' échelle (case vide) · '=' passerelle · '@' mineur (case vide)
    La ligne 0 du dessin est la surface. Les lignes plus courtes que W sont complétées en pierre.
    Sous la dernière ligne : barrière (area suivante verrouillée). */
-import { W, IDS, BRIDGE, TREASURE_BLOCK, ENERGY, TENACITY } from '../src/config.js';
+import { W, IDS, BRIDGE, TREASURE_BLOCK, ENERGY, TENACITY, MINE_MODES } from '../src/config.js';
 /* Énergie : les tests qui lancent des mines (service de jeu, groupes, chat…) partent d'une jauge pleine. Le jeu, lui,
    démarre à 0 depuis le 30/10/2026 (ENERGY.start) : tests/energy.test.js, qui n'importe pas ce fichier, vérifie ce départ. */
 ENERGY.start = 100;
 /* Ténacité : les tests des mécaniques de mobs (vol, étourdissement, recul…) écrivent la ténacité EFFECTIVE (100 % =
    tout est ignoré) ; on rend la courbe linéaire ici. La courbe à rendement décroissant du jeu (02/11/2026, TENACITY)
    est vérifiée par tests/tenacity.test.js, qui n'importe pas ce fichier. */
+/* Niveau requis des activités (03/11/2026, MINE_MODES[].minLevel) : les comptes des tests sont niveau 1 ; ici rien n'est
+   scellé. tests/level-gate.test.js, qui n'importe pas ce fichier, vérifie les vrais niveaux (MI 3, Bloc géant et He's coming 10). */
+for(const m of MINE_MODES) delete m.minLevel;
 TENACITY.k = 1e12; TENACITY.max = 100; TENACITY.pen = {}; TENACITY.tired = 0;   // fatigue : tests/tenacity.test.js
    // pénétration : vérifiée dans tests/tenacity.test.js
 import { newSession } from '../src/sim/session.js';

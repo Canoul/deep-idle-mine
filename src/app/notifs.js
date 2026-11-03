@@ -8,6 +8,7 @@ export const NOTIF_KINDS = [
   { id:'session', label:'Session terminée' },
   { id:'mi',      label:'Mine instantanée dans 5 min' },
   { id:'giant',   label:'Bloc géant accessible' },
+  { id:'hescoming', label:'He\'s coming accessible' },   // 03/11/2026 (Geoffrey)
   { id:'four',    label:'Four terminé' },
 ];
 
@@ -15,6 +16,7 @@ const TEXTS = {
   session: { id:1, title:'Session terminée', body:'Ton mineur est remonté : viens voir le butin.', tab:'session' },
   four:    { id:2, title:'Four terminé', body:'Tes lingots sont prêts.', tab:'four' },
   giant:   { id:3, title:'Bloc géant accessible', body:'Tu peux y retourner.', tab:'lobby' },
+  hescoming: { id:4, title:'He\'s coming accessible', body:'Lucifer t\'attend : tu peux y retourner.', tab:'lobby' },
   mi:      { title:'Mine instantanée dans 5 min', body:'Inscris-toi avant l\'ouverture.', tab:'lobby' },
 };
 /* lié à l'heure du créneau, pas à son rang : quand un créneau passe, les suivants gardent leur identifiant */
@@ -38,14 +40,15 @@ function miNotifs(now, offset, hourOf){
   return out;
 }
 
-/* now, sessionEnd, giantNext : heure du serveur ; offset : serveur − téléphone ; hourOf(at) : heure locale du téléphone */
-export function planNotifs({ now, offset, sessionEnd, furnaces, giantNext, prefs, hourOf }){
+/* now, sessionEnd, giantNext, hcNext (He's coming) : heure du serveur ; offset : serveur − téléphone ; hourOf(at) : heure locale du téléphone */
+export function planNotifs({ now, offset, sessionEnd, furnaces, giantNext, hcNext = null, prefs, hourOf }){
   if(!prefs.all) return [];
   const one = (kind, end) => prefs[kind] && end > now ? [{ ...TEXTS[kind], kind, at:end - offset }] : [];
   return [
     ...one('session', sessionEnd),
     ...one('four', furnaceEnd(furnaces, now)),
     ...one('giant', giantNext),
+    ...one('hescoming', hcNext),
     ...(prefs.mi ? miNotifs(now, offset, hourOf) : []),
   ];
 }

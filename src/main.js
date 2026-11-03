@@ -274,12 +274,14 @@ const spells = setupSpells({
 });
 
 /* sets (Stuff, Skills, Sorts) : équiper change l'inventaire, le stuff, les skills et les sorts d'un coup */
+let lobbyActivity = () => null;   // remplacé quand le lobby existe (plus bas)
 setsUI = setupSets({
   onOp: op => gameApi.sets({ ...op, opId: newOpId() }),
   onLoadout: r => { setInventory(r.inventory); stuff.set(r.stuff); skills.set(r.skills); spells.set(r.spells); },
   inSession: () => !!rec,
   current: () => ui.skills ? { worn: stuff.worn(), skills: ui.skills, spells: spells.slots() } : null,
   onDone: text => notify.flash(text),
+  activity: () => lobbyActivity(),   // set par activité (03/11) : l'activité ouverte dans le Lobby
 });
 
 applyRarityColors();   // couleurs des raretés (config)
@@ -317,7 +319,7 @@ nav = setupNav($('nav'), $('views'), id => {
 /* appli mobile : barre des familles ; shown : l'onglet Session a-t-il quelque chose à montrer (partie, prison, bilan) ? */
 if(appBoot.app) import('./app/main.js').then(async m => { appLayer = m.startApp({ doc:document, win:window, nav,
   shown: () => !!rec || inRoom() || prisonShown() || !$('end').hidden,
-  notifData: () => ({ now:serverNow(), offset:clockOffset, sessionEnd:rec?.finishAt ?? null, furnaces:furnace.state().list, giantNext:giantUI?.nextEntry() ?? null, account:acct.account?.id ?? null }),
+  notifData: () => ({ now:serverNow(), offset:clockOffset, sessionEnd:rec?.finishAt ?? null, furnaces:furnace.state().list, giantNext:giantUI?.nextEntry() ?? null, hcNext:hcUI?.nextEntry() ?? null, account:acct.account?.id ?? null }),
   /* Accueil de l'appli (src/app/home-ui.js, 03/11/2026) : le Lobby (lu à chaque fois : il est créé plus bas) et l'heure du serveur */
   home: { lobby: () => lobby, data: () => ({ now:serverNow(), sessionTimes: rec?.finishAt ? { startedAt:rec.startedAt, finishAt:rec.finishAt } : null, furnaces:furnace.state().list }) } });  (await appBoot.native)?.attach(appLayer); }).catch(e => { console.warn(e); dropApp(document); });
 
@@ -352,6 +354,7 @@ const accountUI = createAccountUI($('account'), acct, {
 
 /* ---------- lobby ---------- */
 const lobby = setupLobby({
+  onActivity: () => setsUI?.refresh(),   // set par activité : la ligne du Lobby suit l'activité ouverte (03/11)
   party: partyApi,
   /* don à un shrine (28/10) : l'inventaire revient du serveur */
   shrineGive: async (shrine, item, qty) => { const r = await partyApi.shrine({ shrine, item, qty, opId: newOpId() }); if(r.inventory) setInventory(r.inventory); return r; },
@@ -895,7 +898,7 @@ let progress = null;
 function setProgress(p){
   const up = levelUpText(progress, p); progress = p ?? null;
   renderNavLevel($('navLevel'), progress); renderLevel($('stuffLevelBody'), progress);   // bandeau du haut et onglet Stuff
-  skills.setSpec(progress?.spec); lobby.update({ mySpec: progress?.spec ?? null });    // niveaux de spécialisation
+  skills.setSpec(progress?.spec); lobby.update({ mySpec: progress?.spec ?? null, myLevel: progress?.level ?? null });    // niveaux de spécialisation ; niveau du mineur : activités scellées (03/11)
   spells.setContext({ spec: Object.fromEntries(Object.entries(progress?.spec ?? {}).map(([t, s]) => [t, s.level])) });
   return up;
 }
@@ -919,6 +922,7 @@ async function refresh(waited){
   if(st.ended && !st.session) showResult(st);
 }
 
+lobbyActivity = () => lobby.activity();   // set par activité (03/11)
 /* ---------- démarrage ---------- */
 await appBoot.update;                      // appli : dernière version du jeu d'abord (la page peut se recharger dedans)
 await appBoot.native;

@@ -97,3 +97,14 @@ export const keepDirs = (state, also = []) => new Set([state.good?.v, state.tryi
 
 /* fiche du store (vide : pas encore de fiche, le message suffit) */
 export const storeUrl = platform => APP_UPDATE.store[platform] ?? '';
+
+/* nouvelle appli sur le store (03/11/2026, APP_UPDATE.latest) : la version à proposer, ou null. seen : { v, at } (dernière
+   fenêtre montrée) ; une même version n'est reproposée qu'après every secondes. Sans fiche du store ni version connue : rien. */
+export function storeNudge({ native, platform, seen = null, now = Date.now(), latest = APP_UPDATE.latest, every = APP_UPDATE.nudgeEvery, url = storeUrl(platform) }){
+  const want = latest?.[platform];
+  if(!url || !okVer(want) || !okVer(native) || cmpVersion(native, want) >= 0) return null;
+  if(seen?.v === want && Number.isFinite(seen.at) && now - seen.at < every * 1000) return null;
+  return want;
+}
+const okVer = v => typeof v === 'string' && /^\d+(\.\d+)*$/.test(v);
+

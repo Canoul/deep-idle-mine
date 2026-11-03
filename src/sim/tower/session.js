@@ -452,7 +452,7 @@ function strike(G, m, o, status){
   m.face = Math.sign(o.x - m.x) || m.face;
   combatSpells(G, m, o);
   const now = nowOf(G, m);   // heure exacte dans le tick (28/10/2026 : sinon paliers de 0,1 s)
-  if(now + 1e-9 >= (m.atkReady || 0)){ hitMob(G, m, o); m.atkReady = now + hitT(G, m) / dk(G, m); }
+  if(now + 1e-9 >= (m.atkReady || 0)){ hitMob(G, m, o); cleaveHit(G, m, o); m.atkReady = now + hitT(G, m) / dk(G, m); }
   return act(m, 'attack', m.atkReady - now, { mob: o.id, done: true, aim: { x: o.x, y: o.y } }, status);
 }
 const torchByOther = (G, m) => G.miners.some(o => o !== m && o.action?.type === 'torch' && Math.abs(o.x - m.x) + Math.abs(o.y - m.y) <= 2);
@@ -702,6 +702,7 @@ function hitBoss(G, m){
   if(m.skill.taunt) G.boss.taunt = m.id;   // provocation du barbare : il le focus (25/10)
   m.stats.hits++;
   damageBoss(G, m, strikeDmg(G, m), true);
+  cleaveHit(G, m, G.boss);
 }
 /* dégâts au boss (coup, ou sort : 28/10) ; push : un coup de son focus le repousse */
 function damageBoss(G, m, dmg, push = false){
@@ -715,6 +716,19 @@ function damageBoss(G, m, dmg, push = false){
     if(G.stele && !G.phase2) return startPhase2(G);   // stèle : l'autre boss arrive (30/10)
     endTower(G, true);
   }
+}
+/* Cleave (03/11/2026, Geoffrey) : après un coup normal sur target, si le sort est prêt : jusqu'à maxTargets − 1 autres
+   (mobs à radius cases, et le boss s'il est à son contact), les plus proches, à dmg × ses dégâts. Sinon il reste prêt. */
+function cleaveHit(G, m, target){
+  if(!ready(G, m, 'cleave') || G.over) return;
+  const S = SPELL.cleave, d2 = o => Math.min((o.x - m.x) ** 2 + (o.y - m.y) ** 2, (o.x - m.x) ** 2 + (o.y - 1 - m.y) ** 2);
+  const ahead = x => (x - m.x) * (m.face || 1) > 0;   // seulement devant lui (03/11)
+  const foes = liveMobs(G).filter(o => o !== target && ahead(o.x) && mobNear(o, m.x, m.y, S.radius)).sort((a, b) => d2(a) - d2(b));
+  const boss = target !== G.boss && contactSide(G, m) && ahead(bossMid(G) - 0.5) && !G.boss.air && G.boss.hp > 0;
+  const list = [...(boss ? [G.boss] : []), ...foes].slice(0, S.maxTargets - 1);
+  if(!list.length) return;
+  cast(G, m, 'cleave');
+  for(const o of list) o === G.boss ? damageBoss(G, m, hitDmg(G, m) * S.dmg) : damageMob(G, m, o, hitDmg(G, m) * S.dmg);
 }
 /* dégâts d'un sort à un mob (sans recul) */
 function damageMob(G, m, o, dmg){
@@ -777,15 +791,7 @@ function combatSpells(G, m, target){
     cast(G, m, 'war_cry', G.warcry.until);
     log(G, `📯 ${m.name} : Cri de guerre`);
   }
-  if(ready(G, m, 'cleave')){
-    const S = SPELL.cleave, foes = liveMobs(G).filter(o => o !== target && mobNear(o, m.x, m.y, S.radius));
-    const boss = target === G.boss || (contactSide(G, m) && !G.boss.air && G.boss.hp > 0);
-    if(foes.length || (boss && target !== G.boss)){
-      cast(G, m, 'cleave');
-      for(const o of foes) damageMob(G, m, o, hitDmg(G, m) * S.dmg);
-      if(boss && target !== G.boss) damageBoss(G, m, hitDmg(G, m) * S.dmg);
-    }
-  }
+
   if(target === G.boss && ready(G, m, 'dynamite') && bossInBlast(G, m.x + m.face, m.y)) blast(G, m, m.x + m.face, m.y);
   /* sur un mob (29/10/2026, Geoffrey) : s'il y en a au moins fightFoes dans le rayon autour de lui (lui compris) */
   else if(target !== G.boss && ready(G, m, 'dynamite') && blastFoes(G, target.x, target.y).length >= SPELL.dynamite.fightFoes) blast(G, m, target.x, target.y);

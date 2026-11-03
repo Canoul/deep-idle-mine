@@ -677,7 +677,15 @@ export const SKILLS = {
 /* Sets (onglets Stuff, Skills et Sorts, 24/10/2026, Geoffrey) : un set enregistre le stuff porté, les skills et les
    sorts ; « Équiper » remet tout d'un coup (hors session). Pas de limite voulue pour le joueur : max est un garde-fou
    (taille de la sauvegarde). nameMax : longueur d'un nom. Valeurs provisoires. */
-export const SETS = { max:20, nameMax:24, opMemory:50 };
+/* activities (03/11/2026, Geoffrey : « devoir changer de set à chaque mode c'est chiant ») : un set peut être associé à
+   chaque activité (ligne « Set défini pour … » de la carte des sets du Lobby) ; il est équipé tout seul quand on lance ou
+   qu'on entre dans l'activité (src/meta/sets.js setActivity, server/game/service.js autoEquip). */
+export const SETS = { max:20, nameMax:24, opMemory:50,
+  activities: [
+    { id:'mine', label:'la Mine' }, { id:'prison', label:'la Prison' }, { id:'mi', label:'la Mine instantanée' },
+    { id:'giant', label:'le Bloc géant' }, { id:'hescoming', label:'He\'s coming' }, { id:'instances', label:'les Instances' },
+    { id:'towers', label:'les tours du Jugement' },
+  ] };
 
 export const SPELLS = {
   /* par sort : icon (emoji, wiki), px (icône pixel de src/ui/pxicons.js : onglet Sorts et barre en session), short (une
@@ -739,9 +747,13 @@ export const SPELLS = {
     /* 27/10/2026 (Geoffrey) : en combat, inflige dmg × ses dégâts (critique possible, tiré pour chaque mob) à chaque mob
        à radius cases ou moins (cercle) ; ni recul, ni dégâts de zone de Force brute. Un boss de donjon seulement s'il le
        combat déjà */
-    { id:'cleave', name:'Cleave', icon:'🪓', px:'sword', short:'Frappe tous les mobs autour de lui', unlock:{ scroll:'Parchemin « Cleave »' }, cd:10,
-      radius:2, dmg:0.5,
-      desc:'En combat : inflige 50 % de ses dégâts à tous les mobs à 2 cases ou moins (coup critique possible)' },
+    /* 03/11/2026 (Geoffrey) : sa prochaine attaque normale est un Cleave : la cible prend le coup (100 %), et jusqu'à
+       maxTargets − 1 autres mobs DEVANT LUI (côté où il regarde) à radius cases ou moins, les plus proches, prennent dmg × ses
+       dégâts (critique possible).
+       Ne part que s'il y a au moins un autre mob (sinon il reste prêt). Ancien : 50 % à TOUS les mobs du rayon, en plus. */
+    { id:'cleave', name:'Cleave', icon:'🪓', px:'sword', short:'Sa prochaine attaque touche 4 mobs devant lui', unlock:{ scroll:'Parchemin « Cleave »' }, cd:10,
+      radius:2, dmg:0.5, maxTargets:4,
+      desc:'Sa prochaine attaque est un coup en arc de cercle devant lui : la cible prend 100 % de ses dégâts, et jusqu\'à 3 autres mobs devant lui, à 2 cases ou moins, prennent 50 % (coup critique possible)' },
     /* 27/10/2026 (Geoffrey) : étourdit stun s un mob à range cases ou moins (cercle) qui se bat : d'abord un mob qui
        tacle un allié, puis celui qui le tacle, puis celui qu'il frappe. Comme le Dash : il lâche son tacle et sa
        canalisation (occultiste) est coupée (choix de Claude). Jamais un mob déjà étourdi */
@@ -801,6 +813,7 @@ export const EFFECTS = {
   },
   /* durée (ms, temps de la page) de l'animation d'un sort sur le perso, et sa couleur (onde qui s'élargit + icône du sort) */
   castAnim: 900,
+  cleaveAnim: 260,   // coup en arc du Cleave (03/11/2026, Geoffrey) : ms pour que la lame balaie le demi-cercle devant le mineur
   castColor: { dash:'#d8f0ff', illumination:'#fff3a0', inspiration:'#6fc2ff', ulti_shen:'#b06bff', fast_learner:'#c9a2ff',
                dynamite:'#ff8c1a', zipette:'#8fd14f', war_cry:'#ff6a3b', cleave:'#e5534b', hand_of_justice:'#ffd23f' },
 };
@@ -1560,6 +1573,11 @@ export const APP_UPDATE = {
   nativePlugins:['@capacitor/app', '@capacitor/app-launcher', '@capacitor/filesystem', '@capacitor/keyboard', '@capacitor/local-notifications', '@capacitor/preferences'],
   checkTimeout:3, applyWithin:10, resumeAfter:300, applyWait:5, readyTimeout:60, keepBad:20, rollbacksPerHour:100,
   store:{ android:'https://play.google.com/store/apps/details?id=fr.deepmineidle.app', ios:'' },
+  /* nouvelle appli sur le store (03/11/2026, Geoffrey) : au démarrage, une coque plus ancienne que latest[plateforme] affiche
+     « Nouvelle version de l'appli » (Mettre à jour → la fiche du store ; Plus tard), au plus une fois toutes les nudgeEvery
+     secondes. Non bloquant (bloquant : minNative). ⚠️ Monter latest SEULEMENT quand la version est vraiment en ligne sur le
+     store (pas juste envoyée en revue), sinon la fiche n'a pas encore le bouton « Mettre à jour ». */
+  latest:{ android:'1.1.2', ios:'1.1.0' }, nudgeEvery:86400,
 };
 
 /* ---- Mine instantanée (MI, GAME_DESIGN §6 « Mine instantanée ») *(décisions du créateur, 21/10/2026 ; valeurs
@@ -1637,15 +1655,17 @@ export const PARTY = { codeLength:6, poll:2500, pollInSession:5000, formingPoll:
    avec « Lancer » : s'ouvre à heure fixe pour les inscrits, voir INSTANT_MINE). */
 export const MINE_MODES = [
   { id:'mine', label:'Mine',              icon:'⛏', ready:true  },
-  { id:'mi',   label:'Mine instantanée',  icon:'🌀', ready:true, scheduled:true },   // MI : inscription dans le lobby
+  /* minLevel (03/11/2026, Geoffrey) : niveau du mineur requis ; en dessous, l'activité est scellée (cadenas) et le serveur
+     refuse l'inscription ou l'entrée (src/shared/level-gate.js) */
+  { id:'mi',   label:'Mine instantanée',  icon:'🌀', ready:true, scheduled:true, minLevel:3 },   // MI : inscription dans le lobby
   /* Instances (27/10/2026, INSTANCE) : un groupe de 1 à 3, une clé chacun ; le lobby les montre sous un seul bouton
      « Instances » (src/ui/lobby.js) */
   { id:'instance_1', label:'Instance I', icon:'🗝', ready:true, instance:true },
   { id:'instance_2', label:'Instance II', icon:'🗝', ready:true, instance:true },   // Golbute (30/10/2026), même bouton « Instances »
   /* Bloc géant (26/10/2026) : on y entre seul depuis son panneau (GIANT), jamais par un lancement de groupe */
-  { id:'giant', label:'Bloc géant', icon:'🌈', ready:true, giant:true },
+  { id:'giant', label:'Bloc géant', icon:'🌈', ready:true, giant:true, minLevel:10 },
   /* He's coming (01/11/2026, HES_COMING) : comme le Bloc géant, sa propre carte et sa propre journée */
-  { id:'hescoming', label:'He\'s coming', icon:'😈', ready:true, giant:true },
+  { id:'hescoming', label:'He\'s coming', icon:'😈', ready:true, giant:true, minLevel:10 },
   /* Prison (29/10/2026, PRISON) : solo, sans fin ; lancée et arrêtée par ses propres routes (/api/game/prison/…) */
   { id:'prison', label:'Prison', icon:'⛓', ready:true, prison:true, solo:true },
   /* tours du Jugement : proposées seulement quand elles sont ouvertes (JUDGMENT, TOWER) */

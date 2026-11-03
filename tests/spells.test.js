@@ -2,7 +2,8 @@
    Ulti shen, Fast learner, Dynamite). GAME_DESIGN §3 « Sorts ». */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { SPELLS, STATS, IDS, BRIDGE } from '../src/config.js';
+import { SPELLS, STATS, IDS, BRIDGE, COMBAT } from '../src/config.js';
+const COMBAT_KNOCK = COMBAT.knock;
 import { createSpells, spellOp, learnScroll, sanitizeSpells, equippedSpells, sessionSpells, isUnlocked, publicSpells, unlockText } from '../src/meta/spells.js';
 import { createInventory, addItem, countOf } from '../src/meta/inventory.js';
 import { worldFrom } from './helpers.js';
@@ -374,24 +375,29 @@ test('Cri de guerre : la vitesse d\'attaque +5 % raccourcit l\'intervalle entre 
   assert.ok(b > a, `plus de coups avec le cri : ${a} → ${b}`);
 });
 
-test('Cleave : en combat, 50 % de ses dégâts à chaque mob à 2 cases (critique possible) ; recharge 10 s', () => {
+/* Cleave (03/11/2026, Geoffrey) : sa prochaine attaque normale ; la cible prend le coup, jusqu'à 3 autres mobs DEVANT lui à
+   2 cases prennent 50 % ; rien derrière ; pas de cast sans autre mob */
+test('Cleave (03/11) : le coup touche la cible et jusqu\'à 3 autres mobs devant lui (50 %) ; rien derrière ; recharge 10 s', async () => {
+  const { landHit } = await import('../src/sim/actions.js');
   const G = worldFrom(['', '#'.repeat(50), '#@          #', '#'.repeat(50)]), m = G.miners[0];
-  m.spells = ['cleave']; m.x = 5; m.y = 2; m.carac.crit = 0;
-  const near1 = { id:1, type:'gobelin', x:6, y:2, hp:1000, maxhp:1000, cd:1 };
-  const near2 = { id:2, type:'bestiole', x:3, y:2, hp:1000, maxhp:1000, cd:1 };
-  const far = { id:3, type:'bestiole', x:8, y:2, hp:1000, maxhp:1000, cd:1 };
-  const boss = { id:4, type:'minotaure', dungeon:0, x:4, y:2, hp:1000, maxhp:1000, cd:1 };
-  G.mobs.push(near1, near2, far, boss);
-  updateSpells(G);
-  assert.equal(near1.hp, 1000, 'pas en combat : rien');
-  startAction(m, 'attack', 1, { mob:near1 });
-  updateSpells(G);
-  const d = hitDamage(G, m) * 0.5;
-  assert.deepEqual([near1.hp, near2.hp, far.hp, boss.hp], [1000 - d, 1000 - d, 1000, 1000], 'le boss qu\'il ne combat pas est épargné');
+  m.spells = ['cleave']; m.x = 5; m.y = 2; m.face = 1; m.carac.crit = 0; m.carac.doubleAttack = 0; m.carac.knockback = -COMBAT_KNOCK;
+  const mob = (id, x, y = 2, extra = {}) => ({ id, type:'bestiole', x, y, hp:1000, maxhp:1000, cd:1, ...extra });
+  const target = mob(1, 6), a = mob(2, 7), b = mob(3, 6, 1), c = mob(4, 7, 1), d = mob(5, 6, 3), behind = mob(6, 4), far = mob(7, 9);
+  G.tiles[1][6] = 0; G.tiles[1][7] = 0; G.tiles[3][6] = 0;
+  G.mobs.push(target, a, b, c, d, behind, far);
+  const solo = worldFrom(['', '#'.repeat(50), '#@          #', '#'.repeat(50)]), s = solo.miners[0];
+  s.spells = ['cleave']; s.x = 5; s.y = 2; s.face = 1;
+  const alone = mob(9, 6); solo.mobs.push(alone, mob(10, 4));
+  landHit(solo, s, alone);
+  assert.ok(!s.spellCd.cleave, 'personne d\'autre devant : il reste prêt');
+  landHit(G, m, target);
+  const dmg = hitDamage(G, m), half = dmg * 0.5;
+  assert.ok(Math.abs((1000 - target.hp) - dmg) < 1e-6, 'la cible : le coup normal (100 %)');
+  const hit = [a, b, c, d].filter(o => o.hp < 1000);
+  assert.equal(hit.length, 3, '3 autres au plus');
+  for(const o of hit) assert.ok(Math.abs((1000 - o.hp) - half) < 1e-6, '50 %');
+  assert.equal(behind.hp, 1000, 'derrière lui : rien'); assert.equal(far.hp, 1000, 'trop loin : rien');
   assert.equal(m.spellCd.cleave, G.t + 10);
-  m.carac.crit = 100; m.spellCd.cleave = 0; near1.hp = 1000;
-  updateSpells(G);
-  assert.equal(near1.hp, 1000 - d * 2, 'critique : double');
 });
 
 test('Hand of Justice : étourdit 3 s un mob qui tacle un allié d\'abord (3 cases au plus), coupe son sort ; recharge 30 s', () => {

@@ -27,6 +27,51 @@ Modèle d'entrée :
 - **À suivre** : Guilde et Classement.
 - **État** : 🧪 sur la branche `jules/appli-historique` (pas en ligne)
 
+## 03/11/2026 — Geoffrey — Un set par activité
+- **Pour le joueur** : dans le Lobby, quand une activité est ouverte, la carte des sets propose « Set défini pour … ».
+  Le set choisi est équipé tout seul à chaque lancement de cette activité (ou à l'entrée au Bloc géant, à He's coming,
+  à l'ouverture de la Mine instantanée). Les instances partagent un set, les deux tours aussi ; en groupe, chacun le sien.
+  Le choix se fait dans un menu déroulant avec les noms de ses sets.
+
+## 03/11/2026 — Geoffrey — Cleave : 4 cibles devant lui, en arc de cercle
+- **Pour le joueur** : le Cleave n'est plus un coup sur tous les mobs autour : **sa prochaine attaque** est un coup en arc
+  de cercle **devant lui**. La cible prend 100 % de ses dégâts, et **jusqu'à 3 autres mobs devant lui** (à 2 cases ou
+  moins) prennent 50 % ; rien derrière. Seul face à une cible, il attend d'avoir un autre mob devant. Une lame balaie le
+  demi-cercle devant le mineur quand il part. À He's coming, il ne sert plus à rien (Lucifer est seul).
+- **État** : ✅ en ligne le 03/11
+
+## 03/11/2026 — Geoffrey — Niveau requis : Mine instantanée 3, Bloc géant et He's coming 10
+- **Pour le joueur** : en dessous du niveau, l'activité est **scellée** dans le Lobby (cadenas, grisée, « niveau 10
+  requis ») et le serveur refuse l'entrée ou l'inscription. Tout le reste est ouvert dès le niveau 1.
+
+## 03/11/2026 — Geoffrey — Tableaux de butin : noms des raretés
+- **Pour le joueur** : dans la bulle de butin d'un coffre (inventaire), les qualités s'affichent par leur nom (Utile, Bon, Haute qualité, Excellent, Antique, Mystérieux, Légendaire) au lieu de « R1 » à « R7 », et le titre de la bulle donne le nom du coffre (« Excellent Trésor angélique », plus « Trésor angélique R4 »). Le Coffre du Roi Gobelin II garde son « II ».
+- **État** : ✅ en ligne le 03/11
+
+## 03/11/2026 — Geoffrey — Appli : notifications à l'heure (MI en retard)
+- **Pour le joueur** : sur Android, la notification de la mine instantanée arrivait ≈ 15 min en retard : l'appli
+  demandait à Android une alarme « approximative » qu'il regroupe pour économiser la batterie. Avec l'appli **1.1.5**, les
+  notifications sont à l'heure exacte quand Android l'autorise ; une case **« Notifications à l'heure exacte »** dans Mon
+  compte ouvre le réglage « Alarmes et rappels » d'Android s'il est coupé. iPhone : rien à changer.
+  Ça vaut pour **toutes** les notifications de l'appli (session, MI, Bloc géant, four), et une nouvelle arrive : **He's
+  coming accessible** (quand on peut y retourner, réglable à part dans Mon compte).
+- **À suivre** : publier l'appli Android 1.1.5 sur le Play Store (le correctif ne marche qu'avec elle). Test « même version
+  iOS qu'Android » déjà rouge avant (iOS 1.1.0, Android 1.1.4).
+- **État** : ✅ en ligne le 03/11 (serveur) ; heure exacte avec l'appli Android 1.1.5, à publier
+
+## 03/11/2026 — Geoffrey — Appli Android 1.1.4 : les mises à jour à chaud marchent enfin (Samsung)
+- **Pour le joueur** : sur certains téléphones (vu sur les Samsung), l'appli ne se mettait jamais à jour toute seule : il fallait attendre une nouvelle version sur Google Play. Trouvé grâce au relevé : l'appli écrivait plusieurs fichiers en même temps dans un dossier pas encore créé, et Android refusait. Les dossiers sont maintenant créés d'abord, un par un. **Il faut installer la 1.1.4 depuis Google Play** (une mise à jour à chaud ne peut pas réparer le code qui fait les mises à jour à chaud).
+- **État** : ✅ en ligne le 03/11 (serveur) ; appli 1.1.4 (code de version 6) à envoyer sur Google Play
+
+## 03/11/2026 — Geoffrey — Appli Android 1.1.3 : le bandeau « Deep Mine Idle MMO » pour de bon
+- **Pour le joueur** : la 1.1.2 avait encore le bandeau noir au nom de l'appli en haut de l'écran (vu sur Samsung). La 1.1.1 avait corrigé le mauvais thème : la fenêtre est créée avec celui de l'écran de lancement, qui gardait sa barre de titre. Corrigé dans la 1.1.3 (nouvelle appli à installer, pas une mise à jour à chaud).
+- **État** : ✅ dans main le 03/11 (AAB 1.1.3, code de version 5, à envoyer sur Google Play) ; bandeau pas encore vérifié sur un téléphone
+
+## 03/11/2026 — Geoffrey — Appli : « Nouvelle version de l'appli » au démarrage
+- **Pour le joueur** : quand une nouvelle appli est sortie sur Google Play, l'appli le dit à l'ouverture : « Nouvelle version de l'appli : 1.1.2 (tu as la 1.1.0) », avec **Mettre à jour** (ouvre la fiche Google Play) ou **Plus tard** (reproposé le lendemain). Rien sur le site. Le jeu lui-même continue de se mettre à jour tout seul : ceci ne concerne que les nouvelles versions de l'appli.
+- **Pour nous** : à chaque nouvelle appli **en ligne** sur Google Play, monter `APP_UPDATE.latest.android` (aujourd'hui 1.1.2). iPhone : rien tant qu'il n'a pas de fiche App Store.
+- **État** : ✅ en ligne le 03/11
+
 ## 03/11/2026 — Jules — Appli mobile : les Sorts, fiche qui monte du bas
 - **Pour le joueur** : rien sur le site. Dans l'appli, l'onglet Sorts montre la barre de sorts en haut (compacte) et le
   grimoire en grille de 4 colonnes dessous. **Toucher un sort ouvre sa fiche en bas de l'écran** (effet, chiffres, et

@@ -7,6 +7,8 @@
     <style name="AppTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
@@ -19,7 +21,13 @@
     </style>
 
 
+    <!-- 03/11/2026 (appli 1.1.3) : c'est AVEC CE THÈME que la fenêtre est créée (MainActivity appelle EdgeToEdge.enable avant
+         super.onCreate, donc avant que BridgeActivity pose AppTheme.NoActionBar) : sans ces deux lignes, Android (vu sur Samsung,
+         barre « Deep Mine Idle MMO » en gros) y ajoutait sa barre de titre, que le correctif de la 1.1.1 sur AppTheme ne
+         touchait pas. Attributs du système (android:…), pas ceux d'AppCompat : cette fenêtre n'est pas encore AppCompat. -->
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
         <item name="android:background">@drawable/splash</item>
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
     </style>
 </resources>

@@ -5,6 +5,7 @@ import { familyOf, targetTab, sessionRedirect } from './families.js';
 import { startNotifs } from './native.js';
 import { startHome } from './home-ui.js';
 import { startPerso } from './perso.js';
+import { startStoreNudge } from './store-nudge.js';
 
 const KEY = 'deepIdleMine.appFamilyTab';   // dernier sous-onglet ouvert, par famille
 const load = win => { try { return JSON.parse(win.localStorage.getItem(KEY)) ?? {}; } catch(e){ return {}; } };
@@ -53,6 +54,7 @@ export function startApp({ doc, win, nav, shown, notifData, home: homeDeps }){
   /* aucun événement commun à la mine, la mine instantanée, les tours, l'instance, le Bloc géant et la prison */
   win.setInterval(sync, 1000);
   const notifs = startNotifs({ win, doc, data:notifData, open:tab => nav.show(tab) });
+  startStoreNudge({ win }).catch(console.warn);   // nouvelle appli sur le store (03/11)
 
   return {
     notifOptions: notifs.options,

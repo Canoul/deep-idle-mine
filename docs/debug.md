@@ -6905,6 +6905,12 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   l'appli annule `left` / `top` en `!important`.
 - **Applis** : pas de plugin ni de code natif ; `src/app/` change (mise à jour à chaud à la mise en ligne).
 
+### 03/11/2026 — Appli Android 1.1.3 : bandeau « Deep Mine Idle MMO » encore là en 1.1.2 (Geoffrey) 🧪
+- Constat (Geoffrey, Samsung, coque 1.1.2, capture) : grand titre gras « Deep Mine Idle MMO » au-dessus du jeu (style DeviceDefault de Samsung, pas la barre AppCompat). Les mises à jour à chaud passent (contenu du jeu à jour, Concasseur compris).
+- Cause probable : `MainActivity` appelle `EdgeToEdge.enable(this)` **avant** `super.onCreate` → `getDecorView()` crée la fenêtre avec le thème de l'activité du manifeste, `AppTheme.NoActionBarLaunch` (parent `Theme.SplashScreen`), pas `AppTheme` ni `AppTheme.NoActionBar` (posé ensuite par BridgeActivity, vérifié dans @capacitor/android 8.6.0 : `super.onCreate` puis `setTheme(AppTheme_NoActionBar)` puis `setContentView`). La barre de titre du système est figée à la création de la fenêtre ; le correctif 1.1.1 (attributs AppCompat sur `AppTheme`) n'y touchait pas.
+- Correctif : `android:windowActionBar` false et `android:windowNoTitle` true (attributs du système) sur `AppTheme.NoActionBarLaunch` et `AppTheme` ; versionCode 5, versionName 1.1.3 (pas de plugin, `APP_UPDATE.minNative` inchangé). Pas pu compiler ici (pas de SDK Android, dl.google.com bloqué) : le workflow android-apk.yml fabrique l'APK au push. Si le bandeau reste : déplacer `EdgeToEdge.enable(this)` après `super.onCreate(savedInstanceState)`.
+- ⚠️ `tests/mobile-config.test.js` « même version qu'Android » échoue **déjà sur main** : iOS en 1.1.0 (`MARKETING_VERSION`), Android en 1.1.2 depuis la 1.1.1. Pas touché ici (rien ne change pour l'iPhone) : à aligner à la prochaine version iOS.
+
 ## 03/11/2026 — Jules — Appli mobile : Sorts, fiche qui monte du bas (✅ en ligne le 03/11)
 - **Quoi** : spec et plan `docs/superpowers/{specs,plans}/2026-11-03-appli-sorts*.md`.
   - `src/ui/spells.js` : `spellInfoHtml(st, id, { ctx, owned, busy, into, close })` (pur, sorti de `renderInfo`, même contenu ;
@@ -6952,3 +6958,74 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   habituelle.
 - **Pas vérifié** ⚠️ une prison, plusieurs jours, une session à plusieurs, vrai téléphone.
 - **Applis** : pas de plugin ni de code natif ; `src/app/` change (mise à jour à chaud à la mise en ligne).
+
+### 03/11/2026 — Appli : fenêtre « Nouvelle version de l'appli » (Geoffrey) 🧪
+- Constat (Geoffrey) : coque 1.1.0 ouverte normalement alors que la 1.1.2 était sur Google Play (test interne) ; rien ne le disait, il a fallu aller sur la fiche. `minNative` est le seul avertissement existant, et il bloque.
+- `APP_UPDATE.latest` ({ android:'1.1.2', ios:'1.1.0' }) et `nudgeEvery` (86 400 s) ; `storeNudge()` (src/app/update.js, pur : version à proposer ou null ; rien sans fiche du store, version inconnue ou coque déjà à jour) ; `src/app/store-nudge.js` (App.getInfo, `ask` de src/ui/dialog.js 2 s après le démarrage, `AppLauncher.openUrl` vers `storeUrl`, mémo `dim.storeNudge` = { v, at } posé à l'affichage) ; lancé par `startApp` (src/app/main.js). Plugins déjà dans la 1.1.0 : pas de `minNative` à monter.
+- Tests : `tests/app-update.test.js` (storeNudge) ✅ ; vu dans Chromium avec `?app` et un faux pont (coque 1.1.0) : fenêtre affichée, « Mettre à jour » ouvre la fiche Google Play, pas de 2e fenêtre au rechargement. ⚠️ Pas vu sur un téléphone.
+- ⚠️ Limite : une coque ne voit la fenêtre qu'après avoir reçu ce code par mise à jour à chaud. Les Samsung en 1.1.0, qui ne recevaient jamais les mises à jour à chaud (entrée du 03/11, relevé), ne la verront pas ; pour eux, seul `minNative` (écran bloquant, lu dans la réponse du serveur sans rien télécharger) agit.
+- ⚠️ `tests/mobile-config.test.js` « même version qu'Android » : déjà rouge sur main (iOS 1.1.0, Android 1.1.2).
+
+### 03/11/2026 — Mises à jour à chaud : « Missing parent directory » sur Samsung, cause trouvée (Geoffrey) 🧪
+- Relevé (16:33, SM-S901U Android 14, coque 1.1.2, version 6bdff568… → d732a1aa…) : 3 essais, 0 fichier servi, retour `telechargement` avec « Missing parent directory – possibly recursive=false was passed or parent directory creation failed. » (FilesystemErrors.missingParentDirectories, code 11 de @capacitor/filesystem 8.1.5).
+- Cause (lue dans ion-android-filesystem 1.1.1, `IONFILECommon.kt`) : `writeFile(recursive:true)` → `createDirOrFile` → `checkParentDirectory` = `parent.exists() || (create && parent.mkdirs())`. `build()` écrit 6 fichiers à la fois (PARALLEL) dans un dossier neuf : deux écritures du même dossier se croisent, `mkdirs()` de la seconde rend false (le dossier vient d'être créé) → NoParentDirectory, tout le téléchargement abandonne. Pas de fichier servi : les premiers fichiers sont ceux recopiés de la version qui tourne (`reuse`), écrits avant tout appel au serveur. Hasard de timing (le OnePlus 8 Pro passait).
+- Correctif : `dirsOf(paths)` + `makeDirs` (src/app/updater.js) : chaque dossier créé un par un, du moins profond au plus profond, avant les écritures en parallèle ; « already exists » ignoré. Test : `racy` dans le faux téléphone de `tests/app-update.test.js` (écriture refusée si le dossier n'a pas été créé par mkdir) : rouge avant, vert après ✅.
+- ⚠️ Le code qui télécharge est celui de la coque (sa copie embarquée) tant qu'aucune mise à jour à chaud n'a réussi : ce correctif ne vaut que dans une **nouvelle appli, 1.1.4** (versionCode 6 ; 1.1.3 sautée si pas encore envoyée). Puis monter `APP_UPDATE.latest.android` à 1.1.4 une fois en ligne sur Google Play.
+- Corrige l'entrée « bandeau 1.1.3 » plus haut : la capture du Concasseur ne prouvait PAS les mises à jour à chaud (le Concasseur était déjà dans la copie embarquée de la 1.1.2).
+
+## 03/11/2026 — Appli : notification de la MI en retard (Geoffrey)
+- Cause : `src/app/native.js` programmait tout avec `isExactNotification:false` (pour que le plugin n'ouvre pas l'écran des
+  alarmes à chaque appel) et l'appli ne déclarait pas `SCHEDULE_EXACT_ALARM` : alarme inexacte, Android la décale (≈ 15 min
+  constatés). L'heure calculée (`planNotifs`, 5 min avant la MI) est juste.
+- Correctif : permission `SCHEDULE_EXACT_ALARM` dans `AndroidManifest.xml`, appli 1.1.5 (versionCode 7) ; `exactAllowed(plugin)`
+  (`checkExactNotificationSetting`) à chaque passe ; `isExactNotification:true` seulement si autorisé (pas d'écran système
+  ouvert sinon) ; changement d'autorisation → tout annulé et reprogrammé ; case « Notifications à l'heure exacte »
+  (`notif_exact`, Android, coque ≥ 1.1.5, `EXACT_SINCE`) qui appelle `changeExactNotificationSetting`. `USE_EXACT_ALARM` écarté
+  (Google Play la réserve aux applis de réveil / agenda). Android 14+ : l'autorisation est coupée par défaut à l'installation,
+  d'où la case.
+- Tests : app-native (3 nouveaux), app-notifs, mobile-config (permission), account* : 114/115, le rouge (version iOS ≠ Android)
+  l'était déjà sur main. ⚠️ Pas essayé sur un vrai téléphone ; valeur de `exact_alarm` (« granted ») prise de la doc du plugin.
+- Même branche : toutes les notifications passent par `toPlugin` (exactes si autorisé). Ajout du type `hescoming` (id 4, `hcNext` =
+  `hcUI.nextEntry()` dans `notifData`, src/main.js), réglage `notif_hescoming`. Tests app-notifs (+1), app-native ✅.
+
+## 03/11/2026 — Geoffrey — Activités scellées sous un niveau (branche geoffrey/niveau-requis-activites)
+- `MINE_MODES[].minLevel` (src/config.js) : `mi` 3, `giant` 10, `hescoming` 10. `src/shared/level-gate.js` (`minLevelOf`,
+  `sealedBelow`, `levelLockText`). Lobby : `mineModes(…, level)` → `sealed`, `activityMenu` → classe `.actBtn.sealed`
+  (cadenas `pxi('lock')`, « Scellé · niveau N requis », grisée) ; niveau reçu par `lobby.update({ myLevel })` dans
+  `setProgress` (src/main.js) ; niveau inconnu = rien de scellé. Serveur : `giant.enter` (Bloc géant et He's coming, même
+  service, `mode`) et `instant.join` → `level_locked` 403 via `game.levelFor`.
+- Tests : `tests/level-gate.test.js` (4, sans helpers) ✅ ; `tests/helpers.js` retire les `minLevel` (comptes de test
+  niveau 1) ; giant-service, instant-server, hescoming-service, lobby, social, shrines, account-delete, anticheat giant /
+  hescoming / instant ✅ (prison-server : seul « une tour et une instance… » échoue, déjà connu). Navigateur ✅ (compte
+  neuf niveau 1 : 3 lignes scellées, entrées 403).
+- ⚠️ Non traité : la notification de l'appli « He's coming accessible » peut encore partir pour un joueur sous le niveau 10.
+
+### 03/11/2026 — Bulle de butin : noms des qualités
+- `src/ui/loot-tip.js` `rowHtml` : une ligne de qualité affiche `r.label` (Utile… Légendaire) dans sa couleur, « R4 » en bulle (avant : « R4 », nom en bulle). Titre de la bulle (`src/meta/loot-table.js`) : `itemName(item)` (« Excellent Trésor angélique », avant le nom interne « Trésor angélique R4 »). `itemName` : suffixe de niveau « II » du Coffre du Roi Gobelin (il était perdu). ✅ loot-table, goblin-king, rune, inventory, instance (111).
+
+## 03/11/2026 — Geoffrey — Set par activité (branche geoffrey/set-par-activite)
+- Données : `sets.byActivity` ({ activité: id de set }, relu par `sanitizeSets` : activités de `SETS.activities`, sets
+  existants ; vidé quand le set est supprimé), envoyé par `publicSets`. Route `POST /api/game/sets` action `assign`
+  ({ activity, id | null }).
+- Équipement : `autoEquip(compte, mode)` (server/game/service.js), verrous inv / skills / spells / sets, **hors** des
+  verrous du lancement ; ne fait rien en session (`activeOf`), sans set, ou set déjà équipé (`equippedSet`) ; jamais
+  d'erreur (journalisée). Appelé : `start` (tous les modes sauf prison, chaque joueur du groupe), `prisonStart`,
+  `openInstant` (MI), `giantEnter(…, mode)` (Bloc géant, He's coming). Exposé `game.autoEquip` (tests).
+- Lobby : `lobby.activity()` (mode de l'activité ouverte, `tower_angel` pour le Jugement), `h.onActivity` → `setsUI.refresh()` ;
+  ligne `activityLineHtml` en tête de `#setsLobby` (site et appli), choix envoyé tout de suite (`onchange`).
+- Tests ✅ sets (+3), lobby, giant-service, hescoming-service, instant-server, game-service, instance-server, party,
+  level-gate, prison-server (sauf « une tour et une instance… », déjà connu) ; anticheat 152/152. Navigateur ✅ (Bloc
+  géant ouvert, choix « Set 2 » → `byActivity: { giant: 2 }` côté serveur).
+- ⚠️ Prison : le set est équipé à l'entrée ; les runs suivants relisent l'équipement du moment (règle du 30/10).
+
+## 03/11/2026 — Cleave : 4 cibles devant lui (Geoffrey)
+- `SPELLS` cleave : `maxTargets: 4` ; `EFFECTS.cleaveAnim` 260 ms. Déclenché par un coup normal (`cleaveHit`) : mine (`landHit`,
+  src/sim/spells.js export), tour (après `hitMob` dans `strike`, après `hitBoss`), Instance I et Golbute (dans `strike`). Cibles :
+  autres mobs à `radius` avec `(x − m.x) × m.face > 0` (devant), les plus proches, + boss au contact s'il est devant ; ≤ 3.
+  Pas de cast sans autre cible. He's coming : retiré (une seule cible). Ancien : `cleave(G, m)` dans `updateSpells` /
+  `combatSpells`, 50 % à tous les mobs du rayon.
+- Rendu : `drawCleave(ctx, cx, cy, T, t, face)` (src/render/effects.js), branché sur le repérage des sorts (`casts`) : demi-cercle
+  devant, du haut vers le bas, miroir à gauche. Vérifié en image (Chromium, deux sens).
+- Tests : spells (nouveau test Cleave), hescoming-sim, tower*, instance*, golbute*, effects*, wiki 229/229 ✅. Simulation mine 5 × 3
+  avec cleave + war_cry : 0 blocage, profondeur 187.
+
