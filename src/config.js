@@ -1724,7 +1724,11 @@ export const INSTANCE = {
     boss: { name: 'Golbute', w: 5, h: 5, hp: 10700, knockRes: 100 },   // 10 700 PV : 40 victoires sur 160 pour la compo de référence (outils en acier + 20 %) avec 25 % de ténacité (30/10, simulation ; avant, outils en fer + 20 % : 7 600)
     slam: { every: 2, range: 3, chance: 0.5, high: 3, back: 1 },
     avalanche: { every: 60, stun: 5, dazed: 90, deathStacks: 6 },
-    split: { every: 180, count: 10, area: 8, hitEvery: 1.5, knock: 0.5, step: 1.8 },
+    split: { every: 180, count: 10, area: 8, hitEvery: 1.5, knock: 0.5, step: 1.8,
+             /* 03/11/2026 (Geoffrey) : toutes les every s, chaque golem retire tenacity point de ténacité (brute, avant la
+                courbe) aux mineurs à radius cases ou moins (Manhattan), pendant duration s ; cumulable (un stack par golem
+                et par pulsation) */
+             debuff: { every: 5, radius: 3, tenacity: 1, duration: 120 } },
     crystal: { at: [0.66, 0.33], hp: 720, dynamite: 20 },   // 720 coups : 45 % des 10 min à miner (cible 45 %)
     rage: { atkSpeed: 0.5, chance: 0.65, avalancheCd: -0.25 },
   },
