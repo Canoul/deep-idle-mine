@@ -6769,3 +6769,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 ### 03/11/2026 — Ténacité : fatigue et Résilience
 - `TENACITY.tired` 0,5 ; `STATS.tenacityResilience` 0 (libellé, unité %, affichée, wiki). `src/sim/tenacity.js` : `tenacityChance(m, src, extra)` (× (1 − tired × (1 − résilience)) si `m.tenTired`), `tenacityTry(m, src, draw, extra)` (tire seulement si chance > 0 ; remet `m.tenTired` à false, le remet à true sur une esquive). Branché : `resists` (mobs.js), Bloc géant (le tirage reste fait même sans ténacité, comme avant), tours, esquive de l'avalanche du Golbute ; `slamChance` lit `tenacityChance` sans toucher la fatigue (chance combinée avec la résistance au recul).
 - helpers.js : `TENACITY.tired = 0` (tests de mécaniques). ✅ tenacity (fatigue) + 184 tests liés.
+
+### 03/11/2026 — He's coming : Marqué par Lucifer, paliers × 24
+- `HES_COMING.roar.markBonus` 0,5 ; `dodgeFear` (src/sim/hescoming/session.js, exporté) : chance du Fear = 1 − ténacité effective (pénétration hescoming), × 1,5 si `m.fearMark`, plafond 1 ; tirage seulement si ténacité > 0 ; marque posée sur une esquive, retirée sinon. Le rugissement n'utilise plus `resists` (pas de fatigue générale) ; l'autoattaque, si. Effet `fear_mark` (EFFECTS, src/sim/effects.js, bulle src/ui/effects.js), déjà envoyé par la vue du Bloc géant.
+- Paliers × 24 (× 12 ce matin sans test : tests/hescoming-sim « config » échouait, corrigé). ✅ hescoming-sim (dont test de la marque), effects, tenacity, giant : 95.

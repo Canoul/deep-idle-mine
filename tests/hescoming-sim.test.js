@@ -13,8 +13,8 @@ const run = (G, s) => { for(let i = 0, n = Math.round(s / DT); i < n; i++) tickL
 /* mineur posé à sa place, combat engagé */
 const ready = (carac, seed) => { const r = room(carac, seed); r.m.x = standX(r.G, r.m); return r; };
 
-test('config : paliers du Bloc × 8, pépites ÷ 8, mêmes objets, même durée', () => {
-  assert.deepEqual(HC.tiers.map(t => t.min), [8000, 40000, 80000, 120000, 160000]);
+test('config : paliers du Bloc × 24 (03/11 ; avant × 8 puis × 12), pépites ÷ 8, mêmes objets, même durée', () => {
+  assert.deepEqual(HC.tiers.map(t => t.min), [24000, 120000, 240000, 360000, 480000]);
   assert.deepEqual(HC.tiers.map(t => t.items), [{ 'Cristal de pleine lune':5 }, { 'Pépite d\'argent':5 }, { 'Cristal de pleine lune':10 }, { 'Pépite d\'argent':10 }, { 'Cristal de pleine lune':15 }]);
   assert.equal(GIANT.tiers[0].items['Plume d\'ange'], 5, 'le Bloc géant garde ses Plumes');
   assert.equal(HC.nugget.per, 800);
@@ -248,4 +248,23 @@ test('sorts sans effet ici : Illumination, Fast learner, Hand of Justice ne part
   m.x = G.contact;
   run(G, 5);
   assert.deepEqual(m.spellCd, {});
+});
+
+test('Fear : esquivé par la ténacité → « Marqué par Lucifer », le suivant a × 1,5 de chance de prendre, puis la marque tombe', async () => {
+  const { HES_COMING } = await import('../src/config.js');
+  const { minerEffects } = await import('../src/sim/effects.js');
+  const { dodgeFear } = await import('../src/sim/hescoming/session.js');
+  assert.equal(HES_COMING.roar.markBonus, 0.5);
+  /* 40 % de ténacité (courbe linéaire dans les tests) : Fear 60 % ; marqué : 90 % */
+  const { G, m } = ready({ tenacity: 40 });
+  let plain = 0, plainN = 0, marked = 0, markedN = 0;
+  for(let i = 0; i < 4000; i++){
+    const was = !!m.fearMark, d = dodgeFear(G, m);
+    if(was){ markedN++; if(d) marked++; } else { plainN++; if(d) plain++; }
+    assert.equal(!!m.fearMark, d, 'marqué seulement après une esquive');
+    if(d) assert.ok(minerEffects(G, m).some(e => e.id === 'fear_mark'));
+  }
+  assert.ok(Math.abs(plain / plainN - 0.4) < 0.04, `esquive normale ${plain}/${plainN}`);
+  assert.ok(Math.abs(marked / markedN - 0.1) < 0.04, `esquive marqué ${marked}/${markedN}`);
+  const z = ready({ tenacity: 0 }).m; assert.equal(dodgeFear(G, z), false); assert.ok(!z.fearMark);
 });

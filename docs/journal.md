@@ -759,6 +759,10 @@ Modèle d'entrée :
 
 ## 30/10/2026 — Geoffrey — Prison : 8 d'énergie par heure de jeu (avant 4)
 
+## 03/11/2026 — Geoffrey — He's coming : « Marqué par Lucifer », paliers +100 %
+- **Pour le joueur** : esquiver le Fear de Lucifer grâce à la ténacité laisse un debuff « Marqué par Lucifer » (visible dans la barre d'états) : le Fear suivant a 50 % de chances en plus de toucher. Les paliers de récompense demandent 2 fois plus de points (× 24 ceux du Bloc géant, avant × 12).
+- **État** : ✅ en ligne le 03/11
+
 ## 03/11/2026 — Geoffrey — He's coming : paliers +50 %
 - **Pour le joueur** : chaque palier de récompense de He's coming demande 50 % de points en plus (× 12 les paliers du Bloc géant, avant × 8).
 - **État** : ✅ en ligne le 03/11
