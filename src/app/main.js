@@ -4,6 +4,7 @@ import { barHtml, subHtml } from './bar.js';
 import { familyOf, targetTab, sessionRedirect } from './families.js';
 import { startNotifs } from './native.js';
 import { startHome } from './home-ui.js';
+import { startPerso } from './perso.js';
 
 const KEY = 'deepIdleMine.appFamilyTab';   // dernier sous-onglet ouvert, par famille
 const load = win => { try { return JSON.parse(win.localStorage.getItem(KEY)) ?? {}; } catch(e){ return {}; } };
@@ -20,6 +21,7 @@ export function startApp({ doc, win, nav, shown, notifData, home: homeDeps }){
   bar.id = 'appBar'; sub.id = 'appSub';
   doc.body.append(sub, bar);
   const home = homeDeps ? startHome({ doc, nav, ...homeDeps }) : null;
+  startPerso({ doc });   // Stuff : mannequin, onglets Équipement | Stats
 
   function draw(){
     const current = nav.current(), family = familyOf(current), inSession = shown();

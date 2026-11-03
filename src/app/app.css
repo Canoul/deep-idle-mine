@@ -142,3 +142,31 @@ body.app #setsSheet .setMore{min-width:44px;font-size:20px}
 body.app #setsSheet .setActs{flex-basis:100%;display:flex;gap:6px}
 body.app #setsSheet .setActs button{flex:1}
 body.app #setsSheet .setNew{width:100%;margin-top:8px}
+
+/* ---------- Stuff en mannequin (03/11/2026, Jules ; spec 2026-11-03-appli-perso-sets-stuff-design.md, src/app/perso.js) :
+   6 cases à gauche, le mineur, 7 à droite (comme le PC) ; onglets Équipement | Stats (ancien : une colonne, ≈ 3,7 écrans) ---------- */
+body.app .stuffTabs{width:100%;margin:0 0 8px} body.app .stuffTabs>button{flex:1}
+body.app section[data-view="stuff"] .setLay{gap:8px}
+body.app section[data-view="stuff"] .furnWrap{padding:6px 8px 8px}
+body.app section[data-view="stuff"] .setsCard,body.app .stuffTabs{margin:0}
+body.app section[data-view="stuff"] .nextNote{margin:0 0 6px;padding:2px 6px;font-size:13px;line-height:1.2}
+body.app #stuffGrid{grid-template-columns:52px minmax(0,1fr) 52px;grid-auto-flow:column;grid-template-rows:repeat(7,52px);gap:4px;padding:4px;align-items:center}
+body.app #stuffGrid .stuffSlot{display:block;width:52px;height:52px}
+body.app #stuffGrid .stuffSlot:nth-child(-n+6){grid-column:1}
+body.app #stuffGrid .stuffSlot:nth-child(n+7){grid-column:3}
+body.app #stuffGrid .stuffSlot .slot{position:relative;width:52px;height:52px;display:grid;place-items:center}
+body.app #stuffGrid .stuffSlot img{width:32px;height:32px}
+body.app #stuffGrid .stuffSlot :is(.slbl,.sname){display:none}
+body.app #stuffGrid .stuffSlot .splus{display:block;position:absolute;right:0;bottom:-2px;font:400 14px/1 var(--f-title);color:#ffe6c4;text-shadow:1px 1px 0 #000}
+body.app #stuffGrid .stuffHero{grid-column:2;grid-row:1/8;order:0}
+body.app #stuffGrid .stuffHero canvas{width:144px;height:144px}
+body.app .stuffHeroGs{display:block;margin:0;font:400 21px/1 var(--f-title);color:#ffcf8a}
+body.app .stuffHint{margin:4px 0 0;text-align:center;font-size:15px}
+body.app .stuffStatsCard{max-width:none;margin-top:0}
+body.app section[data-view="stuff"]:not(.stuffOnStats) .stuffStatsCard,
+body.app section[data-view="stuff"].stuffOnStats :is(#stuffGrid,.stuffHint){display:none}
+/* choix de la pièce d'une case : un panneau qui monte du bas */
+body.app #spick{align-items:flex-end;justify-content:stretch;padding:0}
+body.app #spick .box{width:100%;max-width:none;max-height:85%}
+/* un panneau ouvert (choix d'une pièce, menu des sets, butin…) : la pastille du guide ne passe pas par-dessus ses boutons */
+body.app:has(#spick:not([hidden]),#setsSheet:not([hidden]),#loot:not([hidden]),#fpick:not([hidden]),#cpick:not([hidden]),#fview:not([hidden])) .guide{display:none}

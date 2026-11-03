@@ -16,6 +16,18 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 03/11/2026 — Jules — Appli mobile : les Sets en une ligne, le Stuff en mannequin
+- **Pour le joueur** : rien sur le site. Dans l'appli, en haut de Stuff, Skills et Sorts, le gros bloc des sets devient une
+  seule ligne **« Set : barb ▾ »** ; la toucher ouvre un menu qui monte du bas : « Équiper » pour chaque set, « ⋯ » pour
+  Enregistrer / Renommer / Supprimer, « + Nouveau set ». Le **Stuff** devient un **mannequin** : ton mineur au centre avec
+  son gear score, les 13 cases autour (6 à gauche, 7 à droite, couleur de rareté, rune, +N), tout sur un écran ; les stats
+  passent dans un onglet **Stats** à côté d'**Équipement**. Toucher une case ouvre le choix de la pièce, en bas de l'écran.
+- **Décisions** (Jules) : maquette C (mannequin en grand, stats dans un onglet) et le menu des sets. Conception :
+  `docs/superpowers/specs/2026-11-03-appli-perso-sets-stuff-design.md`.
+- **À suivre** : en session, la note « ce que tu équipes comptera à la prochaine session » fait défiler un peu le Stuff ;
+  prochains morceaux : Skills (un seul arbre) et Sorts (fiche du sort en bas).
+- **État** : 🧪 sur la branche `jules/appli-perso` (pas en ligne)
+
 ## 03/11/2026 — Jules — Appli mobile : nouvel écran d'Accueil
 - **Pour le joueur** : rien sur le site. Dans l'appli, le premier écran n'est plus le Lobby. En haut, une bande du
   **Carreau** (la Taverne, le Chevalement, la Fonderie) où ton équipe attend devant le chevalement, avec « ✓ Prêt » ou

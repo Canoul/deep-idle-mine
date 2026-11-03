@@ -6859,3 +6859,25 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - Correctif : `AppTheme` → `Theme.AppCompat.DayNight.NoActionBar` (windowActionBar false, windowNoTitle true) ; versionCode 3, versionName 1.1.1 (pas de plugin : `APP_UPDATE.minNative` reste 1.1.0). Le workflow android-apk.yml se lance tout seul (chemins mobile/**). ⚠️ Pas vu sur un téléphone.
 - **Relevé du 03/11, 13 h 47 – 13 h 49** : 3 téléphones. OnePlus 8 Pro (Android 11, WebView 90) annonce `a18b1fe1794d8ed5` = version publiée → **à jour** (les mises à jour à chaud marchent chez lui). Deux Samsung (SM-S901U Android 14, SM-S911U1 Android 16, WebView 156) annoncent `0723525a6c884f72` ; le serveur propose la mise à jour à chaque démarrage, **aucun fichier n'est téléchargé**. Lecture la plus probable : `decide()` répond 'bad' (la version est dans `bad` du téléphone : un essai de cette version a échoué avant 13 h 37, retour en arrière signalé mais perdu au redémarrage du serveur), donc ni écran ni téléchargement. Une version refusée n'est jamais réessayée : la prochaine version publiée sera retentée → regarder « Retours en arrière » (raison : erreur / délai / relance) pour savoir ce qui casse sur ces Samsung (WebView récente, Android 14+).
 - Page du relevé : « [object Object] fichiers » (le compteur était écrasé par `trace.files`) → `fileCount`.
+
+## 03/11/2026 — Jules — Appli mobile : Sets en une ligne, Stuff en mannequin (branche jules/appli-perso)
+- **Quoi** : spec `docs/superpowers/specs/2026-11-03-appli-perso-sets-stuff-design.md`, plan `docs/superpowers/plans/2026-11-03-appli-perso-sets-stuff.md`.
+  - `src/ui/sets.js` : `setsBarHtml(current)`, `setsSheetHtml(st, { current, locked, busy, msg, more })` (purs) ; dans
+    l'appli (`body.app`), `setupSets` met la ligne dans les 4 hôtes et le menu dans `#setsSheet` (créé une fois, fond =
+    fermer) ; `onClick` gère `sheet` / `close` / `more`, le reste est le code d'avant (mêmes `ask`) ; menu fermé après
+    un Équiper réussi. `src/app/device.js` : `setsSheet` dans `PANELS` (bouton retour Android).
+  - `src/ui/stuff.js` : `renderSlotsHtml(worn, tag)` (pur, sorti de `renderSlots`) ; ajoute `.stuffHeroGs` (gear score) et
+    `.splus` (+N) ; `style.css` les cache sur le site.
+  - `src/app/perso.js` : `stuffTabsHtml(tab)`, `startPerso({ doc })` (onglets sous la ligne des sets, classe
+    `stuffOnStats` sur la section, aide « Touche une case pour la changer ») ; démarré par `src/app/main.js`.
+  - `src/app/app.css` : blocs « Sets » et « Stuff en mannequin » (grille 52 px × 7 lignes, 3 colonnes, portrait 144 px,
+    `#spick` en panneau du bas) ; guide caché quand un panneau est ouvert (il couvrait « Fermer »).
+- **Décision de construction** : `renderSlotsHtml` séparé de `renderSlots` pour tester le HTML sans navigateur.
+- **Tests** ✅ sets (+2), app-perso (nouveau, 2), stuff, stuff-slots-css, app-* : tout vert.
+- **Vérifié** ✅ aperçu `?app` 393 × 760 (Test_Mineur) : ligne des sets dans Stuff, Skills, Sorts ; menu : créer un set,
+  « ⋯ », fermer par le fond ; Stuff hors session et sans guide = 760 / 760 (sans défiler) ; onglet Stats ; choix d'une
+  pièce en bas. Site PC (1280 × 800, sans `?app`) inchangé : panneau des sets complet, noms des cases, pas d'onglets.
+- **Pas vérifié** ⚠️ vrai téléphone ; bouton retour Android sur le menu des sets ; Renommer / Supprimer dans le menu (même
+  code qu'avant, non relancés à l'écran).
+- **Points fragiles** : en session, la note `.nextNote` ajoute ≈ 40 px (797 / 760) ; guide visible : + 60 px.
+- **Applis** : pas de plugin ni de code natif ; `src/app/` change (mise à jour à chaud à la mise en ligne).
