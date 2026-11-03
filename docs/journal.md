@@ -25,7 +25,7 @@ Modèle d'entrée :
   coming accessible** (quand on peut y retourner, réglable à part dans Mon compte).
 - **À suivre** : publier l'appli Android 1.1.5 sur le Play Store (le correctif ne marche qu'avec elle). Test « même version
   iOS qu'Android » déjà rouge avant (iOS 1.1.0, Android 1.1.4).
-- **État** : 🧪 sur la branche `geoffrey/notif-mi-exacte` (pas en ligne)
+- **État** : ✅ en ligne le 03/11 (serveur) ; heure exacte avec l'appli Android 1.1.5, à publier
 
 ## 03/11/2026 — Geoffrey — Appli Android 1.1.4 : les mises à jour à chaud marchent enfin (Samsung)
 - **Pour le joueur** : sur certains téléphones (vu sur les Samsung), l'appli ne se mettait jamais à jour toute seule : il fallait attendre une nouvelle version sur Google Play. Trouvé grâce au relevé : l'appli écrivait plusieurs fichiers en même temps dans un dossier pas encore créé, et Android refusait. Les dossiers sont maintenant créés d'abord, un par un. **Il faut installer la 1.1.4 depuis Google Play** (une mise à jour à chaud ne peut pas réparer le code qui fait les mises à jour à chaud).
