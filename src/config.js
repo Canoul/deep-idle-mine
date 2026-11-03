@@ -739,9 +739,13 @@ export const SPELLS = {
     /* 27/10/2026 (Geoffrey) : en combat, inflige dmg × ses dégâts (critique possible, tiré pour chaque mob) à chaque mob
        à radius cases ou moins (cercle) ; ni recul, ni dégâts de zone de Force brute. Un boss de donjon seulement s'il le
        combat déjà */
-    { id:'cleave', name:'Cleave', icon:'🪓', px:'sword', short:'Frappe tous les mobs autour de lui', unlock:{ scroll:'Parchemin « Cleave »' }, cd:10,
-      radius:2, dmg:0.5,
-      desc:'En combat : inflige 50 % de ses dégâts à tous les mobs à 2 cases ou moins (coup critique possible)' },
+    /* 03/11/2026 (Geoffrey) : sa prochaine attaque normale est un Cleave : la cible prend le coup (100 %), et jusqu'à
+       maxTargets − 1 autres mobs DEVANT LUI (côté où il regarde) à radius cases ou moins, les plus proches, prennent dmg × ses
+       dégâts (critique possible).
+       Ne part que s'il y a au moins un autre mob (sinon il reste prêt). Ancien : 50 % à TOUS les mobs du rayon, en plus. */
+    { id:'cleave', name:'Cleave', icon:'🪓', px:'sword', short:'Sa prochaine attaque touche 4 mobs devant lui', unlock:{ scroll:'Parchemin « Cleave »' }, cd:10,
+      radius:2, dmg:0.5, maxTargets:4,
+      desc:'Sa prochaine attaque est un coup en arc de cercle devant lui : la cible prend 100 % de ses dégâts, et jusqu\'à 3 autres mobs devant lui, à 2 cases ou moins, prennent 50 % (coup critique possible)' },
     /* 27/10/2026 (Geoffrey) : étourdit stun s un mob à range cases ou moins (cercle) qui se bat : d'abord un mob qui
        tacle un allié, puis celui qui le tacle, puis celui qu'il frappe. Comme le Dash : il lâche son tacle et sa
        canalisation (occultiste) est coupée (choix de Claude). Jamais un mob déjà étourdi */
@@ -801,6 +805,7 @@ export const EFFECTS = {
   },
   /* durée (ms, temps de la page) de l'animation d'un sort sur le perso, et sa couleur (onde qui s'élargit + icône du sort) */
   castAnim: 900,
+  cleaveAnim: 260,   // coup en arc du Cleave (03/11/2026, Geoffrey) : ms pour que la lame balaie le demi-cercle devant le mineur
   castColor: { dash:'#d8f0ff', illumination:'#fff3a0', inspiration:'#6fc2ff', ulti_shen:'#b06bff', fast_learner:'#c9a2ff',
                dynamite:'#ff8c1a', zipette:'#8fd14f', war_cry:'#ff6a3b', cleave:'#e5534b', hand_of_justice:'#ffd23f' },
 };

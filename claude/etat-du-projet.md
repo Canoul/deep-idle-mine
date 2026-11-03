@@ -435,7 +435,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   Dynamite (Mineur spé 10), Ulti shen et Fast learner (parchemins à apprendre, **pas encore de source** : à décider).
   **27/10 (Geoffrey)** : **Bonbonne de zipette** (Logisticien spé 10 : allié à 3 cases qui travaille, +20 % des pods du
   logisticien en oxygène, 180 s), **Cri de guerre** (Barbare spé 10 : en combat, lui et les mineurs à 10 cases +10 % dégâts,
-  +5 % vitesse d'attaque, 30 s, recharge après l'effet, 180 s), **Cleave** et **Hand of Justice** (parchemins, sans source :
+  +5 % vitesse d'attaque, 30 s, recharge après l'effet, 180 s), **Cleave** (depuis le 03/11 : sa prochaine attaque touche la cible à 100 % et jusqu'à 3 mobs devant lui à 50 %, 4 cibles au plus, arc de cercle animé ; ancien : 50 % à tous les mobs à 2 cases) et **Hand of Justice** (parchemins, sans source :
   50 % des dégâts à 2 cases, 10 s ; étourdit 3 s un mob qui se bat à 3 cases, 30 s). Mine classique (et k hole) seulement.
   Figés au lancement, déclenchés tout seuls dès que la recharge est finie et qu'ils servent ; barre des sorts en
   session (29/10 : aussi dans les tours, l'instance et le Bloc géant ; ancien : mine classique seulement).

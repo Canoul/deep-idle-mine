@@ -6987,3 +6987,15 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 
 ### 03/11/2026 — Bulle de butin : noms des qualités
 - `src/ui/loot-tip.js` `rowHtml` : une ligne de qualité affiche `r.label` (Utile… Légendaire) dans sa couleur, « R4 » en bulle (avant : « R4 », nom en bulle). Titre de la bulle (`src/meta/loot-table.js`) : `itemName(item)` (« Excellent Trésor angélique », avant le nom interne « Trésor angélique R4 »). `itemName` : suffixe de niveau « II » du Coffre du Roi Gobelin (il était perdu). ✅ loot-table, goblin-king, rune, inventory, instance (111).
+
+## 03/11/2026 — Cleave : 4 cibles devant lui (Geoffrey)
+- `SPELLS` cleave : `maxTargets: 4` ; `EFFECTS.cleaveAnim` 260 ms. Déclenché par un coup normal (`cleaveHit`) : mine (`landHit`,
+  src/sim/spells.js export), tour (après `hitMob` dans `strike`, après `hitBoss`), Instance I et Golbute (dans `strike`). Cibles :
+  autres mobs à `radius` avec `(x − m.x) × m.face > 0` (devant), les plus proches, + boss au contact s'il est devant ; ≤ 3.
+  Pas de cast sans autre cible. He's coming : retiré (une seule cible). Ancien : `cleave(G, m)` dans `updateSpells` /
+  `combatSpells`, 50 % à tous les mobs du rayon.
+- Rendu : `drawCleave(ctx, cx, cy, T, t, face)` (src/render/effects.js), branché sur le repérage des sorts (`casts`) : demi-cercle
+  devant, du haut vers le bas, miroir à gauche. Vérifié en image (Chromium, deux sens).
+- Tests : spells (nouveau test Cleave), hescoming-sim, tower*, instance*, golbute*, effects*, wiki 229/229 ✅. Simulation mine 5 × 3
+  avec cleave + war_cry : 0 blocage, profondeur 187.
+

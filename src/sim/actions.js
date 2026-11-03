@@ -10,6 +10,7 @@ import { log } from './log.js';
 import { aoeOf } from '../meta/skills.js';
 import { glyphsOfTree } from '../meta/glyphs.js';
 import { noEntry } from './dungeon.js';
+import { cleaveHit } from './spells.js';
 import { depositToMule, pickMule, placeMule, emptyMule, isCarrier } from './mule.js';
 import { finishDash, finishDynamite, learnOnMine } from './spells.js';
 import { fleshAt } from './flesh.js';
@@ -277,6 +278,7 @@ export function landHit(G,m,o){
   o.hp-=dmg; m.foeHit=G.t;
   if(o.grab===m.id) o.grabHit=G.t;   // tacle : il se bat, la soupape repart (COMBAT.tackleGiveUp)
   splash(G,m,o,dmg);
+  cleaveHit(G,m,o);   // Cleave (03/11) : ce coup touche aussi jusqu'à 3 autres mobs
   if(o.hp<=0){ killMob(G,m,o); return; }
   /* double attaque (stat doubleAttack, %) : un second coup, avec son propre critique ; un seul recul */
   if(gearChance(G,m.carac.doubleAttack||0) || ravaged){

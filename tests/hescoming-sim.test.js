@@ -207,18 +207,20 @@ test('Dash : pas de Dash à une case, ni pendant le Fear', () => {
   assert.ok(!b.m.spellCd.dash);
 });
 
-test('Cleave et Dynamite : marquent des points à portée, pas de loin', () => {
-  for(const id of ['cleave', 'dynamite']){
-    const { G, m } = withSpells([id]);
-    m.x = G.contact;
-    tickLucifer(G);
-    assert.ok(m.points >= 20 * SPELL[id].dmg, id);
-    assert.equal(m.spellCd[id], G.t + SPELL[id].cd);
-    const far = withSpells([id], { reach:9 });
-    far.m.x = standX(far.G, far.m);
-    tickLucifer(far.G);
-    assert.ok(!far.m.spellCd[id], id + ' : hors de portée');
-  }
+test('Dynamite : marque des points à portée, pas de loin ; Cleave : sans effet (Lucifer est seul, 03/11)', () => {
+  const { G, m } = withSpells(['dynamite']);
+  m.x = G.contact;
+  tickLucifer(G);
+  assert.ok(m.points >= 20 * SPELL.dynamite.dmg);
+  assert.equal(m.spellCd.dynamite, G.t + SPELL.dynamite.cd);
+  const far = withSpells(['dynamite'], { reach:9 });
+  far.m.x = standX(far.G, far.m);
+  tickLucifer(far.G);
+  assert.ok(!far.m.spellCd.dynamite, 'hors de portée');
+  const c = withSpells(['cleave']);
+  c.m.x = c.G.contact;
+  for(let i = 0; i < 50; i++) tickLucifer(c.G);
+  assert.ok(!c.m.spellCd.cleave, 'Cleave jamais lancé');
 });
 
 test('Bonbonne de zipette : l\'allié proche qui manque d\'oxygène, jamais lui-même', () => {
