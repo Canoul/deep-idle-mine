@@ -14,7 +14,7 @@
 
    Sorts : Cri de guerre, Cleave, Dash, Hand of Justice et Ulti shen en combat ; Dynamite sur le boss, les golems et le
    cristal ; Inspiration et Fast learner sur le cristal ; Illumination et Bonbonne de zipette : sans effet. */
-import { tenacityOf } from '../tenacity.js';
+import { tenacityChance, tenacityTry } from '../tenacity.js';
 import { INSTANCE, DT, STATS, CFG } from '../../config.js';
 import { mulberry32 } from '../../core/rng.js';
 import { SPELL } from '../../meta/spells.js';
@@ -171,7 +171,7 @@ const slamEvery = G => C.slam.every / (G.boss.rage ? 1 + C.rage.atkSpeed : 1);
 const avalancheEvery = G => C.avalanche.every * (G.boss.rage ? 1 + C.rage.avalancheCd : 1);
 /* chance d'être propulsé : chance × (1 − recul %) × (1 − ténacité %) */
 export const slamChance = (G, m) => (G.boss.rage ? C.rage.chance : C.slam.chance)
-  * (1 - Math.min(100, Math.max(0, m.carac.knockRes || 0)) / 100) * (1 - tenacityOf(m, 'golbute', tenDebuffOf(G, m)) / 100);
+  * (1 - Math.min(100, Math.max(0, m.carac.knockRes || 0)) / 100) * (1 - tenacityChance(m, 'golbute', tenDebuffOf(G, m)) / 100);
 
 function slam(G){
   const b = G.boss;
@@ -197,7 +197,7 @@ function avalanche(G){
   const hit = [], dodged = [];
   for(const m of alive(G)){
     G.rocks.push({ x: m.x, at: G.ticks });
-    if(chance(G, tenacityOf(m, 'golbute', tenDebuffOf(G, m)))){ dodged.push(m.name); G.stats.dodges++; continue; }
+    if(tenacityTry(m, 'golbute', G.fightRng, tenDebuffOf(G, m))){ dodged.push(m.name); G.stats.dodges++; continue; }
     if(G.t > m.dazedUntil + 1e-9) m.dazed = 0;
     m.dazed++; m.dazedUntil = G.t + A.dazed; m.stats.dazed++;
     hit.push(m);

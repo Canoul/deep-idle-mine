@@ -26,7 +26,7 @@ export const SPAWN_X = 25, CHEST_X = 22;
    crit = chance qu'un coup fasse le double de dégâts ; oneTap = chance de casser un bloc instantanément (Bloc géant, spawners, cristal : ONE_TAP) ;
    piercing = chance de casser aussi le bloc juste derrière celui miné ; looting = butin des mobs en plus (comme Pillage) */
 export const STATS = { oxygenMax:300, speed:3, climbSpeed:2.25, mineSpeed:1, damage:5, attackSpeed:100, fortune:0, pods:200, light:6, compass:8,
-  compassRows:0, torches:20, torchRadius:5, torchTime:1, discoverMax:2, tenacity:0, knockRes:0, reach:0, knockback:0,
+  compassRows:0, torches:20, torchRadius:5, torchTime:1, discoverMax:2, tenacity:0, tenacityResilience:0, knockRes:0, reach:0, knockback:0,
   bridges:Infinity,   // passerelles illimitées (21/10, Geoffrey) : la stat reste pour un futur coût éventuel
   mineSpeedPct:0, damagePct:0, crit:0, oneTap:0, piercing:0, looting:0,
   blockMinePct:0,   // Némésis du Golbute (30/10/2026, Geoffrey) : % de vitesse de minage en plus sur les blocs de terrain (terre, pierre, pierre dure, résidus), pas les minerais
@@ -93,7 +93,10 @@ export const COMBAT = { reach:0.5, knock:0.25, tackleGiveUp:5, tackleLeash:6 };
 /* Pénétration (02/11/2026, Geoffrey) : points de ténacité BRUTE retirés au mineur avant la courbe, selon la mécanique :
      chance = effective(max(0, brute − pen[source]))   (pen 20 : un mineur à 20 de ténacité n'esquive plus rien)
    Sources : une clé par mécanique (absente = 0). Valeurs provisoires (proposition de Claude, à régler). */
-export const TENACITY = { k:40, max:75,
+/* Fatigue (03/11/2026, Geoffrey) : une mécanique esquivée grâce à la ténacité réduit de tired (50 %) la chance de la
+   suivante, puis tout redevient normal ; la stat tenacityResilience (STATS, 0 pour tout le monde) réduit cette baisse
+   (resilience 100 % : plus de fatigue). */
+export const TENACITY = { k:40, max:75, tired:0.5,
   pen: { gobelin:0, occultiste:0, mephite:0, chien:0, ver:0, chair:0, golem:10, minotaure:10, hescoming:0, giant:0, towerBoss:20, golbute:20 } };
 
 export const PREFS = { priority:'minerais', fightMobs:true, helpAllies:false, helpIgnore:[] };
@@ -1269,8 +1272,8 @@ export const STUFF = {
                 attackSpeed:'Vitesse d\'attaque', fortune:'Fortune', tenacity:'Ténacité',
                 mineSpeedPct:'Vitesse de minage', damagePct:'Dégâts', crit:'Critique', oneTap:'Coup unique',
                 piercing:'Perçage', looting:'Butin des mobs', doubleAttack:'Double attaque', knockRes:'Résistance au recul', reach:'Portée d\'attaque', knockback:'Recul',
-                goblinThrall:'Gobelins asservis (rayon)', blockMinePct:'Minage des blocs de terrain', golemOxygen:'Oxygène par golem tué (8 cases)' },
-  statUnits: { blockMinePct:' %', goblinThrall:' blocs', torchTime:' s', reach:' bloc', knockback:' bloc', doubleAttack:' %', attackSpeed:' %', fortune:' %', tenacity:' %', knockRes:' %', mineSpeedPct:' %', damagePct:' %', crit:' %', oneTap:' %', piercing:' %', looting:' %' },   // unité affichée après la valeur d'une stat
+                goblinThrall:'Gobelins asservis (rayon)', blockMinePct:'Minage des blocs de terrain', tenacityResilience:'Résilience de ténacité', golemOxygen:'Oxygène par golem tué (8 cases)' },
+  statUnits: { tenacityResilience:' %', blockMinePct:' %', goblinThrall:' blocs', torchTime:' s', reach:' bloc', knockback:' bloc', doubleAttack:' %', attackSpeed:' %', fortune:' %', tenacity:' %', knockRes:' %', mineSpeedPct:' %', damagePct:' %', crit:' %', oneTap:' %', piercing:' %', looting:' %' },   // unité affichée après la valeur d'une stat
   /* décimales affichées au plus pour chaque stat (30/10/2026, Jules : pas de virgule quand elle ne sert à rien) ; une stat
      absente en a 1 (bonus en %, dégâts : une amélioration les fait bouger de quelques dixièmes). 0 : un compte (torches,
      pods, oxygène) ; 2 ou 3 : les vitesses, où 0,58 ou +0,206 se lisent (boosts de pioche, bottes, jambes) */
@@ -1278,7 +1281,7 @@ export const STUFF = {
                   speed:2, climbSpeed:2, reach:2, knockback:2, mineSpeed:3 },
   statFloor: ['torches'],   // arrondies à l'inférieur, comme en session (src/sim/mineur.js : 30,9 torches = 30 posées)
   /* stats du mineur affichées dans l'onglet Stuff (base STATS + bonus des pièces portées), dans cet ordre */
-  shownStats: ['oxygenMax','pods','speed','climbSpeed','mineSpeed','mineSpeedPct','damage','damagePct','attackSpeed','doubleAttack','reach','knockback','crit','fortune','tenacity','knockRes','oneTap','piercing','looting',
+  shownStats: ['oxygenMax','pods','speed','climbSpeed','mineSpeed','mineSpeedPct','damage','damagePct','attackSpeed','doubleAttack','reach','knockback','crit','fortune','tenacity','tenacityResilience','knockRes','oneTap','piercing','looting',
                'discoverMax','light','compass','compassRows','torches','torchRadius','torchTime'],   // goblinThrall (Gobelins asservis) cachée le 27/10 (Geoffrey)
   /* ÉQUILIBRE DU STUFF (27/10/2026, Geoffrey ; gardé par tests/stuff-balance.test.js) :
      - casque, jambes et bottes en chitine, fer, acier valent en GS exactement la valeur de leur tier

@@ -10,7 +10,7 @@
    leaveGiant). Chaque visite terminée est ajoutée à G.done ({ account, points, … }) : le serveur les relève.
    Les caractéristiques (stuff, skills, anneaux des présents) sont calculées en dehors (src/shared/giant-room.js), qui
    peut les remplacer quand le groupe présent change. */
-import { tenacityOf } from '../tenacity.js';
+import { tenacityTry } from '../tenacity.js';
 import { GIANT, DT, STATS } from '../../config.js';
 import { mulberry32 } from '../../core/rng.js';
 import { SPELL } from '../../meta/spells.js';
@@ -142,7 +142,8 @@ function mine(G, m){
 function knock(G, m){
   const K = GIANT.knock;
   const base = K.min + Math.floor(G.rng() * (K.max - K.min + 1));
-  if(G.rng() < tenacityOf(m, 'giant') / 100){ m.stats.ignored++; G.stats.ignored++; return; }
+  const draw = G.rng();   // tiré même sans ténacité (comme avant)
+  if(tenacityTry(m, 'giant', () => draw)){ m.stats.ignored++; G.stats.ignored++; return; }
   const n = Math.max(K.min, Math.round(knockOf(m, base)));
   const to = Math.max(0, m.x - n);
   m.fly = { from: m.x, to, t: 0, dur: K.flight, n };

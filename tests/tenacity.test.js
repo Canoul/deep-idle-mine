@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { TENACITY } from '../src/config.js';
-import { effectiveTenacity, tenacityOf } from '../src/sim/tenacity.js';
+import { effectiveTenacity, tenacityOf, tenacityChance, tenacityTry } from '../src/sim/tenacity.js';
 
 const near = (a, b) => Math.abs(a - b) < 0.05;
 test('courbe : k × ln(1 + t / k), presque intacte en bas, très réduite en haut, plafonnée', () => {
@@ -23,4 +23,17 @@ test('pénétration : points retirés de la brute avant la courbe, jamais en des
     assert.equal(tenacityOf(m, 'gros'), 0);
     assert.equal(tenacityOf(m, 'inconnu'), effectiveTenacity(30)); assert.equal(tenacityOf(m), effectiveTenacity(30));
   } finally { TENACITY.pen = keep; }
+});
+
+test('fatigue : après une esquive, chance de la suivante × 0,5 (résilience 0), puis normale ; résilience 100 % : rien', () => {
+  const m = { carac: { tenacity: 50 } }, full = effectiveTenacity(50);
+  assert.equal(tenacityTry(m, null, () => 0), true, 'esquive');
+  assert.ok(Math.abs(tenacityChance(m) - full / 2) < 1e-9, 'fatiguée');
+  assert.equal(tenacityTry(m, null, () => 0.99), false, 'ratée');
+  assert.equal(tenacityChance(m), full, 'redevenue normale');
+  m.carac.tenacityResilience = 60; tenacityTry(m, null, () => 0);
+  assert.ok(Math.abs(tenacityChance(m) - full * (1 - 0.5 * 0.4)) < 1e-9);
+  m.carac.tenacityResilience = 100; tenacityTry(m, null, () => 0);
+  assert.equal(tenacityChance(m), full);
+  let drawn = 0; assert.equal(tenacityTry({ carac: {} }, null, () => { drawn++; return 0; }), false); assert.equal(drawn, 0, 'sans ténacité : pas de tirage');
 });
