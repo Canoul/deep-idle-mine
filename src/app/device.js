@@ -6,7 +6,7 @@ import { ask } from '../ui/dialog.js';
 import { API_BASE } from '../net/base.js';
 
 /* panneaux qui se ferment par un clic à côté (leur gestionnaire regarde e.target === le fond) */
-const PANELS = ['account', 'fview', 'loot', 'spick', 'cpick', 'fpick', 'forming', 'setsSheet', 'skSheet'];   // setsSheet : menu des sets (03/11/2026)
+const PANELS = ['account', 'fview', 'loot', 'spick', 'cpick', 'fpick', 'forming', 'setsSheet', 'skSheet', 'spSheet'];   // setsSheet : menu des sets (03/11/2026)
 const RETRY_MS = 3000;
 
 /* que fait le bouton retour ? 'dialog' | 'panel' | 'tab' | 'home' | 'quit' */

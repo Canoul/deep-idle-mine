@@ -16,6 +16,17 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 03/11/2026 — Jules — Appli mobile : les Sorts, fiche qui monte du bas
+- **Pour le joueur** : rien sur le site. Dans l'appli, l'onglet Sorts montre la barre de sorts en haut (compacte) et le
+  grimoire en grille de 4 colonnes dessous. **Toucher un sort ouvre sa fiche en bas de l'écran** (effet, chiffres, et
+  « Mettre dans la barre », « Retirer de la barre », « Apprendre le parchemin » ou ce qui bloque) : elle n'est plus tout en
+  bas de la page. **Toucher un sort de la barre ouvre sa fiche au lieu de le retirer** d'un coup.
+- **Décisions** (Jules) : maquette A (fiche qui monte du bas, comme les Skills et le Stuff). Conception :
+  `docs/superpowers/specs/2026-11-03-appli-sorts-design.md`.
+- **À suivre** : avec 10 sorts, les 2 derniers sont juste sous l'écran (on défile un peu). Perso est fini ; restent
+  l'Historique, la Guilde et le Classement.
+- **État** : 🧪 sur la branche `jules/appli-sorts` (pas en ligne)
+
 ## 03/11/2026 — Jules — Appli mobile : les Skills, une classe à la fois
 - **Pour le joueur** : rien sur le site. Dans l'appli, l'onglet Skills montre **un seul arbre** : trois onglets en haut
   (Mineur, Logisticien, Barbare, avec « ★ ta classe » et le niveau de spécialisation), et chaque skill avec **son nom et

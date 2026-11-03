@@ -136,7 +136,24 @@ export function setupSpells({ onOp, onInventory = () => {}, onChange = () => {} 
 
   /* fiche du sort choisi (spellInfoHtml) : à côté du grimoire sur le site ; dans l'appli, dans le panneau du bas (#spSheet) */
   const infoHtml = (close = false) => spellInfoHtml(st, cur, { ctx, owned:owned(cur), busy, into:st.slots[target()], close });
-  function renderInfo(){ $('spellInfo').innerHTML = infoHtml(); }
+  function renderInfo(){ $('spellInfo').innerHTML = infoHtml(); renderSheet(); }
+  /* appli (03/11/2026) : la fiche monte du bas (#spSheet) ; un toucher sur le fond, ✕ ou le bouton retour d'Android la ferme */
+  const app = () => document.body.classList.contains('app');
+  let sheet = false;
+  function sheetEl(){
+    let el = $('spSheet');
+    if(!el){
+      el = document.createElement('div'); el.id = 'spSheet'; el.hidden = true; el.innerHTML = '<div class="box"></div>'; document.body.append(el);
+      el.onclick = e => { if(e.target === el || e.target.closest('[data-act="close"]')){ sheet = false; renderSheet(); } else infoClick(e); };
+    }
+    return el;
+  }
+  function renderSheet(){
+    if(!app()) return;
+    const el = sheetEl();
+    el.hidden = !sheet;
+    if(sheet) el.firstChild.innerHTML = infoHtml(true) + (msg ? `<p class="err">${esc(msg)}</p>` : '');
+  }
   function render(){
     /* sort affiché tant que le joueur n'en a pas choisi : le premier de la barre, sinon le premier disponible */
     if(!picked) cur =st.slots.find(Boolean) ?? SPELLS.list.find(s => statusOf(s.id).status === 'ready')?.id ?? SPELLS.list[0].id;
@@ -160,20 +177,23 @@ export function setupSpells({ onOp, onInventory = () => {}, onChange = () => {} 
   const pick = id => { cur = id; picked = true; render(); };
 
   $('spellTabs').onclick = e => { const b = e.target.closest('[data-tab]'); if(b){ tab = b.dataset.tab; render(); } };
-  $('spellList').onclick = e => { const c = e.target.closest('[data-spell]'); if(c) pick(c.dataset.spell); };
+  $('spellList').onclick = e => { const c = e.target.closest('[data-spell]'); if(c){ if(app()) sheet = true; pick(c.dataset.spell); } };
   $('spellList').ondblclick = e => { const c = e.target.closest('[data-spell]'); if(c && !st.slots.includes(c.dataset.spell)) equip(c.dataset.spell); };
   $('spellList').onkeydown = e => { const c = e.target.closest('[data-spell]'); if(c && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); pick(c.dataset.spell); } };
   $('spellList').ondragstart = e => { const c = e.target.closest('[data-spell]'); if(c) e.dataTransfer.setData('text/plain', c.dataset.spell); };
-  $('spellInfo').onclick = e => {
+  function infoClick(e){
     const l = e.target.closest('[data-learn]');
     if(l){ send({ action:'learn', item:l.dataset.learn }); return; }
     const a = e.target.closest('[data-act]')?.dataset.act;
     if(a === 'equip') equip(cur);
     else if(a === 'unequip'){ const i = st.slots.indexOf(cur); if(i >= 0){ sel = i; send({ action:'unequip', slot:i }); } }
-  };
+  }
+  $('spellInfo').onclick = infoClick;
   function slotClick(b){
     const i = +b.dataset.slot;
     sel = i;
+    /* appli : toucher un sort de la barre ouvre sa fiche (« Retirer » y est), il n'est plus retiré d'un coup */
+    if(app()){ if(st.slots[i]){ cur = st.slots[i]; picked = true; sheet = true; } return render(); }
     if(st.slots[i]){ cur = st.slots[i]; picked = true; send({ action:'unequip', slot:i }); } else render();
   }
   $('spellSlots').onclick = e => { const b = e.target.closest('[data-slot]'); if(b) slotClick(b); };

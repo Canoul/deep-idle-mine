@@ -590,7 +590,9 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   `#setsSheet`) ; Stuff = mannequin + onglets Équipement | Stats (`src/app/perso.js`). **Skills** (03/11, en ligne le
   03/11 ; spec `2026-11-03-appli-skills-design.md`) : onglets de classe (`skillTabsHtml`), un arbre à la fois
   avec l'effet de chaque skill, maillons entre les cases, fiche `#skSheet` (`skillSheetHtml`) : dans l'appli un toucher
-  n'apprend plus directement (ancien : un clic = un rang). Étape 2 sur maquettes : Accueil (fait) → Perso (sets en menu,
+  n'apprend plus directement (ancien : un clic = un rang). **Sorts** (03/11, 🧪 branche `jules/appli-sorts` ; spec
+  `2026-11-03-appli-sorts-design.md`) : fiche `#spSheet` (`spellInfoHtml`) qui monte du bas ; toucher la barre ouvre la fiche
+  (ancien : retirait le sort). Étape 2 sur maquettes : Accueil (fait) → Perso (sets en menu,
   stuff en mannequin, un seul arbre de skills, fiche de sort en panneau du bas) → Historique compact → Guilde en
   onglets → Classement.
   **Visuels des stores** (01/11, Jules, branche `jules/visuels-stores`) : **icône = lampe de mine** (source unique

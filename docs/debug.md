@@ -6904,3 +6904,21 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Points fragiles** : en session, la note du haut fait défiler (≈ 40 px) ; `.skNode` du site est en position absolue :
   l'appli annule `left` / `top` en `!important`.
 - **Applis** : pas de plugin ni de code natif ; `src/app/` change (mise à jour à chaud à la mise en ligne).
+
+## 03/11/2026 — Jules — Appli mobile : Sorts, fiche qui monte du bas (branche jules/appli-sorts)
+- **Quoi** : spec et plan `docs/superpowers/{specs,plans}/2026-11-03-appli-sorts*.md`.
+  - `src/ui/spells.js` : `spellInfoHtml(st, id, { ctx, owned, busy, into, close })` (pur, sorti de `renderInfo`, même contenu ;
+    `close` : ✕ au lieu du titre) ; dans l'appli, `#spSheet` (fond / ✕ = fermer), tuile touchée → fiche ouverte, emplacement
+    rempli touché → sa fiche (plus de retrait direct), actions par `infoClick` (même code que `#spellInfo`) ; la fiche reste
+    ouverte après une action.
+  - `src/app/app.css` : bloc « Sorts » (barre compacte, numéros et légende cachés, phrase sur une ligne, filtres en rangée,
+    grille de 4 colonnes, tuiles basses, nom et sous-titre sur une ligne, `#spellInfo` caché, fiche en panneau du bas) ;
+    `src/app/device.js` : `spSheet` dans `PANELS`.
+- **Piège trouvé** : la rangée de filtres en `nowrap` élargissait la colonne `1fr` de `.spGrid` (page à 625 px, le navigateur
+  zoomait) → `grid-template-columns:minmax(0,1fr)` et `min-width:0`. À garder en tête pour toute rangée qui défile dans une grille.
+- **Tests** ✅ app-spells (nouveau, 4), spells, app-device, app-* : tout vert.
+- **Vérifié** ✅ aperçu `?app` 393 × 760 : largeur 393 ; toucher un sort de la barre ouvre sa fiche (« Retirer de la barre »)
+  et la barre garde ses 2 sorts ; fiche de Dash « Débloqué au niveau 5 de spécialisation Barbare » ; fond = fermer ;
+  8 tuiles sur 10 sans défiler (817 / 760). Site PC inchangé (fiche à côté du grimoire, pas de `#spSheet`).
+- **Pas vérifié** ⚠️ Mettre dans la barre / Apprendre à l'écran (même `infoClick` que le site) ; vrai téléphone.
+- **Applis** : pas de plugin ni de code natif ; `src/app/` change (mise à jour à chaud à la mise en ligne).
