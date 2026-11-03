@@ -895,7 +895,7 @@ let progress = null;
 function setProgress(p){
   const up = levelUpText(progress, p); progress = p ?? null;
   renderNavLevel($('navLevel'), progress); renderLevel($('stuffLevelBody'), progress);   // bandeau du haut et onglet Stuff
-  skills.setSpec(progress?.spec); lobby.update({ mySpec: progress?.spec ?? null });    // niveaux de spécialisation
+  skills.setSpec(progress?.spec); lobby.update({ mySpec: progress?.spec ?? null, myLevel: progress?.level ?? null });    // niveaux de spécialisation ; niveau du mineur : activités scellées (03/11)
   spells.setContext({ spec: Object.fromEntries(Object.entries(progress?.spec ?? {}).map(([t, s]) => [t, s.level])) });
   return up;
 }

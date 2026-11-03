@@ -18,6 +18,7 @@
      pour chaque joueur venu au moins une fois, si le score collectif atteint au moins un palier. Réclamée une seule
      fois (claimed), écrite avec l'inventaire. */
 import { minerEffects, sessionBonuses } from '../../src/sim/effects.js';
+import { sealedBelow, levelLockText } from '../../src/shared/level-gate.js';
 import { GIANT, GAME, ITEMS } from '../../src/config.js';
 import { dayOf, dayEnd, nextEntry, canEnter, visitDurationMs, playerRewardFor, nuggetsFor, tiersReached, ranking, shownPoints, minVisitsFor, earnsReward } from '../../src/shared/giant.js';
 import { newRoom, enterRoom, exitRoom, takeDone, giantSim } from '../../src/shared/giant-room.js';
@@ -187,6 +188,9 @@ export function createGiantService({ store, game, clock = Date.now, config = GIA
       const now = clock();
       await sync(now);
       if(liveOf(me.id)) fail('in_visit', 409, `Tu es déjà devant ${place}.`);
+      /* niveau requis (03/11/2026, Geoffrey ; MINE_MODES[].minLevel) */
+      const level = await game.levelFor?.(me.id);
+      if(sealedBelow(mode, level)) fail('level_locked', 403, levelLockText(mode, level));
       return game.giantEnter(me.id, async snap => {
         const p = await loadPlayer(me.id);
         if(p.visit && p.visit.endsAt > now) fail('in_visit', 409, `Tu es déjà devant ${place}.`);
