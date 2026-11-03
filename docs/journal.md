@@ -16,6 +16,13 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 03/11/2026 — Geoffrey — Cleave : 4 cibles devant lui, en arc de cercle
+- **Pour le joueur** : le Cleave n'est plus un coup sur tous les mobs autour : **sa prochaine attaque** est un coup en arc
+  de cercle **devant lui**. La cible prend 100 % de ses dégâts, et **jusqu'à 3 autres mobs devant lui** (à 2 cases ou
+  moins) prennent 50 % ; rien derrière. Seul face à une cible, il attend d'avoir un autre mob devant. Une lame balaie le
+  demi-cercle devant le mineur quand il part. À He's coming, il ne sert plus à rien (Lucifer est seul).
+- **État** : ✅ en ligne le 03/11
+
 ## 03/11/2026 — Geoffrey — Niveau requis : Mine instantanée 3, Bloc géant et He's coming 10
 - **Pour le joueur** : en dessous du niveau, l'activité est **scellée** dans le Lobby (cadenas, grisée, « niveau 10
   requis ») et le serveur refuse l'entrée ou l'inscription. Tout le reste est ouvert dès le niveau 1.

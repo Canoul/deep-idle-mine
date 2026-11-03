@@ -263,6 +263,7 @@ function strike(G, m, target, status){
   if(now + 1e-9 >= (m.atkReady || 0)){
     combatSpells(G, m, target);
     if(boss) damageBoss(G, m, strikeDmg(G, m)); else hitGolem(G, m, target);
+    cleaveHit(G, m, target);
     m.atkReady = now + hitT(G, m);
   }
   return act(m, 'attack', (m.atkReady || 0) - now, { done: true, boss, aim: boss ? undefined : { x: target.x, y: target.y } }, status);
@@ -319,17 +320,25 @@ function mineSpells(G, m){
   }
 }
 const golemsAround = (G, x, y, r) => liveGolems(G).filter(o => (o.x - x) ** 2 + (o.y - y) ** 2 <= r * r + 1e-9);
+/* Cleave (03/11/2026, Geoffrey) : après un coup normal sur target, si le sort est prêt : jusqu'à maxTargets − 1 autres
+   (golems à radius cases, le Golbute s'il est à son contact), les plus proches, à dmg × ses dégâts. Sinon il reste prêt. */
+function cleaveHit(G, m, target){
+  if(!ready(G, m, 'cleave') || G.over) return;
+  const S = SPELL.cleave;
+  const ahead = x => (x - m.x) * (m.face || 1) > 0;   // seulement devant lui (03/11)
+  const foes = liveGolems(G).filter(o => o !== target && ahead(o.x) && manh(o, m) <= S.radius).sort((a, b) => manh(a, m) - manh(b, m));
+  const list = [...(target !== G.boss && inContact(G, m) && ahead(G.boss.x + G.boss.w / 2 - 0.5) ? [G.boss] : []), ...foes].slice(0, S.maxTargets - 1);
+  if(!list.length) return;
+  cast(G, m, 'cleave');
+  for(const o of list) o === G.boss ? damageBoss(G, m, hitDmg(G, m) * S.dmg) : hitGolem(G, m, o, hitDmg(G, m) * S.dmg);
+}
 function combatSpells(G, m, target){
   if(ready(G, m, 'war_cry') && !(G.warcry && G.t < G.warcry.until)){
     const S = SPELL.war_cry; G.warcry = { until: G.t + S.duration, by: m.id, dmg: S.dmgPct, speed: S.atkSpeed };
     cast(G, m, 'war_cry', G.warcry.until);
     log(G, `📯 ${m.name} : Cri de guerre`);
   }
-  if(ready(G, m, 'cleave')){
-    const S = SPELL.cleave; cast(G, m, 'cleave');
-    for(const o of liveGolems(G)) if(o !== target && manh(o, m) <= S.radius) hitGolem(G, m, o, hitDmg(G, m) * S.dmg);
-    if(target !== G.boss && inContact(G, m)) damageBoss(G, m, hitDmg(G, m) * S.dmg);
-  }
+
   if(ready(G, m, 'dynamite')){
     const S = SPELL.dynamite, boss = target === G.boss;
     const gs = boss ? [] : golemsAround(G, target.x, target.y, S.radius);

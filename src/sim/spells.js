@@ -198,7 +198,6 @@ export function updateSpells(G){
     if(spellReady(G,m,'inspiration') && !(G.t < (G.inspire?.until ?? 0))) inspire(G,m);
     if(spellReady(G,m,'ulti_shen')) ulti(G,m);
     if(spellReady(G,m,'war_cry')) warCry(G,m);
-    if(spellReady(G,m,'cleave')) cleave(G,m);
     if(spellReady(G,m,'hand_of_justice')) handOfJustice(G,m);
     if(spellReady(G,m,'zipette')) zipette(G,m);
   }
@@ -284,19 +283,18 @@ function warCry(G,m){
   log(G, `📯 ${m.name} : Cri de guerre, ${hit.length} mineur${hit.length>1 ? 's' : ''} : dégâts +${Math.round(S.dmgPct*100)} %, attaque +${Math.round(S.atkSpeed*100)} % pendant ${S.duration} s`);
 }
 
-/* Cleave : en combat, dmg × ses dégâts (critique tiré pour chaque mob) à chaque mob à radius cases ou moins.
-   Un mob tué ainsi compte pour lui (butin, XP) */
-function cleave(G,m){
-  if(!fighting(G,m)) return;
-  const S = SPELL.cleave, foes = G.mobs.filter(o => fair(G,m,o) && dist(m,o)<=S.radius);
+/* Cleave (03/11/2026, Geoffrey) : appelé par landHit quand son coup normal touche o. Sort prêt et au moins un autre mob
+   à radius cases ou moins : les maxTargets − 1 plus proches prennent dmg × ses dégâts (critique tiré pour chacun). Un mob
+   tué ainsi compte pour lui (butin, XP). Ancien : 50 % à tous les mobs du rayon, à chaque tick de combat. */
+export function cleaveHit(G,m,o){   // devant lui seulement : côté où il regarde (m.face)
+  if(!spellReady(G,m,'cleave')) return;
+  const S = SPELL.cleave;
+  const ahead = q => (q.x-m.x)*(m.face||1) > 0;   // seulement devant lui (03/11)
+  const foes = G.mobs.filter(q => q!==o && fair(G,m,q) && ahead(q) && dist(m,q)<=S.radius).sort((a,b) => dist(m,a)-dist(m,b)).slice(0, S.maxTargets-1);
   if(!foes.length) return;
-  for(const o of foes){
-    o.hp -= hitDamage(G,m)*S.dmg;
-    if(o.hp<=0) killMob(G,m,o);
-  }
-  m.foeHit = G.t;
   cast(G,m,'cleave');
-  log(G, `🪓 ${m.name} : Cleave, ${foes.length} mob${foes.length>1 ? 's' : ''} touché${foes.length>1 ? 's' : ''}`);
+  for(const q of foes){ const d = hitDamage(G,m)*S.dmg; q.hp -= d; q.splash = { v:d, t:G.t }; if(q.hp<=0) killMob(G,m,q); }
+  log(G, `🪓 ${m.name} : Cleave, ${foes.length+1} mobs touchés`);
 }
 
 /* Hand of Justice : étourdit stun s un mob qui se bat à range cases ou moins : d'abord un mob qui tacle un allié, puis
