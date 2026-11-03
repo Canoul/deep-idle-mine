@@ -1819,11 +1819,11 @@ export const GIANT = {
   readyPoll: 60000,   // ms : carte fermée, le navigateur revérifie l'entrée pour le contour doré du menu du Lobby (01/11/2026)
 };
 /* He's coming (01/11/2026, Geoffrey ; src/sim/hescoming/session.js, valeurs provisoires) : le Bloc géant où l'on frappe Lucifer. Tout GIANT,
-   sauf : paliers × 8, pépites ÷ 8 (Geoffrey, à la simulation ; essayé : × 25, 4 fois plus dur que le Bloc) ; 1 dégât = 1 point. roar : toutes les every s, Fear de fear s à radius cases ou moins (wander : s
+   sauf : paliers × 12 (03/11/2026, Geoffrey : +50 % ; avant × 8), pépites ÷ 8 (Geoffrey, à la simulation ; essayé : × 25, 4 fois plus dur que le Bloc) ; 1 dégât = 1 point. roar : toutes les every s, Fear de fear s à radius cases ou moins (wander : s
    avant de changer de sens) ; swing : toutes les every s, tous ceux au contact projetés de knock cases, en arc de high cases, en flight s. */
 /* tiers : Cristaux de pleine lune à la place des Plumes d'ange du Bloc géant, mêmes quantités (01/11/2026, Geoffrey) */
 export const HES_COMING = { ...GIANT, bossName:'Lucifer',
-  tiers: GIANT.tiers.map(({ min, items:{ 'Plume d\'ange':n, ...items } }) => ({ min:min * 8, items:n ? { 'Cristal de pleine lune':n, ...items } : items })), nugget: { ...GIANT.nugget, per:GIANT.nugget.per * 8 },
+  tiers: GIANT.tiers.map(({ min, items:{ 'Plume d\'ange':n, ...items } }) => ({ min:min * 12, items:n ? { 'Cristal de pleine lune':n, ...items } : items })), nugget: { ...GIANT.nugget, per:GIANT.nugget.per * 8 },
   roar: { every:30, radius:3, fear:15, wander:1 }, swing: { every:5, knock:4, high:2, flight:0.6 },
   /* animation du rugissement (02/11/2026, Jules ; src/render/hescoming.js luciferFrame, images de scripts/gen_lucifer.py),
      en secondes de jeu : la main se lève en 3 images de `step` avant le rugissement, la flamme vacille (une image par
