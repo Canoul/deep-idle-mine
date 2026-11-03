@@ -16,6 +16,18 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 03/11/2026 — Jules — Appli mobile : les Sets en une ligne, le Stuff en mannequin
+- **Pour le joueur** : rien sur le site. Dans l'appli, en haut de Stuff, Skills et Sorts, le gros bloc des sets devient une
+  seule ligne **« Set : barb ▾ »** ; la toucher ouvre un menu qui monte du bas : « Équiper » pour chaque set, « ⋯ » pour
+  Enregistrer / Renommer / Supprimer, « + Nouveau set ». Le **Stuff** devient un **mannequin** : ton mineur au centre avec
+  son gear score, les 13 cases autour (6 à gauche, 7 à droite, couleur de rareté, rune, +N), tout sur un écran ; les stats
+  passent dans un onglet **Stats** à côté d'**Équipement**. Toucher une case ouvre le choix de la pièce, en bas de l'écran.
+- **Décisions** (Jules) : maquette C (mannequin en grand, stats dans un onglet) et le menu des sets. Conception :
+  `docs/superpowers/specs/2026-11-03-appli-perso-sets-stuff-design.md`.
+- **À suivre** : en session, la note « ce que tu équipes comptera à la prochaine session » fait défiler un peu le Stuff ;
+  prochains morceaux : Skills (un seul arbre) et Sorts (fiche du sort en bas).
+- **État** : ✅ en ligne le 03/11
+
 ## 03/11/2026 — Geoffrey — Mises à jour automatiques de l'appli : diagnostic et appli 1.1.2
 - **Pour nous** : le relevé admin montre qu'aucun téléphone n'a jamais téléchargé une mise à jour (S22, Pixel 10, OnePlus) : l'appli échoue juste avant, sans rien dire. L'appli 1.1.2 signale maintenant l'erreur exacte au serveur (visible dans le relevé, « Retours en arrière ») et corrige les causes probables. Le serveur publie aussi la page du jeu de façon à ce qu'elle soit toujours téléchargée. À envoyer sur Google Play (test interne pour l'avoir tout de suite).
 - **État** : ✅ en ligne le 03/11 (serveur) ; appli 1.1.2 à publier sur Google Play

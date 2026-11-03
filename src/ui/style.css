@@ -724,6 +724,7 @@ body.phone .chatMore{opacity:1;padding:0 calc(5*var(--u))}
 .stuffSlot:nth-child(-n+6){grid-column:1}
 .stuffHero{grid-column:2;grid-row:1/8;align-self:stretch;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(3*var(--u))}
 .stuffHero canvas{width:calc(96*var(--u));height:calc(96*var(--u))}
+.stuffHeroGs,.stuffSlot .splus{display:none}   /* appli seulement (mannequin, src/app/app.css) */
 .stuffHero::after{content:"";width:calc(60*var(--u));height:calc(6*var(--u));margin-top:calc(-8*var(--u));
   background:radial-gradient(ellipse at 50% 50%,#ff7a2e55 0 30%,#ff7a2e22 30% 60%,transparent 60%)}
 .stuffStatsCard{margin-top:calc(18*var(--u));max-width:calc(220*var(--u))}

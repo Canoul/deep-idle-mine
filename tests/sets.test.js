@@ -209,3 +209,34 @@ test('sets : textes de la pop-up de confirmation', async () => {
   assert.equal(equippedText('Mine', 2), 'Set « Mine » équipé : 2 pièces introuvables');
   assert.equal(equippedText('Mine', 0, true), 'Set « Mine » bien équipé. Il compte dès la prochaine session.');
 });
+
+/* appli (03/11/2026) : une ligne « Set : x ▾ » et un menu qui monte du bas (spec 2026-11-03-appli-perso-sets-stuff-design.md) */
+test('appli : la ligne des sets dit le set équipé, ou « aucun » ; nom échappé', async () => {
+  const { setsBarHtml } = await import('../src/ui/sets.js');
+  const h = setsBarHtml({ id:1, name:'barb' });
+  assert.match(h, /data-act="sheet"/); assert.match(h, /barb/); assert.match(h, /▾/);
+  assert.match(setsBarHtml(null), /aucun/);
+  assert.match(setsBarHtml({ id:1, name:'<b>' }), /&lt;b&gt;/);
+});
+
+test('appli : le menu des sets — Équiper (grisé pour le set porté), ⋯ qui déplie Enregistrer / Renommer / Supprimer, garde-fous', async () => {
+  const { setsSheetHtml } = await import('../src/ui/sets.js');
+  const st = { list:[{ id:1, name:'barb' }, { id:2, name:'Mineur' }], max:20 };
+  const h = setsSheetHtml(st, { current:{ id:1 } });
+  assert.equal((h.match(/data-act="equip"/g) || []).length, 2);
+  assert.match(h, /data-set="1"[^]*?data-act="equip" disabled/);
+  assert.equal((h.match(/✔ équipé/g) || []).length, 1);
+  assert.equal((h.match(/data-act="more"/g) || []).length, 2);
+  assert.doesNotMatch(h, /data-act="delete"/);
+  assert.match(h, /\+ Nouveau set/); assert.match(h, /data-act="close"/);
+  const open = setsSheetHtml(st, { current:{ id:1 }, more:2 });
+  for(const act of ['save', 'rename', 'delete']) assert.equal((open.match(new RegExp(`data-act="${act}"`, 'g')) || []).length, 1, act);
+  assert.match(open, /data-set="2"[^]*data-act="delete"/); assert.doesNotMatch(open.split('data-set="2"')[0], /data-act="delete"/);
+  assert.doesNotMatch(setsSheetHtml({ ...st, max:2 }), /Nouveau set/);
+  assert.equal((setsSheetHtml(st, { busy:true }).match(/data-act="equip" disabled/g) || []).length, 2);
+  assert.match(setsSheetHtml(st, { locked:true }), /prochaine session/);
+  assert.match(setsSheetHtml(st, { msg:'Oups' }), /class="[^"]*err[^"]*">Oups/);
+  const empty = setsSheetHtml({ list:[], max:20 });
+  assert.match(empty, /Aucun set/); assert.match(empty, /\+ Nouveau set/);
+  assert.match(setsSheetHtml({ list:[{ id:3, name:'<i>' }], max:20 }), /&lt;i&gt;/);
+});

@@ -20,14 +20,18 @@ const SLOT_ICON = { casque:'helmet', torse:'shield', pioche:'pickaxe', epee:'swo
 const statLine = p => `<br><small class="stuffStats">${esc([statsText(p), `GS ${pieceGS(p).toLocaleString('fr-FR')}`].filter(Boolean).join(' · '))}</small>`;
 
 /* les cases du stuff et le portrait au milieu, dans el. tag 'div' : en lecture seule (fiche d'un ami, onglet Social) */
-export function renderSlots(el, worn, tag = 'button'){
-  el.innerHTML = STUFF.slots.map(s => {
+/* le HTML seul (testé) : les 13 cases, puis le portrait et son gear score (le gear score et le +N des cases ne se voient que
+   dans l'appli, mannequin du 03/11/2026 : src/app/app.css) */
+export function renderSlotsHtml(worn, tag = 'button'){
+  return STUFF.slots.map(s => {
     const p = worn[s.id];
     return `<${tag} class="stuffSlot${p ? ' full' : ''}" data-slot="${s.id}"${p ? tipAttr(p.item, p.item, p) : ` title="${esc(s.label)}"`}>`+
-           `<span class="slot${p ? rcls(p.item) : ''}">${p ? icon(p.item) + runeMark(p) : `<span class="sico">${SLOT_ICON[s.id] ? pxi(SLOT_ICON[s.id]) : ''}</span>`}</span>`+
+           `<span class="slot${p ? rcls(p.item) : ''}">${p ? icon(p.item) + runeMark(p) + (p.plus > 0 ? `<span class="splus">+${p.plus}</span>` : '') : `<span class="sico">${SLOT_ICON[s.id] ? pxi(SLOT_ICON[s.id]) : ''}</span>`}</span>`+
            `<span class="slbl">${esc(s.label)}</span>${p ? pname(p).replace('class="rn', 'class="sname rn') : '<span class="sname mut">vide</span>'}</${tag}>`;
-  }).join('');
-  el.insertAdjacentHTML('beforeend', '<div class="stuffHero"><canvas width="16" height="16"></canvas></div>');
+  }).join('') + `<div class="stuffHero"><canvas width="16" height="16"></canvas><p class="stuffHeroGs">${gearScore(worn).toLocaleString('fr-FR')} GS</p></div>`;
+}
+export function renderSlots(el, worn, tag = 'button'){
+  el.innerHTML = renderSlotsHtml(worn, tag);
   drawPortrait(el.querySelector('.stuffHero canvas'), lookOf(worn), aurasOf(worn));
 }
 
