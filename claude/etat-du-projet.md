@@ -592,7 +592,9 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   avec l'effet de chaque skill, maillons entre les cases, fiche `#skSheet` (`skillSheetHtml`) : dans l'appli un toucher
   n'apprend plus directement (ancien : un clic = un rang). **Sorts** (03/11, en ligne le 03/11 ; spec
   `2026-11-03-appli-sorts-design.md`) : fiche `#spSheet` (`spellInfoHtml`) qui monte du bas ; toucher la barre ouvre la fiche
-  (ancien : retirait le sort). Étape 2 sur maquettes : Accueil (fait) → Perso (sets en menu,
+  (ancien : retirait le sort). **Historique** (04/11, 🧪 branche `jules/appli-historique` ; spec
+  `2026-11-03-appli-historique-design.md`) : une ligne par session par jour, bilan `#hiSheet` (ancien : une carte dépliée par
+  session, 17 écrans). Étape 2 sur maquettes : Accueil (fait) → Perso (sets en menu,
   stuff en mannequin, un seul arbre de skills, fiche de sort en panneau du bas) → Historique compact → Guilde en
   onglets → Classement.
   **Visuels des stores** (01/11, Jules, branche `jules/visuels-stores`) : **icône = lampe de mine** (source unique

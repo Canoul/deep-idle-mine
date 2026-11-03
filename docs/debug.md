@@ -6938,3 +6938,17 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   stuff*, tenacity*, wiki 229/229 ✅. ⚠️ Repères du Golbute et de la tour à +25 / +50 % de ténacité « en plus » : la base barbare
   baisse de 15, à resimuler si besoin.
 
+## 04/11/2026 — Jules — Appli mobile : Historique, une ligne par session (branche jules/appli-historique)
+- **Quoi** : spec et plan `docs/superpowers/{specs,plans}/2026-11-03-appli-historique*.md`. `src/ui/history.js` : `dayLabel`,
+  `topLoot` (catégorie puis rareté puis `BLOCKS[].val` puis quantité : le terrain en dernier), `sessionRowHtml`,
+  `sessionDetailHtml`, `historyListHtml` (purs) ; `setupHistory({ load, me })` : dans l'appli, la liste et `#hiSheet` (bilan,
+  fond / ✕ = fermer) ; `src/main.js` passe `me` (pseudo) ; `src/app/app.css` (bloc « Historique ») ; `src/app/device.js` :
+  `hiSheet` dans `PANELS`. Le mode vient du serveur (`mode`, déjà envoyé) → `MINE_MODES`.
+- **Trouvé à l'écran** : la première liste peut s'afficher avant que le compte soit chargé (`me` inconnu) → « avec
+  Test_Mineur » ; corrigé : une session à un seul joueur est toujours « solo » (test).
+- **Tests** ✅ app-history (nouveau, 5 tests), app-device, app-* : verts.
+- **Vérifié** ✅ aperçu `?app` (Test_Mineur, une vraie session locale) : ligne « Mine · 14:14 » sous AUJOURD'HUI, 3 butins
+  (Treasure, lingot, tissu) et +887 XP ; bilan avec 13 butins et la seed ; fond = fermer ; largeur 393. Site PC : la carte
+  habituelle.
+- **Pas vérifié** ⚠️ une prison, plusieurs jours, une session à plusieurs, vrai téléphone.
+- **Applis** : pas de plugin ni de code natif ; `src/app/` change (mise à jour à chaud à la mise en ligne).

@@ -16,6 +16,17 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 04/11/2026 — Jules — Appli mobile : l'Historique, une ligne par session
+- **Pour le joueur** : rien sur le site. Dans l'appli, le bouton **Session** hors session (l'Historique) montre **une ligne
+  par session**, regroupées par jour (« AUJOURD'HUI », « HIER », puis la date) : le type (Mine, Prison, Instance…) et
+  l'heure, la durée et avec qui, l'XP et les 3 plus gros butins (les trésors et minerais précieux d'abord, pas les
+  2 000 pierres). **Toucher une ligne ouvre le bilan complet** en bas de l'écran (tout le butin en icônes, areas,
+  profondeur, la seed en petit). Sans aucune session : un bouton « Lancer une session ▸ » vers l'Accueil.
+- **Décisions** (Jules) : maquette A (une ligne par session) ; écartée : la dernière session en grand. Conception :
+  `docs/superpowers/specs/2026-11-03-appli-historique-design.md`.
+- **À suivre** : Guilde et Classement.
+- **État** : 🧪 sur la branche `jules/appli-historique` (pas en ligne)
+
 ## 03/11/2026 — Jules — Appli mobile : les Sorts, fiche qui monte du bas
 - **Pour le joueur** : rien sur le site. Dans l'appli, l'onglet Sorts montre la barre de sorts en haut (compacte) et le
   grimoire en grille de 4 colonnes dessous. **Toucher un sort ouvre sa fiche en bas de l'écran** (effet, chiffres, et

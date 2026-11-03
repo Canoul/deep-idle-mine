@@ -27,6 +27,7 @@ test('ligne : type, heure, avec qui (sans soi, échappé), area de la prison, XP
   const m = sessionRowHtml(mine, 1, 'L9DJULO');
   assert.match(m, /Mine/); assert.match(m, /avec &lt;b&gt;Brakk&lt;\/b&gt;, Ysolde/); assert.doesNotMatch(m, /avec L9DJULO/);
   assert.match(sessionRowHtml({ ...mine, mode:'ancien_mode' }, 2), /Session/, 'mode inconnu');
+  assert.match(sessionRowHtml(prison, 0), /solo/, "un seul joueur : solo, même si son pseudo n'est pas encore connu");
   assert.match(sessionRowHtml({ ...mine, left:true }, 3), /Parti avant la fin/);
 });
 

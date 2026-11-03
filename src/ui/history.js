@@ -51,7 +51,8 @@ const lootScore = item => (CAT[itemDef(item)?.cat] ?? 2) * 1000 + rarityDef(item
 export const topLoot = (bag = {}, n = 3) => Object.entries(bag).sort(([a, qa], [b, qb]) => lootScore(b) - lootScore(a) || qb - qa).slice(0, n);
 const modeName = s => MINE_MODES.find(m => m.id === s.mode) ?? { label:'Session', icon:'⛏' };
 const hm = ms => `${two(new Date(ms).getHours())}:${two(new Date(ms).getMinutes())}`;
-const withWhom = (s, me) => { const o = s.players.filter(p => p !== me); return o.length ? `avec ${o.join(', ')}` : 'solo'; };
+/* un seul joueur : c'est soi (« solo », même si son pseudo n'est pas encore connu au premier affichage) */
+const withWhom = (s, me) => { const o = s.players.length > 1 ? s.players.filter(p => p !== me) : []; return o.length ? `avec ${o.join(', ')}` : 'solo'; };
 /* une ligne (bouton) : type et heure, durée et avec qui, les 3 plus gros butins, l'XP */
 export function sessionRowHtml(s, i, me = null){
   const m = modeName(s);
@@ -81,18 +82,36 @@ export function historyListHtml(sessions, now = Date.now(), me = null){
   return sessions.map((s, i) => { const d = dayLabel(s.startedAt, now), head = d !== day ? `<p class="hiDay">${d}</p>` : ''; day = d; return head + sessionRowHtml(s, i, me); }).join('');
 }
 
-/* load() → promesse de { sessions } */
-export function setupHistory({ load }){
-  let busy = false;
+/* load() → promesse de { sessions } ; me() : son pseudo (appli : « avec … » sans soi) */
+export function setupHistory({ load, me = () => null }){
+  let busy = false, list = [];
+  const app = () => document.body.classList.contains('app');
+  /* appli : le bilan d'une session monte du bas (#hiSheet) ; le fond, ✕ ou le bouton retour d'Android le ferment */
+  function sheetEl(){
+    let el = $('hiSheet');
+    if(!el){
+      el = document.createElement('div'); el.id = 'hiSheet'; el.hidden = true; el.innerHTML = '<div class="box"></div>'; document.body.append(el);
+      el.onclick = e => { if(e.target === el || e.target.closest('[data-act="close"]')) el.hidden = true; };
+    }
+    return el;
+  }
   async function refresh(){
     if(busy) return;
     busy = true;
     try {
       const { sessions } = await load();
-      $('histBody').innerHTML = sessions.length ? sessions.map(sessionCard).join('')
-        : '<p class="mut">Aucune session terminée pour l\'instant.</p>';
+      list = sessions;
+      $('histBody').innerHTML = app() ? historyListHtml(sessions, Date.now(), me())
+        : sessions.length ? sessions.map(sessionCard).join('') : `<p class="mut">Aucune session terminée pour l'instant.</p>`;
     } catch(e){ $('histBody').innerHTML = `<p class="err">${esc(e.message)}</p>`; }
     finally { busy = false; }
   }
+  $('histBody').onclick = e => {
+    const r = e.target.closest('[data-hi]');
+    if(!r || !app() || !list[+r.dataset.hi]) return;
+    const el = sheetEl();
+    el.firstChild.innerHTML = sessionDetailHtml(list[+r.dataset.hi]);
+    el.hidden = false;
+  };
   return { refresh };
 }

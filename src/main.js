@@ -287,7 +287,7 @@ setupTooltips();   // bulles d'info (effets du stuff) : survol, ou toucher sur m
 fillHelp();        // « ? » d'aide des pages (src/ui/help.js)
 
 /* ---------- navigation ---------- */
-const historyTab = setupHistory({ load: () => gameApi.history() });
+const historyTab = setupHistory({ load: () => gameApi.history(), me: () => acct.account?.displayName ?? null });
 let guildTab = null, boardTab = null;   // créés plus bas ; un onglet peut s'ouvrir dès setupNav
 let nav;   // l'onglet de départ est ouvert pendant setupNav, avant que nav soit assigné
 let giantUI = null, hcUI = null;   // Bloc géant, He's coming (créés plus bas) : leur visite occupe l'onglet Session
