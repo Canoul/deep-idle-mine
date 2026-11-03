@@ -16,6 +16,13 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 03/11/2026 — Geoffrey — Appli : connexion cachée par le clavier, tableau de butin trop grand
+- **Pour le joueur** (signalé sur un Galaxy S24) : à la connexion dans l'appli, le clavier ne cache plus le champ où
+  l'on tape (la fenêtre part du haut et ramène le champ au milieu de ce qui reste visible). Au doigt, le tableau de
+  butin d'un coffre (ex. Treasure T4) tient entre les barres du haut et du bas et défile ; on le ferme en le touchant
+  ou à côté, et le bouton « Ouvrir » redevient accessible.
+- **État** : ✅ en ligne le 03/11
+
 ## 03/11/2026 — Geoffrey — Concasseur : minerai d'or
 - **Pour le joueur** : le concasseur accepte le minerai d'or, par lots de 100 ; un lot donne 1 Terre.
 - **État** : ✅ en ligne le 03/11

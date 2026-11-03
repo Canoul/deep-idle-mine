@@ -153,6 +153,10 @@ select option{background:var(--panel)}
 #tip .ltGroup>i{display:block;font-style:normal;color:var(--acc-lt);margin-bottom:var(--u)}
 #tip .ltRows{display:grid;grid-template-columns:1fr;column-gap:calc(6*var(--u))}
 #tip .ltRows.two{grid-template-columns:1fr 1fr}
+/* au doigt (03/11/2026) : la bulle se touche (fermer), et trop haute elle défile entre les barres (src/ui/tooltip.js) */
+#tip.touch{pointer-events:auto}
+#tip.scroll{overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+#tip .tipClose{margin:calc(3*var(--u)) 0 0;color:var(--mut);font-size:var(--fs-s);text-align:center}
 #tip .ltRows.qual{display:flex;flex-wrap:wrap;gap:var(--u) calc(6*var(--u))}
 #tip .ltRows.qual span{flex:none}
 #tip .ltRow{display:flex;align-items:center;gap:calc(2*var(--u));line-height:1.25}
