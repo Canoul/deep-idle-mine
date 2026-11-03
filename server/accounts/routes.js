@@ -2,6 +2,7 @@
    body (JSON lu), ip, me (compte connecté ou null), login(résultat) pour poser le cookie, logout(). */
 import { publicAccount } from './service.js';
 import { ACCOUNT_DELETE_WORD } from '../../src/config.js';
+import { GAME_SERVER } from '../config.js';
 
 const needMe = ctx => { if(!ctx.me) throw Object.assign(new Error('Tu n\'es pas connecté.'), { status: 401, code: 'not_authenticated' }); };
 const str = v => typeof v === 'string' ? v : undefined;
@@ -67,6 +68,9 @@ export function accountRoutes(service, { onRename = () => {}, suspendedText = as
       if(ctx.body.accept !== true) throw rulesRequired();
       return service.acceptRules(ctx.me.id);
     },
+
+    /* langue du jeu : { lang } (03/11/2026, I18N) */
+    'POST /api/account/lang': async ctx => { needMe(ctx); return service.setLang(ctx.me.id, { lang: str(ctx.body.lang) }, { dev: GAME_SERVER.dev }); },
 
     /* pseudo interdit : le remplacer : { name } */
     'POST /api/account/rename': async ctx => {

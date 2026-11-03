@@ -55,6 +55,7 @@ export const accountApi = {
   logout:   ()                       => request('POST', '/api/account/logout', {}),
   claim:    (name, password)         => request('POST', '/api/account/claim', { name, password }),
   rename:   name                     => request('POST', '/api/account/rename', { name }),
+  lang:     lang                     => request('POST', '/api/account/lang', { lang }),   // langue du jeu (03/11)
   recover:  (name, recoveryCode, newPassword) => request('POST', '/api/account/recover', { name, recoveryCode, newPassword }),
   changePassword: (oldPassword, newPassword)  => request('POST', '/api/account/password', { oldPassword, newPassword }),
 };

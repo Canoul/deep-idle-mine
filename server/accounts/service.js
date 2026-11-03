@@ -2,7 +2,8 @@
    récupération par code de secours, changement de mot de passe, connexions (sessions) qui expirent.
    Testable seul : on lui passe un stockage et une horloge. */
 import { nameBanned } from '../moderation/filter.js';
-import { ACCOUNT, RULES } from '../../src/config.js';
+import { ACCOUNT, RULES, I18N } from '../../src/config.js';
+import { isLang } from '../../src/i18n/index.js';
 import { cleanName, nameKey, checkName, checkPassword, parseRecoveryCode, formatCode, formatAccountId,
          displayName } from '../../src/shared/account.js';
 import { SESSIONS, LIMITS, SCRYPT } from '../config.js';
@@ -18,7 +19,8 @@ const fail = (code, status, message, extra) => { throw new AccountError(code, st
 /* Ce que le jeu (et plus tard les autres joueurs) a le droit de voir d'un compte. Jamais d'empreinte. */
 export function publicAccount(a){
   return { id: a.id, displayId: formatAccountId(a.id), name: a.name, displayName: displayName(a),
-           guest: a.guest, createdAt: a.createdAt, ...(nameBanned(a.name) ? { mustRename: true } : {}) };   // pseudo interdit : à changer (31/10)
+           guest: a.guest, createdAt: a.createdAt, lang: isLang(a.lang) ? a.lang : I18N.base,   // langue choisie (03/11)
+           ...(nameBanned(a.name) ? { mustRename: true } : {}) };   // pseudo interdit : à changer (31/10)
 }
 
 export function createAccountService({ store, clock = Date.now, scrypt = SCRYPT, sessions = SESSIONS, limits = LIMITS }){
@@ -155,6 +157,15 @@ export function createAccountService({ store, clock = Date.now, scrypt = SCRYPT,
       Object.assign(acc, { name: n, nameKey: nameKey(n) });
       try { await store.updateAccount(acc); }
       catch(e){ if(e instanceof ConflictError) fail('name_taken', 409, 'Ce pseudo est déjà pris.'); throw e; }
+      return { account: publicAccount(acc) };
+    },
+
+    /* langue du jeu (03/11/2026, I18N) : une langue connue ; cachée aux joueurs (I18N.open false) sauf en mode dev */
+    async setLang(accountId, { lang } = {}, { dev = false } = {}){
+      const acc = await store.getAccount(accountId);
+      if(!acc) fail('not_authenticated', 401, 'Connexion expirée.');
+      if(!isLang(lang) || (lang !== I18N.base && !I18N.open && !dev)) fail('bad_lang', 400, 'Langue inconnue.');
+      if(acc.lang !== lang){ acc.lang = lang; await store.updateAccount(acc); }
       return { account: publicAccount(acc) };
     },
 

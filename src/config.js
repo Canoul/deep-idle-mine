@@ -1532,6 +1532,10 @@ export const ACCOUNT = {
    maxPlayers : places dans le lobby (jeu prévu à 3).
    La partie tourne sur le serveur (une seule copie) : un départ ou un focus s'applique tout de suite. */
 export const GAME = { speed:2, devSpeeds:[1,2,5,20,60,300], maxPlayers:3 };
+/* langues (03/11/2026, Geoffrey ; src/i18n/) : le français est la langue d'écriture du jeu (textes et identifiants),
+   les autres se traduisent depuis lui. open : false = choix « English » caché aux joueurs (mode dev seulement) tant que
+   la traduction n'est pas finie ; tests/i18n.test.js refuse open:true s'il manque des traductions. */
+export const I18N = { langs: ['fr', 'en'], labels: { fr: 'Français', en: 'English' }, base: 'fr', open: false };
 
 /* Appli mobile, notifications programmées sur le téléphone (src/app/notifs.js).
    miBefore : s avant l'ouverture de la mine instantanée ; quietFrom / quietTo : rien entre ces heures (téléphone) ;

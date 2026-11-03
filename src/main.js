@@ -12,8 +12,9 @@
    - mine instantanée (session mode 'mi') : inscription dans le Lobby, rappels depuis tous les onglets
      (src/ui/instant-lobby.js) ; à l'heure, le serveur l'ouvre et le navigateur bascule sur Session, où elle a son
      propre affichage (src/render/instant.js, src/ui/instant-hud.js). */
+import { storedLang, storeLang } from './i18n/boot.js';   // EN PREMIER : la langue avant les écrans (03/11)
 import { applyRarityColors } from './ui/rarity.js';
-import { GAME, HES_COMING, PARTY, SESSION_LEN, INSTANT_MINE, STATS, SOCIAL, CAMERA, JUDGMENT, TOWER, MINE_MODES, INSTANCE, GUIDE, PRISON, ENERGY, DT } from './config.js';
+import { I18N, GAME, HES_COMING, PARTY, SESSION_LEN, INSTANT_MINE, STATS, SOCIAL, CAMERA, JUDGMENT, TOWER, MINE_MODES, INSTANCE, GUIDE, PRISON, ENERGY, DT } from './config.js';
 import { emptyView, applyView, shownPos } from './shared/view.js';
 import { applyInstantView } from './shared/instant-view.js';
 import { createInstantRenderer, MI_TILE } from './render/instant.js';
@@ -94,6 +95,7 @@ let appLayer = null;   // couche appli, chargée seulement dans l'appli (après 
 
 const $ = id => document.getElementById(id);
 const ui = { speed:1, paused:false, follow:null, inv:{ slots:[] }, fresh:new Set(), tab:'lobby' };
+import { getLang, t } from './i18n/index.js';
 const acct = { account:null, offline:false };          // compte connecté (offline : pas de serveur de jeu)
 let info = { dev:false, speed:GAME.speed, speeds:[GAME.speed], maxPlayers:GAME.maxPlayers };
 let rec = null;            // session en cours (enregistrement du serveur)
@@ -337,8 +339,17 @@ function updateOrbs(shown, mi, len = mi ? INSTANT_MINE.duration : SESSION_LEN){
 }
 
 /* ---------- compte ---------- */
+/* langue du compte (03/11/2026) : celle de la page vient de l'appareil (src/i18n/boot.js) ; si le compte en a une autre
+   (choisie ailleurs, ou ici), on la retient et on recharge : tous les écrans repartent dans la bonne langue. Pas ouverte
+   aux joueurs (I18N.open) et pas en dev : français. */
+function syncLang(){
+  const want = acct.account && (I18N.open || info.dev) ? acct.account.lang ?? I18N.base : (I18N.open ? storedLang() ?? getLang() : I18N.base);
+  if(want === getLang()) return;
+  storeLang(want); location.reload();
+}
+
 const accountUI = createAccountUI($('account'), acct, {
-  onChange: () => { renderNavAccount($('navAccount'), acct); lobby.update({ account:acct.account }); startInstant(); pollSocial(); pollJudgment(); appLayer?.refreshNotifs(); },
+  onChange: () => { syncLang(); renderNavAccount($('navAccount'), acct); lobby.update({ account:acct.account }); startInstant(); pollSocial(); pollJudgment(); appLayer?.refreshNotifs(); },
   confirmLeave: () => ask([
     acct.account?.guest && 'Compte invité : sans pseudo ni mot de passe, tu ne pourras plus jamais y revenir.',
     G && !G.over && 'Ta session continue sur le serveur : tu la retrouveras en te reconnectant.',
@@ -346,8 +357,12 @@ const accountUI = createAccountUI($('account'), acct, {
   options: () => [{ key:'bgSession', label:'Session en cours en fond d\'écran', title:'Pendant une session, la mine s\'affiche en fond, assombrie, derrière les autres onglets.', on: backdrop.on },
                    ...(appBoot.app ? [] : [{ key:'bgTown', label:'Le Carreau (la ville) en fond d\'écran', title:'Hors session, la ville du spawn s\'affiche en fond, avec les autres joueurs en ligne ; l\'onglet Session sans session permet de s\'y promener.', on: town.on }]),
                    { key:'names', label:'Afficher les pseudos', title:'Décoché : ni pseudos ni noms de guilde au-dessus des mineurs (pratique pour les captures d\'écran).', on: namesShown() },
-                   ...(appLayer?.notifOptions() ?? [])],
-  setOption: (key, v) => { if(key === 'bgSession') backdrop.set(v); if(key === 'bgTown') town.set(v); if(key === 'names') setNamesShown(v); if(key.startsWith('notif_')) appLayer?.setNotif(key.slice(6), v); },
+                   ...(appLayer?.notifOptions() ?? []),
+                   /* langue (03/11/2026) : cachée aux joueurs tant que la traduction n'est pas finie (I18N.open), sauf en dev */
+                   ...(acct.account && (I18N.open || info.dev) ? [{ key:'lang', type:'select', label:t('Langue'), value:getLang(),
+                        choices: I18N.langs.map(l => [l, I18N.labels[l]]) }] : [])],
+  setOption: (key, v) => {
+    if(key === 'lang'){ accountApi.lang(v).then(r => { acct.account = r.account; syncLang(); }).catch(e => console.warn(e)); return; } if(key === 'bgSession') backdrop.set(v); if(key === 'bgTown') town.set(v); if(key === 'names') setNamesShown(v); if(key.startsWith('notif_')) appLayer?.setNotif(key.slice(6), v); },
 });
 
 /* ---------- lobby ---------- */
@@ -932,6 +947,7 @@ else {
   try { info = await gameApi.info(); await refresh(); }
   catch(e){ acct.offline = true; showNoSession(); }
 }
+syncLang();
 startInstant();
 pollSocial();
 pollJudgment();

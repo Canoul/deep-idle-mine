@@ -9,6 +9,12 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 03/11/2026 — Chantier : le jeu en anglais, étape 1 (Geoffrey)
+
+- Début du chantier « choisir sa langue : Français / English » (plan dans `docs/traduction-anglais.md`).
+- Étape 1 : la langue est retenue sur le compte et se choisit dans « Mon compte ». **Caché aux joueurs** tant que la traduction n'est pas finie : le choix n'apparaît qu'en mode dev. Rien ne change pour les joueurs.
+- Glossaire des 413 noms du jeu en anglais (objets, mobs, skills, sorts, stats, lieux) proposé à Geoffrey pour relecture avant de les brancher.
+
 ## JJ/MM/AAAA — Prénom — Titre court
 - **Pour le joueur** : ce qui change en jeu (ou « rien, c'est de l'organisation »).
 - **Décisions** : choix de design ou d'équilibrage tranchés (s'il y en a).

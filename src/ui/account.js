@@ -10,6 +10,7 @@ import { checkName, checkPassword, parseRecoveryCode } from '../shared/account.j
 import { accountApi, request, ApiError, OfflineError } from '../net/api.js';
 import { inLocalApp } from '../net/base.js';
 import { ask, askFields, tell } from './dialog.js';
+import { t } from '../i18n/index.js';
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
 
@@ -60,8 +61,11 @@ export const deleteFields = account => account.guest ? [{ name: 'confirm', label
 export const profileDanger = () => `<div class="dangerZone"><button class="danger" data-act="deleteAccount">Supprimer mon compte</button></div>`;
 
 /* options du joueur dans « Mon compte » : une case à cocher par option (rien s'il n'y en a pas) */
-export const optionsHtml = (options = []) => options.length ? `<h4>Options</h4>` + options.map(o =>
-  `<label class="chk" title="${esc(o.title ?? '')}"><input type="checkbox" data-opt="${esc(o.key)}"${o.on ? ' checked' : ''}> ${esc(o.label)}</label>`).join('') : '';
+/* type 'select' (langue, 03/11) : une liste { value, choices:[[valeur, libellé]] } */
+export const optionsHtml = (options = []) => options.length ? `<h4>${t('Options')}</h4>` + options.map(o => o.type === 'select'
+  ? `<label class="optSel" title="${esc(o.title ?? '')}">${esc(o.label)} <select data-opt="${esc(o.key)}">${o.choices.map(([v, l]) =>
+      `<option value="${esc(v)}"${v === o.value ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select></label>`
+  : `<label class="chk" title="${esc(o.title ?? '')}"><input type="checkbox" data-opt="${esc(o.key)}"${o.on ? ' checked' : ''}> ${esc(o.label)}</label>`).join('') : '';
 
 const VIEWS = {
   login: () => `
@@ -273,7 +277,7 @@ export function createAccountUI(root, state, handlers = {}){
   box.addEventListener('change', e => {
     if(e.target.matches('[data-ok]')) box.querySelector('[data-act="done"]').disabled = !e.target.checked;
     if(e.target.matches('[data-rules]')){ const g = box.querySelector('[data-act="guest"]'); if(g) g.disabled = !e.target.checked; }
-    if(e.target.matches('[data-opt]')) on.setOption(e.target.dataset.opt, e.target.checked);
+    if(e.target.matches('[data-opt]')) on.setOption(e.target.dataset.opt, e.target.tagName === 'SELECT' ? e.target.value : e.target.checked);
   });
   root.addEventListener('click', e => { if(e.target === root && closable) hide(); });
   addEventListener('keydown', e => { if(e.key === 'Escape' && closable && !root.hidden) hide(); });
