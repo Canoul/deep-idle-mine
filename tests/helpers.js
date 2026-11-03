@@ -9,7 +9,8 @@ ENERGY.start = 100;
 /* Ténacité : les tests des mécaniques de mobs (vol, étourdissement, recul…) écrivent la ténacité EFFECTIVE (100 % =
    tout est ignoré) ; on rend la courbe linéaire ici. La courbe à rendement décroissant du jeu (02/11/2026, TENACITY)
    est vérifiée par tests/tenacity.test.js, qui n'importe pas ce fichier. */
-TENACITY.k = 1e12; TENACITY.max = 100; TENACITY.pen = {};   // pénétration : vérifiée dans tests/tenacity.test.js
+TENACITY.k = 1e12; TENACITY.max = 100; TENACITY.pen = {}; TENACITY.tired = 0;   // fatigue : tests/tenacity.test.js
+   // pénétration : vérifiée dans tests/tenacity.test.js
 import { newSession } from '../src/sim/session.js';
 
 const CH = { ' ':0, '#':IDS.stone, 'd':IDS.dirt, 'h':IDS.hardstone, 'c':IDS.coal, 'T':TREASURE_BLOCK, 'H':0, '=':BRIDGE, '@':0 };

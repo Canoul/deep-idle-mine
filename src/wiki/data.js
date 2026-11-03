@@ -255,6 +255,7 @@ const STAT_HELP = {
   goblinThrall:"Couronne du Roi Gobelin : un gobelin qui apparaît à cette distance ou moins du porteur est asservi. Il ne se bat pas, mine les minerais autour de lui (la roche s'il n'y en a pas) pendant 30 s (vitesse d'un mineur de base, même priorité que le porteur) et ce qu'il mine va directement au coffre commun, puis il disparaît.",
   torchTime:  "Temps qu'il met à poser une torche.",
   bridges:    'Passerelles pour traverser les trous (illimitées).',
+  tenacityResilience:"Après une mécanique esquivée grâce à la ténacité, la chance d'esquiver la suivante est réduite de 50 % (puis redevient normale). La résilience réduit cette baisse : 100 % l'annule.",
   tenacity:   "Chance d'ignorer un sort de mob : le vol du gobelin, la canalisation de l'occultiste, l'asphyxie du méphite (un tirage à chaque sort). Rendement décroissant : 10 % de ténacité donnent 8,9 % de chance réelle, 30 % → 22,4 %, 50 % → 32,4 %, 100 % → 50 % (affiché dans l'onglet Stuff).",
   reach:      "Portée de ses coups, en blocs, en plus de la portée de base (0,5) : il frappe un mob avant que celui-ci soit au contact, et il le touche encore après l'avoir repoussé. La Lance en fer en donne +0,25.",
   knockback:  "Recul qu'il inflige, en blocs, en plus du recul de base (0,25). Un coup qui repousse un mob au-delà de sa portée de tacle (0,5) lui fait lâcher le mineur ; repoussé une fois, il ne peut plus l'être avant d'être revenu à portée. La Lance en fer en donne +0,5.",

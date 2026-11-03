@@ -6765,3 +6765,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 ### 03/11/2026 — Golbute : malus de ténacité des golems de la Division
 - `INSTANCE.golbute.split.debuff = { every:5, radius:3, tenacity:1, duration:120 }` ; `golemDebuff` (src/sim/instance/golbute.js, dans stepGolems, golem vivant et pas étourdi) pousse une date de fin dans `m.tenDebuff` ; `tenDebuffOf(G, m)` = stacks actifs × 1, retiré de la ténacité brute (`tenacityOf(m, 'golbute', extra)`) dans slamChance et l'esquive de l'avalanche. Pas d'affichage des stacks.
 - Sans simulation (demande de Geoffrey) ; ✅ tests golbute + tenacity (11). ⚠️ À rééquilibrer : 10 golems à portée = −2 de ténacité toutes les 5 s, soit jusqu à −240 au bout de 2 min si aucun ne meurt.
+
+### 03/11/2026 — Ténacité : fatigue et Résilience
+- `TENACITY.tired` 0,5 ; `STATS.tenacityResilience` 0 (libellé, unité %, affichée, wiki). `src/sim/tenacity.js` : `tenacityChance(m, src, extra)` (× (1 − tired × (1 − résilience)) si `m.tenTired`), `tenacityTry(m, src, draw, extra)` (tire seulement si chance > 0 ; remet `m.tenTired` à false, le remet à true sur une esquive). Branché : `resists` (mobs.js), Bloc géant (le tirage reste fait même sans ténacité, comme avant), tours, esquive de l'avalanche du Golbute ; `slamChance` lit `tenacityChance` sans toucher la fatigue (chance combinée avec la résistance au recul).
+- helpers.js : `TENACITY.tired = 0` (tests de mécaniques). ✅ tenacity (fatigue) + 184 tests liés.

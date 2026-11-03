@@ -13,3 +13,22 @@ export function effectiveTenacity(raw){
 export const penOf = src => (src && TENACITY.pen?.[src]) || 0;
 /* extra : points de ténacité brute retirés en plus (malus de la Division du Golbute, 03/11) */
 export const tenacityOf = (m, src = null, extra = 0) => effectiveTenacity((Number(m?.carac?.tenacity) || 0) - penOf(src) - extra);
+
+/* Fatigue (03/11/2026, Geoffrey ; TENACITY.tired) : après une esquive (m.tenTired), la chance de la mécanique suivante est
+   × (1 − tired × (1 − résilience)) ; résilience = m.carac.tenacityResilience (%, 0 de base) */
+export function tenacityChance(m, src = null, extra = 0){
+  const t = tenacityOf(m, src, extra);
+  if(!m?.tenTired || t <= 0) return t;
+  const res = Math.min(100, Math.max(0, Number(m.carac?.tenacityResilience) || 0)) / 100;
+  return t * (1 - TENACITY.tired * (1 - res));
+}
+/* une mécanique : la ténacité l'esquive-t-elle ? draw() = tirage dans [0, 1[ (hasard de la partie), appelé seulement si
+   la chance est au-dessus de 0 (sans ténacité, le hasard ne change pas) ; la fatigue retombe après cette mécanique et
+   revient si elle est esquivée */
+export function tenacityTry(m, src, draw, extra = 0){
+  const t = tenacityChance(m, src, extra);
+  m.tenTired = false;
+  if(!(t > 0) || !(draw() * 100 < t)) return false;
+  m.tenTired = true;
+  return true;
+}
