@@ -36,6 +36,30 @@ const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&
 const NODE = 58, ROW_H = 112;   // diamètre d'une case, hauteur d'un étage (px)
 const WHY = { other_tree:'Autre arbre choisi', needs_previous:'Étape précédente au max d\'abord', no_points:'Plus de points', maxed:'Rang max' };
 
+/* ---------- appli (03/11/2026, spec docs/superpowers/specs/2026-11-03-appli-skills-design.md) ---------- */
+const nodeOf = id => SKILLS.trees.flatMap(t => t.nodes.map(n => ({ ...n, tree:t }))).find(n => n.id === id);
+/* onglets de classe : view = l'arbre montré, chosen = sa classe (st.tree), spec = niveaux de spécialisation par arbre */
+export function skillTabsHtml(view, { chosen = null, spec = {} } = {}){
+  return SKILLS.trees.map(t => `<button data-sktab="${t.id}"${t.id === view ? ' class="on"' : ''}>${TREE_PX[t.id] ? pxi(TREE_PX[t.id]) : t.icon}<b>${esc(t.label)}</b>`+
+    `<small>${t.id === chosen ? '★ ta classe · ' : ''}SP ${spec[t.id]?.level ?? 1}</small></button>`).join('');
+}
+/* fiche d'un skill (panneau du bas) : effet maintenant et au rang suivant, glyphe, puis Apprendre ou la raison du blocage */
+export function skillSheetHtml(st, id, { inv = { slots:[] }, busy = false, session = false } = {}){
+  const n = nodeOf(id);
+  if(!n) return '';
+  const r = rankOf(st, id), why = blockedReason(st, id, st.points);
+  const g = glyphSlot(st, id, inv), gact = g === 'can_pose' ? 'glyph_pose' : g === 'posed' || g === 'inactive' ? 'glyph_remove' : null;
+  const glyph = g === 'none' ? '' : `<div class="skGl"><span class="skGlyph g-${g}">${g === 'posed' || g === 'inactive' ? '<img src="textures/glyph.png" alt="">' : ''}</span>`+
+    `<span><b>${esc(glyphOf(id))}</b><br><small class="mut">${esc(GLYPH_TIP[g])}</small></span>`+
+    (gact && !session && !busy ? `<button data-glyph="${id}" data-gact="${gact}">${gact === 'glyph_pose' ? 'Poser' : 'Retirer'}</button>` : '')+`</div>`;
+  return `<div class="skShHead"><span class="skOrb">${NODE_PX[id] ? pxi(NODE_PX[id]) : n.icon}</span><div><h3>${esc(n.name)}</h3>`+
+    `<span class="mut">${esc(n.tree.label)} · étage ${n.row} · rang ${r} / ${n.max}</span></div><button class="x" data-act="close" aria-label="Fermer">✕</button></div>`+
+    `<div class="skLines"><div><i>Maintenant</i><span>${r ? esc(nodeText(id, r)) : 'Pas encore appris'}</span></div>`+
+    (r < n.max ? `<div><i>Au rang suivant</i><span class="ok">${esc(nodeText(id, r + 1))}</span></div>` : '')+`</div>`+
+    glyph+
+    (why ? `<p class="skWhy">🔒 ${esc(WHY[why] ?? '')}</p>` : `<button class="on skLearn" data-learn="${id}"${busy ? ' disabled' : ''}>APPRENDRE · 1 POINT</button>`);
+}
+
 /* onOp({ action:'learn', node } | { action:'reset' }) → promesse ; inSession() : une session est en cours */
 export function setupSkills({ onOp, inSession, onChange = () => {}, inventory = () => ({ slots:[] }) }){
   let st = { tree:null, ranks:{}, points:0, spent:0, glyphs:{} }, busy = false, msg = '';
