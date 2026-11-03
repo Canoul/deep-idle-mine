@@ -6773,3 +6773,19 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 ### 03/11/2026 — He's coming : Marqué par Lucifer, paliers × 24
 - `HES_COMING.roar.markBonus` 0,5 ; `dodgeFear` (src/sim/hescoming/session.js, exporté) : chance du Fear = 1 − ténacité effective (pénétration hescoming), × 1,5 si `m.fearMark`, plafond 1 ; tirage seulement si ténacité > 0 ; marque posée sur une esquive, retirée sinon. Le rugissement n'utilise plus `resists` (pas de fatigue générale) ; l'autoattaque, si. Effet `fear_mark` (EFFECTS, src/sim/effects.js, bulle src/ui/effects.js), déjà envoyé par la vue du Bloc géant.
 - Paliers × 24 (× 12 ce matin sans test : tests/hescoming-sim « config » échouait, corrigé). ✅ hescoming-sim (dont test de la marque), effects, tenacity, giant : 95.
+
+## 03/11/2026 — Geoffrey — Appli : clavier à la connexion, bulle du tableau de butin (branche geoffrey/fix-appli-clavier-butin)
+- Signalement (Galaxy S24, appli Android) : 1) en tapant ses identifiants, la page partait tout en bas, le champ caché ;
+  2) le Treasure T4 ne s'ouvrait pas : la bulle du tableau de butin (`#tip.loot`), plus haute que l'écran, couvrait tout
+  (fixée en haut, sans limite, `pointer-events:none` : impossible à faire défiler, le bouton « Ouvrir » caché dessous).
+- **Clavier** : `src/app/keyboard.js` (chargé par `bootApp`, avant la connexion) : hauteur du clavier = plugin Keyboard
+  (`keyboardWillShow`, déjà dans les coques) sinon `visualViewport` → `--kb-h` et classe `appKb` sur `<body>` ; champ
+  touché ramené au centre (`scrollIntoView`). `app.css` : `#account` aligné en haut, `padding-bottom` = clavier ; champs
+  à 16 px. Cause probable : appli bord à bord (Android 15, `SystemBars insetsHandling: css`), la page n'est pas
+  raccourcie par le clavier (`resize: native` du plugin ne vaut que pour iOS). Pas de code natif ajouté.
+- **Bulle** : `tipPlace` (src/ui/tooltip.js, logique pure) : au doigt, trop haute → entre `.topbar` et `#appBar` / `#nav`,
+  `max-height` et défilement (`#tip.touch.scroll`) ; un appui commencé sur la bulle la ferme (pas celui qui l'a ouverte),
+  défiler dedans ne la ferme plus. Souris : inchangé.
+- Tests ✅ tooltip (4), app-keyboard (2), app-bundle, app-mode, app-device, app-update, inventaire. Navigateur ✅
+  (playwright, 360 × 780 tactile, `?app`) : clavier simulé de 330 px, champ mot de passe à 184-220 px (limite 580) ;
+  bulle du T4 entre 68 et 841 px, fermée par un appui. ⚠️ Non essayé sur un vrai téléphone (clavier réel, plugin).
