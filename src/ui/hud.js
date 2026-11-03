@@ -105,7 +105,8 @@ function updateRail(G, fm){
 /* mini-état de la session dans la barre de navigation (visible depuis tous les onglets) */
 /* len : durée de la partie en s de jeu (mine instantanée : INSTANT_MINE.duration) */
 export function updateNavSession(G, waiting=false, len=SESSION_LEN){
-  $('navTimer').textContent = !G ? (waiting ? 'résultat…' : 'aucune') : G.over ? 'terminée' : fmt(G.t)+' / '+fmt(len);
+  /* navLen : durée totale, cachée dans l'appli pour laisser la place au pseudo (src/app/app.css, 03/11/2026) */
+  $('navTimer').innerHTML = !G ? (waiting ? 'résultat…' : 'aucune') : G.over ? 'terminée' : `${fmt(G.t)}<span class="navLen"> / ${fmt(len)}</span>`;
   $('navBar').style.width = (G ? Math.min(100, G.t/len*100) : 0)+'%';
 }
 

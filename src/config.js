@@ -1538,6 +1538,10 @@ export const GAME = { speed:2, devSpeeds:[1,2,5,20,60,300], maxPlayers:3 };
    miAhead : créneaux programmés d'avance (24 = 48 h, le temps de rouvrir l'appli) ; syncEvery : s entre deux recalculs ;
    syncTolerance : s d'écart d'heure en dessous duquel une notification reste telle quelle. */
 export const APP_NOTIFS = { miBefore:300, quietFrom:23, quietTo:8, miAhead:24, syncEvery:30, syncTolerance:5 };
+/* Accueil de l'appli (src/app/home.js, 03/11/2026, Jules ; spec docs/superpowers/specs/2026-11-03-appli-accueil-design.md) :
+   rendez-vous visibles avant « + N », mine instantanée proposée dans les miSoonMin minutes avant son ouverture, bande du
+   Carreau (hauteur en px, échelle des sprites, onglets des bâtiments de TOWN.buildings : gauche, centre, droite) */
+export const APP_HOME = { rdvShown:2, miSoonMin:30, sceneH:320, scale:2.5, scene:['social', 'session', 'four'] };
 
 /* Appli mobile, mises à jour à chaud (02/11/2026, docs/superpowers/specs/2026-11-01-mises-a-jour-a-chaud-design.md) : l'appli
    récupère le paquet du jeu publié par le serveur (server/app-update/), sans repasser par les stores.

@@ -25,7 +25,7 @@ function memberRow(m){
   /* inviter dans son lobby (01/11/2026, Geoffrey) ; le serveur dit si c'est possible, comme dans Social */
   const why = m.status === 'session' ? 'En session' : m.status === 'offline' ? 'Hors ligne' : 'Déjà dans ton groupe, ou tu es en session';
   const invite = m.me ? '' : `<button data-g="lobbyInvite" data-id="${esc(m.id)}" data-name="${esc(m.name)}"${m.canInvite ? '' : ` disabled title="${why}"`}>${pxi('group')}Inviter</button>`;
-  return `<div class="frow"><span class="fdot ${statusDot(m)}"></span><span class="fname"><b>${esc(m.name)}</b><small class="mut">${RANK_LABEL[m.rank]} · ${esc(statusText(m))}</small></span><span class="gxp">${fr(m.xp)} XP</span><span class="fbtns">${invite}${box}</span></div>`;
+  return `<div class="frow gmem"><span class="fdot ${statusDot(m)}"></span><span class="fname"><b>${esc(m.name)}</b><small class="mut">${RANK_LABEL[m.rank]} · ${esc(statusText(m))}</small></span><span class="gxp">${fr(m.xp)} XP</span><span class="fbtns">${invite}${box}</span></div>`;
 }
 /* bâtiments (01/11/2026) : image, niveau, bonus, matériaux du prochain niveau. opts : owned (ce que je possède), canBuild ;
    sans owned, lecture seule (fiche d'une autre guilde) */

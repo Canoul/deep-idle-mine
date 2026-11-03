@@ -3,13 +3,15 @@
 import { barHtml, subHtml } from './bar.js';
 import { familyOf, targetTab, sessionRedirect } from './families.js';
 import { startNotifs } from './native.js';
+import { startHome } from './home-ui.js';
 
 const KEY = 'deepIdleMine.appFamilyTab';   // dernier sous-onglet ouvert, par famille
 const load = win => { try { return JSON.parse(win.localStorage.getItem(KEY)) ?? {}; } catch(e){ return {}; } };
 const save = (win, v) => { try { win.localStorage.setItem(KEY, JSON.stringify(v)); } catch(e){} };
 const HOME = 'lobby', TRAIL = 20;          // écran d'accueil ; onglets retenus pour le bouton retour
 
-export function startApp({ doc, win, nav, shown, notifData }){
+/* home : { lobby: () => l'objet de setupLobby, data: () => { now, sessionTimes, furnaces } } pour l'Accueil (03/11/2026) */
+export function startApp({ doc, win, nav, shown, notifData, home: homeDeps }){
   const remembered = load(win);
   let marks = new Set(), wasShown = false, drawn = '';
   const trail = [];                        // onglets précédents (bouton retour Android)
@@ -17,6 +19,7 @@ export function startApp({ doc, win, nav, shown, notifData }){
   const bar = doc.createElement('nav'), sub = doc.createElement('div');
   bar.id = 'appBar'; sub.id = 'appSub';
   doc.body.append(sub, bar);
+  const home = homeDeps ? startHome({ doc, nav, ...homeDeps }) : null;
 
   function draw(){
     const current = nav.current(), family = familyOf(current), inSession = shown();
@@ -33,11 +36,13 @@ export function startApp({ doc, win, nav, shown, notifData }){
     const now = shown(), to = sessionRedirect({ tab:nav.current(), shown:now, wasShown });
     wasShown = now;
     if(to) nav.show(to); else draw();
+    home?.render();   // minuteries des rendez-vous et de la session
   }
 
   bar.onclick = e => {
     const f = e.target.closest('[data-family]')?.dataset.family;
     if(f) nav.show(targetTab(f, remembered[f], { inSession:shown() }));
+    if(f === 'accueil') home?.show();   // déjà sur le Lobby, nav.show ne fait rien : on revient quand même à l'Accueil
   };
   sub.onclick = e => { const t = e.target.closest('[data-subtab]')?.dataset.subtab; if(t) nav.show(t); };
   /* le guide « Premiers pas » compte comme une pastille */
@@ -60,7 +65,7 @@ export function startApp({ doc, win, nav, shown, notifData }){
     },
     canGoBack: () => trail.length > 0,
     goBack(){ goingBack = true; nav.show(trail.pop()); },
-    atHome: () => nav.current() === HOME,
-    goHome(){ nav.show(HOME); },
+    atHome: () => nav.current() === HOME && (home?.shown() ?? true),
+    goHome(){ nav.show(HOME); home?.show(); },
   };
 }

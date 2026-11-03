@@ -83,7 +83,9 @@ export function setupGuide(el, { facts, go, highlight }){
   }
 
   function html(view, open){
-    const head = view.all ? '🏆 Premiers pas : terminé !' : `📜 Premiers pas <b>${view.count}/${view.total}</b> · ${esc(view.current.title)}`;
+    /* gLbl / gCur : cachés dans l'appli quand le guide est replié, il ne reste que « 📜 5/7 » (src/app/app.css) */
+    const head = view.all ? '🏆<span class="gLbl"> Premiers pas : terminé !</span>'
+      : `📜<span class="gLbl"> Premiers pas</span> <b>${view.count}/${view.total}</b><span class="gCur"> · ${esc(view.current.title)}</span>`;
     if(!open) return `<button class="gHead" data-g="toggle" aria-expanded="false">${head}<span class="gArrow">▴</span></button>`;
     const intro = view.count === 0
       ? `<p class="gIntro">Bienvenue dans Deep Mine Idle ! Ton mineur creuse tout seul : toi, tu le prépares entre les sessions avec ce qu'il rapporte. Suis ces étapes pour découvrir la boucle du jeu.</p>` : '';

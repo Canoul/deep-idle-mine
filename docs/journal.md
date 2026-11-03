@@ -16,6 +16,33 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 03/11/2026 — Jules — Appli mobile : nouvel écran d'Accueil
+- **Pour le joueur** : rien sur le site. Dans l'appli, le premier écran n'est plus le Lobby. En haut, une bande du
+  **Carreau** (la Taverne, le Chevalement, la Fonderie) où ton équipe attend devant le chevalement, avec « ✓ Prêt » ou
+  « pas prêt » au-dessus de chacun ; une place libre est un « ? » doré qu'on touche pour inviter. En dessous : l'activité
+  choisie (« Mine classique · Minerais · Combattre ») avec **Changer ▸**, qui ouvre le Lobby complet ; les **rendez-vous**
+  ouverts (Bloc géant, He's coming, tour ouverte, mine instantanée bientôt, four fini, invitation), deux visibles et le
+  reste dépliable ; et un gros bouton **LANCER** sous le pouce (« JE SUIS PRÊT » pour un membre, la raison quand on ne peut
+  pas lancer). En session, l'équipe a quitté la place, la carte montre la session et le bouton devient « VOIR LA SESSION ».
+- **Décisions** (Jules) : mélange des maquettes « tableau de bord » et « Carreau », avec une ville bien visible (320 px sur
+  un écran d'iPhone). Choix de Claude validés : ville fixe (pas les autres joueurs), Bloc géant / mine instantanée ouverts
+  dans le Lobby plutôt qu'en un toucher, rien quand on touche un coéquipier. Conception : `docs/superpowers/specs/2026-11-03-appli-accueil-design.md`.
+- **À suivre** : l'essayer sur un vrai téléphone et en groupe de 3 ; la suite de l'étape 2 (Perso : sets, stuff, skills, sorts).
+- **État** : ✅ en ligne le 03/11
+
+## 03/11/2026 — Jules — Appli mobile : audit de l'interface et premières corrections
+- **Pour le joueur** : rien sur le site. Dans l'appli : plus de gros titre en haut de chaque page (le sous-onglet dit
+  déjà où on est) ; les filtres (inventaire, classement…) tiennent sur une rangée qu'on fait défiler au doigt ; dans le
+  classement et la liste des membres de guilde, chaque joueur tient sur une ligne ; des boutons plus grands, faciles à
+  toucher ; le guide « Premiers pas » replié devient une petite pastille « 📜 5/7 » ; en session, le pseudo n'est plus
+  coupé à une lettre dans la barre du haut ; les grosses quantités s'écrivent « 2,2k » dans les cases ; le Sac est dans
+  l'ordre Inventaire, Craft, Four, Concasseur, Recherche.
+- **Décisions** (Jules) : on refait l'interface de l'**appli d'abord**, le site PC plus tard. L'audit (ce qui ne va pas,
+  écran par écran, et l'ordre des prochains chantiers) est dans `docs/superpowers/specs/2026-11-03-appli-ux-audit.md`.
+- **À suivre** : l'étape 2, sur maquettes à comparer : Accueil, puis Perso (sets, stuff, skills, sorts), Historique,
+  Guilde, Classement. À voir avec Geoffrey : l'écran Session hors session et qui fait quels écrans.
+- **État** : ✅ en ligne le 03/11
+
 ## 03/11/2026 — Geoffrey — Appli Android : plus de bandeau « Deep Mine Idle MMO »
 - **Pour le joueur** : sur Android, un bandeau noir avec le nom de l'appli cachait le haut du jeu (portrait, « Mon compte », « Se déconnecter »). Le thème de l'appli n'a plus de barre de titre. Il faut la nouvelle appli (1.1.1, fabriquée par GitHub Actions) : une mise à jour à chaud ne peut pas changer ça.
 - **État** : ✅ dans main le 03/11 (nouvelle appli 1.1.1 à envoyer sur Google Play)
@@ -397,7 +424,6 @@ Modèle d'entrée :
 - **Décision** : tant que la prison tourne, le joueur n'est pas prêt d'office, pour que le chef ne puisse pas la lui terminer
   sans son accord.
 - **État** : ✅ en ligne le 01/11
-
 
 ## 01/11/2026 — Geoffrey — Trois nouveaux talents (étage 6)
 - **Pour le joueur** : un nouveau talent à 1 point au bout de chaque arbre. **Ivresse Minérale** (Mineur) : chaque minerai ajoute 1 dégât à la prochaine attaque. **Reconnaissance** (Logisticien) : chaque autre mineur dans le seau du treuil lui rend 1 d'oxygène toutes les 2 s. **Saccager** (Barbare) : après 2 critiques d'affilée, la prochaine attaque est double.
@@ -982,7 +1008,6 @@ Modèle d'entrée :
 
 Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10 à 20 (avant 15 à 30), tier 2 : 15 à 30 (avant 30 à 45), tier 3 : 20 à 35 (avant 45 à 60), tier 4 : 25 à 40 (avant 60 à 75).
 
-
 ## 30/10/2026 — Geoffrey — Instance II : le Golbute
 - **Pour le joueur** : nouvelle instance dans « Où miner » → Instances. Un golem de 5 × 5 au milieu d'une arène vide,
   10 min. Il tape le sol et projette les mineurs proches (la chute étourdit), fait tomber une avalanche toutes les
@@ -1416,7 +1441,6 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
   ne montre plus que les **autres exemplaires du même objet** (identifiés ou non : sacrifier un exemplaire identifié
   reste permis, avec la fenêtre d'avertissement). Vider la case de la pièce revient au premier temps.
 - **État** : ✅ en ligne le 28/10.
-
 
 ## 28/10/2026 — Geoffrey — Correctif : le mineur « se téléportait » dans l'ascenseur
 - **Pour le joueur** : en session, un mineur qui prenait l'ascenseur (Glyphe Treuil) sautait de plusieurs cases d'un
@@ -2106,7 +2130,6 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
   mineurs restent des torches.
 - **État** : ✅ en ligne le 26/10
 
-
 ## 26/10/2026 — Geoffrey — « Who ? » : aussi les joueurs hors ligne des dernières 24 h
 - **Pour le joueur** : le bouton « Who ? » des tours liste, après les joueurs en ligne, ceux qui sont **hors ligne** mais
   venus dans les **dernières 24 h** et qui n'ont pas fait la tour, avec « vu il y a 3 h ». Pas de bouton Inviter pour
@@ -2350,7 +2373,6 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
   redémarrage du serveur rejoue la partie à l'identique.
 - **État** : ✅ en ligne le 25/10
 
-
 ## 25/10/2026 — Geoffrey — K hole : le portail vers une autre dimension (4 cartes)
 - **Pour le joueur** : rarement (2 % par area), un trou noir est enfoui dans la mine. Dès qu'un mineur le voit, il
   s'ouvre, et 3 s plus tard tout le groupe est aspiré dans une autre dimension, une carte tirée au hasard parmi 4 :
@@ -2396,7 +2418,6 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
   Pillage plafonné à +25 % ; Force brute sur les dégâts totaux ; Glyphe Treuil (ascenseur) à part, étape 2.
 - **À suivre** : la source des glyphes en jeu ; le Glyphe Treuil.
 - **État** : ✅ en ligne le 25/10
-
 
 ## 25/10/2026 — Geoffrey — Runes : 5 stats de plus, Découverte, Double attaque
 - **Pour le joueur** : une rune peut maintenant tomber sur **ténacité, résistance au recul, portée d'attaque, recul** et la
@@ -2537,12 +2558,10 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
 - **Décisions** (Geoffrey) : ces trois pièces valent environ 400 x chacune (valeur d'équilibrage, ajustable) ; pioches nerfées.
 - **État** : ✅ en ligne le 25/10
 
-
 ## 25/10/2026 — Geoffrey — Piège : le barbare vient vraiment aider
 - **Pour le joueur** : quand un allié déclenche un piège, le barbare vient tuer les mobs jusqu'au bout. Avant, s'il
   était juste au-dessus de la salle ou devait creuser pour y arriver, il « oubliait » les mobs au bout de quelques
   secondes et retournait miner.
-
 
 ## 25/10/2026 — Geoffrey — Donjon : on reste même sans oxygène, la salle se révèle au seuil
 - **Pour le joueur** : quand un donjon est découvert, le barbare y va même s'il n'a plus d'oxygène, et les autres
@@ -2654,7 +2673,6 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
   équipée qui explore plus. Si ça ne se sent pas, le levier est la découverte, pas la chance.
 - **État** : ✅ en ligne le 25/10 (avec `geoffrey/tresor-60`, puis 60 % en areas 0 à 2)
 
-
 ## 25/10/2026 — Geoffrey — Aura du stuff runé
 - **Pour le joueur** : une pièce visible (casque, torse, ceinture, jambes, bottes) identifiée R4+ avec une rune R4+
   s'entoure d'un halo qui pulse, de la couleur de la qualité (magenta R4, orange R5, rouge R6, jaune R7) : faible en
@@ -2743,7 +2761,6 @@ déjà de la chitine en plus de sa peau). Wiki et règles du jeu à jour. ✅ en
   perdues par rencontre avec une équipe en fer (7 s de combat + 18 s d'oxygène).
 - **À suivre** : un usage pour la Vésicule de gaz. Vérifié : aucune partie bloquée, et pas d’effet sur la progression (sans stuff 4,0 areas, en fer 5,1 : comme avant).
 - **État** : ✅ en ligne le 24/10
-
 
 ## 24/10/2026 — Geoffrey — Simulations deux fois plus rapides
 - **Pour le joueur** : rien ne change en jeu. Le mineur remonte au même moment et prend les mêmes décisions. Le serveur
@@ -2961,7 +2978,6 @@ déjà de la chitine en plus de sa peau). Wiki et règles du jeu à jour. ✅ en
   (le mineur attend beaucoup) : à regarder à part.
 - **État** : ✅ en ligne le 23/10
 
-
 ## 23/10/2026 — Geoffrey — Mine instantanée : graphite et diamant
 - **Pour le joueur** : la mine instantanée contient maintenant 20 % charbon, 40 % fer, **33 % or** (avant 39 %),
   **5 % graphite** et **1 % diamant** (nouveaux), plus 1 % de tas de plumes. Par mine : 125 graphites et 25 diamants.
@@ -3141,7 +3157,6 @@ déjà de la chitine en plus de sa peau). Wiki et règles du jeu à jour. ✅ en
   rafraîchissement suivant du lobby (quelques secondes).
 - **État** : ✅ en ligne le 22/10
 
-
 ## 22/10/2026 — Geoffrey — Les mineurs reprennent le puits des autres
 - **Pour le joueur** : en équipe, après un passage au coffre, un mineur reprend le puits déjà creusé par les autres
   (ou le treuil) au lieu de retourner à sa colonne pour recreuser un puits depuis la surface. Le mineur de droite
@@ -3285,7 +3300,6 @@ déjà de la chitine en plus de sa peau). Wiki et règles du jeu à jour. ✅ en
 - **Mesures** (6 parties) : seul, 362 minerais contre 365 avant ; à 3, 1 073 contre 1 074 ; aucun blocage. Une partie
   à 3 sur 6 ne débloque plus l'area 4 dans les dernières minutes (on ne fonce plus au front à la fin).
 - **Réglage** : la part du temps restant à garder pour miner (`endWorkShare`, 50 %) se change dans la config.
-
 
 ## 22/10/2026 — Geoffrey — Mine instantanée : galeries dans tous les sens, tas de plumes prioritaires
 - **Pour le joueur** : les mineurs ne creusent plus tous droit vers le bas : chacun suit un cap qu'il change de temps en temps. Un tas de plumes découvert à 8 cases ou moins passe avant tout, même enfermé dans la roche : le mineur le plus proche creuse vers lui.
@@ -3611,7 +3625,6 @@ déjà de la chitine en plus de sa peau). Wiki et règles du jeu à jour. ✅ en
 - **À suivre** : la Mine instantanée elle-même. La branche `origin/social` touche aussi `main.js` et `nav.js` :
   conflits à résoudre quand l'une des deux sera fusionnée après l'autre.
 - **État** : ✅ en ligne le 21/10
-
 
 ---
 

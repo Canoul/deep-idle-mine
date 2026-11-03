@@ -317,7 +317,9 @@ nav = setupNav($('nav'), $('views'), id => {
 /* appli mobile : barre des familles ; shown : l'onglet Session a-t-il quelque chose à montrer (partie, prison, bilan) ? */
 if(appBoot.app) import('./app/main.js').then(async m => { appLayer = m.startApp({ doc:document, win:window, nav,
   shown: () => !!rec || inRoom() || prisonShown() || !$('end').hidden,
-  notifData: () => ({ now:serverNow(), offset:clockOffset, sessionEnd:rec?.finishAt ?? null, furnaces:furnace.state().list, giantNext:giantUI?.nextEntry() ?? null, account:acct.account?.id ?? null }) });  (await appBoot.native)?.attach(appLayer); }).catch(e => { console.warn(e); dropApp(document); });
+  notifData: () => ({ now:serverNow(), offset:clockOffset, sessionEnd:rec?.finishAt ?? null, furnaces:furnace.state().list, giantNext:giantUI?.nextEntry() ?? null, account:acct.account?.id ?? null }),
+  /* Accueil de l'appli (src/app/home-ui.js, 03/11/2026) : le Lobby (lu à chaque fois : il est créé plus bas) et l'heure du serveur */
+  home: { lobby: () => lobby, data: () => ({ now:serverNow(), sessionTimes: rec?.finishAt ? { startedAt:rec.startedAt, finishAt:rec.finishAt } : null, furnaces:furnace.state().list }) } });  (await appBoot.native)?.attach(appLayer); }).catch(e => { console.warn(e); dropApp(document); });
 
 /* orbes de la barre d'action : temps de session et XP ; pendant une session, oxygène et pods du mineur suivi */
 const orbs = setupOrbs($('orbL'), $('orbR'));
@@ -393,12 +395,14 @@ const lobby = setupLobby({
    session dans les 30 dernières minutes, 22/10) ; pas pendant la mine instantanée elle-même. Inscrit, le lobby s'ouvre
    sur « Mine instantanée » */
 let miModeShown = false;
+let miRegistered = false;   // inscrit à la prochaine mine instantanée : rendez-vous de l'Accueil de l'appli (03/11/2026)
 const instantLobby = setupInstantLobby({
   api: instantApi,
   canNotify: () => !isMi(),
   inSession: () => !!rec && !isMi(),
   onJoined: () => { lobby.update({ mode:'mi' }); nav.show('lobby'); },
-  onState: st => { if(st.registered && !miModeShown){ miModeShown = true; lobby.update({ mode:'mi' }); } },
+  onState: st => { if(st.registered && !miModeShown){ miModeShown = true; lobby.update({ mode:'mi' }); }
+                    if(!!st.registered !== miRegistered){ miRegistered = !!st.registered; lobby.update({ miRegistered }); } },
   onOpened: () => pollLobby(),                       // mode dev : la session est là, le lobby la voit et bascule
 });
 function startInstant(){ if(acct.account && !acct.offline) instantLobby.start(); else instantLobby.stop(); giantUI?.refresh(); hcUI?.refresh(); }

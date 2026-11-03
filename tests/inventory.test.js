@@ -114,6 +114,20 @@ test('affichage compact des quantités', () => {
   assert.equal(fmtQty(1234567), '1,2M');
 });
 
+/* appli (03/11, Jules) : 4 caractères au plus dans un slot de téléphone, arrondi vers le bas (jamais plus qu'on n'a) */
+test('affichage court des quantités (appli)', () => {
+  const short = n => fmtQty(n, { short:true });
+  assert.equal(short(999), '999');
+  assert.equal(short(1000), '1k');
+  assert.equal(short(2217), '2,2k');
+  assert.equal(short(2290), '2,2k');
+  assert.equal(short(9999), '9,9k');
+  assert.equal(short(12340), '12k');
+  assert.equal(short(456789), '456k');
+  assert.equal(short(1234567), '1,2M');
+  assert.equal(short(12345678), '12M');
+});
+
 test('onglets de l\'inventaire (29/10/2026) : chaque objet a un onglet ; les cas demandés ; filtre sans trou', async () => {
   const { tabOf, tabSlots } = await import('../src/ui/inventory.js');
   const { ITEMS, INVENTORY } = await import('../src/config.js');

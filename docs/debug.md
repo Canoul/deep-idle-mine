@@ -1113,7 +1113,6 @@ Règles (voir CLAUDE.md) :
 - **Tests** : camera (nouveau test setRows), nav : verts. ✅ Captures : 1918×904 (24 lignes, ciel visible, colonnes
   jusqu'en bas), 1440×900 (40 lignes, ×1 exact, colonnes au-dessus de la barre), 390×844 sans débordement.
 
-
 ### Identification : nerf des qualités, butin des mobs, pièces existantes mises à jour (Geoffrey) — `main`, en ligne le 22/10
 - **Demande** : butin des mobs à +10 % pour 100 x ; total max des qualités R1 à R7 = 25 / 30 / 35 / 40 / 50 / 75 / 100 %
   (avant 30 à 220 %) ; mettre à jour les pièces déjà identifiées ; vérifier le tirage (un joueur, Crousti, a eu 5 R4).
@@ -1299,7 +1298,6 @@ Règles (voir CLAUDE.md) :
   résidus listés en areas ≥ `JUDGMENT.fromArea` dans le tableau des blocs. Plus aucun objet « Pas encore obtenable ».
   wiki + crusher 21/21 ✅, Chromium sans erreur ✅. Mis en ligne le 22/10.
 
-
 ### Tours du Jugement : labyrinthe, brouillard, caméra, 10 min ; vérification « donjon » (Geoffrey) — branche `geoffrey/jugement-patch`, en ligne le 22/10
 - **Config** `TOWER` : `duration` 900 → 600 (5 min demandées, infaisables : voir mesures) ; `unbreakablePct`
   remplacé par `mazeEvery: 2`, `mazeHard: 11` ; `view: { cols: 19, rows: 15 }`.
@@ -1375,7 +1373,6 @@ Règles (voir CLAUDE.md) :
   Chromium (dev) : session lancée, lobby → Mine instantanée → S'inscrire en session ✅, aucune erreur.
   ⚠️ Bouton fermé « 🔒 Inscriptions à … » pas vu à l'écran (testé seulement par `canSignup`).
 
-
 ### Faux blocage « Retour (treuil) » (seed 23757) : détecteur corrigé (Geoffrey) — branche `geoffrey/fix-treuil-retour`, en ligne le 22/10
 - **Symptôme** : `simulate --miners 3 --count 6 --skills mixed`, seed 23757 : ⚠ BLOQUÉ Bleu (logisticien),
   `{"t":3445,"x":32,"y":157,"mode":"return","status":"Retour (treuil)"}`.
@@ -1411,7 +1408,6 @@ Règles (voir CLAUDE.md) :
 - **Cause** : coût = temps de trajet seul + foule ; un bloc voisin coûte 0, la gravité et la montée (échelles) coûteuse → puits vers le bas. Foule à 0 : inchangé (18/18 au fond). Tas : seulement via les cases vides à ≤ 3 pas.
 - **Correction** : cap par mineur (`heading`, `headPenalty`) ; `featherChase` : tas découvert ≤ featherReach (8), le plus proche l'emporte, creusement glouton vers lui.
 - **Tests** : `tests/instant-mine.test.js` (+2 ; test featherReach : sol plat). Mesure 3 mineurs : fond 4/18 (avant 18/18), blocs/mineur 104 (avant 108), tas pris 9,3/9,5.
-
 
 ### Chutes connues de plus de 3 cases sans étourdissement (Jules) — branche `jules/fix-chute`, ✅ en ligne le 22/10
 - **Symptôme** (retour joueur) : un mineur tombe de plus de 3 cases dans un trou déjà creusé par un autre et n'est pas
@@ -1898,7 +1894,6 @@ Règles (voir CLAUDE.md) :
 - **Vérification** : blocks, world, session, wiki, fall, winch, view, dungeon, furnace, craft, social, game-service,
   party, lfg, lobby ✅ ; anticheat 72/72. ⚠️ Rien regardé dans un navigateur.
 - **Points fragiles** : le socle est un bloc `special` en couche 1 (hors area) : `rowDone` l'ignore (incassable).
-
 
 ### Graphite, Steel ingot, area 6 (Geoffrey) — branche `geoffrey/graphite`, ✅ en ligne le 23/10
 - **Quoi** : bloc 19 `Graphite ore` (`ore`, tex `graphite`, w 3, hard 4.0, val 4, dot `#2f3b4d`), `IDS.graphite = 19`,
@@ -3362,7 +3357,6 @@ Règles (voir CLAUDE.md) :
 - **Tests** : `tests/skins.test.js` +1 (ordre des calques, dos, aura) ; skins, aura 19/19 ✅. Aperçu agrandi vérifié
   (corps seul, avec cape, avec armure en fer). ⚠️ Pas regardé dans le navigateur (mine et portrait).
 
-
 ### Bloc géant consultable en session (Geoffrey) — branche `geoffrey/onglet-bloc-geant`, ✅ en ligne le 26/10
 - **Quoi** : `mineModes` (`src/ui/lobby.js`) grisait tout sauf la MI pendant une session → le bouton Bloc géant
   aussi (demande de Geoffrey : la carte doit toujours s'ouvrir). Désormais `disabled` = `locked && !scheduled && !giant`.
@@ -3435,7 +3429,6 @@ Règles (voir CLAUDE.md) :
   0 session bloquée ; le seul golem immobile en chasse attendait devant un donjon où était le mineur (voulu).
 - **À vérifier** : ⚠️ pas regardé dans le navigateur (dessin 2 × 2, barre de vie, goutte) ; ⚠️ la simulation standard
   n'atteint pas l'area 5 (3 areas) : à surveiller en vraie partie.
-
 
 ## 26/10/2026 — « Who ? » : joueurs hors ligne des dernières 24 h (branche `geoffrey/who-deconnectes`) — ✅ en ligne le 26/10
 - **Quoi** : `server/accounts/store.js` `recentlySeen(since)` → { compte: max lastSeenAt } d'après les connexions
@@ -4073,7 +4066,6 @@ Règles (voir CLAUDE.md) :
 - Tests : `tests/shrines.test.js` (11), `tests/anticheat/shrines.test.js` ; liés (game-service, party, lfg, social, world,
   session, khole, view, lobby, live, wiki) 216/216 ✅ ; anti-triche 105/105 ✅ ; simulation 5 sessions sans shrine : 0 blocage.
 - ⚠️ Pas de simulation avec le shrine (effet sur la profondeur et le coffre non mesuré). Le don pendant une session est permis.
-
 
 ## 28/10/2026 (11 h) — Tours : niveau 2 revu, invocation au saut, descente des mobs (Geoffrey)
 - **Config** : `TOWER.levels[2]` hp 2 → 2,5, hard 2 → 1,75, `summon: 2` (niveau 1 : 0) ; `TOWER.mobs.descend: true`.
@@ -5452,7 +5444,6 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   session à la fois). Si un jour on peut échanger ou recycler une clé, le joueur qui s'en débarrasse pendant l'instance
   n'aura simplement pas de coffre.
 
-
 ## 30/10/2026 — Geoffrey — Prison : specs relues à chaque run (branche geoffrey/prison-stuff-a-chaque-run)
 - Signalement : Infernatiwar, Découverte 4, « ne s'applique pas bien en prison ». Le calcul est le même qu'en mine (vérifié :
   `buildPrisonRun` → `minerSpecs`, Lunettes Gucci + Cape de Naingui : discoverMax 4, +63 % de cases découvertes) ; la cause
@@ -5753,7 +5744,6 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** ✅ prison-ui +1. ⚠️ Pas vu dans un vrai navigateur. Chaque prison en fond fait 4 demandes par seconde au lieu d'une toutes
   les 15 s, comme une prison regardée : à surveiller sur le VPS.
 
-
 ## 31/10/2026 — Énergie dans Social (Geoffrey)
 - **Quoi** : `energy` { value, max } sur les lignes Amis et Online ; affichée par `energyHTML` (src/ui/social.js), rouge sous `ENERGY.cost.min`.
 - **Serveur** : `loadEnergy` coupé en deux : `restedEnergy` calcule sans écrire, `loadEnergy` écrit. `game.energyOf` n'écrit rien et ne prend aucun
@@ -5804,7 +5794,6 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Cookie** (31/10) : `cookieName` (server/config.js) : `dim_session_<port>` en mode dev, deux serveurs dev se déconnectaient l'un l'autre ;
   inchangé en ligne.
 - ⚠️ `pg` doit être installé dans le dossier d'où le serveur dev tourne (`npm install`).
-
 
 ## 31/10/2026 — Prison : mines au focus minerai remplacées par une référence (Geoffrey)
 - **Quoi** : `lastMines` note `oreFocus` (un événement de `rec.focus` d'un joueur quelconque de la session vise un minerai ; le focus d'area seul ne compte pas). `oreParts` (src/meta/prison-profile.js) : une mine `refMine` (oreFocus et `areas` ≥ `PRISON.focusRef.area`, 6) pèse comme `PRISON.focusRef.ores`, les autres comptent pour leur butin. Area, mobs et treasures inchangés. `prisonCompos` : `v` = `PRISON.compoVersion` (2) ; compo gardée d'une autre version avec au moins une mine refMine dans l'historique → paliers refaits depuis l'historique, `saved` effacée, une seule fois. Sans mine refMine : compos gardées telles quelles, `v` posé.
@@ -5878,7 +5867,6 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Fausse piste** : une première simulation (mineur à vitesse constante, modèle de lecture sans mémoire) promettait 513 → 50 % : très surestimé. La première version sautait après un pic réseau (×27) : d'où la tête de lecture.
 - ⚠️ Pas mesuré en ligne ni sur plusieurs joueurs. +48 % de requêtes de vue environ (2,7 → 4 par seconde par joueur), pump deux fois plus souvent : à surveiller. Les actions (coup, minage) ne sont pas différées : elles peuvent précéder la position de 0,4 s. `tests/perf.test.js` « boîte de mesures » et `prison-server` « une tour et une instance » échouent, comme avant.
 - Sur le port dev : `?perf` dans l'adresse. Hébergement : l'adresse 82.223.196.89 est chez ARSYS (groupe IONOS), à confronter à la doc (OVH).
-
 
 ## 31/10/2026 — Gobelins asservis : roche sans minerai à portée (Geoffrey)
 - **Constat** (3 seeds, 3 mineurs, couronne sur le 1er, stats de base, 38 gobelins) : vie 29,9 s de jeu (≈ 15 s réelles à ×2), mais 12,5 s inactif ; 78 % de cette attente sans aucun minerai à `reach` (10 gobelins sur 38 nés sans minerai).
@@ -5964,7 +5952,6 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Quoi** : `nameBanned` (server/moderation/filter.js : liste du chat, pseudo tel quel et découpé aux majuscules). `validName` le refuse (création, sécurisation d'un invité, changement). `publicAccount` ajoute `mustRename`. `POST /api/account/rename` : seulement si le pseudo actuel est interdit. server/app.js : `must_rename` (403) sur tout POST hors `/api/account/` et `/api/admin/`. Navigateur : vue `rename` de src/ui/account.js, impossible à fermer, au démarrage et après connexion. `party.rename` met le groupe à jour.
 - **Tests** ✅ tests/pseudo-banword, comptes, sécurité, modération, groupes : 78/78 ; parcours complet dans Chrome (création refusée, fenêtre impossible à fermer, rechargement, action refusée, nouveau pseudo). Vérifié sur les 31 pseudos lisibles par la vue : aucun touché.
 - **Limites** : la liste reste côté serveur, le refus vient donc à l'envoi. Les anciens noms déjà enregistrés (historique, classements figés, sessions) ne sont pas réécrits. Les mots WORD restent en mot entier : `xxConnardxx` passe. La page déjà ouverte d'un joueur ne se bloque qu'au prochain chargement (ses actions sont refusées avant).
-
 
 ## 31/10/2026 — Énergie dans le panneau Équipe (Geoffrey)
 - **Quoi** : `game.view` renvoie `energies` { compte: { value, max } } pour une session à plusieurs, hors MI (`teamEnergies`, server/game/service.js ; cache `GAME_SERVER.teamEnergyFor` 30 s, comme Social). `src/ui/energy-tag.js` : `energyHTML` (déplacé de social.js, toujours réexporté), `setTeamEnergies`, `teamEnergyHTML`. Affiché dans hud.js, tower-hud.js, instance-hud.js ; alimenté dans la boucle de vue de src/main.js.
@@ -6270,7 +6257,6 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** : `tests/admin-session-speed.test.js` ✅, script compris ; ⚠️ navigateur et vraie partie à ×300 pas essayés (faux moteur).
 - **Point fragile** : l'Historique affiche une durée raccourcie, car `startedAt` recule. ×300 demande 3 000 ticks par seconde, or une session d'1 h à 3 mineurs (36 000 ticks) se calcule en ~19 s sur le poste de Geoffrey, soit ~1 900 ticks/s : la session dépasse `finishAt`, passe par le rattrapage de `pump` (`overdue`, une session à la fois) et l'affichage peut dire « connexion… ».
 
-
 ## 28/10/2026 — Jules — Appli mobile : conception (pas de code)
 - **Quoi** : spec `docs/superpowers/specs/2026-10-28-appli-mobile-design.md` (Capacitor 8, jeu chargé depuis
   deepmineidle.fr par `server.url`, interface téléphone ≤ 700 px, notifications locales puis push, APK par GitHub Actions).
@@ -6440,7 +6426,6 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 ## 01/11/2026 — Bot Discord : /todo done efface le message de #report (Geoffrey)
 - **Quoi** : `removeReport` remplace `markDone` dans bot/main.js. Aucun droit Discord en plus : le bot efface ses propres messages.
 - **Tests** ✅ tests/bot-todo.test.js (logique et aide), `node --check bot/main.js`. ⚠️ Effacement non essayé sur le vrai Discord : main.js n'a pas de test sans connexion.
-
 
 ## 01/11/2026 — Modération exigée par les stores : filtre, signaler, bloquer, outils admin, règles (Geoffrey)
 - **Déjà là, gardé** : `server/moderation/filter.js` (casse, accents, leet, répétitions, mot coupé), `service.js` (3 avertissements → ban 24 h), pseudos refusés. Ajouté : termes sexuels et haineux dans `words.js`. **Bug corrigé** : `mongol` et `triso` étaient pris dans un commentaire `//` et ne filtraient rien depuis le 30/10.
@@ -6740,6 +6725,75 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Applis** : rien de natif ; seulement des textures et un script Python.
 - ✅ En ligne le 03/11 (validé par Jules sur les images).
 
+## 03/11/2026 — Jules — Appli mobile : interface téléphone, étape 1 (✅ en ligne le 03/11)
+- **Quoi** : audit de l'appli (`?app`, 393 × 760) avec les skills `ss-audit` et `playwright-cli` :
+  `docs/superpowers/specs/2026-11-03-appli-ux-audit.md`. Corrections, toutes derrière `body.app` (le site ne change pas) :
+  - `src/app/app.css` (bloc « étape 1 ») : `.invHead h1` à `font-size:0` (restent `.qhelp` et les boutons de la ligne ;
+    `.invHead` sans aide ni autre enfant caché), `.lobbyWrap>h1` caché ; `.invTabs` et `.seg` en `nowrap` +
+    `overflow-x:auto` ; `.lrow` / `.gmem` sans retour à la ligne (annule pour eux la règle du site
+    `@media (max-width:700px){.frow{flex-wrap:wrap}.fbtns{width:100%}}`) ; `button{min-height:44px}` ; `.navLen` et
+    `.navLevel>span` cachés ; guide replié : `.gLbl`, `.gCur`, `.gArrow` cachés, `.views` plus bas de 60 px quand le
+    guide est là, guide caché sur l'onglet Chat (il couvrirait « Envoyer »).
+  - `src/app/families.js` : Sac = inventaire, craft, four, concasseur, recherche.
+  - `src/ui/inventory.js` : `fmtQty(n, { short })` (4 caractères au plus, arrondi vers le bas : 2,2k, 12k, 1,2M ; le
+    format du site ne change pas), `inApp()`, « Touche un objet… » dans l'appli.
+  - `src/ui/hud.js` : `#navTimer` en `innerHTML`, durée totale dans `<span class="navLen">` (`fmt` ne rend que des chiffres).
+  - `src/ui/guide.js` : titre replié découpé en `.gLbl` / `<b>` / `.gCur`. `src/ui/guild.js` : classe `gmem` sur les
+    lignes de membres.
+- **Tests** ✅ app-families (ordre du Sac, rouge puis vert), inventory (« affichage court », rouge puis vert) ; fichiers
+  liés (app-bar, app-families, craft, guide, guild-*, help, inventory, leaderboard, spells, stuff, world) : 174/175.
+  ❌ `leaderboard.test.js` « roi gobelin : record revérifié » échoue **aussi sur main** (avant ce chantier) : le test
+  attend `null` pour `instance: 'instance_2'`, que `sanitizeInstanceRecord` accepte depuis l'Instance II (Golbute). Pas
+  corrigé ici ; à trancher par qui connaît les records d'instance (Geoffrey).
+- **Vérifié** ✅ captures avant / après dans l'aperçu (Test_Mineur) : titres, filtres qui défilent, classement sur une
+  ligne, pastille du guide, barre du haut en session simulée (pseudo de 7 lettres entier avec « 93 / 100 »). Lignes de
+  membres de guilde vérifiées avec des lignes injectées (le compte de test n'a pas de guilde).
+- **Pas vérifié** ⚠️ sur un vrai téléphone ; écran de session en cours (chantier `geoffrey/appli-session`) ; un pseudo
+  long (11 lettres) finit par « … » en session.
+- **Points fragiles** : `button{min-height:44px}` vaut pour tous les boutons de l'appli (relire un nouvel écran en
+  `?app`) ; `:has()` demande Android WebView 105+ / iOS 15.4+ (déjà utilisé par app.css) ; les filtres qui défilent
+  peuvent cacher la dernière option (seule une option coupée le signale).
+- **Applis** : pas de plugin ni de code natif ; `src/app/` change, donc part dans les applis par mise à jour à chaud à
+  la mise en ligne.
+
+## 03/11/2026 — Jules — Appli mobile : écran d'Accueil (✅ en ligne le 03/11)
+- **Quoi** : spec `docs/superpowers/specs/2026-11-03-appli-accueil-design.md`, plan `docs/superpowers/plans/2026-11-03-appli-accueil.md`.
+  - `src/ui/lobby.js` : `launchFor(st)` (pur, exporté : le calcul du bouton `#launchBtn`, prison / tour / instance, déplacé
+    tel quel ; le Lobby l'appelle avec `{ ...st, mode: def?.id }` pour garder le comportement du menu) ; le clic devient
+    `async function launch()` (`#launchBtn.onclick = launch`) ; l'objet de `setupLobby` gagne `homeSnapshot()` (état + places
+    avec `look` / `auras` + `launch: launchFor(st)` + `dev`), `launch`, `openMenu()`, `openInvite()` (clique le vrai `#inviteBtn`).
+  - `src/main.js` : `miRegistered` passé au Lobby (onState de la mine instantanée, seulement quand il change) ; `startApp`
+    reçoit `home: { lobby: () => lobby, data: () => ({ now, sessionTimes, furnaces }) }`.
+  - `src/app/home.js` (pur) : `rendezVous`, `mainButton`, `sceneTeam`, `activityLine`, `homeView(snap, data, expanded)`.
+    `src/app/home-ui.js` : `homeHtml(view, { expanded })` (pur), `startHome` (insère `#appHome` + `#appHomeBack` dans la
+    section Lobby, `body.appHomeOn`, portraits par `drawPortrait`, redessin seulement si le HTML change).
+  - `src/app/main.js` : `home.render()` dans le `sync` d'une seconde ; famille Accueil → `home.show()` ; `atHome` / `goHome`
+    tiennent compte de l'Accueil caché (bouton retour Android). `src/app/app.css` : bloc « Accueil ». `src/config.js` : `APP_HOME`.
+- **Décisions de construction** : gros bouton en majuscules seulement quand il agit (« Pas prêt : Brakk » garde sa casse) ;
+  « la session » retirée du texte du Lobby (LANCER, LANCER À 3) ; coût d'énergie caché en mode dev comme le Lobby ; prison
+  en cours → « VOIR LA PRISON » quel que soit le mode choisi ; bouton Inviter en haut à gauche du ciel (en bas à droite, il
+  couvrait la 3e place) ; guide replié rangé dans le ciel (il couvrait le gros bouton).
+- **Tests** ✅ app-home (nouveau, 12), lobby (+1 : launchFor), app-families, app-bar, guide, prison-ui : 74/74 ; app-bundle,
+  app-update, app-mode, app-device : 46/46.
+- **Vérifié** ✅ aperçu `?app` 393 × 760 (Test_Mineur, mode dev) : Accueil sans défiler (760/760), Taverne / Chevalement /
+  Fonderie, places libres « ? », rendez-vous Bloc géant et He's coming ; Changer ▸ → Lobby + « ← Accueil » → retour ;
+  LANCER lance une session et l'Accueil passe en « VOIR LA SESSION », équipe partie ; « Entrer » (Bloc géant) ouvre sa carte
+  dans le Lobby. Aucune erreur dans la console.
+- **Pas vérifié** ⚠️ en groupe de 3 (chef / membre) à l'écran (couvert par les tests) ; compte à rebours et barre de la carte
+  de session (en mode dev la session n'a pas de `finishAt`) ; prison en cours ; mine instantanée proche et four fini à
+  l'écran ; vrai téléphone (encoche, `100dvh`).
+- **Points fragiles** : `startHome` lit `lobby()` au démarrage de la couche appli (import dynamique, après la création du
+  Lobby : pas d'`await` de haut niveau avant `setupLobby` dans main.js) ; `nav.show('lobby')` venu d'ailleurs garde l'état
+  montré / caché de l'Accueil.
+- **Applis** : pas de plugin ni de code natif ; `src/app/` change (mise à jour à chaud à la mise en ligne).
+- **Relecture finale** (par Claude lui-même, pas de relecteur séparé) : ✅ corrigé : l'erreur du Lobby (`#lobbyErr`, dans la
+  partie cachée) n'était pas visible sur l'Accueil → `st.error` dans `homeSnapshot`, `.hErr` au-dessus du gros bouton (test
+  « l'erreur du Lobby s'affiche ») ; ✅ corrigé : le guide rangé dans le ciel et la marge du bas valaient sur tous les onglets
+  tant que l'Accueil était actif (le guide couvrait « Trier » sur le Sac) → règles limitées à la section Lobby visible.
+  Laissé pour plus tard : un membre voit sa propre activité, pas celle du chef (comme le Lobby) ; portrait d'un coéquipier
+  pas redessiné si seul son stuff change ; « Rejoindre » reste actif pendant une session ou si le groupe est plein (le
+  serveur refuse, l'erreur s'affiche maintenant).
+
 ## 03/11/2026 — Jules — Ver de terre : nouveau sprite et file qui pivote (branche jules/sprite-ver-de-terre)
 - **Quoi** : `scripts/gen_worm.py` (nouveau, stdlib) : `worm_textures()` → `worm_head`, `worm_body`, `worm_tail` (16 × 16, tournés vers la droite sauf la queue, qui sort vers le haut). Tête dessinée en texte (`HEAD`, palette `PAL` : chitine 1-6, chair f-i, dents t-w, gorge a-e) ; anneau construit ligne par ligne (`PLATE_ROW` ton de la plaque, `GROOVE_ROW` chair du sillon : sillon, ombre, plaque, arête, deux plaques par case) + fissures ; queue calculée (`worm_tail`, plaques et sillons, fente de roche). gen_textures.py : `tex.update(worm_textures())` à la place des rectangles ; `worm_flesh` (butin) inchangé.
 - **Rendu** : `src/render/worm.js` (nouveau, pur) : `dirTo(a, b)` (0 droite, 1 bas, 2 gauche, 3 haut, comme `DIRS` de src/sim/worm.js), `wormCells(w)` (tête : de trail[0] vers la tête ; anneau i : vers la case i − 1 ; sans corps : droite ; cases confondues : direction d'avant), `drawTurned(ctx, img, px, py, dir, T)` (gauche : miroir, la lumière reste en haut ; bas / haut : quart de tour). `src/render/canvas.js` : la boucle des `G.worms` passe par `wormCells` / `drawTurned` (couleur de repli : sable). Rien côté serveur : la vue envoyait déjà `trail`.
@@ -6760,7 +6814,6 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Inventaire** (même jour) : les 306 PNG de `textures/` sont tous utilisés (noms en toutes lettres, ou fabriqués : `skins/${métal}_${pièce}`, `lucifer_roar${i}`, `golbute…_crystal`, `town_banner_${side}`) ; chaque script de `scripts/` est appelé par package.json, le serveur, un autre script, un test ou docs/deploiement-ovh.md (`scripts/assets/kenney-1bit.png` : planche de build_pxicons.py). Seul `scripts/create-account.js` (Geoffrey, 21/10, époque Render) n'est plus appelé nulle part : gardé, à voir avec lui. Place sur le disque : surtout l'historique git (84 Mo d'objets en vrac, tassés par `git gc` le 03/11) et `mobile/node_modules` (outils de l'appli, réinstallables).
 - **Tests** ✅ tests/security.
 - ✅ En ligne le 03/11.
-
 
 ### 03/11/2026 — Golbute : malus de ténacité des golems de la Division
 - `INSTANCE.golbute.split.debuff = { every:5, radius:3, tenacity:1, duration:120 }` ; `golemDebuff` (src/sim/instance/golbute.js, dans stepGolems, golem vivant et pas étourdi) pousse une date de fin dans `m.tenDebuff` ; `tenDebuffOf(G, m)` = stacks actifs × 1, retiré de la ténacité brute (`tenacityOf(m, 'golbute', extra)`) dans slamChance et l'esquive de l'avalanche. Pas d'affichage des stacks.
