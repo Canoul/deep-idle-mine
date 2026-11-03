@@ -26,7 +26,7 @@ export const SPAWN_X = 25, CHEST_X = 22;
    crit = chance qu'un coup fasse le double de dégâts ; oneTap = chance de casser un bloc instantanément (Bloc géant, spawners, cristal : ONE_TAP) ;
    piercing = chance de casser aussi le bloc juste derrière celui miné ; looting = butin des mobs en plus (comme Pillage) */
 export const STATS = { oxygenMax:300, speed:3, climbSpeed:2.25, mineSpeed:1, damage:5, attackSpeed:100, fortune:0, pods:200, light:6, compass:8,
-  compassRows:0, torches:20, torchRadius:5, torchTime:1, discoverMax:2, tenacity:0, knockRes:0, reach:0, knockback:0,
+  compassRows:0, torches:20, torchRadius:5, torchTime:1, discoverMax:2, tenacity:0, tenacityResilience:0, knockRes:0, reach:0, knockback:0,
   bridges:Infinity,   // passerelles illimitées (21/10, Geoffrey) : la stat reste pour un futur coût éventuel
   mineSpeedPct:0, damagePct:0, crit:0, oneTap:0, piercing:0, looting:0,
   blockMinePct:0,   // Némésis du Golbute (30/10/2026, Geoffrey) : % de vitesse de minage en plus sur les blocs de terrain (terre, pierre, pierre dure, résidus), pas les minerais
@@ -93,7 +93,10 @@ export const COMBAT = { reach:0.5, knock:0.25, tackleGiveUp:5, tackleLeash:6 };
 /* Pénétration (02/11/2026, Geoffrey) : points de ténacité BRUTE retirés au mineur avant la courbe, selon la mécanique :
      chance = effective(max(0, brute − pen[source]))   (pen 20 : un mineur à 20 de ténacité n'esquive plus rien)
    Sources : une clé par mécanique (absente = 0). Valeurs provisoires (proposition de Claude, à régler). */
-export const TENACITY = { k:40, max:75,
+/* Fatigue (03/11/2026, Geoffrey) : une mécanique esquivée grâce à la ténacité réduit de tired (50 %) la chance de la
+   suivante, puis tout redevient normal ; la stat tenacityResilience (STATS, 0 pour tout le monde) réduit cette baisse
+   (resilience 100 % : plus de fatigue). */
+export const TENACITY = { k:40, max:75, tired:0.5,
   pen: { gobelin:0, occultiste:0, mephite:0, chien:0, ver:0, chair:0, golem:10, minotaure:10, hescoming:0, giant:0, towerBoss:20, golbute:20 } };
 
 export const PREFS = { priority:'minerais', fightMobs:true, helpAllies:false, helpIgnore:[] };
@@ -345,6 +348,8 @@ export const CRUSHER = {
                      oneOf:[ { family:'gem', items:gems(0.01) },
                              { family:'treasure', items:[{ item:'Treasure T1', chance:0.02 }, { item:'Treasure T2', chance:0.01 },
                                                          { item:'Treasure T3', chance:0.005 }] } ] },
+    /* minerai d'or (03/11/2026, Geoffrey) : un lot de 100 donne 1 Terre */
+    'Or':          { always:[ { item:'Terre', min:1, max:1 } ], oneOf:[] },
   },
   opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
 };
@@ -754,6 +759,7 @@ export const EFFECTS = {
   list: {
     stun:         { kind:'control', name:'Étourdi',             icon:'daze',      color:'#ffd23f' },
     fear:         { kind:'control', name:'Fear',                icon:'alert',     color:'#b06bff' },   // He's coming : erre sans frapper
+    fear_mark:    { kind:'debuff',  name:'Marqué par Lucifer',  icon:'alert',     color:'#b06bff' },   // He's coming (03/11) : prochain Fear plus probable
     tackled:      { kind:'control', name:'Taclé',               icon:'grab',      color:'#e5534b' },
     caged:        { kind:'control', name:'Enfermé',             icon:'lock',      color:'#c9a227' },
     scared:       { kind:'debuff',  name:'Effroi',              icon:'alert',     color:'#ff8c1a' },
@@ -1269,8 +1275,8 @@ export const STUFF = {
                 attackSpeed:'Vitesse d\'attaque', fortune:'Fortune', tenacity:'Ténacité',
                 mineSpeedPct:'Vitesse de minage', damagePct:'Dégâts', crit:'Critique', oneTap:'Coup unique',
                 piercing:'Perçage', looting:'Butin des mobs', doubleAttack:'Double attaque', knockRes:'Résistance au recul', reach:'Portée d\'attaque', knockback:'Recul',
-                goblinThrall:'Gobelins asservis (rayon)', blockMinePct:'Minage des blocs de terrain', golemOxygen:'Oxygène par golem tué (8 cases)' },
-  statUnits: { blockMinePct:' %', goblinThrall:' blocs', torchTime:' s', reach:' bloc', knockback:' bloc', doubleAttack:' %', attackSpeed:' %', fortune:' %', tenacity:' %', knockRes:' %', mineSpeedPct:' %', damagePct:' %', crit:' %', oneTap:' %', piercing:' %', looting:' %' },   // unité affichée après la valeur d'une stat
+                goblinThrall:'Gobelins asservis (rayon)', blockMinePct:'Minage des blocs de terrain', tenacityResilience:'Résilience de ténacité', golemOxygen:'Oxygène par golem tué (8 cases)' },
+  statUnits: { tenacityResilience:' %', blockMinePct:' %', goblinThrall:' blocs', torchTime:' s', reach:' bloc', knockback:' bloc', doubleAttack:' %', attackSpeed:' %', fortune:' %', tenacity:' %', knockRes:' %', mineSpeedPct:' %', damagePct:' %', crit:' %', oneTap:' %', piercing:' %', looting:' %' },   // unité affichée après la valeur d'une stat
   /* décimales affichées au plus pour chaque stat (30/10/2026, Jules : pas de virgule quand elle ne sert à rien) ; une stat
      absente en a 1 (bonus en %, dégâts : une amélioration les fait bouger de quelques dixièmes). 0 : un compte (torches,
      pods, oxygène) ; 2 ou 3 : les vitesses, où 0,58 ou +0,206 se lisent (boosts de pioche, bottes, jambes) */
@@ -1278,7 +1284,7 @@ export const STUFF = {
                   speed:2, climbSpeed:2, reach:2, knockback:2, mineSpeed:3 },
   statFloor: ['torches'],   // arrondies à l'inférieur, comme en session (src/sim/mineur.js : 30,9 torches = 30 posées)
   /* stats du mineur affichées dans l'onglet Stuff (base STATS + bonus des pièces portées), dans cet ordre */
-  shownStats: ['oxygenMax','pods','speed','climbSpeed','mineSpeed','mineSpeedPct','damage','damagePct','attackSpeed','doubleAttack','reach','knockback','crit','fortune','tenacity','knockRes','oneTap','piercing','looting',
+  shownStats: ['oxygenMax','pods','speed','climbSpeed','mineSpeed','mineSpeedPct','damage','damagePct','attackSpeed','doubleAttack','reach','knockback','crit','fortune','tenacity','tenacityResilience','knockRes','oneTap','piercing','looting',
                'discoverMax','light','compass','compassRows','torches','torchRadius','torchTime'],   // goblinThrall (Gobelins asservis) cachée le 27/10 (Geoffrey)
   /* ÉQUILIBRE DU STUFF (27/10/2026, Geoffrey ; gardé par tests/stuff-balance.test.js) :
      - casque, jambes et bottes en chitine, fer, acier valent en GS exactement la valeur de leur tier
@@ -1728,7 +1734,11 @@ export const INSTANCE = {
     boss: { name: 'Golbute', w: 5, h: 5, hp: 10700, knockRes: 100 },   // 10 700 PV : 40 victoires sur 160 pour la compo de référence (outils en acier + 20 %) avec 25 % de ténacité (30/10, simulation ; avant, outils en fer + 20 % : 7 600)
     slam: { every: 2, range: 3, chance: 0.5, high: 3, back: 1 },
     avalanche: { every: 60, stun: 5, dazed: 90, deathStacks: 6 },
-    split: { every: 180, count: 10, area: 8, hitEvery: 1.5, knock: 0.5, step: 1.8 },
+    split: { every: 180, count: 10, area: 8, hitEvery: 1.5, knock: 0.5, step: 1.8,
+             /* 03/11/2026 (Geoffrey) : toutes les every s, chaque golem retire tenacity point de ténacité (brute, avant la
+                courbe) aux mineurs à radius cases ou moins (Manhattan), pendant duration s ; cumulable (un stack par golem
+                et par pulsation) */
+             debuff: { every: 5, radius: 3, tenacity: 1, duration: 120 } },
     crystal: { at: [0.66, 0.33], hp: 720, dynamite: 20 },   // 720 coups : 45 % des 10 min à miner (cible 45 %)
     rage: { atkSpeed: 0.5, chance: 0.65, avalancheCd: -0.25 },
   },
@@ -1816,12 +1826,13 @@ export const GIANT = {
   readyPoll: 60000,   // ms : carte fermée, le navigateur revérifie l'entrée pour le contour doré du menu du Lobby (01/11/2026)
 };
 /* He's coming (01/11/2026, Geoffrey ; src/sim/hescoming/session.js, valeurs provisoires) : le Bloc géant où l'on frappe Lucifer. Tout GIANT,
-   sauf : paliers × 8, pépites ÷ 8 (Geoffrey, à la simulation ; essayé : × 25, 4 fois plus dur que le Bloc) ; 1 dégât = 1 point. roar : toutes les every s, Fear de fear s à radius cases ou moins (wander : s
+   sauf : paliers × 24 (03/11/2026, Geoffrey : +50 % puis +100 % ; avant × 8 puis × 12), pépites ÷ 8 (Geoffrey, à la simulation ; essayé : × 25, 4 fois plus dur que le Bloc) ; 1 dégât = 1 point. roar : toutes les every s, Fear de fear s à radius cases ou moins (wander : s
    avant de changer de sens) ; swing : toutes les every s, tous ceux au contact projetés de knock cases, en arc de high cases, en flight s. */
 /* tiers : Cristaux de pleine lune à la place des Plumes d'ange du Bloc géant, mêmes quantités (01/11/2026, Geoffrey) */
 export const HES_COMING = { ...GIANT, bossName:'Lucifer',
-  tiers: GIANT.tiers.map(({ min, items:{ 'Plume d\'ange':n, ...items } }) => ({ min:min * 8, items:n ? { 'Cristal de pleine lune':n, ...items } : items })), nugget: { ...GIANT.nugget, per:GIANT.nugget.per * 8 },
-  roar: { every:30, radius:3, fear:15, wander:1 }, swing: { every:5, knock:4, high:2, flight:0.6 },
+  tiers: GIANT.tiers.map(({ min, items:{ 'Plume d\'ange':n, ...items } }) => ({ min:min * 24, items:n ? { 'Cristal de pleine lune':n, ...items } : items })), nugget: { ...GIANT.nugget, per:GIANT.nugget.per * 8 },
+  roar: { every:30, radius:3, fear:15, wander:1, markBonus:0.5 },   // markBonus (03/11/2026, Geoffrey) : Fear esquivé par la ténacité → le suivant a × (1 + markBonus) de chance de prendre (debuff « Marqué »)
+  swing: { every:5, knock:4, high:2, flight:0.6 },
   /* animation du rugissement (02/11/2026, Jules ; src/render/hescoming.js luciferFrame, images de scripts/gen_lucifer.py),
      en secondes de jeu : la main se lève en 3 images de `step` avant le rugissement, la flamme vacille (une image par
      `flicker`) jusqu'à `hold` après, puis la main redescend (3 images de `step`) */

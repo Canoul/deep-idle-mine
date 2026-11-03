@@ -33,6 +33,12 @@ body.app{touch-action:pan-x pan-y;-webkit-tap-highlight-color:transparent}
 #appUpdate[hidden]{display:none}
 #appUpdate p{margin:0}
 #appUpdate button{margin-top:16px;padding:8px 20px;font:inherit;color:#1a0f08;background:#ff7a2e;border:0;border-radius:4px}
+/* clavier ouvert (03/11/2026, src/app/keyboard.js) : --kb-h = hauteur du clavier. La fenêtre de connexion part du haut
+   (centrée, son haut sortait de l'écran) et laisse la place du clavier en bas ; elle défile pour montrer le champ touché */
+body.app{--kb-h:0px}
+body.app #account{align-items:flex-start;padding-top:calc(var(--safe-t) + 6*var(--u));padding-bottom:calc(6*var(--u) + max(var(--kb-h),var(--safe-b)))}
+body.app.appKb #dialog{padding-bottom:var(--kb-h)}
+body.app #account input,body.app #dialog input{font-size:16px}
 /* iPhone : un champ sous 16 px fait zoomer Safari quand on le touche */
 body.app #gchatInput{font-size:16px}
 

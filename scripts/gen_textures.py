@@ -1,7 +1,7 @@
 """Génère les textures 16x16 du jeu dans textures/ (PNG, stdlib uniquement).
 
 Usage : python scripts/gen_textures.py
-Les textures sont ensuite chargées par le jeu (voir deep-idle-mine.html).
+Les textures sont ensuite chargées par le jeu (src/render/textures.js, liste TEXTURES de src/config.js).
 """
 import math
 import os
@@ -13,6 +13,8 @@ from gen_town import town   # le Carreau, ville du spawn (scripts/gen_town.py, 2
 from gen_bosses import bosses, tower_mobs   # boss et mobs des tours du Jugement (scripts/gen_bosses.py, 30/10/2026)
 from gen_lucifer import lucifer_textures   # Lucifer et son portail, He's coming (scripts/gen_lucifer.py, 01/11/2026)
 from gen_giant import giant_block, giant_fountain, giant_torch   # le Bloc géant, « Géode éventrée », sa fontaine et sa torche (scripts/gen_giant.py, 02/11/2026)
+from gen_king import goblin_king   # le roi gobelin, « roi guerrier balafré » (scripts/gen_king.py, 03/11/2026)
+from gen_worm import worm_textures   # le ver de terre, cuirassé (scripts/gen_worm.py, 03/11/2026)
 from gen_flesh import flesh_wall, flesh_icon   # le mur de chair (scripts/gen_flesh.py, 03/11/2026)
 from gen_golbute import golbute, golem   # le Golbute de l'Instance II (et sa forme cristallisée) et le golem (scripts/gen_golbute.py, 30/10/2026)
 
@@ -390,24 +392,10 @@ def main():
     rect(dog, 6, 9, 1, 1, lava_l); rect(dog, 9, 9, 1, 1, lava_l)
     tex['magma_dog'] = dog
 
-    # Vers de terre (31/10) : anneaux roses, tête à gueule ronde, queue qui dépasse d'un bloc (fond transparent)
-    pink, pink_d, pink_l, maw = hexc('#c9787a'), hexc('#8f4c52'), hexc('#e8a8a4'), hexc('#3a1216')
-    wh = blank()
-    rect(wh, 2, 2, 12, 12, pink); rect(wh, 2, 2, 12, 2, pink_l); rect(wh, 2, 12, 12, 2, pink_d)
-    rect(wh, 5, 5, 6, 6, maw)
-    for x, y in [(5, 5), (10, 5), (5, 10), (10, 10), (7, 5), (8, 10)]:
-        rect(wh, x, y, 1, 1, hexc('#f4f1e8'))
-    tex['worm_head'] = wh
-    wb = blank()
-    rect(wb, 2, 1, 12, 14, pink)
-    for y in (3, 7, 11):
-        rect(wb, 2, y, 12, 1, pink_d); rect(wb, 2, y + 1, 12, 1, pink_l)
-    tex['worm_body'] = wb
-    wt = blank()
-    rect(wt, 5, 8, 6, 8, pink); rect(wt, 6, 4, 4, 4, pink); rect(wt, 7, 1, 2, 3, pink_l)
-    for y in (6, 10, 13):
-        rect(wt, 5, y, 6, 1, pink_d)
-    tex['worm_tail'] = wt
+    # Vers de terre (31/10) : tête, anneau, queue dessinés par scripts/gen_worm.py depuis le 03/11/2026 (ver cuirassé, gueule
+    # en pétales ; ancien : anneaux roses en rectangles) ; pink : la chair de vers (butin, plus bas)
+    pink, pink_d, pink_l = hexc('#c9787a'), hexc('#8f4c52'), hexc('#e8a8a4')
+    tex.update(worm_textures())
 
     # butins : peau noire veinée de lave, morceau de chair rose
     hide = blank()
@@ -1674,7 +1662,7 @@ def giant():
 
 def instance():
     """Instance I (27/10) : le spawner à gobelins (une hutte de branches, gueule rougeoyante), les blocs des cages du roi
-    (planches cloutées) et le roi gobelin (3 × 3 cases, 48 × 48 pixels : couronne, cape, massue)."""
+    (planches cloutées) et le roi gobelin (3 × 3 cases, 48 × 48 pixels, scripts/gen_king.py depuis le 03/11/2026)."""
     def canvas(w, h):
         return [(0, 0, 0, 0)] * (w * h)
 
@@ -1705,25 +1693,10 @@ def instance():
         r(cg, 16, 16, x, y, 1, 1, nail)
     r(cg, 16, 16, 0, 0, 1, 16, pl_d); r(cg, 16, 16, 15, 0, 1, 16, pl_d)
 
-    # roi gobelin : grand gobelin vert, couronne d'or, cape pourpre, massue
+    # roi gobelin (3 × 3 cases, 48 × 48) : dessiné par scripts/gen_king.py depuis le 03/11/2026 (roi guerrier balafré,
+    # il porte son butin ; ancien : rectangles, cape pourpre)
     W = H = 48
-    kg = canvas(W, H)
-    skin, skin_d, cape, cape_d, gold, eye = hexc('#6fae48'), hexc('#4a7a2e'), hexc('#6a2a7a'), hexc('#3f1648'), hexc('#ffd23f'), hexc('#ff3b1f')
-    r(kg, W, H, 8, 14, 32, 26, cape); r(kg, W, H, 8, 38, 32, 2, cape_d)
-    r(kg, W, H, 15, 6, 18, 14, skin); r(kg, W, H, 15, 18, 18, 2, skin_d)
-    r(kg, W, H, 10, 8, 5, 3, skin); r(kg, W, H, 33, 8, 5, 3, skin)          # oreilles pointues
-    r(kg, W, H, 19, 11, 3, 2, eye); r(kg, W, H, 26, 11, 3, 2, eye)
-    r(kg, W, H, 20, 16, 8, 1, hexc('#22300e')); r(kg, W, H, 21, 17, 1, 1, hexc('#f4f0e0')); r(kg, W, H, 26, 17, 1, 1, hexc('#f4f0e0'))
-    r(kg, W, H, 15, 2, 18, 4, gold)
-    for x in (15, 20, 25, 30):
-        r(kg, W, H, x, 0, 3, 2, gold)
-    r(kg, W, H, 22, 3, 4, 2, hexc('#c8331a'))
-    r(kg, W, H, 17, 20, 14, 18, skin); r(kg, W, H, 22, 22, 4, 14, skin_d)  # torse
-    r(kg, W, H, 17, 38, 5, 10, skin_d); r(kg, W, H, 26, 38, 5, 10, skin_d)  # jambes
-    r(kg, W, H, 9, 20, 6, 14, skin); r(kg, W, H, 33, 20, 6, 14, skin)        # bras
-    r(kg, W, H, 40, 10, 4, 30, hexc('#5a3a1e')); r(kg, W, H, 38, 6, 8, 8, hexc('#7a5a3a'))   # massue
-    for x, y in [(38, 6), (45, 7), (39, 13), (44, 12)]:
-        r(kg, W, H, x, y, 1, 1, hexc('#c9c9d1'))
+    kg = goblin_king()
     return {'instance_spawner': (16, 16, sp), 'instance_cage': (16, 16, cg), 'goblin_king': (W, H, kg)}
 
 

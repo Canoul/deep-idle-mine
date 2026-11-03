@@ -1,6 +1,7 @@
 /* Comptes côté jeu : écran de connexion au lancement, bloc compte dans la barre de navigation,
    fenêtre « Mon compte » (sécuriser un invité, changer de mot de passe, se déconnecter).
    Les règles (pseudo, mot de passe) viennent de src/shared/account.js ; le serveur refait toujours les vérifications. */
+import { renderAppTrace } from './app-trace.js';
 import { ADMIN_VIEW } from '../config.js';
 import { renderPrisonDashboard } from '../meta/prison-dashboard.js';
 const isTeam = a => !!a && !a.guest && ADMIN_VIEW.names.some(n => n.toLowerCase() === String(a.name ?? a.displayName ?? '').toLowerCase());
@@ -122,7 +123,7 @@ const VIEWS = {
          il est perdu. Sécurise-le avec un pseudo et un mot de passe pour le garder (ton ID ne change pas).</p>
       <div class="acts"><button class="main" data-go="claim">Sécuriser mon compte</button></div>` : `
       <div class="acts"><button data-go="password">Changer de mot de passe</button></div>`}
-    ${isTeam(account) && !inLocalApp ? `<div class="acts"><button data-act="prisonDash" title="Rendement de la prison de chaque joueur contre ses 10 dernières mines (compte de l'équipe)">📊 Rendement de la prison</button></div>` : ''}
+    ${isTeam(account) && !inLocalApp ? `<div class="acts"><button data-act="prisonDash" title="Rendement de la prison de chaque joueur contre ses 10 dernières mines (compte de l'équipe)">📊 Rendement de la prison</button><button data-act="appTrace" title="Demandes de mise à jour des applis mobiles reçues par le serveur (compte de l'équipe)">📱 Mises à jour de l'appli</button></div>` : ''}
     ${optionsHtml(options)}
     <div class="acts end"><button data-act="logout">Se déconnecter</button><button data-act="close">Fermer</button></div>
     ${profileDanger()}
@@ -235,6 +236,14 @@ export function createAccountUI(root, state, handlers = {}){
         const html = renderPrisonDashboard((await request('GET', '/api/game/admin/prison')).rows || []);
         if(w){ w.document.open(); w.document.write(html); w.document.close(); }
       } catch(e){ w?.close(); tell('Tableau de bord indisponible : ' + e.message); }
+      return;
+    }
+    if(name === 'appTrace'){   // relevé des mises à jour de l'appli (03/11/2026)
+      const w = window.open('', '_blank');
+      try {
+        const html = renderAppTrace(await request('GET', '/api/app/update/trace'));
+        if(w){ w.document.open(); w.document.write(html); w.document.close(); }
+      } catch(e){ w?.close(); tell('Relevé indisponible : ' + e.message); }
       return;
     }
     if(name === 'deleteAccount'){

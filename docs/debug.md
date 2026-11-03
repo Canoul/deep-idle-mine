@@ -1113,7 +1113,6 @@ Règles (voir CLAUDE.md) :
 - **Tests** : camera (nouveau test setRows), nav : verts. ✅ Captures : 1918×904 (24 lignes, ciel visible, colonnes
   jusqu'en bas), 1440×900 (40 lignes, ×1 exact, colonnes au-dessus de la barre), 390×844 sans débordement.
 
-
 ### Identification : nerf des qualités, butin des mobs, pièces existantes mises à jour (Geoffrey) — `main`, en ligne le 22/10
 - **Demande** : butin des mobs à +10 % pour 100 x ; total max des qualités R1 à R7 = 25 / 30 / 35 / 40 / 50 / 75 / 100 %
   (avant 30 à 220 %) ; mettre à jour les pièces déjà identifiées ; vérifier le tirage (un joueur, Crousti, a eu 5 R4).
@@ -1299,7 +1298,6 @@ Règles (voir CLAUDE.md) :
   résidus listés en areas ≥ `JUDGMENT.fromArea` dans le tableau des blocs. Plus aucun objet « Pas encore obtenable ».
   wiki + crusher 21/21 ✅, Chromium sans erreur ✅. Mis en ligne le 22/10.
 
-
 ### Tours du Jugement : labyrinthe, brouillard, caméra, 10 min ; vérification « donjon » (Geoffrey) — branche `geoffrey/jugement-patch`, en ligne le 22/10
 - **Config** `TOWER` : `duration` 900 → 600 (5 min demandées, infaisables : voir mesures) ; `unbreakablePct`
   remplacé par `mazeEvery: 2`, `mazeHard: 11` ; `view: { cols: 19, rows: 15 }`.
@@ -1375,7 +1373,6 @@ Règles (voir CLAUDE.md) :
   Chromium (dev) : session lancée, lobby → Mine instantanée → S'inscrire en session ✅, aucune erreur.
   ⚠️ Bouton fermé « 🔒 Inscriptions à … » pas vu à l'écran (testé seulement par `canSignup`).
 
-
 ### Faux blocage « Retour (treuil) » (seed 23757) : détecteur corrigé (Geoffrey) — branche `geoffrey/fix-treuil-retour`, en ligne le 22/10
 - **Symptôme** : `simulate --miners 3 --count 6 --skills mixed`, seed 23757 : ⚠ BLOQUÉ Bleu (logisticien),
   `{"t":3445,"x":32,"y":157,"mode":"return","status":"Retour (treuil)"}`.
@@ -1411,7 +1408,6 @@ Règles (voir CLAUDE.md) :
 - **Cause** : coût = temps de trajet seul + foule ; un bloc voisin coûte 0, la gravité et la montée (échelles) coûteuse → puits vers le bas. Foule à 0 : inchangé (18/18 au fond). Tas : seulement via les cases vides à ≤ 3 pas.
 - **Correction** : cap par mineur (`heading`, `headPenalty`) ; `featherChase` : tas découvert ≤ featherReach (8), le plus proche l'emporte, creusement glouton vers lui.
 - **Tests** : `tests/instant-mine.test.js` (+2 ; test featherReach : sol plat). Mesure 3 mineurs : fond 4/18 (avant 18/18), blocs/mineur 104 (avant 108), tas pris 9,3/9,5.
-
 
 ### Chutes connues de plus de 3 cases sans étourdissement (Jules) — branche `jules/fix-chute`, ✅ en ligne le 22/10
 - **Symptôme** (retour joueur) : un mineur tombe de plus de 3 cases dans un trou déjà creusé par un autre et n'est pas
@@ -1898,7 +1894,6 @@ Règles (voir CLAUDE.md) :
 - **Vérification** : blocks, world, session, wiki, fall, winch, view, dungeon, furnace, craft, social, game-service,
   party, lfg, lobby ✅ ; anticheat 72/72. ⚠️ Rien regardé dans un navigateur.
 - **Points fragiles** : le socle est un bloc `special` en couche 1 (hors area) : `rowDone` l'ignore (incassable).
-
 
 ### Graphite, Steel ingot, area 6 (Geoffrey) — branche `geoffrey/graphite`, ✅ en ligne le 23/10
 - **Quoi** : bloc 19 `Graphite ore` (`ore`, tex `graphite`, w 3, hard 4.0, val 4, dot `#2f3b4d`), `IDS.graphite = 19`,
@@ -3362,7 +3357,6 @@ Règles (voir CLAUDE.md) :
 - **Tests** : `tests/skins.test.js` +1 (ordre des calques, dos, aura) ; skins, aura 19/19 ✅. Aperçu agrandi vérifié
   (corps seul, avec cape, avec armure en fer). ⚠️ Pas regardé dans le navigateur (mine et portrait).
 
-
 ### Bloc géant consultable en session (Geoffrey) — branche `geoffrey/onglet-bloc-geant`, ✅ en ligne le 26/10
 - **Quoi** : `mineModes` (`src/ui/lobby.js`) grisait tout sauf la MI pendant une session → le bouton Bloc géant
   aussi (demande de Geoffrey : la carte doit toujours s'ouvrir). Désormais `disabled` = `locked && !scheduled && !giant`.
@@ -3435,7 +3429,6 @@ Règles (voir CLAUDE.md) :
   0 session bloquée ; le seul golem immobile en chasse attendait devant un donjon où était le mineur (voulu).
 - **À vérifier** : ⚠️ pas regardé dans le navigateur (dessin 2 × 2, barre de vie, goutte) ; ⚠️ la simulation standard
   n'atteint pas l'area 5 (3 areas) : à surveiller en vraie partie.
-
 
 ## 26/10/2026 — « Who ? » : joueurs hors ligne des dernières 24 h (branche `geoffrey/who-deconnectes`) — ✅ en ligne le 26/10
 - **Quoi** : `server/accounts/store.js` `recentlySeen(since)` → { compte: max lastSeenAt } d'après les connexions
@@ -4073,7 +4066,6 @@ Règles (voir CLAUDE.md) :
 - Tests : `tests/shrines.test.js` (11), `tests/anticheat/shrines.test.js` ; liés (game-service, party, lfg, social, world,
   session, khole, view, lobby, live, wiki) 216/216 ✅ ; anti-triche 105/105 ✅ ; simulation 5 sessions sans shrine : 0 blocage.
 - ⚠️ Pas de simulation avec le shrine (effet sur la profondeur et le coffre non mesuré). Le don pendant une session est permis.
-
 
 ## 28/10/2026 (11 h) — Tours : niveau 2 revu, invocation au saut, descente des mobs (Geoffrey)
 - **Config** : `TOWER.levels[2]` hp 2 → 2,5, hard 2 → 1,75, `summon: 2` (niveau 1 : 0) ; `TOWER.mobs.descend: true`.
@@ -5452,7 +5444,6 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   session à la fois). Si un jour on peut échanger ou recycler une clé, le joueur qui s'en débarrasse pendant l'instance
   n'aura simplement pas de coffre.
 
-
 ## 30/10/2026 — Geoffrey — Prison : specs relues à chaque run (branche geoffrey/prison-stuff-a-chaque-run)
 - Signalement : Infernatiwar, Découverte 4, « ne s'applique pas bien en prison ». Le calcul est le même qu'en mine (vérifié :
   `buildPrisonRun` → `minerSpecs`, Lunettes Gucci + Cape de Naingui : discoverMax 4, +63 % de cases découvertes) ; la cause
@@ -5753,7 +5744,6 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** ✅ prison-ui +1. ⚠️ Pas vu dans un vrai navigateur. Chaque prison en fond fait 4 demandes par seconde au lieu d'une toutes
   les 15 s, comme une prison regardée : à surveiller sur le VPS.
 
-
 ## 31/10/2026 — Énergie dans Social (Geoffrey)
 - **Quoi** : `energy` { value, max } sur les lignes Amis et Online ; affichée par `energyHTML` (src/ui/social.js), rouge sous `ENERGY.cost.min`.
 - **Serveur** : `loadEnergy` coupé en deux : `restedEnergy` calcule sans écrire, `loadEnergy` écrit. `game.energyOf` n'écrit rien et ne prend aucun
@@ -5804,7 +5794,6 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Cookie** (31/10) : `cookieName` (server/config.js) : `dim_session_<port>` en mode dev, deux serveurs dev se déconnectaient l'un l'autre ;
   inchangé en ligne.
 - ⚠️ `pg` doit être installé dans le dossier d'où le serveur dev tourne (`npm install`).
-
 
 ## 31/10/2026 — Prison : mines au focus minerai remplacées par une référence (Geoffrey)
 - **Quoi** : `lastMines` note `oreFocus` (un événement de `rec.focus` d'un joueur quelconque de la session vise un minerai ; le focus d'area seul ne compte pas). `oreParts` (src/meta/prison-profile.js) : une mine `refMine` (oreFocus et `areas` ≥ `PRISON.focusRef.area`, 6) pèse comme `PRISON.focusRef.ores`, les autres comptent pour leur butin. Area, mobs et treasures inchangés. `prisonCompos` : `v` = `PRISON.compoVersion` (2) ; compo gardée d'une autre version avec au moins une mine refMine dans l'historique → paliers refaits depuis l'historique, `saved` effacée, une seule fois. Sans mine refMine : compos gardées telles quelles, `v` posé.
@@ -5878,7 +5867,6 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Fausse piste** : une première simulation (mineur à vitesse constante, modèle de lecture sans mémoire) promettait 513 → 50 % : très surestimé. La première version sautait après un pic réseau (×27) : d'où la tête de lecture.
 - ⚠️ Pas mesuré en ligne ni sur plusieurs joueurs. +48 % de requêtes de vue environ (2,7 → 4 par seconde par joueur), pump deux fois plus souvent : à surveiller. Les actions (coup, minage) ne sont pas différées : elles peuvent précéder la position de 0,4 s. `tests/perf.test.js` « boîte de mesures » et `prison-server` « une tour et une instance » échouent, comme avant.
 - Sur le port dev : `?perf` dans l'adresse. Hébergement : l'adresse 82.223.196.89 est chez ARSYS (groupe IONOS), à confronter à la doc (OVH).
-
 
 ## 31/10/2026 — Gobelins asservis : roche sans minerai à portée (Geoffrey)
 - **Constat** (3 seeds, 3 mineurs, couronne sur le 1er, stats de base, 38 gobelins) : vie 29,9 s de jeu (≈ 15 s réelles à ×2), mais 12,5 s inactif ; 78 % de cette attente sans aucun minerai à `reach` (10 gobelins sur 38 nés sans minerai).
@@ -5964,7 +5952,6 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Quoi** : `nameBanned` (server/moderation/filter.js : liste du chat, pseudo tel quel et découpé aux majuscules). `validName` le refuse (création, sécurisation d'un invité, changement). `publicAccount` ajoute `mustRename`. `POST /api/account/rename` : seulement si le pseudo actuel est interdit. server/app.js : `must_rename` (403) sur tout POST hors `/api/account/` et `/api/admin/`. Navigateur : vue `rename` de src/ui/account.js, impossible à fermer, au démarrage et après connexion. `party.rename` met le groupe à jour.
 - **Tests** ✅ tests/pseudo-banword, comptes, sécurité, modération, groupes : 78/78 ; parcours complet dans Chrome (création refusée, fenêtre impossible à fermer, rechargement, action refusée, nouveau pseudo). Vérifié sur les 31 pseudos lisibles par la vue : aucun touché.
 - **Limites** : la liste reste côté serveur, le refus vient donc à l'envoi. Les anciens noms déjà enregistrés (historique, classements figés, sessions) ne sont pas réécrits. Les mots WORD restent en mot entier : `xxConnardxx` passe. La page déjà ouverte d'un joueur ne se bloque qu'au prochain chargement (ses actions sont refusées avant).
-
 
 ## 31/10/2026 — Énergie dans le panneau Équipe (Geoffrey)
 - **Quoi** : `game.view` renvoie `energies` { compte: { value, max } } pour une session à plusieurs, hors MI (`teamEnergies`, server/game/service.js ; cache `GAME_SERVER.teamEnergyFor` 30 s, comme Social). `src/ui/energy-tag.js` : `energyHTML` (déplacé de social.js, toujours réexporté), `setTeamEnergies`, `teamEnergyHTML`. Affiché dans hud.js, tower-hud.js, instance-hud.js ; alimenté dans la boucle de vue de src/main.js.
@@ -6270,7 +6257,6 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** : `tests/admin-session-speed.test.js` ✅, script compris ; ⚠️ navigateur et vraie partie à ×300 pas essayés (faux moteur).
 - **Point fragile** : l'Historique affiche une durée raccourcie, car `startedAt` recule. ×300 demande 3 000 ticks par seconde, or une session d'1 h à 3 mineurs (36 000 ticks) se calcule en ~19 s sur le poste de Geoffrey, soit ~1 900 ticks/s : la session dépasse `finishAt`, passe par le rattrapage de `pump` (`overdue`, une session à la fois) et l'affichage peut dire « connexion… ».
 
-
 ## 28/10/2026 — Jules — Appli mobile : conception (pas de code)
 - **Quoi** : spec `docs/superpowers/specs/2026-10-28-appli-mobile-design.md` (Capacitor 8, jeu chargé depuis
   deepmineidle.fr par `server.url`, interface téléphone ≤ 700 px, notifications locales puis push, APK par GitHub Actions).
@@ -6440,7 +6426,6 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 ## 01/11/2026 — Bot Discord : /todo done efface le message de #report (Geoffrey)
 - **Quoi** : `removeReport` remplace `markDone` dans bot/main.js. Aucun droit Discord en plus : le bot efface ses propres messages.
 - **Tests** ✅ tests/bot-todo.test.js (logique et aide), `node --check bot/main.js`. ⚠️ Effacement non essayé sur le vrai Discord : main.js n'a pas de test sans connexion.
-
 
 ## 01/11/2026 — Modération exigée par les stores : filtre, signaler, bloquer, outils admin, règles (Geoffrey)
 - **Déjà là, gardé** : `server/moderation/filter.js` (casse, accents, leet, répétitions, mot coupé), `service.js` (3 avertissements → ban 24 h), pseudos refusés. Ajouté : termes sexuels et haineux dans `words.js`. **Bug corrigé** : `mongol` et `triso` étaient pris dans un commentaire `//` et ne filtraient rien depuis le 30/10.
@@ -6808,3 +6793,69 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   Laissé pour plus tard : un membre voit sa propre activité, pas celle du chef (comme le Lobby) ; portrait d'un coéquipier
   pas redessiné si seul son stuff change ; « Rejoindre » reste actif pendant une session ou si le groupe est plein (le
   serveur refuse, l'erreur s'affiche maintenant).
+
+## 03/11/2026 — Jules — Ver de terre : nouveau sprite et file qui pivote (branche jules/sprite-ver-de-terre)
+- **Quoi** : `scripts/gen_worm.py` (nouveau, stdlib) : `worm_textures()` → `worm_head`, `worm_body`, `worm_tail` (16 × 16, tournés vers la droite sauf la queue, qui sort vers le haut). Tête dessinée en texte (`HEAD`, palette `PAL` : chitine 1-6, chair f-i, dents t-w, gorge a-e) ; anneau construit ligne par ligne (`PLATE_ROW` ton de la plaque, `GROOVE_ROW` chair du sillon : sillon, ombre, plaque, arête, deux plaques par case) + fissures ; queue calculée (`worm_tail`, plaques et sillons, fente de roche). gen_textures.py : `tex.update(worm_textures())` à la place des rectangles ; `worm_flesh` (butin) inchangé.
+- **Rendu** : `src/render/worm.js` (nouveau, pur) : `dirTo(a, b)` (0 droite, 1 bas, 2 gauche, 3 haut, comme `DIRS` de src/sim/worm.js), `wormCells(w)` (tête : de trail[0] vers la tête ; anneau i : vers la case i − 1 ; sans corps : droite ; cases confondues : direction d'avant), `drawTurned(ctx, img, px, py, dir, T)` (gauche : miroir, la lumière reste en haut ; bas / haut : quart de tour). `src/render/canvas.js` : la boucle des `G.worms` passe par `wormCells` / `drawTurned` (couleur de repli : sable). Rien côté serveur : la vue envoyait déjà `trail`.
+- **Tests** ✅ tests/worm-sprite (nouveau : tailles, `TEXTURES`, icône `MOB_INFO.ver`, anneau qui touche les deux bords, braise de la gueule, `dirTo`, `wormCells` en ligne droite / virage / sans corps / cases confondues, `drawTurned` sur un faux contexte) + mobs-a7, mobs, mob-drops : 45/45.
+- **Vérifié** ✅ simulation réelle d'un ver pendant 40 s (`addWorm` + `updateWorms`, galerie de tests/mobs-a7) : 1 945 liens tête → queue, tous entre cases voisines ; 8 images dessinées avec les sprites pivotés : tête vers le haut, le bas, la gauche, la droite, virages corrects. ⚠️ Pas vu dans le navigateur (le ver ne vient qu'en area 7, pas d'outil dev pour le faire apparaître) ; `canvas.js` se charge (import Node).
+- **Applis** : rien de natif ; nouveau fichier `src/render/worm.js`, copié avec tout `src/`.
+- ✅ En ligne le 03/11 (validé par Jules sur les images).
+
+## 03/11/2026 — Jules — Roi gobelin : nouveau sprite (branche jules/sprite-roi-gobelin)
+- **Quoi** : `scripts/gen_king.py` (nouveau, stdlib) : `goblin_king()` → 48 × 48 RGBA. Moteur `Body` (parties de l'arrière vers l'avant, volumes bombés par la distance au bord, lumière en haut à gauche, lueur chaude des huttes `WARM` sur les bords tournés vers le bas à droite, trame `BAYER`), puis détails (couronne, broche, hermine `_ermine`, torse, collier de crânes, ceinture, lacets, verrues), encre (`ink`, sans trait entre mâchoire et tête, brassards / bras, genouillères / jambes, pointes / tête de la masse), puis visage `FACE` dessiné à la main. gen_textures.py `instance()` prend `goblin_king()` (spawner et cages inchangés). `npm run textures` ne change que `goblin_king.png`. Points d'attention : l'ordre des parties décide qui cache quoi (oreilles après le col, sinon elles disparaissent ; doublure `capein` étroite, sinon on ne voit que 10 pixels de cape rouge).
+- **Tests** ✅ tests/king-sprite (nouveau : taille `INSTANCE.boss` × 16, `TEXTURES`, pieds au sol, silhouette pleine à 55 %, or de la couronne, rouge de la cape, blanc de l'hermine) + instance-sim, instance-server, instance-key : 40/40.
+- **Vérifié** ✅ avec le vrai rendu (`createInstanceRenderer` de src/render/instance.js, importé dans la page en `npm run dev` sur le port 8010, état fabriqué à la main) : endormi (transparence, « zZ »), au combat (barre verte), enragé (halo rouge, barre rouge, icône de rage). ⚠️ Pas vu dans une vraie partie : un mineur seul échoue face aux gobelins et le roi ne descend jamais de sa plateforme (caméra sur le mineur).
+- **Applis** : rien de natif ; seulement une texture et un script Python.
+- ✅ En ligne le 03/11.
+
+## 03/11/2026 — Jules — Ménage : prototype/ supprimé
+- **Quoi** : `prototype/deep-idle-mine.html` supprimé (toujours dans l'historique git). Mentions corrigées : CLAUDE.md (structure), docs/HANDOFF.md, docs/comptes.md (disait à tort que le serveur servait `prototype/`), en-tête de scripts/gen_textures.py, commentaire de server/config.js. tests/security.test.js garde `/prototype/deep-idle-mine.html` dans les chemins qui doivent répondre 404 (toujours vrai).
+- **Inventaire** (même jour) : les 306 PNG de `textures/` sont tous utilisés (noms en toutes lettres, ou fabriqués : `skins/${métal}_${pièce}`, `lucifer_roar${i}`, `golbute…_crystal`, `town_banner_${side}`) ; chaque script de `scripts/` est appelé par package.json, le serveur, un autre script, un test ou docs/deploiement-ovh.md (`scripts/assets/kenney-1bit.png` : planche de build_pxicons.py). Seul `scripts/create-account.js` (Geoffrey, 21/10, époque Render) n'est plus appelé nulle part : gardé, à voir avec lui. Place sur le disque : surtout l'historique git (84 Mo d'objets en vrac, tassés par `git gc` le 03/11) et `mobile/node_modules` (outils de l'appli, réinstallables).
+- **Tests** ✅ tests/security.
+- ✅ En ligne le 03/11.
+
+### 03/11/2026 — Golbute : malus de ténacité des golems de la Division
+- `INSTANCE.golbute.split.debuff = { every:5, radius:3, tenacity:1, duration:120 }` ; `golemDebuff` (src/sim/instance/golbute.js, dans stepGolems, golem vivant et pas étourdi) pousse une date de fin dans `m.tenDebuff` ; `tenDebuffOf(G, m)` = stacks actifs × 1, retiré de la ténacité brute (`tenacityOf(m, 'golbute', extra)`) dans slamChance et l'esquive de l'avalanche. Pas d'affichage des stacks.
+- Sans simulation (demande de Geoffrey) ; ✅ tests golbute + tenacity (11). ⚠️ À rééquilibrer : 10 golems à portée = −2 de ténacité toutes les 5 s, soit jusqu à −240 au bout de 2 min si aucun ne meurt.
+
+### 03/11/2026 — Ténacité : fatigue et Résilience
+- `TENACITY.tired` 0,5 ; `STATS.tenacityResilience` 0 (libellé, unité %, affichée, wiki). `src/sim/tenacity.js` : `tenacityChance(m, src, extra)` (× (1 − tired × (1 − résilience)) si `m.tenTired`), `tenacityTry(m, src, draw, extra)` (tire seulement si chance > 0 ; remet `m.tenTired` à false, le remet à true sur une esquive). Branché : `resists` (mobs.js), Bloc géant (le tirage reste fait même sans ténacité, comme avant), tours, esquive de l'avalanche du Golbute ; `slamChance` lit `tenacityChance` sans toucher la fatigue (chance combinée avec la résistance au recul).
+- helpers.js : `TENACITY.tired = 0` (tests de mécaniques). ✅ tenacity (fatigue) + 184 tests liés.
+
+### 03/11/2026 — He's coming : Marqué par Lucifer, paliers × 24
+- `HES_COMING.roar.markBonus` 0,5 ; `dodgeFear` (src/sim/hescoming/session.js, exporté) : chance du Fear = 1 − ténacité effective (pénétration hescoming), × 1,5 si `m.fearMark`, plafond 1 ; tirage seulement si ténacité > 0 ; marque posée sur une esquive, retirée sinon. Le rugissement n'utilise plus `resists` (pas de fatigue générale) ; l'autoattaque, si. Effet `fear_mark` (EFFECTS, src/sim/effects.js, bulle src/ui/effects.js), déjà envoyé par la vue du Bloc géant.
+- Paliers × 24 (× 12 ce matin sans test : tests/hescoming-sim « config » échouait, corrigé). ✅ hescoming-sim (dont test de la marque), effects, tenacity, giant : 95.
+
+## 03/11/2026 — Geoffrey — Appli : clavier à la connexion, bulle du tableau de butin (branche geoffrey/fix-appli-clavier-butin)
+- Signalement (Galaxy S24, appli Android) : 1) en tapant ses identifiants, la page partait tout en bas, le champ caché ;
+  2) le Treasure T4 ne s'ouvrait pas : la bulle du tableau de butin (`#tip.loot`), plus haute que l'écran, couvrait tout
+  (fixée en haut, sans limite, `pointer-events:none` : impossible à faire défiler, le bouton « Ouvrir » caché dessous).
+- **Clavier** : `src/app/keyboard.js` (chargé par `bootApp`, avant la connexion) : hauteur du clavier = plugin Keyboard
+  (`keyboardWillShow`, déjà dans les coques) sinon `visualViewport` → `--kb-h` et classe `appKb` sur `<body>` ; champ
+  touché ramené au centre (`scrollIntoView`). `app.css` : `#account` aligné en haut, `padding-bottom` = clavier ; champs
+  à 16 px. Cause probable : appli bord à bord (Android 15, `SystemBars insetsHandling: css`), la page n'est pas
+  raccourcie par le clavier (`resize: native` du plugin ne vaut que pour iOS). Pas de code natif ajouté.
+- **Bulle** : `tipPlace` (src/ui/tooltip.js, logique pure) : au doigt, trop haute → entre `.topbar` et `#appBar` / `#nav`,
+  `max-height` et défilement (`#tip.touch.scroll`) ; un appui commencé sur la bulle la ferme (pas celui qui l'a ouverte),
+  défiler dedans ne la ferme plus. Souris : inchangé.
+- Tests ✅ tooltip (4), app-keyboard (2), app-bundle, app-mode, app-device, app-update, inventaire. Navigateur ✅
+  (playwright, 360 × 780 tactile, `?app`) : clavier simulé de 330 px, champ mot de passe à 184-220 px (limite 580) ;
+  bulle du T4 entre 68 et 841 px, fermée par un appui. ⚠️ Non essayé sur un vrai téléphone (clavier réel, plugin).
+
+### 03/11/2026 — Concasseur : minerai d'or
+- `CRUSHER.loot['Or'] = { always:[Terre 1-1], oneOf:[] }` (demande de Geoffrey). tests/crusher.test.js : « Or » n'est plus l'exemple d'objet refusé (remplacé par « Diamant ») + test du lot d'or. ✅ crusher.
+
+### 03/11/2026 — Mine instantanée : Coup unique
+- `G.gearRng` (seed ^ GEAR_RNG.salt) dans src/sim/instant/session.js ; src/sim/instant/ai.js : chance `carac.oneTap` → durée de minage 0,05 s (le minimum de la mine instantanée), tirage seulement si la stat > 0. Sans test ni simulation (demande de Geoffrey).
+
+### 03/11/2026 — Appli 1.1.0 qui ne se met pas à jour : relevé côté serveur 🧪
+- Constat (Geoffrey, Android, coque 1.1.0) : aucun écran de mise à jour au démarrage, le changement du concasseur n'arrive pas. Donc `check()` (src/app/updater.js) s'arrête avant `ui.updating()` : demande au serveur qui échoue ou dépasse `checkTimeout` (3 s), updater pas lancé (`ioOf` null, `nativeStatus` ≠ ok, `g.trial`), ou réponse « même version ».
+- Relevé : `createAppUpdate` garde `trace` en mémoire (100 dernières demandes `/api/app/update` : have, réponse, origine, user-agent ; fichiers `/app-bundle` servis / introuvables par version ; retours en arrière), `GET /api/app/update/trace` (ADMIN_VIEW, sinon 404), page `src/ui/app-trace.js`, bouton « 📱 Mises à jour de l'appli » dans Mon compte (équipe, site). ✅ tests app-update-server (relevé), app-update, account.
+- Lecture : aucune demande du téléphone → l'updater ne tourne pas ou ne joint pas le serveur ; demande avec have = version publiée → « même version » ; have différent mais aucun fichier servi → l'appli abandonne avant de télécharger.
+
+### 03/11/2026 — Appli Android : bandeau noir « Deep Mine Idle MMO » (barre d'action) 🧪
+- Constat (Geoffrey, Android, coque 1.1.0) : un bandeau noir au nom de l'appli cache la barre du haut du jeu (portrait → Mon compte → Se déconnecter). Le texte ne vient que de `strings.xml` (app_name / title_activity_main) : c'est la barre d'action native du thème `AppTheme` (`Theme.AppCompat.Light.DarkActionBar`, gabarit Capacitor), alors que BridgeActivity pose `AppTheme.NoActionBar` (Capacitor 8.6.0, vérifié dans le paquet). Hypothèse : `EdgeToEdge.enable(this)` avant `super.onCreate` (MainActivity) crée la fenêtre avec le thème de l'application.
+- Correctif : `AppTheme` → `Theme.AppCompat.DayNight.NoActionBar` (windowActionBar false, windowNoTitle true) ; versionCode 3, versionName 1.1.1 (pas de plugin : `APP_UPDATE.minNative` reste 1.1.0). Le workflow android-apk.yml se lance tout seul (chemins mobile/**). ⚠️ Pas vu sur un téléphone.
+- **Relevé du 03/11, 13 h 47 – 13 h 49** : 3 téléphones. OnePlus 8 Pro (Android 11, WebView 90) annonce `a18b1fe1794d8ed5` = version publiée → **à jour** (les mises à jour à chaud marchent chez lui). Deux Samsung (SM-S901U Android 14, SM-S911U1 Android 16, WebView 156) annoncent `0723525a6c884f72` ; le serveur propose la mise à jour à chaque démarrage, **aucun fichier n'est téléchargé**. Lecture la plus probable : `decide()` répond 'bad' (la version est dans `bad` du téléphone : un essai de cette version a échoué avant 13 h 37, retour en arrière signalé mais perdu au redémarrage du serveur), donc ni écran ni téléchargement. Une version refusée n'est jamais réessayée : la prochaine version publiée sera retentée → regarder « Retours en arrière » (raison : erreur / délai / relance) pour savoir ce qui casse sur ces Samsung (WebView récente, Android 14+).
+- Page du relevé : « [object Object] fichiers » (le compteur était écrasé par `trace.files`) → `fileCount`.

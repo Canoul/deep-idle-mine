@@ -14,7 +14,7 @@
 
    Sorts : Cri de guerre, Cleave, Dash, Hand of Justice et Ulti shen en combat ; Dynamite sur le boss, les golems et le
    cristal ; Inspiration et Fast learner sur le cristal ; Illumination et Bonbonne de zipette : sans effet. */
-import { tenacityOf } from '../tenacity.js';
+import { tenacityChance, tenacityTry } from '../tenacity.js';
 import { INSTANCE, DT, STATS, CFG } from '../../config.js';
 import { mulberry32 } from '../../core/rng.js';
 import { SPELL } from '../../meta/spells.js';
@@ -111,11 +111,27 @@ function split(G){
   G.timeline.splits.push(G.t);
   log(G, `🪨 Le ${b.name} se divise en ${S.count} golems !`);
 }
+/* malus de ténacité des golems de la Division (03/11/2026, Geoffrey ; C.split.debuff) : toutes les every s, un stack de
+   −tenacity sur chaque mineur à radius cases ou moins, pour duration s ; m.tenDebuff = dates de fin des stacks */
+function golemDebuff(G, o){
+  const D = C.split.debuff;
+  o.debuffCd = (o.debuffCd ?? D.every) - DT;
+  if(o.debuffCd > 1e-9) return;
+  o.debuffCd += D.every;
+  for(const m of alive(G)) if(manh(o, m) <= D.radius) (m.tenDebuff ??= []).push(G.t + D.duration);
+}
+/* points de ténacité retirés à m par les stacks encore actifs (les expirés sont oubliés) */
+export function tenDebuffOf(G, m){
+  if(!m.tenDebuff?.length) return 0;
+  m.tenDebuff = m.tenDebuff.filter(t => t > G.t + 1e-9);
+  return m.tenDebuff.length * C.split.debuff.tenacity;
+}
 function stepGolems(G){
   const S = C.split;
   for(const o of G.golems){
     if(o.hp <= 0) continue;
     if(golemStunned(G, o)){ o.grab = null; continue; }
+    golemDebuff(G, o);
     const taunt = byId(G, o.taunt);
     const prey = taunt && !taunt.dead ? taunt : alive(G).sort((a, c) => manh(o, a) - manh(o, c))[0];
     if(!prey){ o.grab = null; continue; }
@@ -155,7 +171,7 @@ const slamEvery = G => C.slam.every / (G.boss.rage ? 1 + C.rage.atkSpeed : 1);
 const avalancheEvery = G => C.avalanche.every * (G.boss.rage ? 1 + C.rage.avalancheCd : 1);
 /* chance d'être propulsé : chance × (1 − recul %) × (1 − ténacité %) */
 export const slamChance = (G, m) => (G.boss.rage ? C.rage.chance : C.slam.chance)
-  * (1 - Math.min(100, Math.max(0, m.carac.knockRes || 0)) / 100) * (1 - tenacityOf(m, 'golbute') / 100);
+  * (1 - Math.min(100, Math.max(0, m.carac.knockRes || 0)) / 100) * (1 - tenacityChance(m, 'golbute', tenDebuffOf(G, m)) / 100);
 
 function slam(G){
   const b = G.boss;
@@ -181,7 +197,7 @@ function avalanche(G){
   const hit = [], dodged = [];
   for(const m of alive(G)){
     G.rocks.push({ x: m.x, at: G.ticks });
-    if(chance(G, tenacityOf(m, 'golbute'))){ dodged.push(m.name); G.stats.dodges++; continue; }
+    if(tenacityTry(m, 'golbute', G.fightRng, tenDebuffOf(G, m))){ dodged.push(m.name); G.stats.dodges++; continue; }
     if(G.t > m.dazedUntil + 1e-9) m.dazed = 0;
     m.dazed++; m.dazedUntil = G.t + A.dazed; m.stats.dazed++;
     hit.push(m);

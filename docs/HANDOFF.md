@@ -6,7 +6,7 @@ Dernière mise à jour : 2026-10-18. À lire en début de discussion, après CLA
 
 - Jeu modulaire en modules ES (voir la structure dans CLAUDE.md), **3 mineurs** par défaut (Rouge, Bleu, Vert), 1 possible.
 - Un seul commit pour l'instant : `91c02f7 Premier commit : Deep Idle Mine modulaire`, fait par l'utilisateur (identité git : `canoul`, `geoffrey.boilay@gmail.com`). Il contient la règle « ligne occupée » **non vérifiée** (voir §3.1).
-- `prototype/deep-idle-mine.html` : ancien prototype, référence de comportement. En mode 1 mineur, les modules reproduisaient exactement ses résultats sur 8 seeds au moment du découpage ; ce n'est plus le cas depuis (la règle de fin de session et la coordination ont changé le comportement), et c'est voulu.
+- `prototype/deep-idle-mine.html` : ancien prototype, référence de comportement (**supprimé le 03/11/2026**, Jules : il reste dans l'historique git). En mode 1 mineur, les modules reproduisaient exactement ses résultats sur 8 seeds au moment du découpage ; ce n'est plus le cas depuis (la règle de fin de session et la coordination ont changé le comportement), et c'est voulu.
 - **Dernier état mesuré avant la règle de ligne** :
   - 3 mineurs (8 seeds) : 4,0 areas débloquées, profondeur 113, ~37 allers-retours, 0 blocage.
   - 1 mineur (8 seeds) : 2,8 areas, profondeur 76, 12 allers-retours, 0 blocage.

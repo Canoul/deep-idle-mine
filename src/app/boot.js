@@ -19,6 +19,8 @@ export function bootApp({ doc, win }){
   doc.head.append(css);
   const viewport = doc.querySelector('meta[name="viewport"]');
   if(!viewport.content.includes('viewport-fit')) viewport.content += ',viewport-fit=cover';
+  /* clavier du téléphone (03/11/2026) : prêt avant l'écran de connexion (src/app/keyboard.js) */
+  import('./keyboard.js').then(m => m.startKeyboard({ doc, win })).catch(e => console.warn(e));
   if(status === 'blocked'){
     const b = doc.createElement('div');
     b.id = 'appBadge';
