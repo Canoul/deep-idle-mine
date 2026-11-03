@@ -43,7 +43,8 @@ export function appUpdateRoutes(update, { log = console.log, now = Date.now, per
       if(++logged <= perHour){
         const b = ctx.body ?? {};
         log(`Appli : retour en arrière ${clean(b.from)} → ${clean(b.to)} (${clean(b.why)}, ${clean(b.platform)}, coque ${clean(b.native)})`);
-        if(update.trace) pushMax(update.trace.rollbacks, { at: now(), from: clean(b.from), to: clean(b.to), why: clean(b.why), platform: clean(b.platform), native: clean(b.native) });
+        if(update.trace) pushMax(update.trace.rollbacks, { at: now(), from: clean(b.from), to: clean(b.to), why: clean(b.why), platform: clean(b.platform), native: clean(b.native),
+          ...(typeof b.detail === 'string' ? { detail: shortUa(b.detail).slice(0, 200) } : {}) });
       }
       return [204];
     },

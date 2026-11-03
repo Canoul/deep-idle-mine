@@ -8,7 +8,7 @@ export function renderAppTrace(t){
     || '<tr><td colspan="5">Aucune demande depuis le démarrage du serveur.</td></tr>';
   const files = Object.entries(t.files || {}).map(([v, f]) => `<tr><td><code>${esc(v)}</code></td><td>${f.ok}</td><td>${f.missing}</td><td>${f.last ? when(f.last) : '—'}</td></tr>`).join('')
     || '<tr><td colspan="4">Aucun fichier téléchargé.</td></tr>';
-  const rb = (t.rollbacks || []).map(r => `<tr><td>${when(r.at)}</td><td><code>${esc(r.from)}</code> → <code>${esc(r.to)}</code></td><td>${esc(r.why)}</td><td>${esc(r.platform)} · coque ${esc(r.native)}</td></tr>`).join('')
+  const rb = (t.rollbacks || []).map(r => `<tr><td>${when(r.at)}</td><td><code>${esc(r.from)}</code> → <code>${esc(r.to)}</code></td><td>${esc(r.why)}${r.detail ? `<br><small>${esc(r.detail)}</small>` : ''}</td><td>${esc(r.platform)} · coque ${esc(r.native)}</td></tr>`).join('')
     || '<tr><td colspan="4">Aucun.</td></tr>';
   return `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mises à jour de l'appli</title>
 <style>body{font:14px/1.4 system-ui,sans-serif;margin:16px;background:#191310;color:#eee}table{border-collapse:collapse;width:100%;margin:8px 0 20px}

@@ -54,9 +54,10 @@ async function currentManifest(io){
 }
 
 /* un retour en arrière, signalé au serveur (une ligne dans son journal) */
-export function report(io, { from, to, why }){
+export function report(io, { from, to, why, detail }){
   io.fetch(`${io.api}/api/app/rollback`, { method: 'POST', credentials: 'omit', keepalive: true, headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ from, to: to ?? 'embarquée', why, platform: io.platform, native: io.native ?? '' }) }).catch(() => {});
+    body: JSON.stringify({ from, to: to ?? 'embarquée', why, platform: io.platform, native: io.native ?? '',
+                           ...(detail ? { detail: String(detail).slice(0, 200) } : {}) }) }).catch(() => {});
 }
 
 /* dossiers de versions qui ne servent plus (anciennes, refusées, téléchargements interrompus) */
@@ -209,7 +210,12 @@ export async function check(io, ui, { limits = APP_UPDATE } = {}){
   io.downloading = build(io, cur, remote).then(() => {
     writeState(io.store, { ...readState(io.store), ready: { v: remote.version } });
     return true;
-  }, e => { console.warn('mise à jour du jeu :', e); return false; }).finally(() => { io.downloading = null; });
+  }, e => {
+    console.warn('mise à jour du jeu :', e);
+    /* l'échec du téléchargement est signalé au serveur (03/11/2026 : sans ça, on ne voyait rien ; relevé admin) */
+    report(io, { from: current, to: remote.version, why: 'telechargement', detail: e?.message ?? String(e) });
+    return false;
+  }).finally(() => { io.downloading = null; });
   const done = await Promise.race([io.downloading, sleep(limits.applyWithin * 1000).then(() => null)]);
   if(done){ await apply(io, remote.version); return 'applying'; }
   ui.hide();
@@ -238,6 +244,8 @@ export async function startUpdater({ doc, win, io = ioOf(win), guard = win.dimUp
    la version est refusée et le jeu démarre comme avant */
 export async function notReloaded(io, ui, limits = APP_UPDATE){
   await sleep(limits.applyWait * 1000);
-  writeState(io.store, failTrial(readState(io.store)));
+  const s = readState(io.store);
+  if(s.trying) report(io, { from: null, to: s.trying.v, why: 'pas-recharge' });   // signalé aussi (03/11)
+  writeState(io.store, failTrial(s));
   ui.hide();
 }
