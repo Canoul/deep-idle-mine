@@ -6904,3 +6904,10 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Points fragiles** : en session, la note du haut fait défiler (≈ 40 px) ; `.skNode` du site est en position absolue :
   l'appli annule `left` / `top` en `!important`.
 - **Applis** : pas de plugin ni de code natif ; `src/app/` change (mise à jour à chaud à la mise en ligne).
+
+### 03/11/2026 — Appli Android 1.1.3 : bandeau « Deep Mine Idle MMO » encore là en 1.1.2 (Geoffrey) 🧪
+- Constat (Geoffrey, Samsung, coque 1.1.2, capture) : grand titre gras « Deep Mine Idle MMO » au-dessus du jeu (style DeviceDefault de Samsung, pas la barre AppCompat). Les mises à jour à chaud passent (contenu du jeu à jour, Concasseur compris).
+- Cause probable : `MainActivity` appelle `EdgeToEdge.enable(this)` **avant** `super.onCreate` → `getDecorView()` crée la fenêtre avec le thème de l'activité du manifeste, `AppTheme.NoActionBarLaunch` (parent `Theme.SplashScreen`), pas `AppTheme` ni `AppTheme.NoActionBar` (posé ensuite par BridgeActivity, vérifié dans @capacitor/android 8.6.0 : `super.onCreate` puis `setTheme(AppTheme_NoActionBar)` puis `setContentView`). La barre de titre du système est figée à la création de la fenêtre ; le correctif 1.1.1 (attributs AppCompat sur `AppTheme`) n'y touchait pas.
+- Correctif : `android:windowActionBar` false et `android:windowNoTitle` true (attributs du système) sur `AppTheme.NoActionBarLaunch` et `AppTheme` ; versionCode 5, versionName 1.1.3 (pas de plugin, `APP_UPDATE.minNative` inchangé). Pas pu compiler ici (pas de SDK Android, dl.google.com bloqué) : le workflow android-apk.yml fabrique l'APK au push. Si le bandeau reste : déplacer `EdgeToEdge.enable(this)` après `super.onCreate(savedInstanceState)`.
+- ⚠️ `tests/mobile-config.test.js` « même version qu'Android » échoue **déjà sur main** : iOS en 1.1.0 (`MARKETING_VERSION`), Android en 1.1.2 depuis la 1.1.1. Pas touché ici (rien ne change pour l'iPhone) : à aligner à la prochaine version iOS.
+

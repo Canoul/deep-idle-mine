@@ -16,6 +16,10 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 03/11/2026 — Geoffrey — Appli Android 1.1.3 : le bandeau « Deep Mine Idle MMO » pour de bon
+- **Pour le joueur** : la 1.1.2 avait encore le bandeau noir au nom de l'appli en haut de l'écran (vu sur Samsung). La 1.1.1 avait corrigé le mauvais thème : la fenêtre est créée avec celui de l'écran de lancement, qui gardait sa barre de titre. Corrigé dans la 1.1.3 (nouvelle appli à installer, pas une mise à jour à chaud).
+- **État** : 🧪 branche `geoffrey/fix-bandeau-android`, APK de test fabriquée par GitHub Actions ; pas encore vu sur un téléphone
+
 ## 03/11/2026 — Jules — Appli mobile : les Skills, une classe à la fois
 - **Pour le joueur** : rien sur le site. Dans l'appli, l'onglet Skills montre **un seul arbre** : trois onglets en haut
   (Mineur, Logisticien, Barbare, avec « ★ ta classe » et le niveau de spécialisation), et chaque skill avec **son nom et
