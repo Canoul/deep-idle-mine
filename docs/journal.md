@@ -16,6 +16,17 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 04/11/2026 — Jules — Appli mobile : l'Historique, une ligne par session
+- **Pour le joueur** : rien sur le site. Dans l'appli, le bouton **Session** hors session (l'Historique) montre **une ligne
+  par session**, regroupées par jour (« AUJOURD'HUI », « HIER », puis la date) : le type (Mine, Prison, Instance…) et
+  l'heure, la durée et avec qui, l'XP et les 3 plus gros butins (les trésors et minerais précieux d'abord, pas les
+  2 000 pierres). **Toucher une ligne ouvre le bilan complet** en bas de l'écran (tout le butin en icônes, areas,
+  profondeur, la seed en petit). Sans aucune session : un bouton « Lancer une session ▸ » vers l'Accueil.
+- **Décisions** (Jules) : maquette A (une ligne par session) ; écartée : la dernière session en grand. Conception :
+  `docs/superpowers/specs/2026-11-03-appli-historique-design.md`.
+- **À suivre** : Guilde et Classement.
+- **État** : ✅ en ligne le 04/11
+
 ## 03/11/2026 — Geoffrey — Un set par activité
 - **Pour le joueur** : dans le Lobby, quand une activité est ouverte, la carte des sets propose « Set défini pour … ».
   Le set choisi est équipé tout seul à chaque lancement de cette activité (ou à l'entrée au Bloc géant, à He's coming,

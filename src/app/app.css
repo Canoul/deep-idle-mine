@@ -264,3 +264,33 @@ body.app #spSheet .box{position:relative;width:100%;max-height:calc(100dvh - var
 body.app #spSheet .spClose{position:absolute;right:4px;top:4px;z-index:1}
 body.app #spSheet .spAct .big{width:100%}
 body.app:has(#spSheet:not([hidden])) .guide{display:none}
+
+/* ---------- Historique (03/11/2026, Jules ; spec 2026-11-03-appli-historique-design.md) : une ligne par session, par jour,
+   le bilan en panneau du bas (ancien : une carte dépliée par session, ≈ 1 écran chacune) ---------- */
+body.app #histBody{display:flex;flex-direction:column;gap:6px}
+body.app .hiDay{margin:6px 0 0;font:400 15px/1 var(--f-title);color:var(--mut);letter-spacing:.05em}
+body.app .hiRow{display:grid;grid-template-columns:32px minmax(0,1fr) auto;align-items:center;gap:8px;width:100%;min-height:56px;padding:4px 6px;
+  text-align:left;white-space:normal;text-shadow:none;border:0;border-image:none;background:var(--chip);box-shadow:0 0 0 2px #000}
+body.app .hiM{font-size:22px;text-align:center}
+body.app .hiT{min-width:0;display:flex;flex-direction:column}
+body.app .hiT b{font:400 17px/1.05 var(--f-title);color:#ffe6c4;font-weight:400}
+body.app .hiT small{font-size:13px;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body.app .hiR{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+body.app .hiLoot{display:flex;gap:6px}
+body.app .hiL,body.app .hiIt{position:relative;display:grid;place-items:center}
+body.app .hiL img{width:26px;height:26px} body.app .hiIt img{width:28px;height:28px}
+body.app :is(.hiL,.hiIt) i{position:absolute;right:-4px;bottom:-4px;font:400 12px/1 var(--f-title);font-style:normal;color:#ffe6c4;text-shadow:1px 1px 0 #000}
+body.app .hiXp{font:400 14px/1 var(--f-title);color:var(--o2)}
+body.app .hiGo{align-self:flex-start;margin-top:8px}
+body.app #hiSheet{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;background:rgba(5,3,2,.62)}
+body.app #hiSheet[hidden]{display:none}
+body.app #hiSheet .box{position:relative;width:100%;max-height:calc(100dvh - var(--top-h) - var(--dock-h));margin-bottom:var(--dock-h);overflow:auto;padding:4px 8px 10px;
+  border:12px solid transparent;border-image:url(../../textures/ui/panel.png) 6 fill / 12px stretch}
+body.app #hiSheet h3{margin:0 48px 4px 0;font:400 22px/1.05 var(--f-title);color:#ffe6c4}
+body.app #hiSheet .hiClose{position:absolute;right:4px;top:4px}
+body.app #hiSheet .hiFacts{margin:0 0 6px;font-size:15px;color:var(--mut)}
+body.app #hiSheet .hiGrid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px}
+body.app #hiSheet .hiIt{height:44px;background:#100b08;box-shadow:inset 0 0 0 2px var(--line)}
+body.app #hiSheet .hiIt i{right:2px;bottom:1px}
+body.app #hiSheet .hiSeed{margin:8px 0 0;text-align:right}
+body.app:has(#hiSheet:not([hidden])) .guide{display:none}
