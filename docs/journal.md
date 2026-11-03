@@ -19,6 +19,9 @@ Modèle d'entrée :
 ## 03/11/2026 — Geoffrey — Niveau requis : Mine instantanée 3, Bloc géant et He's coming 10
 - **Pour le joueur** : en dessous du niveau, l'activité est **scellée** dans le Lobby (cadenas, grisée, « niveau 10
   requis ») et le serveur refuse l'entrée ou l'inscription. Tout le reste est ouvert dès le niveau 1.
+
+## 03/11/2026 — Geoffrey — Tableaux de butin : noms des raretés
+- **Pour le joueur** : dans la bulle de butin d'un coffre (inventaire), les qualités s'affichent par leur nom (Utile, Bon, Haute qualité, Excellent, Antique, Mystérieux, Légendaire) au lieu de « R1 » à « R7 », et le titre de la bulle donne le nom du coffre (« Excellent Trésor angélique », plus « Trésor angélique R4 »). Le Coffre du Roi Gobelin II garde son « II ».
 - **État** : ✅ en ligne le 03/11
 
 ## 03/11/2026 — Geoffrey — Appli : notifications à l'heure (MI en retard)

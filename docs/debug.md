@@ -6984,3 +6984,6 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   hescoming / instant ✅ (prison-server : seul « une tour et une instance… » échoue, déjà connu). Navigateur ✅ (compte
   neuf niveau 1 : 3 lignes scellées, entrées 403).
 - ⚠️ Non traité : la notification de l'appli « He's coming accessible » peut encore partir pour un joueur sous le niveau 10.
+
+### 03/11/2026 — Bulle de butin : noms des qualités
+- `src/ui/loot-tip.js` `rowHtml` : une ligne de qualité affiche `r.label` (Utile… Légendaire) dans sa couleur, « R4 » en bulle (avant : « R4 », nom en bulle). Titre de la bulle (`src/meta/loot-table.js`) : `itemName(item)` (« Excellent Trésor angélique », avant le nom interne « Trésor angélique R4 »). `itemName` : suffixe de niveau « II » du Coffre du Roi Gobelin (il était perdu). ✅ loot-table, goblin-king, rune, inventory, instance (111).
