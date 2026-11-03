@@ -16,6 +16,10 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 03/11/2026 — Geoffrey — Appli Android : plus de bandeau « Deep Mine Idle MMO »
+- **Pour le joueur** : sur Android, un bandeau noir avec le nom de l'appli cachait le haut du jeu (portrait, « Mon compte », « Se déconnecter »). Le thème de l'appli n'a plus de barre de titre. Il faut la nouvelle appli (1.1.1, fabriquée par GitHub Actions) : une mise à jour à chaud ne peut pas changer ça.
+- **État** : 🧪 sur la branche `geoffrey/appli-sans-bandeau` (APK à installer et vérifier sur un téléphone)
+
 ## 03/11/2026 — Geoffrey — Relevé des mises à jour de l'appli (compte admin)
 - **Pour nous** : « Mon compte » → « 📱 Mises à jour de l'appli » (compte admin, sur le site) montre ce que le serveur reçoit des applis : chaque demande de version (version annoncée par le téléphone, réponse du serveur, appareil), les fichiers téléchargés et les retours en arrière. Sert à comprendre pourquoi une appli 1.1.0 ne se met pas à jour. Remis à zéro à chaque redémarrage du serveur.
 - **État** : ✅ en ligne le 03/11
