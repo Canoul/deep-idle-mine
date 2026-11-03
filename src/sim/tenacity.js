@@ -11,4 +11,5 @@ export function effectiveTenacity(raw){
 /* ténacité effective d'un mineur face à une mécanique src (clé de TENACITY.pen) : sa ténacité brute moins la
    pénétration de la source (02/11), puis la courbe */
 export const penOf = src => (src && TENACITY.pen?.[src]) || 0;
-export const tenacityOf = (m, src = null) => effectiveTenacity((Number(m?.carac?.tenacity) || 0) - penOf(src));
+/* extra : points de ténacité brute retirés en plus (malus de la Division du Golbute, 03/11) */
+export const tenacityOf = (m, src = null, extra = 0) => effectiveTenacity((Number(m?.carac?.tenacity) || 0) - penOf(src) - extra);

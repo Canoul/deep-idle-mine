@@ -759,6 +759,10 @@ Modèle d'entrée :
 
 ## 30/10/2026 — Geoffrey — Prison : 8 d'énergie par heure de jeu (avant 4)
 
+## 03/11/2026 — Geoffrey — Golbute : les golems de la Division affaiblissent la ténacité
+- **Pour le joueur** : pendant la Division, toutes les 5 s, chaque golem retire 1 % de ténacité aux mineurs à 3 cases ou moins, pendant 2 min, cumulable (chaque golem applique le sien).
+- **État** : ✅ en ligne le 03/11
+
 ## 02/11/2026 — Geoffrey — Commande admin : donner de l'énergie
 - **Pour nous** : sur le serveur, `sudo node /opt/deep-idle-mine/scripts/give-energy.js --name PSEUDO --amount 50` donne de l'énergie à un joueur (1 à 100, plafonnée au max de la jauge), sans redémarrer.
 - **État** : ✅ en ligne le 02/11
