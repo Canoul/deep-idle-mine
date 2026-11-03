@@ -31,6 +31,7 @@ export function minerEffects(G, m, ctx = {}){
   const cage = G.cages?.some(c => c.id === m.id) && G.boss?.state === 'wait';
   if(cage) push({ id:'caged', left:Math.max(0, r1(INSTANCE.boss.cageMaxWait - (G.boss.t || 0))) });
   /* debuffs */
+  if(m.fearMark) push({ id:'fear_mark' });   // He's coming (03/11) : prochain Fear plus probable
   if(m.scaredUntil > G.t) push({ id:'scared', left:left(G, m.scaredUntil) });
   if(foe?.type === 'mephite') push({ id:'choke' });
   if(foe?.type === 'gobelin' && ctx.robbable) push({ id:'robbed' });

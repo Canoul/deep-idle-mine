@@ -4,7 +4,7 @@
    nombre de stacks. Bulle au survol / toucher (data-tip, src/ui/tooltip.js).
    Les icônes sont des nœuds gardés d'une image à l'autre (une par état) : la bulle ouverte ne saute pas quand le
    temps restant change. effectTip / bonusTip sont purs (testés). */
-import { EFFECTS, SHRINES, CFG, MOBS, COMBAT, INSTANCE, GLYPHS, GOBLIN_KING } from '../config.js';
+import { EFFECTS, SHRINES, CFG, MOBS, COMBAT, INSTANCE, GLYPHS, GOBLIN_KING, HES_COMING } from '../config.js';
 import { SPELL } from '../meta/spells.js';
 import { ringLines } from '../meta/stuff.js';
 import { pxi } from './pxicons.js';
@@ -33,6 +33,7 @@ export function effectTip(e){
                          `Le roi reprend le combat dès qu'un mineur sort (${INSTANCE.boss.cageMaxWait} s au plus)`,
                          `Il régénère ${INSTANCE.boss.regenPct * 100} % de ses PV (${INSTANCE.levels[2].boss.regenPct * 100} % au niveau 2) toutes les ${INSTANCE.boss.regenEvery} s tant que personne n'est redescendu au sol`); break;
     case 'fear': L.push('Lucifer l\'a terrifié : il erre et ne frappe plus', 'La ténacité peut l\'éviter'); break;
+    case 'fear_mark': L.push('Il a esquivé le dernier Fear de Lucifer grâce à sa ténacité', `Le prochain Fear a ${Math.round(HES_COMING.roar.markBonus * 100)} % de chances en plus de le toucher`, 'La marque tombe au Fear suivant'); break;
     case 'scared': L.push('Pas de barbare avec lui dans le donjon : il fuit si le minotaure le tacle'); break;
     case 'choke': L.push(`Le méphite lui retire ${MOBS.mephite.oxygen} d'oxygène toutes les ${MOBS.mephite.every} s`, 'La ténacité peut l\'éviter'); break;
     case 'robbed': L.push(`Le gobelin lui vole un minerai toutes les ${MOBS.goblinStealEvery} s`, 'La ténacité peut l\'éviter'); break;

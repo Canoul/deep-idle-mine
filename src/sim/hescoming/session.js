@@ -10,6 +10,7 @@ import { hitDamage } from '../actions.js';
 import { warcryOf } from '../mineur.js';
 import { knockOf, reachOf } from '../knock.js';
 import { resists } from '../mobs.js';
+import { tenacityOf } from '../tenacity.js';
 import { log } from '../log.js';
 import { newGiant, joinGiant, leaveGiant, walk, stepFly } from '../giant/session.js';
 
@@ -44,13 +45,25 @@ export function tickLucifer(G){
 
 const feared = (G, m) => m.fearUntil > G.t;
 
+/* Fear et ténacité (03/11/2026, Geoffrey) : chance du Fear = 1 − ténacité effective ; marqué (m.fearMark, debuff
+   « Marqué par Lucifer » : il a esquivé le Fear précédent), × (1 + roar.markBonus), plafonnée à 1. La marque tombe à ce
+   Fear et revient s'il l'esquive encore. Pas la fatigue générale de la ténacité (elle ne s'ajoute pas ici). */
+export function dodgeFear(G, m){
+  const t = tenacityOf(m, 'hescoming') / 100;
+  let fear = 1 - t;
+  if(m.fearMark) fear = Math.min(1, fear * (1 + HC.roar.markBonus));
+  m.fearMark = false;
+  if(!(t > 0) || !(G.rng() >= fear)) return false;
+  m.fearMark = true;
+  return true;
+}
 /* rugissement : Fear pour ceux à roar.radius cases ou moins ; un Fear en cours n'est pas prolongé ; la ténacité l'ignore */
 function roar(G){
   G.roarAt = G.t;
   log(G, `😈 ${HC.bossName} rugit !`);
   for(const m of G.miners){
     if(gapOf(G, m) > HC.roar.radius + 1e-9 || feared(G, m)) continue;
-    if(resists(G, m, 'hescoming')){ m.stats.ignored++; continue; }
+    if(dodgeFear(G, m)){ m.stats.ignored++; continue; }
     m.fearUntil = G.t + HC.roar.fear;
     m.wanderUntil = 0;
   }
