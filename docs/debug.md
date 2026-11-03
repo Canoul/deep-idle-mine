@@ -6755,3 +6755,9 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Applis** : rien de natif ; seulement une texture et un script Python.
 - ✅ En ligne le 03/11.
 
+## 03/11/2026 — Jules — Ménage : prototype/ supprimé
+- **Quoi** : `prototype/deep-idle-mine.html` supprimé (toujours dans l'historique git). Mentions corrigées : CLAUDE.md (structure), docs/HANDOFF.md, docs/comptes.md (disait à tort que le serveur servait `prototype/`), en-tête de scripts/gen_textures.py, commentaire de server/config.js. tests/security.test.js garde `/prototype/deep-idle-mine.html` dans les chemins qui doivent répondre 404 (toujours vrai).
+- **Inventaire** (même jour) : les 306 PNG de `textures/` sont tous utilisés (noms en toutes lettres, ou fabriqués : `skins/${métal}_${pièce}`, `lucifer_roar${i}`, `golbute…_crystal`, `town_banner_${side}`) ; chaque script de `scripts/` est appelé par package.json, le serveur, un autre script, un test ou docs/deploiement-ovh.md (`scripts/assets/kenney-1bit.png` : planche de build_pxicons.py). Seul `scripts/create-account.js` (Geoffrey, 21/10, époque Render) n'est plus appelé nulle part : gardé, à voir avec lui. Place sur le disque : surtout l'historique git (84 Mo d'objets en vrac, tassés par `git gc` le 03/11) et `mobile/node_modules` (outils de l'appli, réinstallables).
+- **Tests** ✅ tests/security.
+- ✅ En ligne le 03/11.
+
