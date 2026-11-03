@@ -16,6 +16,17 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 03/11/2026 — Geoffrey — Appli : notifications à l'heure (MI en retard)
+- **Pour le joueur** : sur Android, la notification de la mine instantanée arrivait ≈ 15 min en retard : l'appli
+  demandait à Android une alarme « approximative » qu'il regroupe pour économiser la batterie. Avec l'appli **1.1.5**, les
+  notifications sont à l'heure exacte quand Android l'autorise ; une case **« Notifications à l'heure exacte »** dans Mon
+  compte ouvre le réglage « Alarmes et rappels » d'Android s'il est coupé. iPhone : rien à changer.
+  Ça vaut pour **toutes** les notifications de l'appli (session, MI, Bloc géant, four), et une nouvelle arrive : **He's
+  coming accessible** (quand on peut y retourner, réglable à part dans Mon compte).
+- **À suivre** : publier l'appli Android 1.1.5 sur le Play Store (le correctif ne marche qu'avec elle). Test « même version
+  iOS qu'Android » déjà rouge avant (iOS 1.1.0, Android 1.1.4).
+- **État** : ✅ en ligne le 03/11 (serveur) ; heure exacte avec l'appli Android 1.1.5, à publier
+
 ## 03/11/2026 — Geoffrey — Appli Android 1.1.4 : les mises à jour à chaud marchent enfin (Samsung)
 - **Pour le joueur** : sur certains téléphones (vu sur les Samsung), l'appli ne se mettait jamais à jour toute seule : il fallait attendre une nouvelle version sur Google Play. Trouvé grâce au relevé : l'appli écrivait plusieurs fichiers en même temps dans un dossier pas encore créé, et Android refusait. Les dossiers sont maintenant créés d'abord, un par un. **Il faut installer la 1.1.4 depuis Google Play** (une mise à jour à chaud ne peut pas réparer le code qui fait les mises à jour à chaud).
 - **État** : ✅ en ligne le 03/11 (serveur) ; appli 1.1.4 (code de version 6) à envoyer sur Google Play

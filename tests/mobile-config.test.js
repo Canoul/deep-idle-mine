@@ -54,6 +54,7 @@ test('coque : plugin des notifications dans mobile/, jamais à la racine', () =>
   assert.ok(!json('package.json').dependencies['@capacitor/local-notifications']);
   assert.match(read('mobile/android/capacitor.settings.gradle'), /capacitor-local-notifications/);
   assert.match(read('mobile/android/app/src/main/AndroidManifest.xml'), /android\.permission\.POST_NOTIFICATIONS/);
+  assert.match(read('mobile/android/app/src/main/AndroidManifest.xml'), /android\.permission\.SCHEDULE_EXACT_ALARM/, 'notifications à l\'heure (03/11)');
 });
 
 /* ---- projet iOS (mobile/ios, repris de jules/appli-ios) ---- */

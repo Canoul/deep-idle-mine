@@ -6958,3 +6958,17 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - ⚠️ Le code qui télécharge est celui de la coque (sa copie embarquée) tant qu'aucune mise à jour à chaud n'a réussi : ce correctif ne vaut que dans une **nouvelle appli, 1.1.4** (versionCode 6 ; 1.1.3 sautée si pas encore envoyée). Puis monter `APP_UPDATE.latest.android` à 1.1.4 une fois en ligne sur Google Play.
 - Corrige l'entrée « bandeau 1.1.3 » plus haut : la capture du Concasseur ne prouvait PAS les mises à jour à chaud (le Concasseur était déjà dans la copie embarquée de la 1.1.2).
 
+## 03/11/2026 — Appli : notification de la MI en retard (Geoffrey)
+- Cause : `src/app/native.js` programmait tout avec `isExactNotification:false` (pour que le plugin n'ouvre pas l'écran des
+  alarmes à chaque appel) et l'appli ne déclarait pas `SCHEDULE_EXACT_ALARM` : alarme inexacte, Android la décale (≈ 15 min
+  constatés). L'heure calculée (`planNotifs`, 5 min avant la MI) est juste.
+- Correctif : permission `SCHEDULE_EXACT_ALARM` dans `AndroidManifest.xml`, appli 1.1.5 (versionCode 7) ; `exactAllowed(plugin)`
+  (`checkExactNotificationSetting`) à chaque passe ; `isExactNotification:true` seulement si autorisé (pas d'écran système
+  ouvert sinon) ; changement d'autorisation → tout annulé et reprogrammé ; case « Notifications à l'heure exacte »
+  (`notif_exact`, Android, coque ≥ 1.1.5, `EXACT_SINCE`) qui appelle `changeExactNotificationSetting`. `USE_EXACT_ALARM` écarté
+  (Google Play la réserve aux applis de réveil / agenda). Android 14+ : l'autorisation est coupée par défaut à l'installation,
+  d'où la case.
+- Tests : app-native (3 nouveaux), app-notifs, mobile-config (permission), account* : 114/115, le rouge (version iOS ≠ Android)
+  l'était déjà sur main. ⚠️ Pas essayé sur un vrai téléphone ; valeur de `exact_alarm` (« granted ») prise de la doc du plugin.
+- Même branche : toutes les notifications passent par `toPlugin` (exactes si autorisé). Ajout du type `hescoming` (id 4, `hcNext` =
+  `hcUI.nextEntry()` dans `notifData`, src/main.js), réglage `notif_hescoming`. Tests app-notifs (+1), app-native ✅.
