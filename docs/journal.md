@@ -16,6 +16,10 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 03/11/2026 — Geoffrey — Concasseur : minerai d'or
+- **Pour le joueur** : le concasseur accepte le minerai d'or, par lots de 100 ; un lot donne 1 Terre.
+- **État** : 🧪 sur la branche `geoffrey/concasseur-or` (pas en ligne)
+
 ## 03/11/2026 — Jules — Ménage du dépôt
 - **Pour le joueur** : rien, c'est de l'organisation.
 - **Décisions** (Jules) : suppression de l'ancien prototype (`prototype/`, le jeu d'origine en un seul fichier, gardé pour référence ; il reste dans l'historique git). Inventaire fait avant : les 306 images et tous les scripts servent encore, rien d'autre à supprimer.
