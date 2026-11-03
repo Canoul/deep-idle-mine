@@ -1642,15 +1642,17 @@ export const PARTY = { codeLength:6, poll:2500, pollInSession:5000, formingPoll:
    avec « Lancer » : s'ouvre à heure fixe pour les inscrits, voir INSTANT_MINE). */
 export const MINE_MODES = [
   { id:'mine', label:'Mine',              icon:'⛏', ready:true  },
-  { id:'mi',   label:'Mine instantanée',  icon:'🌀', ready:true, scheduled:true },   // MI : inscription dans le lobby
+  /* minLevel (03/11/2026, Geoffrey) : niveau du mineur requis ; en dessous, l'activité est scellée (cadenas) et le serveur
+     refuse l'inscription ou l'entrée (src/shared/level-gate.js) */
+  { id:'mi',   label:'Mine instantanée',  icon:'🌀', ready:true, scheduled:true, minLevel:3 },   // MI : inscription dans le lobby
   /* Instances (27/10/2026, INSTANCE) : un groupe de 1 à 3, une clé chacun ; le lobby les montre sous un seul bouton
      « Instances » (src/ui/lobby.js) */
   { id:'instance_1', label:'Instance I', icon:'🗝', ready:true, instance:true },
   { id:'instance_2', label:'Instance II', icon:'🗝', ready:true, instance:true },   // Golbute (30/10/2026), même bouton « Instances »
   /* Bloc géant (26/10/2026) : on y entre seul depuis son panneau (GIANT), jamais par un lancement de groupe */
-  { id:'giant', label:'Bloc géant', icon:'🌈', ready:true, giant:true },
+  { id:'giant', label:'Bloc géant', icon:'🌈', ready:true, giant:true, minLevel:10 },
   /* He's coming (01/11/2026, HES_COMING) : comme le Bloc géant, sa propre carte et sa propre journée */
-  { id:'hescoming', label:'He\'s coming', icon:'😈', ready:true, giant:true },
+  { id:'hescoming', label:'He\'s coming', icon:'😈', ready:true, giant:true, minLevel:10 },
   /* Prison (29/10/2026, PRISON) : solo, sans fin ; lancée et arrêtée par ses propres routes (/api/game/prison/…) */
   { id:'prison', label:'Prison', icon:'⛓', ready:true, prison:true, solo:true },
   /* tours du Jugement : proposées seulement quand elles sont ouvertes (JUDGMENT, TOWER) */

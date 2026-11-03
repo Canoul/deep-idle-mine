@@ -3,6 +3,7 @@
    de test et réglages. Pendant une session, il reste visible en LECTURE SEULE (bandeau « En session dans la mine ») :
    la session elle-même est dans l'onglet Session.
    Lit l'état et appelle des fonctions : le groupe et la session sont gérés par le serveur. */
+import { sealedBelow, levelLockText } from '../shared/level-gate.js';
 import { gearScore } from '../meta/gearscore.js';
 import { leftText, statusText } from './social.js';
 import { canBeInvited } from '../shared/party.js';
@@ -197,7 +198,7 @@ export function lfgState({ account, party, offline, session, mode, lfg }){
    si le joueur les a déjà faites pendant cette ouverture. Mode dev : toujours là et jamais grisées (illimitées).
    Prison (29/10) : solo, grisée quand on est dans un groupe de plusieurs (size : joueurs du groupe) ; premier bouton
    (30/10, Geoffrey). */
-export function mineModes(cur, locked = false, judgment = null, dev = false, size = 1){
+export function mineModes(cur, locked = false, judgment = null, dev = false, size = 1, level = null){
   /* instances (27/10) : un seul bouton « Instances » pour toutes ; il ouvre l'instance choisie (la première sinon) */
   const curInst = MINE_MODES.find(m => m.id === cur)?.instance;
   const order = [...MINE_MODES].sort((a, b) => !!b.prison - !!a.prison);   // prison en premier (30/10)
@@ -207,6 +208,9 @@ export function mineModes(cur, locked = false, judgment = null, dev = false, siz
     const done = !dev && !!m.tower && !!judgment?.sides?.[m.tower]?.done;
     /* pendant une session, on peut encore regarder la mine instantanée et s'y inscrire (22/10), et regarder le Bloc géant
        (26/10 : scores, classement, récompenses ; « Entrer » y est grisé) */
+    /* niveau requis (03/11/2026, Geoffrey) : en dessous, scellée (cadenas) et grisée */
+    const sealed = sealedBelow(m.id, level);
+    if(sealed) return { id:m.id, label:`🔒 ${m.label}`, on: false, soon: false, done: false, disabled: true, sealed, title: levelLockText(m.id, level) };
     return { id:m.id, label:`${m.icon} ${m.label}`, on: m.id === cur, soon: !m.ready, done, disabled: (locked && !m.scheduled && !m.giant) || !m.ready || done };
   });
 }
@@ -231,7 +235,8 @@ export function activityMenu(modes, { towerOpen = false, prisonOn = false, noFor
     if(a.id === 'forming') return { ...a, kind:'forming', disabled:noForming };
     if(a.id === 'jugement') return { ...a, kind:'view', note: towerOpen ? 'tour ouverte' : null };
     const m = a.id === 'instances' ? modes.find(x => MINE_MODES.find(d => d.id === x.id)?.instance) : modes.find(x => x.id === a.id);
-    return { ...a, kind:'mode', mode:m.id, disabled: a.id === 'mine' ? !!m.soon : m.disabled, soon:m.soon, hint:m.title ?? null, note: a.id === 'prison' && prisonOn ? 'en cours' : null, ready: !!ready[a.id] && !m.disabled };
+    return { ...a, kind:'mode', mode:m.id, disabled: a.id === 'mine' ? !!m.soon : m.disabled, soon:m.soon, hint:m.title ?? null, note: a.id === 'prison' && prisonOn ? 'en cours' : null, ready: !!ready[a.id] && !m.disabled,
+             sealed: m.sealed ?? 0 };
   });
 }
 
@@ -284,7 +289,8 @@ export function setupLobby(h){
     $('teamTitle').textContent = locked ? 'Ton groupe' : 'Équipe de la prochaine session';
     /* Mine instantanée : pas d'équipe ni de Lancer (elle s'ouvre à heure fixe), sa carte d'inscription à la place */
     /* une tour choisie qui vient de fermer (ou déjà faite) : retour à la Mine */
-    const modes = mineModes(st.mode, locked, st.judgment, !!st.info?.dev, party?.members.length ?? 1);
+    const modes = mineModes(st.mode, locked, st.judgment, !!st.info?.dev, party?.members.length ?? 1, st.myLevel ?? null);
+    if(modes.some(m => m.id === st.mode && m.sealed)) st.mode = MINE_MODES[0].id;   // activité scellée (niveau) : retour à la Mine
     if(!locked && !modes.some(m => m.id === st.mode && !m.done)) st.mode = MINE_MODES[0].id;
     const menu = st.screen === 'menu';
     const def = menu ? null : MINE_MODES.find(m => m.id === st.mode), mi = def?.scheduled, tower = def?.tower;   // menu : aucune activité choisie
@@ -313,9 +319,9 @@ export function setupLobby(h){
     }
     $('launchBtn').hidden = !cards.launch;
     $('mineModes').innerHTML = activityMenu(modes, { towerOpen: st.judgmentPending, prisonOn: prisonActive(st.prison), noForming: offline || !account || locked, ready: { giant: st.giantReady, hescoming: st.hcReady } }).map(a =>
-      `<button ${a.kind === 'forming' ? 'data-forming' : a.kind === 'view' ? 'data-view="jugement"' : `data-mode="${a.mode}"`} class="actBtn${a.ready ? ' ready' : ''}"${a.disabled ? ' disabled' : ''}${a.hint ? ` title="${esc(a.hint)}"` : ''}>`+
-      `<span class="actIcon">${a.icon}</span><span class="actText"><b>${esc(a.title)}</b><small>${esc(a.desc)}</small></span>`+
-      (a.note ? `<small class="jnew">● ${esc(a.note)}</small>` : a.soon ? '<small>bientôt</small>' : '')+`</button>`).join('');
+      `<button ${a.kind === 'forming' ? 'data-forming' : a.kind === 'view' ? 'data-view="jugement"' : `data-mode="${a.mode}"`} class="actBtn${a.ready ? ' ready' : ''}${a.sealed ? ' sealed' : ''}"${a.disabled ? ' disabled' : ''}${a.hint ? ` title="${esc(a.hint)}"` : ''}>`+
+      `<span class="actIcon">${a.sealed ? pxi('lock') : a.icon}</span><span class="actText"><b>${esc(a.title)}</b><small>${a.sealed ? `🔒 Scellé · niveau ${a.sealed} requis` : esc(a.desc)}</small></span>`+
+      (a.note ? `<small class="jnew">● ${esc(a.note)}</small>` : a.soon ? '<small>bientôt</small>' : '')+`</button>`).join('');   // scellé : niveau requis (03/11)
     /* mode dev : les tours, même fermées (jeu normal : « Choisir la tour » de la carte du Jugement) */
     const devTowers = jv && !!info?.dev ? modes.filter(m => MINE_MODES.find(d => d.id === m.id)?.tower) : [];
     $('towerModes').hidden = !devTowers.length;
@@ -793,7 +799,7 @@ export function setupLobby(h){
     /* retour au menu en cliquant sur l'onglet Lobby */
     showMenu(){ st.screen = 'menu'; st.view = null; render(); scrollTo(0, 0); },
     /* choisir un type de mine (ex. la tour ouverte, depuis le Jugement) s'il est proposé et pas déjà fait */
-    pickMode(mode){ if(mineModes(st.mode, !!st.session, st.judgment, !!st.info?.dev).some(m => m.id === mode && !m.disabled)) pick(mode); },
+    pickMode(mode){ if(mineModes(st.mode, !!st.session, st.judgment, !!st.info?.dev, 1, st.myLevel ?? null).some(m => m.id === mode && !m.disabled)) pick(mode); },
     /* recherche de groupe depuis le Carreau (30/10, Jules) : l'état comme si la mine classique était choisie (lfgState),
        le nombre de joueurs en recherche et le début de la sienne */
     lfgView: () => ({ ...lfgState({ ...st, mode: MINE_MODES[0].id }), players: st.lfg?.players ?? 0, start: st.lfgStart }),

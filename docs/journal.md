@@ -16,6 +16,11 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 03/11/2026 — Geoffrey — Niveau requis : Mine instantanée 3, Bloc géant et He's coming 10
+- **Pour le joueur** : en dessous du niveau, l'activité est **scellée** dans le Lobby (cadenas, grisée, « niveau 10
+  requis ») et le serveur refuse l'entrée ou l'inscription. Tout le reste est ouvert dès le niveau 1.
+- **État** : ✅ en ligne le 03/11
+
 ## 03/11/2026 — Geoffrey — Appli : notifications à l'heure (MI en retard)
 - **Pour le joueur** : sur Android, la notification de la mine instantanée arrivait ≈ 15 min en retard : l'appli
   demandait à Android une alarme « approximative » qu'il regroupe pour économiser la batterie. Avec l'appli **1.1.5**, les

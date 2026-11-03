@@ -6972,3 +6972,15 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   l'était déjà sur main. ⚠️ Pas essayé sur un vrai téléphone ; valeur de `exact_alarm` (« granted ») prise de la doc du plugin.
 - Même branche : toutes les notifications passent par `toPlugin` (exactes si autorisé). Ajout du type `hescoming` (id 4, `hcNext` =
   `hcUI.nextEntry()` dans `notifData`, src/main.js), réglage `notif_hescoming`. Tests app-notifs (+1), app-native ✅.
+
+## 03/11/2026 — Geoffrey — Activités scellées sous un niveau (branche geoffrey/niveau-requis-activites)
+- `MINE_MODES[].minLevel` (src/config.js) : `mi` 3, `giant` 10, `hescoming` 10. `src/shared/level-gate.js` (`minLevelOf`,
+  `sealedBelow`, `levelLockText`). Lobby : `mineModes(…, level)` → `sealed`, `activityMenu` → classe `.actBtn.sealed`
+  (cadenas `pxi('lock')`, « Scellé · niveau N requis », grisée) ; niveau reçu par `lobby.update({ myLevel })` dans
+  `setProgress` (src/main.js) ; niveau inconnu = rien de scellé. Serveur : `giant.enter` (Bloc géant et He's coming, même
+  service, `mode`) et `instant.join` → `level_locked` 403 via `game.levelFor`.
+- Tests : `tests/level-gate.test.js` (4, sans helpers) ✅ ; `tests/helpers.js` retire les `minLevel` (comptes de test
+  niveau 1) ; giant-service, instant-server, hescoming-service, lobby, social, shrines, account-delete, anticheat giant /
+  hescoming / instant ✅ (prison-server : seul « une tour et une instance… » échoue, déjà connu). Navigateur ✅ (compte
+  neuf niveau 1 : 3 lignes scellées, entrées 403).
+- ⚠️ Non traité : la notification de l'appli « He's coming accessible » peut encore partir pour un joueur sous le niveau 10.
