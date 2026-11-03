@@ -4,7 +4,7 @@
    touche ni au DOM ni au canvas.
    Bloc disputé : quand un mineur finit un bloc, les autres qui minaient ce même bloc perdent leur travail (« bloc
    perdu ») ; après MI.interruptMax blocs perdus d'affilée, il change de zone (voir ai.js). */
-import { INSTANT_MINE as MI, DT, STATS, BLOCKS, ITEMS, SHINY, FORTUNE, SKILLS } from '../../config.js';
+import { INSTANT_MINE as MI, DT, STATS, BLOCKS, ITEMS, SHINY, FORTUNE, SKILLS, GEAR_RNG } from '../../config.js';
 import { mulberry32 } from '../../core/rng.js';
 import { shinyOf, fortuneExtra } from '../actions.js';
 import { rushTime } from '../mineur.js';
@@ -26,7 +26,7 @@ export function newInstant(seed, opts={}){
   const cols = spawnColumns(specs.length, world.w);
   const G = {
     mode:'mi', seed, t:0, ticks:0, over:false, ...world,
-    rng:mulberry32(seed^0x3c6ef372), shinyRng:mulberry32(seed^SHINY.salt), fortuneRng:mulberry32(seed^FORTUNE.salt),
+    rng:mulberry32(seed^0x3c6ef372), shinyRng:mulberry32(seed^SHINY.salt), fortuneRng:mulberry32(seed^FORTUNE.salt), gearRng:mulberry32(seed^GEAR_RNG.salt),   // gearRng : Coup unique (03/11)
     ladder: world.tiles.map(r => new Uint8Array(r.length)),   // échelles posées (1 = échelle sur la case)
     seen: world.tiles.map((r, y) => new Uint8Array(r.length).fill(y === 0 ? 1 : 0)),   // cases découvertes (surface : oui)
     log:[], stats:{ mined:0, contested:0, feathers:0, shiny:0, ladders:0 }, summary:null,

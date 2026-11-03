@@ -16,6 +16,10 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 03/11/2026 — Geoffrey — Mine instantanée : le Coup unique marche
+- **Pour le joueur** : en mine instantanée, le Coup unique casse maintenant un bloc tout de suite (avant, la stat n'y servait à rien).
+- **État** : ✅ en ligne le 03/11
+
 ## 03/11/2026 — Jules — Ménage du dépôt
 - **Pour le joueur** : rien, c'est de l'organisation.
 - **Décisions** (Jules) : suppression de l'ancien prototype (`prototype/`, le jeu d'origine en un seul fichier, gardé pour référence ; il reste dans l'historique git). Inventaire fait avant : les 306 images et tous les scripts servent encore, rien d'autre à supprimer.
