@@ -25,7 +25,7 @@ Modèle d'entrée :
   `docs/superpowers/specs/2026-11-03-appli-sorts-design.md`.
 - **À suivre** : avec 10 sorts, les 2 derniers sont juste sous l'écran (on défile un peu). Perso est fini ; restent
   l'Historique, la Guilde et le Classement.
-- **État** : 🧪 sur la branche `jules/appli-sorts` (pas en ligne)
+- **État** : ✅ en ligne le 03/11
 
 ## 03/11/2026 — Geoffrey — Force brute ne donne plus de ténacité
 - **Pour le joueur** : le 1er skill du Barbare (Force brute) donne toujours +5 % de dégâts et 2 % de dégâts de zone par

@@ -6905,7 +6905,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   l'appli annule `left` / `top` en `!important`.
 - **Applis** : pas de plugin ni de code natif ; `src/app/` change (mise à jour à chaud à la mise en ligne).
 
-## 03/11/2026 — Jules — Appli mobile : Sorts, fiche qui monte du bas (branche jules/appli-sorts)
+## 03/11/2026 — Jules — Appli mobile : Sorts, fiche qui monte du bas (✅ en ligne le 03/11)
 - **Quoi** : spec et plan `docs/superpowers/{specs,plans}/2026-11-03-appli-sorts*.md`.
   - `src/ui/spells.js` : `spellInfoHtml(st, id, { ctx, owned, busy, into, close })` (pur, sorti de `renderInfo`, même contenu ;
     `close` : ✕ au lieu du titre) ; dans l'appli, `#spSheet` (fond / ✕ = fermer), tuile touchée → fiche ouverte, emplacement
