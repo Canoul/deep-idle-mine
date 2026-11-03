@@ -7002,3 +7002,15 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   level-gate, prison-server (sauf « une tour et une instance… », déjà connu) ; anticheat 152/152. Navigateur ✅ (Bloc
   géant ouvert, choix « Set 2 » → `byActivity: { giant: 2 }` côté serveur).
 - ⚠️ Prison : le set est équipé à l'entrée ; les runs suivants relisent l'équipement du moment (règle du 30/10).
+
+## 03/11/2026 — Cleave : 4 cibles devant lui (Geoffrey)
+- `SPELLS` cleave : `maxTargets: 4` ; `EFFECTS.cleaveAnim` 260 ms. Déclenché par un coup normal (`cleaveHit`) : mine (`landHit`,
+  src/sim/spells.js export), tour (après `hitMob` dans `strike`, après `hitBoss`), Instance I et Golbute (dans `strike`). Cibles :
+  autres mobs à `radius` avec `(x − m.x) × m.face > 0` (devant), les plus proches, + boss au contact s'il est devant ; ≤ 3.
+  Pas de cast sans autre cible. He's coming : retiré (une seule cible). Ancien : `cleave(G, m)` dans `updateSpells` /
+  `combatSpells`, 50 % à tous les mobs du rayon.
+- Rendu : `drawCleave(ctx, cx, cy, T, t, face)` (src/render/effects.js), branché sur le repérage des sorts (`casts`) : demi-cercle
+  devant, du haut vers le bas, miroir à gauche. Vérifié en image (Chromium, deux sens).
+- Tests : spells (nouveau test Cleave), hescoming-sim, tower*, instance*, golbute*, effects*, wiki 229/229 ✅. Simulation mine 5 × 3
+  avec cleave + war_cry : 0 blocage, profondeur 187.
+

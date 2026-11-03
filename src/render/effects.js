@@ -124,8 +124,9 @@ export function drawMinerFx(ctx, m, px, py, T, now, casts = []){
     ctx.moveTo(x1 - c, y1); ctx.lineTo(x1, y1); ctx.lineTo(x1, y1 - c);
     ctx.stroke();
   }
-  /* sorts qui viennent de partir : onde + icône qui monte */
+  /* sorts qui viennent de partir : onde + icône qui monte ; le Cleave : un coup en arc devant lui (03/11) */
   for(const c of casts){
+    if(c.id === 'cleave'){ drawCleave(ctx, cx, py + T / 2, T, now - c.at, m.face < 0 ? -1 : 1); continue; }
     const p = Math.min(1, (now - c.at) / EFFECTS.castAnim), col = EFFECTS.castColor[c.id] ?? '#ffffff';
     ctx.globalAlpha = 1 - p;
     ctx.strokeStyle = col; ctx.lineWidth = 2 * (1 - p) + 0.5;
@@ -133,6 +134,30 @@ export function drawMinerFx(ctx, m, px, py, T, now, casts = []){
     const icon = SPELL_ICON[c.id];
     if(icon){ ctx.font = `${Math.round(9 * k)}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.fillText(icon, cx, py - 2 - p * T * 0.8); }
     ctx.globalAlpha = 1;
+  }
+  ctx.restore();
+}
+
+/* Cleave (03/11/2026, Geoffrey) : une lame balaie en EFFECTS.cleaveAnim ms le demi-cercle DEVANT le mineur (face : 1 = vers la
+   droite, −1 = vers la gauche), du haut vers le bas, avec une traînée qui s'efface derrière elle. (cx, cy) : centre du mineur ;
+   t : ms depuis le coup */
+export function drawCleave(ctx, cx, cy, T, t, face = 1){
+  const D = EFFECTS.cleaveAnim, R = T * 1.1, life = D * 1.8;
+  if(t < 0 || t > life) return;
+  const col = EFFECTS.castColor.cleave ?? '#e5534b';
+  /* angle sur le demi-cercle devant : −90° (en haut) à +90° (en bas), miroir à gauche */
+  const at = u => { const a = -Math.PI / 2 + u * Math.PI; return face < 0 ? Math.PI - a : a; };
+  const p = Math.min(1, t / D), fade = t <= D ? 1 : Math.max(0, 1 - (t - D) / (life - D)), steps = 10, tail = 0.55;
+  ctx.save(); ctx.lineCap = 'round';
+  for(let i = 0; i < steps; i++){
+    const u1 = p - tail * i / steps, u0 = p - tail * (i + 1) / steps;
+    if(u1 <= 0) break;
+    const f = 1 - i / steps;
+    ctx.globalAlpha = 0.9 * f * fade;
+    ctx.strokeStyle = i < 2 ? '#ffffff' : col;
+    ctx.lineWidth = Math.max(1, (T / 5) * f);
+    const a0 = at(Math.max(0, u0)), a1 = at(u1);
+    ctx.beginPath(); ctx.arc(cx, cy, R, Math.min(a0, a1), Math.max(a0, a1)); ctx.stroke();
   }
   ctx.restore();
 }
