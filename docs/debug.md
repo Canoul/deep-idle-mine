@@ -6905,6 +6905,24 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   l'appli annule `left` / `top` en `!important`.
 - **Applis** : pas de plugin ni de code natif ; `src/app/` change (mise à jour à chaud à la mise en ligne).
 
+## 03/11/2026 — Jules — Appli mobile : Sorts, fiche qui monte du bas (✅ en ligne le 03/11)
+- **Quoi** : spec et plan `docs/superpowers/{specs,plans}/2026-11-03-appli-sorts*.md`.
+  - `src/ui/spells.js` : `spellInfoHtml(st, id, { ctx, owned, busy, into, close })` (pur, sorti de `renderInfo`, même contenu ;
+    `close` : ✕ au lieu du titre) ; dans l'appli, `#spSheet` (fond / ✕ = fermer), tuile touchée → fiche ouverte, emplacement
+    rempli touché → sa fiche (plus de retrait direct), actions par `infoClick` (même code que `#spellInfo`) ; la fiche reste
+    ouverte après une action.
+  - `src/app/app.css` : bloc « Sorts » (barre compacte, numéros et légende cachés, phrase sur une ligne, filtres en rangée,
+    grille de 4 colonnes, tuiles basses, nom et sous-titre sur une ligne, `#spellInfo` caché, fiche en panneau du bas) ;
+    `src/app/device.js` : `spSheet` dans `PANELS`.
+- **Piège trouvé** : la rangée de filtres en `nowrap` élargissait la colonne `1fr` de `.spGrid` (page à 625 px, le navigateur
+  zoomait) → `grid-template-columns:minmax(0,1fr)` et `min-width:0`. À garder en tête pour toute rangée qui défile dans une grille.
+- **Tests** ✅ app-spells (nouveau, 4), spells, app-device, app-* : tout vert.
+- **Vérifié** ✅ aperçu `?app` 393 × 760 : largeur 393 ; toucher un sort de la barre ouvre sa fiche (« Retirer de la barre »)
+  et la barre garde ses 2 sorts ; fiche de Dash « Débloqué au niveau 5 de spécialisation Barbare » ; fond = fermer ;
+  8 tuiles sur 10 sans défiler (817 / 760). Site PC inchangé (fiche à côté du grimoire, pas de `#spSheet`).
+- **Pas vérifié** ⚠️ Mettre dans la barre / Apprendre à l'écran (même `infoClick` que le site) ; vrai téléphone.
+- **Applis** : pas de plugin ni de code natif ; `src/app/` change (mise à jour à chaud à la mise en ligne).
+
 ## 03/11/2026 — Dash : 300 %, recharge entière sur les boss (Geoffrey)
 - Enquête : Infernatiwar (barbare, Dash + Cri de guerre) très au-dessus des autres à He's coming. Pas de bug de comptage
   (1 dégât = 1 point). Cause : l'autoattaque projette de 4 cases → le Dash (2 à 6 cases) part après chaque recul, recharge 15 s,
