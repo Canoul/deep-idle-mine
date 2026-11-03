@@ -54,3 +54,14 @@ test('copie embarquée = paquet du serveur, manifeste compris', () => {
     for(const [p, h] of Object.entries(m.files)) assert.equal(sha256(fs.readFileSync(path.join(out, p))), h, p);
   } finally { fs.rmSync(out, { recursive: true, force: true }); }
 });
+
+test('paquet publié (03/11) : index.html marqué, donc jamais repris de la copie embarquée ; le reste identique', async () => {
+  const { PUBLISHED_MARK } = await import('../server/app-update/bundle.js');
+  const emb = bundleFiles(), pub = bundleFiles({ published: true });
+  assert.ok(pub.get('index.html').toString().endsWith(PUBLISHED_MARK));
+  assert.notEqual(sha256(emb.get('index.html')), sha256(pub.get('index.html')));
+  for(const [p, b] of emb) if(p !== 'index.html') assert.equal(sha256(b), sha256(pub.get(p)), p);
+  const { fileSteps } = await import('../src/app/update.js');
+  const s = fileSteps(manifestOf(emb).files, manifestOf(pub).files);
+  assert.deepEqual(s.fetch, ['index.html']);
+});

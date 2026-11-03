@@ -59,6 +59,7 @@ test('décision : coque trop ancienne d\'abord, puis même version, version refu
 
 test('fichiers : inchangés recopiés, autres téléchargés ; un chemin dangereux rend le manifeste invalide', () => {
   assert.deepEqual(fileSteps({ 'a.js': H('a'), 'b.js': H('b') }, { 'a.js': H('a'), 'b.js': H('B'), 'c.js': H('c') }), { reuse: ['a.js'], fetch: ['b.js', 'c.js'] });
+  assert.deepEqual(fileSteps({ 'index.html': H('i'), 'a.js': H('a') }, { 'index.html': H('i'), 'a.js': H('a') }), { reuse: ['a.js'], fetch: ['index.html'] }, 'un .html jamais réutilisé (03/11)');
   for(const p of ['../x.js', '/etc/x', 'a//b', 'a/./b', 'a\\b', '', 'src/../../x']) assert.equal(safePath(p), false, p);
   assert.equal(fileSteps({}, { '../x.js': H('x') }), null);
   assert.equal(fileSteps({}, { 'a.js': 'pas une empreinte' }), null);
@@ -145,7 +146,8 @@ test('mise à jour depuis une version téléchargée : copie du dossier, seules 
   const asked = [], f = t.io.fetch;
   t.io.fetch = (url, o) => { asked.push(url); return f(url, o); };
   await build(t.io, manifest(L, V1), manifest(R, V2));
-  assert.deepEqual(asked.filter(u => u.includes('/app-bundle/')).sort(), [`${API}/app-bundle/${V2}/src/main.js`, `${API}/app-bundle/${V2}/src/new.js`]);
+  /* index.html : toujours du serveur (03/11, un .html relu sur le téléphone est modifié par Capacitor) */
+  assert.deepEqual(asked.filter(u => u.includes('/app-bundle/')).sort(), [`${API}/app-bundle/${V2}/index.html`, `${API}/app-bundle/${V2}/src/main.js`, `${API}/app-bundle/${V2}/src/new.js`]);
   for(const [p, b] of R) assert.deepEqual(t.disk.get(`NoCloud/ionic_built_snapshots/${V2}/${p}`), b, p);
   assert.ok(t.disk.has(`NoCloud/ionic_built_snapshots/${V1}/src/main.js`), 'la version gardée n\'est pas touchée');
 });
@@ -274,4 +276,12 @@ test('la page ne se recharge pas dans la nouvelle version : refusée, l\'écran 
 
 test('hors de l\'appli (site, ?app dans un navigateur, coque 1.0.0 sans les plugins) : rien', async () => {
   assert.equal(await startUpdater({ doc: null, win: { Capacitor: { Plugins: { App: {} } } } }), undefined);
+});
+
+test('relu sur le téléphone, un fichier sans son empreinte (Capacitor modifie ce qu\'il sert) est repris du serveur (03/11)', async () => {
+  const t = phone({ local: L, remote: R });
+  const f = t.io.fetch;
+  t.io.fetch = (url, o) => url.includes('/app-bundle/') ? f(url, o) : Promise.resolve(new Response('modifié par le téléphone'));
+  assert.equal(await build(t.io, manifest(L, V1), manifest(R, V2)), true);
+  for(const [p, b] of R) assert.deepEqual(t.disk.get(`NoCloud/ionic_built_snapshots/${V2}/${p}`), b, p);
 });
