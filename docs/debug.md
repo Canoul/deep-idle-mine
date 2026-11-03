@@ -6764,4 +6764,4 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 
 ### 03/11/2026 — Golbute : malus de ténacité des golems de la Division
 - `INSTANCE.golbute.split.debuff = { every:5, radius:3, tenacity:1, duration:120 }` ; `golemDebuff` (src/sim/instance/golbute.js, dans stepGolems, golem vivant et pas étourdi) pousse une date de fin dans `m.tenDebuff` ; `tenDebuffOf(G, m)` = stacks actifs × 1, retiré de la ténacité brute (`tenacityOf(m, 'golbute', extra)`) dans slamChance et l'esquive de l'avalanche. Pas d'affichage des stacks.
-- Sans simulation (demande de Geoffrey) ; ✅ tests golbute + tenacity (11). ⚠️ À rééquilibrer : 10 golems au contact = −2 de ténacité par seconde (jusqu'à −240 en 2 min si rien ne meurt).
+- Sans simulation (demande de Geoffrey) ; ✅ tests golbute + tenacity (11). ⚠️ À rééquilibrer : 10 golems à portée = −2 de ténacité toutes les 5 s, soit jusqu à −240 au bout de 2 min si aucun ne meurt.
