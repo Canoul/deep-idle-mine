@@ -171,7 +171,7 @@ test('compte changé ou déconnecté : les notifications du compte précédent d
 test('réglages : un interrupteur général et un par type ; tout couper annule', async () => {
   const p = fakePlugin(), { app } = run(p);
   await app.refresh();
-  assert.deepEqual(app.options().map(o => o.key), ['notif_all', 'notif_session', 'notif_mi', 'notif_giant', 'notif_four']);
+  assert.deepEqual(app.options().map(o => o.key), ['notif_all', 'notif_session', 'notif_mi', 'notif_giant', 'notif_hescoming', 'notif_four']);
   assert.ok(app.options().every(o => o.on));
   p.calls.length = 0;
   app.set('all', false); await settle();

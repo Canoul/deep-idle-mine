@@ -6970,4 +6970,5 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   d'où la case.
 - Tests : app-native (3 nouveaux), app-notifs, mobile-config (permission), account* : 114/115, le rouge (version iOS ≠ Android)
   l'était déjà sur main. ⚠️ Pas essayé sur un vrai téléphone ; valeur de `exact_alarm` (« granted ») prise de la doc du plugin.
-
+- Même branche : toutes les notifications passent par `toPlugin` (exactes si autorisé). Ajout du type `hescoming` (id 4, `hcNext` =
+  `hcUI.nextEntry()` dans `notifData`, src/main.js), réglage `notif_hescoming`. Tests app-notifs (+1), app-native ✅.

@@ -7,7 +7,7 @@ import { newFurnace, ingotMs } from '../src/meta/furnace.js';
 import { planNotifs, furnaceEnd, NOTIF_KINDS, notifPrefs, setNotifPref, ALL_OFF } from '../src/app/notifs.js';
 
 const NOW = Date.UTC(2026, 10, 2, 10, 30);   // 2 novembre, 11 h 30 à Paris
-const ON = { all:true, session:true, mi:true, giant:true, four:true };
+const ON = { all:true, session:true, mi:true, giant:true, hescoming:true, four:true };
 const midday = () => 12;
 const plan = o => planNotifs({ now:NOW, offset:0, sessionEnd:null, furnaces:[], giantNext:null, prefs:ON, hourOf:midday, ...o });
 const only = (list, kind) => list.filter(n => n.kind === kind);
@@ -140,4 +140,12 @@ test('réglages : stockage indisponible ou abîmé, clé inconnue refusée', () 
   assert.deepEqual(notifPrefs(s, 'a1'), ON);
   setNotifPref(s, 'a1', 'pirate', false);
   assert.equal(notifPrefs(s, 'a1').pirate, undefined);
+});
+
+test('He\'s coming (03/11) : notification quand on peut y retourner, à part du Bloc géant', () => {
+  const [n] = only(plan({ hcNext:NOW + 1800e3 }), 'hescoming');
+  assert.equal(n.at, NOW + 1800e3); assert.equal(n.id, 4); assert.equal(n.tab, 'lobby');
+  assert.equal(only(plan({ hcNext:NOW - 1 }), 'hescoming').length, 0);
+  assert.equal(only(plan({ hcNext:NOW + 1e3, prefs:{ ...ON, hescoming:false } }), 'hescoming').length, 0);
+  assert.equal(only(plan({ giantNext:NOW + 1e3 }), 'hescoming').length, 0);
 });

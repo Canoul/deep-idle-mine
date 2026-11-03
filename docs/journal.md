@@ -21,6 +21,8 @@ Modèle d'entrée :
   demandait à Android une alarme « approximative » qu'il regroupe pour économiser la batterie. Avec l'appli **1.1.5**, les
   notifications sont à l'heure exacte quand Android l'autorise ; une case **« Notifications à l'heure exacte »** dans Mon
   compte ouvre le réglage « Alarmes et rappels » d'Android s'il est coupé. iPhone : rien à changer.
+  Ça vaut pour **toutes** les notifications de l'appli (session, MI, Bloc géant, four), et une nouvelle arrive : **He's
+  coming accessible** (quand on peut y retourner, réglable à part dans Mon compte).
 - **À suivre** : publier l'appli Android 1.1.5 sur le Play Store (le correctif ne marche qu'avec elle). Test « même version
   iOS qu'Android » déjà rouge avant (iOS 1.1.0, Android 1.1.4).
 - **État** : 🧪 sur la branche `geoffrey/notif-mi-exacte` (pas en ligne)
