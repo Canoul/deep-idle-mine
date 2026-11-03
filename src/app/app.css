@@ -225,3 +225,42 @@ body.app #skSheet .skGl>span:nth-child(2){flex:1}
 body.app #skSheet .skLearn{width:100%;min-height:56px;font:400 26px/1 var(--f-title)}
 body.app #skSheet .skWhy{margin:4px 0;text-align:center;color:var(--mut)}
 body.app:has(#skSheet:not([hidden])) .guide{display:none}
+
+/* ---------- Sorts (03/11/2026, Jules ; spec 2026-11-03-appli-sorts-design.md) : barre compacte, grimoire en grille, fiche qui
+   monte du bas ; toucher un sort de la barre ouvre sa fiche (ancien : fiche deux écrans plus bas, sort retiré d'un toucher) ---------- */
+body.app section[data-view="sorts"] .furnWrap{padding:6px 8px 8px}
+body.app .spGrid{gap:8px;grid-template-columns:minmax(0,1fr)}   /* minmax(0,…) : la rangée de filtres qui défile ne doit pas élargir la page */
+body.app :is(.spMain,.spGrim){min-width:0}
+body.app .spMain{gap:8px}
+body.app #spellInfo{display:none}
+body.app .spBarCard{padding:6px 8px}
+body.app .spBarCard>h2{display:none}
+body.app .spBarRow{flex-direction:column;align-items:stretch;gap:4px}
+body.app .spSlots{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
+body.app .spSock{width:auto;min-width:0}
+body.app .spSockBtn{width:54px;height:54px}
+body.app .spSockBtn .pi{width:30px;height:30px}
+body.app .spSockName{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
+body.app .spCd{font-size:13px}
+body.app .spBarNote{font-size:13px;line-height:1.2;text-align:center;color:var(--mut)}
+body.app .spBarNote p{margin:0} body.app .spBarNote p:not(:first-child){display:none}
+body.app .spGrim{padding:6px 6px}
+body.app .spGrim>h2{display:none}
+body.app .spTabs{display:flex;flex-wrap:nowrap;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 0 6px}
+body.app .spTabs::-webkit-scrollbar{display:none} body.app .spTabs>button{flex:none}
+body.app .spList{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+body.app .spTile{min-width:0;width:auto;min-height:0;aspect-ratio:auto;padding:4px 2px;gap:1px}
+body.app .spTIco{width:40px;height:40px}
+body.app .spTIco .pi{width:28px;height:28px}
+body.app .spTName{max-width:100%;font-size:13px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}   /* nom complet dans la fiche */
+body.app .spTSub{min-height:0;max-width:100%;font-size:11px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.app .spLegend,body.app .spNum{display:none}
+body.app .spBarRow>*{min-width:0} body.app .spBarNote{min-width:0;max-width:100%}
+body.app .spBarNote p:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.app #spSheet{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;background:rgba(5,3,2,.62)}
+body.app #spSheet[hidden]{display:none}
+body.app #spSheet .box{position:relative;width:100%;max-height:calc(100dvh - var(--top-h) - var(--dock-h));margin-bottom:var(--dock-h);overflow:auto;padding:4px 8px 10px;
+  border:12px solid transparent;border-image:url(../../textures/ui/panel.png) 6 fill / 12px stretch}
+body.app #spSheet .spClose{position:absolute;right:4px;top:4px;z-index:1}
+body.app #spSheet .spAct .big{width:100%}
+body.app:has(#spSheet:not([hidden])) .guide{display:none}

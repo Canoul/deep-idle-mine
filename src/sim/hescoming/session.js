@@ -140,12 +140,12 @@ const ready = (m, id, G) => m.spells.includes(id) && G.t >= (m.spellCd[id] || 0)
 const bossDist = (G, m) => gapOf(G, m) + 1;
 
 /* Dash : comme sur le boss d'une tour, il fonce à sa place de frappe s'il en est à portée, et frappe (dmg × ses dégâts,
-   recharge × hitCd). Lucifer n'est pas étourdi. */
+   recharge entière depuis le 03/11 : c'est un boss). Lucifer n'est pas étourdi. */
 function dash(G, m, x){
   const S = SPELL.dash, n = Math.abs(x - m.x);
   if(!ready(m, 'dash', G) || n < S.minCells || n > S.range) return false;
   m.x = x; m.face = 1; m.status = 'Dash';
-  m.spellCd.dash = G.t + S.cd * S.hitCd;
+  m.spellCd.dash = G.t + S.cd;   // Lucifer est un boss : recharge entière (03/11 ; avant × hitCd)
   score(G, m, hitDamage(G, m) * S.dmg);
   log(G, `💨 ${m.name} : Dash sur ${HC.bossName}`);
   return true;

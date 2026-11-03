@@ -6911,3 +6911,43 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - Correctif : `android:windowActionBar` false et `android:windowNoTitle` true (attributs du système) sur `AppTheme.NoActionBarLaunch` et `AppTheme` ; versionCode 5, versionName 1.1.3 (pas de plugin, `APP_UPDATE.minNative` inchangé). Pas pu compiler ici (pas de SDK Android, dl.google.com bloqué) : le workflow android-apk.yml fabrique l'APK au push. Si le bandeau reste : déplacer `EdgeToEdge.enable(this)` après `super.onCreate(savedInstanceState)`.
 - ⚠️ `tests/mobile-config.test.js` « même version qu'Android » échoue **déjà sur main** : iOS en 1.1.0 (`MARKETING_VERSION`), Android en 1.1.2 depuis la 1.1.1. Pas touché ici (rien ne change pour l'iPhone) : à aligner à la prochaine version iOS.
 
+## 03/11/2026 — Jules — Appli mobile : Sorts, fiche qui monte du bas (✅ en ligne le 03/11)
+- **Quoi** : spec et plan `docs/superpowers/{specs,plans}/2026-11-03-appli-sorts*.md`.
+  - `src/ui/spells.js` : `spellInfoHtml(st, id, { ctx, owned, busy, into, close })` (pur, sorti de `renderInfo`, même contenu ;
+    `close` : ✕ au lieu du titre) ; dans l'appli, `#spSheet` (fond / ✕ = fermer), tuile touchée → fiche ouverte, emplacement
+    rempli touché → sa fiche (plus de retrait direct), actions par `infoClick` (même code que `#spellInfo`) ; la fiche reste
+    ouverte après une action.
+  - `src/app/app.css` : bloc « Sorts » (barre compacte, numéros et légende cachés, phrase sur une ligne, filtres en rangée,
+    grille de 4 colonnes, tuiles basses, nom et sous-titre sur une ligne, `#spellInfo` caché, fiche en panneau du bas) ;
+    `src/app/device.js` : `spSheet` dans `PANELS`.
+- **Piège trouvé** : la rangée de filtres en `nowrap` élargissait la colonne `1fr` de `.spGrid` (page à 625 px, le navigateur
+  zoomait) → `grid-template-columns:minmax(0,1fr)` et `min-width:0`. À garder en tête pour toute rangée qui défile dans une grille.
+- **Tests** ✅ app-spells (nouveau, 4), spells, app-device, app-* : tout vert.
+- **Vérifié** ✅ aperçu `?app` 393 × 760 : largeur 393 ; toucher un sort de la barre ouvre sa fiche (« Retirer de la barre »)
+  et la barre garde ses 2 sorts ; fiche de Dash « Débloqué au niveau 5 de spécialisation Barbare » ; fond = fermer ;
+  8 tuiles sur 10 sans défiler (817 / 760). Site PC inchangé (fiche à côté du grimoire, pas de `#spSheet`).
+- **Pas vérifié** ⚠️ Mettre dans la barre / Apprendre à l'écran (même `infoClick` que le site) ; vrai téléphone.
+- **Applis** : pas de plugin ni de code natif ; `src/app/` change (mise à jour à chaud à la mise en ligne).
+
+## 03/11/2026 — Dash : 300 %, recharge entière sur les boss (Geoffrey)
+- Enquête : Infernatiwar (barbare, Dash + Cri de guerre) très au-dessus des autres à He's coming. Pas de bug de comptage
+  (1 dégât = 1 point). Cause : l'autoattaque projette de 4 cases → le Dash (2 à 6 cases) part après chaque recul, recharge 15 s,
+  ≈ 12 Dash à 500 % par visite. Simulation (40 visites, barbare 3/3 acier) : sans Dash 2 153, avec 3 500 (+63 %).
+  Point fragile repéré, non corrigé : portée en plus > 0,5 = jamais d'autoattaque, > 3 = jamais de Fear (seul l'Arc de l'Admin, +8).
+- Changement : `SPELLS` dash `dmg` 5 → 3. Recharge × `hitCd` retirée sur les boss : `finishDash` (mine, `isBoss`),
+  `dashBoss` de la tour, de l'Instance I et du Golbute, `dash` de He's coming. Les Dash sur des mobs gardent × 0,5.
+- Après : sans Dash 2 153, avec 2 834 (+32 %) ; profil type Infernatiwar (ténacité 44, crit 20) 4 608 → 3 779.
+- Tests : spells (nouveau test boss), hescoming-sim, instance-sim, tower*, golbute*, wiki 210/210 ✅. Pas resimulé : tours et
+  instances (le Dash pèse moins sur leurs boss).
+- Même branche, 03/11 : Force brute (`SKILLS.trees` barbare, nœud `damage`) sans `adds.tenacity` (avant +5 par rang) ni
+  « ténacité » dans `desc`. Test `skills.test.js` mis à jour. Tests skills, minotaur, hescoming*, golbute*, tower*, instance*,
+  stuff*, tenacity*, wiki 229/229 ✅. ⚠️ Repères du Golbute et de la tour à +25 / +50 % de ténacité « en plus » : la base barbare
+  baisse de 15, à resimuler si besoin.
+
+### 03/11/2026 — Appli : fenêtre « Nouvelle version de l'appli » (Geoffrey) 🧪
+- Constat (Geoffrey) : coque 1.1.0 ouverte normalement alors que la 1.1.2 était sur Google Play (test interne) ; rien ne le disait, il a fallu aller sur la fiche. `minNative` est le seul avertissement existant, et il bloque.
+- `APP_UPDATE.latest` ({ android:'1.1.2', ios:'1.1.0' }) et `nudgeEvery` (86 400 s) ; `storeNudge()` (src/app/update.js, pur : version à proposer ou null ; rien sans fiche du store, version inconnue ou coque déjà à jour) ; `src/app/store-nudge.js` (App.getInfo, `ask` de src/ui/dialog.js 2 s après le démarrage, `AppLauncher.openUrl` vers `storeUrl`, mémo `dim.storeNudge` = { v, at } posé à l'affichage) ; lancé par `startApp` (src/app/main.js). Plugins déjà dans la 1.1.0 : pas de `minNative` à monter.
+- Tests : `tests/app-update.test.js` (storeNudge) ✅ ; vu dans Chromium avec `?app` et un faux pont (coque 1.1.0) : fenêtre affichée, « Mettre à jour » ouvre la fiche Google Play, pas de 2e fenêtre au rechargement. ⚠️ Pas vu sur un téléphone.
+- ⚠️ Limite : une coque ne voit la fenêtre qu'après avoir reçu ce code par mise à jour à chaud. Les Samsung en 1.1.0, qui ne recevaient jamais les mises à jour à chaud (entrée du 03/11, relevé), ne la verront pas ; pour eux, seul `minNative` (écran bloquant, lu dans la réponse du serveur sans rien télécharger) agit.
+- ⚠️ `tests/mobile-config.test.js` « même version qu'Android » : déjà rouge sur main (iOS 1.1.0, Android 1.1.2).
+

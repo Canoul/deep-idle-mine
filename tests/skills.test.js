@@ -228,21 +228,15 @@ test('stats : Pillage s\'ajoute au butin des mobs (3 rangs → +9 %), les skills
   assert.deepEqual(behaviourSkills({}), [], 'aucun skill : rien');
 });
 
-test('Barbare, Force brute : +5 % de dégâts ET +5 % de ténacité par rang (texte, session, onglet Stuff)', async () => {
+test('Barbare, Force brute : +5 % de dégâts par rang, plus de ténacité depuis le 03/11 (texte, session, onglet Stuff)', async () => {
   const { withSkillStats } = await import('../src/meta/skills.js');
-  const { minerStats } = await import('../src/meta/stuff.js');
-  assert.equal(nodeText('damage', 1), 'Dégâts infligés +5 %, ténacité +5 %, dégâts de zone 2 % (mobs à 1 case de sa cible)');
-  assert.equal(nodeText('damage', 3), 'Dégâts infligés +15 %, ténacité +15 %, dégâts de zone 6 % (mobs à 1 case de sa cible)');
+  assert.equal(nodeText('damage', 1), 'Dégâts infligés +5 %, dégâts de zone 2 % (mobs à 1 case de sa cible)');
+  assert.equal(nodeText('damage', 3), 'Dégâts infligés +15 %, dégâts de zone 6 % (mobs à 1 case de sa cible)');
   const st = learnAll(createSkills(), ['damage', 'damage']);
-  const eff = skillEffects(st);
-  const c = withSkillStats({ ...STATS }, eff);
-  assert.equal(c.tenacity, 10); assert.equal(c.damage, STATS.damage * 1.1);
-  assert.equal(withSkillStats({ ...STATS }, skillEffects(createSkills())).tenacity, 0, 'sans skill : 0');
-  const ten = minerStats({}, eff).find(s => s.key === 'tenacity');
-  assert.deepEqual([ten.total, ten.skill, ten.mult, ten.label], [10, 10, 1, 'Ténacité']);
-  /* en session : la carac du mineur porte la ténacité */
+  const c = withSkillStats({ ...STATS }, skillEffects(st));
+  assert.equal(c.tenacity, STATS.tenacity ?? 0, 'pas de ténacité'); assert.equal(c.damage, STATS.damage * 1.1);
   const G = buildSession({ seed:1, players:[{ account:'A', name:'A' }], skills:{ A:{ tree:st.tree, ranks:{ ...st.ranks } } } });
-  assert.equal(G.miners[0].carac.tenacity, 10);
+  assert.equal(G.miners[0].carac.tenacity, STATS.tenacity ?? 0);
 });
 
 test('Force brute : 2 % de dégâts de zone par rang (aoeOf), dans le texte du nœud', async () => {

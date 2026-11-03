@@ -48,6 +48,39 @@ export function spellStatus(st, id, ctx, owned = 0){
 const RANK = { equipped:0, ready:0, learn:1, other:2, locked:3 };
 export const grimoireOrder = (list, statusOf) => [...list].sort((a, b) => RANK[statusOf(a.id).status] - RANK[statusOf(b.id).status]);
 
+/* fiche d'un sort (logique pure, testée) : description, chiffres et l'action possible, ou pourquoi on ne peut pas.
+   into : le sort déjà dans l'emplacement visé (« Remplacer X ») ; close : un ✕ à la place du titre (panneau de l'appli, 03/11/2026) */
+export function spellInfoHtml(st, cur, { ctx = { tree:null, spec:{} }, owned = 0, busy = false, into = null, close = false } = {}){
+    const s = SPELL[cur], v = spellStatus(st, cur, ctx, owned), t = treeOf(s), T = TREE[t];
+    const level = tree => ctx.spec?.[tree] ?? 1;
+    const chip = t === 'scroll' ? `${T.label} · toutes les spés` : `${T.label} · spé ${s.unlock.level}`;
+    let act = '';
+    if(v.status === 'ready'){
+      act = `<button type="button" class="big on" data-act="equip"${busy ? ' disabled' : ''}>${into ? `Remplacer ${esc(SPELL[into].name)}` : 'Mettre dans la barre'}</button>`;
+    } else if(v.status === 'equipped'){
+      if(v.bad) act = `<div class="spWhy bad">${pxi('alert')}N'agit pas : réservé au ${TREE[s.needTree].label} (arbre choisi dans l'onglet Skills)</div>`;
+      act += `<button type="button" class="big" data-act="unequip"${busy ? ' disabled' : ''}>Retirer de la barre</button>`;
+    } else if(v.status === 'learn'){
+      act = `<p class="mut small">Le parchemin est consommé, le sort reste à toi pour toujours.</p>`+
+            `<button type="button" class="big on" data-learn="${esc(s.unlock.scroll)}"${busy ? ' disabled' : ''}>Apprendre le parchemin</button>`;
+    } else if(v.status === 'other'){
+      act = `<div class="spWhy">${pxi('lock')}Réservé au ${T.label} : choisis cet arbre dans l'onglet Skills</div>`;
+    } else if(t === 'scroll'){
+      act = `<div class="spWhy">${pxi('lock')}Il faut le ${esc(s.unlock.scroll)}, trouvé dans le ${SCROLL_FROM}</div>`;
+    } else {
+      const lv = level(t), need = s.unlock.level;
+      act = `<div class="spProg"><span class="mut">${T.label} : niveau ${lv} / ${need} (encore ${need - lv})</span>`+
+            `<div class="bar"><i style="width:${Math.min(100, Math.round(lv / need * 100))}%"></i></div></div>`+
+            `<div class="spWhy">${pxi('lock')}Débloqué au niveau ${need} de spécialisation ${T.label}</div>`;
+    }
+    return (close ? '<button type="button" class="x spClose" data-act="close" aria-label="Fermer">✕</button>' : `<h2>Fiche du sort</h2>`)+
+      `<div class="spFHead tr-${t} st-${v.status}"><div class="spFIco">${pxi(s.px)}</div>`+
+      `<div class="spFTitle"><h3>${esc(s.name)}</h3><span class="spChip">${pxi(T.px)}${chip}</span></div></div>`+
+      `<p class="spShort tr-${t}">${esc(s.short)}</p><p class="spDesc">${esc(s.desc)}</p>`+
+      `<dl class="spStats">${spellStats(s).map(r => `<div><dt>${r.label}</dt><dd>${r.value}</dd></div>`).join('')}</dl>`+
+      `<div class="spAct">${act}</div>`;
+  }
+
 /* onOp({ action:'equip', spell, slot } | { action:'unequip', slot } | { action:'learn', item }) → promesse de la réponse
    du serveur ({ spells, inventory? }) ; onInventory(inv) : inventaire renvoyé après un parchemin appris */
 export function setupSpells({ onOp, onInventory = () => {}, onChange = () => {} }){
@@ -101,37 +134,26 @@ export function setupSpells({ onOp, onInventory = () => {}, onChange = () => {} 
     }).join('');
   }
 
-  function renderInfo(){
-    const s = SPELL[cur], v = statusOf(cur), t = treeOf(s), T = TREE[t];
-    const chip = t === 'scroll' ? `${T.label} · toutes les spés` : `${T.label} · spé ${s.unlock.level}`;
-    let act = '';
-    if(v.status === 'ready'){
-      const into = st.slots[target()];
-      act = `<button type="button" class="big on" data-act="equip"${busy ? ' disabled' : ''}>${into ? `Remplacer ${esc(SPELL[into].name)}` : 'Mettre dans la barre'}</button>`;
-    } else if(v.status === 'equipped'){
-      if(v.bad) act = `<div class="spWhy bad">${pxi('alert')}N'agit pas : réservé au ${TREE[s.needTree].label} (arbre choisi dans l'onglet Skills)</div>`;
-      act += `<button type="button" class="big" data-act="unequip"${busy ? ' disabled' : ''}>Retirer de la barre</button>`;
-    } else if(v.status === 'learn'){
-      act = `<p class="mut small">Le parchemin est consommé, le sort reste à toi pour toujours.</p>`+
-            `<button type="button" class="big on" data-learn="${esc(s.unlock.scroll)}"${busy ? ' disabled' : ''}>Apprendre le parchemin</button>`;
-    } else if(v.status === 'other'){
-      act = `<div class="spWhy">${pxi('lock')}Réservé au ${T.label} : choisis cet arbre dans l'onglet Skills</div>`;
-    } else if(t === 'scroll'){
-      act = `<div class="spWhy">${pxi('lock')}Il faut le ${esc(s.unlock.scroll)}, trouvé dans le ${SCROLL_FROM}</div>`;
-    } else {
-      const lv = level(t), need = s.unlock.level;
-      act = `<div class="spProg"><span class="mut">${T.label} : niveau ${lv} / ${need} (encore ${need - lv})</span>`+
-            `<div class="bar"><i style="width:${Math.min(100, Math.round(lv / need * 100))}%"></i></div></div>`+
-            `<div class="spWhy">${pxi('lock')}Débloqué au niveau ${need} de spécialisation ${T.label}</div>`;
+  /* fiche du sort choisi (spellInfoHtml) : à côté du grimoire sur le site ; dans l'appli, dans le panneau du bas (#spSheet) */
+  const infoHtml = (close = false) => spellInfoHtml(st, cur, { ctx, owned:owned(cur), busy, into:st.slots[target()], close });
+  function renderInfo(){ $('spellInfo').innerHTML = infoHtml(); renderSheet(); }
+  /* appli (03/11/2026) : la fiche monte du bas (#spSheet) ; un toucher sur le fond, ✕ ou le bouton retour d'Android la ferme */
+  const app = () => document.body.classList.contains('app');
+  let sheet = false;
+  function sheetEl(){
+    let el = $('spSheet');
+    if(!el){
+      el = document.createElement('div'); el.id = 'spSheet'; el.hidden = true; el.innerHTML = '<div class="box"></div>'; document.body.append(el);
+      el.onclick = e => { if(e.target === el || e.target.closest('[data-act="close"]')){ sheet = false; renderSheet(); } else infoClick(e); };
     }
-    $('spellInfo').innerHTML = `<h2>Fiche du sort</h2>`+
-      `<div class="spFHead tr-${t} st-${v.status}"><div class="spFIco">${pxi(s.px)}</div>`+
-      `<div class="spFTitle"><h3>${esc(s.name)}</h3><span class="spChip">${pxi(T.px)}${chip}</span></div></div>`+
-      `<p class="spShort tr-${t}">${esc(s.short)}</p><p class="spDesc">${esc(s.desc)}</p>`+
-      `<dl class="spStats">${spellStats(s).map(r => `<div><dt>${r.label}</dt><dd>${r.value}</dd></div>`).join('')}</dl>`+
-      `<div class="spAct">${act}</div>`;
+    return el;
   }
-
+  function renderSheet(){
+    if(!app()) return;
+    const el = sheetEl();
+    el.hidden = !sheet;
+    if(sheet) el.firstChild.innerHTML = infoHtml(true) + (msg ? `<p class="err">${esc(msg)}</p>` : '');
+  }
   function render(){
     /* sort affiché tant que le joueur n'en a pas choisi : le premier de la barre, sinon le premier disponible */
     if(!picked) cur =st.slots.find(Boolean) ?? SPELLS.list.find(s => statusOf(s.id).status === 'ready')?.id ?? SPELLS.list[0].id;
@@ -155,20 +177,23 @@ export function setupSpells({ onOp, onInventory = () => {}, onChange = () => {} 
   const pick = id => { cur = id; picked = true; render(); };
 
   $('spellTabs').onclick = e => { const b = e.target.closest('[data-tab]'); if(b){ tab = b.dataset.tab; render(); } };
-  $('spellList').onclick = e => { const c = e.target.closest('[data-spell]'); if(c) pick(c.dataset.spell); };
+  $('spellList').onclick = e => { const c = e.target.closest('[data-spell]'); if(c){ if(app()) sheet = true; pick(c.dataset.spell); } };
   $('spellList').ondblclick = e => { const c = e.target.closest('[data-spell]'); if(c && !st.slots.includes(c.dataset.spell)) equip(c.dataset.spell); };
   $('spellList').onkeydown = e => { const c = e.target.closest('[data-spell]'); if(c && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); pick(c.dataset.spell); } };
   $('spellList').ondragstart = e => { const c = e.target.closest('[data-spell]'); if(c) e.dataTransfer.setData('text/plain', c.dataset.spell); };
-  $('spellInfo').onclick = e => {
+  function infoClick(e){
     const l = e.target.closest('[data-learn]');
     if(l){ send({ action:'learn', item:l.dataset.learn }); return; }
     const a = e.target.closest('[data-act]')?.dataset.act;
     if(a === 'equip') equip(cur);
     else if(a === 'unequip'){ const i = st.slots.indexOf(cur); if(i >= 0){ sel = i; send({ action:'unequip', slot:i }); } }
-  };
+  }
+  $('spellInfo').onclick = infoClick;
   function slotClick(b){
     const i = +b.dataset.slot;
     sel = i;
+    /* appli : toucher un sort de la barre ouvre sa fiche (« Retirer » y est), il n'est plus retiré d'un coup */
+    if(app()){ if(st.slots[i]){ cur = st.slots[i]; picked = true; sheet = true; } return render(); }
     if(st.slots[i]){ cur = st.slots[i]; picked = true; send({ action:'unequip', slot:i }); } else render();
   }
   $('spellSlots').onclick = e => { const b = e.target.closest('[data-slot]'); if(b) slotClick(b); };

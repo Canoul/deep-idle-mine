@@ -260,7 +260,7 @@ test('niveau 2 : rage sous son seuil, régénération à son taux', () => {
   assert.ok(Math.abs(G.boss.hp - hp - G.boss.maxhp * INSTANCE.levels[2].boss.regenPct) < 1e-6);
 });
 
-test('Dash sur le roi (29/10) : au sol, sur sa ligne, il fonce à côté de lui et frappe à 500 % ; le roi n\'est pas étourdi', async () => {
+test('Dash sur le roi (29/10) : au sol, sur sa ligne, il fonce à côté de lui et frappe à 300 % (03/11) ; le roi n\'est pas étourdi', async () => {
   const { SPELL } = await import('../src/meta/spells.js');
   const { decide } = await import('../src/sim/instance/session.js');
   const G = newInstance(9, { miners: [spec(0, { damage: 10, crit: 0, doubleAttack: 0 }, { spells: ['dash'], skillTree: 'barbare' })] });
@@ -269,7 +269,7 @@ test('Dash sur le roi (29/10) : au sol, sur sa ligne, il fonce à côté de lui 
   const m = G.miners[0]; m.y = G.floorY; m.x = b.x - 1 - 4; m.action = null;
   decide(G, m);
   assert.equal(m.x, b.x - 1, 'au contact, de son côté');
-  assert.ok(Math.abs(b.maxhp - b.hp - 10 * SPELL.dash.dmg) < 1e-6, '500 % de ses dégâts');
+  assert.ok(Math.abs(b.maxhp - b.hp - 10 * SPELL.dash.dmg) < 1e-6, '300 % de ses dégâts');
   assert.equal(b.state, 'fight'); assert.equal(b.stunUntil, undefined, 'pas d\'étourdissement');
   assert.ok(m.spellCd.dash > G.t, 'recharge');
   /* trop près (1 case) : pas de Dash */

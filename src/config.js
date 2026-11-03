@@ -648,7 +648,7 @@ export const SKILLS = {
       { id:'recon',       row:6, max:1, per:1,    icon:'🔭', name:'Reconnaissance',  desc:'Chaque autre mineur dans le seau du treuil lui rend 1 d\'oxygène toutes les 2 s (cumulable)' },
     ]},
     { id:'barbare', label:'Barbare', icon:'🪓', nodes:[
-      { id:'damage',      row:1, max:3, per:0.05, icon:'🪓', name:'Force brute',     desc:'Dégâts infligés +{v}, ténacité +{tenacity}, dégâts de zone {aoe} (mobs à 1 case de sa cible)', adds:{ tenacity:5 }, aoe:0.02 },   // zone : 23/10 (Geoffrey)
+      { id:'damage',      row:1, max:3, per:0.05, icon:'🪓', name:'Force brute',     desc:'Dégâts infligés +{v}, dégâts de zone {aoe} (mobs à 1 case de sa cible)', aoe:0.02 },   // zone : 23/10 (Geoffrey) ; ténacité +5 % par rang retirée le 03/11 (Geoffrey)
       { id:'taunt',       row:2, max:1, per:1,    icon:'😤', name:'Provocation',     desc:'Le mob qu\'il frappe lâche les autres mineurs et ne peut plus tacler que lui ; ses coups interrompent la canalisation d\'un occultiste' },
       { id:'loot',        row:3, max:5, per:0.03, icon:'💰', name:'Pillage',         desc:'Butin des mobs +{v}' },
       { id:'braum',       row:4, max:3, per:0.1,  icon:'🛡', name:'Braum',           desc:'Vitesse de marche et de montée (échelle, seau) +{v} quand il va aider un allié (tacle, donjon, piège) et pendant ce combat' },
@@ -690,8 +690,10 @@ export const SPELLS = {
        garde. Mob heurté : dmg × ses dégâts, recharge × hitCd, sa canalisation coupée, étourdi stun s (25/10/2026,
        Geoffrey ; avant : ligne droite seulement, sans étourdissement) */
     { id:'dash', name:'Dash', icon:'💨', px:'arrow', short:'Fonce sur un mob et l\'étourdit', unlock:{ tree:'barbare', level:5 }, needTree:'barbare', cd:30,
-      range:6, speed:6, dmg:5, hitCd:0.5, minCells:2, stun:2,
-      desc:'Fonce de 6 cases au plus (600 % de vitesse) en suivant le terrain : il descend et saute un bloc. Vise d\'abord un mob qui tacle un allié ; en route vers un mob, il attend d\'être à portée. Mob heurté : 500 % de ses dégâts, recharge réduite de moitié, son sort est coupé et il est étourdi 2 s' },
+      /* 03/11/2026 (Geoffrey) : dmg 3 (avant 5) ; recharge × hitCd seulement sur un mob, jamais sur un boss (minotaure,
+         Gallianix, boss des tours, roi gobelin, Golbute, Lucifer) */
+      range:6, speed:6, dmg:3, hitCd:0.5, minCells:2, stun:2,
+      desc:'Fonce de 6 cases au plus (600 % de vitesse) en suivant le terrain : il descend et saute un bloc. Vise d\'abord un mob qui tacle un allié ; en route vers un mob, il attend d\'être à portée. Mob heurté : 300 % de ses dégâts, recharge réduite de moitié (pas sur un boss), son sort est coupé et il est étourdi 2 s' },
     /* révèle les blocs à radius cases (cercle) ; part s'il en reste au moins un inconnu */
     { id:'illumination', name:'Illumination', icon:'💡', px:'sun', short:'Révèle les blocs autour de lui', unlock:{ tree:'mineur', level:5 }, needTree:'mineur', cd:90,
       radius:5,
@@ -1558,6 +1560,11 @@ export const APP_UPDATE = {
   nativePlugins:['@capacitor/app', '@capacitor/app-launcher', '@capacitor/filesystem', '@capacitor/keyboard', '@capacitor/local-notifications', '@capacitor/preferences'],
   checkTimeout:3, applyWithin:10, resumeAfter:300, applyWait:5, readyTimeout:60, keepBad:20, rollbacksPerHour:100,
   store:{ android:'https://play.google.com/store/apps/details?id=fr.deepmineidle.app', ios:'' },
+  /* nouvelle appli sur le store (03/11/2026, Geoffrey) : au démarrage, une coque plus ancienne que latest[plateforme] affiche
+     « Nouvelle version de l'appli » (Mettre à jour → la fiche du store ; Plus tard), au plus une fois toutes les nudgeEvery
+     secondes. Non bloquant (bloquant : minNative). ⚠️ Monter latest SEULEMENT quand la version est vraiment en ligne sur le
+     store (pas juste envoyée en revue), sinon la fiche n'a pas encore le bouton « Mettre à jour ». */
+  latest:{ android:'1.1.2', ios:'1.1.0' }, nudgeEvery:86400,
 };
 
 /* ---- Mine instantanée (MI, GAME_DESIGN §6 « Mine instantanée ») *(décisions du créateur, 21/10/2026 ; valeurs

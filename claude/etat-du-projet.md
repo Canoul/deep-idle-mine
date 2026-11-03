@@ -391,7 +391,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   `minoHp`) = **Minotaure brun** (Charge seule) et **Minotaure noir** (Rage dès 50 %, un coup / 0,4 s, recul 0,75 ;
   texture `minotaur_black`). L'IA des mineurs n'esquive pas la charge.
 - **Ténacité** (21/10) : stat en %, chance d'ignorer un sort de mob (vol du gobelin, canalisation de l'occultiste, asphyxie du méphite),
-  un tirage par sort ; vient de Force brute (Barbare, +5 % par rang). Force brute donne aussi **2 % de dégâts de zone
+  un tirage par sort ; vient du stuff (**ancien** : aussi Force brute, Barbare, +5 % par rang, retiré le 03/11, Geoffrey). Force brute donne aussi **2 % de dégâts de zone
   par rang** depuis le 23/10 (mobs à 1 case de la cible).
 - **Piège** (mine classique, 22/10, `src/sim/trap.js`, `TRAP` en config) : à partir de l'area 1, 2 tirages de 25 % par
   area ; salle 5 × 3 cachée dans des blocs normaux, 5 mobs (PV et vitesse × 1,5, hors quota) qui chassent le mineur dès
@@ -430,7 +430,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   Sert à débloquer des sorts.
 - **Sorts** (24/10, Geoffrey ; `SPELLS` en config, `src/meta/spells.js` règles du compte, `src/sim/spells.js` effets,
   `src/ui/spells.js` onglet, GAME_DESIGN §3 « Sorts ») : onglet Sorts, 4 emplacements dont 2 ouverts (les 2 autres
-  verrouillés, règle à décider). Dash (Barbare spé 5), Illumination (Mineur spé 5), Inspiration (Logisticien spé 5),
+  verrouillés, règle à décider). Dash (Barbare spé 5 ; 300 % des dégâts, recharge entière sur les boss depuis le 03/11, ancien 500 % et recharge ÷ 2 partout), Illumination (Mineur spé 5), Inspiration (Logisticien spé 5),
   Dynamite (Mineur spé 10), Ulti shen et Fast learner (parchemins à apprendre, **pas encore de source** : à décider).
   **27/10 (Geoffrey)** : **Bonbonne de zipette** (Logisticien spé 10 : allié à 3 cases qui travaille, +20 % des pods du
   logisticien en oxygène, 180 s), **Cri de guerre** (Barbare spé 10 : en combat, lui et les mineurs à 10 cases +10 % dégâts,
@@ -590,7 +590,9 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   `#setsSheet`) ; Stuff = mannequin + onglets Équipement | Stats (`src/app/perso.js`). **Skills** (03/11, en ligne le
   03/11 ; spec `2026-11-03-appli-skills-design.md`) : onglets de classe (`skillTabsHtml`), un arbre à la fois
   avec l'effet de chaque skill, maillons entre les cases, fiche `#skSheet` (`skillSheetHtml`) : dans l'appli un toucher
-  n'apprend plus directement (ancien : un clic = un rang). Étape 2 sur maquettes : Accueil (fait) → Perso (sets en menu,
+  n'apprend plus directement (ancien : un clic = un rang). **Sorts** (03/11, en ligne le 03/11 ; spec
+  `2026-11-03-appli-sorts-design.md`) : fiche `#spSheet` (`spellInfoHtml`) qui monte du bas ; toucher la barre ouvre la fiche
+  (ancien : retirait le sort). Étape 2 sur maquettes : Accueil (fait) → Perso (sets en menu,
   stuff en mannequin, un seul arbre de skills, fiche de sort en panneau du bas) → Historique compact → Guilde en
   onglets → Classement.
   **Visuels des stores** (01/11, Jules, branche `jules/visuels-stores`) : **icône = lampe de mine** (source unique

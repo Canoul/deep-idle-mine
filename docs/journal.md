@@ -20,6 +20,35 @@ Modèle d'entrée :
 - **Pour le joueur** : la 1.1.2 avait encore le bandeau noir au nom de l'appli en haut de l'écran (vu sur Samsung). La 1.1.1 avait corrigé le mauvais thème : la fenêtre est créée avec celui de l'écran de lancement, qui gardait sa barre de titre. Corrigé dans la 1.1.3 (nouvelle appli à installer, pas une mise à jour à chaud).
 - **État** : 🧪 branche `geoffrey/fix-bandeau-android`, APK de test fabriquée par GitHub Actions ; pas encore vu sur un téléphone
 
+## 03/11/2026 — Geoffrey — Appli : « Nouvelle version de l'appli » au démarrage
+- **Pour le joueur** : quand une nouvelle appli est sortie sur Google Play, l'appli le dit à l'ouverture : « Nouvelle version de l'appli : 1.1.2 (tu as la 1.1.0) », avec **Mettre à jour** (ouvre la fiche Google Play) ou **Plus tard** (reproposé le lendemain). Rien sur le site. Le jeu lui-même continue de se mettre à jour tout seul : ceci ne concerne que les nouvelles versions de l'appli.
+- **Pour nous** : à chaque nouvelle appli **en ligne** sur Google Play, monter `APP_UPDATE.latest.android` (aujourd'hui 1.1.2). iPhone : rien tant qu'il n'a pas de fiche App Store.
+- **État** : ✅ en ligne le 03/11
+
+## 03/11/2026 — Jules — Appli mobile : les Sorts, fiche qui monte du bas
+- **Pour le joueur** : rien sur le site. Dans l'appli, l'onglet Sorts montre la barre de sorts en haut (compacte) et le
+  grimoire en grille de 4 colonnes dessous. **Toucher un sort ouvre sa fiche en bas de l'écran** (effet, chiffres, et
+  « Mettre dans la barre », « Retirer de la barre », « Apprendre le parchemin » ou ce qui bloque) : elle n'est plus tout en
+  bas de la page. **Toucher un sort de la barre ouvre sa fiche au lieu de le retirer** d'un coup.
+- **Décisions** (Jules) : maquette A (fiche qui monte du bas, comme les Skills et le Stuff). Conception :
+  `docs/superpowers/specs/2026-11-03-appli-sorts-design.md`.
+- **À suivre** : avec 10 sorts, les 2 derniers sont juste sous l'écran (on défile un peu). Perso est fini ; restent
+  l'Historique, la Guilde et le Classement.
+- **État** : ✅ en ligne le 03/11
+
+## 03/11/2026 — Geoffrey — Force brute ne donne plus de ténacité
+- **Pour le joueur** : le 1er skill du Barbare (Force brute) donne toujours +5 % de dégâts et 2 % de dégâts de zone par
+  rang, mais **plus les +5 % de ténacité** par rang (15 % à 3/3). La ténacité ne vient plus que du stuff.
+- **État** : ✅ en ligne le 03/11
+
+## 03/11/2026 — Geoffrey — Dash : 300 %, recharge entière sur les boss
+- **Pour le joueur** : le Dash frappe à **300 %** des dégâts (avant 500 %). Sa recharge n'est plus divisée par deux quand
+  il touche un **boss** (Lucifer, boss des tours, roi gobelin, Golbute, minotaure, Gallianix) ; sur un mob normal, elle
+  l'est toujours. À He's coming, le Dash rapporte environ **+32 %** de points à un barbare au lieu de +63 %.
+- **Pourquoi** : enquête sur les points d'Infernatiwar à He's coming : le recul de Lucifer (4 cases) le remettait à
+  chaque fois à portée de Dash, environ 12 Dash à 500 % par visite.
+- **État** : ✅ en ligne le 03/11
+
 ## 03/11/2026 — Jules — Appli mobile : les Skills, une classe à la fois
 - **Pour le joueur** : rien sur le site. Dans l'appli, l'onglet Skills montre **un seul arbre** : trois onglets en haut
   (Mineur, Logisticien, Barbare, avec « ★ ta classe » et le niveau de spécialisation), et chaque skill avec **son nom et
