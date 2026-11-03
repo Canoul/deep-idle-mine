@@ -6974,4 +6974,4 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   `hcUI.nextEntry()` dans `notifData`, src/main.js), réglage `notif_hescoming`. Tests app-notifs (+1), app-native ✅.
 
 ### 03/11/2026 — Bulle de butin : noms des qualités
-- `src/ui/loot-tip.js` `rowHtml` : une ligne de qualité affiche `r.label` (Utile… Légendaire) dans sa couleur, « R4 » en bulle (avant : « R4 », nom en bulle). ✅ loot-table.
+- `src/ui/loot-tip.js` `rowHtml` : une ligne de qualité affiche `r.label` (Utile… Légendaire) dans sa couleur, « R4 » en bulle (avant : « R4 », nom en bulle). Titre de la bulle (`src/meta/loot-table.js`) : `itemName(item)` (« Excellent Trésor angélique », avant le nom interne « Trésor angélique R4 »). `itemName` : suffixe de niveau « II » du Coffre du Roi Gobelin (il était perdu). ✅ loot-table, goblin-king, rune, inventory, instance (111).
