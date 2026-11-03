@@ -136,7 +136,7 @@ export function finishDash(G,m,a){
   if(!G.khole && m.y>m.stats.maxDepth) m.stats.maxDepth = m.y;
   const o = d.mob!=null ? G.mobs.find(q => q.id===d.mob && q.hp>0) : null;
   const hit = o && near(m,o);
-  cast(G,m,'dash',G.t,hit ? S.hitCd : 1);
+  cast(G,m,'dash',G.t,hit && !isBoss(o) ? S.hitCd : 1);   // boss : recharge entière (03/11)
   if(!hit) return;
   o.hp -= hitDamage(G,m)*S.dmg;
   m.foe = o.id; m.foeHit = G.t;

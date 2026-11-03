@@ -184,7 +184,7 @@ test('Inspiration : tout le monde frappe plus vite', () => {
 
 const withSpells = (spells, carac = {}) => { const G = newLucifer(1), m = joinLucifer(G, { ...spec(carac), spells }); return { G, m }; };
 
-test('Dash : à portée de sa place de frappe, il y fonce et frappe ; recharge réduite ; trop loin, il le garde', () => {
+test('Dash : à portée de sa place de frappe, il y fonce et frappe ; recharge entière (Lucifer est un boss, 03/11) ; trop loin, il le garde', () => {
   const { G, m } = withSpells(['dash']), S = SPELL.dash;
   m.x = G.contact - S.range - 1;
   tickLucifer(G);
@@ -193,7 +193,7 @@ test('Dash : à portée de sa place de frappe, il y fonce et frappe ; recharge r
   while(!m.spellCd.dash) tickLucifer(G);
   assert.equal(m.x, G.contact);
   assert.ok(m.points >= 20 * S.dmg);
-  assert.equal(m.spellCd.dash, G.t + S.cd * S.hitCd);
+  assert.equal(m.spellCd.dash, G.t + S.cd);
 });
 
 test('Dash : pas de Dash à une case, ni pendant le Fear', () => {

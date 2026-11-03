@@ -846,7 +846,7 @@ function dashBoss(G, m, goals){
   const S = SPELL.dash, dir = Math.sign(tx - m.x), n = Math.abs(tx - m.x);
   if(n < S.minCells || n > S.range) return false;
   for(let x = m.x + dir; x !== tx + dir; x += dir) if(!towerAir(G, x, m.y) || !towerSupported(G, x, m.y)) return false;
-  cast(G, m, 'dash', G.t, S.hitCd);
+  cast(G, m, 'dash', G.t);   // boss : recharge entière (03/11 ; avant × hitCd)
   m.x = tx; m.kx = 0; m.face = dir;
   log(G, `💨 ${m.name} : Dash sur ${b.name}`);
   if(m.skill.taunt) b.taunt = m.id;
