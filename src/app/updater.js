@@ -136,12 +136,18 @@ export async function build(io, cur, remote){
     todo = [...steps.reuse, ...steps.fetch];
   }
   const fromServer = new Set(steps.fetch);
-  const one = async p => {
-    const url = fromServer.has(p) ? `${io.api}/app-bundle/${v}/${encodePath(p)}` : encodePath(p);
-    const r = await io.fetch(url, fromServer.has(p) ? { credentials: 'omit' } : { cache: 'no-store' });
+  /* un fichier relu sur le téléphone qui n'a pas son empreinte (03/11/2026 : Capacitor modifie ce qu'il sert) : repris du serveur */
+  const get = async (p, server) => {
+    const r = await io.fetch(server ? `${io.api}/app-bundle/${v}/${encodePath(p)}` : encodePath(p), server ? { credentials: 'omit' } : { cache: 'no-store' });
     if(!r.ok) throw new Error(`${p} : réponse ${r.status}`);
     const bytes = new Uint8Array(await r.arrayBuffer());
     if(await sha256(bytes) !== remote.files[p]) throw new Error(`${p} : empreinte différente`);
+    return bytes;
+  };
+  const one = async p => {
+    let bytes;
+    if(fromServer.has(p)) bytes = await get(p, true);
+    else { try { bytes = await get(p, false); } catch(e){ bytes = await get(p, true); } }
     await io.fs.writeFile({ directory: DIR, path: `${base}/${p}`, data: toBase64(bytes), recursive: true });
   };
   for(let i = 0; i < todo.length; i += PARALLEL) await Promise.all(todo.slice(i, i + PARALLEL).map(one));

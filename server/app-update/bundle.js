@@ -35,13 +35,18 @@ function walk(dir, rel, out, skip){
   }
 }
 
-/* contenu du paquet : Map chemin → octets, triée. src/wiki : le wiki s'ouvre dans le navigateur du téléphone */
-export function bundleFiles({ root = ROOT, api = API_URL } = {}){
+/* contenu du paquet : Map chemin → octets, triée. src/wiki : le wiki s'ouvre dans le navigateur du téléphone.
+   published (03/11/2026) : le paquet publié par le serveur a un index.html marqué, donc toujours différent de celui de la
+   copie embarquée. Capacitor modifie les .html qu'il sert (script du pont injecté) : relu depuis la copie embarquée,
+   index.html n'a jamais son empreinte, et les applis 1.1.0 abandonnaient chaque mise à jour (vu sur un Galaxy S22). Ainsi,
+   il est toujours téléchargé depuis le serveur. */
+export const PUBLISHED_MARK = '\n<!-- paquet publié par le serveur (server/app-update/bundle.js) -->\n';
+export function bundleFiles({ root = ROOT, api = API_URL, published = false } = {}){
   const files = new Map();
   walk(path.join(root, 'src'), 'src', files, r => r === 'src/wiki');
   walk(path.join(root, 'textures'), 'textures', files, () => false);
   walk(path.join(root, 'mobile', 'assets', 'fonts'), 'fonts', files, () => false);
-  files.set('index.html', Buffer.from(appIndex(fs.readFileSync(path.join(root, 'index.html'), 'utf8'))));
+  files.set('index.html', Buffer.from(appIndex(fs.readFileSync(path.join(root, 'index.html'), 'utf8')) + (published ? PUBLISHED_MARK : '')));
   files.set('app-config.js', Buffer.from(appConfig(api)));
   return new Map([...files].sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0));
 }

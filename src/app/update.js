@@ -81,11 +81,13 @@ export const safePath = p => typeof p === 'string' && p.length > 0 && p.length <
 
 /* ce qu'il faut pour construire le dossier de la nouvelle version : reuse = même empreinte dans la version qui tourne (recopiés
    sans réseau), fetch = à télécharger. null si le manifeste est invalide. */
+/* les .html ne sont jamais réutilisés (03/11/2026) : Capacitor les modifie quand il les sert (script du pont), relus sur le
+   téléphone ils n'ont plus leur empreinte */
 export function fileSteps(currentFiles, remoteFiles){
   const reuse = [], fetch = [];
   for(const [p, h] of Object.entries(remoteFiles ?? {})){
     if(!safePath(p) || typeof h !== 'string' || !/^[0-9a-f]{64}$/.test(h)) return null;
-    (currentFiles?.[p] === h ? reuse : fetch).push(p);
+    (currentFiles?.[p] === h && !/\.html?$/i.test(p) ? reuse : fetch).push(p);
   }
   return reuse.length + fetch.length ? { reuse, fetch } : null;
 }

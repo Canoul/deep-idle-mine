@@ -12,7 +12,7 @@ import { nameKey } from '../../src/shared/account.js';
 import { API_URL, bundleFiles, manifestOf } from './bundle.js';
 
 export function createAppUpdate({ files, api = API_URL, minNative = APP_UPDATE.minNative } = {}){
-  const content = files ?? bundleFiles({ api });
+  const content = files ?? bundleFiles({ api, published: true });   // index.html marqué (03/11, bundle.js)
   const manifest = manifestOf(content, { minNative });
   /* relevé (03/11/2026, diagnostic des mises à jour, compte admin) : en mémoire, perdu au redémarrage ; ni IP ni compte */
   const trace = { since: Date.now(), checks: [], files: {}, rollbacks: [] };
