@@ -393,12 +393,14 @@ const lobby = setupLobby({
    session dans les 30 dernières minutes, 22/10) ; pas pendant la mine instantanée elle-même. Inscrit, le lobby s'ouvre
    sur « Mine instantanée » */
 let miModeShown = false;
+let miRegistered = false;   // inscrit à la prochaine mine instantanée : rendez-vous de l'Accueil de l'appli (03/11/2026)
 const instantLobby = setupInstantLobby({
   api: instantApi,
   canNotify: () => !isMi(),
   inSession: () => !!rec && !isMi(),
   onJoined: () => { lobby.update({ mode:'mi' }); nav.show('lobby'); },
-  onState: st => { if(st.registered && !miModeShown){ miModeShown = true; lobby.update({ mode:'mi' }); } },
+  onState: st => { if(st.registered && !miModeShown){ miModeShown = true; lobby.update({ mode:'mi' }); }
+                    if(!!st.registered !== miRegistered){ miRegistered = !!st.registered; lobby.update({ miRegistered }); } },
   onOpened: () => pollLobby(),                       // mode dev : la session est là, le lobby la voit et bascule
 });
 function startInstant(){ if(acct.account && !acct.offline) instantLobby.start(); else instantLobby.stop(); giantUI?.refresh(); hcUI?.refresh(); }

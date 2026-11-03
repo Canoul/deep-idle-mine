@@ -2,7 +2,7 @@ import fs from 'node:fs';
 /* Lobby : places affichées et bouton Lancer, depuis l'état du groupe envoyé par le serveur (logique pure). */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { lobbySlots, launchState, lfgState, alwaysReadyState } from '../src/ui/lobby.js';
+import { lobbySlots, launchState, launchFor, lfgState, alwaysReadyState } from '../src/ui/lobby.js';
 
 const me = { id:'AAAA1111', displayId:'AAAA-1111', displayName:'Zoe' };
 const party = (members, extra = {}) => ({ code:'K7Q4P2', leader:members[0].account, members, invited:[], ...extra });
@@ -30,6 +30,15 @@ test('Lancer : seul ou chef → oui (« Lancer à 2 ») si les autres sont prêt
   assert.equal(launchState({ account:me, party:{ ...p, launching:true } }).can, false);
   assert.equal(launchState({ account:me, party:null, offline:true }).can, false);
   assert.equal(launchState({ account:me, party:null, busy:true }).label, '… Lancement');
+});
+
+/* Accueil de l'appli (03/11/2026) : le bouton du Lobby pour l'activité choisie, réutilisé tel quel */
+test("launchFor : le bouton Lancer du Lobby selon l'activité (mine, tour, instance, prison)", () => {
+  assert.deepEqual(launchFor({ account:me, party:null, mode:'mine' }), { can:true, label:'▶ Lancer la session' });
+  assert.match(launchFor({ account:me, party:null, mode:'tower_demon' }).label, /la tour/);
+  const p = party([M('AAAA1111', 'Zoe'), M('BBBB2222', 'Max', { ready:true })]);
+  assert.equal(launchFor({ account:me, party:p, mode:'instance_1' }).label, "▶ Lancer l'instance à 2");
+  assert.deepEqual(launchFor({ account:me, party:null, mode:'prison', prison:null }), { can:true, label:'⛓ Entrer en prison', action:'start' });
 });
 
 test('lancer : un membre encore dans la session précédente → le chef attend la fin', () => {
