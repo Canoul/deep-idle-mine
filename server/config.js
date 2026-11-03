@@ -51,7 +51,7 @@ export const SERVER = {
   /* salon Discord PRIVÉ de modération (signalements, server/moderation/reports.js) : DIM_DISCORD_MOD_WEBHOOK, même principe,
      jamais le salon public des annonces. Absent : les signalements restent en base, rien n'est envoyé. */
   discordModWebhook: process.env.DIM_DISCORD_MOD_WEBHOOK || '',
-  /* seuls ces chemins sont servis au navigateur (le reste du dépôt, dont data/ et l'ancien prototype, ne l'est jamais) */
+  /* seuls ces chemins sont servis au navigateur (le reste du dépôt, dont data/, ne l'est jamais) */
   publicPaths: ['/index.html', '/wiki.html', '/suppression-compte.html', '/confidentialite.html', '/mentions-legales.html', '/conditions.html', '/src/', '/textures/'],
   /* origines de l'appli mobile : fichiers du jeu dans l'appli, donc une autre origine que le site. Elles seules reçoivent le CORS et un
      jeton (server/app.js) ; jamais de cookie en cross-origin. DIM_APP_ORIGINS : d'autres, séparées par des virgules (essais). */

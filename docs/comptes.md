@@ -81,7 +81,7 @@ Codes d'erreur : `invalid_name`, `invalid_password`, `name_taken`, `bad_credenti
 - **Force brute / spam** : 10 échecs par pseudo et 30 par adresse en 15 min ; 10 créations de compte
   par adresse et par heure. Pseudo inconnu et mauvais mot de passe : même message, même temps de réponse.
 - Changer de mot de passe ou le récupérer **déconnecte les autres appareils**.
-- Le serveur ne sert que `index.html`, `wiki.html`, `src/`, `textures/`, `prototype/` : jamais `data/` ni son propre code.
+- Le serveur ne sert que les chemins listés dans `server/config.js` (`index.html`, `wiki.html`, `src/`, `textures/`…) : jamais `data/` ni son propre code.
 - En ligne : servir en **https** avec le cookie `Secure` (`DIM_SECURE_COOKIE=1`) et, derrière un hébergeur qui
   fait proxy, `DIM_TRUST_PROXY=N` = nombre de relais de confiance. L'adresse du joueur est lue **depuis la droite**
   de `X-Forwarded-For` (la N-ième) : le début de l'en-tête peut être écrit par le joueur pour changer d'adresse et

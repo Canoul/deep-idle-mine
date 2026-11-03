@@ -16,6 +16,11 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 03/11/2026 — Jules — Ménage du dépôt
+- **Pour le joueur** : rien, c'est de l'organisation.
+- **Décisions** (Jules) : suppression de l'ancien prototype (`prototype/`, le jeu d'origine en un seul fichier, gardé pour référence ; il reste dans l'historique git). Inventaire fait avant : les 306 images et tous les scripts servent encore, rien d'autre à supprimer.
+- **État** : ✅ en ligne le 03/11
+
 ## 03/11/2026 — Jules — Roi gobelin redessiné (remise à niveau des sprites, 4/4 : chantier fini)
 - **Pour le joueur** : le boss de l'Instance I n'est plus fait de rectangles. C'est un **roi guerrier balafré** : trapu et voûté, épaules massives, épaulière de fer à pointes, grosse couronne d'or à rubis, col d'hermine, broche à émeraude, collier de crânes, balafre sur l'œil, défenses, brassards, pagne effiloché, griffes, et la masse cloutée qui traîne au sol. Il porte enfin **son vrai butin** : la cape royale rouge bordée d'hermine (avant : une cape violette), la couronne et la masse à pommeau d'or. Endormi, au combat et enragé, il s'affiche comme avant (transparent avec « zZ », barre de vie, halo rouge).
 - **Décisions** (Jules) : choisi parmi 3 prototypes (tyran ventripotent, roi guerrier balafré, vieux roi rusé), le guerrier, plus détaillé, avec une couronne plus grosse et le col d'hermine bien visible.

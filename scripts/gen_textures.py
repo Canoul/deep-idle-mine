@@ -1,7 +1,7 @@
 """Génère les textures 16x16 du jeu dans textures/ (PNG, stdlib uniquement).
 
 Usage : python scripts/gen_textures.py
-Les textures sont ensuite chargées par le jeu (voir deep-idle-mine.html).
+Les textures sont ensuite chargées par le jeu (src/render/textures.js, liste TEXTURES de src/config.js).
 """
 import math
 import os
