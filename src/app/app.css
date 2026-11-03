@@ -109,6 +109,9 @@ body.app #appHome .hBig .pi{width:28px;height:28px}
 body.app #appHome .hBig:disabled{font:400 20px/1.1 var(--f-body);white-space:normal}
 body.app #appHome .hHint{margin:2px 0 0;text-align:center;color:var(--mut);font-size:15px}
 /* le guide replié se range dans le ciel de l'Accueil, pas sur le gros bouton */
-body.app.appHomeOn .guide:has(.gHead[aria-expanded="false"]){top:calc(var(--top-h) + 8px);bottom:auto}
-body.app.appHomeOn:has(.guide:not([hidden])) .views{padding-bottom:var(--dock-h)}
+body.app.appHomeOn:has(section[data-view="lobby"]:not([hidden])) .guide:has(.gHead[aria-expanded="false"]){top:calc(var(--top-h) + 8px);bottom:auto}
+body.app.appHomeOn:has(section[data-view="lobby"]:not([hidden])):has(.guide:not([hidden])) .views{padding-bottom:var(--dock-h)}
+/* erreur du Lobby (lancement refusé…) juste au-dessus du gros bouton */
+body.app #appHome .hErr{margin:auto 0 0;text-align:center}
+body.app #appHome .hErr+.hGo{margin-top:0}
 body.app #appHome .ok{color:var(--ok)} body.app #appHome .acc{color:var(--acc-lt)}

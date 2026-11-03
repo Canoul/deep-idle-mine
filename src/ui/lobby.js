@@ -507,7 +507,7 @@ export function setupLobby(h){
       }).join('')}</div>`;
   }
 
-  function error(msg){ $('lobbyErr').hidden = !msg; $('lobbyErr').textContent = msg || ''; }
+  function error(msg){ $('lobbyErr').hidden = !msg; $('lobbyErr').textContent = msg || ''; st.error = msg || ''; }   // st.error : lu par l'Accueil de l'appli
 
   /* action sur le groupe : met à jour l'état renvoyé par le serveur, affiche l'erreur sinon */
   async function act(fn, done){
@@ -773,7 +773,7 @@ export function setupLobby(h){
         .map(s => s.kind === 'member' ? { ...s, look: portraitLook(s, look), auras: portraitAuras(s, auras) } : s);
       return { account:st.account, offline:st.offline, busy:st.busy, dev:!!st.info?.dev, party:st.party, slots, mode:st.mode, prefs:st.prefs,
                launch:launchFor(st), session:st.session, prison:st.prison, energy:st.energy, giantReady:!!st.giantReady,
-               hcReady:!!st.hcReady, judgment:st.judgment ?? null, invites:st.invites ?? [], miRegistered:!!st.miRegistered };
+               hcReady:!!st.hcReady, judgment:st.judgment ?? null, invites:st.invites ?? [], miRegistered:!!st.miRegistered, error:st.error ?? '' };
     },
     launch,
     /* l'Accueil passe la main au Lobby : le menu des activités, ou l'invitation (dans l'activité, avec l'équipe) */

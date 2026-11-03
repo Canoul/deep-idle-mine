@@ -87,5 +87,5 @@ export function homeView(snap, data, expanded = false){
   const offline = snap.offline || !snap.account;
   const rdv = offline ? [] : rendezVous(snap, data), shown = expanded ? rdv.length : APP_HOME.rdvShown;
   return { team:sceneTeam(snap), activity:activityLine(snap), session:sessionCard(snap, data),
-           rdv:rdv.slice(0, shown), more:Math.max(0, rdv.length - shown), main:mainButton(snap) };
+           rdv:rdv.slice(0, shown), more:Math.max(0, rdv.length - shown), main:mainButton(snap), error:snap.error || '' };
 }

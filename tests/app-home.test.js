@@ -123,3 +123,11 @@ test('écran : les pseudos sont échappés ; déplié, tous les rendez-vous et �
   assert.equal(all.rdv.length, 4); assert.equal(all.more, 0);
   assert.match(homeHtml(all, { expanded:true }), /Replier/);
 });
+
+/* relecture finale (03/11) : une erreur du Lobby (lancement refusé…) se lit sur l'Accueil, qui cache le Lobby */
+test('écran : l\'erreur du Lobby s\'affiche au-dessus du gros bouton', () => {
+  const v = homeView(solo({ error:'Pas assez d\'énergie' }), data());
+  assert.equal(v.error, 'Pas assez d\'énergie');
+  assert.match(homeHtml(v), /class="err hErr">Pas assez d'énergie</);
+  assert.doesNotMatch(homeHtml(homeView(solo(), data())), /hErr/);
+});

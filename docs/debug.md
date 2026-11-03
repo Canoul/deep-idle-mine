@@ -6801,3 +6801,10 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   Lobby : pas d'`await` de haut niveau avant `setupLobby` dans main.js) ; `nav.show('lobby')` venu d'ailleurs garde l'état
   montré / caché de l'Accueil.
 - **Applis** : pas de plugin ni de code natif ; `src/app/` change (mise à jour à chaud à la mise en ligne).
+- **Relecture finale** (par Claude lui-même, pas de relecteur séparé) : ✅ corrigé : l'erreur du Lobby (`#lobbyErr`, dans la
+  partie cachée) n'était pas visible sur l'Accueil → `st.error` dans `homeSnapshot`, `.hErr` au-dessus du gros bouton (test
+  « l'erreur du Lobby s'affiche ») ; ✅ corrigé : le guide rangé dans le ciel et la marge du bas valaient sur tous les onglets
+  tant que l'Accueil était actif (le guide couvrait « Trier » sur le Sac) → règles limitées à la section Lobby visible.
+  Laissé pour plus tard : un membre voit sa propre activité, pas celle du chef (comme le Lobby) ; portrait d'un coéquipier
+  pas redessiné si seul son stuff change ; « Rejoindre » reste actif pendant une session ou si le groupe est plein (le
+  serveur refuse, l'erreur s'affiche maintenant).
