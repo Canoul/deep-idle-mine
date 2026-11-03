@@ -85,19 +85,31 @@ const API = 'https://deepmineidle.fr';
 const files = obj => new Map(Object.entries(obj).map(([p, s]) => [p, Buffer.from(s)]));
 const manifest = (m, v) => ({ version: v, minNative: '1.1.0', files: Object.fromEntries([...m].map(([p, b]) => [p, H(b)])) });
 
-function phone({ local, localV = V1, remote, remoteV = V2, native = '1.1.0', state, serverFiles, slow = 0, down = false }){
-  const disk = new Map(), calls = [], listeners = {}, posted = [];
+/* racy (03/11/2026) : comme le plugin Android (ion-android-filesystem, checkParentDirectory : exists() || mkdirs()), une
+   écriture dans un dossier pas encore créé échoue dès que plusieurs écritures s'y croisent ; on le simule toujours : seule une
+   écriture dans un dossier déjà créé par mkdir (un appel à la fois) passe. mkdir d'un dossier existant : « already exists ». */
+function phone({ local, localV = V1, remote, remoteV = V2, native = '1.1.0', state, serverFiles, slow = 0, down = false, racy = false }){
+  const disk = new Map(), calls = [], listeners = {}, posted = [], dirs = new Set(['NoCloud']);
+  const parent = p => p.slice(0, p.lastIndexOf('/'));
   const resp = (status, body) => ({ ok: status === 200, status, json: async () => JSON.parse(body), arrayBuffer: async () => { const b = Buffer.from(body); return b.buffer.slice(b.byteOffset, b.byteOffset + b.length); } });
   const under = p => [...disk.keys()].filter(k => k === p || k.startsWith(p + '/'));
   const fs = {
     getUri: async ({ path }) => ({ uri: 'file:///data/lib/' + encodeURI(path) }),
     rmdir: async ({ path }) => { for(const k of under(path)) disk.delete(k); },
-    mkdir: async () => {},
+    mkdir: async ({ path, recursive }) => {
+      if(!racy) return;
+      if(dirs.has(path)) throw new Error(`Directory at '${path}' already exists, cannot be overwritten.`);
+      if(!recursive && !dirs.has(parent(path))) throw new Error('Missing parent directory');
+      for(let d = path; d && !dirs.has(d); d = parent(d)) dirs.add(d);
+    },
     readdir: async ({ path }) => ({ files: [...new Set(under(path).filter(k => k !== path).map(k => k.slice(path.length + 1).split('/')[0]))].map(name => ({ name })) }),
     copy: async ({ from, to }) => { for(const k of under(from)) disk.set(to + k.slice(from.length), disk.get(k)); },
     deleteFile: async ({ path }) => { if(!disk.delete(path)) throw new Error('absent'); },
     stat: async ({ path }) => { if(!disk.has(path)) throw new Error('absent'); return {}; },
-    writeFile: async ({ path, data, encoding }) => { disk.set(path, encoding ? Buffer.from(data) : Buffer.from(data, 'base64')); },
+    writeFile: async ({ path, data, encoding }) => {
+      if(racy && !dirs.has(parent(path))) throw new Error('Missing parent directory – possibly recursive=false was passed or parent directory creation failed.');
+      disk.set(path, encoding ? Buffer.from(data) : Buffer.from(data, 'base64'));
+    },
   };
   const io = {
     fs, store: memStore(state ? { [STATE_KEY]: JSON.stringify(state) } : {}), platform: 'android', api: API, now: () => Date.now(),
@@ -127,6 +139,17 @@ const ui = () => { const seen = []; return { seen, updating: () => seen.push('up
 const fast = { ...APP_UPDATE, checkTimeout: 1, applyWithin: 1 };
 const L = files({ 'index.html': '<p>1</p>', 'src/main.js': 'un', 'textures/a b.png': '\x00\x01' });
 const R = files({ 'index.html': '<p>1</p>', 'src/main.js': 'deux', 'textures/a b.png': '\x00\x01', 'src/new.js': 'nouveau' });
+
+/* 03/11/2026 : relevé des Samsung en coque 1.1.2, « Missing parent directory » à chaque essai, aucun fichier téléchargé */
+test('mise à jour : les dossiers sont créés un par un avant les écritures en parallèle (plugin Android et ses mkdirs concurrents)', async () => {
+  const deep = files({ 'index.html': '<p>2</p>', 'src/a/b/c.js': 'c', 'src/a/d.js': 'd', 'src/main.js': 'deux', 'textures/ui/x.png': '\x00',
+                       'textures/a b.png': '\x00\x01' });
+  const t = phone({ local: L, remote: deep, racy: true }), u = ui();
+  assert.equal(await check(t.io, u, { limits: fast }), 'applying');
+  const dir = `NoCloud/ionic_built_snapshots/${V2}`;
+  for(const [p, b] of deep) assert.deepEqual(t.disk.get(`${dir}/${p}`), b, p);
+  assert.deepEqual(t.posted, [], 'aucun échec signalé');
+});
 
 test('mise à jour depuis la copie embarquée : dossier complet et vérifié, bascule en essai', async () => {
   const t = phone({ local: L, remote: R }), u = ui();
