@@ -20,9 +20,9 @@ const setup = (bag = { Terre:500, Pierre:300, 'Pierre dure':200, Or:50 }) => {
 };
 const op = (c, inv, o, now = T0) => crusherOp(c, inv, { opId:id(), ...o }, now);
 
-test('terre, pierre, pierre dure, minerai de fer (28/10) et d'or (03/11) : seuls eux se concassent', () => {
+test('terre, pierre, pierre dure, minerai de fer (28/10) et d\'or (03/11) : seuls eux se concassent', () => {
   for(const b of ['Terre', 'Pierre', 'Pierre dure']){ assert.equal(ITEMS[b].cat, 'bloc', b); assert.ok(crushable(b), b); }
-  assert.ok(crushable('Fer'), 'minerai de fer (28/10/2026)'); assert.ok(crushable('Or'), 'minerai d\'or (03/11/2026)');
+  assert.ok(crushable('Fer'), 'minerai de fer (28/10/2026)'); assert.ok(crushable('Or'), "minerai d'or (03/11/2026)");
   for(const x of ['Diamant', 'Charbon', 'Treasure T1', 'Rubis inférieur', '__proto__', 'constructor', '', null, 3]) assert.ok(!crushable(x), String(x));
   assert.equal(createCrusher().in.length, 8); assert.equal(createCrusher().out.length, 8);
 });
