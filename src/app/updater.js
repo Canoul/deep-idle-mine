@@ -113,6 +113,16 @@ const toBase64 = bytes => {
   return btoa(s);
 };
 
+/* tous les dossiers des fichiers à écrire, des moins profonds aux plus profonds ; un dossier déjà là n'est pas une erreur */
+export const dirsOf = paths => [...new Set(paths.flatMap(p => { const parts = p.split('/').slice(0, -1);
+  return parts.map((_, i) => parts.slice(0, i + 1).join('/')); }))].sort((a, b) => a.split('/').length - b.split('/').length || (a < b ? -1 : 1));
+async function makeDirs(io, base, paths){
+  for(const d of dirsOf(paths)){
+    try { await io.fs.mkdir({ directory: DIR, path: `${base}/${d}`, recursive: true }); }
+    catch(e){ if(!/exist/i.test(String(e?.message ?? e))) throw e; }
+  }
+}
+
 export async function build(io, cur, remote){
   const steps = fileSteps(cur?.version && cur.files, remote.files);
   if(!steps) throw new Error('manifeste invalide');
@@ -136,6 +146,10 @@ export async function build(io, cur, remote){
     await io.fs.mkdir({ directory: DIR, path: base, recursive: true });
     todo = [...steps.reuse, ...steps.fetch];
   }
+  /* dossiers créés un par un AVANT les écritures en parallèle (03/11/2026) : sur Android, le plugin crée le dossier d'un fichier
+     par « existe ? sinon mkdirs() » ; deux écritures qui se croisent dans un dossier neuf, la seconde voit mkdirs() échouer
+     (le dossier vient d'être créé par l'autre) et tout s'arrête : « Missing parent directory » (relevé des Samsung, coque 1.1.2) */
+  await makeDirs(io, base, todo);
   const fromServer = new Set(steps.fetch);
   /* un fichier relu sur le téléphone qui n'a pas son empreinte (03/11/2026 : Capacitor modifie ce qu'il sert) : repris du serveur */
   const get = async (p, server) => {

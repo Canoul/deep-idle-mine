@@ -16,6 +16,10 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 03/11/2026 — Geoffrey — Appli Android 1.1.4 : les mises à jour à chaud marchent enfin (Samsung)
+- **Pour le joueur** : sur certains téléphones (vu sur les Samsung), l'appli ne se mettait jamais à jour toute seule : il fallait attendre une nouvelle version sur Google Play. Trouvé grâce au relevé : l'appli écrivait plusieurs fichiers en même temps dans un dossier pas encore créé, et Android refusait. Les dossiers sont maintenant créés d'abord, un par un. **Il faut installer la 1.1.4 depuis Google Play** (une mise à jour à chaud ne peut pas réparer le code qui fait les mises à jour à chaud).
+- **État** : ✅ en ligne le 03/11 (serveur) ; appli 1.1.4 (code de version 6) à envoyer sur Google Play
+
 ## 03/11/2026 — Geoffrey — Appli Android 1.1.3 : le bandeau « Deep Mine Idle MMO » pour de bon
 - **Pour le joueur** : la 1.1.2 avait encore le bandeau noir au nom de l'appli en haut de l'écran (vu sur Samsung). La 1.1.1 avait corrigé le mauvais thème : la fenêtre est créée avec celui de l'écran de lancement, qui gardait sa barre de titre. Corrigé dans la 1.1.3 (nouvelle appli à installer, pas une mise à jour à chaud).
 - **État** : ✅ dans main le 03/11 (AAB 1.1.3, code de version 5, à envoyer sur Google Play) ; bandeau pas encore vérifié sur un téléphone
