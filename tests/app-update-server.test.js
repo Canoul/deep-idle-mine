@@ -95,3 +95,21 @@ test('paquet réel : construit depuis le dépôt', () => {
   assert.ok(Object.keys(real.manifest.files).length > 100);
   assert.ok(real.file(real.manifest.version, 'src/main.js'));
 });
+
+test('relevé (03/11) : demandes de version et fichiers notés ; route réservée à l\'équipe ; page du relevé', async () => {
+  await raw('GET', '/api/app/update?have=abc', { origin: APP });
+  await raw('GET', `/api/app/update?have=${V}`, { origin: APP });
+  await raw('GET', `/app-bundle/${V}/index.html`, { origin: APP });
+  const [same, upd] = update.trace.checks;
+  assert.equal(same.have, V); assert.equal(same.answer, 'même version');
+  assert.equal(upd.have, 'abc'); assert.equal(upd.answer, 'mise à jour proposée'); assert.equal(upd.origin, APP);
+  assert.ok(update.trace.files[V].ok >= 1);
+  assert.equal((await raw('GET', '/api/app/update/trace')).status, 404, 'sans compte : route inconnue');
+  const routes = appUpdateRoutes(update);
+  await assert.rejects(routes['GET /api/app/update/trace']({ me: { name: 'Zoe' } }), e => e.status === 404);
+  const t = await routes['GET /api/app/update/trace']({ me: { name: 'admin' } });
+  assert.equal(t.version, V); assert.ok(t.checks.length >= 2);
+  const { renderAppTrace } = await import('../src/ui/app-trace.js');
+  const html = renderAppTrace(t);
+  assert.ok(html.includes(V) && html.includes('mise à jour proposée'));
+});

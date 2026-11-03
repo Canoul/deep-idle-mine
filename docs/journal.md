@@ -16,6 +16,10 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 03/11/2026 — Geoffrey — Relevé des mises à jour de l'appli (compte admin)
+- **Pour nous** : « Mon compte » → « 📱 Mises à jour de l'appli » (compte admin, sur le site) montre ce que le serveur reçoit des applis : chaque demande de version (version annoncée par le téléphone, réponse du serveur, appareil), les fichiers téléchargés et les retours en arrière. Sert à comprendre pourquoi une appli 1.1.0 ne se met pas à jour. Remis à zéro à chaque redémarrage du serveur.
+- **État** : 🧪 sur la branche `geoffrey/releve-maj-appli` (pas en ligne)
+
 ## 03/11/2026 — Geoffrey — Appli : connexion cachée par le clavier, tableau de butin trop grand
 - **Pour le joueur** (signalé sur un Galaxy S24) : à la connexion dans l'appli, le clavier ne cache plus le champ où
   l'on tape (la fenêtre part du haut et ramène le champ au milieu de ce qui reste visible). Au doigt, le tableau de

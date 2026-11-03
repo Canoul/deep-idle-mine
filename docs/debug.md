@@ -6795,3 +6795,8 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 
 ### 03/11/2026 — Mine instantanée : Coup unique
 - `G.gearRng` (seed ^ GEAR_RNG.salt) dans src/sim/instant/session.js ; src/sim/instant/ai.js : chance `carac.oneTap` → durée de minage 0,05 s (le minimum de la mine instantanée), tirage seulement si la stat > 0. Sans test ni simulation (demande de Geoffrey).
+
+### 03/11/2026 — Appli 1.1.0 qui ne se met pas à jour : relevé côté serveur 🧪
+- Constat (Geoffrey, Android, coque 1.1.0) : aucun écran de mise à jour au démarrage, le changement du concasseur n'arrive pas. Donc `check()` (src/app/updater.js) s'arrête avant `ui.updating()` : demande au serveur qui échoue ou dépasse `checkTimeout` (3 s), updater pas lancé (`ioOf` null, `nativeStatus` ≠ ok, `g.trial`), ou réponse « même version ».
+- Relevé : `createAppUpdate` garde `trace` en mémoire (100 dernières demandes `/api/app/update` : have, réponse, origine, user-agent ; fichiers `/app-bundle` servis / introuvables par version ; retours en arrière), `GET /api/app/update/trace` (ADMIN_VIEW, sinon 404), page `src/ui/app-trace.js`, bouton « 📱 Mises à jour de l'appli » dans Mon compte (équipe, site). ✅ tests app-update-server (relevé), app-update, account.
+- Lecture : aucune demande du téléphone → l'updater ne tourne pas ou ne joint pas le serveur ; demande avec have = version publiée → « même version » ; have différent mais aucun fichier servi → l'appli abandonne avant de télécharger.
