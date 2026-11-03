@@ -6789,3 +6789,9 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - Tests ✅ tooltip (4), app-keyboard (2), app-bundle, app-mode, app-device, app-update, inventaire. Navigateur ✅
   (playwright, 360 × 780 tactile, `?app`) : clavier simulé de 330 px, champ mot de passe à 184-220 px (limite 580) ;
   bulle du T4 entre 68 et 841 px, fermée par un appui. ⚠️ Non essayé sur un vrai téléphone (clavier réel, plugin).
+
+### 03/11/2026 — Concasseur : minerai d'or
+- `CRUSHER.loot['Or'] = { always:[Terre 1-1], oneOf:[] }` (demande de Geoffrey). tests/crusher.test.js : « Or » n'est plus l'exemple d'objet refusé (remplacé par « Diamant ») + test du lot d'or. ✅ crusher.
+
+### 03/11/2026 — Mine instantanée : Coup unique
+- `G.gearRng` (seed ^ GEAR_RNG.salt) dans src/sim/instant/session.js ; src/sim/instant/ai.js : chance `carac.oneTap` → durée de minage 0,05 s (le minimum de la mine instantanée), tirage seulement si la stat > 0. Sans test ni simulation (demande de Geoffrey).

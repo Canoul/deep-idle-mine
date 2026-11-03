@@ -20,10 +20,10 @@ const setup = (bag = { Terre:500, Pierre:300, 'Pierre dure':200, Or:50 }) => {
 };
 const op = (c, inv, o, now = T0) => crusherOp(c, inv, { opId:id(), ...o }, now);
 
-test('terre, pierre, pierre dure et minerai de fer (28/10) : seuls eux se concassent', () => {
+test('terre, pierre, pierre dure, minerai de fer (28/10) et d\'or (03/11) : seuls eux se concassent', () => {
   for(const b of ['Terre', 'Pierre', 'Pierre dure']){ assert.equal(ITEMS[b].cat, 'bloc', b); assert.ok(crushable(b), b); }
-  assert.ok(crushable('Fer'), 'minerai de fer (28/10/2026)');
-  for(const x of ['Or', 'Charbon', 'Treasure T1', 'Rubis inférieur', '__proto__', 'constructor', '', null, 3]) assert.ok(!crushable(x), String(x));
+  assert.ok(crushable('Fer'), 'minerai de fer (28/10/2026)'); assert.ok(crushable('Or'), "minerai d'or (03/11/2026)");
+  for(const x of ['Diamant', 'Charbon', 'Treasure T1', 'Rubis inférieur', '__proto__', 'constructor', '', null, 3]) assert.ok(!crushable(x), String(x));
   assert.equal(createCrusher().in.length, 8); assert.equal(createCrusher().out.length, 8);
 });
 
@@ -41,7 +41,7 @@ test('tables : les chances demandées par le créateur', () => {
 
 test('poser : bloc seulement, une sorte par case, quantités invalides refusées, rien ne bouge en cas de refus', () => {
   const { inv, c } = setup();
-  assert.equal(op(c, inv, { action:'load', slot:0, item:'Or', qty:10 }).error, 'bad_item');
+  assert.equal(op(c, inv, { action:'load', slot:0, item:'Diamant', qty:10 }).error, 'bad_item');
   for(const slot of [-1, 8, 1.5, '0', null]) assert.equal(op(c, inv, { action:'load', slot, item:'Terre', qty:10 }).error, 'bad_slot');
   for(const qty of [0, -5, 2.5, Infinity, NaN, '100', 1e300]) assert.equal(op(c, inv, { action:'load', slot:0, item:'Terre', qty }).error, 'bad_qty');
   assert.equal(op(c, inv, { action:'load', slot:0, item:'Terre', qty:501 }).error, 'not_enough');
@@ -117,7 +117,7 @@ test('aide « ? » : les chances affichées sont celles du tirage (gemmes additi
   assert.equal(tre.items[0].item, 'Treasure T1');
   assert.equal(tre.chance, 0.005);
   for(const o of [gem, tre, ...gem.items]) assert.deepEqual(Object.keys(o).filter(k => k === 'every' || k === 'sec'), []);
-  assert.deepEqual(dropOdds('Or'), []);
+  assert.deepEqual(dropOdds('Diamant'), []);
   /* contrôle par le vrai tirage : 1 million de lots de pierre, toutes familles */
   for(const block of Object.keys(CRUSHER.loot)){
     const rng = mulberry32(7), N = 1_000_000, got = {};
@@ -169,9 +169,9 @@ test('sortie pleine : pas de cycle, aucun bloc consommé', () => {
 });
 
 test('relecture : sauvegarde trafiquée nettoyée', () => {
-  const c = sanitizeCrusher({ in:[{ item:'Or', qty:100 }, { item:'Terre', qty:-5 }, { item:'Terre', qty:2.5 }, { item:'Pierre', qty:300 }],
+  const c = sanitizeCrusher({ in:[{ item:'Diamant', qty:100 }, { item:'Terre', qty:-5 }, { item:'Terre', qty:2.5 }, { item:'Pierre', qty:300 }],
                               out:[{ item:'Lingot de fer', qty:5 }, { item:'Jade inférieur', qty:2 }, null, null, null, null, null, null, { item:'Rubis inférieur', qty:1 }],
-                              since:Infinity, crushed:-3, finds:[{ at:1, from:'Or', loot:{} }], ops:[1, 'a'] });
+                              since:Infinity, crushed:-3, finds:[{ at:1, from:'Diamant', loot:{} }], ops:[1, 'a'] });
   assert.deepEqual(c.in, [null, null, null, { item:'Pierre', qty:300 }, null, null, null, null]);
   assert.deepEqual(c.out[1], { item:'Jade inférieur', qty:2 }); assert.equal(c.out[0], null); assert.equal(c.out.length, 8);
   assert.equal(c.since, null); assert.equal(c.crushed, 0); assert.deepEqual(c.finds, []); assert.deepEqual(c.ops, ['a']);
@@ -214,7 +214,7 @@ test('serveur : poser, concasser au fil du temps, enregistré une seule fois, é
 test('serveur : demandes invalides refusées', async () => {
   const { game } = await server({ Terre:100 });
   await assert.rejects(game.crusher(ME, { action:'load', slot:0, item:'Terre', qty:100, opId:'x' }), { code:'bad_request' });
-  await assert.rejects(game.crusher(ME, { action:'load', slot:0, item:'Or', qty:1, opId:'op-crush-bad1' }), { code:'bad_item' });
+  await assert.rejects(game.crusher(ME, { action:'load', slot:0, item:'Diamant', qty:1, opId:'op-crush-bad1' }), { code:'bad_item' });
   await assert.rejects(game.crusher(ME, { action:'load', slot:0, item:'Terre', qty:101, opId:'op-crush-bad2' }), { code:'not_enough' });
 });
 
@@ -239,4 +239,9 @@ test('minerai de fer (28/10/2026) : lot de 100 → charbon 1-50, or 1-20, 1 diam
   assert.equal(c.in[0], null);
   const out = Object.fromEntries(c.out.filter(Boolean).map(s => [s.item, s.qty]));
   assert.ok(out['Charbon'] >= 1 && out['Or'] >= 1 && out['Diamant'] === 1 && out['Graphite ore'] >= 1, JSON.stringify(out));
+});
+
+test('minerai d\'or (03/11/2026) : se concasse par 100, un lot donne 1 Terre', () => {
+  assert.ok(crushable('Or'));
+  assert.deepEqual(CRUSHER.loot['Or'], { always:[ { item:'Terre', min:1, max:1 } ], oneOf:[] });
 });

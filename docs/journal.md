@@ -21,7 +21,15 @@ Modèle d'entrée :
   l'on tape (la fenêtre part du haut et ramène le champ au milieu de ce qui reste visible). Au doigt, le tableau de
   butin d'un coffre (ex. Treasure T4) tient entre les barres du haut et du bas et défile ; on le ferme en le touchant
   ou à côté, et le bouton « Ouvrir » redevient accessible.
-- **État** : 🧪 sur la branche `geoffrey/fix-appli-clavier-butin` (pas en ligne)
+- **État** : ✅ en ligne le 03/11
+
+## 03/11/2026 — Geoffrey — Concasseur : minerai d'or
+- **Pour le joueur** : le concasseur accepte le minerai d'or, par lots de 100 ; un lot donne 1 Terre.
+- **État** : ✅ en ligne le 03/11
+
+## 03/11/2026 — Geoffrey — Mine instantanée : le Coup unique marche
+- **Pour le joueur** : en mine instantanée, le Coup unique casse maintenant un bloc tout de suite (avant, la stat n'y servait à rien).
+- **État** : ✅ en ligne le 03/11
 
 ## 03/11/2026 — Jules — Ménage du dépôt
 - **Pour le joueur** : rien, c'est de l'organisation.

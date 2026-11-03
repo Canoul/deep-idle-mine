@@ -348,6 +348,8 @@ export const CRUSHER = {
                      oneOf:[ { family:'gem', items:gems(0.01) },
                              { family:'treasure', items:[{ item:'Treasure T1', chance:0.02 }, { item:'Treasure T2', chance:0.01 },
                                                          { item:'Treasure T3', chance:0.005 }] } ] },
+    /* minerai d'or (03/11/2026, Geoffrey) : un lot de 100 donne 1 Terre */
+    'Or':          { always:[ { item:'Terre', min:1, max:1 } ], oneOf:[] },
   },
   opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
 };
