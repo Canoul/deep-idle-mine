@@ -771,7 +771,7 @@ export function setupLobby(h){
       const look = h.look?.() ?? {}, auras = h.auras?.() ?? {};
       const slots = lobbySlots(st.account, st.party, GAME.maxPlayers, st.myTree)
         .map(s => s.kind === 'member' ? { ...s, look: portraitLook(s, look), auras: portraitAuras(s, auras) } : s);
-      return { account:st.account, offline:st.offline, busy:st.busy, party:st.party, slots, mode:st.mode, prefs:st.prefs,
+      return { account:st.account, offline:st.offline, busy:st.busy, dev:!!st.info?.dev, party:st.party, slots, mode:st.mode, prefs:st.prefs,
                launch:launchFor(st), session:st.session, prison:st.prison, energy:st.energy, giantReady:!!st.giantReady,
                hcReady:!!st.hcReady, judgment:st.judgment ?? null, invites:st.invites ?? [], miRegistered:!!st.miRegistered };
     },
