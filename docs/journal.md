@@ -9,6 +9,13 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## JJ/MM/AAAA — Prénom — Titre court
+- **Pour le joueur** : ce qui change en jeu (ou « rien, c'est de l'organisation »).
+- **Décisions** : choix de design ou d'équilibrage tranchés (s'il y en a).
+- **À suivre** : ce qui reste à faire ou à vérifier.
+- **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
+```
+
 ## 03/11/2026 — Geoffrey — Dash : 300 %, recharge entière sur les boss
 - **Pour le joueur** : le Dash frappe à **300 %** des dégâts (avant 500 %). Sa recharge n'est plus divisée par deux quand
   il touche un **boss** (Lucifer, boss des tours, roi gobelin, Golbute, minotaure, Gallianix) ; sur un mob normal, elle
@@ -16,13 +23,6 @@ Modèle d'entrée :
 - **Pourquoi** : enquête sur les points d'Infernatiwar à He's coming : le recul de Lucifer (4 cases) le remettait à
   chaque fois à portée de Dash, environ 12 Dash à 500 % par visite.
 - **État** : 🧪 sur la branche `geoffrey/dash-boss` (pas en ligne)
-
-## JJ/MM/AAAA — Prénom — Titre court
-- **Pour le joueur** : ce qui change en jeu (ou « rien, c'est de l'organisation »).
-- **Décisions** : choix de design ou d'équilibrage tranchés (s'il y en a).
-- **À suivre** : ce qui reste à faire ou à vérifier.
-- **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
-```
 
 ## 03/11/2026 — Jules — Appli mobile : les Skills, une classe à la fois
 - **Pour le joueur** : rien sur le site. Dans l'appli, l'onglet Skills montre **un seul arbre** : trois onglets en haut
