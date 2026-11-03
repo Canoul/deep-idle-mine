@@ -274,12 +274,14 @@ const spells = setupSpells({
 });
 
 /* sets (Stuff, Skills, Sorts) : équiper change l'inventaire, le stuff, les skills et les sorts d'un coup */
+let lobbyActivity = () => null;   // remplacé quand le lobby existe (plus bas)
 setsUI = setupSets({
   onOp: op => gameApi.sets({ ...op, opId: newOpId() }),
   onLoadout: r => { setInventory(r.inventory); stuff.set(r.stuff); skills.set(r.skills); spells.set(r.spells); },
   inSession: () => !!rec,
   current: () => ui.skills ? { worn: stuff.worn(), skills: ui.skills, spells: spells.slots() } : null,
   onDone: text => notify.flash(text),
+  activity: () => lobbyActivity(),   // set par activité (03/11) : l'activité ouverte dans le Lobby
 });
 
 applyRarityColors();   // couleurs des raretés (config)
@@ -352,6 +354,7 @@ const accountUI = createAccountUI($('account'), acct, {
 
 /* ---------- lobby ---------- */
 const lobby = setupLobby({
+  onActivity: () => setsUI?.refresh(),   // set par activité : la ligne du Lobby suit l'activité ouverte (03/11)
   party: partyApi,
   /* don à un shrine (28/10) : l'inventaire revient du serveur */
   shrineGive: async (shrine, item, qty) => { const r = await partyApi.shrine({ shrine, item, qty, opId: newOpId() }); if(r.inventory) setInventory(r.inventory); return r; },
@@ -919,6 +922,7 @@ async function refresh(waited){
   if(st.ended && !st.session) showResult(st);
 }
 
+lobbyActivity = () => lobby.activity();   // set par activité (03/11)
 /* ---------- démarrage ---------- */
 await appBoot.update;                      // appli : dernière version du jeu d'abord (la page peut se recharger dedans)
 await appBoot.native;

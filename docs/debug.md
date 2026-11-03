@@ -6988,6 +6988,21 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 ### 03/11/2026 — Bulle de butin : noms des qualités
 - `src/ui/loot-tip.js` `rowHtml` : une ligne de qualité affiche `r.label` (Utile… Légendaire) dans sa couleur, « R4 » en bulle (avant : « R4 », nom en bulle). Titre de la bulle (`src/meta/loot-table.js`) : `itemName(item)` (« Excellent Trésor angélique », avant le nom interne « Trésor angélique R4 »). `itemName` : suffixe de niveau « II » du Coffre du Roi Gobelin (il était perdu). ✅ loot-table, goblin-king, rune, inventory, instance (111).
 
+## 03/11/2026 — Geoffrey — Set par activité (branche geoffrey/set-par-activite)
+- Données : `sets.byActivity` ({ activité: id de set }, relu par `sanitizeSets` : activités de `SETS.activities`, sets
+  existants ; vidé quand le set est supprimé), envoyé par `publicSets`. Route `POST /api/game/sets` action `assign`
+  ({ activity, id | null }).
+- Équipement : `autoEquip(compte, mode)` (server/game/service.js), verrous inv / skills / spells / sets, **hors** des
+  verrous du lancement ; ne fait rien en session (`activeOf`), sans set, ou set déjà équipé (`equippedSet`) ; jamais
+  d'erreur (journalisée). Appelé : `start` (tous les modes sauf prison, chaque joueur du groupe), `prisonStart`,
+  `openInstant` (MI), `giantEnter(…, mode)` (Bloc géant, He's coming). Exposé `game.autoEquip` (tests).
+- Lobby : `lobby.activity()` (mode de l'activité ouverte, `tower_angel` pour le Jugement), `h.onActivity` → `setsUI.refresh()` ;
+  ligne `activityLineHtml` en tête de `#setsLobby` (site et appli), choix envoyé tout de suite (`onchange`).
+- Tests ✅ sets (+3), lobby, giant-service, hescoming-service, instant-server, game-service, instance-server, party,
+  level-gate, prison-server (sauf « une tour et une instance… », déjà connu) ; anticheat 152/152. Navigateur ✅ (Bloc
+  géant ouvert, choix « Set 2 » → `byActivity: { giant: 2 }` côté serveur).
+- ⚠️ Prison : le set est équipé à l'entrée ; les runs suivants relisent l'équipement du moment (règle du 30/10).
+
 ## 03/11/2026 — Cleave : 4 cibles devant lui (Geoffrey)
 - `SPELLS` cleave : `maxTargets: 4` ; `EFFECTS.cleaveAnim` 260 ms. Déclenché par un coup normal (`cleaveHit`) : mine (`landHit`,
   src/sim/spells.js export), tour (après `hitMob` dans `strike`, après `hitBoss`), Instance I et Golbute (dans `strike`). Cibles :

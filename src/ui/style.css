@@ -1186,6 +1186,13 @@ button.danger{color:var(--bad)}
 
 /* sets : ligne « Set équipé » et set équipé marqué (29/10/2026) */
 .setCur{margin:0 0 calc(2*var(--u))}
+/* set par activité (03/11/2026) : « Set défini pour … : [▾] » en haut de la carte des sets du Lobby */
+.setFor{display:flex;flex-wrap:wrap;align-items:center;gap:var(--u) calc(2*var(--u));margin:0 0 calc(3*var(--u));padding:calc(2*var(--u));background:var(--chip);color:var(--acc-lt)}
+.setFor .setPick{position:relative;flex:1 1 calc(60*var(--u));min-width:0;display:flex}
+/* un vrai menu déroulant (03/11) : on voit la flèche, ça ne ressemble plus à un champ où l'on tape */
+.setFor select{flex:1;min-width:0;font-size:16px;cursor:pointer;-webkit-appearance:none;appearance:none;padding-right:calc(14*var(--u));
+  border-image-source:url(../../textures/ui/slot_sel.png);color:var(--acc-lt)}
+.setFor .setPick::after{content:'▾';position:absolute;right:calc(4*var(--u));top:50%;transform:translateY(-50%);pointer-events:none;color:var(--acc-lt)}
 .setRow.on b{color:var(--ok)}
 /* onglet Stuff (31/10/2026, Geoffrey) : les sets en bandeau au-dessus, la largeur va aux noms des pièces */
 @media (min-width:701px){

@@ -16,6 +16,12 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 03/11/2026 — Geoffrey — Un set par activité
+- **Pour le joueur** : dans le Lobby, quand une activité est ouverte, la carte des sets propose « Set défini pour … ».
+  Le set choisi est équipé tout seul à chaque lancement de cette activité (ou à l'entrée au Bloc géant, à He's coming,
+  à l'ouverture de la Mine instantanée). Les instances partagent un set, les deux tours aussi ; en groupe, chacun le sien.
+  Le choix se fait dans un menu déroulant avec les noms de ses sets.
+
 ## 03/11/2026 — Geoffrey — Cleave : 4 cibles devant lui, en arc de cercle
 - **Pour le joueur** : le Cleave n'est plus un coup sur tous les mobs autour : **sa prochaine attaque** est un coup en arc
   de cercle **devant lui**. La cible prend 100 % de ses dégâts, et **jusqu'à 3 autres mobs devant lui** (à 2 cases ou

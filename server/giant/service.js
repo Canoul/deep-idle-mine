@@ -191,7 +191,7 @@ export function createGiantService({ store, game, clock = Date.now, config = GIA
       /* niveau requis (03/11/2026, Geoffrey ; MINE_MODES[].minLevel) */
       const level = await game.levelFor?.(me.id);
       if(sealedBelow(mode, level)) fail('level_locked', 403, levelLockText(mode, level));
-      return game.giantEnter(me.id, async snap => {
+      return game.giantEnter(me.id, async snap => {   // mode : son set y est équipé avant (03/11)
         const p = await loadPlayer(me.id);
         if(p.visit && p.visit.endsAt > now) fail('in_visit', 409, `Tu es déjà devant ${place}.`);
         if(!canEnter(p.lastEntry, now, { cooldownMs: cooldown })) fail('cooldown', 409, 'Pas encore : une entrée toutes les 3 h.');
@@ -207,7 +207,7 @@ export function createGiantService({ store, game, clock = Date.now, config = GIA
         p.visit = { day, startedAt: now, endsAt: now + visitMs, points: 0, name, entry: snap };
         await putDayAndPlayer(d, me.id, p);
         return { visit: { endsAt: p.visit.endsAt, minerId: m.id }, view: viewOf(me) };
-      });
+      }, mode);
     }),
 
     /* sortir avant la fin : les points faits comptent, l'entrée reste consommée */

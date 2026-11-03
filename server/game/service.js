@@ -41,7 +41,7 @@ import { sanitizeProgress, creditXp, raiseAreaMax, levelOf, specXpOf, specLevels
 import { sanitizeSkills, skillOp, skillRanks, spentPoints } from '../../src/meta/skills.js';
 import { glyphOp, sessionSkills, ownedGlyphs, nodeOfGlyph } from '../../src/meta/glyphs.js';
 import { sanitizeSpells, spellOp, learnScroll, publicSpells, equippedSpells } from '../../src/meta/spells.js';
-import { sanitizeSets, setOp, applySet, snapshot, publicSets, inSomeSet } from '../../src/meta/sets.js';
+import { sanitizeSets, setOp, applySet, snapshot, publicSets, inSomeSet, setForMode, equippedSet } from '../../src/meta/sets.js';
 import { canOpen, openTreasure, openAll } from '../../src/meta/loot.js';
 import { sanitizeFurnaces, furnaceOp, advance } from '../../src/meta/furnace.js';
 import { sanitizeCrusher, crusherOp, advance as advanceCrusher, publicCrusher } from '../../src/meta/crusher.js';
@@ -299,6 +299,27 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
   };
   const spellCtx = async accountId => ({ tree: (await loadSkills(accountId)).tree,
     spec: Object.fromEntries(Object.entries(specLevels(await loadProgress(accountId))).map(([t, s]) => [t, s.level])) });
+  /* Set par activité (03/11/2026, Geoffrey) : avant de lancer ou d'entrer dans une activité (mode), le set que le joueur
+     lui a associé est équipé, comme avec « Équiper » ; rien s'il n'y en a pas, s'il est déjà équipé, ou si le joueur est
+     en session (son équipement figé ne change pas, le prochain lancement s'en chargera). Jamais d'erreur : un set
+     introuvable ne bloque pas le lancement. À appeler HORS des verrous du lancement (il prend inv, skills, spells, sets). */
+  async function autoEquip(accountId, mode){
+    try {
+      if(await activeOf(accountId)) return null;
+      return await withLock.many(['inv:' + accountId, 'skills:' + accountId, 'spells:' + accountId, 'sets:' + accountId], async () => {
+        const sets = sanitizeSets(await store.getSets(accountId)), set = setForMode(sets, mode);
+        if(!set) return null;
+        const inv = await loadInventory(accountId), stuff = await loadStuff(accountId, inv);
+        const skills = await loadSkills(accountId), spells = await loadSpells(accountId);
+        if(equippedSet([set], stuff.worn, skills, spells.slots)) return null;
+        const ctx = await spellCtx(accountId);
+        const r = applySet(sets, { id: set.id, opId: 'auto-' + crypto.randomUUID() }, { inv, stuff, skills, spells, points: await pointsOf(accountId), spec: ctx.spec });
+        if(r.error) return null;
+        await store.putLoadout(accountId, { inventory: JSON.parse(serialize(inv)), stuff, skills, spells, sets });
+        return { set: set.name, missing: r.missing };
+      });
+    } catch(e){ console.error(`Set par activité (${accountId}, ${mode}) :`, e.message); return null; }
+  }
   /* le mineur d'un joueur, figé au lancement (session ou prison) : préférences, skills (glyphes actifs ; owned : glyphes
      possédés, pour le drop), sorts équipés encore valides, apparence (src/skins.js) et pièces portées avec leur qualité
      et leur niveau (gear) */
@@ -996,6 +1017,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       if(!modeDef.ready) fail('mode_not_ready', 400, `${modeDef.label} : bientôt disponible.`);
       if(modeDef.scheduled) fail('mode_scheduled', 400, `${modeDef.label} : elle s'ouvre à heure fixe, inscris-toi dans le lobby.`);
       if(modeDef.giant) fail('mode_giant', 400, `${modeDef.label} : on y entre seul, depuis son panneau dans le lobby.`);
+      if(!modeDef.prison) for(const p of players) await autoEquip(p.account, mode);   // set de l'activité, chacun le sien (03/11)
       if(modeDef.prison) fail('mode_prison', 400, `${modeDef.label} : elle se lance depuis son bouton dans le lobby.`);
       const side = modeDef.tower ?? null;
       /* instance (27/10) : une clé par joueur, vérifiée et consommée au lancement (sous le verrou des inventaires) */
@@ -1165,6 +1187,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     /* body (mode dev seulement) : { speed } (GAME.devSpeeds) */
     async prisonStart(me, members = null, body = {}){
       if(Array.isArray(members) && members.length > 1) fail('not_solo', 409, 'La prison se joue seul : quitte ton groupe pour la lancer.');
+      await autoEquip(me.id, 'prison');   // set de la Prison (03/11)
       if(body?.area !== undefined && body.area !== null && !isInt(body.area)) fail('bad_request', 400, 'Area invalide.');
       if(body?.compo !== undefined && body.compo !== null && !['current', 'previous', 'saved'].includes(body.compo)) fail('bad_request', 400, 'Composition invalide.');
       await withLock.many(['acct:' + me.id, 'prison:' + me.id], async () => {
@@ -1205,6 +1228,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     async openInstant(id, slot, list){
       const players = [];
       for(const p of list) if(!players.some(q => q.account === p.account)) players.push({ account: String(p.account), name: String(p.name ?? ''), ...await guildField(String(p.account)) });
+      for(const p of players) await autoEquip(p.account, 'mi');   // set de la Mine instantanée (03/11)
       return withLock.many(players.map(p => 'acct:' + p.account), async () => {
         if(await store.getGameSession(id)) return null;
         const ok = [];
@@ -1610,10 +1634,11 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
        (28/10/2026, Geoffrey ; avant : refusé) : la session en cours garde le stuff, les skills et les sorts figés à son
        lancement (rec.gear, rec.skills, rec.spells), le set ne compte qu'à partir de la prochaine. Équiper touche l'inventaire, le stuff, les skills et les sorts : tout est écrit en une fois. opId : une demande
        renvoyée n'agit qu'une fois. */
+    autoEquip: (accountId, mode) => autoEquip(accountId, mode),
     async sets(me, body = {}){
       const { action, opId } = body;
       if(typeof opId !== 'string' || !/^[\w-]{8,64}$/.test(opId)) fail('bad_request', 400, 'Demande invalide.');
-      if(!['create', 'save', 'rename', 'delete', 'equip'].includes(action)) fail('bad_request', 400, 'Demande invalide.');
+      if(!['create', 'save', 'rename', 'delete', 'equip', 'assign'].includes(action)) fail('bad_request', 400, 'Demande invalide.');
       const err = e => fail(e, e === 'bad_request' ? 400 : e === 'unknown' ? 404 : 409, SET_ERRORS[e] ?? 'Demande invalide.');
       return withLock.many(['inv:' + me.id, 'skills:' + me.id, 'spells:' + me.id, 'sets:' + me.id], async () => {
         const sets = sanitizeSets(await store.getSets(me.id));
@@ -1627,7 +1652,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           await store.putLoadout(me.id, { inventory: JSON.parse(serialize(inv)), stuff, skills, spells, sets });
           return { ...await setsReply(me.id, sets), missing: r.missing };
         }
-        const r = setOp(sets, { action, id: body.id, name: body.name, opId }, snapshot(stuff, skills, spells));
+        const r = setOp(sets, { action, id: action === 'assign' && body.id === null ? null : body.id, name: body.name, activity: body.activity, opId }, snapshot(stuff, skills, spells));
         if(r.error) err(r.error);
         await store.putSets(me.id, sets);
         return await setsReply(me.id, sets);
@@ -1903,7 +1928,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     /* entrer au Bloc géant : sous le verrou du compte ; fn(fiche) reçoit le stuff, les skills et les sorts figés pour la
        visite et enregistre l'entrée. Possible pendant une session, et une session peut se lancer pendant une visite
        (27/10/2026, Geoffrey ; avant : l'un ou l'autre) : la visite et la session tournent chacune de leur côté. */
-    async giantEnter(accountId, fn){
+    async giantEnter(accountId, fn, mode = 'giant'){
+      await autoEquip(accountId, mode);   // set du Bloc géant ou de He's coming (03/11)
       return withLock('acct:' + accountId, async () => {
         const inv = await loadInventory(accountId), st = await loadStuff(accountId, inv);
         const sk = await loadSkills(accountId);
