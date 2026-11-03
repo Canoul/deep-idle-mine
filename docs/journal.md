@@ -25,7 +25,7 @@ Modèle d'entrée :
 - **Décisions** (Jules) : maquette A (une ligne par session) ; écartée : la dernière session en grand. Conception :
   `docs/superpowers/specs/2026-11-03-appli-historique-design.md`.
 - **À suivre** : Guilde et Classement.
-- **État** : 🧪 sur la branche `jules/appli-historique` (pas en ligne)
+- **État** : ✅ en ligne le 04/11
 
 ## 03/11/2026 — Geoffrey — Un set par activité
 - **Pour le joueur** : dans le Lobby, quand une activité est ouverte, la carte des sets propose « Set défini pour … ».

@@ -6944,7 +6944,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   stuff*, tenacity*, wiki 229/229 ✅. ⚠️ Repères du Golbute et de la tour à +25 / +50 % de ténacité « en plus » : la base barbare
   baisse de 15, à resimuler si besoin.
 
-## 04/11/2026 — Jules — Appli mobile : Historique, une ligne par session (branche jules/appli-historique)
+## 04/11/2026 — Jules — Appli mobile : Historique, une ligne par session (✅ en ligne le 04/11)
 - **Quoi** : spec et plan `docs/superpowers/{specs,plans}/2026-11-03-appli-historique*.md`. `src/ui/history.js` : `dayLabel`,
   `topLoot` (catégorie puis rareté puis `BLOCKS[].val` puis quantité : le terrain en dernier), `sessionRowHtml`,
   `sessionDetailHtml`, `historyListHtml` (purs) ; `setupHistory({ load, me })` : dans l'appli, la liste et `#hiSheet` (bilan,
