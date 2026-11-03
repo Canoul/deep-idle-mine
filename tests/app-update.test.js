@@ -285,3 +285,19 @@ test('relu sur le téléphone, un fichier sans son empreinte (Capacitor modifie 
   assert.equal(await build(t.io, manifest(L, V1), manifest(R, V2)), true);
   for(const [p, b] of R) assert.deepEqual(t.disk.get(`NoCloud/ionic_built_snapshots/${V2}/${p}`), b, p);
 });
+
+/* nouvelle appli sur le store (03/11/2026, APP_UPDATE.latest) : fenêtre non bloquante au démarrage */
+test('storeNudge : coque plus ancienne que la dernière version du store → proposée, au plus une fois par nudgeEvery', async () => {
+  const { storeNudge } = await import('../src/app/update.js');
+  const now = 1_800_000_000_000, latest = { android: '1.1.3', ios: '1.1.3' }, url = 'https://play.google.com/x', every = 86400;
+  const n = o => storeNudge({ platform: 'android', now, latest, every, url, ...o });
+  assert.equal(n({ native: '1.1.2' }), '1.1.3');
+  assert.equal(n({ native: '1.1.3' }), null, 'à jour');
+  assert.equal(n({ native: '1.2.0' }), null, 'plus récente que le store (test interne)');
+  assert.equal(n({ native: '1.1.2', seen: { v: '1.1.3', at: now - 3600_000 } }), null, 'déjà proposée il y a 1 h');
+  assert.equal(n({ native: '1.1.2', seen: { v: '1.1.3', at: now - 25 * 3600_000 } }), '1.1.3', 'reproposée le lendemain');
+  assert.equal(n({ native: '1.1.2', seen: { v: '1.1.2', at: now } }), '1.1.3', 'une version plus récente est proposée tout de suite');
+  assert.equal(n({ native: '' }), null, 'version de la coque inconnue');
+  assert.equal(n({ native: '1.1.2', url: '' }), null, 'pas de fiche du store (iPhone pour l\'instant)');
+  assert.equal(n({ native: '1.1.2', platform: 'web' }), null);
+});

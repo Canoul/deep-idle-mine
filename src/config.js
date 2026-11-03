@@ -1560,6 +1560,11 @@ export const APP_UPDATE = {
   nativePlugins:['@capacitor/app', '@capacitor/app-launcher', '@capacitor/filesystem', '@capacitor/keyboard', '@capacitor/local-notifications', '@capacitor/preferences'],
   checkTimeout:3, applyWithin:10, resumeAfter:300, applyWait:5, readyTimeout:60, keepBad:20, rollbacksPerHour:100,
   store:{ android:'https://play.google.com/store/apps/details?id=fr.deepmineidle.app', ios:'' },
+  /* nouvelle appli sur le store (03/11/2026, Geoffrey) : au démarrage, une coque plus ancienne que latest[plateforme] affiche
+     « Nouvelle version de l'appli » (Mettre à jour → la fiche du store ; Plus tard), au plus une fois toutes les nudgeEvery
+     secondes. Non bloquant (bloquant : minNative). ⚠️ Monter latest SEULEMENT quand la version est vraiment en ligne sur le
+     store (pas juste envoyée en revue), sinon la fiche n'a pas encore le bouton « Mettre à jour ». */
+  latest:{ android:'1.1.2', ios:'1.1.0' }, nudgeEvery:86400,
 };
 
 /* ---- Mine instantanée (MI, GAME_DESIGN §6 « Mine instantanée ») *(décisions du créateur, 21/10/2026 ; valeurs

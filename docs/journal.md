@@ -16,6 +16,11 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 03/11/2026 — Geoffrey — Appli : « Nouvelle version de l'appli » au démarrage
+- **Pour le joueur** : quand une nouvelle appli est sortie sur Google Play, l'appli le dit à l'ouverture : « Nouvelle version de l'appli : 1.1.2 (tu as la 1.1.0) », avec **Mettre à jour** (ouvre la fiche Google Play) ou **Plus tard** (reproposé le lendemain). Rien sur le site. Le jeu lui-même continue de se mettre à jour tout seul : ceci ne concerne que les nouvelles versions de l'appli.
+- **Pour nous** : à chaque nouvelle appli **en ligne** sur Google Play, monter `APP_UPDATE.latest.android` (aujourd'hui 1.1.2). iPhone : rien tant qu'il n'a pas de fiche App Store.
+- **État** : 🧪 branche `geoffrey/popup-maj-appli`
+
 ## 03/11/2026 — Jules — Appli mobile : les Sorts, fiche qui monte du bas
 - **Pour le joueur** : rien sur le site. Dans l'appli, l'onglet Sorts montre la barre de sorts en haut (compacte) et le
   grimoire en grille de 4 colonnes dessous. **Toucher un sort ouvre sa fiche en bas de l'écran** (effet, chiffres, et
