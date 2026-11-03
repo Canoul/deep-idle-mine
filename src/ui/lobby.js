@@ -89,6 +89,16 @@ export function prisonLaunchState({ account, party, offline, busy, session, pris
   return { can:true, label:'⛓ Entrer en prison', action:'start' };
 }
 
+/* bouton principal pour l'activité st.mode (prison, tour, instance, sinon la session) : le Lobby et l'Accueil de l'appli
+   (src/app/home.js, 03/11/2026) affichent le même */
+export function launchFor(st){
+  const def = MINE_MODES.find(m => m.id === st.mode);
+  const ls = def?.prison ? prisonLaunchState(st) : launchState(st);
+  if(def?.tower && ls.can) ls.label = ls.label.replace('la session', 'la tour').replace('Lancer à', 'Lancer la tour à');
+  if(def?.instance && ls.can) ls.label = ls.label.replace('la session', 'l\'instance').replace('Lancer à', 'Lancer l\'instance à');
+  return ls;
+}
+
 /* case « Modulation » du lobby (tours) : visible pour celui qui lance (seul, ou chef du groupe) quand une tour est choisie,
    si elle est ouverte (TOWER.modulation.open) ou en mode dev ; over : les joueurs au-dessus du plafond (le serveur
    revérifie au lancement) */
@@ -329,9 +339,7 @@ export function setupLobby(h){
     /* sprite de chaque joueur, avec son équipement */
     $('lobbySlots').querySelectorAll('canvas').forEach(c => drawPortrait(c, portraitLook(slots[+c.dataset.slot], h.look?.() ?? {}), portraitAuras(slots[+c.dataset.slot], h.auras?.() ?? {})));
 
-    const ls = def?.prison ? prisonLaunchState(st) : launchState(st);
-    if(tower && ls.can) ls.label = ls.label.replace('la session', 'la tour').replace('Lancer à', 'Lancer la tour à');
-    if(def?.instance && ls.can) ls.label = ls.label.replace('la session', 'l\'instance').replace('Lancer à', 'Lancer l\'instance à');
+    const ls = launchFor({ ...st, mode: def?.id });   // au menu (def null) : la session, comme avant
     $('launchBtn').disabled = !ls.can; $('launchBtn').innerHTML = pxi('arrow') + esc(ls.label.replace(/^[^\p{L}\d]+/u, ''));   // l'icône pixel remplace le « ▶ » du texte
     /* énergie (29/10) : coût possible à côté de « Lancer », mine classique seulement (pas en mode dev : rien n'est débité) */
     const cost = def === MINE_MODES[0] && !locked && !jv && !!account && !offline && !info?.dev && !(party && party.members.length > 1 && party.leader !== account.id);
@@ -499,7 +507,7 @@ export function setupLobby(h){
       }).join('')}</div>`;
   }
 
-  function error(msg){ $('lobbyErr').hidden = !msg; $('lobbyErr').textContent = msg || ''; }
+  function error(msg){ $('lobbyErr').hidden = !msg; $('lobbyErr').textContent = msg || ''; st.error = msg || ''; }   // st.error : lu par l'Accueil de l'appli
 
   /* action sur le groupe : met à jour l'état renvoyé par le serveur, affiche l'erreur sinon */
   async function act(fn, done){
@@ -731,7 +739,8 @@ export function setupLobby(h){
     try { setCompos(await h.prisonSaveCompo?.(st.prisonCompo)); st.prisonCompo = 'saved'; }
     catch(e){ console.error(e); } finally { st.busy = false; render(); }
   };
-  $('launchBtn').onclick = async () => {
+  /* Lancer (ou Je suis prêt, ou la prison) : le bouton du Lobby et le gros bouton de l'Accueil de l'appli (03/11/2026) */
+  async function launch(){
     if(st.busy) return;
     if(MINE_MODES.find(m => m.id === st.mode)?.prison){   // prison (29/10) : la voir, ou y entrer
       const ps = prisonLaunchState(st);
@@ -751,11 +760,25 @@ export function setupLobby(h){
     const md = MINE_MODES.find(m => m.id === st.mode), tw = !!md?.tower;
     try { await h.onLaunch({ mode: st.mode, ...((tw || md?.instance) && st.towerLevel ? { level: st.towerLevel } : {}), ...(tw && $('modulation').checked ? { modulation: true } : {}), ...(tw && st.info?.dev && $('devStele').checked ? { stele: Object.keys(SHRINES.list).find(id => SHRINES.list[id].tower === md.tower) } : {}), ...(tw && st.info?.dev && $('devHeroic').checked ? { heroic: true } : {}), ...(st.info?.dev ? devOptions() : {}) }, { party: st.party }); }
     finally { st.busy = false; render(); }
-  };
+  }
+  $('launchBtn').onclick = launch;
 
   return {
     pubContext,
     team: () => st.party,
+    /* Accueil de l'appli (src/app/home.js, 03/11/2026) : l'état dont il a besoin, rien de recalculé ; places avec leur skin */
+    homeSnapshot(){
+      const look = h.look?.() ?? {}, auras = h.auras?.() ?? {};
+      const slots = lobbySlots(st.account, st.party, GAME.maxPlayers, st.myTree)
+        .map(s => s.kind === 'member' ? { ...s, look: portraitLook(s, look), auras: portraitAuras(s, auras) } : s);
+      return { account:st.account, offline:st.offline, busy:st.busy, dev:!!st.info?.dev, party:st.party, slots, mode:st.mode, prefs:st.prefs,
+               launch:launchFor(st), session:st.session, prison:st.prison, energy:st.energy, giantReady:!!st.giantReady,
+               hcReady:!!st.hcReady, judgment:st.judgment ?? null, invites:st.invites ?? [], miRegistered:!!st.miRegistered, error:st.error ?? '' };
+    },
+    launch,
+    /* l'Accueil passe la main au Lobby : le menu des activités, ou l'invitation (dans l'activité, avec l'équipe) */
+    openMenu(){ st.screen = 'menu'; st.view = null; render(); scrollTo(0, 0); },
+    openInvite(){ if(st.screen === 'menu') pick(st.mode); if(!st.inviteOpen) $('inviteBtn').click(); },
     update(patch){
       const { lfg, ...rest } = patch;
       Object.assign(st, rest);

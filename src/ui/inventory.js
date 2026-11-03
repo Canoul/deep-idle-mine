@@ -14,6 +14,8 @@ import { glyphInfo } from '../meta/glyphs.js';
 import { pxi } from './pxicons.js';
 
 const $ = id => document.getElementById(id);
+/* dans l'appli mobile (classe app, src/app/boot.js) : slots plus petits, pas de survol */
+const inApp = () => !!globalThis.document?.body?.classList.contains('app');
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 export const CAT_LABEL = { terrain:'Terrain', bloc:'Bloc', residu:'Résidu', rune:'Rune', ore:'Minerai', treasure:'Treasure', blueprint:'Blueprint', gem:'Gemme',
@@ -28,8 +30,18 @@ const iconHtml = item => {
 };
 
 const fr = (n, d) => n.toFixed(d).replace('.', ',').replace(/,0$/, '');
+/* une décimale arrondie vers le bas : 2,2 pour 2,29 (jamais plus qu'on n'a) */
+const floor1 = n => fr(Math.floor(n * 10) / 10, 1);
 /* quantité compacte pour tenir dans un slot : 950 · 9 999 · 12,3k · 456k · 1,2M */
-export function fmtQty(n){
+export function fmtQty(n, { short = false } = {}){
+  /* short (appli, 03/11/2026) : 4 caractères au plus, arrondi vers le bas : 999 · 2,2k · 12k · 456k · 1,2M · 12M */
+  if(short){
+    if(n < 1000) return String(n);
+    if(n < 1e4)  return floor1(n/1000)+'k';
+    if(n < 1e6)  return Math.floor(n/1000)+'k';
+    if(n < 1e7)  return floor1(n/1e6)+'M';
+    return Math.floor(n/1e6)+'M';
+  }
   if(n < 10000)   return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
   if(n < 100000)  return fr(n/1000, 1)+'k';
   if(n < 1e6)     return Math.floor(n/1000)+'k';
@@ -40,7 +52,7 @@ const fullQty = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 
 function slotHtml(s, i, fresh){
   if(!s) return `<div class="slot empty" data-i="${i}"></div>`;
-  const q = isStackable(s.item) ? `<span class="q">${fmtQty(s.qty)}</span>` : s.plus > 0 ? `<span class="q">+${s.plus}</span>` : '';
+  const q = isStackable(s.item) ? `<span class="q">${fmtQty(s.qty, { short:inApp() })}</span>` : s.plus > 0 ? `<span class="q">+${s.plus}</span>` : '';
   return `<div class="slot${rcls(s.item)}${fresh.has(i)?' fresh':''}"${rframe(s)} data-i="${i}" draggable="true"${tipAttr(s.item, `${pieceName(s)} × ${fullQty(s.qty)}`, s.uid != null ? s : null)}>${iconHtml(s.item)}${runeMark(s)}${q}</div>`;
 }
 
@@ -79,7 +91,9 @@ const recycleHtml = s => s.uid != null && recyclable(s.item)
   ? ` <button class="invRecycle" data-uid="${s.uid}" title="${recycleRange(s.item) ? 'Détruit la rune et rend de la Poudre de rêve' : 'Détruit la pièce et rend une partie de ses matériaux'}">♻ Recycler</button>` : '';
 
 function infoHtml(s, pinned=false, inv=null, worn=null, furn=null){
-  if(!s) return '<span class="mut">Survole ou clique un objet pour voir son détail.</span>';
+  if(!s) return inApp()
+    ? '<span class="mut">Touche un objet pour voir son détail.</span>'
+    : '<span class="mut">Survole ou clique un objet pour voir son détail.</span>';
   const d = itemDef(s.item);
   const piece = s.uid != null ? s : null;
   const bits = [ piece ? pname(piece, 'b') : rname(s.item, undefined, 'b'), `× ${fullQty(s.qty)}` ];

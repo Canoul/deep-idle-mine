@@ -41,3 +41,83 @@ body.app.appKb #dialog{padding-bottom:var(--kb-h)}
 body.app #account input,body.app #dialog input{font-size:16px}
 /* iPhone : un champ sous 16 px fait zoomer Safari quand on le touche */
 body.app #gchatInput{font-size:16px}
+
+/* ---------- interface téléphone, étape 1 (03/11/2026, Jules ; audit du 02/11 : docs/journal.md) ---------- */
+/* titre de page : le sous-onglet dit déjà où on est ; restent l'aide « ? » et les boutons de la ligne (Trier…) */
+body.app .lobbyWrap>h1{display:none}
+body.app .invHead{align-items:center;margin-bottom:calc(5*var(--u))}
+body.app .invHead h1{font-size:0;gap:0}
+body.app .invHead h1>i:has(>.pi){display:none}
+body.app .invHead:not(:has(.qhelp)):not(:has(>:not(h1))){display:none}
+/* filtres sur une seule rangée qui défile (ancien : retour à la ligne, une icône seule sur la 2e ligne) */
+body.app .invTabs,body.app .seg{display:flex;flex-wrap:nowrap;max-width:100%;overflow-x:auto;scrollbar-width:none}
+body.app .invTabs::-webkit-scrollbar,body.app .seg::-webkit-scrollbar{display:none}
+body.app .invTabs>*,body.app .seg>*{flex:none}
+/* classement et membres de guilde : le bouton reste sur la ligne du joueur (ancien : une ligne de plus par joueur) */
+body.app :is(.lrow,.gmem){flex-wrap:nowrap}
+body.app :is(.lrow,.gmem) .fname{flex:1;min-width:0}
+body.app :is(.lrow,.gmem) .fbtns{width:auto;flex:none;flex-wrap:nowrap}
+body.app .gmem .fbtns button[data-g="lobbyInvite"]{font-size:0;gap:0;min-width:44px}   /* « Inviter » : l'icône seule */
+/* au doigt : 44 px au moins (ancien : boutons de 36 px, puces du chat de 22 px) */
+body.app button{min-height:44px}
+body.app :is(.chatTabs,.chatPanel) button{height:auto}
+body.app .fbtns .x{min-width:44px}
+/* barre du haut en session : le chrono sans la durée totale et le niveau sans son % d'XP (il reste dans Perso → Stuff),
+   pour que le pseudo ne soit plus coupé à une lettre (ancien : « L Niv. 11 47 % 53:46 / 60:00 ») */
+body.app .navLen,body.app .navLevel>span{display:none}
+/* guide « Premiers pas » replié : une pastille « 📜 5/7 » en bas à droite (ancien : une barre sur toute la largeur) */
+body.app .guide:has(.gHead[aria-expanded="false"]){width:auto}
+body.app .gHead[aria-expanded="false"] :is(.gLbl,.gCur,.gArrow){display:none}
+body.app .gHead[aria-expanded="false"]{min-height:44px;font-size:var(--fs)}
+body.app:has(.guide:not([hidden])) .views{padding-bottom:calc(var(--dock-h) + 60px)}
+body.app:has(section[data-view="chat"]:not([hidden])) .guide{display:none}
+
+/* ---------- Accueil (03/11/2026, Jules ; src/app/home-ui.js, spec docs/superpowers/specs/2026-11-03-appli-accueil-design.md) ----------
+   montré : le reste du Lobby est caché (« Changer ▸ » le rouvre, « ← Accueil » revient) ; tout tient sans défiler à 393 × 760 */
+body.app #appHome,body.app #appHomeBack{display:none}
+body.app.appHomeOn .lobbyWrap{display:none}
+body.app.appHomeOn #appHome{display:flex;flex-direction:column;min-height:calc(100dvh - var(--top-h) - var(--dock-h))}
+body.app:not(.appHomeOn) #appHomeBack{display:inline-flex;margin:8px 8px 0}
+body.app #appHome .hScene{position:relative;flex:none;overflow:hidden}
+body.app #appHome .hSun{position:absolute;right:14%;top:46%;width:60px;height:60px;background:#ffb25a;box-shadow:0 0 0 6px rgba(255,150,70,.35),0 0 0 14px rgba(255,130,60,.15)}
+body.app #appHome .hFar{position:absolute;left:0;right:0;bottom:40px;height:76px;
+  clip-path:polygon(0 60%,8% 40%,15% 55%,24% 20%,33% 45%,44% 30%,55% 52%,66% 18%,76% 42%,86% 28%,100% 50%,100% 100%,0 100%)}
+body.app #appHome .hB{position:absolute;bottom:40px;max-width:none;image-rendering:pixelated}
+body.app #appHome .hGround{position:absolute;left:0;right:0;bottom:0;height:40px;background:url(../../textures/town_cobble.png) 0 0/40px repeat;image-rendering:pixelated}
+body.app #appHome .hTeam{position:absolute;left:0;right:0;bottom:40px;display:flex;justify-content:center;align-items:flex-end;gap:14px}
+body.app #appHome .hWho{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:72px;min-height:0;padding:0;background:none;border:0;border-image:none;text-shadow:none}
+body.app #appHome .hWho canvas{width:40px;height:40px;image-rendering:pixelated}
+body.app #appHome .hName{max-width:96px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:400 17px/1 var(--f-title);color:#ffe6c4;text-shadow:2px 2px 0 #000}
+body.app #appHome .hSt{min-height:13px;font-size:13px;line-height:1;text-shadow:1px 1px 0 #000}
+body.app #appHome .hQ{width:40px;height:40px;display:grid;place-items:center;color:#ffd23f;font:400 30px/1 var(--f-title);text-shadow:2px 2px 0 #000}
+body.app #appHome .hInv{position:absolute;left:8px;top:8px;font-size:var(--fs-s)}
+body.app #appHome .hAway{position:absolute;left:50%;bottom:56px;transform:translateX(-50%);padding:2px 8px;white-space:nowrap;font-size:15px;color:#ffe6c4;
+  background:rgba(20,12,8,.85);box-shadow:0 0 0 2px #000,0 0 0 4px var(--acc-dk)}
+body.app #appHome .hLow{flex:1;display:flex;flex-direction:column;gap:8px;padding:8px 10px}
+body.app #appHome .hAct{display:flex;align-items:center;gap:10px}
+body.app #appHome .hIco{flex:none;width:36px;text-align:center;font-size:26px;line-height:1}
+body.app #appHome :is(.hAct,.hRv)>div{flex:1;min-width:0;display:flex;flex-direction:column}
+body.app #appHome .hAct b{font:400 21px/1.05 var(--f-title)}
+body.app #appHome .hAct .bar{margin-top:6px}
+body.app #appHome .hRv{display:flex;align-items:center;gap:10px;min-height:46px;box-shadow:0 -2px 0 var(--sep)}
+body.app #appHome .hRv:first-child{box-shadow:none}
+body.app #appHome .hRi{flex:none;width:36px;height:36px;display:grid;place-items:center}
+body.app #appHome .hRi img{max-width:36px;max-height:36px;image-rendering:pixelated}
+body.app #appHome .hRi .pi{width:28px;height:28px;color:var(--acc-lt)}
+body.app #appHome .hEmo{font-size:24px}
+body.app #appHome .hRv b{font:400 18px/1.05 var(--f-title)}
+body.app #appHome .hRv span{font-size:15px}
+body.app #appHome .hRv button{min-width:96px}
+body.app #appHome .hMore{width:100%;border:0;border-image:none;background:none;color:var(--mut);font-size:15px;text-shadow:none}
+body.app #appHome .hGo{margin-top:auto}
+body.app #appHome .hBig{width:100%;min-height:56px;font:400 28px/1 var(--f-title);letter-spacing:.03em}
+body.app #appHome .hBig .pi{width:28px;height:28px}
+body.app #appHome .hBig:disabled{font:400 20px/1.1 var(--f-body);white-space:normal}
+body.app #appHome .hHint{margin:2px 0 0;text-align:center;color:var(--mut);font-size:15px}
+/* le guide replié se range dans le ciel de l'Accueil, pas sur le gros bouton */
+body.app.appHomeOn:has(section[data-view="lobby"]:not([hidden])) .guide:has(.gHead[aria-expanded="false"]){top:calc(var(--top-h) + 8px);bottom:auto}
+body.app.appHomeOn:has(section[data-view="lobby"]:not([hidden])):has(.guide:not([hidden])) .views{padding-bottom:var(--dock-h)}
+/* erreur du Lobby (lancement refusé…) juste au-dessus du gros bouton */
+body.app #appHome .hErr{margin:auto 0 0;text-align:center}
+body.app #appHome .hErr+.hGo{margin-top:0}
+body.app #appHome .ok{color:var(--ok)} body.app #appHome .acc{color:var(--acc-lt)}
