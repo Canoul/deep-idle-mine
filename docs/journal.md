@@ -16,6 +16,12 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 03/11/2026 — Jules — Roi gobelin redessiné (remise à niveau des sprites, 4/4 : chantier fini)
+- **Pour le joueur** : le boss de l'Instance I n'est plus fait de rectangles. C'est un **roi guerrier balafré** : trapu et voûté, épaules massives, épaulière de fer à pointes, grosse couronne d'or à rubis, col d'hermine, broche à émeraude, collier de crânes, balafre sur l'œil, défenses, brassards, pagne effiloché, griffes, et la masse cloutée qui traîne au sol. Il porte enfin **son vrai butin** : la cape royale rouge bordée d'hermine (avant : une cape violette), la couronne et la masse à pommeau d'or. Endormi, au combat et enragé, il s'affiche comme avant (transparent avec « zZ », barre de vie, halo rouge).
+- **Décisions** (Jules) : choisi parmi 3 prototypes (tyran ventripotent, roi guerrier balafré, vieux roi rusé), le guerrier, plus détaillé, avec une couronne plus grosse et le col d'hermine bien visible.
+- **À suivre** : le voir dans une vraie victoire contre le roi. Les 4 sprites du chantier sont faits (Bloc géant, mur de chair, ver de terre, roi gobelin).
+- **État** : ✅ en ligne le 03/11
+
 ## 03/11/2026 — Jules — Ver de terre redessiné (remise à niveau des sprites, 3/4)
 - **Pour le joueur** : le ver de terre de l'area 7 est maintenant un **ver cuirassé** : des plaques de chitine couleur de sable, usées et fendues, qui se chevauchent comme des écailles, avec de la chair rose entre elles. Sa tête est une gueule ronde grande ouverte, avec des pétales à pointes, deux couronnes de dents en aiguilles et une braise au fond de la gorge. Surtout, **il regarde où il va** : la tête et chaque anneau pivotent dans le sens de la marche (avant, toutes les cases étaient dessinées pareil). Sa queue coincée sort d'une fente de la roche, pointe recourbée.
 - **Décisions** (Jules) : choisi parmi 3 prototypes (lamproie rose, ver cuirassé, ver pâle), le cuirassé, plus détaillé, inspiration Dune. Le rose est laissé au mur de chair, juste avant (area 6).
