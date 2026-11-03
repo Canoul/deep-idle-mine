@@ -6774,5 +6774,10 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - `HES_COMING.roar.markBonus` 0,5 ; `dodgeFear` (src/sim/hescoming/session.js, exporté) : chance du Fear = 1 − ténacité effective (pénétration hescoming), × 1,5 si `m.fearMark`, plafond 1 ; tirage seulement si ténacité > 0 ; marque posée sur une esquive, retirée sinon. Le rugissement n'utilise plus `resists` (pas de fatigue générale) ; l'autoattaque, si. Effet `fear_mark` (EFFECTS, src/sim/effects.js, bulle src/ui/effects.js), déjà envoyé par la vue du Bloc géant.
 - Paliers × 24 (× 12 ce matin sans test : tests/hescoming-sim « config » échouait, corrigé). ✅ hescoming-sim (dont test de la marque), effects, tenacity, giant : 95.
 
+<<<<<<< HEAD
 ### 03/11/2026 — Concasseur : minerai d'or
 - `CRUSHER.loot['Or'] = { always:[Terre 1-1], oneOf:[] }` (demande de Geoffrey). tests/crusher.test.js : « Or » n'est plus l'exemple d'objet refusé (remplacé par « Diamant ») + test du lot d'or. ✅ crusher.
+=======
+### 03/11/2026 — Mine instantanée : Coup unique
+- `G.gearRng` (seed ^ GEAR_RNG.salt) dans src/sim/instant/session.js ; src/sim/instant/ai.js : chance `carac.oneTap` → durée de minage 0,05 s (le minimum de la mine instantanée), tirage seulement si la stat > 0. Sans test ni simulation (demande de Geoffrey).
+>>>>>>> origin/main

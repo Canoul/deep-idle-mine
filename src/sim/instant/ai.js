@@ -60,7 +60,9 @@ export function decide(G, m, depth = 0){
   if(!m.target || m.path.length){ m.action = { type:'wait', dur:0.5, t:0, data:{} }; m.status = 'Plus rien à miner'; return; }
   const { x, y } = m.target, t = G.tiles[y][x];
   if(x !== m.x) m.face = x > m.x ? 1 : -1;
-  m.action = { type:'mine', dur:Math.max(0.05, miMineT(m, t)), t:0, data:{ x, y } };
+  /* Coup unique (03/11/2026, Geoffrey) : chance oneTap que le bloc casse tout de suite ; tiré seulement avec la stat */
+  const tap = (m.carac.oneTap || 0) > 0 && G.gearRng && G.gearRng() * 100 < m.carac.oneTap;
+  m.action = { type:'mine', dur:tap ? 0.05 : Math.max(0.05, miMineT(m, t)), t:0, data:{ x, y } };
   if(m.status !== 'Change de zone' || !m.flee || G.t >= m.flee.until) m.status = 'Mine';
 }
 
