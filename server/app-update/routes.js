@@ -12,7 +12,7 @@ import { nameKey } from '../../src/shared/account.js';
 import { API_URL, bundleFiles, manifestOf } from './bundle.js';
 
 export function createAppUpdate({ files, api = API_URL, minNative = APP_UPDATE.minNative } = {}){
-  const content = files ?? bundleFiles({ api });
+  const content = files ?? bundleFiles({ api, published: true });   // index.html marqué (03/11, bundle.js)
   const manifest = manifestOf(content, { minNative });
   /* relevé (03/11/2026, diagnostic des mises à jour, compte admin) : en mémoire, perdu au redémarrage ; ni IP ni compte */
   const trace = { since: Date.now(), checks: [], files: {}, rollbacks: [] };
@@ -43,7 +43,8 @@ export function appUpdateRoutes(update, { log = console.log, now = Date.now, per
       if(++logged <= perHour){
         const b = ctx.body ?? {};
         log(`Appli : retour en arrière ${clean(b.from)} → ${clean(b.to)} (${clean(b.why)}, ${clean(b.platform)}, coque ${clean(b.native)})`);
-        if(update.trace) pushMax(update.trace.rollbacks, { at: now(), from: clean(b.from), to: clean(b.to), why: clean(b.why), platform: clean(b.platform), native: clean(b.native) });
+        if(update.trace) pushMax(update.trace.rollbacks, { at: now(), from: clean(b.from), to: clean(b.to), why: clean(b.why), platform: clean(b.platform), native: clean(b.native),
+          ...(typeof b.detail === 'string' ? { detail: shortUa(b.detail).slice(0, 200) } : {}) });
       }
       return [204];
     },

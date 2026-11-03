@@ -16,6 +16,10 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 03/11/2026 — Geoffrey — Mises à jour automatiques de l'appli : diagnostic et appli 1.1.2
+- **Pour nous** : le relevé admin montre qu'aucun téléphone n'a jamais téléchargé une mise à jour (S22, Pixel 10, OnePlus) : l'appli échoue juste avant, sans rien dire. L'appli 1.1.2 signale maintenant l'erreur exacte au serveur (visible dans le relevé, « Retours en arrière ») et corrige les causes probables. Le serveur publie aussi la page du jeu de façon à ce qu'elle soit toujours téléchargée. À envoyer sur Google Play (test interne pour l'avoir tout de suite).
+- **État** : ✅ en ligne le 03/11 (serveur) ; appli 1.1.2 à publier sur Google Play
+
 ## 03/11/2026 — Jules — Appli mobile : nouvel écran d'Accueil
 - **Pour le joueur** : rien sur le site. Dans l'appli, le premier écran n'est plus le Lobby. En haut, une bande du
   **Carreau** (la Taverne, le Chevalement, la Fonderie) où ton équipe attend devant le chevalement, avec « ✓ Prêt » ou
