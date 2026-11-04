@@ -110,12 +110,14 @@ const serverNow = () => Date.now() + clockOffset;
    Pas « setClock » : c'est déjà la vitesse / pause du mode dev (plus bas). */
 const syncClock = t => { if(!rec && Number.isFinite(t)) clockOffset = t - Date.now(); };
 const renderer = createRenderer($('cv'));
+const mineZoom = appBoot.app ? CAMERA.appZoom : 1;   // appli (04/11/2026) : la mine démarre zoomée sur le mineur
+renderer.setBaseZoom(mineZoom);
 const miRenderer = createInstantRenderer($('cvMi'));
 const isMi = () => rec?.mode === 'mi';
 const twRenderer = createTowerRenderer($('cvTw'));
 const inRenderer = createInstanceRenderer($('cvIn'));
 const SESSION_CV = { mine:'cv', mi:'cvMi', tower:'cvTw', instance:'cvIn' };
-const backdrop = createBackdrop($('bgSession'), { sessionCanvas: mode => $(SESSION_CV[mode]) });   // fond : la session en cours, hors onglet Session
+const backdrop = createBackdrop($('bgSession'), { sessionCanvas: mode => $(SESSION_CV[mode]), mineZoom });   // fond : la session en cours, hors onglet Session
 /* fond hors session : le Carreau, la ville du spawn (29/10) ; onglet Session sans session : on s'y promène */
 const town = setupTown($('bgTown'), {
   ping: body => townApi.ping(body),

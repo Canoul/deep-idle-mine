@@ -605,7 +605,9 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   (04/11, en ligne le 04/11 ; spec `2026-11-04-appli-ecrans-fin-design.md`) : Inventaire « Déplacer » (ancien :
   glisser-déposer seulement), Four en onglets (ancien : fours empilés), Concasseur resserré, Recherche en 4 boutons de tier,
   Amélioration en grille d'icônes (ancien : une carte par pièce), Amis en une ligne + fiche `#frSheet` (ancien : 5 boutons
-  par ami) ; Craft et Chat inchangés. **Étape 2 de l'interface téléphone finie.** Étape 2 sur maquettes : Accueil (fait) → Perso (sets en menu,
+  par ami) ; Craft et Chat inchangés. **Étape 2 de l'interface téléphone finie.** **Zoom de la mine** (04/11, Jules) :
+  dans l'appli, la mine démarre zoomée ×3 (`CAMERA.appZoom`, ≈ 17 colonnes sur 50 ; ancien : ×1, toute la largeur,
+  mineur minuscule) ; pincer pour dézoomer jusqu'à ×1, double appui = retour au ×3 ; le site ne change pas. Étape 2 sur maquettes : Accueil (fait) → Perso (sets en menu,
   stuff en mannequin, un seul arbre de skills, fiche de sort en panneau du bas) → Historique compact → Guilde en
   onglets → Classement.
   **Visuels des stores** (01/11, Jules, branche `jules/visuels-stores`) : **icône = lampe de mine** (source unique

@@ -78,8 +78,10 @@ export function leavePanels(view, box, stillHere = () => false){
   view._bgT = setTimeout(() => { resetPanels(view); view.hidden = !stillHere(); }, BACKDROP.transitionMs);
 }
 
-/* root : boîte du fond ; sessionCanvas(mode) : le canvas de la mine dans l'onglet Session (caché pendant l'entrée) */
-export function createBackdrop(root, { sessionCanvas = () => null, now = () => performance.now() } = {}){
+/* root : boîte du fond ; sessionCanvas(mode) : le canvas de la mine dans l'onglet Session (caché pendant l'entrée) ;
+   mineZoom : zoom de départ de la mine de la session (appli, 04/11/2026 : CAMERA.appZoom), le même ici pour que la
+   transition reste un simple zoom de la même image */
+export function createBackdrop(root, { sessionCanvas = () => null, now = () => performance.now(), mineZoom = 1 } = {}){
   let on = load(KEY, '1') !== '0', shownMode = null, anim = null;   // anim : { to:'session'|'cover', t0, mode, hidden }
   const places = readPlaces();
   const made = {};                                     // mode → { cv, r, rows, key }
@@ -88,7 +90,9 @@ export function createBackdrop(root, { sessionCanvas = () => null, now = () => p
     if(made[mode]) return made[mode];
     const cv = document.createElement('canvas');
     root.appendChild(cv);
-    return made[mode] = { cv, r: MODES[mode].make(cv), rows: 0, key: '' };
+    const r = MODES[mode].make(cv);
+    if(mode === 'mine') r.setBaseZoom(mineZoom);
+    return made[mode] = { cv, r, rows: 0, key: '' };
   }
   function show(mode){
     if(mode === shownMode) return;

@@ -1,6 +1,7 @@
 /* Caméra de la session (affichage seulement) : elle suit un mineur, ou reste où le joueur l'a déplacée
    (défilement libre, pour naviguer dans la mine). Zoom ×1 = la mine tient dans la largeur de l'écran et la caméra ne
-   bouge que verticalement ; zoomée (30/10, pincer sur mobile), elle bouge aussi à l'horizontale.
+   bouge que verticalement ; zoomée (30/10, pincer sur mobile), elle bouge aussi à l'horizontale. Dans l'appli mobile
+   (04/11/2026), elle démarre zoomée (setBaseZoom(CAMERA.appZoom)).
    Logique pure, testée sans navigateur (tests/camera.test.js). */
 import { CAMERA, W } from '../config.js';
 
@@ -16,7 +17,9 @@ export function createCamera(viewRows, cols = W){
   const bottom = lastRow => Math.max(CAMERA.top, lastRow + 1 + CAMERA.margin - vr());
   const clamp = (y, lastRow) => Math.max(CAMERA.top, Math.min(bottom(lastRow), y));
   const clampX = x => Math.max(box.lo, Math.min(box.hi - vc(), x));
+  const fitZ = z => Math.max(box.zmin, Math.min(Math.max(CAMERA.maxZoom, box.zmin), z));   // zoom permis
   let last = 0;   // dernière ligne connue (pour borner un zoom ou un glissé entre deux images)
+  let base = 1;   // zoom de départ (appli mobile, 04/11/2026 : CAMERA.appZoom), repris au double appui et en sortant de prison
 
   return {
     get y(){ return cam.y; },
@@ -42,20 +45,26 @@ export function createCamera(viewRows, cols = W){
     /* zoom multiplié par f, autour du point de l'écran (fx, fy) en fraction de la vue (0..1) : ce point ne bouge pas.
        Ne change pas le mode (en suivi, la caméra reste sur le mineur) */
     zoomBy(f, fx = 0.5, fy = 0.5){
-      if(!Number.isFinite(f) || f < 0) return;   // f = 0 : retour au ×1
-      const z = Math.max(box.zmin, Math.min(Math.max(CAMERA.maxZoom, box.zmin), cam.z * f));
+      if(!Number.isFinite(f) || f < 0) return;   // f = 0 : retour au zoom de départ (×1 sur le site)
+      const z = fitZ(f === 0 ? base : cam.z * f);
       if(z === cam.z) return;
       const wx = cam.x + fx * vc(), wy = cam.y + fy * vr();
       cam.z = z;
       cam.x = clampX(wx - fx * vc());
       cam.y = clamp(wy - fy * vr(), last);
     },
-    /* colonnes visibles bornées à b = { x0, x1 } (prison), ou toute la mine (null) ; un changement remet le zoom au minimum */
+    /* colonnes visibles bornées à b = { x0, x1 } (prison), ou toute la mine (null) ; un changement remet le zoom de
+       départ (au moins le minimum) */
     setBox(b){
       const key = b ? b.x0 + ':' + b.x1 : '';
       if(key === box.key) return;
       box.key = key; box.lo = b ? b.x0 : 0; box.hi = b ? b.x1 + 1 : cols; box.zmin = cols / (box.hi - box.lo);
-      cam.z = box.zmin; cam.x = clampX(box.lo);
+      cam.z = fitZ(base); cam.x = clampX(box.lo);
+    },
+    /* zoom de départ (appli mobile : CAMERA.appZoom) : appliqué tout de suite, repris au double appui (zoomBy(0)) */
+    setBaseZoom(z){
+      if(!Number.isFinite(z) || z <= 0) return;
+      base = z; cam.z = fitZ(base); cam.x = clampX(cam.x); cam.y = clamp(cam.y, last);
     },
     /* revient au mineur suivi (glissade depuis la position actuelle) */
     follow(){ cam.free = false; },
