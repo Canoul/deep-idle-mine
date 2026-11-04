@@ -7029,7 +7029,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - Tests : spells (nouveau test Cleave), hescoming-sim, tower*, instance*, golbute*, effects*, wiki 229/229 ✅. Simulation mine 5 × 3
   avec cleave + war_cry : 0 blocage, profondeur 187.
 
-## 04/11/2026 — Jules — Appli mobile : Guilde en onglets (branche jules/appli-guilde)
+## 04/11/2026 — Jules — Appli mobile : Guilde en onglets (✅ en ligne le 04/11)
 - **Quoi** : spec et plan `docs/superpowers/{specs,plans}/2026-11-04-appli-guilde*.md`. `src/ui/guild.js` : morceaux communs
   `requestsHTML`, `membersHTML`, `levelHTML`, `bonusHTML` (le site les assemble comme avant dans `mineHTML`) ;
   `mineAppHTML(g, older, { sub, building })` (pur) : onglets `data-gsub` (house, members, buildings, log), bâtiments `data-gb`

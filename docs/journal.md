@@ -24,7 +24,7 @@ Modèle d'entrée :
 - **Décisions** (Jules) : maquette A (onglets) ; écartée : le tableau de bord à tuiles. Conception :
   `docs/superpowers/specs/2026-11-04-appli-guilde-design.md`.
 - **À suivre** : le Classement (podium, sa place en bas) ; Maison et Bâtiments défilent encore un peu.
-- **État** : 🧪 sur la branche `jules/appli-guilde` (pas en ligne)
+- **État** : ✅ en ligne le 04/11
 
 ## 04/11/2026 — Jules — Appli mobile : l'Historique, une ligne par session
 - **Pour le joueur** : rien sur le site. Dans l'appli, le bouton **Session** hors session (l'Historique) montre **une ligne
