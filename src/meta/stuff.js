@@ -9,7 +9,7 @@
    effet va à tout le groupe de la session (withRings), une fois par anneau différent. */
 import { STUFF, ITEMS, STATS, RINGS, CFG } from '../config.js';
 import { takePiece, putPiece } from './inventory.js';
-import { withSkillStats, slotMastery, SKILL_STATS, SKILL_ADD } from './skills.js';
+import { withSkillStats, slotMastery, SKILL_STATS, SKILL_ADD, groupAuras } from './skills.js';
 import { withGlyphStats } from './glyphs.js';
 import { pieceBonus, pieceName, sanitizePiece, rolledSpec, rolledValue, lineValue, runeLineValue, runeLineFactor, plusMult, roundStat, runeFactor, isRing } from './piece.js';
 import { pieceGS } from './gearscore.js';
@@ -161,7 +161,7 @@ export function minerStats(worn, effects = {}){
   const s = statsOf(pieces);
   const withStuff = Object.fromEntries(Object.entries(s).map(([k, v]) => [k, v.total]));
   /* maîtrises (28/10) : elles grossissent les stats d'une pièce, leur apport va dans la colonne des skills */
-  const all = withSkillStats(equippedStats(pieces, slotMastery(effects)), effects);
+  const all = withSkillStats(equippedStats(pieces, slotMastery(effects)), effects, { auras: groupAuras([effects]) });   // ses propres auras (04/11)
   const multOf = key => Object.hasOwn(SKILL_STATS, key) ? 1 + (effects[SKILL_STATS[key]] || 0) : 1;
   const addOf = key => Object.hasOwn(SKILL_ADD, key) ? (effects[SKILL_ADD[key].node] || 0) * SKILL_ADD[key].scale : 0;
   /* anneaux de ce joueur (en session, ceux du reste du groupe s'ajoutent) : ring = ce qu'ils ajoutent au total */

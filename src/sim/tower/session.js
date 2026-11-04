@@ -10,6 +10,7 @@
    Pods (26/10/2026, Geoffrey) : chaque stonebrick minée va dans le sac du mineur (m.inv, m.load) ; plein, il redescend au
    coffre commun (TOWER.chest, au milieu de l'étage 0) le vider dans G.chest. Victoire : summary.loot = coffre + sacs des
    présents ; le serveur le partage en parts égales et ajoute les trésors (server/game/service.js). */
+import { critMul, backstabMul } from '../skillfx.js';
 import { tenacityTry } from '../tenacity.js';
 import { TOWER, DT, STATS, BLOCKS, CFG, COMBAT, WINCH, SHRINES } from '../../config.js';
 import { mulberry32 } from '../../core/rng.js';
@@ -173,7 +174,9 @@ export const warcryOf = (G, m) => { const w = G.warcry, c = w && G.t < w.until ?
   return c && manh(c, m) <= SPELL.war_cry.radius ? w : null; };
 const hitT = (G, m) => CFG.attackInterval / Math.max(0.1, (m.carac.attackSpeed ?? 100) / 100 * (1 + (warcryOf(G, m)?.speed || 0)));
 const chance = (G, pct) => pct > 0 && G.fightRng() < pct / 100;
-const hitDmg = (G, m) => m.carac.damage * (1 + (m.carac.damagePct || 0) / 100) * (1 + (warcryOf(G, m)?.dmg || 0)) * (chance(G, m.carac.crit || 0) ? 2 : 1);
+/* arbres v2 (04/11) : Crushing ; Dans le dos : visé si un mob le tacle ou si le boss l'a pour cible */
+const hitDmg = (G, m) => m.carac.damage * (1 + (m.carac.damagePct || 0) / 100) * (1 + (warcryOf(G, m)?.dmg || 0)) * (chance(G, m.carac.crit || 0) ? critMul(m) : 1)
+  * backstabMul(m, !!tackler(G, m) || (!!G.boss && (G.boss.target === m.id || G.boss.focus === m.id)));
 
 /* ---------- mobs ---------- */
 /* distance (Manhattan) d'un mineur à un mob (2 cases de haut : (x, y) et (x, y - 1)) */

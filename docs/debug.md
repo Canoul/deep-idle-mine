@@ -7265,3 +7265,74 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Équilibrage** (simulate-raid.js `--clues --clue-hard --clue-w --clue-depth`, équipe de référence, 2 seeds) : 10 Indices sans rapport : 7-9 trouvés en 30 min (les derniers jamais) ; avec « mène au suivant » mais sans remonter : traîne (le dernier reste dans un sac) ; avec la remontée : 100 → 12 min, 120 → 13, 150 (ligne ≥ 40) → 18,5, 100 dureté 240 → 19. Retenu 150 / 30 / 150 pods / 40.
 - **Tests** : raid (bandes, noir, Indices, sac, suivant montré, coffre), raid-server, raid-ui ✅. Simulation mine normale 5 sessions : voir plus bas.
 - ⚠️ Pas vérifié dans un navigateur (texture `clue`, bandeau).
+
+## 04/11/2026 — Geoffrey — Arbres de skills v2 (branche geoffrey/arbres-skills-v2)
+- **Config** (`SKILLS`) : `tierPoints` 3, nœuds avec `col` (0/1), `needs` (« | »), `specOnly` (tous les skills à 1 point),
+  effets génériques `adds` (points), `mult` (× (1 + effet × poids)), `raid` (instances, tours, Bloc géant / He's coming),
+  `aura` (groupe). `SKILLS.rested` { time 180, prisonTime 60, tenacity 2 }, `SKILLS.steady` { tenacity 5, sources }.
+  `needsAll` supprimé. Ruée et Pillage max 3 (avant 5). EFFECTS.rested (buff affiché).
+- **Règles** (`src/meta/skills.js`) : état `{ v:2, tree, ranks, glyphs, ops }`. `blockedReason` : unknown → no_spec →
+  maxed → spec_only → too_deep (hors spé, étage > profondeur de la spé − 1) → needs_tier (3 × (r − 1) points dans
+  l'arbre) → needs_previous (needs) → no_points. `skillOp` : `spec` (autre arbre = ranks {}), `reset` garde la spé.
+  `sanitizeSkills` rejoue la spé puis les autres arbres, étage par étage. `migrateSkills` (sans v:2 → ranks {}),
+  appelée **seulement** au chargement du compte (server/game/service.js loadSkills) : les enregistrements de session et
+  les sets sont relus avec les nouvelles règles, sans reset. `skillRanks` porte v:2. `groupAuras`, `pointsByTree`,
+  `treePoints`, `treeDepth`, `depthCap`, `tierNeed`. `withSkillStats(carac, effects, { raid, auras })`.
+- **Partie** : Solide ne joue pas sur l'avalanche du Golbute (golbute.js : bonus retiré via `extra`). `src/sim/skillfx.js` : `critMul` (Crushing, × 2 × (1 + 10 %/rang)) dans les 4 hitDmg (mine, instance,
+  Golbute, tours) et le DPS de Lucifer ; `backstabMul` (Dans le dos) : mine = tacle (G.mobs), instance = tacle ou
+  boss.focus, tours = tacle ou boss.target / focus, Golbute = golem qui tacle ou boss au combat à portée de l'autoattack ;
+  `trackRested` (session.js stepMiner : fin du mode 'departure' avec trips > 0) → `m.restedNow`, `restedMul` dans moveT,
+  climbT, winchT, mineT, hitDamage ; `tenacityBonus` dans `tenacityOf` (Reposé, Solide pour les sources de boss).
+  `src/shared/game.js` minerSpecs : `raid` depuis MINE_MODES, auras de tous les mineurs (ou `record.skillAuras` : salle du
+  Bloc géant, src/shared/giant-room.js) ; mine instantanée : auras pour soi seul.
+- **Serveur / lobby** : action `spec` (refusée en session), erreurs no_spec / needs_tier / too_deep / spec_only ;
+  `game.skillPointsOf` → party `treePts` → `specLabel(tree, level, pts)` « Logisticien (2/12/1) · SP lvl 3 ».
+- **UI** : `specBarHtml` (bureau), bouton « Choisir la spé » sous les onglets (appli), deux colonnes (`--c` / `--r` en
+  appli), étiquettes d'étage (🔒 + points), ★ sur les skills de classe. Wiki : texte et tableau des arbres (nodeText).
+- **Tests** ✅ skills (réécrit), skills-v2 (nouveau : stats, tout terrain, auras, Crushing, Dans le dos, Reposé, Solide,
+  serveur + migration), app-skills, glyphs, sets, dev-spec, mule, game-service, social, admin-take, hescoming-*, lobby,
+  anticheat/skills (réécrit, 500 suites avec spé) ; `npm run test:anticheat` vert. ❌ déjà rouges sur main, sans rapport :
+  energy « energyOfTicks », leaderboard « roi gobelin », mobile-config « iOS », perf « boîte de mesures »,
+  prison-server « une tour et une instance », tier2 « fortune : le doublon » et « recycle : un BP du T2 », tier4 « recettes du
+  T4 ». dev-spec : attendu du lobby corrigé (He's coming manquait). talents-etage6 : Saccager est à l'étage 4. `npm test` :
+  2298 verts, ces 8 rouges.
+- **Simulation** (3 mineurs × 5) : sans skills identique à avant (coffre 4169,2) ; `--skills mixed` : areas 3,8, profondeur
+  205, coffre 4543, 0 blocage.
+- ⚠️ Fragile : une session en cours pendant la mise en ligne est rejouée avec les règles v2 (ses rangs peuvent être
+  coupés si l'ancien chemin ne tient plus). Navigateur ✅ bureau et appli (Test_Logisticien). Pas essayé sur téléphone.
+- **Raid Cerbère** (arrivé sur main pendant le chantier) : `raidSpecs` passe `raidMode` (Mineur tout terrain), hitDmg de
+  src/sim/raid/cerbere.js avec Crushing et Dans le dos (visé = cible de la Morsure), `cerbere` dans `SKILLS.steady.sources`.
+  Tests raid, raid-server, raid-ui (libellé de spé à jour) ✅. En ligne le 04/11.
+
+## 04/11/2026 — Chat permanent : zone vide sous le chat quand il recouvre la barre d'action (Jules)
+- **Quoi** : `.chatDock.overNav .card{padding-bottom:dock-h + 6u}` ajoutait une marge opaque (fond du chat) de 64u, alors que
+  la bulle recouverte (#orbL) ne fait que 36u. Désormais src/ui/chat-dock.js `navLift(w, rects, screenH)` (pure, exportée)
+  mesure la hauteur des enfants de `.dock` que la largeur du chat recouvre (largeur 0 = caché, ignoré) → `--chat-lift` sur
+  le dock ; `overNav` = lift > 0. CSS : la marge est sur `.chatDock` (transparente) et non plus sur `.card` ;
+  `.chatDock{pointer-events:none}` + `.chatDock>*{pointer-events:auto}` (les clics traversent la marge) ; la règle
+  `body.townWalk .chatDock` est retirée (les enfants ont déjà `auto`). ≤1170 px et `body.phone` : marge 0 comme avant.
+  `#nav` ajouté au ResizeObserver.
+- **Tests** : chat (nouveau test navLift), chat-ui : 41/41 ✅. Vérifié dans le navigateur (mode dev, 1600×900, Lobby et
+  Inventaire) ✅ : le chat s'arrête au-dessus de la barre, `elementFromPoint` dans la marge ne tombe pas sur le chat.
+- ⚠️ Pas vu en session (orbe Oxygène) ni en ville (townWalk), même mécanique.
+- **Applis** : seulement src/ui (copié en entier) : rien à signaler.
+
+## 04/11/2026 — Cerbère : nouveau sprite « Molosse des Enfers », animé (Jules)
+- **Quoi** : `scripts/gen_cerbere.py` réécrit (l'ancien chien de lave de Geoffrey est remplacé). Moteur générique
+  `scripts/gen_sculpt.py` (parties en ellipse / polygone / tube de l'arrière vers l'avant, volumes bombés, facettes de
+  Voronoï en option, clé froide + lave d'en bas, encre ; `merge` : parties fondues sans encre entre elles ; pixels hors
+  parties `'_fx'` cernés d'encre, `'_fl'` lumières sans encre). `base(rage)` = corps fixe encré ; `frame(b, i)` = corps
+  + ce qui bouge (flammes qui respirent et se balancent, flammèches, 40 braises, gueules dont le feu pulse, filets de lave
+  entre les crocs, bave qui tombe, yeux) ; tout est périodique en t = i / FRAMES, la boucle est sans saut.
+- **Textures** : `cerbere` / `cerbere_rage` (image 0, 128 × 96 : lobby de guilde, et repli) ; `cerbere_anim` /
+  `cerbere_rage_anim` (planches 1536 × 96 = 12 images). `TEXTURES` (config) les charge.
+- **Rendu** : src/render/raid.js `cerbereFrame(now)` (pure, exportée) = image de la planche au temps réel (ms) ;
+  `RAID.cerbere.anim = { frames: 12, ms: 90 }` (frames doit valoir `FRAMES` de gen_cerbere.py). Planche pas chargée →
+  l'image fixe comme avant. Boss, zone, règles : inchangés (8 × 6 cases).
+- **Tests** : raid-ui (taille des planches lue dans l'en-tête PNG = 128 × frames sur 96 ; cerbereFrame boucle), raid,
+  raid-server : 29/29 ✅. Sortie du générateur comparée pixel à pixel au prototype validé par Jules : identique ✅. Vu dans
+  le vrai rendu de l'arène (page d'essai sur src/render/raid.js, normal et enragé) ✅.
+- ⚠️ Pas vu dans une vraie partie de raid (10 joueurs), ni sur téléphone. `npm run textures` régénère les mêmes PNG
+  (~3 s pour Cerbère).
+- **Applis** : nouveaux PNG dans textures/ (copié en entier par server/app-update/bundle.js) et src/render : rien à signaler.
+

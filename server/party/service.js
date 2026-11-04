@@ -72,7 +72,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
   const invitesFor = accountId => [...parties.values()].filter(p => p.invites.has(accountId));
 
   /* ce que les membres voient de leur groupe (les ID de compte sont publics) */
-  function publicParty(p, meId, playing = new Map(), trees = new Map(), looks = new Map(), specLv = new Map(), auras = new Map(), gs = new Map(), prisons = new Set(), energies = new Map()){
+  function publicParty(p, meId, playing = new Map(), trees = new Map(), looks = new Map(), specLv = new Map(), auras = new Map(), gs = new Map(), prisons = new Set(), energies = new Map(), pts = new Map()){
     const now = clock();
     return { code: p.code, leader: p.leader, max: GAME.maxPlayers, launching: !!p.launching, devPresets: p.devPresets ?? null, locked: !!p.locked,
              members: p.members.map(m => ({ account: m.account, displayId: formatAccountId(m.account), name: m.name,
@@ -81,6 +81,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
                                             playing: playing.has(m.account), playingLeftMs: playing.get(m.account) ?? null,   // temps restant (null en mode dev)
                                             tree: trees.get(m.account) ?? null,
                                             specLevel: specLv.get(m.account) ?? null,
+                                            treePts: pts.get(m.account) ?? null,       // points par arbre (04/11)
                                             look: looks.get(m.account) ?? {},
                                             auras: auras.get(m.account) ?? {},          // aura des pièces visibles (src/meta/aura.js)
                                             gs: gs.get(m.account) ?? null,              // gear score du stuff porté (src/meta/gearscore.js)
@@ -313,6 +314,9 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       /* et son niveau de spécialisation dans cet arbre */
       const specLv = new Map();
       if(p) for(const m of p.members) specLv.set(m.account, await game.specLevelOf?.(m.account, trees.get(m.account)) ?? null);
+      /* points par arbre (arbres v2, 04/11/2026 : « Logisticien (2/12/1) ») */
+      const pts = new Map();
+      if(p) for(const m of p.members) pts.set(m.account, await game.skillPointsOf?.(m.account) ?? null);
       /* skin de chacun (équipement porté) */
       const looks = new Map();
       if(p) for(const m of p.members) looks.set(m.account, await game.lookFor?.(m.account) ?? {});
@@ -329,7 +333,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       const energies = new Map();
       if(p) for(const m of p.members) energies.set(m.account, await energyOf(m.account));
       return {
-        party: p ? publicParty(p, me.id, playing, trees, looks, specLv, auras, gs, prisons, energies) : null,
+        party: p ? publicParty(p, me.id, playing, trees, looks, specLv, auras, gs, prisons, energies, pts) : null,
         /* invitations reçues : qui invite, qui est déjà là */
         invites: invitesFor(me.id).map(q => ({ code: q.code, from: q.invites.get(me.id).from,
                                                members: q.members.map(m => m.name), full: q.members.length >= GAME.maxPlayers })),

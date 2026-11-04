@@ -101,7 +101,7 @@ export const COMBAT = { reach:0.5, knock:0.25, tackleGiveUp:5, tackleLeash:6 };
    suivante, puis tout redevient normal ; la stat tenacityResilience (STATS, 0 pour tout le monde) réduit cette baisse
    (resilience 100 % : plus de fatigue). */
 export const TENACITY = { k:40, max:75, tired:0.5,
-  pen: { gobelin:0, occultiste:0, mephite:0, chien:0, ver:0, chair:0, golem:10, minotaure:10, hescoming:0, giant:0, towerBoss:20, golbute:20, cerbere:20 } };
+  pen: { gobelin:0, occultiste:0, mephite:0, chien:0, ver:0, chair:0, golem:10, minotaure:10, hescoming:0, giant:0, towerBoss:20, golbute:30, cerbere:20 } };   // golbute 20 → 30 (04/11/2026, Geoffrey)
 
 export const PREFS = { priority:'minerais', fightMobs:true, helpAllies:false, helpIgnore:[] };
 /* Aider allié : il ne part aider que si le mob est à helpRange cases ou moins (Manhattan). Au-delà, le combat est fini
@@ -634,46 +634,70 @@ const GLYPH_ITEMS = Object.fromEntries(Object.entries(GLYPHS.items).map(([node, 
   [name, { cat:'glyph', tex:GLYPHS.tex, w:1, stack:true, glyph:node }]));
 
 export const SKILLS = {
-  /* Arbres en étages : chaque nœud a son étage (row, 1 = en haut). Plusieurs nœuds d'un même étage sont côte à côte.
-     Un nœud de l'étage r > 1 exige qu'AU MOINS UN nœud de l'étage r−1 de son arbre soit au rang max (les lignes de
-     l'arbre relient chaque nœud à ceux de l'étage d'avant). needsAll : il faut TOUS les nœuds de l'étage d'avant au
-     rang max (Escalateur, 23/10/2026, Geoffrey : Échelle de 2 ET Treuil, pour qu'un logisticien avec Mule ait toujours le
-     Treuil). name/icon : affichage de l'onglet Skills.
-     Logisticien refait le 23/10/2026 au soir (Geoffrey) : Bâtisseur supprimé, Navette passe à l'étage 1 (max 3, avant
-     max 5 à l'étage 3), Escalateur à l'étage 3. Même coût total jusqu'à Mule (11 points) ; les points qui ne tiennent
-     plus dans le nouvel arbre sont rendus à la relecture (sanitizeSkills). */
+  /* Arbres v2 (04/11/2026, Geoffrey) : deux colonnes par arbre, 6 étages (row, 1 = en haut).
+     - spé : on la choisit (3 boutons en haut de l'onglet) ; changer de spé remet tous les points à zéro (gratuit, hors
+       session). On met ses points dans l'arbre de sa spé, et aussi dans les deux autres, mais jamais aussi profond : un
+       arbre secondaire va au plus jusqu'à l'étage (profondeur de la spé − 1) ; profondeur = étage le plus bas où on a mis
+       un point ;
+     - un étage r s'ouvre avec tierPoints × (r − 1) points dépensés dans CET arbre (3 pour l'étage 2, 15 pour le 6) ;
+     - needs : ce skill exige en plus celui-là au rang max (les « | » de l'arbre de Geoffrey) ;
+     - specOnly : skill spécial de classe (les skills à 1 point) : seulement pour la spé de son arbre (14:22, Geoffrey : « seul
+       un sp logisticien peut mettre un point dans treuil »).
+     Effets génériques (src/meta/skills.js withSkillStats) : adds = { stat: points par rang } ajoutés à la stat ;
+     mult = { stat: part par rang } (× (1 + rang × part)) ; raid : seulement dans les instances, les tours du Jugement,
+     le Bloc géant et He's coming ; aura = { stat: points } pour tout le groupe, lui compris (plusieurs porteurs : une
+     seule fois). Le reste agit pendant la partie (src/sim). Ancien (jusqu'au 04/11) : un seul arbre, chaque étage exigeait
+     un skill de l'étage d'avant au rang max. Valeurs provisoires. */
+  tierPoints: 3,
   trees: [
     { id:'mineur', label:'Mineur', icon:'⛏', nodes:[
-      { id:'mine_speed',  row:1, max:3, per:0.02, icon:'⛏', name:'Pioche aiguisée', desc:'Vitesse de minage +{v}' },
-      { id:'ore_oxygen',  row:2, max:1, per:1,    icon:'🫧', name:'Second souffle',  desc:'Miner un minerai rend 1 d\'oxygène' },
-      { id:'ore_rush',    row:3, max:5, per:0.03, icon:'💨', name:'Ruée',            desc:'Vitesse de marche +{v} pendant 3 s après avoir miné un minerai (ne se cumule pas)' },
+      { id:'mine_speed',  row:1, col:0, max:3, per:0.02, icon:'⛏', name:'Pioche aiguisée', desc:'Vitesse de minage +{v}' },
+      { id:'enchanted_pick', row:1, col:1, max:3, per:1, adds:{ fortune:2 }, icon:'✨', name:'Pioche ensorcelée', desc:'Fortune +{fortune}' },
+      { id:'ore_oxygen',  row:2, col:0, max:1, specOnly:true, per:1,    icon:'🫧', name:'Second souffle',  desc:'Miner un minerai rend 1 d\'oxygène' },
+      { id:'filou',       row:2, col:1, max:3, per:1, adds:{ crit:2 }, icon:'🎲', name:'Filou', desc:'Critique +{crit}' },
+      { id:'ore_rush',    row:3, col:0, max:3, per:0.03, icon:'💨', name:'Ruée',            desc:'Vitesse de marche +{v} pendant 3 s après avoir miné un minerai (ne se cumule pas)' },   // max 3 (avant 5)
+      { id:'all_terrain', row:3, col:1, max:3, per:0.05, mult:{ mineSpeed:1 }, raid:true, icon:'🏔', name:'Mineur tout terrain', desc:'Vitesse de minage +{v} dans les instances, les raids, les tours, le Bloc géant et He\'s coming' },
       /* 23/10 (Geoffrey) : un tirage par remontée, au moment où il part (après un tacle ou un étourdissement), mine classique seulement */
-      { id:'lazy_legend', row:4, max:1, per:0.05, icon:'💤', name:'Légende de la flemme', desc:'5 % de chance de se téléporter au-dessus du coffre commun quand il doit remonter à la surface (sauf en fin de session)' },
+      { id:'lazy_legend', row:4, col:0, max:1, specOnly:true, per:0.05, icon:'💤', name:'Légende de la flemme', desc:'5 % de chance de se téléporter au-dessus du coffre commun quand il doit remonter à la surface (sauf en fin de session)' },
+      { id:'rested',      row:4, col:1, max:3, per:0.02, icon:'☕', name:'Reposé', desc:'Après une remontée à la surface : vitesse de minage, de marche et de montée, dégâts +{v} et ténacité +{ten} pendant 3 min (1 min en prison) une fois redescendu au front' },
       /* maîtrises (28/10/2026, Geoffrey) : slot = case du stuff dont la pièce portée voit ses stats × (1 + rang × per),
          comme l'amélioration (bonus positifs, et ce qu'une valeur `set` ajoute à la base) ; pas dans le GS */
-      { id:'pick_mastery', row:5, max:3, per:0.05, slot:'pioche', icon:'⚒', name:'Maîtrise de la pioche', desc:'Les stats données par la pioche +{v}' },
-      /* étage 6 (01/11/2026, Geoffrey) : un point chacun */
-      { id:'ore_drunk',   row:6, max:1, per:1,    icon:'🍺', name:'Ivresse Minérale', desc:'Miner un minerai ajoute 1 dégât fixe à sa prochaine attaque (cumulable, sans limite)' },
+      { id:'pick_mastery', row:5, col:0, max:3, per:0.05, slot:'pioche', icon:'⚒', name:'Maîtrise de la pioche', desc:'Les stats données par la pioche +{v}' },
+      { id:'ore_drunk',   row:6, col:0, max:1, specOnly:true, per:1,    icon:'🍺', name:'Ivresse Minérale', desc:'Miner un minerai ajoute 1 dégât fixe à sa prochaine attaque (cumulable, sans limite)' },
+      { id:'aura_efficiency', row:6, col:1, max:1, specOnly:true, per:1, needs:'rested', aura:{ piercing:2 }, icon:'🔆', name:'Aura d\'efficacité', desc:'Perçage +{piercing} pour tout le groupe' },
     ]},
     { id:'logisticien', label:'Logisticien', icon:'🪜', nodes:[
-      { id:'travel_rush', row:1, max:3, per:0.03, icon:'👟', name:'Navette',         desc:'Vitesse de marche +{v} quand il remonte à la surface ou redescend au front' },
-      { id:'tall_ladder', row:2, max:1, per:1,    icon:'🪜', name:'Échelle de 2',    desc:'Pose des échelles de 2 de haut (si la case du dessus est vide)' },
-      { id:'winch',       row:2, max:1, per:1,    icon:'🪣', name:'Treuil',          desc:'À chaque nouvelle area, il creuse le puits au milieu de la mine et pose un treuil de la surface jusqu\'à elle. Dans les tours, la première fois qu\'il tombe au pied de la tour, il installe un treuil jusqu\'au toit (10 s)' },
+      { id:'travel_rush', row:1, col:0, max:3, per:0.03, icon:'👟', name:'Navette',         desc:'Vitesse de marche +{v} quand il remonte à la surface ou redescend au front' },
+      { id:'organized',   row:1, col:1, max:3, per:0.01, mult:{ pods:1 }, icon:'🗃', name:'Organisé', desc:'Pods +{v}' },
+      { id:'tall_ladder', row:2, col:0, max:1, specOnly:true, per:1,    icon:'🪜', name:'Échelle de 2',    desc:'Pose des échelles de 2 de haut (si la case du dessus est vide)' },
+      { id:'demat',       row:2, col:1, max:3, per:1, adds:{ oneTap:2 }, icon:'👻', name:'Dématérialisation', desc:'Coup unique +{oneTap}' },
+      { id:'winch',       row:3, col:0, max:1, specOnly:true, per:1,    icon:'🪣', name:'Treuil',          desc:'À chaque nouvelle area, il creuse le puits au milieu de la mine et pose un treuil de la surface jusqu\'à elle. Dans les tours, la première fois qu\'il tombe au pied de la tour, il installe un treuil jusqu\'au toit (10 s)' },
+      { id:'grounded',    row:3, col:1, max:3, per:1, adds:{ tenacity:3 }, icon:'⚓', name:'Cloué au sol', desc:'Ténacité +{tenacity}' },
       /* 23/10 soir (Geoffrey) : pour tout le groupe ; plusieurs logisticiens : le plus haut rang compte (pas de cumul) */
-      { id:'winch_speed', row:3, max:5, per:0.05, needsAll:true, icon:'🛗', name:'Escalateur', desc:'Vitesse du seau du treuil +{v} pour tout le groupe (plusieurs logisticiens : le meilleur rang compte)' },
-      { id:'mule',        row:4, max:1, per:1,    icon:'🎒', name:'Mule',            desc:'Pose un sac en bas du treuil où tout le monde dépose (capacité : 2 × ses pods). Il le vide au coffre quand il prolonge le treuil et en fin de session' },
-      { id:'bench_mastery', row:5, max:3, per:0.03, slot:'torse', icon:'🏋', name:'Maîtrise du bench', desc:'Les stats données par le torse +{v}' },
-      { id:'recon',       row:6, max:1, per:1,    icon:'🔭', name:'Reconnaissance',  desc:'Chaque autre mineur dans le seau du treuil lui rend 1 d\'oxygène toutes les 2 s (cumulable)' },
+      { id:'winch_speed', row:4, col:0, max:3, per:0.05, needs:'winch', icon:'🛗', name:'Escalateur', desc:'Vitesse du seau du treuil +{v} pour tout le groupe (plusieurs logisticiens : le meilleur rang compte)' },
+      { id:'mule',        row:5, col:0, max:1, specOnly:true, per:1, needs:'winch_speed', icon:'🎒', name:'Mule', desc:'Pose un sac en bas du treuil où tout le monde dépose (capacité : 2 × ses pods). Il le vide au coffre quand il prolonge le treuil et en fin de session' },
+      { id:'bench_mastery', row:5, col:1, max:3, per:0.03, slot:'torse', icon:'🏋', name:'Maîtrise du bench', desc:'Les stats données par le torse +{v}' },
+      { id:'aura_reassure', row:6, col:0, max:1, specOnly:true, per:1, needs:'mule', aura:{ reach:0.1 }, icon:'🤝', name:'Aura rassurante', desc:'Portée d\'attaque +{reach} pour tout le groupe' },
+      { id:'recon',       row:6, col:1, max:1, specOnly:true, per:1,    icon:'🔭', name:'Reconnaissance',  desc:'Chaque autre mineur dans le seau du treuil lui rend 1 d\'oxygène toutes les 2 s (cumulable)' },
     ]},
     { id:'barbare', label:'Barbare', icon:'🪓', nodes:[
-      { id:'damage',      row:1, max:3, per:0.05, icon:'🪓', name:'Force brute',     desc:'Dégâts infligés +{v}, dégâts de zone {aoe} (mobs à 1 case de sa cible)', aoe:0.02 },   // zone : 23/10 (Geoffrey) ; ténacité +5 % par rang retirée le 03/11 (Geoffrey)
-      { id:'taunt',       row:2, max:1, per:1,    icon:'😤', name:'Provocation',     desc:'Le mob qu\'il frappe lâche les autres mineurs et ne peut plus tacler que lui ; ses coups interrompent la canalisation d\'un occultiste' },
-      { id:'loot',        row:3, max:5, per:0.03, icon:'💰', name:'Pillage',         desc:'Butin des mobs +{v}' },
-      { id:'braum',       row:4, max:3, per:0.1,  icon:'🛡', name:'Braum',           desc:'Vitesse de marche et de montée (échelle, seau) +{v} quand il va aider un allié (tacle, donjon, piège) et pendant ce combat' },
-      { id:'sword_mastery', row:5, max:3, per:0.05, slot:'epee', icon:'⚔', name:'Maîtrise de l\'épée', desc:'Les stats données par l\'épée +{v}' },
-      { id:'ravage',      row:6, max:1, per:1,    icon:'🩸', name:'Saccager',        desc:'Après 2 critiques d\'affilée, sa prochaine attaque est une double attaque' },
+      { id:'damage',      row:1, col:0, max:3, per:0.05, icon:'🪓', name:'Force brute',     desc:'Dégâts infligés +{v}, dégâts de zone {aoe} (mobs à 1 case de sa cible)', aoe:0.02 },   // zone : 23/10 (Geoffrey) ; ténacité +5 % par rang retirée le 03/11 (Geoffrey)
+      { id:'loot',        row:1, col:1, max:3, per:0.03, icon:'💰', name:'Pillage',         desc:'Butin des mobs +{v}' },   // étage 1, max 3 (avant : étage 3, max 5)
+      { id:'taunt',       row:2, col:0, max:1, specOnly:true, per:1,    icon:'😤', name:'Provocation',     desc:'Le mob qu\'il frappe lâche les autres mineurs et ne peut plus tacler que lui ; ses coups interrompent la canalisation d\'un occultiste' },
+      { id:'backstab',    row:2, col:1, max:3, per:0.05, icon:'🗡', name:'Dans le dos', desc:'Dégâts +{v} quand aucun ennemi ne le vise (aucun mob ne le tacle, aucun boss ne l\'a pour cible)' },
+      { id:'steady',      row:3, col:0, max:1, specOnly:true, per:1, needs:'taunt', icon:'🧱', name:'Solide sur les appuis', desc:'Ténacité +5 % contre les attaques des boss (autoattack du Golbute, boss qui le taclent ou le frappent)' },
+      { id:'crushing',    row:3, col:1, max:3, per:0.1,  icon:'💥', name:'Crushing', desc:'Dégâts des coups critiques +{v}' },
+      { id:'braum',       row:4, col:0, max:3, per:0.1,  icon:'🛡', name:'Braum',           desc:'Vitesse de marche et de montée (échelle, seau) +{v} quand il va aider un allié (tacle, donjon, piège) et pendant ce combat' },
+      { id:'ravage',      row:4, col:1, max:1, specOnly:true, per:1, needs:'crushing', icon:'🩸', name:'Saccager', desc:'Après 2 critiques d\'affilée, sa prochaine attaque est une double attaque' },
+      { id:'sword_mastery', row:5, col:0, max:3, per:0.05, slot:'epee', icon:'⚔', name:'Maîtrise de l\'épée', desc:'Les stats données par l\'épée +{v}' },
+      { id:'aura_berserk', row:6, col:1, max:1, specOnly:true, per:1, needs:'ravage', aura:{ crit:2 }, icon:'😡', name:'Aura berserk', desc:'Critique +{crit} pour tout le groupe' },
     ]},
   ],
+  /* Reposé (rested) : durée du bonus après être redescendu au front (s), en mine classique et en prison ; ténacité : points
+     par rang */
+  rested: { time:180, prisonTime:60, tenacity:2 },
+  /* Solide sur les appuis (steady) : points de ténacité contre ces mécaniques de boss (clés de TENACITY.pen) */
+  steady: { tenacity:5, sources:['golbute', 'towerBoss', 'minotaure', 'hescoming', 'cerbere'] },   // cerbere : Morsure (raid, 04/11)
   rushTime: 3,          // s : durée du bonus de vitesse après un minerai (ore_rush), remise à 3 s à chaque minerai
   reconEvery: 2,        // s dans le seau, par mineur, pour 1 d'oxygène (recon, Reconnaissance)
   ravageCrits: 2,       // critiques d'affilée pour une double attaque garantie (ravage, Saccager)
@@ -806,6 +830,7 @@ export const EFFECTS = {
     ore_rush:     { kind:'buff',    name:'Ruée',                icon:'rocket',    color:'#6fc24a' },
     travel_rush:  { kind:'buff',    name:'Navette',             icon:'updown',    color:'#6fc24a' },
     braum:        { kind:'buff',    name:'Braum',               icon:'shield',    color:'#6fc2ff' },
+    rested:       { kind:'buff',    name:'Reposé',              icon:'heart',     color:'#7fe08a' },   // skill Mineur (arbres v2, 04/11)
     pillage:      { kind:'buff',    name:'Pillage (glyphe)',    icon:'sword',     color:'#e5534b' },
     fast_learner: { kind:'buff',    name:'Fast learner',        icon:'book',      color:'#b06bff' },
     /* bonus de session (une seule icône, le détail dans sa bulle) */
@@ -849,7 +874,7 @@ export const TEXTURES = ['dirt','grass','hellstone','clue','stone','hardstone','
   'gloves_tactical','gloves_worker','cape_naingui','straps_goblin','hood_dark','cloud_magic','belt_giant','dark_cloth','gas_vesicle','slippery_stone','dungeon_brick','minotaur','minotaur_black','moon_crystal','orb','orb_superior','pick_goblin','kilt_dark','hat_naab','sword_cardboard','key_instance_1','key_instance_2','angel_feather','angel_feathers',
   'guild_armory','guild_treasury','guild_forge',
   'guild_hall_1','guild_hall_2','guild_hall_3','guild_hall_4','guild_site','guild_wing_armory','guild_wing_treasury','guild_wing_forge','guild_lot',
-  'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon','giant_block','lucifer','lucifer_portal','lucifer_roar1','lucifer_roar2','lucifer_roar3','lucifer_roar4','lucifer_roar5','lucifer_roar6','giant_fountain','giant_torch','instance_spawner','instance_cage','goblin_king','golbute','golbute_crystal','golbute_body','golbute_body_crystal','golbute_arm','golbute_arm_crystal','golbute_rock','chest_golbute','cerbere','cerbere_rage',
+  'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon','giant_block','lucifer','lucifer_portal','lucifer_roar1','lucifer_roar2','lucifer_roar3','lucifer_roar4','lucifer_roar5','lucifer_roar6','giant_fountain','giant_torch','instance_spawner','instance_cage','goblin_king','golbute','golbute_crystal','golbute_body','golbute_body_crystal','golbute_arm','golbute_arm_crystal','golbute_rock','chest_golbute','cerbere','cerbere_rage','cerbere_anim','cerbere_rage_anim',
   'brick_angel','brick_angel_hard','brick_demon','brick_demon_hard','boss_angel','boss_demon','seraph','imp',
   'crown_goblin_king','mace_goblin_king','cape_goblin_royal','furnace_gold','recipe_chitin','chest_goblin_king','nugget_silver','ingot_silver','shrine_abundance',
   'ingot_mithril','refined_cobalt','refined_thorium','ingot_cobalt','ingot_thorium','minotaur_leather','rotten_flesh','treasure_t4',
@@ -1777,7 +1802,7 @@ export const INSTANCE = {
      Valeurs provisoires (équilibrage : scripts/simulate-golbute.js). */
   golbute: {
     w: 20, h: 20, spawn: [1, 2, 3],
-    boss: { name: 'Golbute', w: 5, h: 5, hp: 10700, knockRes: 100 },   // 10 700 PV : 40 victoires sur 160 pour la compo de référence (outils en acier + 20 %) avec 25 % de ténacité (30/10, simulation ; avant, outils en fer + 20 % : 7 600)
+    boss: { name: 'Golbute', w: 5, h: 5, hp: 16050, knockRes: 100 },   // 04/11/2026 (Geoffrey) : PV × 1,5 (avant 10 700), les joueurs passaient en spammant avec un peu de ténacité ; 10 700 PV : 40 victoires sur 160 pour la compo de référence (outils en acier + 20 %) avec 25 % de ténacité (30/10, simulation ; avant, outils en fer + 20 % : 7 600)
     slam: { every: 2, range: 3, chance: 0.5, high: 3, back: 1 },
     avalanche: { every: 60, stun: 5, dazed: 90, deathStacks: 6 },
     split: { every: 180, count: 10, area: 8, hitEvery: 1.5, knock: 0.5, step: 1.8,
@@ -1897,6 +1922,9 @@ export const RAID = {
     magma: { every: 30, chance: 0.5 },
     stone: { hard: 50 },
     rage: { below: 0.33, biteEvery: 21, back: 6, high: 4, chance: 0.65 },
+    /* animation du sprite (04/11/2026, Jules ; scripts/gen_cerbere.py, src/render/raid.js cerbereFrame) : planche
+       cerbere_anim / cerbere_rage_anim de `frames` images (= FRAMES dans gen_cerbere.py), une toutes les `ms` ms, en boucle */
+    anim: { frames: 12, ms: 90 },
   },
 };
 

@@ -26,11 +26,11 @@ export const groupsOk = players => { const n = {}; for(const p of players){ cons
    (enregistré avant) : un seul groupe, comme avant */
 export function raidSpecs(record){
   const players = record.players || [];
-  if(!players.some(p => cleanGroup(p.group) != null)) return instanceSpecs(record);
+  if(!players.some(p => cleanGroup(p.group) != null)) return instanceSpecs({ ...record, raidMode: true });   // Mineur tout terrain (04/11)
   const gOf = p => cleanGroup(p.group) ?? 1, cache = {};
   return players.map((p, i) => {
     const g = gOf(p);
-    cache[g] ??= instanceSpecs({ ...record, rings: groupRings({ ...record, players: players.filter(q => gOf(q) === g) }) });
+    cache[g] ??= instanceSpecs({ ...record, raidMode: true, rings: groupRings({ ...record, players: players.filter(q => gOf(q) === g) }) });
     return { ...cache[g][i], group: g };
   });
 }

@@ -26,6 +26,30 @@ Modèle d'entrée :
   temps qui reste).
 - **État** : 🧪 sur la branche `geoffrey/raid-indices` (pas en ligne)
 
+## 04/11/2026 — Jules — Cerbère redessiné et animé : le « Molosse des Enfers »
+- **Pour le joueur** : dans l'arène du raid, Cerbère est un énorme molosse noir à trois têtes : une tête basse qui gronde
+  vers les mineurs, une qui rugit vers le haut, une qui se retourne. Gueules béantes en feu, longs crocs, yeux de braise,
+  colliers de fer à pointes, chaîne brisée, crinière de flammes. Il est **animé** : la crinière et la queue en feu
+  ondulent, des braises montent, la bave de lave coule et tombe en gouttes, les gorges et les yeux pulsent. Enragé, son
+  pelage vire au rouge braise et son feu devient plus haut et plus blanc. Même taille et mêmes règles qu'avant.
+- **Décisions** : piste « Molosse des Enfers » choisie par Jules parmi trois (Molosse, Gardien antique, Bête d'os), puis
+  raffinée. La version générée par Gemini a été écartée. Taille gardée à 8 × 6 cases (passer à 12 × 9 donnerait plus de
+  détails mais change la zone du boss : à voir avec Geoffrey).
+- **État** : ✅ en ligne le 04/11
+
+## 04/11/2026 — Geoffrey — Skills : Escalateur 3 rangs max (avant 5)
+- **État** : ✅ en ligne le 04/11
+
+## 04/11/2026 — Jules — Chat : plus de zone vide en bas (retour joueur)
+- **Pour le joueur** : quand le chat est assez large pour passer au-dessus de la bulle de gauche de la barre d'action
+  (Oxygène, Session…), il gardait en bas une grande zone sombre et vide qui cachait la mine. Maintenant il s'arrête juste
+  au-dessus de la bulle (ou des boutons s'il les recouvre) ; dessous, on voit le jeu et on peut cliquer à travers.
+- **État** : ✅ en ligne le 04/11
+
+## 04/11/2026 — Jules (demande de Geoffrey) — Golbute plus dur : PV × 1,5, ténacité moins efficace contre lui
+- **Pour le joueur** : le Golbute a 16 050 PV (avant 10 700) et retire 30 points de ténacité au lieu de 20 avant le calcul d'esquive (à 50 de ténacité : 16 % d'esquive au lieu de 22 %). Les autres mobs ne changent pas.
+- **État** : ✅ en ligne le 04/11
+
 ## 04/11/2026 — Geoffrey — Raid : portrait et spé des joueurs dans le lobby
 - **Pour le joueur** : dans les groupes du lobby du raid, chaque joueur montre son pseudo, l'image de son perso (son stuff)
   et sa spécialisation avec son niveau (ex. « 🪓 Barbare (SP lvl : 12) »).
@@ -55,6 +79,23 @@ Modèle d'entrée :
   (4 barbares, 4 mineurs, 2 logisticiens, stuff T4.5 +5 et runes R4, tanks à 40 % de ténacité). Valeurs provisoires.
 - **À suivre** : un essai à plusieurs vrais comptes et sur téléphone ; la récompense ; le lobby se vide quand le
   serveur redémarre.
+- **État** : ✅ en ligne le 04/11
+
+## 04/11/2026 — Geoffrey — Arbres de skills v2 : spé choisie, deux colonnes, 13 nouveaux skills
+- **Pour le joueur** :
+  - en haut de l'onglet Skills, trois boutons pour **choisir sa spécialisation** (en changer rend tous les points) ;
+  - chaque arbre a **deux colonnes et six étages**, et un étage s'ouvre avec 3 points dépensés dans l'arbre ;
+  - on peut mettre des points dans les deux autres arbres, **jamais aussi profond** que dans sa spé, et sans les
+    skills de classe (★, ceux à 1 point) ;
+  - **13 nouveaux skills** : Pioche ensorcelée, Filou, Mineur tout terrain, Reposé, Aura d'efficacité, Organisé,
+    Dématérialisation, Cloué au sol, Aura rassurante, Dans le dos, Solide sur les appuis, Crushing, Aura berserk ;
+  - lobby : « 🪜 Logisticien (2/12/1) · SP lvl 3 » (points dans chaque arbre) ;
+  - **à la mise en ligne, tout le monde est remis à zéro** (reset gratuit) ; la spé et les glyphes posés restent.
+- **Décisions** : Treuil → Escalateur → Mule → Aura rassurante (l'Escalateur descend à l'étage 4, la Mule au 5e) ;
+  changer de spé = reset ; Solide sur les appuis agit contre le Golbute et les boss qui frappent ou taclent ; Reposé :
+  mine classique (3 min) et prison (1 min) ; auras pour tout le groupe, sans cumul ; Ruée et Pillage passent à 3 rangs.
+- **À suivre** : équilibrage des nouveaux skills (valeurs provisoires) ; regarder comment les joueurs répartissent
+  leurs points hors spé.
 - **État** : ✅ en ligne le 04/11
 
 ## 04/11/2026 — Geoffrey — Guilde : l'Armurerie demande 20 Orbes supérieurs (avant 100)

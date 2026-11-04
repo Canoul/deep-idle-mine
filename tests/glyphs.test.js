@@ -45,7 +45,7 @@ test('glyphes : 10 objets, un par skill visé, catégorie glyph, épiques, textu
 let nOp = 0; const op = () => 'op-glyph-' + String(++nOp).padStart(4, '0');
 const RUSH = 'Glyphe Ruée';
 /* mineur avec Pioche aiguisée 3/3, Second souffle 1/1, Ruée 5/5 (au max) ; partial : Ruée 4/5 */
-const miner = (partial = false) => sanitizeSkills({ tree:'mineur', ranks:{ mine_speed:3, ore_oxygen:1, ore_rush:partial ? 4 : 5 } });
+const miner = (partial = false) => sanitizeSkills({ tree:'mineur', ranks:{ mine_speed:3, ore_oxygen:1, enchanted_pick:2, ore_rush:partial ? 2 : 3 } });   // arbres v2 (04/11) : Ruée max 3, 6 points pour l'étage 3
 const invWith = (items = {}) => { const inv = createInventory(); for(const [k, q] of Object.entries(items)) addItem(inv, k, q); return inv; };
 
 test('glyphes : nom de l\'objet par skill, et l\'inverse', () => {
@@ -100,7 +100,7 @@ test('reset des skills et set appliqué : glyphes toujours posés, inactifs tant
 
 test('relecture : glyphes trafiqués ignorés ; un glyphe sur un skill pas au max est gardé (inactif)', () => {
   const raw = JSON.parse('{"ore_rush":"Glyphe Ruée","taunt":"Glyphe Pillage","mine_speed":"Charbon","ore_oxygen":7,"__proto__":{"x":1}}');
-  const st = sanitizeSkills({ tree:'mineur', ranks:{ mine_speed:3, ore_oxygen:1, ore_rush:2 }, glyphs:raw });
+  const st = sanitizeSkills({ tree:'mineur', ranks:{ mine_speed:3, ore_oxygen:1, enchanted_pick:2, ore_rush:2 }, glyphs:raw });
   assert.deepEqual({ ...st.glyphs }, { ore_rush:RUSH });
   assert.equal(isActive(st, 'ore_rush'), false);
   assert.deepEqual(sanitizeSkills(null).glyphs, {});
@@ -112,7 +112,7 @@ test('effets en partie et enregistrement de session : seulement les glyphes acti
   glyphOp(st, inv, { action:'pose', node:'ore_oxygen', opId:op() });
   assert.equal(skillEffects(st).glyph_ore_rush, 1); assert.equal(skillEffects(st).glyph_ore_oxygen, 1);
   assert.equal(skillEffects(st).glyph_mine_speed, undefined);
-  st.ranks.ore_rush = 4;                                                  // plus au max (comme après un reset partiel)
+  st.ranks.ore_rush = 2;                                                  // plus au max (comme après un reset partiel)
   assert.equal(skillEffects(st).glyph_ore_rush, undefined);
   assert.deepEqual(sessionSkills(st).glyphs, { ore_oxygen:'Glyphe Second souffle' });
   assert.equal(skillEffects(sanitizeSkills(JSON.parse(JSON.stringify(sessionSkills(st))))).glyph_ore_oxygen, 1, 'relu depuis l\'enregistrement');
@@ -219,14 +219,14 @@ test('Braum : +30 % de l\'oxygène max à chaque entrée dans un donjon ; rester
 test('case de glyphe : none sans glyphe, can_pose (skill au max et glyphe possédé), empty, posed, inactive', async () => {
   const { glyphSlot } = await import('../src/ui/skills.js');
   const inv = { slots:[{ item:RUSH, qty:1 }] }, none = { slots:[] };
-  const max = { tree:'mineur', ranks:{ mine_speed:3, ore_oxygen:1, ore_rush:5 }, glyphs:{} };
+  const max = { tree:'mineur', ranks:{ mine_speed:3, ore_oxygen:1, enchanted_pick:2, ore_rush:3 }, glyphs:{} };
   assert.equal(glyphSlot(max, 'taunt', inv), 'none');
   assert.equal(glyphSlot(max, 'lazy_legend', inv), 'none');
   assert.equal(glyphSlot(max, 'ore_rush', inv), 'can_pose');
   assert.equal(glyphSlot(max, 'ore_rush', none), 'empty', 'pas de glyphe dans l\'inventaire');
-  assert.equal(glyphSlot({ ...max, ranks:{ ...max.ranks, ore_rush:4 } }, 'ore_rush', inv), 'empty', 'skill pas au max');
+  assert.equal(glyphSlot({ ...max, ranks:{ ...max.ranks, ore_rush:2 } }, 'ore_rush', inv), 'empty', 'skill pas au max');
   assert.equal(glyphSlot({ ...max, glyphs:{ ore_rush:RUSH } }, 'ore_rush', none), 'posed');
-  assert.equal(glyphSlot({ ...max, ranks:{ ...max.ranks, ore_rush:4 }, glyphs:{ ore_rush:RUSH } }, 'ore_rush', none), 'inactive');
+  assert.equal(glyphSlot({ ...max, ranks:{ ...max.ranks, ore_rush:2 }, glyphs:{ ore_rush:RUSH } }, 'ore_rush', none), 'inactive');
 });
 
 test('fiche d\'un glyphe (inventaire) : skill visé, effet, où le poser ; rien pour un autre objet', async () => {
@@ -238,7 +238,7 @@ test('fiche d\'un glyphe (inventaire) : skill visé, effet, où le poser ; rien 
 test('Glyphe Mule : seulement dans la mine classique (son skill n\'agit pas en mine instantanée ni dans les tours)', async () => {
   const { instantSpecs } = await import('../src/shared/instant.js');
   const { towerSpecs } = await import('../src/shared/tower.js');
-  const skills = { tree:'logisticien', ranks:{ travel_rush:3, tall_ladder:1, winch:1, winch_speed:5, mule:1 }, glyphs:{ mule:'Glyphe Mule' } };
+  const skills = { tree:'logisticien', ranks:{ travel_rush:3, tall_ladder:1, organized:2, winch:1, demat:2, winch_speed:5, mule:1 }, glyphs:{ mule:'Glyphe Mule' } };
   const rec = { seed:1, players:[{ account:'A', name:'Geo' }], skills:{ A:skills } };
   const k = 1 + GLYPHS.oxygenToSpeed * STATS.oxygenMax;
   assert.ok(Math.abs(minerSpecs(rec)[0].carac.speed - STATS.speed * k) < 1e-9, 'mine classique : bonus');

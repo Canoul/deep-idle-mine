@@ -32,6 +32,14 @@ function centralLeft(){
   return el.getBoundingClientRect().left + pad;
 }
 
+/* hauteur, depuis le bas de l'écran (screenH), des éléments de la barre d'action (rects : bulles, boutons) que le chat de largeur w
+   recouvre ; 0 : aucun. Un élément caché (largeur 0) ne compte pas. */
+export function navLift(w, rects, screenH){
+  let top = screenH;
+  for(const r of rects) if(r.width > 0 && r.left < w) top = Math.min(top, r.top);
+  return Math.max(0, screenH - top);
+}
+
 /* edges : bordures à tirer (data-edge : h hauteur, w largeur, hw les deux) ; onChange() : taille ou pliage changé (le chat
    se remet sur les derniers messages, relit s'il vient d'être déplié) */
 export function setupChatDock({ dock, edges, fold, onChange = () => {} }){
@@ -43,12 +51,16 @@ export function setupChatDock({ dock, edges, fold, onChange = () => {} }){
   function fit(){
     const w = dockFit(width, centralLeft());
     document.body.style.setProperty('--chat-w', `${w}px`);
-    dock.classList.toggle('overNav', w > (document.querySelector('.dock .orb')?.getBoundingClientRect().left ?? Infinity));
+    /* chat plus large que le début de la barre d'action : il s'arrête juste au-dessus de ce qu'il recouvre (04/11, retour joueur :
+       avant, une zone vide de la couleur du chat, plus haute que la bulle, cachait la mine) */
+    const lift = navLift(w, [...document.querySelectorAll('.dock > *')].map(el => el.getBoundingClientRect()), innerHeight);
+    dock.style.setProperty('--chat-lift', `${lift}px`);
+    dock.classList.toggle('overNav', lift > 0);
   }
   /* le bord de l'interface centrale bouge avec l'onglet, l'écran du Lobby et la taille de la fenêtre */
   if(typeof ResizeObserver !== 'undefined'){
     const ro = new ResizeObserver(fit);
-    for(const el of document.querySelectorAll('#views, #lobbyMenu, #lobbyStage, #run, #miRun, #twRun, #gtRun, #hcRun, #inRun, #cv, #cvMi, #cvTw, #cvGt, #cvHc, #cvIn')) ro.observe(el);
+    for(const el of document.querySelectorAll('#views, #lobbyMenu, #lobbyStage, #run, #miRun, #twRun, #gtRun, #hcRun, #inRun, #cv, #cvMi, #cvTw, #cvGt, #cvHc, #cvIn, #nav')) ro.observe(el);
   }
   addEventListener('resize', fit);
   function apply(){

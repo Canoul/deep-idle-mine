@@ -1,5 +1,6 @@
 /* Session : création de la partie et boucle de simulation à pas fixe (DT).
    Ne touche ni au DOM ni au canvas : tourne aussi bien dans le navigateur que dans Node (tests, simulate). */
+import { trackRested } from './skillfx.js';
 import { shrineOf, shrineEffects } from '../meta/shrines.js';
 import { W, DT, SESSION_LEN, TOP_DIRT_ROWS, STATS, CFG, IDS, CHEST_X, CHEST_BASE, MOBS, SPAWN_X, TEAM, SHINY, FORTUNE, GEAR_RNG, GLYPHS, PRISON, SKILLS, RAID } from '../config.js';
 import { inReach, reachOf, stopAction } from './knock.js';
@@ -79,6 +80,7 @@ function revealAround(G,m){
 
 /* fait avancer un mineur de DT secondes : enchaîne ses actions dans le budget de temps disponible */
 function stepMiner(G,m){
+  trackRested(G,m);   // Reposé (arbres v2, 04/11) : bonus après être redescendu au front
   if(m.y===0){
     m.ox=Math.min(m.carac.oxygenMax, m.ox+CFG.refillRate*DT);
     m.torches=m.carac.torches; m.bridges=m.carac.bridges;

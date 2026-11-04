@@ -76,6 +76,7 @@ test('états : Morsure (affichage), Durci (solidité), Mort au raid ; bulles', (
 
 test('textures de Cerbère chargées ; le fond dessine l\'arène avec le rendu du raid', async () => {
   assert.ok(TEXTURES.includes('cerbere') && TEXTURES.includes('cerbere_rage'));
+  assert.ok(TEXTURES.includes('cerbere_anim') && TEXTURES.includes('cerbere_rage_anim'));
   const { modeOf } = await import('../src/ui/backdrop.js').catch(() => ({}));
   if(!modeOf) return;                                       // module navigateur : pas chargé sans DOM
   assert.equal(modeOf({ mode:'raid', phase:'boss' }), 'raid');
@@ -109,5 +110,21 @@ test('lobby : chaque joueur avec son pseudo, son portrait et sa spé', () => {
   const r = { max: 10, groups: 2, groupSize: 5, leader: 'A', launching: false, waiting: [], canLaunch: false, running: null, size: 1, mine: true, isLeader: true,
               members: [{ account: 'A', name: 'Canoul', ready: true, group: 1, leader: true, me: true, playing: false, tree: 'barbare', specLevel: 12, look: { pioche: 'Pioche en fer' }, auras: {} }] };
   const out = raidHTML(r);
-  assert.match(out, /<b>Canoul<\/b>/); assert.match(out, /data-raidpic="A"/); assert.match(out, /Barbare \(SP lvl : 12\)/);
+  assert.match(out, /<b>Canoul<\/b>/); assert.match(out, /data-raidpic="A"/); assert.match(out, /Barbare · SP lvl 12/);
+});
+
+test('Cerbère animé : planches de RAID.cerbere.anim.frames images de 128 × 96, image qui boucle', async () => {
+  const fs = await import('node:fs');
+  const A = RAID.cerbere.anim;
+  for(const n of ['cerbere_anim', 'cerbere_rage_anim']){
+    const png = fs.readFileSync(new URL(`../textures/${n}.png`, import.meta.url));
+    assert.equal(png.readUInt32BE(16), 128 * A.frames, n);                     // largeur (IHDR)
+    assert.equal(png.readUInt32BE(20), 96, n);                                 // hauteur
+  }
+  const { cerbereFrame } = await import('../src/render/raid.js');
+  assert.equal(cerbereFrame(0), 0);
+  assert.equal(cerbereFrame(A.ms - 1), 0);
+  assert.equal(cerbereFrame(A.ms), 1);
+  assert.equal(cerbereFrame(A.ms * A.frames), 0);                            // boucle
+  assert.equal(cerbereFrame(A.ms * (A.frames - 1)), A.frames - 1);
 });
