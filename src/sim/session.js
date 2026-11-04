@@ -1,7 +1,7 @@
 /* Session : création de la partie et boucle de simulation à pas fixe (DT).
    Ne touche ni au DOM ni au canvas : tourne aussi bien dans le navigateur que dans Node (tests, simulate). */
 import { shrineOf, shrineEffects } from '../meta/shrines.js';
-import { W, DT, SESSION_LEN, TOP_DIRT_ROWS, STATS, CFG, IDS, CHEST_X, CHEST_BASE, MOBS, SPAWN_X, TEAM, SHINY, FORTUNE, GEAR_RNG, GLYPHS, PRISON, SKILLS } from '../config.js';
+import { W, DT, SESSION_LEN, TOP_DIRT_ROWS, STATS, CFG, IDS, CHEST_X, CHEST_BASE, MOBS, SPAWN_X, TEAM, SHINY, FORTUNE, GEAR_RNG, GLYPHS, PRISON, SKILLS, RAID } from '../config.js';
 import { inReach, reachOf, stopAction } from './knock.js';
 import { mulberry32 } from '../core/rng.js';
 import { genArea, maxRow, prisonBox } from './world.js';
@@ -42,6 +42,7 @@ export function newSession(seed, opts={}){
        effets sur la génération (oreBonus : points de terrain changés en minerais, src/meta/shrines.js) */
     shrines: Array.isArray(opts.shrines) && !opts.prison ? opts.shrines.filter(id => shrineOf(id)) : [],
   };
+  if(opts.raid){ G.raid = { left: null }; G.endAt = Infinity; }   // raid Cerbère (04/11) : src/sim/raid/session.js
   if(opts.prison){ G.prison = { areaMax: Math.max(0, opts.prison.areaMax | 0), profile: sanitizeProfile(opts.prison.profile), goblinMul: opts.prison.goblinMul ?? 1 }; G.endAt = Infinity; }
   G.oreBonus = shrineEffects(G.shrines).orePoints;
   /* Escalateur (skill Logisticien) : le seau du treuil va plus vite pour tout le groupe ; le meilleur rang des mineurs
@@ -61,7 +62,8 @@ export function newSession(seed, opts={}){
   const box = prisonBox(G);   // prison : barreaux aussi dans les couches de terre (la surface reste libre)
   if(box) for(let y=1;y<=TOP_DIRT_ROWS;y++) for(let x=0;x<W;x++) if(x<box.x0 || x>=box.x0+box.w) G.tiles[y][x] = PRISON.bars;
   genArea(G,0); G.unlockedAreas = 1;
-  G.duckBase = G.prison ? Infinity : G.unlockedAreas; G.ducks = 0;   // Gallianix : un canard par area débloquée ensuite (src/sim/duck.js) ; jamais en prison
+  if(G.raid) for(let k=1;k<RAID.mine.areas;k++){ genArea(G,k); G.unlockedAreas++; }   // raid : toutes les areas ouvertes d'emblée
+  G.duckBase = G.prison || G.raid ? Infinity : G.unlockedAreas; G.ducks = 0;   // Gallianix : un canard par area débloquée ensuite (src/sim/duck.js) ; jamais en prison
   log(G, `Session démarrée (seed ${seed}, ${G.miners.length} mineur${G.miners.length>1?'s':''})`);
   return G;
 }
@@ -171,7 +173,7 @@ export function tick(G){
   }
   updateDungeons(G);   // découverte d'un donjon, barbare entré, effroi, boss vaincu
   updateKhole(G);      // k hole découvert : le groupe part dans la dimension ; au bout du temps, il revient
-  if(!G.prison && G.ticks>=SESSION_TICKS) endSession(G);   // prison : la fin du run est jugée par tickPrison
+  if(!G.prison && !G.raid && G.ticks>=SESSION_TICKS) endSession(G);   // raid : la fin est jugée par src/sim/raid/session.js   // prison : la fin du run est jugée par tickPrison
 }
 
 /* Un joueur quitte la session : son mineur disparaît de la mine, ce qu'il portait est perdu, et il ne recevra

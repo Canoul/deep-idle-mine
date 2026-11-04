@@ -420,6 +420,7 @@ export function pickType(table, r){
 }
 
 function spawnMobs(G){
+  if(G.raid) return;   // raid Cerbère : pas de mobs pendant le minage (04/11)
   G.spawnTimer-=DT;
   if(G.spawnTimer>0) return;
   const k=contentOf(G, G.unlockedAreas-1);   // intensité : la dernière area débloquée (prison : son contenu)

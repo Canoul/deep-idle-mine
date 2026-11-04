@@ -1857,6 +1857,31 @@ export const GIANT = {
   top: 10, poll: 3000, viewPoll: 500,
   readyPoll: 60000,   // ms : carte fermée, le navigateur revérifie l'entrée pour le contour doré du menu du Lobby (01/11/2026)
 };
+/* Raid 1 : Cerbère (04/11/2026, Geoffrey ; spec docs/superpowers/specs/2026-11-04-raid-cerbere-design.md ; src/sim/raid/).
+   Lancé depuis l'onglet Raid de sa guilde, 1 à 10 joueurs, gratuit. duration : temps de jeu total (minage + boss).
+   mine : les areas (0,0) et (0,−1) de la mine (50 × 50), que du terrain en bandes de haut en bas (bands : [bloc, lignes]) ;
+     tout doit être miné ; terrainVal : attrait d'un bloc de terrain pour l'IA (la mine vise les minerais) ; gather : s de
+     rassemblement devant la grande porte avant l'arène.
+   cerbere : arène w × h (1,−1), sans oxygène ; boss w × h au sol à droite (bossX : colonne de gauche), PV hp ; spawn :
+     colonnes d'arrivée (par la porte, à gauche). bite : autoattaque toutes les every s sur targets cibles (d'abord ceux qui
+     le provoquent), Morsure de last s ; si toutes ses cibles sont DÉJÀ mordues, elles meurent. sweep : balayage toutes les
+     every s à range cases, repousse de back cases et high de haut. magma : toutes les every s, chance de « Durci » par
+     joueur (ténacité : seulement la spé Mineur) ; stone : dureté du mineur en pierre (à miner par les autres).
+     rage : sous below de ses PV. Valeurs provisoires (équilibrage : scripts/simulate-raid.js). */
+export const RAID = {
+  maxPlayers: 10, duration: 30 * 60,
+  mine: { areas: 2, bands: [['dirt', 25], ['stone', 25], ['hardstone', 25], ['hellstone', 25]], terrainVal: 5, gather: 5 },   // terrainVal ≥ CFG.farVal : un bloc resté loin est aussi visé
+  cerbere: {
+    w: 30, h: 12, spawn: [1, 2, 3, 4, 5, 1, 2, 3, 4, 5],
+    boss: { name: 'Cerbère', w: 8, h: 6, hp: 60000, knockRes: 100, bossX: 18 },
+    bite: { every: 10, targets: 3, last: 20 },
+    sweep: { every: 5, range: 2, back: 5, high: 3 },
+    magma: { every: 30, chance: 0.5 },
+    stone: { hard: 50 },
+    rage: { below: 0.33, biteEvery: 7, back: 6, high: 4, chance: 0.65 },
+  },
+};
+
 /* He's coming (01/11/2026, Geoffrey ; src/sim/hescoming/session.js, valeurs provisoires) : le Bloc géant où l'on frappe Lucifer. Tout GIANT,
    sauf : paliers × 24 (03/11/2026, Geoffrey : +50 % puis +100 % ; avant × 8 puis × 12), pépites ÷ 8 (Geoffrey, à la simulation ; essayé : × 25, 4 fois plus dur que le Bloc) ; 1 dégât = 1 point. roar : toutes les every s, Fear de fear s à radius cases ou moins (wander : s
    avant de changer de sens) ; swing : toutes les every s, tous ceux au contact projetés de knock cases, en arc de high cases, en flight s. */
