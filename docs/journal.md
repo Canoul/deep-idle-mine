@@ -20,7 +20,7 @@ Modèle d'entrée :
 - **Pour le joueur** : quand le chat est assez large pour passer au-dessus de la bulle de gauche de la barre d'action
   (Oxygène, Session…), il gardait en bas une grande zone sombre et vide qui cachait la mine. Maintenant il s'arrête juste
   au-dessus de la bulle (ou des boutons s'il les recouvre) ; dessous, on voit le jeu et on peut cliquer à travers.
-- **État** : 🧪 sur la branche `jules/chat-zone-vide` (pas en ligne)
+- **État** : ✅ en ligne le 04/11
 
 ## 04/11/2026 — Geoffrey — Raid : portrait et spé des joueurs dans le lobby
 - **Pour le joueur** : dans les groupes du lobby du raid, chaque joueur montre son pseudo, l'image de son perso (son stuff)
