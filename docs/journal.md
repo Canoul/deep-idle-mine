@@ -16,6 +16,13 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 04/11/2026 — Geoffrey — Correctif : galeries à l'aveugle en fin de session
+- **Pour le joueur** : dans les dernières minutes d'une session, un mineur pouvait faire des allers-retours en
+  « creusant une galerie » alors qu'il voyait des minerais juste au-dessus de lui (à la torche ou à la boussole). Il
+  les mine maintenant. Rejoué sur la vraie partie signalée (seed 177078764) : plus aucune galerie à côté d'un minerai
+  connu, 37 blocs minés en plus.
+- **État** : ✅ en ligne le 04/11
+
 ## 04/11/2026 — Geoffrey — Appli : clavier de la connexion (Galaxy S22) et fond de l'Accueil
 - **Pour le joueur** : sur certains téléphones (Galaxy S22), ouvrir le clavier pour taper son pseudo écrasait la fenêtre de connexion (seul le champ restait visible) : le clavier était compté deux fois. Corrigé. L'Accueil n'affiche plus la session en cours (la prison) en fond derrière le Carreau, qui coupait l'écran en deux.
 - **État** : ✅ en ligne le 04/11

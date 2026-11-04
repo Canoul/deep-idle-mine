@@ -420,7 +420,9 @@ function decideWork(G,m){
   const f = G.khole ? null : farGoal(G,m,[...known.values()].filter(o=>o.y<=cap && (targetVal(G,m,o.t)??0)>=CFG.farVal && !oreTakenBy(G,m,o.x,o.y) && !veinTaken(G,m,o.x,o.y)));
   if(f){ m.target={x:f.o.x,y:f.o.y,far:true}; m.status=targetStatus(f.o.t); return goOre(G,m,f.o,f.r,f.r.n); }
   const k = stopK ?? (m.exploring && m.exploreArea!=null ? m.exploreArea : G.unlockedAreas-1);
-  explore(G,m, Math.min(k, Math.max(0,areaOf(cap))), cap);   // fin de session : galeries au-dessus de la profondeur max
+  /* fin de session : galeries au-dessus de la profondeur max, dans l'area de travail (« Plus profond » peut viser l'area
+     du dessus quand la profondeur max n'entre que de quelques couches dans la plus profonde, 04/11/2026) */
+  explore(G,m, Math.min(k, A ?? Infinity, Math.max(0,areaOf(cap))), cap);
 }
 
 function digDown(G,m){

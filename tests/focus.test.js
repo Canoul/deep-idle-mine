@@ -2,7 +2,7 @@
    focus abandonné, rejeu à l'identique depuis l'enregistrement du serveur. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { IDS, BLOCKS, FOCUS, W, TREASURE_BLOCK } from '../src/config.js';
+import { IDS, BLOCKS, FOCUS, W, TREASURE_BLOCK, CFG } from '../src/config.js';
 import { newSession, tick } from '../src/sim/session.js';
 import { areaOf, areaTop, tryUnlock } from '../src/sim/world.js';
 import { mineBlock } from '../src/sim/actions.js';
@@ -268,8 +268,14 @@ test("Plus profond : en fin de session, l'area la plus profonde qu'il peut attei
   G.areas[0].oreMined = 1e9; assert.ok(tryUnlock(G));
   m.tripCap = areaTop(1)-1;
   assert.equal(deepArea(G, m), 0);
-  m.tripCap = areaTop(1)+5;
+  m.tripCap = areaTop(1)+15;
   assert.equal(deepArea(G, m), 1);
+  /* 04/11/2026 (seed 177078764) : la profondeur max n'entre que de 6 couches (< CFG.capMinRows) dans l'area 1 : il reste
+     dans l'area 0, où sont les minerais qu'il voit (avant : galeries dans les 6 couches, minerais du dessus ignorés) */
+  m.tripCap = areaTop(1)+5;
+  assert.equal(deepArea(G, m), 0);
+  m.tripCap = areaTop(1)+CFG.capMinRows-1;
+  assert.equal(deepArea(G, m), 1, 'à partir de capMinRows couches : l\'area du dessous');
 });
 
 test("Plus profond : l'area 1 débloquée, il quitte l'area 0 pour l'area 1 au lieu d'y finir les filons", () => {
