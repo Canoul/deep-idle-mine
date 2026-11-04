@@ -139,7 +139,7 @@ export function setupCrusher({ onOp, onSync }){
     const box = $('cpick').querySelector('.box');
     const FAMILY = { gem:'Une gemme', treasure:'Un treasure' };
     const family = f => f.min != null   // butin garanti (minerai de fer) : sa fourchette
-      ? `<div class="fodds">${icon(f.items[0].item)}${rname(f.items[0].item, f.items[0].item, 'b')} <b>${f.min === f.max ? f.min : `${f.min} à ${f.max}`}</b></div>`
+      ? `<div class="fodds">${icon(f.items[0].item)}${rname(f.items[0].item, f.items[0].item, 'b')} <b>${f.min === f.max ? f.min : `${f.min} à ${f.max}`}</b>${f.chance < 1 ? ` <span class="mut">(${pct(f.chance)})</span>` : ''}</div>`
       : f.items.length === 1
       ? `<div class="fodds">${icon(f.items[0].item)}${rname(f.items[0].item, f.items[0].item, 'b')} <b>${pct(f.chance)}</b></div>`
       : `<div class="fodds"><b>${FAMILY[f.family] ?? esc(f.family)} : ${pct(f.chance)}</b></div>`+

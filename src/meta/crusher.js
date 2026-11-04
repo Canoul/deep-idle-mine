@@ -166,7 +166,7 @@ export function dropOdds(block){
   const t = CRUSHER.loot[block];
   if(!t) return [];
   /* butin garanti (always, minerai de fer) : une « famille » par objet, à 100 %, avec sa fourchette (min, max) */
-  return [...(t.always || []).map(a => ({ family: 'fixed', chance: 1, min: a.min, max: a.max, items: [{ item: a.item, chance: 1 }] })),
+  return [...(t.always || []).map(a => ({ family: 'fixed', chance: a.chance ?? 1, min: a.min, max: a.max, items: [{ item: a.item, chance: a.chance ?? 1 }] })),
           ...t.oneOf.map(f => ({ family: f.family, chance: f.items.reduce((s, i) => s + i.chance, 0),
                                  items: f.items.map(i => ({ item: i.item, chance: i.chance })) }))];
 }

@@ -241,7 +241,27 @@ test('minerai de fer (28/10/2026) : lot de 100 → charbon 1-50, or 1-20, 1 diam
   assert.ok(out['Charbon'] >= 1 && out['Or'] >= 1 && out['Diamant'] === 1 && out['Graphite ore'] >= 1, JSON.stringify(out));
 });
 
-test('minerai d\'or (03/11/2026) : se concasse par 100, un lot donne 1 Terre', () => {
+test('minerai d\'or (04/11/2026) : la table demandée ; mithril, cobalt et thorium seulement à leur chance', () => {
   assert.ok(crushable('Or'));
-  assert.deepEqual(CRUSHER.loot['Or'], { always:[ { item:'Terre', min:1, max:1 } ], oneOf:[] });
+  const t = CRUSHER.loot['Or'], by = Object.fromEntries(t.always.map(a => [a.item, a]));
+  assert.deepEqual(Object.keys(by), ['Charbon', 'Graphite ore', 'Mithril ore', 'Cobalt ore', 'Thorium ore']);
+  assert.deepEqual([by['Charbon'].min, by['Charbon'].max, by['Charbon'].chance], [1, 50, undefined]);
+  assert.deepEqual([by['Graphite ore'].min, by['Graphite ore'].max, by['Graphite ore'].chance], [1, 15, undefined]);
+  assert.deepEqual([by['Mithril ore'].min, by['Mithril ore'].max, by['Mithril ore'].chance], [1, 10, 0.5]);
+  for(const o of ['Cobalt ore', 'Thorium ore']) assert.deepEqual([by[o].min, by[o].max, by[o].chance], [1, 2, 0.25]);
+  const ch = item => t.oneOf.flatMap(f => f.items).find(i => i.item === item)?.chance;
+  for(const g of ['Rubis inférieur', 'Jade inférieur', 'Saphir inférieur']) assert.equal(ch(g), 0.01);
+  assert.deepEqual(['Treasure T1', 'Treasure T2', 'Treasure T3', 'Treasure T4'].map(ch), [0.02, 0.01, 0.005, 0.0025]);
+  /* 100 000 lots : charbon et graphite toujours, mithril ≈ 50 %, cobalt / thorium ≈ 25 %, dans leurs fourchettes */
+  const rng = mulberry32(7), N = 100000, got = {};
+  for(let i = 0; i < N; i++){
+    const l = rollLoot(t, rng);
+    for(const [k, q] of Object.entries(l)){ (got[k] ??= { n:0, lo:Infinity, hi:0 }); got[k].n++; got[k].lo = Math.min(got[k].lo, q); got[k].hi = Math.max(got[k].hi, q); }
+  }
+  assert.equal(got['Charbon'].n, N); assert.equal(got['Graphite ore'].n, N);
+  assert.ok(Math.abs(got['Mithril ore'].n / N - 0.5) < 0.01); assert.ok(Math.abs(got['Cobalt ore'].n / N - 0.25) < 0.01); assert.ok(Math.abs(got['Thorium ore'].n / N - 0.25) < 0.01);
+  assert.deepEqual([got['Mithril ore'].lo, got['Mithril ore'].hi, got['Cobalt ore'].lo, got['Cobalt ore'].hi, got['Graphite ore'].hi], [1, 10, 1, 2, 15]);
+  assert.equal(dropOdds('Or').find(f => f.items[0].item === 'Mithril ore').chance, 0.5);   // aide « ? » et wiki : la chance
+  /* les tables sans chance ne changent pas de tirage (minerai de fer : même butin qu'avant ce changement) */
+  assert.equal(dropOdds('Fer')[0].chance, 1);
 });

@@ -7176,3 +7176,12 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - Tests ✅ inventory-stack (2), inventaire, sets. Navigateur ✅ (4 Casques en fer simples : une case « 4 », Recycler tout
   → 4 recyclés, 12 Tainted iron et 48 Peaux de gobelin).
 - ⚠️ Le message « ♻ n × … recyclés » peut être effacé par le rafraîchissement suivant de l'inventaire (comme pour une seule pièce).
+
+## 04/11/2026 — Geoffrey — Concasseur, minerai d'or ; `chance` sur un « always »
+- `CRUSHER.loot['Or']` (config). `rollLoot` (src/meta/loot.js) : une entrée `always` avec `chance` n'est versée que si `rng() <
+  chance` (tirage à part, avant sa quantité) ; sans `chance`, aucun tirage de plus : les autres tables (fer, coffres, Golbute)
+  gardent exactement les mêmes tirages. `dropOdds` porte la chance ; aide « ? » (src/ui/crusher.js) « (50 %) », wiki « (pas à
+  chaque lot) » ; texte du wiki : minerais de fer et d'or.
+- **Tests** ✅ crusher (nouveau test : table, 100 000 lots, fourchettes, chances), wiki, loot, loot-table : 52/52 ;
+  `npm run test:anticheat` 152/152.
+
