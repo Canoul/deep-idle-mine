@@ -17,7 +17,7 @@ import { SocialError } from '../social/service.js';
 
 const fail = (code, status, message) => { throw new SocialError(code, status, message); };
 
-export function createRaidLobby({ game = null, guildOf, nameOf }){
+export function createRaidLobby({ game = null, guildOf, nameOf, findByName = async () => null }){
   const lobbies = new Map();       // id de guilde → lobby
   let chain = Promise.resolve();
   const serial = fn => { const run = chain.catch(() => {}).then(fn); chain = run.catch(() => {}); return run; };
@@ -33,7 +33,7 @@ export function createRaidLobby({ game = null, guildOf, nameOf }){
   }
   function prune(g, L){
     if(L.launching) return;
-    L.members = L.members.filter(m => g.members.some(x => x.id === m.account));
+    L.members = L.members.filter(m => m.invited || g.members.some(x => x.id === m.account));   // invités (bêta) : gardés
     fix(g.id, L);
   }
   /* chef parti : le suivant ; plus personne : le lobby disparaît */
@@ -55,7 +55,7 @@ export function createRaidLobby({ game = null, guildOf, nameOf }){
     const L = lobbies.get(g.id) ?? null;
     if(L) prune(g, L);
     const lobby = lobbies.get(g.id) ?? null;
-    const members = lobby ? await Promise.all(lobby.members.map(async m => ({ account: m.account, name: m.name, ready: !!m.ready, group: m.group,
+    const members = lobby ? await Promise.all(lobby.members.map(async m => ({ account: m.account, name: m.name, ready: !!m.ready, group: m.group, invited: !!m.invited,
       leader: m.account === lobby.leader, me: m.account === me.id, playing: await inSession(m.account) }))) : [];
     const mine = members.some(m => m.me);
     const running = await game?.raidOfGuild?.(g.id).catch(() => null) ?? null;
@@ -100,6 +100,27 @@ export function createRaidLobby({ game = null, guildOf, nameOf }){
       notLaunching(L);
       L.members = L.members.filter(m => m.account !== id);
       fix(g.id, L);
+    }),
+    /* bêta (04/11/2026, Geoffrey, temporaire : pas assez de monde par guilde) : un joueur du lobby invite un joueur par son
+       pseudo, même d'une autre guilde ou sans guilde. Il entre directement dans le lobby, prêt (il ne voit pas l'onglet
+       Raid d'une autre guilde) ; il est emmené dans la session au lancement, il peut la quitter. Le chef peut le sortir. */
+    invite: (me, input) => serial(async () => {
+      const text = typeof input === 'string' ? input.trim() : '';
+      if(!text || text.length > 32) fail('bad_name', 400, 'Tape le pseudo du joueur.');
+      const { g, L } = await context(me);
+      if(!L?.members.some(m => m.account === me.id)) fail('not_in_raid', 404, 'Rejoins d\'abord le lobby du raid.');
+      notLaunching(L);
+      const who = await findByName(text);
+      if(!who || who.guest) fail('not_found', 404, 'Ce pseudo n\'existe pas.');
+      if(L.members.some(m => m.account === who.id)) fail('already_in_raid', 409, `${who.name} est déjà dans le lobby.`);
+      for(const [gid, o] of lobbies) if(gid !== g.id && o.members.some(m => m.account === who.id)) fail('busy', 409, `${who.name} est déjà dans un autre lobby de raid.`);
+      if(L.members.length >= RAID.maxPlayers) fail('raid_full', 409, `Le raid est complet (${RAID.maxPlayers} joueurs).`);
+      if(await inSession(who.id)) fail('member_in_session', 409, `${who.name} est déjà dans une session.`);
+      const gr = firstRoom(L);
+      if(gr == null) fail('raid_full', 409, `Le raid est complet (${RAID.maxPlayers} joueurs).`);
+      const name = await nameOf(who.id) || who.name;
+      L.members.push({ account: who.id, name, ready: true, group: gr, invited: true });
+      return { name, group: gr };
     }),
     /* changer de groupe : soi-même, ou (chef du raid) un autre joueur ; id absent = soi */
     move: (me, group, id = null) => serial(async () => {

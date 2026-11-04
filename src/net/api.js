@@ -148,6 +148,7 @@ export const guildApi = {
   raidLeave:  () => request('POST', '/api/guild/raid/leave', {}),
   raidReady:  ready => request('POST', '/api/guild/raid/ready', { ready }),
   raidKick:   id => request('POST', '/api/guild/raid/kick', { id }),
+  raidInvite: name => request('POST', '/api/guild/raid/invite', { name }),   // bêta, temporaire (04/11)
   raidLaunch: seed => request('POST', '/api/guild/raid/launch', Number.isSafeInteger(seed) ? { seed } : {}),
 };
 

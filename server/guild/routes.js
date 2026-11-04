@@ -37,6 +37,8 @@ export function guildRoutes(guild){
     'POST /api/guild/raid/leave':  async ctx => { needMe(ctx); return guild.raidLeave(ctx.me); },
     'POST /api/guild/raid/ready':  async ctx => { needMe(ctx); return guild.raidReady(ctx.me, ctx.body?.ready); },
     'POST /api/guild/raid/kick':   write(guild.raidKick),
+    /* bêta, temporaire (04/11) : inviter un joueur par son pseudo { name } */
+    'POST /api/guild/raid/invite': async ctx => { needMe(ctx); return guild.raidInvite(ctx.me, ctx.body?.name); },
     'POST /api/guild/raid/launch': async ctx => { needMe(ctx); return [201, await guild.raidLaunch(ctx.me, ctx.body ?? {})]; },
   };
 }

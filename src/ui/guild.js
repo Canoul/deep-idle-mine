@@ -54,12 +54,15 @@ export function raidHTML(r, now = Date.now()){
     : [r.isLeader ? `<button class="on" data-g="raidLaunch"${r.canLaunch ? '' : ' disabled'}>Lancer le raid</button>`
                   : `<button class="${me?.ready ? '' : 'on'}" data-g="raidReady" data-on="${me?.ready ? '0' : '1'}">${me?.ready ? 'Plus prêt' : 'Je suis prêt'}</button>`,
        '<button data-g="raidLeave">Quitter le lobby</button>'].join('');
+  /* bêta, temporaire (04/11) : inviter un joueur par son pseudo, même hors de la guilde */
+  const invite = r.mine && !r.launching && r.size < r.max ? `<div class="frow raidInvite"><input id="raidInviteName" maxlength="32" placeholder="Pseudo du joueur" autocomplete="off">`+
+    `<button class="small" data-g="raidInvite">Inviter dans le raid</button></div><p class="mut small">Bêta : tu peux inviter n'importe quel joueur, même d'une autre guilde. Il entre directement dans le lobby, prêt.</p>` : '';
   const wait = r.mine && r.isLeader && r.waiting.length ? `<p class="mut small">En attente : ${r.waiting.map(esc).join(', ')}</p>` : '';
   return `<div class="gcols"><div>${running}
     <div class="card"><h2>Lobby du raid <span class="mut">${r.size}/${r.max}</span></h2>
       ${r.members.length || G > 1 ? list : ''}${r.members.length ? '' : '<p class="mut small">Personne pour l\'instant : rejoins le lobby, le premier arrivé devient chef du raid.</p>'}
       ${r.launching ? '<p class="small">Lancement…</p>' : ''}${wait}
-      <div class="fbtns">${btns}</div></div>
+      <div class="fbtns">${btns}</div>${invite}</div>
   </div><div><div class="card"><h2>Cerbère</h2><img class="raidBoss" src="textures/cerbere.png" alt="Cerbère">${RAID_INTRO}</div></div></div>`;
 }
 
@@ -287,6 +290,14 @@ export function setupGuild({ root, api = guildApi, onChange = () => {}, onRaid =
     if(name === 'raidWatch') return onRaidWatch();
     if(name === 'raidJoin') return run(() => api.raidJoin(el.dataset.group ? +el.dataset.group : null));
     if(name === 'raidLeave') return run(() => api.raidLeave());
+    if(name === 'raidInvite'){
+      const input = document.getElementById('raidInviteName'), who = input?.value.trim();
+      if(!who) return;
+      let done = null;
+      await run(async () => { done = (await api.raidInvite(who)).invited; });
+      if(done) await tell(`✅ ${done.name} est invité dans le lobby du raid (groupe ${done.group}).`);
+      return;
+    }
     if(name === 'raidMove') return run(() => api.raidMove(+el.dataset.group, id || null));
     if(name === 'raidReady') return run(() => api.raidReady(el.dataset.on === '1'));
     if(name === 'raidKick'){ if(await ask('Sortir ce joueur du lobby du raid ?', { ok:'Sortir' })) await run(() => api.raidKick(id)); return; }
