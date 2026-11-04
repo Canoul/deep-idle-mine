@@ -28,6 +28,7 @@ import { createReportService } from './moderation/reports.js';
 import { createAccountEraser } from './accounts/erase.js';
 import { migrateItemNames } from './game/rename-items.js';
 import { createAppUpdate } from './app-update/routes.js';
+import { createAppLatest } from './app-update/latest.js';
 
 const port = +(process.argv[2] || SERVER.port);
 /* stockage : PostgreSQL si DATABASE_URL est défini (en ligne), sinon fichiers dans data/ (en local) */
@@ -71,6 +72,7 @@ const eraser = createAccountEraser({ accounts: store, gameStore, game, party, in
 let appUpdate = null;
 try {
   appUpdate = createAppUpdate({ api: process.env.DIM_APP_API || undefined });
+  appUpdate.latest = createAppLatest({ store: gameStore });   // dernière appli sur les stores, réglable sur le VPS (04/11)
   console.log(`Paquet de l'appli : version ${appUpdate.manifest.version} (${Object.keys(appUpdate.manifest.files).length} fichiers)`);
 } catch(e){ console.error('Paquet de l\'appli indisponible :', e); }
 const server = http.createServer(createApp({ store, service, game, party, instant, social, guild, giant, hescoming, town, moderation, reports, eraser, appUpdate, root: ROOT }));

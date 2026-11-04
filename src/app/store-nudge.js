@@ -4,17 +4,31 @@
    sans le pont natif. Le jeu lui-même se met à jour tout seul (mises à jour à chaud) : ceci ne concerne que la coque. */
 import { storeNudge, storeUrl } from './update.js';
 import { ask } from '../ui/dialog.js';
+import { API_BASE } from '../net/base.js';
+import { APP_UPDATE } from '../config.js';
 
 const KEY = 'dim.storeNudge';   // { v, at } : dernière fenêtre montrée
 const read = win => { try { return JSON.parse(win.localStorage.getItem(KEY)) ?? null; } catch(e){ return null; } };
 const write = (win, v) => { try { win.localStorage.setItem(KEY, JSON.stringify(v)); } catch(e){} };
+
+/* dernière appli sur les stores, demandée au serveur (04/11/2026 : réglée sur le VPS, scripts/set-app-latest.js) ; sans
+   réponse à temps : APP_UPDATE.latest du jeu */
+export async function latestOf({ fetch, api = API_BASE, timeout = APP_UPDATE.latestTimeout, fallback = APP_UPDATE.latest }){
+  try {
+    const r = await Promise.race([fetch(`${api}/api/app/latest`, { cache: 'no-store', credentials: 'omit' }),
+                                  new Promise((_, no) => setTimeout(() => no(new Error('délai')), timeout * 1000))]);
+    const v = r?.ok ? await r.json() : null;
+    return v && typeof v === 'object' ? { ...fallback, ...Object.fromEntries(Object.entries(v).filter(([, x]) => typeof x === 'string' && x)) } : fallback;
+  } catch(e){ return fallback; }
+}
 
 export async function startStoreNudge({ win, delay = 2000 }){
   const P = win.Capacitor?.Plugins ?? {}, platform = win.Capacitor?.getPlatform?.() ?? '';
   if(!P.App || !P.AppLauncher) return;
   let native = '';
   try { native = (await P.App.getInfo()).version ?? ''; } catch(e){ return; }
-  const want = storeNudge({ native, platform, seen: read(win), now: Date.now() });
+  const latest = await latestOf({ fetch: (...a) => win.fetch(...a) });
+  const want = storeNudge({ native, platform, seen: read(win), now: Date.now(), latest });
   if(!want) return;
   await new Promise(r => win.setTimeout(r, delay));   // par-dessus le jeu déjà affiché
   write(win, { v: want, at: Date.now() });

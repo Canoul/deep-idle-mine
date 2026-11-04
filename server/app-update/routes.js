@@ -5,6 +5,7 @@
                                            liste si l'appli a déjà cette version
      GET  /app-bundle/<version>/<chemin>   un fichier du paquet en cours (version périmée : 404, l'appli réessaiera plus tard)
      POST /api/app/rollback                une nouvelle version n'a pas démarré sur un téléphone : une ligne dans le journal
+     GET  /api/app/latest                  { android, ios } : dernière appli sur les stores (04/11, server/app-update/latest.js)
 
    Les fichiers sont lus une fois, au démarrage du serveur (1,8 Mo en mémoire) : rien n'est servi depuis le disque ici. */
 import { APP_UPDATE, ADMIN_VIEW } from '../../src/config.js';
@@ -36,6 +37,7 @@ export function appUpdateRoutes(update, { log = console.log, now = Date.now, per
         origin: shortUa(ctx.req.headers.origin ?? '—').slice(0, 60), ua: shortUa(ctx.req.headers['user-agent']) });
       return have === version ? { version, minNative, same: true } : update.manifest;
     },
+    'GET /api/app/latest': async () => update.latest ? update.latest.get() : { ...APP_UPDATE.latest },
     /* n'importe qui peut appeler cette route : rien n'est gardé, le journal est plafonné */
     'POST /api/app/rollback': async ctx => {
       const h = Math.floor(now() / 3600e3);
