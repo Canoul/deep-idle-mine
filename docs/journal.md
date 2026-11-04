@@ -27,7 +27,7 @@ Modèle d'entrée :
 - **Décisions** (Jules) : bandeau + Lancer pour l'écran Session hors session (écartés : renommer le bouton « Historique », les
   deux).
 - **À suivre** : la suite des essais sur téléphone.
-- **État** : 🧪 sur la branche `jules/appli-retours-tel` (pas en ligne)
+- **État** : ✅ en ligne le 04/11
 
 ## 04/11/2026 — Jules — Appli mobile : les derniers écrans (Sac, Amélioration, Amis)
 - **Pour le joueur** : rien sur le site. Dans l'appli :

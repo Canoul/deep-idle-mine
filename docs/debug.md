@@ -7086,7 +7086,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   Recycle de la Recherche ; vrai téléphone.
 - **Applis** : touche `src/app/` (style et liste des panneaux du bouton retour) : rien de natif, part par mise à jour à chaud.
 
-## 04/11/2026 — Jules — Appli mobile : retours après l'essai sur iPhone (🧪 branche jules/appli-retours-tel)
+## 04/11/2026 — Jules — Appli mobile : retours après l'essai sur iPhone (✅ en ligne le 04/11)
 - **Accueil** : `homeView` (src/app/home.js) retire des rendez-vous celui de l'activité choisie (`act.mode === snap.mode`)
   et met son état dans `activity.sub` ; `homeHtml` : rendez-vous puis activité puis gros bouton (avant : activité en premier).
 - **Session hors session** : `historyListHtml` (src/ui/history.js) commence par `.hiNow` (« Pas de session en cours »,
