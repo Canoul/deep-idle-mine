@@ -9,6 +9,13 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## JJ/MM/AAAA — Prénom — Titre court
+- **Pour le joueur** : ce qui change en jeu (ou « rien, c'est de l'organisation »).
+- **Décisions** : choix de design ou d'équilibrage tranchés (s'il y en a).
+- **À suivre** : ce qui reste à faire ou à vérifier.
+- **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
+```
+
 ## 04/11/2026 — Geoffrey — Skills : nouveaux arbres (5 étages, Ambidextre)
 - **Pour le joueur** : les arbres de skills passent à 5 étages ; plusieurs skills changent de place (les auras, Ivresse
   Minérale et Reconnaissance remontent ; Treuil, Escalateur et Mule arrivent plus tôt ; Dématérialisation descend d'un
@@ -17,13 +24,6 @@ Modèle d'entrée :
 - **Décisions** : Escalateur reste au max 3 (le tableau disait 5). Reset de tous les joueurs.
 - **À suivre** : regarder l'onglet Skills au bureau et dans l'appli (3 colonnes dans certains arbres).
 - **État** : ✅ en ligne le 04/11
-
-## JJ/MM/AAAA — Prénom — Titre court
-- **Pour le joueur** : ce qui change en jeu (ou « rien, c'est de l'organisation »).
-- **Décisions** : choix de design ou d'équilibrage tranchés (s'il y en a).
-- **À suivre** : ce qui reste à faire ou à vérifier.
-- **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
-```
 
 ## 04/11/2026 — Geoffrey — Administration : mettre un joueur dans un lobby de raid, et prêt
 - **Pour le joueur** : rien de visible ; l'équipe peut placer un joueur dans un lobby de raid depuis le VPS :
