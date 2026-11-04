@@ -18,7 +18,7 @@ Modèle d'entrée :
 
 ## 04/11/2026 — Jules (demande de Geoffrey) — Golbute plus dur : PV × 1,5, ténacité moins efficace contre lui
 - **Pour le joueur** : le Golbute a 16 050 PV (avant 10 700) et retire 30 points de ténacité au lieu de 20 avant le calcul d'esquive (à 50 de ténacité : 16 % d'esquive au lieu de 22 %). Les autres mobs ne changent pas.
-- **État** : 🧪 sur la branche `jules/nerf-tenacite-golbute` (pas en ligne)
+- **État** : ✅ en ligne le 04/11
 
 ## 04/11/2026 — Geoffrey — Raid : portrait et spé des joueurs dans le lobby
 - **Pour le joueur** : dans les groupes du lobby du raid, chaque joueur montre son pseudo, l'image de son perso (son stuff)
