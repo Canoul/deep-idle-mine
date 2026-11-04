@@ -7336,3 +7336,22 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   (~3 s pour Cerbère).
 - **Applis** : nouveaux PNG dans textures/ (copié en entier par server/app-update/bundle.js) et src/render : rien à signaler.
 
+
+## 04/11/2026 — Geoffrey — Skills : liens « | » tracés d'après la mise en page (branche geoffrey/skills-liens)
+- `src/ui/skills.js` `drawLinks` : après chaque rendu (bureau et appli, et au redimensionnement), un SVG par arbre (taille
+  réelle de `.skGraph`) ; pour chaque case `data-needs`, un crochet de la case exigée à celle qui l'exige (gauche des
+  cases ; à droite pour la colonne de droite au bureau), flèche (`marker`), pointillé ou orange (`data-open` : skill exigé
+  au max). Bulle « Exige … au rang max », fiche de l'appli `.skNeed`. Ancien : lignes centre à centre en % (cachées par
+  le nom et la case de glyphe), maillon de 14 px dans l'appli.
+- Tests mis à jour pour l'Escalateur max 3 (skills, mule ; la valeur était partie en ligne sans tests). ✅ skills, mule,
+  glyphs, winch, dps, app-skills, skills-v2. Navigateur ✅ bureau et appli (?app).
+
+## 04/11/2026 — Geoffrey — Skills : reset, spé et glyphes permis en session ; Ajout rapide (branche geoffrey/skills-liens)
+- `server/game/service.js` skills : plus de `session_running` pour reset, spec, glyph_pose / glyph_remove (les skills et
+  glyphes d'une session sont figés au lancement : `frozenSkills`, l'enregistrement ne bouge pas ; XP de spé : arbre figé).
+  `src/ui/skills.js` : boutons plus grisés en session (message « tes changements comptent pour la suivante ») ; appli :
+  case `#skQuick` (localStorage `dim.skQuick`), un toucher sur une case `data-node` envoie `learn` sans fiche.
+- Tests ✅ game-service (reset / spé / retrait de glyphe en session, enregistrement inchangé), app-skills, glyphs, skills ;
+  `npm run test:anticheat` 152/152. Navigateur ✅ (appli : case à côté de Reset).
+- ⚠️ Glyphe retiré pendant la session : il revient dans l'inventaire et reste actif dans la session en cours (figé) ; pas
+  de doublon possible (le drop lit les glyphes possédés figés au lancement).

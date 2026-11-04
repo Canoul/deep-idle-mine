@@ -770,8 +770,11 @@ body.phone .chatMore{opacity:1;padding:0 calc(5*var(--u))}
 .skTree.locked{opacity:.45}
 .skGraph{position:relative;margin:var(--u) 0 0}
 .skLinks{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
-.skLinks line{stroke:#3a302a;stroke-width:6}
-.skLinks line.on{stroke:#ff7a2e}
+.skLinks{pointer-events:none}
+.skLinks .lnk{fill:none;stroke:#a88458;stroke-width:4;stroke-linejoin:miter;stroke-dasharray:7 4}   /* lien « | » : skill exigé → skill qui l'exige (04/11) */
+.skLinks .lnk.on{stroke:#ff7a2e;stroke-dasharray:none}
+.skLinks .ar{fill:#a88458} .skLinks .ar.on{fill:#ff7a2e}
+.skNeed{margin:6px 0 0;color:#d9a86a} .skNeed.ok{color:var(--acc)}
 .skNode{position:absolute;transform:translate(-50%,-29px);width:calc(60*var(--u));display:flex;flex-direction:column;align-items:center;gap:var(--u);text-align:center;user-select:none}
 .skOrb{width:58px;height:58px;display:grid;place-items:center;color:var(--mut);
   border:calc(3*var(--u)) solid transparent;border-image:url(../../textures/ui/slot_n.png) 3 fill / calc(3*var(--u)) stretch}

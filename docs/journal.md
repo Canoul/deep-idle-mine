@@ -16,6 +16,18 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 04/11/2026 — Geoffrey — Skills : reset pendant une session, Ajout rapide
+- **Pour le joueur** : le reset, le changement de spé et les glyphes marchent aussi pendant une session (la session en
+  cours ne change pas, ça compte pour la suivante). Dans l'appli, la case **Ajout rapide** ajoute un point d'un toucher,
+  sans ouvrir la fiche du skill.
+- **État** : ✅ en ligne le 04/11
+
+## 04/11/2026 — Geoffrey — Skills : liens de dépendance bien visibles
+- **Pour le joueur** : dans l'onglet Skills, un skill qui en exige un autre y est relié par un trait épais avec une
+  flèche, sur le côté des cases : pointillé tant que le skill exigé n'est pas au max, orange quand il l'est. Sa bulle
+  et sa fiche (appli) disent « Exige … au rang max ».
+- **État** : ✅ en ligne le 04/11
+
 ## 04/11/2026 — Geoffrey — Raid : les Indices remplacent « tout miner »
 - **Pour le joueur** : la première phase du raid n'est plus de miner les 2 areas à 100 %. Elles sont dans le noir, et
   **150 Indices** y sont cachés (pas tout en haut). Un Indice miné montre le plus proche encore caché ; il pèse 150 pods

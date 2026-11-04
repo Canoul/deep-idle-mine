@@ -191,8 +191,8 @@ body.app .skTabs button b{font:400 17px/1 var(--f-title)}
 body.app .skTabs button small{font-size:12px;line-height:1.1;color:var(--mut)}
 body.app .skTabs button.on small{color:#4a1e08}
 body.app #skillTrees .skTree{border:0;border-image:none;padding:0;background:none}
-body.app #skillTrees .skTree>h3,body.app #skillTrees .skTree .specLvl,body.app #skillTrees .skLinks{display:none}
-body.app #skillTrees .skGraph{height:auto!important;display:grid;grid-template-columns:1fr 1fr;gap:14px 8px;margin:0;padding:2px 0}
+body.app #skillTrees .skTree>h3,body.app #skillTrees .skTree .specLvl{display:none}
+body.app #skillTrees .skGraph{height:auto!important;display:grid;grid-template-columns:1fr 1fr;gap:14px 16px;margin:0;padding:2px 0 2px 12px}   /* 12 px à gauche : les liens « | » (04/11) */
 body.app #skillTrees .skNode{position:relative;left:auto!important;top:auto!important;transform:none;width:auto;grid-column:1/3;
   display:grid;grid-template-columns:50px minmax(0,1fr) auto;grid-template-rows:auto auto;column-gap:10px;align-items:center;text-align:left}
 body.app #skillTrees .skNode{grid-column:var(--c);grid-row:var(--r)}   /* arbres v2 (04/11) : deux colonnes, chaque skill dans la sienne */
@@ -208,8 +208,6 @@ body.app #skillTrees .skTxt{grid-column:2;display:-webkit-box;-webkit-line-clamp
 body.app #skillTrees .skGlyph{grid-column:3;grid-row:1/3}   /* glyphe à droite du skill, pas sur sa case */
 body.app #skillTrees .skNode{cursor:pointer}
 /* maillon vers l'étage du dessus : entre les cases, sous elles */
-body.app #skillTrees .skNode.lk::before{content:"";position:absolute;left:22px;top:-14px;width:6px;height:14px;background:var(--line);box-shadow:0 0 0 2px #000}
-body.app #skillTrees .skNode.lk-on::before{background:var(--acc)}
 /* fiche d'un skill */
 body.app #skSheet{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;background:rgba(5,3,2,.62)}
 body.app #skSheet[hidden]{display:none}

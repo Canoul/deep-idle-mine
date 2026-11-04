@@ -517,14 +517,15 @@ test('skills par le serveur : points = niveau, rangs vérifiés, reset refusé e
   assert.deepEqual((await game.state(ME)).skills, { v:2, tree:'barbare', ranks:{ damage:2 }, points:2, spent:2, glyphs:{} });
   const { session } = await game.start(ME, {});
   assert.deepEqual((await store.getGameSession(session.id)).skills[ME.id], { v:2, tree:'barbare', ranks:{ damage:2 }, glyphs:{}, owned:[] });
-  await assert.rejects(game.skills(ME, { action:'reset', opId:'op-skill-5' }), { code:'session_running' });
-  await game.leave(ME);
+  /* reset et changement de spé permis pendant la session (04/11) : la session en cours garde ses skills figés */
   r = await game.skills(ME, { action:'reset', opId:'op-skill-6' });
   assert.deepEqual([r.skills.tree, r.skills.spent], ['barbare', 0], 'reset : la spé reste');
-  await assert.rejects(game.skills(ME, { action:'spec', tree:'mineur', opId:'op-skill-7' }).then(() => game.start(ME, {})).then(() => game.skills(ME, { action:'spec', tree:'barbare', opId:'op-skill-8' })), { code:'session_running' }, 'changer de spé : refusé en session');
+  r = await game.skills(ME, { action:'spec', tree:'mineur', opId:'op-skill-7' });
+  assert.equal(r.skills.tree, 'mineur');
+  assert.deepEqual((await store.getGameSession(session.id)).skills[ME.id], { v:2, tree:'barbare', ranks:{ damage:2 }, glyphs:{}, owned:[] }, 'session en cours : inchangée');
 });
 
-test('glyphes par le serveur : pose et retrait (inventaire et skills ensemble), demande rejouée, refusés en session, figés au lancement', async () => {
+test('glyphes par le serveur : pose et retrait (inventaire et skills ensemble), demande rejouée, permis en session, figés au lancement', async () => {
   const { game, store } = setup();
   const G = 'Glyphe Force brute', count = r => r.inventory.slots.find(s => s?.item === G)?.qty ?? 0;
   await store.putProgress(ME.id, { xp:100000, credited:[] });
@@ -538,10 +539,9 @@ test('glyphes par le serveur : pose et retrait (inventaire et skills ensemble), 
   await assert.rejects(game.skills(ME, { action:'glyph_pose', node:'taunt', opId:'op-glyph-srv-2' }), { code:'unknown', status:400 });
   const { session } = await game.start(ME, {});
   assert.deepEqual((await store.getGameSession(session.id)).skills[ME.id].glyphs, { damage:G });
-  await assert.rejects(game.skills(ME, { action:'glyph_remove', node:'damage', opId:'op-glyph-srv-3' }), { code:'session_running' });
-  await game.leave(ME);
-  r = await game.skills(ME, { action:'glyph_remove', node:'damage', opId:'op-glyph-srv-4' });
+  r = await game.skills(ME, { action:'glyph_remove', node:'damage', opId:'op-glyph-srv-4' });   // permis en session (04/11)
   assert.deepEqual(r.skills.glyphs, {}); assert.equal(count(r), 1);
+  assert.deepEqual((await store.getGameSession(session.id)).skills[ME.id].glyphs, { damage:G }, 'session en cours : son glyphe reste figé');
   await assert.rejects(game.skills(ME, { action:'glyph_remove', node:'damage', opId:'op-glyph-srv-5' }), { code:'empty' });
 });
 

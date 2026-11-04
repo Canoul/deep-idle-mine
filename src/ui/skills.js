@@ -1,10 +1,11 @@
 /* Onglet Skills : trois arbres (Mineur, Logisticien, Barbare), dessinés en arbres de compétences, deux colonnes par arbre
    (arbres v2, 04/11/2026). En haut, trois boutons pour choisir sa spé (en changer remet les points à zéro). Un clic sur
    une case qu'on peut apprendre demande un rang au serveur (onOp), qui vérifie points, étage ouvert (3 points par étage
-   dans l'arbre), profondeur hors spé, skill de classe et « | » (needs). Reset : gratuit, hors session.
+   dans l'arbre), profondeur hors spé, skill de classe et « | » (needs). Reset : gratuit, même pendant une session (04/11 :
+   tout compte pour la session suivante, celle en cours garde ce qui était figé au lancement).
    Ne modifie rien lui-même : affiche ce que renvoie le serveur.
    Glyphes (25/10, src/meta/glyphs.js) : une petite case sous chaque skill qui a un glyphe ; clic : poser (skill au max,
-   glyphe dans l'inventaire) ou retirer (hors session). */
+   glyphe dans l'inventaire) ou retirer (même pendant une session, 04/11). */
 import { SKILLS, GLYPHS } from '../config.js';
 import { pxi } from './pxicons.js';
 import { blockedReason, rankOf, nodeText, parentsOf, treePoints, tierNeed, depthCap, pointsByTree } from '../meta/skills.js';
@@ -63,10 +64,11 @@ export function skillSheetHtml(st, id, { inv = { slots:[] }, busy = false, sessi
   const r = rankOf(st, id), why = blockedReason(st, id, st.points);
   const g = glyphSlot(st, id, inv), gact = g === 'can_pose' ? 'glyph_pose' : g === 'posed' || g === 'inactive' ? 'glyph_remove' : null;
   const glyph = g === 'none' ? '' : `<div class="skGl"><span class="skGlyph g-${g}">${g === 'posed' || g === 'inactive' ? '<img src="textures/glyph.png" alt="">' : ''}</span>`+
-    `<span><b>${esc(glyphOf(id))}</b><br><small class="mut">${esc(gact && session ? 'Poser ou retirer : après la session' : GLYPH_SHEET[g])}</small></span>`+
-    (gact && !session && !busy ? `<button data-glyph="${id}" data-gact="${gact}">${gact === 'glyph_pose' ? 'Poser' : 'Retirer'}</button>` : '')+`</div>`;
+    `<span><b>${esc(glyphOf(id))}</b><br><small class="mut">${esc(GLYPH_SHEET[g])}</small></span>`+
+    (gact && !busy ? `<button data-glyph="${id}" data-gact="${gact}">${gact === 'glyph_pose' ? 'Poser' : 'Retirer'}</button>` : '')+`</div>`;
   return `<div class="skShHead"><span class="skOrb">${NODE_PX[id] ? pxi(NODE_PX[id]) : n.icon}</span><div><h3>${esc(n.name)}</h3>`+
     `<span class="mut">${esc(n.tree.label)} · étage ${n.row} · rang ${r} / ${n.max}</span></div><button class="x" data-act="close" aria-label="Fermer">✕</button></div>`+
+    (parentsOf(id)[0] ? `<p class="skNeed${rankOf(st, parentsOf(id)[0].id) >= parentsOf(id)[0].max ? ' ok' : ''}">⤷ Exige <b>${esc(parentsOf(id)[0].name)}</b> au rang max</p>` : '')+
     `<div class="skLines"><div><i>Maintenant</i><span>${r ? esc(nodeText(id, r)) : 'Pas encore appris'}</span></div>`+
     (r < n.max ? `<div><i>Au rang suivant</i><span class="ok">${esc(nodeText(id, r + 1))}</span></div>` : '')+`</div>`+
     glyph+
@@ -79,22 +81,28 @@ export function setupSkills({ onOp, inSession, onChange = () => {}, inventory = 
   let spec = {};   // niveaux de spécialisation (progress.spec du serveur), un par arbre
   /* appli (03/11/2026) : view = l'arbre montré (sa classe au départ), sheet = le skill dont la fiche est ouverte */
   let view = null, sheet = null;
+  /* Ajout rapide (appli, 04/11/2026, Geoffrey) : un toucher sur un skill qu'on peut apprendre ajoute le point tout de suite,
+     sans ouvrir la fiche ; retenu dans ce navigateur (confort, pas de stockage qui compte) */
+  let quick = false;
+  try { quick = localStorage.getItem('dim.skQuick') === '1'; } catch {}
   const app = () => document.body.classList.contains('app');
 
   function render(){
     const free = st.points - st.spent, session = inSession();
     $('skillHead').innerHTML =
       `<span class="pill">${free} point${free > 1 ? 's' : ''} à dépenser</span> <span class="mut small">${st.spent} / ${st.points} utilisés · 1 point par niveau · ${pointsByTree(st).join('/')}</span>`+
-      ` <button id="skillReset"${st.spent && !session && !busy ? '' : ' disabled'} title="${session ? 'Impossible pendant une session' : 'Gratuit : tous les points sont rendus'}">↺ Reset</button>`+
-      (session ? ' <span class="mut small">(reset possible après la session)</span>' : '')+
+      ` <button id="skillReset"${st.spent && !busy ? '' : ' disabled'} title="Gratuit : tous les points sont rendus (ta spé reste)">↺ Reset</button>`+
+      (app() ? ` <label class="skQuick"><input type="checkbox" id="skQuick"${quick ? ' checked' : ''}> Ajout rapide</label>` : '')+
+      (session ? ' <span class="mut small">(une session est en cours : tes changements comptent pour la suivante)</span>' : '')+
       (msg ? ` <span class="err">${esc(msg)}</span>` : '');
-    const bar = specBarHtml(st.tree, { pts:pointsByTree(st), disabled:session || busy });
-    if(!app()){ $('skillTrees').innerHTML = bar + `<div class="skTreeRow">${SKILLS.trees.map(t => treeHtml(t)).join('')}</div>`; return; }
+    const bar = specBarHtml(st.tree, { pts:pointsByTree(st), disabled:busy });
+    if(!app()){ $('skillTrees').innerHTML = bar + `<div class="skTreeRow">${SKILLS.trees.map(t => treeHtml(t)).join('')}</div>`; drawLinks(); return; }
     const v = view ?? st.tree ?? SKILLS.trees[0].id;
     /* appli : les onglets montrent un arbre ; sous l'onglet d'un autre arbre, un bouton pour en faire sa spé */
     const tv = SKILLS.trees.find(t => t.id === v);
-    const pick = v !== st.tree ? `<button class="skPickSpec" data-spec="${v}"${session || busy ? ' disabled' : ''}>Choisir la spé ${esc(tv.label)}${st.spent ? ' (points remis à zéro)' : ''}</button>` : '';
+    const pick = v !== st.tree ? `<button class="skPickSpec" data-spec="${v}"${busy ? ' disabled' : ''}>Choisir la spé ${esc(tv.label)}${st.spent ? ' (points remis à zéro)' : ''}</button>` : '';
     $('skillTrees').innerHTML = `<div class="skTabs">${skillTabsHtml(v, { chosen:st.tree, spec })}</div>` + pick + treeHtml(tv);
+    drawLinks();
     renderSheet();
   }
   /* fiche d'un skill (appli) : un toucher sur le fond, ✕ ou le bouton retour d'Android (src/app/device.js) la ferme */
@@ -118,6 +126,36 @@ export function setupSkills({ onOp, inSession, onChange = () => {}, inventory = 
     if(sheet) el.firstChild.innerHTML = skillSheetHtml(st, sheet, { inv:inventory(), busy, session:inSession() }) + (msg ? `<p class="err">${esc(msg)}</p>` : '');
   }
 
+  /* liens de dépendance (« | », 04/11/2026, Geoffrey : « il faut bien voir visuellement cette dépendance ») : tracés
+     après la mise en page, d'après la place réelle des cases (bureau et appli). Un crochet sur le côté gauche, de la case
+     exigée à celle qui l'exige, avec une flèche ; orange quand le skill exigé est au max (le chemin est ouvert). */
+  function drawLinks(){
+    requestAnimationFrame(() => {
+      for(const g of document.querySelectorAll('#skillTrees .skGraph')){
+        const svg = g.querySelector('.skLinks'), box = g.getBoundingClientRect();
+        if(!svg || !box.width) continue;
+        svg.setAttribute('viewBox', `0 0 ${box.width} ${box.height}`);
+        const orb = el => el?.querySelector('.skOrb')?.getBoundingClientRect();
+        svg.innerHTML = `<defs><marker id="skArrOff" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0 0L10 5L0 10z" class="ar"/></marker>`+
+          `<marker id="skArrOn" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0 0L10 5L0 10z" class="ar on"/></marker></defs>` +
+          [...g.querySelectorAll('[data-needs]')].map(c => {
+            const a = orb(g.querySelector(`[data-nid="${c.dataset.needs}"]`)), b = orb(c);
+            if(!a || !b) return '';
+            const ay = a.top + a.height / 2 - box.top, by = b.top + b.height / 2 - box.top;
+            const on = c.dataset.open ? ' on' : '', mk = `marker-end="url(#${on ? 'skArrOn' : 'skArrOff'})"`;
+            /* colonne de droite : le crochet passe à droite des cases (pas entre les deux colonnes) */
+            if(c.dataset.col === '1' && !app()){
+              const x1 = Math.min(box.width - 2, Math.max(a.right, b.right) - box.left + 9);
+              return `<path class="lnk${on}" d="M${a.right - box.left} ${ay} H${x1} V${by} H${b.right - box.left + 3}" ${mk}/>`;
+            }
+            const x0 = Math.max(2, Math.min(a.left, b.left) - box.left - 9);
+            return `<path class="lnk${on}" d="M${a.left - box.left} ${ay} H${x0} V${by} H${b.left - box.left - 3}" ${mk}/>`;
+          }).join('');
+      }
+    });
+  }
+  addEventListener('resize', () => { if(!$('skillTrees')?.closest('[hidden]')) drawLinks(); });
+
   /* un arbre façon RPG (arbres v2, 04/11) : deux colonnes de cases rondes, six étages ; une ligne relie un skill à celui
      qu'il exige (« | », needs), allumée quand celui-ci est au max. À gauche de chaque étage : les points à dépenser dans
      l'arbre pour l'ouvrir ; hors spé, les étages trop profonds sont grisés. */
@@ -127,10 +165,6 @@ export function setupSkills({ onOp, inSession, onChange = () => {}, inventory = 
     const pos = {};                                     // id → { x en %, y en px } (centre de la case)
     for(const n of t.nodes) pos[n.id] = { x:n.col ? 70 : 30, y:(n.row - 1) * ROW_H + NODE / 2 + 6 };
     const h = (rows - 1) * ROW_H + NODE + 40;
-    const links = t.nodes.flatMap(n => parentsOf(n.id).map(p => {
-      const on = rankOf(st, p.id) >= p.max, a = pos[p.id], b = pos[n.id];
-      return `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" class="${on ? 'on' : ''}" vector-effect="non-scaling-stroke"/>`;
-    })).join('');
     const tiers = Array.from({ length:rows }, (_, i) => i + 1).map(r => {
       const open = pts >= tierNeed(r), deep = r > cap;
       return `<span class="skTier${open && !deep ? ' on' : ''}" style="top:${(r - 1) * ROW_H + 6}px" title="${esc(deep ? WHY.too_deep : `Étage ${r} : ${tierNeed(r)} points dans l'arbre`)}">`+
@@ -139,19 +173,21 @@ export function setupSkills({ onOp, inSession, onChange = () => {}, inventory = 
     const nodes = t.nodes.map(n => {
       const r = rankOf(st, n.id), why = blockedReason(st, n.id, st.points), can = !why && !busy;
       const state = r >= n.max ? 'max' : can ? 'can' : r ? 'some' : 'off';
+      const need = parentsOf(n.id)[0];
       const tip = [n.name, nodeText(n.id, r), `Rang ${r} / ${n.max}`, n.specOnly ? `Skill de classe (${t.label})` : '',
+                   need ? `Exige ${need.name} au rang max` : '',
                    can ? 'Clic : apprendre un rang (1 point)' : why && why !== 'maxed' ? '🔒 ' + (WHY[why] ?? '') : ''].filter(Boolean).join('\n');
       /* appli (03/11/2026) : lk = un maillon vers le skill exigé (lk-on : chemin ouvert) ; --c / --r : colonne et étage */
       const parents = parentsOf(n.id);
       const lk = parents.length ? (parents.every(p => rankOf(st, p.id) >= p.max) ? ' lk lk-on' : ' lk') : '';
-      return `<div class="skNode ${state}${lk}${n.specOnly ? ' cls' : ''}" data-nid="${n.id}" style="left:${pos[n.id].x}%;top:${pos[n.id].y}px;--c:${n.col + 1};--r:${n.row}"${can ? ` data-node="${n.id}" role="button" tabindex="0"` : ''} data-tip="${esc(tip)}">`+
+      return `<div class="skNode ${state}${lk}${n.specOnly ? ' cls' : ''}" data-nid="${n.id}" data-col="${n.col}"${need ? ` data-needs="${need.id}"${rankOf(st, need.id) >= need.max ? ' data-open="1"' : ''}` : ''} style="left:${pos[n.id].x}%;top:${pos[n.id].y}px;--c:${n.col + 1};--r:${n.row}"${can ? ` data-node="${n.id}" role="button" tabindex="0"` : ''} data-tip="${esc(tip)}">`+
              `<span class="skOrb">${NODE_PX[n.id] ? pxi(NODE_PX[n.id]) : n.icon}</span><b class="skRank">${r}/${n.max}</b>${can ? '<i class="skPlus">+</i>' : ''}`+
              `<span class="skName">${esc(n.name)}</span><span class="skTxt">${esc(nodeText(n.id, Math.max(r, 1)))}</span>${glyphHtml(n)}</div>`;
     }).join('');
     return `<div class="skTree${chosen ? ' chosen' : ''}${st.tree && !chosen ? ' side' : ''}"><h3>${TREE_PX[t.id] ? pxi(TREE_PX[t.id]) : t.icon} ${esc(t.label)}`+
       ` <span class="mut small">· ${pts} pts${chosen ? ' · ★ ta spé' : st.tree ? ` · jusqu'à l'étage ${Math.max(0, cap)}` : ''}</span></h3>`+
       specLevelHtml(spec[t.id])+
-      `<div class="skGraph" style="height:${h}px"><svg class="skLinks" viewBox="0 0 100 ${h}" preserveAspectRatio="none">${links}</svg>${tiers}${nodes}</div></div>`;
+      `<div class="skGraph" style="height:${h}px"><svg class="skLinks" aria-hidden="true"></svg>${tiers}${nodes}</div></div>`;
   }
 
   /* case de glyphe d'un skill (vide si le skill n'a pas de glyphe) */
@@ -159,8 +195,8 @@ export function setupSkills({ onOp, inSession, onChange = () => {}, inventory = 
     const g = glyphSlot(st, n.id, inventory());
     if(g === 'none') return '';
     const act = g === 'can_pose' ? 'glyph_pose' : g === 'posed' || g === 'inactive' ? 'glyph_remove' : null;
-    const click = act && !inSession() && !busy;
-    const tip = [glyphOf(n.id), GLYPHS.desc[n.id], GLYPH_TIP[g], act && inSession() ? 'Impossible pendant une session' : ''].filter(Boolean).join('\n');
+    const click = act && !busy;
+    const tip = [glyphOf(n.id), GLYPHS.desc[n.id], GLYPH_TIP[g]].filter(Boolean).join('\n');
     return `<span class="skGlyph g-${g}"${click ? ` data-glyph="${n.id}" data-gact="${act}" role="button" tabindex="0"` : ''} data-tip="${esc(tip)}">`+
            (g === 'posed' || g === 'inactive' ? '<img src="textures/glyph.png" alt="">' : g === 'can_pose' ? '+' : '')+`</span>`;
   }
@@ -177,7 +213,7 @@ export function setupSkills({ onOp, inSession, onChange = () => {}, inventory = 
     if(app()){
       const t = e.target.closest('[data-sktab]'), n = e.target.closest('[data-nid]');
       if(t){ view = t.dataset.sktab; render(); }
-      else if(n){ sheet = n.dataset.nid; renderSheet(); }
+      else if(n){ if(quick && n.dataset.node) send({ action:'learn', node:n.dataset.node }); else { sheet = n.dataset.nid; renderSheet(); } }
       return;
     }
     const g = e.target.closest('[data-glyph]');
@@ -194,6 +230,11 @@ export function setupSkills({ onOp, inSession, onChange = () => {}, inventory = 
     view = t.id; send({ action:'spec', tree:t.id });
   }, true);
   $('skillTrees').onkeydown = e => { const b = e.target.closest('[data-node]'); if(b && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); send({ action:'learn', node:b.dataset.node }); } };
+  $('skillHead').onchange = e => {
+    if(e.target.id !== 'skQuick') return;
+    quick = e.target.checked;
+    try { localStorage.setItem('dim.skQuick', quick ? '1' : '0'); } catch {}
+  };
   $('skillHead').onclick = async e => {
     if(!e.target.closest('#skillReset')) return;
     if(await ask('Reset des skills : tous les points sont rendus (ta spé reste). Continuer ?', { ok:'Reset' })) send({ action:'reset' });
