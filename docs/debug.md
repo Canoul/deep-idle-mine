@@ -7425,3 +7425,15 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   = true), script `scripts/set-raid-ready.js --name X [--ready on|off]`. Tests `tests/admin-raid-move.test.js` +2 (route,
   script) : 64/64 avec raid-server, admin, admin-party, guild-service, app-guild. Les ID de compte des tests doivent passer
   `parseAccountId` (sinon `raidKick` répond « Joueur inconnu »).
+
+## 04/11/2026 — Geoffrey — Arbres de skills v3 (branche geoffrey/arbres-skills-v3) — ✅ en ligne le 04/11
+- `src/config.js` SKILLS.trees : 5 étages, `col:2` pour all_terrain (Mineur, étage 2), ambidextrous (nouveau, Logisticien
+  étage 2, `adds:{ doubleAttack:2 }`, max 3) et demat (Logisticien, étage 3) ; places changées (voir GAME_DESIGN).
+  Escalateur max 3 gardé (le tableau de Geoffrey disait 5 ; décidé avec lui). `src/meta/skills.js` SKILLS_VERSION 2 → 3 :
+  toute sauvegarde de compte v2 perd ses rangs (`migrateSkills`) ; les sets sont rejoués par `sanitizeSkills` (rangs
+  devenus impossibles ignorés).
+- Affichage : `src/ui/skills.js` colonnes à 30/70 % (2 colonnes) ou 20/50/80 % (3 colonnes, classe `.c3` : cases de 46u au
+  lieu de 60u) ; `--cols` sur `.skGraph` pour la grille de l'appli (`src/app/app.css`). Icône d'Ambidextre : `grab`.
+- Tests ✅ skills (+ Ambidextre), skills-v2, talents-etage6, mule, sets, game-service, social, glyphs, winch, dps,
+  app-skills, wiki, dev-presets, dev-spec, session, mobs, anticheat skills / glyphs / sets (versions 2 → 3 et étages mis
+  à jour). ⚠️ Pas vu dans le navigateur : 3 colonnes au bureau dans un arbre d'environ 300 px, noms longs sur 2 lignes.

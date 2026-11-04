@@ -124,7 +124,7 @@ test('serveur : migration (ancienne sauvegarde → points rendus, spé gardée),
   assert.deepEqual(await game.skillPointsOf('AAAA1111'), [0, 0, 0], 'points rendus');
   let r = await game.skills(ME, { action: 'learn', node: 'damage', opId: 'op-skv2-aa' });
   assert.equal(r.skills.ranks.damage, 1);
-  assert.equal((await store.getSkills('AAAA1111')).v, 2, 'enregistrée en v2 : plus de migration');
+  assert.equal((await store.getSkills('AAAA1111')).v, 3, 'enregistrée en v3 : plus de migration');
   r = await game.skills(ME, { action: 'spec', tree: 'mineur', opId: 'op-skv2-bb' });
   assert.deepEqual([r.skills.tree, r.skills.spent], ['mineur', 0]);
   await assert.rejects(game.skills(ME, { action: 'learn', node: 'taunt', opId: 'op-skv2-cc' }), /spécialisation|Hors spé|classe/i);

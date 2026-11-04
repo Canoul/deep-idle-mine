@@ -9,6 +9,15 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 04/11/2026 — Geoffrey — Skills : nouveaux arbres (5 étages, Ambidextre)
+- **Pour le joueur** : les arbres de skills passent à 5 étages ; plusieurs skills changent de place (les auras, Ivresse
+  Minérale et Reconnaissance remontent ; Treuil, Escalateur et Mule arrivent plus tôt ; Dématérialisation descend d'un
+  étage). Nouveau skill du Logisticien : **Ambidextre** (double attaque +2 % par rang, 3 rangs). Tout le monde récupère
+  ses points (reset gratuit), la spé et les glyphes restent.
+- **Décisions** : Escalateur reste au max 3 (le tableau disait 5). Reset de tous les joueurs.
+- **À suivre** : regarder l'onglet Skills au bureau et dans l'appli (3 colonnes dans certains arbres).
+- **État** : ✅ en ligne le 04/11
+
 ## JJ/MM/AAAA — Prénom — Titre court
 - **Pour le joueur** : ce qui change en jeu (ou « rien, c'est de l'organisation »).
 - **Décisions** : choix de design ou d'équilibrage tranchés (s'il y en a).
