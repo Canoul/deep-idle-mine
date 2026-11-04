@@ -52,7 +52,8 @@ export function createRaidViewer(G){
   const mine = createViewer(G.mine);
   return function view(since){
     if(G.phase === 'boss' && G.boss) return arenaView(G);
-    return { ...mine(since), mode: 'raid', phase: G.phase, raid: raidHeader(G) };
+    /* over : celui du raid (temps écoulé pendant le minage : la mine, elle, ne finit pas ; 04/11, vu au navigateur) */
+    return { ...mine(since), mode: 'raid', phase: G.phase, over: G.over, raid: raidHeader(G) };
   };
 }
 

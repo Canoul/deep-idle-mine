@@ -13,7 +13,7 @@
      (src/ui/instant-lobby.js) ; à l'heure, le serveur l'ouvre et le navigateur bascule sur Session, où elle a son
      propre affichage (src/render/instant.js, src/ui/instant-hud.js). */
 import { applyRarityColors } from './ui/rarity.js';
-import { GAME, HES_COMING, PARTY, SESSION_LEN, INSTANT_MINE, STATS, SOCIAL, CAMERA, JUDGMENT, TOWER, MINE_MODES, INSTANCE, GUIDE, PRISON, ENERGY, DT } from './config.js';
+import { GAME, HES_COMING, PARTY, SESSION_LEN, INSTANT_MINE, STATS, SOCIAL, CAMERA, JUDGMENT, TOWER, MINE_MODES, INSTANCE, GUIDE, PRISON, ENERGY, DT, RAID } from './config.js';
 import { emptyView, applyView, shownPos } from './shared/view.js';
 import { applyInstantView } from './shared/instant-view.js';
 import { createInstantRenderer, MI_TILE } from './render/instant.js';
@@ -25,6 +25,9 @@ import { updateTowerHUD, showTowerEnd } from './ui/tower-hud.js';
 import { setTeamEnergies } from './ui/energy-tag.js';
 import { updateInstanceHUD, showInstanceEnd } from './ui/instance-hud.js';
 import { createInstanceRenderer } from './render/instance.js';
+import { createRaidRenderer } from './render/raid.js';
+import { applyRaidView } from './shared/raid-view.js';
+import { updateRaidHUD, showRaidEnd, raidBannerText, raidMinedPct } from './ui/raid-hud.js';
 import { applyInstanceView } from './shared/instances-view.js';
 import { isInstanceMode } from './shared/instances.js';
 import { createTowerRenderer } from './render/tower.js';
@@ -116,7 +119,9 @@ const miRenderer = createInstantRenderer($('cvMi'));
 const isMi = () => rec?.mode === 'mi';
 const twRenderer = createTowerRenderer($('cvTw'));
 const inRenderer = createInstanceRenderer($('cvIn'));
-const SESSION_CV = { mine:'cv', mi:'cvMi', tower:'cvTw', instance:'cvIn' };
+/* Raid Cerbère (04/11/2026) : minage et porte = la mine (cv) ; l'arène = les panneaux et le canvas de l'instance (cvIn) */
+const rdRenderer = createRaidRenderer($('cvIn'));
+const SESSION_CV = { mine:'cv', mi:'cvMi', tower:'cvTw', instance:'cvIn', raid:'cvIn' };
 const backdrop = createBackdrop($('bgSession'), { sessionCanvas: mode => $(SESSION_CV[mode]), mineZoom });   // fond : la session en cours, hors onglet Session
 /* fond hors session : le Carreau, la ville du spawn (29/10) ; onglet Session sans session : on s'y promène */
 const town = setupTown($('bgTown'), {
@@ -136,7 +141,15 @@ const town = setupTown($('bgTown'), {
 });
 window.TOWN_UI = town;                               // débogage depuis la console (F12) : TOWN_UI.state()
 const isIn = () => isInstanceMode(rec?.mode);   // instance (27/10) : même principe d'affichage que les tours
-const isTw = () => isTowerMode(rec?.mode);   // tour de l'Ange ou du Démon : même principe d'affichage que la MI
+const isTw = () => isTowerMode(rec?.mode);
+const isRd = () => rec?.mode === 'raid';                          // raid Cerbère (04/11)
+const raidBoss = G => G?.mode === 'raid' && G.phase === 'boss';    // … dans l'arène (sinon : la mine)
+/* raid : la mine (#run) pendant le minage et la porte, les panneaux de l'instance (#inRun) dans l'arène */
+function raidPanes(){
+  if(!isRd() || !$('end').hidden) return;
+  const boss = raidBoss(G);
+  $('run').hidden = boss; $('inRun').hidden = !boss;
+}   // tour de l'Ange ou du Démon : même principe d'affichage que la MI
 
 /* ancienne sauvegarde d'inventaire dans le navigateur : l'inventaire est maintenant sur le serveur */
 try { for(const k of Object.keys(localStorage)) if(k.startsWith('deepIdleMine.inventory') || k === 'deepIdleMine.global') localStorage.removeItem(k); } catch {}
@@ -461,7 +474,7 @@ window.MI = instantLobby;                            // pour le débogage depuis
 function showNoSession(){
   rec = null; G = null; waiting = false; clearTimeout(viewTimer);
   setsUI.refresh(); sessionFlag();   // sets de nouveau disponibles
-  $('run').hidden = true; $('miRun').hidden = true; $('twRun').hidden = true; $('inRun').hidden = true; $('noSession').hidden = inRoom();   // une visite au Bloc géant garde l'onglet
+  $('run').hidden = true; $('miRun').hidden = true; $('twRun').hidden = true; $('inRun').hidden = true; $('raidBanner').hidden = true; $('noSession').hidden = inRoom();   // une visite au Bloc géant garde l'onglet
   lobby.update({ account:acct.account, offline:acct.offline, info, session:null });
   updatePrisonUI();   // la prison reprend l'onglet Session
   pollLobby();
@@ -550,7 +563,15 @@ async function joinParty(fn){
   return r;
 }
 boardTab = setupLeaderboard({ root: document.querySelector('.view[data-view="classement"]'), load: board => socialApi.leaderboard(board), moderate: p => moderate.playerMenu(p) });
-guildTab = setupGuild({ root: document.querySelector('.view[data-view="guilde"]'), onChange: () => { pollSocial(); pollLobby(); } });
+guildTab = setupGuild({ root: document.querySelector('.view[data-view="guilde"]'), onChange: () => { pollSocial(); pollLobby(); },
+  /* lobby de raid (04/11/2026) : le chef lance → la session ; un membre voit le raid lancé → la session est relue */
+  onRaid: async session => {
+    enterSession(session); nav.show('session');
+    gameApi.state().then(st => { setInventory(st.inventory); setEnergy(st.energy); setPrison(st.prison, { sync:false }); }).catch(() => {});
+  },
+  onRaidWatch: async () => { if(!rec) await refresh().catch(console.warn); nav.show('session'); },
+  onState: st => { const run = st.mine?.raid?.running; if(run?.mine && !rec && !waiting) refresh().then(() => nav.show('session')).catch(console.warn); },
+  now: () => serverNow() });
 const social = setupSocial({
   request: async name => setSocial(await socialApi.request(name)),
   accept:  async id => setSocial(await socialApi.accept(id)),
@@ -650,8 +671,9 @@ function enterSession(session){
   setsUI.refresh(); sessionFlag();   // sets indisponibles pendant la session
   clockOffset = session.now - Date.now();
   appLayer?.refreshNotifs();
-  const mi = session.mode === 'mi', tw = isTowerMode(session.mode), ins = isInstanceMode(session.mode);
-  G = mi ? { mode:'mi', ready:false, miners:[] } : tw ? { mode:'tower', ready:false, miners:[] } : ins ? { mode:'instance', ready:false, miners:[] } : emptyView();   // MI et tour : remplacées en entier à chaque envoi
+  const mi = session.mode === 'mi', tw = isTowerMode(session.mode), ins = isInstanceMode(session.mode), rd = session.mode === 'raid';
+  G = mi ? { mode:'mi', ready:false, miners:[] } : tw ? { mode:'tower', ready:false, miners:[] } : ins ? { mode:'instance', ready:false, miners:[] }
+    : rd ? Object.assign(emptyView(), { mode:'raid', phase:'mine' }) : emptyView();   // MI et tour : remplacées en entier à chaque envoi ; raid : la mine, puis l'arène
   window.G = G;                             // pour le débogage depuis la console (F12)
   /* la caméra suit son propre mineur ; les mineurs portent le nom de leur joueur */
   ui.names = Object.fromEntries(session.players.map(p => [p.account, p.name]));
@@ -660,6 +682,9 @@ function enterSession(session){
   renderSpeeds(ui, info, s => setClock({ speed:s }));
   $('seedLbl').textContent = info.dev ? `seed ${session.seed}` : '';
   $('end').hidden = true; $('noSession').hidden = true; $('run').hidden = mi || tw || ins; $('miRun').hidden = !mi; $('twRun').hidden = !tw; $('inRun').hidden = !ins;
+  $('inLeaveBtn').innerHTML = pxi('door') + (rd ? 'Quitter le raid' : 'Quitter l\'instance');
+  $('inLeaveBtn').title = rd ? 'Tu ne pourras pas revenir dans ce raid' : 'La clé est perdue';
+  $('raidBanner').hidden = !rd;
   lobby.update({ session:{ id:session.id } });   // lobby en lecture seule
   updatePrisonUI();                              // la session passe devant la prison (mine instantanée)
   pollView();
@@ -689,6 +714,11 @@ async function pollView(){
     Object.assign(rec, { speed:r.speed, startedAt:r.startedAt, finishAt:r.finishAt });   // l'administration peut changer la vitesse en cours de session
     if(r.view?.mode === 'mi'){ G = applyInstantView(r.view, G?.mode === 'mi' ? G : null, performance.now(), viewRate()); G.ready = true; window.G = G; lastView = performance.now(); }
     else if(r.view?.mode === 'instance'){ G = applyInstanceView(r.view, G?.mode === 'instance' ? G : null, performance.now(), viewRate()); G.ready = true; window.G = G; lastView = performance.now(); }
+    else if(r.view?.mode === 'raid'){
+      G = applyRaidView(r.view, G?.mode === 'raid' ? G : null, performance.now(), viewRate()); G.ready = true; G._rate = viewRate(); window.G = G; lastView = performance.now();
+      if(!raidBoss(G) && !ui.followSet && G.miners.length){ ui.follow = (G.miners.find(m => m.account === acct.account?.id) ?? G.miners[0]).id; ui.followSet = true; }
+      raidPanes();
+    }
     else if(r.view?.mode === 'tower'){ G = applyTowerView(r.view, G?.mode === 'tower' ? G : null, performance.now(), viewRate()); G.ready = true; window.G = G; lastView = performance.now(); }
     else if(r.view){
       applyView(G, r.view, performance.now(), viewRate()); lastView = performance.now();
@@ -725,7 +755,7 @@ function smooth(dtr){
 async function leave(){
   if(prisonShown()) return stopPrison();   // même bouton, pendant qu'on regarde la prison (29/10)
   if(!G || G.over) return;
-  if(!await ask(isIn() ? 'Quitter l\'instance ?\nTu ne recevras pas de coffre. Si le groupe gagne sans toi, ta clé est perdue (elle est rendue si le groupe perd).' : isTw() ? 'Quitter la tour ?\nTu ne recevras pas de trésor.' : isMi() ? 'Quitter la mine instantanée ?\nTu ne recevras rien de ce que tu as miné.'
+  if(!await ask(isRd() ? 'Quitter le raid ?\nTu ne pourras pas y revenir : ton mineur quitte le raid pour de bon.' : isIn() ? 'Quitter l\'instance ?\nTu ne recevras pas de coffre. Si le groupe gagne sans toi, ta clé est perdue (elle est rendue si le groupe perd).' : isTw() ? 'Quitter la tour ?\nTu ne recevras pas de trésor.' : isMi() ? 'Quitter la mine instantanée ?\nTu ne recevras rien de ce que tu as miné.'
                      : 'Quitter la session ?\nTu ne recevras rien de cette session : le coffre ira aux joueurs restants.', { ok:'Quitter', danger:true })) return;
   try { await gameApi.leave(); }
   catch(e){ if(!(e instanceof ApiError) || e.code !== 'no_session'){ tell(e.message); return; } }
@@ -841,8 +871,8 @@ function updatePrisonUI(){
     if($('prisonLootBody').innerHTML !== html) $('prisonLootBody').innerHTML = html;
   }
   $('prisonBanner').hidden = !on;
-  $('leaveBtn').innerHTML = pxi('door') + (on ? 'Sortir de prison' : 'Quitter la session');
-  $('leaveBtn').title = on ? 'Le coffre du run en cours est versé, pas ce que le mineur porte' : 'Tu ne recevras rien de cette session';
+  $('leaveBtn').innerHTML = pxi('door') + (on ? 'Sortir de prison' : isRd() ? 'Quitter le raid' : 'Quitter la session');
+  $('leaveBtn').title = on ? 'Le coffre du run en cours est versé, pas ce que le mineur porte' : isRd() ? 'Tu ne pourras pas revenir dans ce raid' : 'Tu ne recevras rien de cette session';
   if(rec) return;                               // une session est affichée : on n'y touche pas
   if(on){ $('run').hidden = !$('end').hidden; $('noSession').hidden = true; }   // un bilan affiché reste devant
   /* mode dev (29/10) : les boutons de vitesse de la barre de la mine pilotent la prison (pas de pause en prison) */
@@ -893,6 +923,7 @@ function showResult(st){
   if(ended.mode === 'mi') showInstantEnd(ended, acct.account?.id, back, toInv);
   else if(isTowerMode(ended.mode)) showTowerEnd(ended, acct.account?.id, back, toInv);
   else if(isInstanceMode(ended.mode)) showInstanceEnd(ended, acct.account?.id, back, toInv);
+  else if(ended.mode === 'raid') showRaidEnd(ended, acct.account?.id, () => { done(); $('end').hidden = true; showNoSession(); nav.show('guilde'); });
   else showEnd(ended, acct.account?.id, back, toInv, up);
   pollLobby();                               // signe de vie au groupe pendant le bilan
 }
@@ -980,7 +1011,7 @@ for(const id of ['twTeam', 'inTeam', 'miRank']) $(id).addEventListener('pointerd
   ui.focus = !m || m.account === acct.account?.id || ui.focus === m.id ? null : m.id;
 });
 function updateEffects(G){
-  const key = !G ? null : G.mode === 'mi' || G.mode === 'tower' || G.mode === 'instance' ? G.mode : 'mine';
+  const key = !G ? null : G.mode === 'mi' || G.mode === 'tower' || G.mode === 'instance' ? G.mode : raidBoss(G) ? 'instance' : 'mine';   // arène du raid : la barre de l'instance
   for(const [k, [update, bar, cv, wrap, below]] of Object.entries(fxBars)){
     if(k !== key){ if(!bar.hidden) update(null); continue; }
     /* 29/10 : mine classique = le mineur suivi (clic dans l'équipe) ; tours, instance, MI = le joueur choisi dans l'équipe
@@ -994,7 +1025,7 @@ function updateEffects(G){
 const spellBars = { tower: [$('spellBarTw'), $('cvTw'), $('cvTwWrap')], instance: [$('spellBarIn'), $('cvIn'), $('cvInWrap')] };
 function updateSpellBars(G){
   for(const [k, [el, cv, wrap]] of Object.entries(spellBars)){
-    showSpellBar(el, G && G.mode === k ? G.miners.find(m => m.account === acct.account?.id) ?? null : null, G?.t ?? 0);
+    showSpellBar(el, G && (G.mode === k || (k === 'instance' && raidBoss(G))) ? G.miners.find(m => m.account === acct.account?.id) ?? null : null, G?.t ?? 0);
     placeSpellBar(el, cv, wrap);
   }
 }
@@ -1011,6 +1042,7 @@ function frame(now){
   }
   const pz = prisonShown() && !!PG?.ready;   // prison : affichée comme la mine classique (29/10)
   const shown = G?.ready ? G : pz ? PG : null, mi = shown?.mode === 'mi', tw = shown?.mode === 'tower', ins = shown?.mode === 'instance';
+  const rb = raidBoss(shown), rm = shown?.mode === 'raid' && !rb;   // raid : l'arène, ou la mine (minage, porte)
   ui.prison = pz && shown === PG;
   ui.prisonArea = prison?.area ?? null;   // area du contenu de la prison (titre du panneau Area)
   /* fond : la session en cours, ou la prison (30/10/2026 : même fond et mêmes transitions que la mine) */
@@ -1018,10 +1050,11 @@ function frame(now){
   backdrop.draw(bgG, ui.tab !== 'session', acct.account?.id, ui.follow);
   /* le Carreau : fond quand il n'y a ni session ni prison en fond ; promenade quand l'onglet Session n'a rien d'autre à montrer */
   town.frame(dtr, { show: !appBoot.app && !rec && !(ui.prison && ui.tab === 'session') && !(bgG && backdrop.on) && !!acct.account && !acct.offline, walk: townWalks(ui.tab, $('noSession').hidden, $('end').hidden), tab: ui.tab }, now);
-  if(shown && ui.tab==='session') ins ? inRenderer.draw(shown, acct.account?.id) : tw ? twRenderer.draw(shown, acct.account?.id) : mi ? miRenderer.draw(shown, acct.account?.id) : renderer.draw(shown, ui.follow);
+  if(shown && ui.tab==='session') rb ? rdRenderer.draw(shown, acct.account?.id) : ins ? inRenderer.draw(shown, acct.account?.id) : tw ? twRenderer.draw(shown, acct.account?.id) : mi ? miRenderer.draw(shown, acct.account?.id) : renderer.draw(shown, ui.follow);
   if(now - lastHud > 120){
     if(perfOn){ const t = perfText(perf.stats()); for(const el of document.querySelectorAll('.perfBox')) el.textContent = t; }
-    if(ins && ui.tab==='session') updateInstanceHUD(shown, acct.account?.id, rec.finishAt ? Math.max(0, (rec.finishAt - serverNow()) / 1000) : null, ui.focus);
+    if(rb && ui.tab==='session') updateRaidHUD(shown, acct.account?.id, !info.dev && rec.finishAt ? Math.max(0, (rec.finishAt - serverNow()) / 1000) : null, ui.focus);
+    else if(ins && ui.tab==='session') updateInstanceHUD(shown, acct.account?.id, rec.finishAt ? Math.max(0, (rec.finishAt - serverNow()) / 1000) : null, ui.focus);
     else if(tw && ui.tab==='session') updateTowerHUD(shown, acct.account?.id, rec.finishAt ? Math.max(0, (rec.finishAt - serverNow()) / 1000) : null, ui.focus);
     else if(mi && ui.tab==='session') updateInstantHUD(shown, acct.account?.id, Math.max(0, (rec.finishAt - serverNow()) / 1000), ui.focus);
     else if(ui.prison && ui.tab==='session'){
@@ -1036,18 +1069,26 @@ function frame(now){
     }
     else if(shown && ui.tab==='session'){
       updateHUD(shown, ui);
-      focusPanel.update(shown, acct.account?.id);
+      if(rm){                                               // raid, minage et porte : bandeau, temps sur RAID.duration, pas de focus
+        $('raidBannerTxt').textContent = raidBannerText(shown.raid);
+        $('raidBanner').classList.toggle('door', shown.phase === 'door');
+        $('raidBar').style.width = raidMinedPct(shown.raid) + '%';
+        $('timer').textContent = fmt(shown.t) + ' / ' + fmt(RAID.duration);
+        $('timeBar').style.width = Math.min(100, shown.t / RAID.duration * 100) + '%';
+        $('focusCard').hidden = true; $('focusAreaCard').hidden = true;
+      } else focusPanel.update(shown, acct.account?.id);
       $('followBtn').hidden = !renderer.free;               // caméra déplacée par le joueur : bouton pour revenir
       const late = !info.dev && rec && G.ticks + 50 < tickAt(serverNow() - rec.startedAt, rec.speed);
       $('realLeft').textContent = late ? 'connexion…' : info.dev ? '' : `fin dans ${fmt(Math.max(0, (rec.finishAt - serverNow()) / 1000))}`;
     }
     updateEffects(ui.tab==='session' ? shown : null);
     updateSpellBars(ui.tab==='session' ? shown : null);
-    updateNavSession(rec ? shown : null, waiting, ins ? INSTANCE.duration : tw ? TOWER.duration : mi ? INSTANT_MINE.duration : SESSION_LEN);
-    updateOrbs(shown, mi || tw || ins, ins ? INSTANCE.duration : tw ? TOWER.duration : undefined);
+    updateNavSession(rec ? shown : null, waiting, isRd() ? RAID.duration : ins ? INSTANCE.duration : tw ? TOWER.duration : mi ? INSTANT_MINE.duration : SESSION_LEN);
+    updateOrbs(shown, mi || tw || ins || rb, rb || rm ? RAID.duration : ins ? INSTANCE.duration : tw ? TOWER.duration : undefined);
     if(ui.tab==='session'){
-      ins ? fitCanvas($('cvIn'), $('cvInWrap')) : tw ? fitCanvas($('cvTw'), $('cvTwWrap')) : mi ? fitInstant($('cvMi'), $('cvMiWrap'), miRenderer, MI_TILE) : fitMine($('cv'), $('cvWrap'), renderer, CAMERA, TILE);   // la mine remplit la place libre
-      if(shown) backdrop.measure(ins ? 'instance' : tw ? 'tower' : mi ? 'mi' : 'mine', $(SESSION_CV[ins ? 'instance' : tw ? 'tower' : mi ? 'mi' : 'mine']), mi ? miRenderer.rows : renderer.rows);   // le fond reprend cette place et cette échelle
+      ins || rb ? fitCanvas($('cvIn'), $('cvInWrap')) : tw ? fitCanvas($('cvTw'), $('cvTwWrap')) : mi ? fitInstant($('cvMi'), $('cvMiWrap'), miRenderer, MI_TILE) : fitMine($('cv'), $('cvWrap'), renderer, CAMERA, TILE);   // la mine remplit la place libre
+      const bm = rb ? 'raid' : ins ? 'instance' : tw ? 'tower' : mi ? 'mi' : 'mine';
+      if(shown) backdrop.measure(bm, $(SESSION_CV[bm]), mi ? miRenderer.rows : renderer.rows);   // le fond reprend cette place et cette échelle
       document.querySelectorAll('.runL, .runR, .runGrid.mi > aside').forEach(c => clearDock(c, dockEl($)));   // colonnes jusqu'en bas si possible
     }
     const face = $('navAccount').querySelector('canvas');

@@ -167,6 +167,8 @@
 <!-- session en cours (ou prison : même affichage, avec son bandeau, 29/10) -->
 <div id="run" hidden>
 <div class="prisonBanner" id="prisonBanner" hidden><span>⛓</span><span id="prisonBannerTxt"></span></div>
+<!-- raid Cerbère (04/11/2026), minage et porte : phase, blocs restants, temps (src/ui/raid-hud.js raidBannerText) -->
+<div class="prisonBanner raidBanner" id="raidBanner" hidden><span>🔥</span><span id="raidBannerTxt"></span><div class="bar raidBar"><i id="raidBar"></i></div></div>
 <header>
   <div class="timer" id="timer">00:00 / 60:00</div>
   <div class="grow"><div class="bar"><i id="timeBar"></i></div></div>
@@ -444,6 +446,7 @@
     <div class="seg rsTabs" id="guildTabs"></div>
     <p id="guildMsg" class="err small" hidden></p>
     <div id="guildMineTab" hidden><div id="guildMine"></div></div>
+    <div id="guildRaidTab" hidden><div id="guildRaid"></div></div>
     <div id="guildSearchTab" hidden>
       <div class="card" id="guildInvitesCard" hidden><h2>Invitations reçues</h2><div id="guildInvites"></div></div>
       <form class="card sadd" id="guildCreate" hidden><span>Créer ma guilde</span><input id="guildName" placeholder="Nom de la guilde" autocomplete="off" spellcheck="false" maxlength="24">

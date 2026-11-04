@@ -12,6 +12,7 @@ import { createRenderer, TILE } from '../render/canvas.js';
 import { createInstantRenderer, MI_TILE } from '../render/instant.js';
 import { createTowerRenderer } from '../render/tower.js';
 import { createInstanceRenderer } from '../render/instance.js';
+import { createRaidRenderer } from '../render/raid.js';
 
 const KEY = 'dim.bgSession', PLACE_KEY = 'dim.bgPlace';
 export const BACKDROP = { dim: 0.4, transitionMs: 450 };   // luminosité du fond ; durée de la transition (aussi en CSS : --bgAnim)
@@ -25,8 +26,9 @@ const MODES = {
   mi:       { make: createInstantRenderer,  draw: (r, G, me) => r.draw(G, me),            tile: MI_TILE },
   tower:    { make: createTowerRenderer,    draw: (r, G, me) => r.draw(G, me) },
   instance: { make: createInstanceRenderer, draw: (r, G, me) => r.draw(G, me) },
+  raid:     { make: createRaidRenderer,     draw: (r, G, me) => r.draw(G, me) },   // arène de Cerbère (minage et porte : la mine)
 };
-export const modeOf = G => G.mode === 'mi' || G.mode === 'tower' || G.mode === 'instance' ? G.mode : 'mine';
+export const modeOf = G => G.mode === 'mi' || G.mode === 'tower' || G.mode === 'instance' ? G.mode : G.mode === 'raid' && G.phase === 'boss' ? 'raid' : 'mine';
 
 /* plein écran (le canvas couvre la fenêtre, centré, proportions gardées) */
 export function coverRect(cw, ch, vw, vh){

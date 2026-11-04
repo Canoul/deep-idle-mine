@@ -1,6 +1,6 @@
 /* Onglet Guilde (31/10/2026, Geoffrey) : sa guilde, recherche, classement. Le serveur fait foi : chaque case et chaque bouton
    viennent de ce qu'il renvoie (actions d'un membre, demandes), et il revérifie tout. */
-import { GUILD, ITEMS } from '../config.js';
+import { GUILD, ITEMS, RAID } from '../config.js';
 import { RANK_LABEL, canRecruit } from '../shared/guild.js';
 import { houseState } from '../shared/guild-house.js';
 import { ask, askText, tell } from './dialog.js';
@@ -17,7 +17,40 @@ const ACTION_LABEL = { promote:'Passer officier', demote:'Rétrograder', transfe
 export const holdsPanel = el => !!el?.matches('[data-gact]');
 
 /* sous-onglets : celui de sa guilde n'existe que si on en a une */
-export const guildTabs = st => [...(st.mine ? [{ id:'mine', label:esc(st.mine.name) }] : []), { id:'search', label:'Rechercher' }, { id:'board', label:'Leaderboard' }];
+export const guildTabs = st => [...(st.mine ? [{ id:'mine', label:esc(st.mine.name) }, { id:'raid', label:'Raid' }] : []), { id:'search', label:'Rechercher' }, { id:'board', label:'Leaderboard' }];
+
+/* onglet Raid (04/11/2026, Geoffrey ; spec docs/superpowers/specs/2026-11-04-raid-cerbere-design.md) : le lobby de raid de
+   la guilde (server/guild/raid.js), le raid en cours. r : mine.raid de la vue du serveur ; now : heure du serveur (ms). */
+const mins = s => Math.round(s / 60);
+export const RAID_INTRO = `<p class="small">Raid 1 : <b>Cerbère</b>. De 1 à ${RAID.maxPlayers} joueurs de la guilde, ${mins(RAID.duration)} min en tout. `+
+  `Minez d'abord ${RAID.mine.areas} areas à 100 % (rien que du terrain, jusqu'à la pierre des enfers) : la grande porte s'ouvre alors sur l'arène de Cerbère, le chien à trois têtes.</p>`+
+  `<p class="small mut">Morts définitives jusqu'à la fin du raid. Gratuit (ni clé, ni énergie) ; pas de récompense pour l'instant.</p>`;
+const left = (r, now) => r.finishAt ? Math.max(0, Math.round((r.finishAt - now) / 60000)) : null;
+function raidRow(m, r){
+  const kick = r.isLeader && !m.me ? `<button class="small" data-g="raidKick" data-id="${esc(m.account)}">Sortir</button>` : '';
+  const state = m.leader ? '<span class="gxp">Chef du raid</span>' : m.ready ? '<span class="gxp okmsg">Prêt</span>' : '<span class="gxp mut">Pas prêt</span>';
+  return `<div class="frow raidMem${m.me ? ' me' : ''}"><span class="raidCrown">${m.leader ? pxi('crown') : ''}</span><span class="fname"><b>${esc(m.name)}</b>`+
+    `${m.playing ? '<small class="mut">En session</small>' : ''}</span>${state}<span class="fbtns">${kick}</span></div>`;
+}
+export function raidHTML(r, now = Date.now()){
+  if(!r) return `<div class="card"><h2>Raid</h2>${RAID_INTRO}</div>`;
+  const run = r.running, me = r.members.find(m => m.me);
+  const running = run ? `<div class="card raidRunning"><h2>Raid en cours</h2><p class="small">${run.players.map(esc).join(', ') || 'Plus personne'}`+
+    `${left(run, now) != null ? ` · fin dans ${left(run, now)} min au plus` : ''}</p>`+
+    (run.mine ? '<div class="fbtns"><button class="on" data-g="raidWatch">Retourner au raid</button></div>' : '<p class="mut small">Ta guilde est en raid ; tu peux préparer le suivant.</p>')+'</div>' : '';
+  const btns = !r.mine
+    ? `<button class="on" data-g="raidJoin"${r.size >= r.max || r.launching ? ' disabled' : ''}>Rejoindre le raid</button>`
+    : [r.isLeader ? `<button class="on" data-g="raidLaunch"${r.canLaunch ? '' : ' disabled'}>Lancer le raid</button>`
+                  : `<button class="${me?.ready ? '' : 'on'}" data-g="raidReady" data-on="${me?.ready ? '0' : '1'}">${me?.ready ? 'Plus prêt' : 'Je suis prêt'}</button>`,
+       '<button data-g="raidLeave">Quitter le lobby</button>'].join('');
+  const wait = r.mine && r.isLeader && r.waiting.length ? `<p class="mut small">En attente : ${r.waiting.map(esc).join(', ')}</p>` : '';
+  return `<div class="gcols"><div>${running}
+    <div class="card"><h2>Lobby du raid <span class="mut">${r.size}/${r.max}</span></h2>
+      ${r.members.length ? r.members.map(m => raidRow(m, r)).join('') : '<p class="mut small">Personne pour l\'instant : rejoins le lobby, le premier arrivé devient chef du raid.</p>'}
+      ${r.launching ? '<p class="small">Lancement…</p>' : ''}${wait}
+      <div class="fbtns">${btns}</div></div>
+  </div><div><div class="card"><h2>Cerbère</h2><img class="raidBoss" src="textures/cerbere.png" alt="Cerbère">${RAID_INTRO}</div></div></div>`;
+}
 
 function memberRow(m){
   const actions = Object.keys(ACTION_LABEL).filter(k => m.actions[k]);
@@ -153,7 +186,9 @@ export async function sendInvite(input, { invite, done, tell }){
 }
 
 /* onChange() : un changement peut retirer un pop-up d'invitation (src/main.js) */
-export function setupGuild({ root, api = guildApi, onChange = () => {} }){
+/* onRaid(session) : le chef vient de lancer le raid (src/main.js entre dans la session) ; onRaidWatch() : retourner au raid
+   en cours ; onState(st) : chaque vue relue (un raid lancé par le chef : src/main.js relit la session) ; now() : heure du serveur */
+export function setupGuild({ root, api = guildApi, onChange = () => {}, onRaid = () => {}, onRaidWatch = () => {}, onState = () => {}, now = () => Date.now() }){
   const $ = id => document.getElementById(id);
   let st = { mine:null, invites:[], requests:[] }, tab = null, list = [], board = [], at = 0, open = null, members = null;
   let older = {}, peek = null, peekOlder = {};        // lignes anciennes du journal déjà demandées ; fiche d'une autre guilde
@@ -168,8 +203,9 @@ export function setupGuild({ root, api = guildApi, onChange = () => {} }){
     const tabs = guildTabs(st);
     if(!tabs.some(t => t.id === tab)) tab = tabs[0].id;
     put($('guildTabs'), tabs.map(t => `<button data-gtab="${t.id}" class="${t.id === tab ? 'on' : ''}">${t.label}</button>`).join(''));
-    $('guildMineTab').hidden = tab !== 'mine'; $('guildSearchTab').hidden = tab !== 'search'; $('guildBoardTab').hidden = tab !== 'board';
+    $('guildMineTab').hidden = tab !== 'mine'; $('guildRaidTab').hidden = tab !== 'raid'; $('guildSearchTab').hidden = tab !== 'search'; $('guildBoardTab').hidden = tab !== 'board';
     if(st.mine && !holdsPanel(document.activeElement)) put($('guildMine'), app() ? mineAppHTML(st.mine, older, { sub, building:bsel }) : mineHTML(st.mine, older));
+    if(st.mine && tab === 'raid') put($('guildRaid'), raidHTML(st.mine.raid, now()));
     $('guildPeek').hidden = !peek;
     if(peek) put($('guildPeek'), peekHTML(peek, peekOlder));
     $('guildCreate').hidden = !!st.mine;
@@ -181,6 +217,7 @@ export function setupGuild({ root, api = guildApi, onChange = () => {} }){
   async function refresh(){
     at = Date.now();
     st = await api.view();
+    onState(st);
     if((tab ?? (st.mine ? 'mine' : 'search')) === 'search') list = (await api.list($('guildQuery').value)).guilds;
     if(open && !list.some(g => g.id === open)) open = null;
     if(open){
@@ -233,6 +270,18 @@ export function setupGuild({ root, api = guildApi, onChange = () => {} }){
       let sent = false;
       await run(async () => { await api.lobbyInvite(id); sent = true; });
       if(sent) say(`Invitation envoyée à ${el.dataset.name}.`);
+      return;
+    }
+    /* lobby de raid : chaque action renvoie la vue de la guilde */
+    if(name === 'raidWatch') return onRaidWatch();
+    if(name === 'raidJoin' || name === 'raidLeave') return run(() => api[name]());
+    if(name === 'raidReady') return run(() => api.raidReady(el.dataset.on === '1'));
+    if(name === 'raidKick'){ if(await ask('Sortir ce joueur du lobby du raid ?', { ok:'Sortir' })) await run(() => api.raidKick(id)); return; }
+    if(name === 'raidLaunch'){
+      if(!await ask('Lancer le raid pour tout le lobby ?\nLes prisons en cours s\'arrêtent ; les morts sont définitives jusqu\'à la fin.', { ok:'Lancer' })) return;
+      let session = null;
+      await run(async () => { session = (await api.raidLaunch()).session; });
+      if(session) onRaid(session);
       return;
     }
     if(name === 'leave' && !await ask('Quitter la guilde ?', { danger:true, ok:'Quitter' })) return;

@@ -7199,3 +7199,37 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - ⚠️ Reste : états « Morsure » / « Durci » pas ajoutés à EFFECTS (le test des bulles exige un texte dans src/ui/effects.js,
   côté navigateur) : la vue de l'arène envoie `bitten` (s) et `stone {hp,max}` par mineur. Lobby perdu au redémarrage.
   Récompense du raid à définir. Pas vu dans un navigateur (interface à faire).
+
+## 04/11/2026 — Geoffrey — Raid Cerbère côté navigateur : onglet Raid de la guilde, session 'raid', arène (branche geoffrey/raid-cerbere)
+- **Onglet Raid** (`src/ui/guild.js` `raidHTML`, `guildTabs` + 'raid', `#guildRaidTab` dans index.html) : explication, lobby
+  (couronne du chef, Prêt / Pas prêt, « Sortir » pour le chef), Rejoindre / Quitter le lobby / Je suis prêt, « Lancer le raid »
+  (chef, grisé sans `canLaunch`, « En attente : … »), carte « Raid en cours » (« Retourner au raid » si `running.mine`).
+  `guildApi.raidJoin/Leave/Ready/Kick/Launch` (src/net/api.js). `setupGuild({ onRaid, onRaidWatch, onState, now })` : le chef
+  entre dans la session renvoyée par `/launch` ; un membre est basculé par `pollLobby` (party state `session`) ou par
+  `onState` (onglet Guilde ouvert, `running.mine` sans session → `refresh()`).
+- **Session 'raid'** (`src/main.js`) : `applyRaidView` (G de départ = `emptyView()` + `mode:'raid'`) ; minage et porte : la mine
+  (`#run`, rendu de la mine) + bandeau `#raidBanner` (`raidBannerText` : blocs restants left/total, %, temps restant ; porte :
+  « La grande porte s'ouvre dans X s »), chrono sur RAID.duration, pas de focus. Arène : **panneaux et canvas de l'instance
+  réutilisés** (`#inRun`, `cvIn`, fxBarIn, spellBarIn ; `raidPanes()` bascule #run / #inRun selon `G.phase`), rendu
+  `src/render/raid.js` (toute l'arène, `cerbere` / `cerbere_rage` 8 × 6 cases, barre de vie, cibles marquées, éclair de
+  Morsure, poussière du Balayage, voile du Magma ; Durci : mineur grisé + bloc de pierre + solidité ; mordu : halo rouge ;
+  mort : pierre tombale), HUD `src/ui/raid-hud.js` (`updateRaidHUD` : PV, repère des 33 %, prochaines attaques, cibles,
+  équipe ; `showRaidEnd` : réussite, durée, blocs, PV restants, parts mined / bossDmg / bitten / stoned / freed / dead ;
+  « Retour » → onglet Guilde). Quitter : « Quitter le raid ? ». Fond (`src/ui/backdrop.js`) : mode 'raid' (arène) → canvas cvIn.
+- **Correctif serveur** `src/shared/raid-view.js` : la vue du minage envoie `over` du RAID (avant : celui de la mine, jamais
+  vrai quand le temps s'écoule pendant le minage → le navigateur restait figé jusqu'à no_session).
+- **États** : `bitten` (Morsure, debuff) et `stone` (Durci, contrôle, value = solidité) dans EFFECTS.list, lus par
+  `minerEffects` (m.bitUntil, m.stone) ; Mort dans un raid : src 'raid' (bulle sans le texte du Golbute). Bulles dans src/ui/effects.js.
+- **Textures** : `cerbere_textures()` branché dans scripts/gen_textures.py ; 'cerbere', 'cerbere_rage' dans TEXTURES
+  (`npm run textures` : cerbere*.png identiques, les autres PNG régénérés remis comme avant).
+- **Tests** ✅ raid-ui (nouveau, 9 : onglet, boutons, bandeau, bilan, états, fin vue pendant le minage), guild-ui (sous-onglet
+  Raid), raid, raid-server, effects, guild*, backdrop, app-mode, prison-ui, view : 175/175. ❌ « fortune : le doublon… » et
+  « recycle : un BP du T2… » rouges aussi sans ces changements (sans rapport).
+- **Navigateur** ✅ (Playwright, `npm run dev`, données dans un dossier à part) : lobby vide / chef, lancement solo, minage
+  avec bandeau, fin à ×300 → bilan en 7 s, Retour → Guilde. ⚠️ Porte et arène vues **avec une vue fabriquée** (route
+  `/api/game/view` remplacée par `createRaidViewer` sur une partie Node : un mineur niveau 1 ne mine pas 5 000 blocs en
+  30 min) : porte, arène, Durci, Morsure, rage, équipe, barre d'états (Mort).
+- ⚠️ Pas vu : téléphone / appli (disposition de l'arène dans #inRun au format portrait, onglet Raid à 360 px), à plusieurs
+  comptes (bascule des membres au lancement), `ctx.filter` (grisé du Durci) ignoré par les vieux Safari (le bloc de pierre
+  reste). Les morts au contact sont souvent cachés derrière un vivant (pierres tombales empilées en x = contact).
+- **Applis** : src/, textures/ copiés en entier par server/app-update/bundle.js (copy-web.js) : rien hors paquet.
