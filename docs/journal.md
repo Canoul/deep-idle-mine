@@ -16,6 +16,23 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 04/11/2026 — Geoffrey — Raid 1 : Cerbère
+- **Pour le joueur** : nouvel onglet **Raid** dans sa guilde, avec un lobby de 1 à 10 joueurs de la guilde (gratuit,
+  pas de récompense pour l'instant). 30 min au total : il faut d'abord miner **en entier** deux areas de terrain (terre,
+  pierre, pierre dure, puis la nouvelle **Pierre des enfers**, deux fois plus dure), avec les pods et l'oxygène comme
+  dans la mine. Tout miné, la grande porte s'ouvre sur l'arène de **Cerbère**, un chien de lave à trois têtes (8 × 6).
+  - **Morsure** (toutes les 30 s, 21 s enragé) : sur 3 cibles, d'abord ceux qui le provoquent. Si aucune ne résiste
+    (ténacité), une des trois meurt, au hasard ; sinon elle se dissipe.
+  - **Balayage** (toutes les 5 s) : repousse ceux qui sont à 2 cases.
+  - **Magma** (toutes les 30 s) : 50 % de chances pour chacun de devenir **Durci** (en pierre, intouchable), libéré
+    quand les autres le minent. Jamais sur les tanks ; la ténacité ne joue que pour la spé Mineur.
+  - **Enragé** sous 33 %. Morts définitives ; défaite si tout le monde est mort ou au bout des 30 min.
+- **Décisions** : Cerbère 280 000 PV : environ 1 victoire sur 10 et un combat de 10 min pour l'équipe de référence
+  (4 barbares, 4 mineurs, 2 logisticiens, stuff T4.5 +5 et runes R4, tanks à 40 % de ténacité). Valeurs provisoires.
+- **À suivre** : un essai à plusieurs vrais comptes et sur téléphone ; la récompense ; le lobby se vide quand le
+  serveur redémarre.
+- **État** : 🧪 sur la branche `geoffrey/raid-cerbere` (pas en ligne)
+
 ## 04/11/2026 — Geoffrey — Guilde : l'Armurerie demande 20 Orbes supérieurs (avant 100)
 - **État** : ✅ en ligne le 04/11
 
