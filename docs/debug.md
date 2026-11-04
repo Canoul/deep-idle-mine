@@ -7085,3 +7085,21 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Pas vérifié** ⚠️ mode Alliage du four dans l'appli (4 cases en 2 × 2, CSS seulement) ; Enchantement avec de vraies runes ;
   Recycle de la Recherche ; vrai téléphone.
 - **Applis** : touche `src/app/` (style et liste des panneaux du bouton retour) : rien de natif, part par mise à jour à chaud.
+
+## 04/11/2026 — Jules — Appli mobile : retours après l'essai sur iPhone (✅ en ligne le 04/11)
+- **Accueil** : `homeView` (src/app/home.js) retire des rendez-vous celui de l'activité choisie (`act.mode === snap.mode`)
+  et met son état dans `activity.sub` ; `homeHtml` : rendez-vous puis activité puis gros bouton (avant : activité en premier).
+- **Session hors session** : `historyListHtml` (src/ui/history.js) commence par `.hiNow` (« Pas de session en cours »,
+  bouton `data-app-home` « Lancer ▸ ») puis « Tes dernières sessions » ; src/app/main.js : classe `appLive` sur le body
+  (= `shown()`, caché en session par app.css) et clic `[data-app-home]` → `nav.show(HOME)` + `home.show()`.
+- **Podium** : `LEADERBOARD.podium` (3) ; `social.leaderboard` (server/social/service.js) ajoute `look` et `auras`
+  (`game.lookFor`, `game.aurasFor`, comme les groupes) aux `podium` premières lignes ; `podiumHtml` : `data-lp` sur chaque
+  canvas, `renderBoard` dessine `b.rows[lp - 1].look`. Coût : 6 lectures stuff + inventaire par demande de classement
+  (le client redemande toutes les 30 s, onglet ouvert).
+- **Tests** ✅ app-home (+2), app-history (bandeau), leaderboard (+1, look du podium), app-leaderboard (+1), app-*, social,
+  party, history : 277 / 278 ; ⚠️ « roi gobelin : record revérifié » rouge sur `main` avant ce chantier (déjà signalé).
+- **Vérifié** ✅ aperçu `?app` : Accueil (rendez-vous puis activité puis LANCER), Historique (bandeau, « Lancer ▸ » ramène à
+  l'Accueil), podium dessiné avec des looks (réponse du serveur simulée dans le navigateur : le serveur local, lancé hors de
+  cette discussion, n'a pas été redémarré). ⚠️ Pas vu : le podium avec la vraie réponse du serveur (test serveur vert) ;
+  l'Accueil avec la MI choisie à l'écran (test vert).
+- **Applis** : touche `src/app/` (main.js, home*.js, app.css) : rien de natif, mise à jour à chaud.

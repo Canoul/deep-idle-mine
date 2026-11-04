@@ -131,3 +131,18 @@ test('écran : l\'erreur du Lobby s\'affiche au-dessus du gros bouton', () => {
   assert.match(homeHtml(v), /class="err hErr">Pas assez d'énergie</);
   assert.doesNotMatch(homeHtml(homeView(solo(), data())), /hErr/);
 });
+
+/* retour de Jules sur son téléphone (04/11) : « MI, four et MI encore, 3 boutons MI » */
+test('Accueil : l\'activité choisie n\'est pas répétée dans les rendez-vous, son horaire passe sur sa ligne', () => {
+  const soon = nextSlot(NOW) - 6 * 60e3, four = { ...newFurnace(), out:{ item:'Lingot de fer', qty:1 } };
+  const v = homeView(solo({ mode:'mi' }), data({ now:soon, furnaces:[four] }));
+  assert.deepEqual(ids(v.rdv), ['four']);
+  assert.equal(v.activity.sub, 'Dans 6 min');
+  assert.deepEqual(ids(homeView(solo(), data({ now:soon })).rdv), ['mi']);   // une autre activité choisie : le rendez-vous reste
+});
+
+test('écran : les rendez-vous en haut, puis l\'activité juste au-dessus du gros bouton', () => {
+  const h = homeHtml(homeView(solo({ giantReady:true }), data()));
+  assert.ok(h.indexOf('card hRdv') > 0 && h.indexOf('card hRdv') < h.indexOf('card hAct'), 'rendez-vous avant l\'activité');
+  assert.ok(h.indexOf('card hAct') < h.indexOf('hBig'), 'activité avant le gros bouton');
+});

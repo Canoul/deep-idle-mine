@@ -585,9 +585,10 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   quantités courtes « 2,2k » (`fmtQty(n, { short })`), Sac = Inventaire, Craft, Four, Concasseur, Recherche
   (ancien : Inventaire, Four, Concasseur, Craft, Recherche). **Accueil** (03/11, fait ; spec
   `2026-11-03-appli-accueil-design.md`, `src/app/home.js` + `home-ui.js`, `APP_HOME`) : premier écran de l'appli à la place du
-  Lobby (ancien : le Lobby du site) : bande du Carreau (Taverne, Chevalement, Fonderie) avec l'équipe, activité + Changer ▸
-  (le Lobby complet, retour « ← Accueil »), rendez-vous (Bloc géant, He's coming, tour, MI, four, invitation), gros bouton
-  = `lobby.launch()` (même fonction que `#launchBtn`). **Sets et Stuff** (03/11, en ligne le 03/11 ; spec
+  Lobby (ancien : le Lobby du site) : bande du Carreau (Taverne, Chevalement, Fonderie) avec l'équipe, rendez-vous (Bloc
+  géant, He's coming, tour, MI, four, invitation ; jamais l'activité déjà choisie, dont l'horaire passe sur sa ligne,
+  retour de Jules du 04/11), puis activité + Changer ▸ (le Lobby complet, retour « ← Accueil ») collée au gros bouton
+  = `lobby.launch()` (même fonction que `#launchBtn`) ; ancien (jusqu'au 04/11) : activité au-dessus des rendez-vous. **Sets et Stuff** (03/11, en ligne le 03/11 ; spec
   `2026-11-03-appli-perso-sets-stuff-design.md`) : sets = une ligne « Set : x ▾ » + menu du bas (`setsBarHtml`, `setsSheetHtml`,
   `#setsSheet`) ; Stuff = mannequin + onglets Équipement | Stats (`src/app/perso.js`). **Skills** (03/11, en ligne le
   03/11 ; spec `2026-11-03-appli-skills-design.md`) : onglets de classe (`skillTabsHtml`), un arbre à la fois
@@ -596,10 +597,11 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   `2026-11-03-appli-sorts-design.md`) : fiche `#spSheet` (`spellInfoHtml`) qui monte du bas ; toucher la barre ouvre la fiche
   (ancien : retirait le sort). **Historique** (04/11, en ligne le 04/11 ; spec
   `2026-11-03-appli-historique-design.md`) : une ligne par session par jour, bilan `#hiSheet` (ancien : une carte dépliée par
-  session, 17 écrans). **Guilde** (04/11, en ligne le 04/11 ; spec `2026-11-04-appli-guilde-design.md`) :
+  session, 17 écrans) ; hors session, bandeau « Pas de session en cours · Lancer ▸ » en tête (vers l'Accueil, caché en session :
+  classe `appLive`), choix de Jules du 04/11 (écartés : renommer le bouton « Historique », les deux). **Guilde** (04/11, en ligne le 04/11 ; spec `2026-11-04-appli-guilde-design.md`) :
   sa guilde en onglets Maison / Membres / Bâtiments / Journal (`mineAppHTML`), un bâtiment à la fois. **Classement** (04/11,
-  en ligne le 04/11 ; spec `2026-11-04-appli-classement-design.md`) : podium du top 3 (`podiumHtml`, mineurs
-  d'apparence de base), sa ligne collée en bas (`boardAppHtml`, `.lMe` sticky) ; ancien : liste seule. **Écrans qui restaient**
+  en ligne le 04/11 ; spec `2026-11-04-appli-classement-design.md`) : podium du top 3 (`podiumHtml`, chaque mineur
+  avec son stuff : `look` et `auras` des `LEADERBOARD.podium` premières lignes, lus par le serveur ; ancien : apparence de base), sa ligne collée en bas (`boardAppHtml`, `.lMe` sticky) ; ancien : liste seule. **Écrans qui restaient**
   (04/11, en ligne le 04/11 ; spec `2026-11-04-appli-ecrans-fin-design.md`) : Inventaire « Déplacer » (ancien :
   glisser-déposer seulement), Four en onglets (ancien : fours empilés), Concasseur resserré, Recherche en 4 boutons de tier,
   Amélioration en grille d'icônes (ancien : une carte par pièce), Amis en une ligne + fiche `#frSheet` (ancien : 5 boutons

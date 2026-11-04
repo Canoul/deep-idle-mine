@@ -161,6 +161,19 @@ test('GS, XP et XP de spé : tous les comptes, classés par le serveur ; classem
   for(const bad of ['', 'inventaire', 'spec:', null]) await assert.rejects(social.leaderboard(A, bad), { code: 'bad_request' });
 });
 
+/* podium de l'appli (retour de Jules, 04/11) : « tous les joueurs sont sans stuff » */
+test('podium : les premiers du classement viennent avec leur apparence (look), lue par le serveur', async () => {
+  const { store, social } = setup();
+  for(const [a, xp] of [[A, 5000], [B, 8000], [C, 3000]]) await store.putProgress(a.id, { xp, spec: {}, credited: [] });
+  await store.putInventoryAndStuff(A.id, null, { worn: { pioche: { item: 'Pioche en acier', uid: 1 } }, ops: [] });
+  const r = await social.leaderboard(B, 'xp');
+  assert.deepEqual(r.rows.map(x => x.name), ['Max', 'Zoe', 'Lou']);
+  assert.ok(LEADERBOARD.podium >= 3);
+  assert.deepEqual(r.rows[1].look, { pioche: 'Pioche en acier' });
+  assert.deepEqual(r.rows[0].look, {});
+  assert.ok(r.rows.every(x => x.auras && typeof x.auras === 'object'));
+});
+
 test('compte « admin » (LEADERBOARD.hidden) : jamais classé, ni compté, même premier partout (27/10)', async () => {
   assert.ok(LEADERBOARD.hidden.includes('admin'));
   const { store, social } = setup();

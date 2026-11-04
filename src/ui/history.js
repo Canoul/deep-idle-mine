@@ -76,10 +76,13 @@ export function sessionDetailHtml(s){
     `<p class="hiFacts">${esc(facts.join(' · '))}</p>${prison}${loot}<p class="hiSeed mut small">🌱 seed ${esc(s.seed)}</p>`;
 }
 /* toute la liste : un intertitre par jour ; vide → un bouton vers l'Accueil */
+/* en tête (appli, retour de Jules du 04/11) : hors session, l'écran Session le dit et propose de lancer (vers l'Accueil) ;
+   caché en session par src/app/app.css (classe appLive) */
+const NOW_HTML = `<div class="card hiNow"><span class="hiM">⛏</span><b>Pas de session en cours</b><button class="on" data-app-home>Lancer ▸</button></div>`;
 export function historyListHtml(sessions, now = Date.now(), me = null){
-  if(!sessions.length) return `<p class="mut">Aucune session terminée pour l'instant.</p><a class="btn on hiGo" href="#lobby">Lancer une session ▸</a>`;
+  if(!sessions.length) return NOW_HTML + `<p class="mut">Aucune session terminée pour l'instant.</p>`;
   let day = '';
-  return sessions.map((s, i) => { const d = dayLabel(s.startedAt, now), head = d !== day ? `<p class="hiDay">${d}</p>` : ''; day = d; return head + sessionRowHtml(s, i, me); }).join('');
+  return NOW_HTML + `<p class="hiDay hiPast">Tes dernières sessions</p>` + sessions.map((s, i) => { const d = dayLabel(s.startedAt, now), head = d !== day ? `<p class="hiDay">${d}</p>` : ''; day = d; return head + sessionRowHtml(s, i, me); }).join('');
 }
 
 /* load() → promesse de { sessions } ; me() : son pseudo (appli : « avec … » sans soi) */

@@ -44,5 +44,8 @@ test('liste : intertitres par jour ; vide → bouton vers l\'Accueil', () => {
   assert.ok(h.indexOf('AUJOURD\'HUI') < h.indexOf('HIER'));
   assert.equal((h.match(/class="hiRow"/g) || []).length, 2);
   const empty = historyListHtml([], NOW);
-  assert.match(empty, /Aucune session terminée/); assert.match(empty, /href="#lobby"[^>]*>Lancer une session/);
+  assert.match(empty, /Aucune session terminée/);
+  /* retour de Jules (04/11) : hors session, l'écran Session dit qu'il n'y en a pas et propose de lancer (vers l'Accueil) */
+  for(const x of [h, empty]) assert.match(x, /class="card hiNow">.*Pas de session en cours.*data-app-home[^>]*>Lancer ▸/s);
+  assert.match(h, /Tes dernières sessions/); assert.doesNotMatch(empty, /Tes dernières sessions/);
 });

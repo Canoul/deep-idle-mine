@@ -16,6 +16,19 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 04/11/2026 — Jules — Appli mobile : retours après l'essai sur iPhone
+- **Pour le joueur** : rien sur le site. Dans l'appli :
+  - **Accueil** : l'activité choisie n'apparaît plus aussi dans les rendez-vous (avant : « Mine instantanée » trois fois,
+    dont deux boutons « S'inscrire ») ; son horaire (« Dans 6 min ») est sur sa ligne. Les rendez-vous sont en haut, l'activité
+    juste au-dessus du gros bouton ;
+  - **Session** hors session : un bandeau « Pas de session en cours » avec **Lancer ▸** (vers l'Accueil), puis « Tes dernières
+    sessions » ;
+  - **Classement** : les mineurs du podium portent leur vrai stuff.
+- **Décisions** (Jules) : bandeau + Lancer pour l'écran Session hors session (écartés : renommer le bouton « Historique », les
+  deux).
+- **À suivre** : la suite des essais sur téléphone.
+- **État** : ✅ en ligne le 04/11
+
 ## 04/11/2026 — Jules — Appli mobile : les derniers écrans (Sac, Amélioration, Amis)
 - **Pour le joueur** : rien sur le site. Dans l'appli :
   - **Inventaire** : un bouton **Déplacer** dans le détail d'un objet, puis on touche la case où le poser (le glisser-déposer

@@ -47,7 +47,8 @@ export function homeHtml(v, { expanded = false } = {}){
     `<button${r.now ? ' class="on"' : ''} data-h="rdv" data-i="${i}">${esc(r.button)}</button></div>`).join('');
   const fold = v.more ? `<button class="hMore" data-h="more">+ ${v.more} rendez-vous ▾</button>` : expanded && v.rdv.length > APP_HOME.rdvShown ? `<button class="hMore" data-h="more">Replier ▴</button>` : '';
   const m = v.main;
-  return sceneHtml(v.team) + `<div class="hLow">${act}${rows ? `<div class="card hRdv">${rows}${fold}</div>` : ''}`+
+  /* les rendez-vous d'abord, puis l'activité choisie collée à son gros bouton (retour de Jules, 04/11) */
+  return sceneHtml(v.team) + `<div class="hLow">${rows ? `<div class="card hRdv">${rows}${fold}</div>` : ''}${act}`+
     (v.error ? `<p class="err hErr">${esc(v.error)}</p>` : '')+
     `<div class="hGo"><button class="on hBig" data-h="main"${m.can ? '' : ' disabled'}>${m.can ? pxi('pickaxe') : ''}${esc(m.label)}</button>`+
     (m.hint ? `<p class="hHint">${esc(m.hint)}</p>` : '')+`</div></div>`;

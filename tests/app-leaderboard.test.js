@@ -25,3 +25,8 @@ test('liste : les rangs 4 et plus en lignes, sa place collée en bas (dans le to
   assert.match(out, /class="lMe"><div class="frow lrow mine">37 Toi/); assert.match(out, /80 joueurs classés/);
   assert.match(boardAppHtml({ rows:[], total:0, me:null }, { value, row }), /Personne n'est encore classé ici/);
 });
+
+test('podium : une image par marche, reliée à son joueur (data-lp = sa place sur le podium)', () => {
+  const h = podiumHtml([R(1, 'A'), R(2, 'B'), R(3, 'C')], value);
+  assert.deepEqual([...h.matchAll(/data-lp="(\d)"/g)].map(m => m[1]), ['2', '1', '3']);
+});
