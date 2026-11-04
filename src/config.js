@@ -101,7 +101,7 @@ export const COMBAT = { reach:0.5, knock:0.25, tackleGiveUp:5, tackleLeash:6 };
    suivante, puis tout redevient normal ; la stat tenacityResilience (STATS, 0 pour tout le monde) réduit cette baisse
    (resilience 100 % : plus de fatigue). */
 export const TENACITY = { k:40, max:75, tired:0.5,
-  pen: { gobelin:0, occultiste:0, mephite:0, chien:0, ver:0, chair:0, golem:10, minotaure:10, hescoming:0, giant:0, towerBoss:20, golbute:20, cerbere:20 } };
+  pen: { gobelin:0, occultiste:0, mephite:0, chien:0, ver:0, chair:0, golem:10, minotaure:10, hescoming:0, giant:0, towerBoss:20, golbute:30, cerbere:20 } };   // golbute 20 → 30 (04/11/2026, Geoffrey)
 
 export const PREFS = { priority:'minerais', fightMobs:true, helpAllies:false, helpIgnore:[] };
 /* Aider allié : il ne part aider que si le mob est à helpRange cases ou moins (Manhattan). Au-delà, le combat est fini
@@ -1798,7 +1798,7 @@ export const INSTANCE = {
      Valeurs provisoires (équilibrage : scripts/simulate-golbute.js). */
   golbute: {
     w: 20, h: 20, spawn: [1, 2, 3],
-    boss: { name: 'Golbute', w: 5, h: 5, hp: 10700, knockRes: 100 },   // 10 700 PV : 40 victoires sur 160 pour la compo de référence (outils en acier + 20 %) avec 25 % de ténacité (30/10, simulation ; avant, outils en fer + 20 % : 7 600)
+    boss: { name: 'Golbute', w: 5, h: 5, hp: 16050, knockRes: 100 },   // 04/11/2026 (Geoffrey) : PV × 1,5 (avant 10 700), les joueurs passaient en spammant avec un peu de ténacité ; 10 700 PV : 40 victoires sur 160 pour la compo de référence (outils en acier + 20 %) avec 25 % de ténacité (30/10, simulation ; avant, outils en fer + 20 % : 7 600)
     slam: { every: 2, range: 3, chance: 0.5, high: 3, back: 1 },
     avalanche: { every: 60, stun: 5, dazed: 90, deathStacks: 6 },
     split: { every: 180, count: 10, area: 8, hitEvery: 1.5, knock: 0.5, step: 1.8,
