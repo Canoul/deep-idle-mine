@@ -141,12 +141,12 @@ test('vue de l\'arène (phase boss) : boss, mineurs (pierre, morsure), en-tête 
   assert.equal(v.phase, 'door'); assert.ok(v.raid.doorLeft > 0);
   g.advance(20 + Math.round(RAID.mine.gather / DT) + 2);
   assert.equal(G.phase, 'boss');
-  G.boss.miners[1].stone = { hp: 30, max: 50 }; G.boss.miners[0].bitUntil = G.boss.t + 5;
+  G.boss.miners[1].stone = { hp: 30, max: 50 }; G.boss.miners[0].bitUntil = G.boss.t + 1;
   v = g.view(null);
   assert.equal(v.phase, 'boss'); assert.equal(v.raid.phase, 'boss');
   assert.equal(v.boss.name, RAID.cerbere.boss.name); assert.equal(v.w, RAID.cerbere.w);
   for(const k of ['hp', 'maxhp', 'x', 'y', 'w', 'h', 'rage', 'biteAgo', 'sweepAgo', 'magmaAgo', 'targets']) assert.ok(k in v.boss, k);
-  assert.deepEqual(v.miners[1].stone, { hp: 30, max: 50 }); assert.ok(v.miners[0].bitten > 4);
+  assert.deepEqual(v.miners[1].stone, { hp: 30, max: 50 }); assert.ok(v.miners[0].bitten > 0.5);
   assert.ok(v.log.length <= 20);
   const A = applyRaidView(v, null, 0);
   assert.equal(A.phase, 'boss'); assert.equal(A.tiles.length, RAID.cerbere.h + 1);

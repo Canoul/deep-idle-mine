@@ -25,28 +25,25 @@ test('minage : 2 areas pleines, que du terrain en bandes (terre, pierre, pierre 
   assert.ok(terrainLeft(G) < 2 * W * AREA_H, 'il mine');
 });
 
-test('Cerbère : ses 3 cibles d\'abord parmi ceux qui le provoquent ; toutes déjà mordues → elles meurent', () => {
+test('Cerbère : ses 3 cibles d\'abord parmi ceux qui le provoquent ; Morsure sans résistance → elles meurent', () => {
   const G = newCerbere(1, { miners: Array.from({ length: 6 }, (_, i) => spec(i)) });
   G.boss.taunts.add(0); G.boss.taunts.add(1);
   for(let k = 0; k < 20; k++){ const ts = pickTargets(G).map(m => m.id); assert.equal(ts.length, 3); assert.ok(ts.includes(0) && ts.includes(1)); }
-  const [a, b] = G.miners; const c = G.miners[2];
   G.boss.taunts.add(2);
-  for(const m of [a, b, c]) m.bitUntil = G.t + 100;
-  G.next.bite = 0; tickCerbere(G);
-  assert.ok(a.dead && b.dead && c.dead, 'les 3 cibles déjà mordues meurent');
+  G.next.bite = 0; G.next.sweep = G.next.magma = 1e9; tickCerbere(G);
+  const [a, b, c] = G.miners;
+  assert.ok(a.dead && b.dead && c.dead, 'ténacité 0 : les 3 cibles mordues meurent');
   assert.ok(!G.miners[3].dead);
 });
 
-test('Cerbère : une morsure dure bite.last s ; la ténacité peut l\'éviter', () => {
-  const G = newCerbere(2, { miners: Array.from({ length: 3 }, (_, i) => spec(i)) });
-  G.next.bite = 0; G.next.sweep = G.next.magma = 1e9; tickCerbere(G);
-  for(const m of G.miners) assert.ok(bitten(G, m));
-  G.next.bite = 1e9;
-  while(!G.over && G.t < C.bite.last + 0.5) tickCerbere(G);
-  assert.ok(G.miners.every(m => !bitten(G, m) && !m.dead), 'la morsure est passée');
-  const T = newCerbere(3, { miners: Array.from({ length: 3 }, (_, i) => spec(i, { carac: { tenacity: 100 } })) });
-  T.next.bite = 0; tickCerbere(T);
-  assert.ok(T.miners.every(m => !bitten(T, m)), 'ténacité 100 % (linéaire dans les tests) : aucune morsure');
+test('Cerbère : une cible qui résiste dissipe la Morsure pour les 3 ; rien ne persiste à la suivante', () => {
+  const G = newCerbere(2, { miners: [spec(0, { carac: { tenacity: 100 } }), spec(1), spec(2)] });
+  G.next.sweep = G.next.magma = 1e9;
+  for(let k = 0; k < 5; k++){ G.next.bite = G.t; tickCerbere(G); }
+  assert.ok(G.miners.every(m => !m.dead), '5 Morsures, une cible résiste toujours : personne ne meurt');
+  assert.ok(bitten(G, G.miners[1]) && !bitten(G, G.miners[0]), 'affichage : mordu / résisté');
+  while(G.t < C.bite.show + 1) tickCerbere(G);
+  assert.ok(!bitten(G, G.miners[1]), 'la Morsure ne persiste pas');
 });
 
 test('Magma : Durci (intouchable), libéré quand les autres le minent ; la ténacité ne joue que pour la spé Mineur', () => {
@@ -72,7 +69,7 @@ test('enragé sous 33 % : autoattaque toutes les 7 s', () => {
 });
 
 test('partie complète : minage → porte (rassemblement) → arène ; temps total limité ; départ d\'un joueur', () => {
-  const G = newRaid(7, { miners: [spec(0), spec(1)], hp: 50 });
+  const G = newRaid(7, { miners: [spec(0, { carac: { tenacity: 100 } }), spec(1)], hp: 50 });   // seul en arène : il doit résister aux Morsures
   assert.equal(G.phase, 'mine');
   for(let y = AREA_Y0; y < AREA_Y0 + 2 * AREA_H; y++) G.mine.tiles[y].fill(0);   // tout miné
   for(let i = 0; i < 20; i++) tickRaid(G);
