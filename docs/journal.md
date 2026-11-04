@@ -16,6 +16,13 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 04/11/2026 — Geoffrey — Lag du jeu en ligne : corrigé
+- **Pour le joueur** : le jeu ne rame plus. Le serveur mettait plus d'1,5 s à répondre à chaque demande (mineur qui avance
+  par à-coups, onglets lents), parce que pour savoir si un ami était en session, il recopiait tout l'historique de ses
+  sessions, et ça pour chaque ami et membre de guilde, toutes les quelques secondes. Il ne regarde plus que les sessions en cours.
+- **À suivre** : vérifier en ligne avec `?perf` dans l'adresse (« réponse » doit retomber sous ~100 ms).
+- **État** : ✅ en ligne le 04/11
+
 ## 04/11/2026 — Geoffrey — Stuff : les dégâts % beaucoup moins forts
 - **Pour le joueur** : les pièces qui donnent des dégâts % en donnent nettement moins : Jambes en thorium 11,8 % (avant
   31,3 %), Jambières du Golbute 12,5 % de dégâts, 7 % de double attaque et 25 % de butin (avant 33,3 / 21,9 / 20 %), Cape

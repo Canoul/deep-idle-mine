@@ -176,10 +176,18 @@ export function createMemoryGameStore(initial = {}){
       await store.changed([{ ns: 'game_session', key: rec.id, value: rec }, ...entries.map(([id, inv]) => ({ ns: 'inventory', key: id, value: inv }))]);
     },
     async putGameSession(rec){ sessions.set(rec.id, copy(rec)); await store.changed([{ ns: 'game_session', key: rec.id, value: rec }]); },
-    /* sessions où ce compte joue, les plus récentes d'abord */
-    async sessionsOf(accountId){
-      return [...sessions.values()].filter(s => s.players.some(p => p.account === accountId))
+    /* sessions où ce compte joue, les plus récentes d'abord ; keep : tri fait avant la copie (04/11/2026 : copier tout
+       l'historique de chaque ami à chaque vue du Social saturait le serveur) */
+    async sessionsOf(accountId, keep = null){
+      return [...sessions.values()].filter(s => s.players.some(p => p.account === accountId) && (!keep || keep(s)))
         .sort((a, b) => b.startedAt - a.startedAt).map(copy);
+    },
+    /* heure de fin la plus récente de ses sessions retenues par keep (0 si aucune), sans rien copier */
+    async lastEndOf(accountId, keep = () => true){
+      let end = 0;
+      for(const s of sessions.values())
+        if(s.players.some(p => p.account === accountId) && keep(s) && Number.isFinite(s.endedAt)) end = Math.max(end, s.endedAt);
+      return end;
     },
     async sessionsWithStatus(status){ return [...sessions.values()].filter(s => s.status === status).map(copy); },
     async deleteGameSession(id){ if(sessions.delete(id)) await store.changed([{ ns: 'game_session', key: id, value: null }]); },
