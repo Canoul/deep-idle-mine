@@ -192,10 +192,10 @@ body.app .skTabs button small{font-size:12px;line-height:1.1;color:var(--mut)}
 body.app .skTabs button.on small{color:#4a1e08}
 body.app #skillTrees .skTree{border:0;border-image:none;padding:0;background:none}
 body.app #skillTrees .skTree>h3,body.app #skillTrees .skTree .specLvl{display:none}
-body.app #skillTrees .skGraph{height:auto!important;display:grid;grid-template-columns:1fr 1fr;gap:14px 16px;margin:0;padding:2px 0 2px 12px}   /* 12 px à gauche : les liens « | » (04/11) */
+body.app #skillTrees .skGraph{height:auto!important;display:grid;grid-template-columns:repeat(var(--cols,2),minmax(0,1fr));gap:14px 16px;margin:0;padding:2px 0 2px 12px}   /* 12 px à gauche : les liens « | » (04/11) */
 body.app #skillTrees .skNode{position:relative;left:auto!important;top:auto!important;transform:none;width:auto;grid-column:1/3;
   display:grid;grid-template-columns:50px minmax(0,1fr) auto;grid-template-rows:auto auto;column-gap:10px;align-items:center;text-align:left}
-body.app #skillTrees .skNode{grid-column:var(--c);grid-row:var(--r)}   /* arbres v2 (04/11) : deux colonnes, chaque skill dans la sienne */
+body.app #skillTrees .skNode{grid-column:var(--c);grid-row:var(--r)}   /* arbres v2 (04/11) : deux colonnes (trois en v3, --cols), chaque skill dans la sienne */
 body.app #skillTrees .skTier{display:none}
 body.app .skPickSpec{display:block;width:100%;min-height:44px;margin:0 0 8px;font-size:15px}
 body.app #skillTrees .skOrb{position:relative;z-index:1;grid-row:1/3;width:50px;height:50px}

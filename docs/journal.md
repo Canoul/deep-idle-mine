@@ -16,6 +16,14 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 04/11/2026 — Geoffrey — Skills : nouveaux arbres (5 étages, Ambidextre)
+- **Pour le joueur** : les arbres de skills passent à 5 étages ; plusieurs skills changent de place (les auras, Ivresse
+  Minérale et Reconnaissance remontent ; Treuil, Escalateur et Mule arrivent plus tôt ; Dématérialisation descend d'un
+  étage). Nouveau skill du Logisticien : **Ambidextre** (double attaque +2 % par rang, 3 rangs). Tout le monde récupère
+  ses points (reset gratuit), la spé et les glyphes restent.
+- **Décisions** : Escalateur reste au max 3 (le tableau disait 5). Reset de tous les joueurs.
+- **À suivre** : regarder l'onglet Skills au bureau et dans l'appli (3 colonnes dans certains arbres).
+
 ## 04/11/2026 — Geoffrey — Mobs : méphite, occultiste, golem et mur de chair arrivent une area plus tôt
 - **Pour le joueur** : les areas 2 à 6 changent de composition. Méphite dès l'area 2, occultiste dès l'area 3 (3 %), golem dès l'area 4 (2 %), mur de chair dès l'area 5 (2 %). Moins de bestioles et de gobelins dans ces areas ; mimics à 17 % en areas 5 et 6.
 - **Décisions** : les PV gardent leur courbe : là où un mob existait déjà, rien ne change ; dans sa nouvelle première area, il arrive 15 % plus faible (golem 261 PV en area 4, occultiste 130 en area 3). Area 3 : le 1 % qui manquait au tableau va à l'occultiste (3 %).

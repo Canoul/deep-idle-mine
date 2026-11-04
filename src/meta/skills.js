@@ -11,7 +11,7 @@
    - reset : tous les points rendus (gratuit), la spé reste ; refusé pendant une session (vérifié par le serveur). */
 import { SKILLS, STUFF, GLYPHS, GUILD } from '../config.js';
 
-export const SKILLS_VERSION = 2;
+export const SKILLS_VERSION = 3;   // 3 : arbres v3 (04/11/2026, après-midi), reset gratuit de tout le monde
 export const NODES = Object.fromEntries(SKILLS.trees.flatMap(t => t.nodes.map((n, i) => [n.id, { ...n, tree:t.id, index:i }])));
 /* le nœud exigé au rang max par ce nœud (le « | » de l'arbre), en liste ; vide sinon */
 export const parentsOf = id => { const n = NODES[id]; return n?.needs && NODES[n.needs] ? [NODES[n.needs]] : []; };
@@ -95,8 +95,8 @@ export function sanitizeSkills(raw, points = Infinity){
   return st;
 }
 
-/* Migration vers les arbres v2 (04/11/2026, Geoffrey : reset gratuit de tout le monde) : une sauvegarde de COMPTE sans
-   v:2 perd ses rangs ; sa spé (l'ancien arbre choisi), ses glyphes posés et sa mémoire de demandes restent. Idempotent. */
+/* Migration vers les arbres v2 puis v3 (04/11/2026, Geoffrey : reset gratuit de tout le monde) : une sauvegarde de COMPTE sans
+   la version actuelle perd ses rangs ; sa spé (l'ancien arbre choisi), ses glyphes posés et sa mémoire de demandes restent. Idempotent. */
 export const migrateSkills = raw => raw && typeof raw === 'object' && raw.v !== SKILLS_VERSION ? { ...raw, ranks:{}, v:SKILLS_VERSION } : raw;
 
 /* bonus des bâtiments de guilde (01/11/2026), figé au lancement avec les skills (server/game/service.js frozenSkills) :

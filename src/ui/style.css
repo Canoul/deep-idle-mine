@@ -776,6 +776,7 @@ body.phone .chatMore{opacity:1;padding:0 calc(5*var(--u))}
 .skLinks .ar{fill:#a88458} .skLinks .ar.on{fill:#ff7a2e}
 .skNeed{margin:6px 0 0;color:#d9a86a} .skNeed.ok{color:var(--acc)}
 .skNode{position:absolute;transform:translate(-50%,-29px);width:calc(60*var(--u));display:flex;flex-direction:column;align-items:center;gap:var(--u);text-align:center;user-select:none}
+.skTree.c3 .skNode{width:calc(46*var(--u))}   /* arbre à 3 colonnes (v3, 04/11) : cases plus étroites */
 .skOrb{width:58px;height:58px;display:grid;place-items:center;color:var(--mut);
   border:calc(3*var(--u)) solid transparent;border-image:url(../../textures/ui/slot_n.png) 3 fill / calc(3*var(--u)) stretch}
 .skOrb .pi{width:calc(16*var(--u));height:calc(16*var(--u))}

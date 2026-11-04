@@ -30,9 +30,9 @@ function bag(G, carrier, x, y, inv = {}, by = carrier){
 }
 const give = (m, inv) => { m.inv = { ...inv }; m.load = Object.entries(inv).reduce((s, [k, n]) => s + n*itemW(k), 0); };
 
-test('config : Mule 0/1 au 5e étage du Logisticien, exige l\'Escalateur au max, qui exige le Treuil (arbres v2, 04/11)', () => {
+test('config : Mule 0/1 au 4e étage du Logisticien, exige l\'Escalateur au max, qui exige le Treuil (arbres v3, 04/11)', () => {
   const n = SKILLS.trees.find(t => t.id === 'logisticien').nodes.find(x => x.id === 'mule');
-  assert.deepEqual([n.row, n.max, n.per, n.needs], [5, 1, 1, 'winch_speed']);
+  assert.deepEqual([n.row, n.max, n.per, n.needs], [4, 1, 1, 'winch_speed']);
   assert.equal(MULE.capacityPct, 2);
   const st = createSkills(), learn = id => skillOp(st, { action:'learn', node:id, opId:Math.random().toString(36) }, 30);
   skillOp(st, { action:'spec', tree:'logisticien', opId:'op-mule-spec' }, 30);
