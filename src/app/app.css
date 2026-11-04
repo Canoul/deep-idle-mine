@@ -391,3 +391,10 @@ body.app .frActs{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 body.app .frActs .w{grid-column:1/3}
 body.app .frActs .frDel{color:#ff9a8a}
 body.app:has(#frSheet:not([hidden])) .guide{display:none}
+
+/* ---------- Retours de Jules sur son téléphone (04/11/2026) ---------- */
+/* Session hors session : « Pas de session en cours · Lancer ▸ » en tête de l'Historique (caché quand une session tourne) */
+body.app .hiNow{display:grid;grid-template-columns:32px minmax(0,1fr) auto;align-items:center;gap:8px;padding:2px 2px}
+body.app .hiNow b{font:400 19px/1.05 var(--f-title);color:#ffe6c4;font-weight:400}
+body.app.appLive .hiNow{display:none}
+body.app .hiPast{text-transform:uppercase}

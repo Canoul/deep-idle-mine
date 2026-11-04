@@ -38,6 +38,7 @@ export function startApp({ doc, win, nav, shown, notifData, home: homeDeps }){
   function sync(){
     const now = shown(), to = sessionRedirect({ tab:nav.current(), shown:now, wasShown });
     wasShown = now;
+    doc.body.classList.toggle('appLive', now);   // une session (ou la prison) à montrer : pas de bandeau « Pas de session »
     if(to) nav.show(to); else draw();
     home?.render();   // minuteries des rendez-vous et de la session
   }
@@ -48,6 +49,8 @@ export function startApp({ doc, win, nav, shown, notifData, home: homeDeps }){
     if(f === 'accueil') home?.show();   // déjà sur le Lobby, nav.show ne fait rien : on revient quand même à l'Accueil
   };
   sub.onclick = e => { const t = e.target.closest('[data-subtab]')?.dataset.subtab; if(t) nav.show(t); };
+  /* un lien data-app-home (« Lancer ▸ » de l'Historique) : l'Accueil, comme le bouton de la barre */
+  doc.addEventListener('click', e => { if(!e.target.closest?.('[data-app-home]')) return; e.preventDefault(); nav.show(HOME); home?.show(); });
   /* le guide « Premiers pas » compte comme une pastille */
   nav.onMark(({ badges, guide }) => { marks = new Set(guide ? [...badges, guide] : badges); draw(); });
   sync();

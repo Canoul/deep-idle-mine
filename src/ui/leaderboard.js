@@ -51,7 +51,7 @@ export const rankText = (rank, total) => `${rank}${rank === 1 ? 'er' : 'e'} sur 
 /* podium : 2ᵉ à gauche, 1ᵉʳ au centre, 3ᵉ à droite ; mineur d'apparence de base (le classement n'envoie pas le stuff) */
 export function podiumHtml(top, value){
   return `<div class="lPodium">${[[top[1], 2], [top[0], 1], [top[2], 3]].map(([r, n]) => r
-    ? `<div class="lp lp${n}"><canvas width="16" height="16"></canvas><b class="lpName">${esc(r.name)}</b><small>${esc(value(r))}</small><span class="lpStep">${r.rank}</span></div>`
+    ? `<div class="lp lp${n}"><canvas width="16" height="16" data-lp="${n}"></canvas><b class="lpName">${esc(r.name)}</b><small>${esc(value(r))}</small><span class="lpStep">${r.rank}</span></div>`
     : `<div class="lp lp${n} empty"><span class="lpStep"></span></div>`).join('')}</div>`;
 }
 /* tout le classement dans l'appli ; row : le rendu d'une ligne (boardRow) ; sa place (dans le top ou board.me) collée en bas */
@@ -87,7 +87,7 @@ export function setupLeaderboard({ root, load, moderate = () => {} }){
     /* appli (04/11/2026) : podium, la suite en lignes, sa place collée en bas */
     if(document.body.classList.contains('app')){
       $('boardList').innerHTML = boardAppHtml(b, { value:info.value, row:boardRow });
-      $('boardList').querySelectorAll('.lp canvas').forEach(c => drawPortrait(c, {}, {}));   // mineur de base (pas de stuff au classement)
+      $('boardList').querySelectorAll('.lp canvas').forEach(c => { const r = b.rows[+c.dataset.lp - 1]; drawPortrait(c, r?.look ?? {}, r?.auras ?? {}); });   // son stuff (serveur, LEADERBOARD.podium)
       return;
     }
     $('boardList').innerHTML = !b.rows.length ? '<p class="mut small">Personne n\'est encore classé ici.</p>'

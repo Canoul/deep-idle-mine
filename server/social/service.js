@@ -326,7 +326,11 @@ export function createSocialService({ store, accounts, party, game, clock = Date
       const row = async ({ id, rank, value, me: mine, level, side, team, fight }) =>
         ({ id, rank, name: await nameOf(id), value, me: mine, ...(level ? { level } : {}), ...(side ? { side, team } : {}),
            ...(board === 'instance' || board === 'instance2' ? { team: team ?? [], fight: fight ?? null } : {}) });   // roi gobelin (niveaux 1 et 2) : équipe, temps de combat (29/10)
-      return { board, total: r.total, rows: await Promise.all(r.rows.map(row)), me: r.me && await row(r.me) };
+      /* podium de l'appli (04/11) : l'apparence des premiers, lue sur leur stuff (même lecture que les groupes) */
+      const dressed = async (x, i) => i < LEADERBOARD.podium
+        ? { ...x, look: await game.lookFor?.(x.id) ?? {}, auras: await game.aurasFor?.(x.id) ?? {} } : x;
+      const rows = await Promise.all(r.rows.map(row));
+      return { board, total: r.total, rows: await Promise.all(rows.map(dressed)), me: r.me && await row(r.me) };
     },
 
     /* inviter un ami dans mon groupe / rejoindre le sien */
