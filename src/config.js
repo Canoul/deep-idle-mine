@@ -354,8 +354,15 @@ export const CRUSHER = {
                      oneOf:[ { family:'gem', items:gems(0.01) },
                              { family:'treasure', items:[{ item:'Treasure T1', chance:0.02 }, { item:'Treasure T2', chance:0.01 },
                                                          { item:'Treasure T3', chance:0.005 }] } ] },
-    /* minerai d'or (03/11/2026, Geoffrey) : un lot de 100 donne 1 Terre */
-    'Or':          { always:[ { item:'Terre', min:1, max:1 } ], oneOf:[] },
+    /* minerai d'or (04/11/2026, Geoffrey ; avant, 03/11 : 1 Terre) : charbon 1-50 et graphite 1-15 toujours ; mithril 1-10 à
+       50 %, cobalt et thorium 1-2 à 25 % chacun (tirés à part) ; une gemme inférieure (1 % chacune, une au plus) ; un treasure
+       (T1 2 %, T2 1 %, T3 0,5 %, T4 0,25 %, un au plus) */
+    'Or':          { always:[ { item:'Charbon', min:1, max:50 }, { item:'Graphite ore', min:1, max:15 },
+                              { item:'Mithril ore', min:1, max:10, chance:0.5 }, { item:'Cobalt ore', min:1, max:2, chance:0.25 },
+                              { item:'Thorium ore', min:1, max:2, chance:0.25 } ],
+                      oneOf:[ { family:'gem', items:gems(0.01) },
+                              { family:'treasure', items:[{ item:'Treasure T1', chance:0.02 }, { item:'Treasure T2', chance:0.01 },
+                                                          { item:'Treasure T3', chance:0.005 }, { item:'Treasure T4', chance:0.0025 }] } ] },
   },
   opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
 };

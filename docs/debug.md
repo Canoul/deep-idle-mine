@@ -7240,3 +7240,12 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **UI** : src/ui/guild.js `raidHTML` : un bloc par groupe (Rejoindre ce groupe / Passer dans ce groupe / → Groupe X pour le chef), `api.raidMove`.
 - **Tests** : raid (groupes : Inspiration, Cri de guerre, anneaux), raid-server (groupes du lobby, déplacement, plein, lancement), raid-ui (HTML) ✅. Simulation : `simulate-raid.js` met 2 barbares, 2 mineurs, 1 logisticien par groupe.
 - ⚠️ Non vérifié dans un navigateur (seulement le HTML testé) ; Hand of Justice, Ulti shen, Dash visent les ennemis ou rejoignent un allié de n'importe quel groupe (ce ne sont pas des buffs).
+
+## 04/11/2026 — Geoffrey — Concasseur, minerai d'or ; `chance` sur un « always »
+- `CRUSHER.loot['Or']` (config). `rollLoot` (src/meta/loot.js) : une entrée `always` avec `chance` n'est versée que si `rng() <
+  chance` (tirage à part, avant sa quantité) ; sans `chance`, aucun tirage de plus : les autres tables (fer, coffres, Golbute)
+  gardent exactement les mêmes tirages. `dropOdds` porte la chance ; aide « ? » (src/ui/crusher.js) « (50 %) », wiki « (pas à
+  chaque lot) » ; texte du wiki : minerais de fer et d'or.
+- **Tests** ✅ crusher (nouveau test : table, 100 000 lots, fourchettes, chances), wiki, loot, loot-table : 52/52 ;
+  `npm run test:anticheat` 152/152.
+
