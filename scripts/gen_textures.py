@@ -115,6 +115,17 @@ def main():
         rect(hard, x, y, 1, 1, hexc('#2f3238'))
     tex['hardstone'] = hard
 
+    # pierre des enfers (raid Cerbère, 04/11/2026) : roche brun-rouge sombre, veines de lave
+    hell = noisy(hexc('#4a1c16'), 41, 0.12)
+    r = random.Random(41)
+    for _ in range(7):
+        rect(hell, r.randrange(S - 1), r.randrange(S - 1), 2, 2, hexc('#5e241c'))
+    for (x, y) in [(1, 2), (2, 3), (3, 3), (4, 4), (9, 7), (10, 8), (11, 8), (12, 9), (5, 12), (6, 12), (7, 13)]:
+        rect(hell, x, y, 1, 1, hexc('#ff5a1f'))
+    for (x, y) in [(3, 4), (11, 9), (6, 13)]:
+        rect(hell, x, y, 1, 1, hexc('#ffb347'))
+    tex['hellstone'] = hell
+
     # coffre au trésor enfoui : un petit coffre dans la roche
     treasure = noisy(hexc('#7d828c'), 13)
     rect(treasure, 2, 5, 12, 9, hexc('#8a5a2b'))
