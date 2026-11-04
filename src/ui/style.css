@@ -977,6 +977,7 @@ button.gopen:active:not(:disabled){transform:none}
 #dialog[hidden]{display:none}
 #dialog .box{box-sizing:border-box;max-width:min(calc(190*var(--u)),100%);width:100%;max-height:100%;overflow:auto;border:calc(6*var(--u)) solid transparent;
   padding:calc(4*var(--u)) calc(6*var(--u));border-image:url(../../textures/ui/panel_hi.png) 6 fill / calc(6*var(--u)) stretch;animation:obin .2s steps(3)}
+.dlgTitle{margin:0 0 calc(3*var(--u));font:var(--fs-l)/1.1 var(--f-title);color:var(--acc-lt)}
 .dlgText{margin:0 0 calc(4*var(--u));line-height:1.35}
 .dlgInput{width:100%;box-sizing:border-box;margin-bottom:calc(4*var(--u))}
 textarea.dlgInput{resize:vertical}

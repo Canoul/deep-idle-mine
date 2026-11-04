@@ -161,7 +161,8 @@ export const townApi = {
 
 /* modération du chat (30/10) : { warnings, max, bannedUntil, motif } */
 export const moderationApi = { me: () => request('GET', '/api/moderation/me'),
-  report: body => request('POST', '/api/moderation/report', body) };   // { source, message | target, reason, comment? }
+  report: body => request('POST', '/api/moderation/report', body),    // { source, message | target, reason, comment? }
+  noticeSeen: id => request('POST', '/api/moderation/notice-seen', { id }) };   // message de l'équipe fermé (scripts/warn.js)
 
 export const socialApi = {
   state:   ()   => request('GET', '/api/social'),

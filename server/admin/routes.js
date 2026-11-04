@@ -8,7 +8,9 @@
    POST /api/admin/reports {"name":"crousti","open":true} : signalements ; {"action":"close","id":12} : traité (scripts/reports.js).
    POST /api/admin/chat-recent {"name":"crousti"} : derniers messages du chat global ; POST /api/admin/chat-delete {"id":42} : le supprime (scripts/delete-message.js).
    POST /api/admin/mute {"name":"crousti","hours":24} : plus de chat ; {"off":true} : levé (scripts/mute.js).
-   POST /api/admin/ban {"name":"crousti","days":7,"reason":"…"} : compte suspendu, sans days = définitif ; {"off":true} : levé (scripts/ban.js).
+   POST /api/admin/ban {"name":"crousti","days":7,"reason":"…"} : compte suspendu, « minutes » au lieu de days, sans durée = définitif ;
+     {"off":true} : levé (scripts/ban.js).
+   POST /api/admin/notice {"name":"crousti","title":"…","text":"…"} : pop-up « message de l'équipe » chez le joueur (scripts/warn.js).
    POST /api/admin/rename {"name":"crousti","to":"Nouveau"} : force un pseudo (scripts/rename.js).
    POST /api/admin/mod-log {"limit":50} : journal de ces actions (scripts/reports.js --log).
    POST /api/admin/delete-account {"name":"crousti"} : dit quel compte serait supprimé ; avec "confirm":true, le supprime (scripts/delete-account.js).
@@ -131,11 +133,29 @@ export function adminRoutes({ accounts, service = null, game, party = null, mode
       guard(ctx); noMod();
       const acc = await byNameOrId(ctx);
       if(ctx.body?.off === true){ await moderation.suspend(acc.id, { lift: true }); await journal(ctx, 'unban', label(acc)); return { account: label(acc), suspended: null }; }
-      const days = ctx.body?.days === undefined || ctx.body?.days === null ? null : count(ctx.body.days, MODERATION.banDaysMax, 'days');
+      const given = v => v !== undefined && v !== null;
+      if(given(ctx.body?.days) && given(ctx.body?.minutes)) throw new HttpError(400, 'bad_request', 'days ou minutes, pas les deux.');
+      const days = given(ctx.body?.days) ? count(ctx.body.days, MODERATION.banDaysMax, 'days') : null;
+      const minutes = given(ctx.body?.minutes) ? count(ctx.body.minutes, MODERATION.banMinutesMax, 'minutes') : null;
       const reason = typeof ctx.body?.reason === 'string' ? ctx.body.reason.trim().slice(0, 200) : '';
-      const r = await moderation.suspend(acc.id, { ms: days === null ? null : days * 24 * 3600e3, reason });
+      const ms = days !== null ? days * 24 * 3600e3 : minutes !== null ? minutes * 60e3 : null;
+      const r = await moderation.suspend(acc.id, { ms, reason });
       await game.adminLeave?.(acc.id).catch(() => {});       // sa session en cours : comme son bouton « Quitter » ; pas de session : rien
-      await journal(ctx, 'ban', label(acc), `${days === null ? 'définitif' : `${days} j`}${reason ? ` : ${reason}` : ''}`);
+      await journal(ctx, 'ban', label(acc), `${days !== null ? `${days} j` : minutes !== null ? `${minutes} min` : 'définitif'}${reason ? ` : ${reason}` : ''}`);
+      return { account: label(acc), ...r };
+    },
+    /* message de l'équipe (04/11/2026, Geoffrey) : pop-up chez le joueur, tout de suite s'il est en ligne, sinon à sa prochaine visite */
+    'POST /api/admin/notice': async ctx => {
+      guard(ctx); noMod();
+      const acc = await byNameOrId(ctx);
+      const field = (k, max) => {
+        const v = typeof ctx.body?.[k] === 'string' ? ctx.body[k].trim() : '';
+        if(!v || v.length > max) throw new HttpError(400, 'bad_request', `${k} : un texte de 1 à ${max} caractères.`);
+        return v;
+      };
+      const title = field('title', MODERATION.noticeTitleMax), text = field('text', MODERATION.noticeTextMax);
+      const r = await moderation.notice(acc.id, { title, text, by: adminName(ctx) });
+      await journal(ctx, 'notice', label(acc), `${title} : ${text}`);
       return { account: label(acc), ...r };
     },
     'POST /api/admin/rename': async ctx => {

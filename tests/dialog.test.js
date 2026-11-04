@@ -38,3 +38,9 @@ test('saisie sur plusieurs lignes : zone de texte échappée, limitée', () => {
   assert.match(h, /<textarea class="dlgInput"[^>]*maxlength="500"/);
   assert.ok(h.includes('&lt;/textarea&gt;&lt;b&gt;'));
 });
+
+test('message avec titre : titre échappé au-dessus du texte ; sans titre, pas de balise', () => {
+  const h = dialogHtml({ kind:'tell', title:'<Avertissement>', text:'Reste poli.' });
+  assert.match(h, /<h3 class="dlgTitle">&lt;Avertissement&gt;<\/h3><p class="dlgText">Reste poli\.<\/p>/);
+  assert.doesNotMatch(dialogHtml({ kind:'tell', text:'x' }), /dlgTitle/);
+});

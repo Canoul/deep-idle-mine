@@ -528,7 +528,20 @@ function setSocial(st){
   nav.badge('guilde', st.guildInvites?.length > 0);
   lastSocial = st;
   syncNotifs();
+  showNotices(st.notices);
   return st;
+}
+/* messages de l'équipe (04/11/2026, scripts/warn.js) : une pop-up chacun ; fermé = lu sur le serveur. shown : pas deux fois
+   pendant que la fenêtre est ouverte (l'état social est relu toutes les quelques secondes) ; sur la fonction, pas dans un const :
+   l'état social peut arriver avant la fin du chargement du module */
+function showNotices(list = []){
+  const shown = showNotices.shown ??= new Set();
+  for(const n of list){
+    const key = `${acct.account?.id}:${n.id}`;
+    if(shown.has(key)) continue;
+    shown.add(key);
+    tell(n.text, { title: n.title }).then(() => moderationApi.noticeSeen(n.id)).catch(console.warn);
+  }
 }
 function syncNotifs(){
   const st = lastSocial ?? { partyInvites: [], incoming: [], guildInvites: [] };

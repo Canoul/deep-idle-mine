@@ -16,6 +16,14 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 04/11/2026 — Geoffrey — Administration : avertissement en pop-up, ban en minutes
+- **Pour le joueur** : l'équipe peut lui envoyer un message en pop-up (un titre et un texte) : il s'ouvre dans les
+  secondes s'il est en ligne, sinon à sa prochaine visite, et ne revient plus une fois fermé.
+- **Décisions** : ce message ne compte pas comme un avertissement du chat (pas de ban automatique au bout de 3). Un ban
+  peut maintenant durer un nombre de minutes (`--minutes`). Retirer un objet existait déjà (`take-item.js`).
+- **À suivre** : rien.
+- **État** : ✅ en ligne le 04/11
+
 ## 04/11/2026 — Geoffrey — Lag du jeu en ligne : corrigé
 - **Pour le joueur** : le jeu ne rame plus. Le serveur mettait plus d'1,5 s à répondre à chaque demande (mineur qui avance
   par à-coups, onglets lents), parce que pour savoir si un ami était en session, il recopiait tout l'historique de ses

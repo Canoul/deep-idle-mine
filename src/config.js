@@ -2184,7 +2184,8 @@ export const RAFFLE = { name:'Raffle', command:'!join', joinMs:120e3,   /* 01/11
 export const MODERATION = { warnings: 3, banMs: 24 * 3600e3, joinMessages: 3, joinWindowMs: 60e3, keep: 50,
   /* signalements et blocage (01/11/2026, exigence des stores) : server/moderation/reports.js, server/social/service.js */
   reportsPerHour: 10, reportCommentMax: 300, blockedMax: 200,
-  muteHoursMax: 8760, banDaysMax: 3650,   // bornes des outils admin (scripts/mute.js, scripts/ban.js)
+  muteHoursMax: 8760, banDaysMax: 3650, banMinutesMax: 3650 * 1440,   // bornes des outils admin (scripts/mute.js, scripts/ban.js)
+  noticeTitleMax: 80, noticeTextMax: 1000,   // message de l'équipe en pop-up (scripts/warn.js)
   reasons: [{ id:'harassment', label:'Insulte ou harcèlement' }, { id:'hate', label:'Contenu haineux' }, { id:'sexual', label:'Contenu sexuel' },
             { id:'spam', label:'Spam' }, { id:'name', label:'Pseudo inapproprié' }, { id:'cheat', label:'Triche' }, { id:'other', label:'Autre' }] };
 /* mot à taper pour supprimer un compte invité (pas de mot de passe à redemander) */

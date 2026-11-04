@@ -7,14 +7,16 @@
    dernier ban (ou du pardon) : seuls les avertissements d'après comptent pour le prochain ban.
    Décidés par les créateurs (01/11/2026, exigence des stores ; scripts/mute.js, scripts/ban.js) : mutedUntil = plus de chat ;
    suspended = { at, until (null : définitif), reason } : connexion refusée, à ne pas confondre avec le ban automatique, où
-   le joueur voit encore le jeu. Toute action des créateurs passe dans le journal (log, ns mod_log). */
+   le joueur voit encore le jeu. Toute action des créateurs passe dans le journal (log, ns mod_log).
+   notices (04/11/2026, scripts/warn.js) : messages de l'équipe [{ id, at, by, title, text, seenAt }] ; le navigateur montre en
+   pop-up ceux pas encore lus (état social, relu toutes les quelques secondes), puis dit qu'ils sont lus (seenAt). */
 import { MODERATION, RULES } from '../../src/config.js';
 
 /* « 31/10 à 14:05 », heure de Paris */
 export const parisDate = t => new Intl.DateTimeFormat('fr-FR', { timeZone: 'Europe/Paris', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
   .format(new Date(t)).replace(' ', ' à ');
 
-const blank = () => ({ warnings: [], bans: [], bannedUntil: 0, countFrom: 0, mutedUntil: 0, suspended: null });
+const blank = () => ({ warnings: [], bans: [], bannedUntil: 0, countFrom: 0, mutedUntil: 0, suspended: null, notices: [] });
 function sanitize(raw){
   const m = blank();
   if(!raw || typeof raw !== 'object') return m;
@@ -25,6 +27,7 @@ function sanitize(raw){
   m.mutedUntil = Number.isFinite(raw.mutedUntil) ? raw.mutedUntil : 0;
   const s = raw.suspended;
   if(s && Number.isFinite(s.at) && (s.until === null || Number.isFinite(s.until))) m.suspended = { at: s.at, until: s.until, reason: typeof s.reason === 'string' ? s.reason : '' };
+  m.notices = (Array.isArray(raw.notices) ? raw.notices : []).filter(n => n && Number.isSafeInteger(n.id) && typeof n.title === 'string' && typeof n.text === 'string').slice(-MODERATION.keep);
   return m;
 }
 /* avertissements qui comptent pour le prochain ban */
@@ -94,6 +97,23 @@ export function createModerationService({ store, clock = Date.now, config = MODE
       await store.putModeration(id, m);
       if(!lift) Promise.resolve().then(() => onBan(id)).catch(console.error);
       return { suspended: m.suspended };
+    }),
+    /* message de l'équipe (pop-up) : { id } ; title et text déjà vérifiés par la route */
+    notice: (id, { title, text, by = 'admin' }) => serial(async () => {
+      const m = await load(id), n = { id: Math.max(0, ...m.notices.map(x => x.id)) + 1, at: clock(), by, title, text, seenAt: 0 };
+      m.notices.push(n);
+      if(m.notices.length > config.keep) m.notices.splice(0, m.notices.length - config.keep);
+      await store.putModeration(id, m);
+      return { id: n.id, at: n.at };
+    }),
+    /* messages pas encore lus, les plus anciens d'abord : [{ id, at, title, text }] */
+    async unseenNotices(id){ return (await load(id)).notices.filter(n => !n.seenAt).map(({ id, at, title, text }) => ({ id, at, title, text })); },
+    /* le joueur l'a fermé : lu (une seconde fois ne change rien) ; false si ce message n'existe pas */
+    noticeSeen: (id, noticeId) => serial(async () => {
+      const m = await load(id), n = m.notices.find(x => x.id === noticeId);
+      if(!n) return false;
+      if(!n.seenAt){ n.seenAt = clock(); await store.putModeration(id, m); }
+      return true;
     }),
     /* journal des actions des créateurs : qui, quoi, sur qui, quand */
     log: ({ by, action, target = null, detail = '' }) => store.addModLog({ at: clock(), by, action, target, detail }),

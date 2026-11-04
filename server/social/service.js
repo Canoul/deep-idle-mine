@@ -189,6 +189,8 @@ export function createSocialService({ store, accounts, party, game, clock = Date
       guildInvites: await guildInvites(me.id),
       /* joueurs bloqués (liste à débloquer de l'onglet Social) */
       blocked: await Promise.all(s.blocked.map(async id => ({ id, displayId: formatAccountId(id), name: await nameOf(id) }))),
+      /* messages de l'équipe pas encore lus (pop-up, scripts/warn.js) */
+      notices: await moderation?.unseenNotices?.(me.id) ?? [],
     };
   }
 
