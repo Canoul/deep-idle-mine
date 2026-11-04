@@ -4,7 +4,7 @@
    Arène sans oxygène, sol plat ; on y entre par la gauche. Cerbère (8 × 6, résistance au recul 100 %) au sol, à droite ;
    on le frappe depuis la case collée à son flanc gauche.
    - Autoattaque : toutes les 10 s (7 s enragé), sur 3 cibles : d'abord ceux qui le provoquent, puis au hasard. Si ses
-     cibles sont TOUTES déjà mordues, elles meurent ; sinon chacune reçoit « Morsure » (20 s ; la ténacité l'évite).
+     cibles sont toutes mordues (aucune ne l'évite par la ténacité), l'une d'elles meurt, au hasard ; sinon elle se dissipe.
    - Balayage : toutes les 5 s, à 2 cases de lui : repoussé de 5 cases et 3 de haut (6 et 4 enragé) ; la ténacité l'évite.
    - Magma gazeux : toutes les 30 s, 50 % (65 % enragé) par joueur d'être « Durci » ; la ténacité ne joue que pour la spé
      Mineur. Durci = en pierre (dureté 50), intouchable, jusqu'à ce que d'autres le minent. Les tanks (ceux qui le
@@ -115,7 +115,7 @@ function bite(G){
   b.targets = ts.map(m => m.id);
   if(!ts.length) return;
   /* Geoffrey, 04/11 : la Morsure frappe ses cibles en même temps ; si toutes sont mordues (aucune ne l'évite par la
-     ténacité), elles meurent ; si une seule résiste, la Morsure se dissipe pour toutes. Rien ne persiste d'une Morsure
+     ténacité), l'une d'elles meurt (au hasard) ; si une seule résiste, la Morsure se dissipe pour toutes. Rien ne persiste d'une Morsure
      à l'autre (bitUntil : simple affichage, bite.show s). */
   const hit = [], dodged = [];
   for(const m of ts){
@@ -123,8 +123,10 @@ function bite(G){
     m.bitUntil = G.t + B.show; m.stats.bitten++; G.stats.bitten++; hit.push(m);
   }
   if(!dodged.length){
-    for(const m of ts) die(G, m);
-    log(G, `💀 ${b.name} : Morsure sur ${ts.map(m => m.name).join(', ')}, personne ne résiste : ils meurent`);
+    /* Geoffrey, 04/11 13:24 : une seule des cibles meurt, au hasard (avant : les 3) */
+    const v = ts[Math.floor(G.rng() * ts.length)];
+    die(G, v);
+    log(G, `💀 ${b.name} : Morsure sur ${ts.map(m => m.name).join(', ')}, personne ne résiste : ${v.name} meurt`);
     return checkEnd(G);
   }
   log(G, `🐺 Morsure${hit.length ? ` : ${hit.map(m => m.name).join(', ')}` : ''} · ${dodged.map(m => m.name).join(', ')} résiste : elle se dissipe`);

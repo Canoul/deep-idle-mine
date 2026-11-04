@@ -84,6 +84,7 @@ for(let r = 0; r < RUNS; r++){
   }
   const B = newCerbere(seed, { miners: specs, hp: HP ?? RAID.cerbere.boss.hp, ticks: Math.round(Math.max(0, tLeft) / DT) });
   while(!B.over) tickCerbere(B);
+  if(args.includes("--log")) for(const l of B.log) console.log("     ", typeof l === "string" ? l : `${(l.t ?? 0).toFixed?.(0) ?? ""}s ${l.msg ?? l.text ?? JSON.stringify(l)}`);
   if(B.summary.success) wins++;
   left.push(B.summary.bossHp / B.summary.bossMax);
   console.log(`   boss : ${B.summary.success ? 'VICTOIRE' : 'défaite'} en ${(B.t / 60).toFixed(1)} min · PV restants ${Math.round(100 * B.summary.bossHp / B.summary.bossMax)} % · morts ${B.stats.deaths} · durcis ${B.stats.stoned} · morsures ${B.stats.bitten}/${B.stats.bites} · dégâts/s ${(B.stats.bossDmg / Math.max(1, B.t)).toFixed(0)}`);

@@ -25,14 +25,14 @@ test('minage : 2 areas pleines, que du terrain en bandes (terre, pierre, pierre 
   assert.ok(terrainLeft(G) < 2 * W * AREA_H, 'il mine');
 });
 
-test('Cerbère : ses 3 cibles d\'abord parmi ceux qui le provoquent ; Morsure sans résistance → elles meurent', () => {
+test('Cerbère : ses 3 cibles d\'abord parmi ceux qui le provoquent ; Morsure sans résistance → une des 3 meurt', () => {
   const G = newCerbere(1, { miners: Array.from({ length: 6 }, (_, i) => spec(i)) });
   G.boss.taunts.add(0); G.boss.taunts.add(1);
   for(let k = 0; k < 20; k++){ const ts = pickTargets(G).map(m => m.id); assert.equal(ts.length, 3); assert.ok(ts.includes(0) && ts.includes(1)); }
   G.boss.taunts.add(2);
   G.next.bite = 0; G.next.sweep = G.next.magma = 1e9; tickCerbere(G);
   const [a, b, c] = G.miners;
-  assert.ok(a.dead && b.dead && c.dead, 'ténacité 0 : les 3 cibles mordues meurent');
+  assert.equal([a, b, c].filter(m => m.dead).length, 1, 'ténacité 0 : une des 3 cibles mordues meurt');
   assert.ok(!G.miners[3].dead);
 });
 
