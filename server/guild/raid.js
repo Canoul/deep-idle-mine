@@ -11,6 +11,7 @@
    Le lancement se fait HORS de la file du lobby et de celle de la guilde : il prend les verrous des comptes (inventaire,
    XP…), qu'un versement de session tient en attendant la guilde (addXp) ; launching bloque entrées et sorties pendant ce temps.
    guildOf(compte) → la guilde ({ id, members:[{ id }] }) ou null ; nameOf(compte) → pseudo affiché. */
+import { cleanGroup } from '../../src/shared/raid.js';
 import { RAID } from '../../src/config.js';
 import { SocialError } from '../social/service.js';
 
@@ -42,6 +43,9 @@ export function createRaidLobby({ game = null, guildOf, nameOf }){
     for(const m of L.members) if(m.account === L.leader) m.ready = true;
   }
   const notLaunching = L => { if(L?.launching) fail('raid_launching', 409, 'Le raid est en cours de lancement.'); };
+  const countIn = (L, gr) => (L?.members ?? []).filter(m => m.group === gr).length;
+  const roomIn = (L, gr) => gr != null && countIn(L, gr) < RAID.groupSize ? gr : null;
+  const firstRoom = L => { for(let gr = 1; gr <= RAID.groups; gr++) if(countIn(L, gr) < RAID.groupSize) return gr; return null; };
   const waitingOf = L => L.members.filter(m => m.account !== L.leader && !m.ready);
 
   /* ce que voit un membre de la guilde (champ raid de GET /api/guild) */
@@ -51,11 +55,11 @@ export function createRaidLobby({ game = null, guildOf, nameOf }){
     const L = lobbies.get(g.id) ?? null;
     if(L) prune(g, L);
     const lobby = lobbies.get(g.id) ?? null;
-    const members = lobby ? await Promise.all(lobby.members.map(async m => ({ account: m.account, name: m.name, ready: !!m.ready,
+    const members = lobby ? await Promise.all(lobby.members.map(async m => ({ account: m.account, name: m.name, ready: !!m.ready, group: m.group,
       leader: m.account === lobby.leader, me: m.account === me.id, playing: await inSession(m.account) }))) : [];
     const mine = members.some(m => m.me);
     const running = await game?.raidOfGuild?.(g.id).catch(() => null) ?? null;
-    return { max: RAID.maxPlayers, members, leader: lobby?.leader ?? null, size: members.length, mine,
+    return { max: RAID.maxPlayers, groups: RAID.groups, groupSize: RAID.groupSize, members, leader: lobby?.leader ?? null, size: members.length, mine,
              isLeader: !!lobby && lobby.leader === me.id, launching: !!lobby?.launching,
              waiting: lobby ? waitingOf(lobby).map(m => m.name) : [],
              canLaunch: !!lobby && lobby.leader === me.id && !lobby.launching && !waitingOf(lobby).length,
@@ -65,15 +69,18 @@ export function createRaidLobby({ game = null, guildOf, nameOf }){
 
   return {
     view,
-    join: me => serial(async () => {
+    /* group : le groupe choisi (1..RAID.groups) ; absent ou plein : le premier qui a de la place */
+    join: (me, group = null) => serial(async () => {
       const { g, L } = await context(me);
       if(L?.members.some(m => m.account === me.id)) return;            // déjà dedans (double clic)
       notLaunching(L);
       if(L && L.members.length >= RAID.maxPlayers) fail('raid_full', 409, `Le raid est complet (${RAID.maxPlayers} joueurs).`);
+      const gr = roomIn(L, cleanGroup(group)) ?? firstRoom(L);
+      if(gr == null) fail('raid_full', 409, `Le raid est complet (${RAID.maxPlayers} joueurs).`);
       if(await inSession(me.id)) fail('session_running', 409, 'Tu es déjà dans une session : termine-la d\'abord.');
       const lobby = L ?? { leader: me.id, members: [], launching: false };
       for(const m of lobby.members) if(m.account !== lobby.leader) m.ready = false;   // une arrivée : les autres repassent « pas prêt »
-      lobby.members.push({ account: me.id, name: await nameOf(me.id), ready: false });
+      lobby.members.push({ account: me.id, name: await nameOf(me.id), ready: false, group: gr });
       lobbies.set(g.id, lobby);
       fix(g.id, lobby);
     }),
@@ -93,6 +100,20 @@ export function createRaidLobby({ game = null, guildOf, nameOf }){
       notLaunching(L);
       L.members = L.members.filter(m => m.account !== id);
       fix(g.id, L);
+    }),
+    /* changer de groupe : soi-même, ou (chef du raid) un autre joueur ; id absent = soi */
+    move: (me, group, id = null) => serial(async () => {
+      const gr = cleanGroup(group);
+      if(gr == null) fail('bad_request', 400, 'Groupe invalide.');
+      const { L } = await context(me);
+      if(!L?.members.some(m => m.account === me.id)) fail('not_in_raid', 404, 'Tu n\'es pas dans le lobby du raid.');
+      const who = id == null ? me.id : String(id);
+      if(who !== me.id && L.leader !== me.id) fail('not_leader', 403, 'Seul le chef du raid peut déplacer un joueur.');
+      const m = L.members.find(x => x.account === who);
+      if(!m || m.group === gr) return;
+      notLaunching(L);
+      if(countIn(L, gr) >= RAID.groupSize) fail('group_full', 409, `Le groupe ${gr} est complet (${RAID.groupSize} joueurs).`);
+      m.group = gr;
     }),
     ready: (me, on) => serial(async () => {
       if(typeof on !== 'boolean') fail('bad_request', 400, 'Demande invalide.');
@@ -115,7 +136,7 @@ export function createRaidLobby({ game = null, guildOf, nameOf }){
         for(const m of L.members) if(await inSession(m.account)) fail('member_in_session', 409, `${m.name || 'Un joueur'} est déjà dans une session.`);
         L.launching = true;
         const lead = L.members.find(m => m.account === me.id);
-        return { g, L, members: [lead, ...L.members.filter(m => m !== lead)].map(m => ({ account: m.account, name: m.name })) };
+        return { g, L, members: [lead, ...L.members.filter(m => m !== lead)].map(m => ({ account: m.account, name: m.name, group: m.group })) };
       });
       const { g, L, members } = held;
       try {

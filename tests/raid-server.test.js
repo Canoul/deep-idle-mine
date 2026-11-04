@@ -153,3 +153,27 @@ test('vue de l\'arène (phase boss) : boss, mineurs (pierre, morsure), en-tête 
   g.leave('B');
   assert.equal(g.view(null).miners.length, 1, 'départ appliqué dans l\'arène');
 });
+
+test('2 groupes de 5 : on choisit son groupe, le chef du raid déplace, groupe plein refusé, groupes gardés au lancement', async () => {
+  const { guild, store } = await setup(12);
+  let r = (await guild.raidJoin(CHIEF, 2)).mine.raid;
+  assert.equal(r.groups, RAID.groups); assert.equal(r.groupSize, RAID.groupSize);
+  assert.equal(r.members[0].group, 2, 'groupe choisi');
+  for(const p of PEOPLE.slice(1, 5)) await guild.raidJoin(p, 2);
+  await guild.raidJoin(PEOPLE[5], 2);                                // groupe 2 plein : il va dans le groupe 1
+  r = await raidOf(guild, CHIEF);
+  assert.equal(r.members.filter(m => m.group === 2).length, RAID.groupSize);
+  assert.equal(r.members.find(m => m.account === PEOPLE[5].id).group, 1);
+  await rejects(guild.raidMove(PEOPLE[5], 2), 'group_full');
+  await rejects(guild.raidMove(PEOPLE[5], 3), 'bad_request');
+  await rejects(guild.raidMove(PEOPLE[5], 1, PEOPLE[1].id), 'not_leader');
+  await guild.raidMove(CHIEF, 1, PEOPLE[1].id);                      // le chef déplace
+  await guild.raidMove(PEOPLE[5], 2);                                // une place s'est libérée
+  r = await raidOf(guild, CHIEF);
+  assert.equal(r.members.find(m => m.account === PEOPLE[1].id).group, 1);
+  assert.equal(r.members.find(m => m.account === PEOPLE[5].id).group, 2);
+  for(const p of PEOPLE.slice(1, 6)) await guild.raidReady(p, true);
+  const { session } = await guild.raidLaunch(CHIEF);
+  const rec = await store.getGameSession(session.id);
+  assert.deepEqual(rec.players.map(p => [p.account, p.group]), r.members.map(m => [m.account, m.group]).sort((a, b) => (a[0] === CHIEF.id ? -1 : b[0] === CHIEF.id ? 1 : 0)));
+});

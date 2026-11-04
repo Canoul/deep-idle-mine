@@ -52,6 +52,9 @@ function team(seed){
   const specs = copies.map((c, i) => ({ ...minerSpecs({ mode: 'mine', players: [], bots: 1, botPresets: ['copy:ref' + i], botCopies: [c] })[0],
                                         x: Math.round((i + 0.5) * W / copies.length), home: Math.round((i + 0.5) * W / copies.length) }));
   specs.forEach((s, i) => { s.name = `${TEAM[i].slice(0, 3)}${i}`; s.skillTree = s.skillTree ?? TEAM[i]; });
+  /* 2 groupes de 5 (04/11) : 2 barbares, 2 mineurs, 1 logisticien chacun ; buffs de groupe dans son groupe */
+  const GROUP = [1, 1, 2, 2, 1, 1, 2, 2, 1, 2];
+  specs.forEach((s, i) => { s.group = GROUP[i]; });
   /* --tank-ten 40 (Geoffrey, 04/11) : les tanks (barbares) à 40 % de ténacité fixe face à Cerbère : brute recalculée pour
      que la courbe donne ce %, après la pénétration ; résilience 100 % (pas de fatigue) */
   if(TANK != null) for(const s of specs) if(s.skillTree === 'barbare'){

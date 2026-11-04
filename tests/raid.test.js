@@ -89,3 +89,29 @@ test('partie complète : minage → porte (rassemblement) → arène ; temps tot
   assert.ok(G.summary.success, 'Cerbère à 50 PV');
   assert.equal(G.summary.shares.length, 2); assert.ok(G.summary.shares[1].left);
 });
+
+test('groupes : Inspiration et Cri de guerre ne vont qu\'à son groupe ; les anneaux aussi', async () => {
+  const { SPELL } = await import('../src/config.js');
+  const { warcryOf } = await import('../src/sim/raid/cerbere.js');
+  const { inspirePct } = await import('../src/sim/groups.js');
+  const { raidSpecs } = await import('../src/shared/raid.js');
+  const g = (i, group, o = {}) => ({ ...spec(i, o), group });
+  const G = newCerbere(8, { miners: [g(0, 1, { tree: 'logisticien' }), g(1, 1), g(2, 2, { tree: 'barbare' }), g(3, 2), g(4, 1)] });
+  G.miners[0].spells = ['inspiration']; G.miners[2].spells = ['war_cry'];
+  G.miners[1].stone = { hp: 1e6, max: 1e6 };                        // le logisticien vient le libérer : il lance Inspiration
+  G.next.bite = G.next.sweep = G.next.magma = 1e9;
+  for(let i = 0; i < 600 && !inspirePct(G, G.miners[0]); i++) tickCerbere(G);
+  assert.ok(inspirePct(G, G.miners[4]) > 0 && inspirePct(G, G.miners[3]) === 0, 'Inspiration : groupe 1 seulement');
+  G.miners[1].stone = null; for(const m of G.miners) m.action = null;   // plus personne à libérer : on frappe
+  for(let i = 0; i < 600 && !warcryOf(G, G.miners[2]); i++) tickCerbere(G);
+  for(const m of [G.miners[3], G.miners[4]]){ m.x = G.miners[2].x; m.y = G.miners[2].y; }
+  assert.ok(warcryOf(G, G.miners[2]), 'Cri de guerre lancé');
+  assert.ok(warcryOf(G, G.miners[3]) && !warcryOf(G, G.miners[4]), 'Cri de guerre : groupe 2 seulement (même à côté)');
+  /* anneaux : l'Anneau en pierre d'un joueur du groupe 1 ne va pas au groupe 2 */
+  const players = ['A', 'B', 'C'].map((a, i) => ({ account: a, name: a, group: i < 2 ? 1 : 2 }));
+  const rec = { mode: 'raid', seed: 1, players, gear: { A: { anneau1: { uid: 1, item: 'Anneau en pierre' } }, B: {}, C: {} } };
+  const S = raidSpecs(rec);
+  assert.deepEqual(S.map(s => s.group), [1, 1, 2]);
+  assert.ok(S[1].rings.some(r => r.item === 'Anneau en pierre') && !S[2].rings.some(r => r.item === 'Anneau en pierre'));
+  assert.ok(S[1].carac.tenacity > S[2].carac.tenacity);
+});

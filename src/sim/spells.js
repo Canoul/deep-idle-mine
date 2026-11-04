@@ -8,6 +8,7 @@
    - updateSpells : à chaque tick, Illumination, Inspiration, Ulti shen, Cri de guerre, Cleave, Hand of Justice,
      Bonbonne de zipette ;
    - learnOnMine : un bloc miné (Fast learner). */
+import { inspireOn, inspirePct, setInspire, sameGroup } from './groups.js';
 import { W, IDS, DUCK, BLOCKS, CFG } from '../config.js';
 import { SPELL } from '../meta/spells.js';
 import { isAir, supported, typeOf, maxRow } from './world.js';
@@ -195,7 +196,7 @@ export function updateSpells(G){
   for(const m of G.miners){
     if(!m.spells?.length || m.y<=0) continue;
     if(spellReady(G,m,'illumination')) illuminate(G,m);
-    if(spellReady(G,m,'inspiration') && !(G.t < (G.inspire?.until ?? 0))) inspire(G,m);
+    if(spellReady(G,m,'inspiration') && !inspireOn(G,m)) inspire(G,m);
     if(spellReady(G,m,'ulti_shen')) ulti(G,m);
     if(spellReady(G,m,'war_cry')) warCry(G,m);
     if(spellReady(G,m,'hand_of_justice')) handOfJustice(G,m);
@@ -219,11 +220,11 @@ function illuminate(G,m){
    à la fin de l'effet. Ne part pas pendant un effet déjà en cours (plusieurs logisticiens : ils s'enchaînent). */
 function inspire(G,m){
   const S = SPELL.inspiration;
-  G.inspire = { until:G.t+S.duration, pct:S.mineSpeed };
-  cast(G,m,'inspiration',G.inspire.until);
-  log(G, `🎺 ${m.name} : Inspiration, minage +${Math.round(S.mineSpeed*100)} % pour tous pendant ${S.duration} s`);
+  setInspire(G, m, { until:G.t+S.duration, pct:S.mineSpeed });             // raid : pour son groupe seulement (src/sim/groups.js)
+  cast(G,m,'inspiration',G.t+S.duration);
+  log(G, `🎺 ${m.name} : Inspiration, minage +${Math.round(S.mineSpeed*100)} % pour ${m.group != null ? 'son groupe' : 'tous'} pendant ${S.duration} s`);
 }
-export const inspireBonus = G => G.inspire && G.t < G.inspire.until ? G.inspire.pct : 0;
+export const inspireBonus = (G, m = null) => inspirePct(G, m);
 
 /* Ulti shen : un autre mineur du groupe se bat (il frappe un mob, ou un mob le tacle) → téléporté sur sa case, il
    inflige hpPct des PV max du mob (bossPct sur un boss), puis se bat à ses côtés. Seulement quand il travaille (pas
@@ -277,7 +278,7 @@ const fair = (G,m,o) => o.hp>0 && !(o.type==='mimic' && !o.revealed)
 function warCry(G,m){
   if(!fighting(G,m)) return;
   const S = SPELL.war_cry, until = G.t+S.duration;
-  const hit = G.miners.filter(o => o===m || dist(m,o)<=S.radius);
+  const hit = G.miners.filter(o => o===m || (sameGroup(m,o) && dist(m,o)<=S.radius));   // raid : les membres de son groupe dans le rayon
   for(const o of hit) o.warcry = { until:Math.max(until, o.warcry?.until ?? 0), dmg:S.dmgPct, speed:S.atkSpeed };
   cast(G,m,'war_cry',until);
   log(G, `📯 ${m.name} : Cri de guerre, ${hit.length} mineur${hit.length>1 ? 's' : ''} : dégâts +${Math.round(S.dmgPct*100)} %, attaque +${Math.round(S.atkSpeed*100)} % pendant ${S.duration} s`);
@@ -320,7 +321,7 @@ const ZIP_AWAY = new Set(['return', 'departure', 'surface', 'fetch']);
 function zipette(G,m){
   const S = SPELL.zipette;
   const ratio = o => o.ox/o.carac.oxygenMax;
-  const o = G.miners.filter(o => o!==m && o.y>0 && !ZIP_AWAY.has(o.mode) && o.ox<o.carac.oxygenMax && dist(m,o)<=S.radius)
+  const o = G.miners.filter(o => o!==m && sameGroup(m,o) && o.y>0 && !ZIP_AWAY.has(o.mode) && o.ox<o.carac.oxygenMax && dist(m,o)<=S.radius)
                     .sort((a,b) => ratio(a)-ratio(b))[0];
   if(!o) return;
   const gain = Math.min(m.carac.pods*S.podsPct, o.carac.oxygenMax-o.ox);

@@ -27,7 +27,9 @@ export const RAID_INTRO = `<p class="small">Raid 1 : <b>Cerbère</b>. De 1 à ${
   `<p class="small mut">Morts définitives jusqu'à la fin du raid. Gratuit (ni clé, ni énergie) ; pas de récompense pour l'instant.</p>`;
 const left = (r, now) => r.finishAt ? Math.max(0, Math.round((r.finishAt - now) / 60000)) : null;
 function raidRow(m, r){
-  const kick = r.isLeader && !m.me ? `<button class="small" data-g="raidKick" data-id="${esc(m.account)}">Sortir</button>` : '';
+  const other = m.group === 1 ? 2 : 1, room = (r.members || []).filter(o => o.group === other).length < (r.groupSize ?? 5);
+  const move = r.isLeader && !m.me && (r.groups ?? 1) > 1 ? `<button class="small" data-g="raidMove" data-id="${esc(m.account)}" data-group="${other}"${room ? '' : ' disabled'}>→ Groupe ${other}</button>` : '';
+  const kick = move + (r.isLeader && !m.me ? `<button class="small" data-g="raidKick" data-id="${esc(m.account)}">Sortir</button>` : '');
   const state = m.leader ? '<span class="gxp">Chef du raid</span>' : m.ready ? '<span class="gxp okmsg">Prêt</span>' : '<span class="gxp mut">Pas prêt</span>';
   return `<div class="frow raidMem${m.me ? ' me' : ''}"><span class="raidCrown">${m.leader ? pxi('crown') : ''}</span><span class="fname"><b>${esc(m.name)}</b>`+
     `${m.playing ? '<small class="mut">En session</small>' : ''}</span>${state}<span class="fbtns">${kick}</span></div>`;
@@ -38,15 +40,24 @@ export function raidHTML(r, now = Date.now()){
   const running = run ? `<div class="card raidRunning"><h2>Raid en cours</h2><p class="small">${run.players.map(esc).join(', ') || 'Plus personne'}`+
     `${left(run, now) != null ? ` · fin dans ${left(run, now)} min au plus` : ''}</p>`+
     (run.mine ? '<div class="fbtns"><button class="on" data-g="raidWatch">Retourner au raid</button></div>' : '<p class="mut small">Ta guilde est en raid ; tu peux préparer le suivant.</p>')+'</div>' : '';
+  /* 2 groupes de 5 (04/11) : chacun choisit le sien ; les buffs de groupe (sorts, anneaux) restent dans son groupe */
+  const G = r.groups ?? 1, size = r.groupSize ?? r.max;
+  const groupBox = g => { const ms = r.members.filter(m => (m.group ?? 1) === g), full = ms.length >= size;
+    const btn = !r.mine ? `<button class="small on" data-g="raidJoin" data-group="${g}"${full || r.launching ? ' disabled' : ''}>Rejoindre ce groupe</button>`
+              : me && (me.group ?? 1) !== g ? `<button class="small" data-g="raidMove" data-group="${g}"${full || r.launching ? ' disabled' : ''}>Passer dans ce groupe</button>` : '';
+    return `<div class="raidGroup"><h3>Groupe ${g} <span class="mut">${ms.length}/${size}</span> ${btn}</h3>`+
+      (ms.length ? ms.map(m => raidRow(m, r)).join('') : '<p class="mut small">Vide</p>')+'</div>'; };
+  const list = G > 1 ? Array.from({ length: G }, (_, i) => groupBox(i + 1)).join('')+'<p class="mut small">Les buffs de groupe (sorts, anneaux) ne vont qu\'aux membres de son groupe.</p>'
+             : r.members.map(m => raidRow(m, r)).join('');
   const btns = !r.mine
-    ? `<button class="on" data-g="raidJoin"${r.size >= r.max || r.launching ? ' disabled' : ''}>Rejoindre le raid</button>`
+    ? (G > 1 ? '' : `<button class="on" data-g="raidJoin"${r.size >= r.max || r.launching ? ' disabled' : ''}>Rejoindre le raid</button>`)
     : [r.isLeader ? `<button class="on" data-g="raidLaunch"${r.canLaunch ? '' : ' disabled'}>Lancer le raid</button>`
                   : `<button class="${me?.ready ? '' : 'on'}" data-g="raidReady" data-on="${me?.ready ? '0' : '1'}">${me?.ready ? 'Plus prêt' : 'Je suis prêt'}</button>`,
        '<button data-g="raidLeave">Quitter le lobby</button>'].join('');
   const wait = r.mine && r.isLeader && r.waiting.length ? `<p class="mut small">En attente : ${r.waiting.map(esc).join(', ')}</p>` : '';
   return `<div class="gcols"><div>${running}
     <div class="card"><h2>Lobby du raid <span class="mut">${r.size}/${r.max}</span></h2>
-      ${r.members.length ? r.members.map(m => raidRow(m, r)).join('') : '<p class="mut small">Personne pour l\'instant : rejoins le lobby, le premier arrivé devient chef du raid.</p>'}
+      ${r.members.length || G > 1 ? list : ''}${r.members.length ? '' : '<p class="mut small">Personne pour l\'instant : rejoins le lobby, le premier arrivé devient chef du raid.</p>'}
       ${r.launching ? '<p class="small">Lancement…</p>' : ''}${wait}
       <div class="fbtns">${btns}</div></div>
   </div><div><div class="card"><h2>Cerbère</h2><img class="raidBoss" src="textures/cerbere.png" alt="Cerbère">${RAID_INTRO}</div></div></div>`;
@@ -274,7 +285,9 @@ export function setupGuild({ root, api = guildApi, onChange = () => {}, onRaid =
     }
     /* lobby de raid : chaque action renvoie la vue de la guilde */
     if(name === 'raidWatch') return onRaidWatch();
-    if(name === 'raidJoin' || name === 'raidLeave') return run(() => api[name]());
+    if(name === 'raidJoin') return run(() => api.raidJoin(el.dataset.group ? +el.dataset.group : null));
+    if(name === 'raidLeave') return run(() => api.raidLeave());
+    if(name === 'raidMove') return run(() => api.raidMove(+el.dataset.group, id || null));
     if(name === 'raidReady') return run(() => api.raidReady(el.dataset.on === '1'));
     if(name === 'raidKick'){ if(await ask('Sortir ce joueur du lobby du raid ?', { ok:'Sortir' })) await run(() => api.raidKick(id)); return; }
     if(name === 'raidLaunch'){

@@ -13,6 +13,7 @@
    Cerbère mort = réussite ; temps écoulé, tous morts (ou tous morts et en pierre) = échec.
    Sorts : Cri de guerre, Dynamite, Dash, Ulti shen en combat ; Inspiration et Fast learner pour libérer un allié ;
    les autres : sans effet. */
+import { inspireOn, inspirePct, setInspire } from '../groups.js';
 import { tenacityTry } from '../tenacity.js';
 import { RAID, DT, STATS, CFG } from '../../config.js';
 import { mulberry32 } from '../../core/rng.js';
@@ -50,7 +51,7 @@ export function newCerbere(seed, opts = {}){
 
 function createMiner(id, s, x, y){
   return {
-    id, name: s.name || ('Mineur ' + (id + 1)), color: s.color || null, look: s.look || {}, auras: s.auras || {}, account: s.account ?? null,
+    id, name: s.name || ('Mineur ' + (id + 1)), color: s.color || null, look: s.look || {}, auras: s.auras || {}, account: s.account ?? null, group: s.group ?? null,
     carac: { ...STATS, ...(s.carac || {}) }, skill: { ...(s.skills || {}) }, skillTree: s.skillTree ?? null,
     spells: Array.isArray(s.spells) ? [...s.spells] : [], spellCd: {}, learned: 0, rings: cleanRings(s.rings),
     x, y, face: 1, kx: 0, ky: 0, action: null, status: 'Entre dans l\'arène', fallN: 0, fallT: 0, knocked: false,
@@ -77,14 +78,15 @@ const actives = G => G.miners.filter(active);
 export const isTank = (G, m) => G.boss.taunts.has(m.id);
 
 /* ---------- vitesses et coups ---------- */
-const inspireOn = G => !!G.inspire && G.t < G.inspire.until;
-const mineRate = (G, m) => m.carac.mineSpeed * (1 + (m.carac.mineSpeedPct || 0) / 100) * (1 + (inspireOn(G) ? G.inspire.pct : 0)) * (1 + (m.learned || 0));
+const mineRate = (G, m) => m.carac.mineSpeed * (1 + (m.carac.mineSpeedPct || 0) / 100) * (1 + inspirePct(G, m)) * (1 + (m.learned || 0));
 const moveT = m => 1 / m.carac.speed;
 const fallT = () => 1 / CFG.fallSpeed;
 const chance = (G, pct) => pct > 0 && G.fightRng() < pct / 100;
 const byId = (G, id) => id == null ? null : G.miners.find(m => m.id === id) ?? null;
 const manh = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
-export const warcryOf = (G, m) => { const w = G.warcry, c = w && G.t < w.until ? byId(G, w.by) : null;
+/* Cri de guerre : G.warcry, ou G.warcryG[groupe] dans le raid : les membres de son groupe dans le rayon (Geoffrey, 04/11) */
+const warcryAt = (G, m) => m?.group != null ? G.warcryG?.[m.group] ?? null : G.warcry;
+export const warcryOf = (G, m) => { const w = warcryAt(G, m), c = w && G.t < w.until ? byId(G, w.by) : null;
   return c && manh(c, m) <= SPELL.war_cry.radius ? w : null; };
 const hitT = (G, m) => CFG.attackInterval / Math.max(0.1, (m.carac.attackSpeed ?? 100) / 100 * (1 + (warcryOf(G, m)?.speed || 0)));
 const hitDmg = (G, m) => m.carac.damage * (1 + (m.carac.damagePct || 0) / 100) * (1 + (warcryOf(G, m)?.dmg || 0)) * (chance(G, m.carac.crit || 0) ? 2 : 1);
@@ -246,17 +248,18 @@ export function decide(G, m){
 
 /* ---------- sorts ---------- */
 function mineBuffs(G, m){
-  if(ready(G, m, 'inspiration') && !inspireOn(G)){
-    const S = SPELL.inspiration; G.inspire = { until: G.t + S.duration, pct: S.mineSpeed };
-    cast(G, m, 'inspiration', G.inspire.until);
+  if(ready(G, m, 'inspiration') && !inspireOn(G, m)){
+    const S = SPELL.inspiration; setInspire(G, m, { until: G.t + S.duration, pct: S.mineSpeed });   // son groupe
+    cast(G, m, 'inspiration', G.t + S.duration);
     log(G, `🎺 ${m.name} : Inspiration`);
   }
   if(ready(G, m, 'fast_learner')){ m.learned = Math.round((m.learned + SPELL.fast_learner.bonus) * 1e6) / 1e6; cast(G, m, 'fast_learner'); }
 }
 function combatSpells(G, m){
-  if(ready(G, m, 'war_cry') && !(G.warcry && G.t < G.warcry.until)){
-    const S = SPELL.war_cry; G.warcry = { until: G.t + S.duration, by: m.id, dmg: S.dmgPct, speed: S.atkSpeed };
-    cast(G, m, 'war_cry', G.warcry.until);
+  if(ready(G, m, 'war_cry') && !(warcryAt(G, m) && G.t < warcryAt(G, m).until)){
+    const S = SPELL.war_cry, w = { until: G.t + S.duration, by: m.id, dmg: S.dmgPct, speed: S.atkSpeed };
+    if(m.group != null) (G.warcryG ??= {})[m.group] = w; else G.warcry = w;
+    cast(G, m, 'war_cry', w.until);
     log(G, `📯 ${m.name} : Cri de guerre`);
   }
   if(ready(G, m, 'dynamite')){

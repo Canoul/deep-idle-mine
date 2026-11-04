@@ -48,3 +48,9 @@ Chien à trois têtes de lave et des enfers (Cerbère de la mythologie). Sprite 
 - ~~Durée de la Morsure~~ : sans objet, elle ne persiste pas (Geoffrey, 04/11). PV provisoires : 280 000 (~1 victoire sur 10, combat ~9-10 min ; tanks à 40 % de ténacité fixe). 13:37 : les tanks ne sont jamais la cible du Magma.
 - Ce que voient les joueurs pendant l'attente devant la porte.
 - Nom de l'activité et icône.
+
+
+## Groupes (Geoffrey, 04/11 13:48)
+- Le lobby de 10 se joue en **2 groupes de 5**. Chacun choisit son groupe ; le chef du raid peut déplacer un joueur ; on peut lancer avec des groupes incomplets.
+- Les buffs de groupe apportés par chacun (Inspiration, Bonbonne de zipette, anneaux) ne vont qu'à son groupe ; le Cri de guerre aux membres de son groupe dans le rayon.
+- Équilibrage (2 barbares, 2 mineurs, 1 logisticien par groupe) : 280 000 PV → 3/40, 240 000 → 11/40 ; on garde 280 000.

@@ -20,7 +20,8 @@ Modèle d'entrée :
 - **Pour le joueur** : nouvel onglet **Raid** dans sa guilde, avec un lobby de 1 à 10 joueurs de la guilde (gratuit,
   pas de récompense pour l'instant). 30 min au total : il faut d'abord miner **en entier** deux areas de terrain (terre,
   pierre, pierre dure, puis la nouvelle **Pierre des enfers**, deux fois plus dure), avec les pods et l'oxygène comme
-  dans la mine. Tout miné, la grande porte s'ouvre sur l'arène de **Cerbère**, un chien de lave à trois têtes (8 × 6).
+  dans la mine. Le lobby se joue en **2 groupes de 5** (chacun choisit le sien, le chef du raid peut déplacer) : les
+  buffs de groupe (Inspiration, Cri de guerre, Bonbonne de zipette, anneaux) ne vont qu'à son groupe. Tout miné, la grande porte s'ouvre sur l'arène de **Cerbère**, un chien de lave à trois têtes (8 × 6).
   - **Morsure** (toutes les 30 s, 21 s enragé) : sur 3 cibles, d'abord ceux qui le provoquent. Si aucune ne résiste
     (ténacité), une des trois meurt, au hasard ; sinon elle se dissipe.
   - **Balayage** (toutes les 5 s) : repousse ceux qui sont à 2 cases.

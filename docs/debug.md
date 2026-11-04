@@ -7233,3 +7233,10 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   comptes (bascule des membres au lancement), `ctx.filter` (grisé du Durci) ignoré par les vieux Safari (le bloc de pierre
   reste). Les morts au contact sont souvent cachés derrière un vivant (pierres tombales empilées en x = contact).
 - **Applis** : src/, textures/ copiés en entier par server/app-update/bundle.js (copy-web.js) : rien hors paquet.
+
+## 04/11/2026 — Raid Cerbère : 2 groupes de 5 (Geoffrey)
+- **Quoi** : `RAID.groups = 2`, `RAID.groupSize = 5`. Lobby (server/guild/raid.js) : `group` par membre, `join(me, group)` (plein → premier groupe avec de la place), `move(me, group, id?)` (soi, ou un autre pour le chef du raid ; `group_full` 409) ; route `POST /api/guild/raid/group { group, id? }`, `join { group }`. Vue : `groups`, `groupSize`, `members[].group`. `startRaid` garde `players[].group` (`cleanGroup`, défaut par paquets de 5) et refuse des groupes > 5 (`groupsOk`).
+- **Sim** : `src/sim/groups.js` (`sameGroup`, `inspireAt/On/Pct`, `setInspire`) ; `m.group` (null hors raid = comportement d'avant). Inspiration par groupe (`G.inspireG`), Cri de guerre (mine : filtre `sameGroup` ; arène : `G.warcryG`), Bonbonne de zipette par groupe. Anneaux : `raidSpecs` calcule `groupRings` par groupe (src/shared/raid.js). Un ancien enregistrement sans groupes : un seul groupe.
+- **UI** : src/ui/guild.js `raidHTML` : un bloc par groupe (Rejoindre ce groupe / Passer dans ce groupe / → Groupe X pour le chef), `api.raidMove`.
+- **Tests** : raid (groupes : Inspiration, Cri de guerre, anneaux), raid-server (groupes du lobby, déplacement, plein, lancement), raid-ui (HTML) ✅. Simulation : `simulate-raid.js` met 2 barbares, 2 mineurs, 1 logisticien par groupe.
+- ⚠️ Non vérifié dans un navigateur (seulement le HTML testé) ; Hand of Justice, Ulti shen, Dash visent les ennemis ou rejoignent un allié de n'importe quel groupe (ce ne sont pas des buffs).

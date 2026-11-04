@@ -92,3 +92,14 @@ test('vue du minage : la fin du raid (temps écoulé) se voit, même si la mine 
   assert.equal(v.over, true); assert.equal(G.mine.over, false);
   assert.equal(applyRaidView(v, null, 0).over, true);
 });
+
+test('lobby : 2 groupes, rejoindre un groupe, changer de groupe, le chef déplace', () => {
+  const mem = (n, group, o = {}) => ({ account: n, name: n, ready: false, group, leader: false, me: false, playing: false, ...o });
+  const base = { max: 10, groups: 2, groupSize: 5, leader: 'A', launching: false, waiting: [], canLaunch: false, running: null };
+  const out = raidHTML({ ...base, members: [mem('A', 1, { leader: true }), ...['B', 'C', 'D', 'E', 'F'].map(n => mem(n, 2))], size: 6, mine: false, isLeader: false });
+  assert.match(out, /Groupe 1 <span class="mut">1\/5/); assert.match(out, /Groupe 2 <span class="mut">5\/5/);
+  assert.match(out, /data-g="raidJoin" data-group="1">/); assert.match(out, /data-g="raidJoin" data-group="2" disabled/);
+  const lead = raidHTML({ ...base, members: [mem('A', 1, { leader: true, me: true }), mem('B', 1)], size: 2, mine: true, isLeader: true });
+  assert.match(lead, /data-g="raidMove" data-id="B" data-group="2">/, 'le chef déplace B');
+  assert.match(lead, /data-g="raidMove" data-group="2">Passer dans ce groupe/);
+});

@@ -360,10 +360,11 @@ export function createGuildService({ store, accounts, statusOf, inviteCheck = as
     }),
 
     /* lobby de raid de la guilde (04/11/2026, server/guild/raid.js) : chaque action renvoie la vue, comme les autres */
-    raidJoin: async me => { await raid.join(me); return view(me); },
+    raidJoin: async (me, group = null) => { await raid.join(me, group); return view(me); },
     raidLeave: async me => { await raid.leave(me); return view(me); },
     raidKick: async (me, id) => { needId(id); await raid.kick(me, id); return view(me); },
     raidReady: async (me, on) => { await raid.ready(me, on); return view(me); },
+    raidMove: async (me, group, id = null) => { await raid.move(me, group, id); return view(me); },
     /* lancement : la session du raid (comme POST /api/game/start) et la vue de la guilde */
     raidLaunch: async (me, body) => { const r = await raid.launch(me, body); return { ...await view(me), session: r.session }; },
 

@@ -11,6 +11,7 @@
    sessionBonuses(G, m) → [{ id, src, value? }] : bonus permanents de la session (une seule icône à l'écran).
    Couronne du Roi Gobelin : buff du porteur seul (crownOf, 29/10).
    mobEffects(G, o) → ['stun', 'channel', 'taunt'] : états d'un mob. */
+import { inspireOn, inspireAt } from './groups.js';
 import { EFFECTS, INSTANCE, RINGS } from '../config.js';
 import { SPELL } from '../meta/spells.js';
 
@@ -47,7 +48,7 @@ export function minerEffects(G, m, ctx = {}){
   else if(m.dazed > 0 && G.t <= (m.dazedUntil ?? 0) + 1e-9) push({ id:'dazed', stacks:m.dazed, left:left(G, m.dazedUntil) });
   /* buffs */
   if(ctx.warcry && G.t < ctx.warcry.until) push({ id:'war_cry', left:left(G, ctx.warcry.until) });
-  if(G.inspire && G.t < G.inspire.until) push({ id:'inspiration', left:left(G, G.inspire.until) });
+  if(inspireOn(G, m)) push({ id:'inspiration', left:left(G, inspireAt(G, m).until) });
   if(m.skill?.ore_rush && G.t < (m.rushUntil ?? -1)) push({ id:'ore_rush', left:left(G, m.rushUntil), value:m.skill.ore_rush });
   if(m.skill?.travel_rush && ctx.travelling) push({ id:'travel_rush', value:m.skill.travel_rush });
   if(m.skill?.braum && m.helping) push({ id:'braum', value:m.skill.braum });

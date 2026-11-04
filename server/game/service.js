@@ -36,7 +36,7 @@ import { sanitizeJudgment, addResidues, refresh as refreshJudgment, publicJudgme
          setCount as setJudgmentCount, SIDES as JUDGMENT_SIDES } from '../../src/meta/judgment.js';
 import { towerSide, isTowerMode, towerDurationMs, splitTowerLoot } from '../../src/shared/tower.js';
 import { instanceDef, instanceDurationMs, isInstanceMode, missingKeys, levelsOf } from '../../src/shared/instances.js';
-import { RAID_MODE, isRaidMode, raidDurationMs } from '../../src/shared/raid.js';
+import { RAID_MODE, isRaidMode, raidDurationMs, cleanGroup, groupsOk } from '../../src/shared/raid.js';
 import { rollChestQuality, rollRune, rolledSpec, rollStats, isRing, canIdentify, qualityDef } from '../../src/meta/piece.js';
 import { sanitizeProgress, creditXp, raiseAreaMax, levelOf, specXpOf, specLevels } from '../../src/meta/level.js';
 import { sanitizeSkills, skillOp, skillRanks, spentPoints } from '../../src/meta/skills.js';
@@ -1177,9 +1177,9 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
        guilde du lobby, gardé dans la session), seed (mode dev) }. */
     async startRaid(me, members = null, body = {}){
       const list = members?.length ? members : [{ account: me.id, name: displayName(me) }];
-      const players = await Promise.all(list.map(async p => ({ account: String(p.account), name: String(p.name ?? ''), ...await guildField(String(p.account)) })));
+      const players = await Promise.all(list.map(async (p, i) => ({ account: String(p.account), name: String(p.name ?? ''), group: cleanGroup(p.group) ?? 1 + Math.floor(i / RAID.groupSize), ...await guildField(String(p.account)) })));
       if(players[0].account !== me.id) fail('bad_request', 400, 'Le joueur qui lance doit être le premier.');
-      if(new Set(players.map(p => p.account)).size !== players.length || players.length > RAID.maxPlayers)
+      if(new Set(players.map(p => p.account)).size !== players.length || players.length > RAID.maxPlayers || !groupsOk(players))
         fail('bad_request', 400, 'Raid invalide.');
       for(const p of players) await autoEquip(p.account, RAID_MODE);   // set de l'activité, chacun le sien
       return withLock.many([...players.map(p => 'acct:' + p.account), ...players.flatMap(p => prisonLocks(p.account))], async () => {

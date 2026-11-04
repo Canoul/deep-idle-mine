@@ -1873,6 +1873,7 @@ export const GIANT = {
      rage : sous below de ses PV. Valeurs provisoires (équilibrage : scripts/simulate-raid.js). */
 export const RAID = {
   maxPlayers: 10, duration: 30 * 60,
+  groups: 2, groupSize: 5,   // 2 groupes de 5 ; les buffs de groupe (sorts, anneaux) restent dans son groupe (Geoffrey, 04/11)
   mine: { areas: 2, bands: [['dirt', 25], ['stone', 25], ['hardstone', 25], ['hellstone', 25]], terrainVal: 5, gather: 5 },   // terrainVal ≥ CFG.farVal : un bloc resté loin est aussi visé
   cerbere: {
     w: 30, h: 12, spawn: [1, 2, 3, 4, 5, 1, 2, 3, 4, 5],
