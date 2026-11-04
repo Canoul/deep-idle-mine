@@ -17,11 +17,26 @@ const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&
 const num = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 const rangeText = r => `${r.min} à ${r.max}`;
 const icon = item => { const d = itemDef(item); return d?.tex ? `<img src="textures/${d.tex}.png" alt="">` : ''; };
+/* dans l'appli mobile (classe app, src/app/boot.js) : les tiers en boutons au lieu de la liste déroulante */
+const inApp = () => !!globalThis.document?.body?.classList.contains('app');
+
+/* appli (04/11/2026, Jules, spec 2026-11-04-appli-ecrans-fin-design.md) : un bouton par tier, 🔒 s'il est fermé */
+export const tierChipsHtml = (inv, tier) => `<div class="seg rsTiers">${RESEARCH.tiers.map(t => {
+  const open = tierUnlocked(inv, t.tier), cls = [t.tier === tier && 'on', !open && 'locked'].filter(Boolean).join(' ');
+  return `<button${cls ? ` class="${cls}"` : ''} data-rtier="${t.tier}">${open ? '' : '🔒 '}${esc(t.label)}</button>`;
+}).join('')}</div>`;
+/* ce qui manque pour ouvrir le tier t (rien s'il est ouvert) */
+export function tierWhyHtml(inv, t){
+  if(tierUnlocked(inv, t)) return '';
+  return `🔒 ${esc(tierOf(t).label)} : apprends encore ${tiersBlocking(inv, t)
+    .map(b => `${b.left} recette${b.left > 1 ? 's' : ''} du ${esc(b.label)}`).join(' et ')} pour l'ouvrir.`;
+}
 
 /* onOp({ action:'research', tier } | { action:'recycle', item }) → promesse du résultat ({ item, parts }) */
 export function setupResearch({ onOp }){
   let inv = { slots:[], unlocked:[] }, tab = 'research', tier = RESEARCH.tiers[0].tier;
   let partsIn = false, bpIn = null, picking = false, busy = false, msg = null, found = null;   // found : dernier BP obtenu
+  let why = null;                                      // appli : tier fermé touché (on dit ce qu'il manque)
 
   const blueprints = () => [...new Set(inv.slots.filter(s => s && isBlueprint(s.item)).map(s => s.item))];
 
@@ -31,17 +46,18 @@ export function setupResearch({ onOp }){
     const lockedBy = RESEARCH.tiers.filter(t => !tierUnlocked(inv, t.tier));
     if(partsIn && have < def.cost) partsIn = false;           // plus assez (dépensées ailleurs) : la case se vide
     const ok = partsIn && left > 0 && !busy;
-    return `<div class="rsRow"><label>Tier <select id="rsTier">${RESEARCH.tiers.map(t =>
+    const app = inApp(), count = `${stage ? `Étape ${stage.index + 1} / ${stage.count} : ${left} plan${left > 1 ? 's' : ''} possible${left > 1 ? 's' : ''}` : `${left} blueprint${left > 1 ? 's' : ''} du ${esc(def.label)} encore à découvrir`}`;
+    return (app ? tierChipsHtml(inv, tier) + `<p class="mut small rsCount">${count}</p>` : `<div class="rsRow"><label>Tier <select id="rsTier">${RESEARCH.tiers.map(t =>
               `<option value="${t.tier}"${t.tier === tier ? ' selected' : ''}${tierUnlocked(inv, t.tier) ? '' : ' disabled'}>${esc(t.label)}${tierUnlocked(inv, t.tier) ? '' : ' 🔒'}</option>`).join('')}</select></label>`+
-           `<span class="mut small">${stage ? `Étape ${stage.index + 1} / ${stage.count} : ${left} plan${left > 1 ? 's' : ''} possible${left > 1 ? 's' : ''}` : `${left} blueprint${left > 1 ? 's' : ''} du ${esc(def.label)} encore à découvrir`}</span></div>`+
+           `<span class="mut small">${count}</span></div>`)+
            `<div class="rsBench"><div class="slot rsSlot${partsIn ? '' : ' empty'}" id="rsParts" title="Clique pour poser ou retirer ${def.cost} ${esc(PARTS)}">`+
              `${partsIn ? icon(PARTS) + `<span class="q">${def.cost}</span>` : `<span class="fhint">${def.cost} parts</span>`}</div>`+
            `<span class="rsArrow">➜</span>`+
            (found ? `<div class="slot rsSlot${rcls(found)}"${tipAttr(found)}>${icon(found)}</div>` : `<div class="slot rsSlot empty"><span class="fhint">?</span></div>`)+`</div>`+
            (found ? bpInfoHtml(found) : '')+
            `<p class="mut small">${icon(PARTS)} ${esc(PARTS)} : ${num(have)} / ${def.cost}${have < def.cost ? ' <span class="err">(pas assez)</span>' : ''}</p>`+
-           lockedBy.map(t => `<p class="mut small">🔒 ${esc(t.label)} : apprends encore ${tiersBlocking(inv, t.tier)
-             .map(b => `${b.left} recette${b.left > 1 ? 's' : ''} du ${esc(b.label)}`).join(' et ')} pour l'ouvrir.</p>`).join('')+
+           (app ? (why && tierWhyHtml(inv, why) ? `<p class="mut small rsWhy">${tierWhyHtml(inv, why)}</p>` : '')
+                : lockedBy.map(t => `<p class="mut small">${tierWhyHtml(inv, t.tier)}</p>`).join(''))+
            `<p><button class="on" id="rsGo"${ok ? '' : ' disabled'}>🔬 Rechercher</button></p>`;
   }
 
@@ -83,6 +99,13 @@ export function setupResearch({ onOp }){
 
   $('rsTabs').onclick = e => { const b = e.target.closest('[data-rs]'); if(b){ tab = b.dataset.rs; msg = null; picking = false; render(); } };
   $('rsBody').onclick = e => {
+    const c = e.target.closest('[data-rtier]');
+    if(c){                                         // appli : un tier ouvert se choisit, un fermé dit ce qu'il manque
+      const t = +c.dataset.rtier;
+      if(tierUnlocked(inv, t)){ if(t !== tier){ tier = t; partsIn = false; found = null; } why = null; }
+      else why = t;
+      msg = null; return render();
+    }
     if(e.target.closest('#rsParts')){ partsIn = !partsIn && countOf(inv, PARTS) >= tierOf(tier).cost; msg = null; found = null; return render(); }
     if(e.target.closest('#rsBp')){ picking = !picking; msg = null; return render(); }
     const b = e.target.closest('[data-bp]'); if(b){ bpIn = b.dataset.bp; picking = false; return render(); }

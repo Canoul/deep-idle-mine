@@ -7058,3 +7058,30 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Pas vérifié** ⚠️ un vrai classement de 50 lignes avec sa place hors du top 50 (`b.me`) ; les onglets Tour céleste et
   Roi gobelin (détails dans les lignes) ; vrai téléphone.
 - **Applis** : pas de plugin ni de code natif.
+
+## 04/11/2026 — Jules — Appli mobile : écrans qui restaient (✅ en ligne le 04/11)
+- **Quoi** : spec et plan `docs/superpowers/{specs,plans}/2026-11-04-appli-ecrans-fin*.md`. Tout derrière `body.app` (`inApp()`
+  dans chaque module) :
+  - `src/ui/inventory.js` : `moveOp(inv, from, to)` (aussi utilisé par le glisser-déposer du PC), `infoHtml(…, moveFrom)`
+    exporté (bouton `.invMove`) ; mode déplacement dans `renderInventory` (bandeau `#invMoveBar`, grille `.moving` ; la case
+    de départ ou « Annuler » arrête sans rien envoyer) ;
+  - `src/ui/furnace.js` : `furnTabsHtml(list, max, sel)` ; `render` n'affiche que le four de l'onglet (`sel`, clic `data-ftab`) ;
+    `#furnEmptyAll` caché dans l'appli (le « Tout retirer » du four suffit) ;
+  - `src/ui/crusher.js` : carte « Dernières trouvailles » retirée de la page, mise en tête du panneau « Butin » (`.cfindsBox`) ;
+  - `src/ui/research.js` : `tierChipsHtml(inv, tier)`, `tierWhyHtml(inv, t)` (aussi pour les phrases du site, même texte) ;
+    clic `data-rtier` (tier ouvert = choisi, fermé = phrase `.rsWhy`) ;
+  - `src/ui/upgrade.js` : `pieceTileHtml(p, { worn, tag, sel, dim })` ; listes en `.upTiles` (tags MAX, ✨, ?, R5 ; rune trop
+    rare = `dim`) ; `.upStat` (stats sous le nom de la pièce posée, cachées sur le site par `style.css`) ;
+  - `src/ui/social.js` : `friendRowAppHtml(f)`, `friendSheetHtml(f)` ; `#frSheet` créé à la demande, un bouton le ferme puis
+    passe par `onBtn` (même traitement que la liste ; ex-`socialBody.onclick`) ; fiche remise à jour à chaque `set`, fermée si
+    ce n'est plus un ami ;
+  - `src/app/device.js` : `frSheet` dans `PANELS` ; `src/app/app.css` : bloc « Écrans qui restaient ».
+- **Tests** ✅ app-ecrans (nouveau, 6), inventory, furnace, furnace-trio, iron-furnace-gold-compass, crusher, research,
+  amelioration, social, craft, stuff, app-* : 347 / 347.
+- **Vérifié** ✅ aperçu `?app` 393 × 760 (Test_Mineur ; amis Test_Logisticien et Test_Barbare créés en local) : Four, Concasseur,
+  Recherche, Amis sur un écran ; Amélioration 822 px (la pastille du guide) ; Déplacer aller-retour case 5 ↔ 20 (serveur
+  local) ; fiche d'ami → « Voir son stuff » ouvre `#fview` ; site PC 1280 × 800 inchangé (3 fours, `<select>` des tiers, liste
+  des pièces, lignes d'amis à 5 boutons, carte des trouvailles, pas de Déplacer).
+- **Pas vérifié** ⚠️ mode Alliage du four dans l'appli (4 cases en 2 × 2, CSS seulement) ; Enchantement avec de vraies runes ;
+  Recycle de la Recherche ; vrai téléphone.
+- **Applis** : touche `src/app/` (style et liste des panneaux du bouton retour) : rien de natif, part par mise à jour à chaud.
