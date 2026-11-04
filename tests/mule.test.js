@@ -30,15 +30,16 @@ function bag(G, carrier, x, y, inv = {}, by = carrier){
 }
 const give = (m, inv) => { m.inv = { ...inv }; m.load = Object.entries(inv).reduce((s, [k, n]) => s + n*itemW(k), 0); };
 
-test('config : Mule 0/1 au 4e étage du Logisticien ; Escalateur exige Échelle de 2 ET Treuil', () => {
+test('config : Mule 0/1 au 5e étage du Logisticien, exige l\'Escalateur 5/5, qui exige le Treuil (arbres v2, 04/11)', () => {
   const n = SKILLS.trees.find(t => t.id === 'logisticien').nodes.find(x => x.id === 'mule');
-  assert.deepEqual([n.row, n.max, n.per], [4, 1, 1]);
+  assert.deepEqual([n.row, n.max, n.per, n.needs], [5, 1, 1, 'winch_speed']);
   assert.equal(MULE.capacityPct, 2);
-  const st = createSkills(), learn = id => skillOp(st, { action:'learn', node:id, opId:Math.random().toString(36) }, 20);
-  for(const id of ['travel_rush', 'travel_rush', 'travel_rush', 'winch', 'winch_speed']) learn(id);
-  assert.equal(st.ranks.winch_speed ?? 0, 0, 'Treuil seul : pas d\'Escalateur');
-  for(const id of ['tall_ladder', 'winch_speed', 'winch_speed', 'winch_speed', 'winch_speed', 'winch_speed']) learn(id);
-  assert.equal(blockedReason(st, 'mule', 20), null, 'Escalateur 5/5 ouvre Mule');
+  const st = createSkills(), learn = id => skillOp(st, { action:'learn', node:id, opId:Math.random().toString(36) }, 30);
+  skillOp(st, { action:'spec', tree:'logisticien', opId:'op-mule-spec' }, 30);
+  for(const id of ['travel_rush', 'travel_rush', 'travel_rush', 'organized', 'organized', 'organized', 'demat', 'demat', 'demat', 'winch_speed']) learn(id);
+  assert.equal(st.ranks.winch_speed ?? 0, 0, 'sans Treuil : pas d\'Escalateur');
+  for(const id of ['winch', 'grounded', 'winch_speed', 'winch_speed', 'winch_speed', 'winch_speed', 'winch_speed']) learn(id);
+  assert.equal(blockedReason(st, 'mule', 30), null, 'Escalateur 5/5 ouvre Mule');
   assert.ok(learn('mule').ok); assert.equal(st.ranks.winch, 1, 'qui a Mule a le Treuil');
 });
 

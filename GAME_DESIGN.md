@@ -260,7 +260,35 @@ Le mineur du joueur a un **niveau**, rattaché à son compte, qui monte avec l'*
 - Repères (simulation, mineur de base) : **≈ 860 XP par session en solo** (60 % minerais, 40 % bestioles) ; **≈ 740 par joueur à 3** (≈ 2220 au total) : les bestioles apparaissent au même rythme quelle que soit la taille de l'équipe, donc à 3 on se les partage. À surveiller : le jeu à 3 rapporte un peu moins d'XP par tête que le solo.
 
 ### Skills *(règles fermes ; valeurs provisoires, par rang)*
-Trois arbres **en étages** (3 étages chacun ; 4 pour le Barbare depuis le 22/10, pour le Mineur et le Logisticien depuis le 23/10). Un étage peut avoir **plusieurs cases côte à côte** (Logisticien, étage 2). Une case de l'étage r > 1 exige qu'**au moins une case de l'étage d'avant** soit **au rang max** ; on peut prendre les deux cases d'un même étage. **Exception : l'étage 3 du Logisticien (Escalateur, avant Navette) exige les deux cases de l'étage 2** (Échelle de 2 **et** Treuil) *(23/10/2026, Geoffrey : tout logisticien qui atteint Mule, à l'étage 4, a donc le Treuil ; une ancienne sauvegarde avec une seule des deux perd l'étage 3 et récupère ses points)*. Dépenser un point dans un arbre **bloque les deux autres**. Bouton **Reset** : gratuit, rend tous les points, **refusé pendant une session**. Les skills sont **figés au lancement** de la session (comme le stuff) ; c'est le serveur qui les vérifie (jamais plus de rangs que de points).
+
+**Arbres v2** *(04/11/2026, Geoffrey ; valeurs provisoires ; `SKILLS` en config, `src/meta/skills.js`, effets en partie `src/sim/skillfx.js`)*. Ils **remplacent** les règles d'étages ci-dessous (marquées « ancien ») ; les effets des skills qui existaient déjà ne changent pas, seule leur place change.
+- **Spécialisation choisie** : trois boutons en haut de l'onglet Skills. Sans spé, on ne dépense aucun point. **Changer de spé rend tous les points** (gratuit, refusé pendant une session). Le **reset** rend les points et **garde la spé**. La spé décide des sorts de classe, de l'XP de spé et des glyphes trouvés.
+- **Deux colonnes, six étages** par arbre. L'**étage r s'ouvre avec 3 × (r − 1) points dépensés dans cet arbre** (3, 6, 9, 12, 15), peu importe où.
+- **« | »** : certains skills exigent un autre skill **au rang max** : Treuil → Escalateur → Mule → Aura rassurante ; Provocation → Solide sur les appuis ; Crushing → Saccager → Aura berserk ; Reposé → Aura d'efficacité.
+- **Arbres secondaires** : on peut mettre des points dans les deux autres arbres, **jamais aussi profond** que dans sa spé : étage ≤ profondeur de la spé − 1 (profondeur = étage le plus bas où l'on a un point). Exemple : spé Logisticien à l'étage 5 → les autres jusqu'à l'étage 4.
+- **Skills de classe** (★ : tous les skills à 1 point, comme Treuil ou Provocation) : **seulement pour leur spé** *(Geoffrey, 04/11 : « seul un sp logisticien peut mettre un point dans treuil »)*.
+- **Lobby** : « 🪜 Logisticien (2/12/1) · SP lvl 3 », points par arbre dans l'ordre Mineur / Logisticien / Barbare.
+- **Migration** : à la mise en ligne, **tout le monde est remis à zéro** (reset gratuit), la spé (ancien arbre choisi) et les glyphes posés restent.
+
+| Étage (points) | Mineur (25 pts) | Logisticien (25 pts) | Barbare (22 pts) |
+|---|---|---|---|
+| 1 (0) | Pioche aiguisée 3 · **Pioche ensorcelée 3** | Navette 3 · **Organisé 3** | Force brute 3 · Pillage 3 *(avant 5)* |
+| 2 (3) | Second souffle ★1 · **Filou 3** | Échelle de 2 ★1 · **Dématérialisation 3** | Provocation ★1 · **Dans le dos 3** |
+| 3 (6) | Ruée 3 *(avant 5)* · **Mineur tout terrain 3** | Treuil ★1 · **Cloué au sol 3** | **Solide sur les appuis ★1** (| Provocation) · **Crushing 3** |
+| 4 (9) | Légende de la flemme ★1 · **Reposé 3** | Escalateur 5 (| Treuil) | Braum 3 · Saccager ★1 (| Crushing) |
+| 5 (12) | Maîtrise de la pioche 3 | Mule ★1 (| Escalateur) · Maîtrise du bench 3 | Maîtrise de l'épée 3 |
+| 6 (15) | Ivresse Minérale ★1 · **Aura d'efficacité ★1** (| Reposé) | **Aura rassurante ★1** (| Mule) · Reconnaissance ★1 | **Aura berserk ★1** (| Saccager) |
+
+**Nouveaux skills** (par rang ; les « % » de critique, coup unique, perçage, fortune et ténacité s'ajoutent en points à la stat, ceux des pods et des vitesses multiplient) :
+- **Pioche ensorcelée** : fortune +2 %. **Filou** : critique +2 %. **Organisé** : pods ×(1 + 1 %). **Dématérialisation** : coup unique +2 %. **Cloué au sol** : ténacité +3 %.
+- **Mineur tout terrain** : vitesse de minage +5 % dans les **instances, tours du Jugement, Bloc géant et He's coming**.
+- **Reposé** : après une remontée à la surface, une fois **redescendu au front** (fin de la descente depuis la surface ; pas la première descente de la session), vitesse de minage, de marche et de montée (échelle, seau) et dégâts **+2 %**, ténacité **+2 %**, pendant **3 min** en mine classique et **1 min en prison**. Une nouvelle descente remet le compteur à zéro (pas de cumul). Affiché dans les états du mineur.
+- **Dans le dos** : dégâts **+5 %** quand aucun ennemi ne le vise : aucun mob ne le tacle et aucun boss ne l'a pour cible (Golbute : au combat, à portée de son autoattack ; golems de la Division qui le taclent). Pas dans He's coming (Lucifer vise tout le monde).
+- **Solide sur les appuis** : ténacité **+5 %** contre les mécaniques de boss qui le visent : autoattack et avalanche du Golbute, boss des tours, minotaure, Lucifer (`SKILLS.steady.sources`).
+- **Crushing** : un coup critique fait ×2 × (1 + **10 %**) (×2,6 à 3/3) au lieu de ×2.
+- **Auras** (1 point, étage 6) : **pour tout le groupe, lui compris**, tout le temps ; deux porteurs de la même aura : une seule fois. **Aura d'efficacité** : perçage +2 %. **Aura rassurante** : portée d'attaque +0,1 bloc. **Aura berserk** : critique +2 %. Mine instantanée : pour soi seul (comme les anneaux). Bloc géant et He's coming : tous les présents.
+
+*Ancien (jusqu'au 04/11/2026)* : Trois arbres **en étages** (3 étages chacun ; 4 pour le Barbare depuis le 22/10, pour le Mineur et le Logisticien depuis le 23/10). Un étage peut avoir **plusieurs cases côte à côte** (Logisticien, étage 2). Une case de l'étage r > 1 exige qu'**au moins une case de l'étage d'avant** soit **au rang max** ; on peut prendre les deux cases d'un même étage. **Exception : l'étage 3 du Logisticien (Escalateur, avant Navette) exige les deux cases de l'étage 2** (Échelle de 2 **et** Treuil) *(23/10/2026, Geoffrey : tout logisticien qui atteint Mule, à l'étage 4, a donc le Treuil ; une ancienne sauvegarde avec une seule des deux perd l'étage 3 et récupère ses points)*. Dépenser un point dans un arbre **bloque les deux autres**. Bouton **Reset** : gratuit, rend tous les points, **refusé pendant une session**. Les skills sont **figés au lancement** de la session (comme le stuff) ; c'est le serveur qui les vérifie (jamais plus de rangs que de points).
 
 | Arbre | Étape 1 | Étape 2 | Étape 3 |
 |---|---|---|---|

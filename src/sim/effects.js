@@ -48,6 +48,7 @@ export function minerEffects(G, m, ctx = {}){
   if(m.skill?.ore_rush && G.t < (m.rushUntil ?? -1)) push({ id:'ore_rush', left:left(G, m.rushUntil), value:m.skill.ore_rush });
   if(m.skill?.travel_rush && ctx.travelling) push({ id:'travel_rush', value:m.skill.travel_rush });
   if(m.skill?.braum && m.helping) push({ id:'braum', value:m.skill.braum });
+  if(m.restedNow) push({ id:'rested', left:left(G, m.restedUntil), value:m.skill.rested });   // Reposé (04/11)
   if(m.pillage > 0) push({ id:'pillage', stacks:Math.round(m.pillage), value:m.pillage });
   const learned = learnedOf(m);
   if(learned.total > 0) push({ id:'fast_learner', stacks:learned.count, value:r1(learned.total * 100) / 100 });

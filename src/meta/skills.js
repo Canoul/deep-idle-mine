@@ -1,66 +1,89 @@
 /* Skills (onglet Skills) : logique pure, partagée par le jeu (affichage), le serveur (qui fait foi) et la partie
    (effets du mineur). Règles dans SKILLS (src/config.js) et GAME_DESIGN §3 « Skills ».
 
-   État d'un joueur : { tree: null | id d'arbre, ranks: { id de nœud: rang }, ops:[opId…] }.
+   Arbres v2 (04/11/2026, Geoffrey). État d'un joueur : { v:2, tree: null | id d'arbre (sa spé), ranks: { id de nœud: rang },
+   glyphs, ops:[opId…] }.
    - points disponibles = points de skill du niveau (levelOf) − rangs dépensés ;
-   - le premier point dépensé choisit l'arbre ; les autres arbres sont bloqués jusqu'au reset ;
-   - un nœud de l'étage r > 1 exige qu'au moins un nœud de l'étage r−1 de son arbre soit au rang max (tous, si le
-     nœud a needsAll : Navette exige Échelle de 2 et Treuil) ;
-   - reset : tout est rendu (gratuit), refusé pendant une session (vérifié par le serveur). */
+   - la spé se choisit (action 'spec') ; en changer remet tous les points à zéro ; sans spé, aucun point ne se dépense ;
+   - un nœud de l'étage r exige tierPoints × (r − 1) points dans son arbre, et son `needs` au rang max ;
+   - hors de l'arbre de la spé : étage ≤ profondeur de la spé − 1 (profondeur = étage le plus bas avec un point), et jamais
+     un skill specOnly (skills spéciaux de classe, à 1 point) ;
+   - reset : tous les points rendus (gratuit), la spé reste ; refusé pendant une session (vérifié par le serveur). */
 import { SKILLS, STUFF, GLYPHS, GUILD } from '../config.js';
 
+export const SKILLS_VERSION = 2;
 export const NODES = Object.fromEntries(SKILLS.trees.flatMap(t => t.nodes.map((n, i) => [n.id, { ...n, tree:t.id, index:i }])));
-/* nœuds de l'étage d'avant (ceux qui débloquent ce nœud) ; vide pour l'étage 1 */
-export const parentsOf = id => { const n = NODES[id]; return SKILLS.trees.find(t => t.id === n.tree).nodes.filter(p => p.row === n.row - 1); };
+/* le nœud exigé au rang max par ce nœud (le « | » de l'arbre), en liste ; vide sinon */
+export const parentsOf = id => { const n = NODES[id]; return n?.needs && NODES[n.needs] ? [NODES[n.needs]] : []; };
 /* nœud par son id (null si inconnu : jamais un nom hérité comme « __proto__ ») */
 const nodeOf = id => typeof id === 'string' && Object.hasOwn(NODES, id) ? NODES[id] : null;
-const treeOf = id => SKILLS.trees.find(t => t.id === id) ?? null;
+const treeOf = id => typeof id === 'string' ? SKILLS.trees.find(t => t.id === id) ?? null : null;
 
-export const createSkills = () => ({ tree:null, ranks:{}, glyphs:{}, ops:[] });   // glyphs : src/meta/glyphs.js
+export const createSkills = () => ({ v:SKILLS_VERSION, tree:null, ranks:{}, glyphs:{}, ops:[] });   // glyphs : src/meta/glyphs.js
 export const spentPoints = st => Object.values(st.ranks).reduce((s, r) => s + r, 0);
 export const rankOf = (st, id) => (Object.hasOwn(st.ranks, id) ? st.ranks[id] : 0);
+/* points dépensés dans un arbre */
+export const treePoints = (st, tree) => (treeOf(tree)?.nodes ?? []).reduce((s, n) => s + rankOf(st, n.id), 0);
+/* points par arbre, dans l'ordre des arbres (lobby : « Logisticien (2/12/1) ») */
+export const pointsByTree = st => SKILLS.trees.map(t => treePoints(st, t.id));
+/* profondeur d'un arbre : étage le plus bas où il y a au moins un point (0 sans point) */
+export const treeDepth = (st, tree) => Math.max(0, ...(treeOf(tree)?.nodes ?? []).filter(n => rankOf(st, n.id) > 0).map(n => n.row));
+/* points à dépenser dans l'arbre pour ouvrir l'étage r */
+export const tierNeed = r => SKILLS.tierPoints * (r - 1);
+/* étage le plus profond permis dans cet arbre (Infinity pour l'arbre de la spé) */
+export const depthCap = (st, tree) => tree === st.tree ? Infinity : treeDepth(st, st.tree) - 1;
 
 /* pourquoi on ne peut pas ajouter un rang à ce nœud (null = possible) */
 export function blockedReason(st, id, points){
   const n = nodeOf(id);
   if(!n) return 'unknown';
-  if(st.tree && st.tree !== n.tree) return 'other_tree';
+  if(!st.tree) return 'no_spec';
   if(rankOf(st, id) >= n.max) return 'maxed';
-  const parents = parentsOf(id);
-  const maxed = p => rankOf(st, p.id) >= p.max;
-  if(parents.length && !(n.needsAll ? parents.every(maxed) : parents.some(maxed))) return 'needs_previous';
+  if(n.specOnly && n.tree !== st.tree) return 'spec_only';
+  if(n.row > depthCap(st, n.tree)) return 'too_deep';
+  if(treePoints(st, n.tree) < tierNeed(n.row)) return 'needs_tier';
+  const need = parentsOf(id)[0];
+  if(need && rankOf(st, need.id) < need.max) return 'needs_previous';
   if(spentPoints(st) >= points) return 'no_points';
   return null;
 }
 
-/* op = { action:'learn', node, opId } | { action:'reset', opId } ; points : points de skill du niveau.
-   Renvoie { ok, repeated } ou { error }. (Le serveur refuse le reset pendant une session avant d'appeler.) */
+/* op = { action:'learn', node, opId } | { action:'spec', tree, opId } | { action:'reset', opId } ; points : points de
+   skill du niveau. Renvoie { ok, repeated } ou { error }. (Le serveur refuse 'spec' et 'reset' pendant une session.) */
 export function skillOp(st, op, points){
   if(st.ops.includes(op.opId)) return { ok:true, repeated:true };
   if(op.action === 'learn'){
     const why = blockedReason(st, op.node, points);
     if(why) return { error:why };
     st.ranks[op.node] = rankOf(st, op.node) + 1;
-    st.tree = NODES[op.node].tree;
+  } else if(op.action === 'spec'){
+    if(!treeOf(op.tree)) return { error:'unknown' };
+    if(op.tree !== st.tree){ st.ranks = {}; st.tree = op.tree; }   // changer de spé : tous les points rendus
   } else if(op.action === 'reset'){
-    st.ranks = {}; st.tree = null;
+    st.ranks = {};
   } else return { error:'bad_request' };
+  st.v = SKILLS_VERSION;
   st.ops.push(op.opId);
   if(st.ops.length > SKILLS.opMemory) st.ops.splice(0, st.ops.length - SKILLS.opMemory);
   return { ok:true, repeated:false };
 }
 
-/* Relecture (stockage, enregistrement d'une session) : revérifiée à chaque fois. On rejoue les rangs étage par étage :
-   rang hors bornes, nœud sans un nœud de l'étage d'avant au max, autre arbre ou plus de points que le niveau → ignoré. */
+/* Relecture (stockage, enregistrement d'une session, set) : revérifiée à chaque fois. On rejoue les rangs, l'arbre de la
+   spé d'abord puis les autres, étage par étage : rang hors bornes, étage pas ouvert, trop profond hors spé, `needs` pas au
+   max, plus de points que le niveau → ignoré. Une sauvegarde d'avant les arbres v2 (sans v:2) est rejouée telle quelle :
+   la migration (reset) se fait au chargement du compte (migrateSkills). */
 export function sanitizeSkills(raw, points = Infinity){
   const st = createSkills();
   const tree = treeOf(raw?.tree);
-  if(tree && raw.ranks && typeof raw.ranks === 'object'){
-    for(const n of [...tree.nodes].sort((a, b) => a.row - b.row)){
-      const want = raw.ranks[n.id];
-      if(!Number.isSafeInteger(want) || want <= 0) continue;
-      for(let k = 0; k < Math.min(want, n.max); k++){ if(blockedReason(st, n.id, points)) break; st.ranks[n.id] = rankOf(st, n.id) + 1; st.tree = tree.id; }
-    }
+  if(tree){
+    st.tree = tree.id;
+    if(raw.ranks && typeof raw.ranks === 'object')
+      for(const t of [tree, ...SKILLS.trees.filter(x => x !== tree)])
+        for(const n of [...t.nodes].sort((a, b) => a.row - b.row)){
+          const want = raw.ranks[n.id];
+          if(!Number.isSafeInteger(want) || want <= 0) continue;
+          for(let k = 0; k < Math.min(want, n.max); k++){ if(blockedReason(st, n.id, points)) break; st.ranks[n.id] = rankOf(st, n.id) + 1; }
+        }
   }
   /* glyphes posés (src/meta/glyphs.js) : nœud qui a un glyphe et nom exact de son objet ; le rang n'est PAS vérifié ici
      (un glyphe sur un skill qui n'est plus au max reste posé, inactif) */
@@ -71,6 +94,10 @@ export function sanitizeSkills(raw, points = Infinity){
   if(guild) st.guild = guild;
   return st;
 }
+
+/* Migration vers les arbres v2 (04/11/2026, Geoffrey : reset gratuit de tout le monde) : une sauvegarde de COMPTE sans
+   v:2 perd ses rangs ; sa spé (l'ancien arbre choisi), ses glyphes posés et sa mémoire de demandes restent. Idempotent. */
+export const migrateSkills = raw => raw && typeof raw === 'object' && raw.v !== SKILLS_VERSION ? { ...raw, ranks:{}, v:SKILLS_VERSION } : raw;
 
 /* bonus des bâtiments de guilde (01/11/2026), figé au lancement avec les skills (server/game/service.js frozenSkills) :
    il suit ainsi tous les modes, et un rejeu garde celui de la partie. Seuls les stats et les plafonds de la config passent. */
@@ -92,20 +119,34 @@ export const SKILL_ADD = { looting:{ node:'loot', scale:100 } };
 /* skills qui changent le comportement pendant la partie (pas une stat) : affichés à part, sous les stats */
  /* (les maîtrises, qui agissent sur les stats d'une pièce, comptent dans la colonne des skills des stats) */
 export const behaviourSkills = effects => Object.values(NODES)
-  .filter(n => effects?.[n.id] && !n.slot && !Object.values(SKILL_STATS).includes(n.id) && !Object.values(SKILL_ADD).some(a => a.node === n.id))
+  .filter(n => effects?.[n.id] && !n.slot && !n.adds && !(n.mult && !n.raid) && !Object.values(SKILL_STATS).includes(n.id) && !Object.values(SKILL_ADD).some(a => a.node === n.id))
   .map(n => ({ id:n.id, icon:n.icon, name:n.name, text:nodeText(n.id, Math.round(effects[n.id] / n.per)) }));
 /* rang d'un nœud retrouvé depuis son effet (rang × per) */
 const rankFrom = (n, effects) => Math.round((effects?.[n.id] || 0) / n.per);
-/* applique ces multiplicateurs, puis les points ajoutés (adds des nœuds : ténacité…), à des caractéristiques
-   { stat: valeur } (déjà avec le stuff) ; renvoie une copie. Même calcul en session (src/shared/game.js) et dans
-   l'onglet Stuff. */
-export function withSkillStats(carac, effects){
+/* auras (arbres v2, 04/11/2026) : { stat: points } que les skills `aura` des membres du groupe donnent à TOUT le groupe ;
+   list = effets des skills de chaque membre ; une aura portée par plusieurs membres ne compte qu'une fois */
+export function groupAuras(list){
+  const out = {};
+  for(const n of Object.values(NODES)) if(n.aura && (list || []).some(e => e?.[n.id] > 0))
+    for(const [stat, v] of Object.entries(n.aura)) out[stat] = Math.round(((out[stat] || 0) + v) * 1e6) / 1e6;
+  return out;
+}
+/* applique ces multiplicateurs, puis les points ajoutés (adds des nœuds : fortune, critique, ténacité…), à des
+   caractéristiques { stat: valeur } (déjà avec le stuff) ; renvoie une copie. Même calcul en session (src/shared/game.js)
+   et dans l'onglet Stuff. opts.raid : la partie est une instance, une tour, le Bloc géant ou He's coming (nœuds `raid`) ;
+   opts.auras : auras du groupe (groupAuras), ajoutées en points. */
+export function withSkillStats(carac, effects, opts = {}){
   const out = { ...carac };
   for(const [stat, node] of Object.entries(SKILL_STATS)) if(effects?.[node]) out[stat] = carac[stat] * (1 + effects[node]);
-  for(const n of Object.values(NODES)) if(n.adds){
-    const r = rankFrom(n, effects);
-    if(r) for(const [stat, v] of Object.entries(n.adds)) out[stat] = (out[stat] || 0) + r * v;
+  for(const n of Object.values(NODES)){
+    if(n.mult && effects?.[n.id] && (!n.raid || opts.raid))
+      for(const [stat, w] of Object.entries(n.mult)) out[stat] = (out[stat] || 0) * (1 + effects[n.id] * w);
+    if(n.adds){
+      const r = rankFrom(n, effects);
+      if(r) for(const [stat, v] of Object.entries(n.adds)) out[stat] = (out[stat] || 0) + r * v;
+    }
   }
+  for(const [stat, v] of Object.entries(opts.auras ?? {})) out[stat] = (out[stat] || 0) + v;
   for(const [stat, v] of Object.entries(effects?.guild?.mult ?? {})) out[stat] = (out[stat] || 0) * (1 + v / 100);
   for(const [stat, v] of Object.entries(effects?.guild?.add ?? {})) out[stat] = (out[stat] || 0) + v;
   return out;
@@ -128,7 +169,7 @@ export function aoeOf(effects){
 }
 
 /* rangs seuls (ce qu'on fige dans l'enregistrement d'une session) */
-export const skillRanks = st => ({ tree:st.tree, ranks:{ ...st.ranks } });
+export const skillRanks = st => ({ v:SKILLS_VERSION, tree:st.tree, ranks:{ ...st.ranks } });
 
 /* effets pour la partie : { id de nœud: rang × per } (0 si pas appris) */
 export function skillEffects(st){
@@ -142,10 +183,11 @@ export function skillEffects(st){
 
 /* texte d'un nœud avec la valeur au rang r (au moins 1, pour montrer ce que donne le premier rang) */
 export function nodeText(id, r){
-  const n = NODES[id], v = Math.max(1, r) * n.per;
+  const n = NODES[id], k = Math.max(1, r), v = k * n.per;
   let text = n.desc.replace('{v}', n.per === 1 ? '' : `${String(Math.round(v * 1000) / 10).replace('.', ',')} %`);
-  for(const [stat, p] of Object.entries(n.adds || {}))
-    text = text.replace(`{${stat}}`, `${String(Math.max(1, r) * p).replace('.', ',')}${STUFF.statUnits?.[stat] ?? ''}`);
-  if(n.aoe) text = text.replace('{aoe}', `${String(Math.round(Math.max(1, r) * n.aoe * 1000) / 10).replace('.', ',')} %`);
+  for(const [stat, p] of Object.entries({ ...(n.adds || {}), ...(n.aura || {}) }))
+    text = text.replace(`{${stat}}`, `${String(Math.round((n.aura ? 1 : k) * p * 1000) / 1000).replace('.', ',')}${STUFF.statUnits?.[stat] ?? ''}`);
+  if(n.aoe) text = text.replace('{aoe}', `${String(Math.round(k * n.aoe * 1000) / 10).replace('.', ',')} %`);
+  if(id === 'rested') text = text.replace('{ten}', `${k * SKILLS.rested.tenacity} %`);
   return text;
 }

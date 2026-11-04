@@ -14,6 +14,7 @@
    Dynamite sur les spawners et les cages (Dynamite = INSTANCE.spawner.dynamite coups sur un spawner, casse les blocs de
    cage à son rayon) ; Cri de guerre, Cleave, Hand of Justice, Dash et Ulti shen contre les gobelins (Ulti shen et Cleave
    aussi sur le roi) ; Illumination et Bonbonne de zipette : sans effet (tout est éclairé, pas d'oxygène). */
+import { critMul, backstabMul } from '../skillfx.js';
 import { INSTANCE, DT, STATS, CFG, COMBAT } from '../../config.js';
 import { mulberry32 } from '../../core/rng.js';
 import { SPELL } from '../../meta/spells.js';
@@ -90,7 +91,9 @@ const manh = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 export const warcryOf = (G, m) => { const w = G.warcry, c = w && G.t < w.until ? byId(G, w.by) : null;
   return c && manh(c, m) <= SPELL.war_cry.radius ? w : null; };
 const hitT = (G, m) => CFG.attackInterval / Math.max(0.1, (m.carac.attackSpeed ?? 100) / 100 * (1 + (warcryOf(G, m)?.speed || 0)));
-const hitDmg = (G, m) => m.carac.damage * (1 + (m.carac.damagePct || 0) / 100) * (1 + (warcryOf(G, m)?.dmg || 0)) * (chance(G, m.carac.crit || 0) ? 2 : 1);
+/* arbres v2 (04/11) : Crushing ; Dans le dos : visé si un gobelin le tacle ou si le boss l'a pour cible */
+const hitDmg = (G, m) => m.carac.damage * (1 + (m.carac.damagePct || 0) / 100) * (1 + (warcryOf(G, m)?.dmg || 0)) * (chance(G, m.carac.crit || 0) ? critMul(m) : 1)
+  * backstabMul(m, !!tackler(G, m) || G.boss?.focus === m.id);
 const strikeDmg = (G, m) => { let d = hitDmg(G, m); if(chance(G, m.carac.doubleAttack || 0)) d += hitDmg(G, m); return d; };
 const ready = (G, m, id) => m.spells.includes(id) && G.t + 1e-9 >= (m.spellCd[id] || 0);
 const cast = (G, m, id, cdFrom = G.t, mul = 1) => { m.spellCd[id] = cdFrom + SPELL[id].cd * mul; m.stats.spells++; };
