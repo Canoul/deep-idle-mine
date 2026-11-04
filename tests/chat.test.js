@@ -269,6 +269,16 @@ test("chat permanent : largeur arrêtée au bord de l'interface centrale, jamais
   assert.equal(dockFit(700, 50), CHAT.dock.minWidth);
 });
 
+test("chat permanent : il s'arrête juste au-dessus de la partie de la barre d'action qu'il recouvre (04/11)", async () => {
+  const { navLift } = await import('../src/ui/chat-dock.js');
+  /* écran de 1000 px : bulle à gauche (haut 900), boutons (haut 880), bulle à droite ; une bulle cachée a une largeur 0 */
+  const orbL = { left:600, top:900, width:90 }, bar = { left:700, top:880, width:500 }, hidden = { left:0, top:0, width:0 };
+  assert.equal(navLift(500, [orbL, bar], 1000), 0);     // chat plus étroit : rien à éviter
+  assert.equal(navLift(650, [orbL, bar], 1000), 100);   // il recouvre la bulle : marge = sa hauteur, pas celle de toute la barre
+  assert.equal(navLift(800, [orbL, bar], 1000), 120);   // il recouvre aussi les boutons, plus hauts
+  assert.equal(navLift(800, [hidden], 1000), 0);
+});
+
 /* ---------- canaux du chat global (31/10) ---------- */
 function setupChannels(){
   let now = 5_000_000;

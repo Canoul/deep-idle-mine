@@ -7259,3 +7259,16 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 ## 04/11/2026 — Raid : portrait et spé dans le lobby (Geoffrey)
 - server/guild/raid.js `cardOf` (cache 30 s) : `tree`, `specLevel`, `look`, `auras` par membre (game.skillTreeOf / specLevelOf / lookFor / aurasFor, comme les groupes en formation). src/ui/guild.js : canvas `data-raidpic` dans `raidRow`, `drawRaidPortraits` après `put` quand le HTML change, `specLabel`.
 - Tests raid-ui, raid-server ✅ ; vérifié dans le navigateur (mode dev, 2 comptes, invitation) ✅.
+
+## 04/11/2026 — Chat permanent : zone vide sous le chat quand il recouvre la barre d'action (Jules)
+- **Quoi** : `.chatDock.overNav .card{padding-bottom:dock-h + 6u}` ajoutait une marge opaque (fond du chat) de 64u, alors que
+  la bulle recouverte (#orbL) ne fait que 36u. Désormais src/ui/chat-dock.js `navLift(w, rects, screenH)` (pure, exportée)
+  mesure la hauteur des enfants de `.dock` que la largeur du chat recouvre (largeur 0 = caché, ignoré) → `--chat-lift` sur
+  le dock ; `overNav` = lift > 0. CSS : la marge est sur `.chatDock` (transparente) et non plus sur `.card` ;
+  `.chatDock{pointer-events:none}` + `.chatDock>*{pointer-events:auto}` (les clics traversent la marge) ; la règle
+  `body.townWalk .chatDock` est retirée (les enfants ont déjà `auto`). ≤1170 px et `body.phone` : marge 0 comme avant.
+  `#nav` ajouté au ResizeObserver.
+- **Tests** : chat (nouveau test navLift), chat-ui : 41/41 ✅. Vérifié dans le navigateur (mode dev, 1600×900, Lobby et
+  Inventaire) ✅ : le chat s'arrête au-dessus de la barre, `elementFromPoint` dans la marge ne tombe pas sur le chat.
+- ⚠️ Pas vu en session (orbe Oxygène) ni en ville (townWalk), même mécanique.
+- **Applis** : seulement src/ui (copié en entier) : rien à signaler.

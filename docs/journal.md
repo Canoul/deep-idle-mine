@@ -16,6 +16,12 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 04/11/2026 — Jules — Chat : plus de zone vide en bas (retour joueur)
+- **Pour le joueur** : quand le chat est assez large pour passer au-dessus de la bulle de gauche de la barre d'action
+  (Oxygène, Session…), il gardait en bas une grande zone sombre et vide qui cachait la mine. Maintenant il s'arrête juste
+  au-dessus de la bulle (ou des boutons s'il les recouvre) ; dessous, on voit le jeu et on peut cliquer à travers.
+- **État** : 🧪 sur la branche `jules/chat-zone-vide` (pas en ligne)
+
 ## 04/11/2026 — Geoffrey — Raid : portrait et spé des joueurs dans le lobby
 - **Pour le joueur** : dans les groupes du lobby du raid, chaque joueur montre son pseudo, l'image de son perso (son stuff)
   et sa spécialisation avec son niveau (ex. « 🪓 Barbare (SP lvl : 12) »).

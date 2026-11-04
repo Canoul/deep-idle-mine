@@ -60,7 +60,7 @@ body.townWalk .topbar,body.townWalk .views,body.townWalk .guide{visibility:hidde
 .townLfgMsg{color:var(--bad)}
 .townLfgMsg:empty{display:none}
 body.townWalk .app{pointer-events:none}   /* les clics passent à la ville… */
-body.townWalk .dock,body.townWalk .chatDock,body.townWalk #notifs{pointer-events:auto}   /* … sauf la barre d'action et les pop-ups */
+body.townWalk .dock,body.townWalk #notifs{pointer-events:auto}   /* … sauf la barre d'action, le chat (.chatDock>*) et les pop-ups */
 /* transition avec l'onglet Session (backdrop.js) : les panneaux glissent depuis les bords (.bgEnter) ou y repartent
    (.bgLeave, l'onglet reste affiché par-dessus le nouveau le temps de la sortie), linéaire comme le zoom de la mine */
 @keyframes bgFromL{from{transform:translateX(-110%);opacity:0}}
@@ -463,6 +463,8 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 /* chat de session et chat global du lobby (src/ui/chat.js) */
 .chatDock{position:fixed;left:0;bottom:0;z-index:35;width:var(--chat-w);height:var(--chat-h,60dvh);display:flex;flex-direction:column}
 .chatDock.folded{height:auto}
+.chatDock{pointer-events:none}   /* sa marge du bas (overNav) laisse passer les clics ; son contenu les prend */
+.chatDock>*{pointer-events:auto}
 /* bordures à tirer, invisibles, à cheval sur le bord de la boîte (src/ui/chat-dock.js) */
 .chatEdge{position:absolute;z-index:2;touch-action:none}
 .chatEdge.top{left:0;right:0;top:-6px;height:12px;cursor:ns-resize}
@@ -489,9 +491,9 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .chatFold{flex:none;min-height:0;min-width:calc(12*var(--u));height:calc(10*var(--u));padding:0}
 #gchatLog{flex:1;min-height:0;max-height:none}
 body{--chat-w:calc(287.5*var(--u))}
-/* le chat flotte par-dessus : sa taille ne décale rien (31/10). overNav : plus large que le début de la barre d'action, son
-   champ reste au-dessus d'elle */
-.chatDock.overNav .card{padding-bottom:calc(var(--dock-h) + 6*var(--u))}
+/* le chat flotte par-dessus : sa taille ne décale rien (31/10). overNav : plus large que le début de la barre d'action, il s'arrête
+   juste au-dessus de ce qu'il recouvre (--chat-lift, src/ui/chat-dock.js) ; la marge est transparente, la mine reste visible (04/11) */
+.chatDock.overNav{padding-bottom:calc(var(--chat-lift,0px) + 2*var(--u))}
 @media (min-width:1171px){ body.chatOn #run .runL{margin-bottom:var(--chat-h,60dvh)!important} }   /* la colonne de gauche s'arrête au-dessus du chat */
 @media (max-width:1170px){
   /* bandeau du haut et barre d'action (31/10/2026) : ils tiennent dans l'écran, y compris en paysage (le pseudo se raccourcit,
@@ -507,7 +509,7 @@ body{--chat-w:calc(287.5*var(--u))}
   .dock ul{overflow-x:auto;max-width:100%}
   .dock ul button{flex:none}
   .chatDock{width:100%;bottom:calc(var(--dock-h) + 2*var(--u))}
-  .chatDock.overNav .card{padding-bottom:0}
+  .chatDock.overNav{padding-bottom:0}
   .chatEdge.right,.chatEdge.corner{display:none}   /* toute la largeur de l'écran */
   .chatDock.folded{width:max-content;max-width:100%}
   .chatDock.folded .chatTabs{flex-wrap:nowrap}
@@ -520,6 +522,7 @@ body.phone .phoneOnly{display:block}
 body.phone .chatDock.folded{display:none}
 body.phone .chatDock{top:var(--top-h);bottom:calc(var(--dock-h) + 2*var(--u));left:0;width:100%;height:auto}
 body.phone .chatEdge,body.phone .chatFold{display:none}
+body.phone .chatDock.overNav{padding-bottom:0}
 body.phone .chatDock .card{background:#0b0806}
 .chatLog{max-height:calc(90*var(--u));overflow:auto;overflow-wrap:anywhere}
 .chatLog div{padding:var(--u) 0}
