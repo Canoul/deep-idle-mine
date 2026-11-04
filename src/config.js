@@ -670,7 +670,7 @@ export const SKILLS = {
       { id:'winch',       row:3, col:0, max:1, specOnly:true, per:1,    icon:'🪣', name:'Treuil',          desc:'À chaque nouvelle area, il creuse le puits au milieu de la mine et pose un treuil de la surface jusqu\'à elle. Dans les tours, la première fois qu\'il tombe au pied de la tour, il installe un treuil jusqu\'au toit (10 s)' },
       { id:'grounded',    row:3, col:1, max:3, per:1, adds:{ tenacity:3 }, icon:'⚓', name:'Cloué au sol', desc:'Ténacité +{tenacity}' },
       /* 23/10 soir (Geoffrey) : pour tout le groupe ; plusieurs logisticiens : le plus haut rang compte (pas de cumul) */
-      { id:'winch_speed', row:4, col:0, max:5, per:0.05, needs:'winch', icon:'🛗', name:'Escalateur', desc:'Vitesse du seau du treuil +{v} pour tout le groupe (plusieurs logisticiens : le meilleur rang compte)' },
+      { id:'winch_speed', row:4, col:0, max:3, per:0.05, needs:'winch', icon:'🛗', name:'Escalateur', desc:'Vitesse du seau du treuil +{v} pour tout le groupe (plusieurs logisticiens : le meilleur rang compte)' },
       { id:'mule',        row:5, col:0, max:1, specOnly:true, per:1, needs:'winch_speed', icon:'🎒', name:'Mule', desc:'Pose un sac en bas du treuil où tout le monde dépose (capacité : 2 × ses pods). Il le vide au coffre quand il prolonge le treuil et en fin de session' },
       { id:'bench_mastery', row:5, col:1, max:3, per:0.03, slot:'torse', icon:'🏋', name:'Maîtrise du bench', desc:'Les stats données par le torse +{v}' },
       { id:'aura_reassure', row:6, col:0, max:1, specOnly:true, per:1, needs:'mule', aura:{ reach:0.1 }, icon:'🤝', name:'Aura rassurante', desc:'Portée d\'attaque +{reach} pour tout le groupe' },
