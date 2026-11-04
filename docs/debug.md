@@ -7367,7 +7367,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - Tests ✅ stuff-balance (Plastron 994, tolérance 0,02), gearscore (priceAdjust), cape-inclusive (ligne 7,8), steel-gear,
   stuff, rune, wiki, golbute, dps.
 
-## 04/11/2026 — Geoffrey — Lag en ligne : fil principal du serveur saturé par structuredClone (branche geoffrey/fix-lag-sessions)
+## 04/11/2026 — Geoffrey — Lag en ligne : fil principal du serveur saturé par structuredClone (branche geoffrey/fix-lag-sessions) — ✅ en ligne le 04/11
 - Symptôme (`?perf`) : réponse 1604 ms, envoi toutes les 395 ms, 33,5 ticks/envoi. `top -H` sur le VPS : MainThread
   99,9 %, WorkerThread (parties) ~0 %, VPS 2 cœurs (50 % global) : monter en gamme n'aurait rien changé.
 - Mesure : profil CPU de 15 s pris à distance (`kill -USR1 <pid>` sur le VPS, tunnel `ssh -L 9229:127.0.0.1:9229

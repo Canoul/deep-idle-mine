@@ -21,7 +21,7 @@ Modèle d'entrée :
   par à-coups, onglets lents), parce que pour savoir si un ami était en session, il recopiait tout l'historique de ses
   sessions, et ça pour chaque ami et membre de guilde, toutes les quelques secondes. Il ne regarde plus que les sessions en cours.
 - **À suivre** : vérifier en ligne avec `?perf` dans l'adresse (« réponse » doit retomber sous ~100 ms).
-- **État** : 🧪 sur la branche `geoffrey/fix-lag-sessions` (pas en ligne)
+- **État** : ✅ en ligne le 04/11
 
 ## 04/11/2026 — Geoffrey — Stuff : les dégâts % beaucoup moins forts
 - **Pour le joueur** : les pièces qui donnent des dégâts % en donnent nettement moins : Jambes en thorium 11,8 % (avant
