@@ -723,6 +723,7 @@ Tirage au sort dans le chat global, 30 à 60 min après la fin du précédent, d
 - Limites *(config serveur)* : 100 amis, 20 demandes envoyées en attente, 30 demandes par heure.
 
 ### Inventaire global
+- **Pièces simples empilées** *(04/11/2026, Geoffrey)* : les pièces de stuff **non identifiées, sans amélioration ni rune** d'un même objet s'affichent dans **une seule case** (× n) ; leur fiche propose **Recycler tout** (sauf les pièces d'un set). Chaque pièce reste une pièce à part pour le serveur (équiper, sets, craft, identification inchangés).
 Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (ex. « Charbon × 100 »).
 - Un objet **déjà présent s'empile** sur son slot, **sans taille maximum**.
 - Un objet **absent prend un nouveau slot** : le premier slot libre (**ordre d'arrivée**, un objet garde sa place).

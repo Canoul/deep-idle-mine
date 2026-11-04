@@ -142,7 +142,7 @@ const isTw = () => isTowerMode(rec?.mode);   // tour de l'Ange ou du Démon : m�
 try { for(const k of Object.keys(localStorage)) if(k.startsWith('deepIdleMine.inventory') || k === 'deepIdleMine.global') localStorage.removeItem(k); } catch {}
 
 /* ---------- inventaire ---------- */
-const renderInventory = (inv, fresh) => drawInventory(inv, fresh, { onOpen:openTreasure, onLearn:useBlueprint, onEquip:equipFromInventory, onUnlock:unlockFurnace, onSort:() => arrangeInventory({ action:'sort' }), onMove:op => arrangeInventory({ action:'move', ...op }), onRecycle:recyclePiece, setsOf:uid => setsUI.setsOf(uid), worn:() => stuff.worn(), furnaces:() => furnace.state() });
+const renderInventory = (inv, fresh) => drawInventory(inv, fresh, { onOpen:openTreasure, onLearn:useBlueprint, onEquip:equipFromInventory, onUnlock:unlockFurnace, onSort:() => arrangeInventory({ action:'sort' }), onMove:op => arrangeInventory({ action:'move', ...op }), onRecycle:recyclePiece, onRecycleAll:recyclePieces, setsOf:uid => setsUI.setsOf(uid), worn:() => stuff.worn(), furnaces:() => furnace.state() });
 
 /* identifiant de demande (getRandomValues : randomUUID n'existe pas hors HTTPS / localhost) */
 const newOpId = () => Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, '0')).join('');
@@ -174,6 +174,20 @@ async function recyclePiece(uid){
     const got = Object.entries(r.refund).map(([k, n]) => `${n} ${k}`).join(', ').replace(/[&<>]/g, '');
     $('invInfo').innerHTML = `<span class="okmsg">♻ ${r.item.replace(/[&<>]/g, '')} recyclé${got ? ` : ${got}` : ' (rien à récupérer)'}.</span>`;
   } catch(e){ lootError(e.message); }
+}
+
+/* « Recycler tout » (04/11/2026) : les pièces simples empilées, une demande par pièce (le serveur vérifie chacune) */
+async function recyclePieces(uids){
+  const got = {}; let n = 0, last = null;
+  for(const uid of uids){
+    try { const r = await gameApi.recycle(uid); last = r; n++; for(const [k, v] of Object.entries(r.refund)) got[k] = (got[k] || 0) + v; }
+    catch(e){ lootError(e.message); break; }
+  }
+  if(!last) return;
+  ui.fresh.clear();
+  setInventory(last.inventory, got);
+  const txt = Object.entries(got).map(([k, v]) => `${v} ${k}`).join(', ').replace(/[&<>]/g, '');
+  $('invInfo').innerHTML = `<span class="okmsg">♻ ${n} × ${last.item.replace(/[&<>]/g, '')} recyclé${n > 1 ? 's' : ''}${txt ? ` : ${txt}` : ' (rien à récupérer)'}.</span>`;
 }
 
 /* utiliser un blueprint : le serveur le consomme et débloque sa recette (onglet Craft) */

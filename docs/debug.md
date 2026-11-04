@@ -7165,3 +7165,14 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   iOS qu'Android » : déjà rouge sur main (iOS 1.1.0, Android 1.1.5), sans rapport. ⚠️ Pas essayé sur un téléphone ; les coques
   avant ce changement (≤ 1.1.3 sur Samsung, mises à jour à chaud cassées) ne reçoivent pas ce code et gardent leur config.
 
+
+## 04/11/2026 — Geoffrey — Stuff non identifié empilé à l'affichage (branche geoffrey/stuff-empile)
+- **Affichage seulement** : `isPlainPiece` et `inventoryCells` (src/ui/inventory.js) regroupent les pièces sans `q`, sans
+  `plus`, sans `rune` ni `lines` d'un même objet sur la case de la première (× n) ; cases libérées rendues en fin de
+  grille dans « Tout ». Le stockage ne change pas (un slot et un uid par pièce) : équiper (premier uid), sets, craft
+  (`plainestFirst`), identification, tri et déplacement inchangés ; aucune règle de serveur touchée, pas d'anticheat.
+- « Recycler tout (n) » : pièces du groupe hors set ; `recyclePieces` (src/main.js) envoie un `recycle` par pièce (le
+  serveur vérifie chacune), fenêtre de confirmation avec le butin × n (`showRecycle(…, count)`).
+- Tests ✅ inventory-stack (2), inventaire, sets. Navigateur ✅ (4 Casques en fer simples : une case « 4 », Recycler tout
+  → 4 recyclés, 12 Tainted iron et 48 Peaux de gobelin).
+- ⚠️ Le message « ♻ n × … recyclés » peut être effacé par le rafraîchissement suivant de l'inventaire (comme pour une seule pièce).
