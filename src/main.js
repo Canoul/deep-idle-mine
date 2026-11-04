@@ -251,10 +251,10 @@ const upgradeUI = setupUpgrade({
 
 /* craft et stuff : même principe, le serveur fait l'action et renvoie l'inventaire (et le stuff) à jour */
 const craft = setupCraft({
-  onCraft: async item => {
-    const r = await gameApi.craft(item, newOpId());
+  onCraft: async (item, count = 1) => {
+    const r = await gameApi.craft(item, newOpId(), count);
     setInventory(r.inventory);
-    obtained.show({ title:'Tu as obtenu', entry: r.piece ?? item, qty: recipeOf(item)?.qty ?? 1 });   // Rune : sa qualité
+    obtained.show({ title:'Tu as obtenu', entry: r.piece ?? item, qty: (recipeOf(item)?.qty ?? 1) * count });   // Rune : sa qualité
   },
 });
 let setsUI = null;   // sets (créés plus bas) : les onglets Stuff, Skills et Sorts rafraîchissent la ligne « Set équipé »

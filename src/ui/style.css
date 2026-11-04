@@ -1250,3 +1250,4 @@ button.danger{color:var(--bad)}
 /* modération du chat (30/10) : bandeau du joueur banni, au-dessus de tout */
 .banBar{position:fixed;top:0;left:0;right:0;z-index:9999;padding:calc(3*var(--u)) calc(6*var(--u));background:#5a0f0f;color:#ffd9d9;
   text-align:center;font-size:calc(9*var(--u));box-shadow:0 calc(var(--u)) 0 #2a0505}
+.craftQty{max-width:calc(120*var(--u));margin-top:calc(4*var(--u))}   /* quantité d'un craft en série (04/11/2026) */

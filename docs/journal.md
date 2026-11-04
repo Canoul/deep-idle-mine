@@ -16,6 +16,12 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 04/11/2026 — Geoffrey — Craft : plusieurs orbes d'un coup
+- **Pour le joueur** : dans l'onglet Craft, les orbes, orbes supérieurs, clés d'instance et autres matériaux qui
+  s'empilent ont un champ **Quantité** et un bouton **Max** : on en fabrique autant qu'on veut en un clic (jusqu'à 1 000).
+  L'équipement et les runes restent un par un.
+- **État** : ✅ en ligne le 04/11
+
 ## 04/11/2026 — Geoffrey — Administration : avertissement en pop-up, ban en minutes
 - **Pour le joueur** : l'équipe peut lui envoyer un message en pop-up (un titre et un texte) : il s'ouvre dans les
   secondes s'il est en ligne, sinon à sa prochaine visite, et ne revient plus une fois fermé.

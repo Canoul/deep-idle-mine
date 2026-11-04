@@ -61,3 +61,36 @@ test('blueprints : 300 suites d\'apprentissages et de crafts au hasard, jamais u
     assert.equal(countOf(inv, 'Tainted iron') + spent, 60, 'matière conservée');
   }
 });
+
+test('craft en série (04/11/2026) : 300 demandes au hasard (quantités trafiquées, rejouées), matière conservée', async () => {
+  const { createInventory, addAll, countOf } = await import('../../src/meta/inventory.js');
+  const { RECIPES } = await import('../../src/recipes.js');
+  const cost = RECIPES.Orbe.cost, start = { 'Tissu sombre':900, 'Vésicule de gaz':900, 'Pierre glissante':300 };
+  const inv = createInventory(); addAll(inv, start);
+  let seed = 7; const r = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const counts = [1, 2, 5, 40, 0, -1, 2.5, '3', NaN, Infinity, 1e9, 1001];
+  for(let i = 0; i < 300; i++){
+    const opId = 'op-serie-' + Math.floor(r() * 60);                 // beaucoup d'opId rejoués
+    craft(inv, 'Orbe', opId, undefined, counts[Math.floor(r() * counts.length)]);
+  }
+  const made = countOf(inv, 'Orbe');
+  for(const [k, n] of Object.entries(cost)) assert.equal(countOf(inv, k), start[k] - made * n, k);
+  assert.ok(made > 0 && made <= 30);
+});
+
+test('craft en série par le serveur : count vérifié, rafale du même opId créditée une fois', async () => {
+  const { createMemoryGameStore } = await import('../../server/game/store.js');
+  const { createGameService } = await import('../../server/game/service.js');
+  const { fakeLive } = await import('../helpers.js');
+  const ME = { id:'AAAA1111', name:'Zoe', guest:false };
+  const game = createGameService({ store: createMemoryGameStore(), liveRunner: fakeLive(() => ({ shares:[] })), clock: () => 1_000_000,
+                                  dev:false, config:{ startsPerHour:1000, keepEnded:1e12, maxLive:2 } });
+  for(const [k, n] of [['Tissu sombre', 300], ['Vésicule de gaz', 300], ['Pierre glissante', 100]]) await game.adminGive(ME.id, k, n);
+  const count = (inv, item) => inv.slots.reduce((n, s) => n + (s?.item === item ? s.qty : 0), 0);
+  for(const bad of ['4', -1, 0, 2.5, 1001]) await assert.rejects(game.craft(ME, { item:'Orbe', opId:'op-srv-bad-1', count:bad }), { code:'bad_count' });
+  await assert.rejects(game.craft(ME, { item:'Orbe', opId:'op-srv-big-1', count:11 }), { code:'not_enough' });
+  const res = await Promise.allSettled(Array.from({ length:6 }, () => game.craft(ME, { item:'Orbe', opId:'op-srv-ten-1', count:10 })));
+  assert.ok(res.every(r => r.status === 'fulfilled'));
+  const inv = (await game.state(ME)).inventory;
+  assert.deepEqual([count(inv, 'Orbe'), count(inv, 'Tissu sombre'), count(inv, 'Pierre glissante')], [10, 0, 0]);
+});

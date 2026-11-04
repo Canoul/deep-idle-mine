@@ -1541,6 +1541,10 @@ export const ITEMS = {
 /* sortGroups (bouton « Trier », 25/10/2026, Geoffrey) : ordre des types, chacun une liste de familles (ITEMS[].cat) ;
    dans un type, du plus rare au plus commun (RARITY, la rareté du catalogue, PAS la qualité d'identification R1-R7),
    puis l'ordre du catalogue. Les familles absentes d'ici viennent après, dans l'ordre du catalogue. */
+/* craft en plusieurs exemplaires (04/11/2026, Geoffrey : les orbes un par un, c'est pénible) : au plus maxCount crafts
+   d'un coup, seulement pour les recettes en série (src/meta/craft.js, inBatch) */
+export const CRAFT = { maxCount:1000 };
+
 export const INVENTORY = { cols:8, minSlots:48, maxUniqueAdd:1000,
   sortGroups: [
     { label:'Blocs',     cats:['bloc', 'residu'] },
