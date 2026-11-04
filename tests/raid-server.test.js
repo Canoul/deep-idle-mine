@@ -177,3 +177,18 @@ test('2 groupes de 5 : on choisit son groupe, le chef du raid déplace, groupe p
   const rec = await store.getGameSession(session.id);
   assert.deepEqual(rec.players.map(p => [p.account, p.group]), r.members.map(m => [m.account, m.group]).sort((a, b) => (a[0] === CHIEF.id ? -1 : b[0] === CHIEF.id ? 1 : 0)));
 });
+
+test('bêta : inviter un joueur par son pseudo dans le lobby, même hors de la guilde ; il entre prêt et part au lancement', async () => {
+  const { guild, store } = await setup(2);
+  await rejects(guild.raidInvite(CHIEF, OUT.name), 'not_in_raid');
+  await guild.raidJoin(CHIEF);
+  await rejects(guild.raidInvite(CHIEF, 'Personne'), 'not_found');
+  const r = await guild.raidInvite(CHIEF, OUT.name);
+  assert.deepEqual(r.invited, { name: OUT.name, group: 1 });
+  const m = r.mine.raid.members.find(x => x.account === OUT.id);
+  assert.ok(m && m.ready && m.invited, 'dans le lobby, prêt');
+  await rejects(guild.raidInvite(CHIEF, OUT.name), 'already_in_raid');
+  assert.ok((await raidOf(guild, CHIEF)).members.some(x => x.account === OUT.id), 'pas retiré : il n\'est pas de la guilde');
+  const { session } = await guild.raidLaunch(CHIEF);
+  assert.ok((await store.getGameSession(session.id)).players.some(p => p.account === OUT.id));
+});

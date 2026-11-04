@@ -16,6 +16,14 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 04/11/2026 — Geoffrey — Raid : inviter un joueur par son pseudo (bêta, temporaire)
+- **Pour le joueur** : dans le lobby du raid, un champ « Pseudo du joueur » et un bouton **Inviter dans le raid** :
+  n'importe quel joueur, même d'une autre guilde ou sans guilde, entre directement dans le lobby, prêt, dans le premier
+  groupe qui a de la place. Une fenêtre confirme l'invitation. Il part dans la session au lancement (il peut la quitter) ;
+  le chef du raid peut le sortir.
+- **Décisions** : temporaire, le temps de la bêta (pas assez de monde par guilde).
+- **État** : ✅ en ligne le 04/11
+
 ## 04/11/2026 — Geoffrey — Raid 1 : Cerbère
 - **Pour le joueur** : nouvel onglet **Raid** dans sa guilde, avec un lobby de 1 à 10 joueurs de la guilde (gratuit,
   pas de récompense pour l'instant). 30 min au total : il faut d'abord miner **en entier** deux areas de terrain (terre,

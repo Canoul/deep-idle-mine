@@ -7249,3 +7249,9 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** ✅ crusher (nouveau test : table, 100 000 lots, fourchettes, chances), wiki, loot, loot-table : 52/52 ;
   `npm run test:anticheat` 152/152.
 
+
+## 04/11/2026 — Raid : invitation par pseudo dans le lobby (bêta, temporaire, Geoffrey)
+- **Quoi** : `invite(me, name)` dans server/guild/raid.js (dépendance `findByName`, branchée sur `accounts.findAccountByName(nameKey())` dans server/guild/service.js `raidInvite`), route `POST /api/guild/raid/invite { name }` → vue de la guilde + `invited: { name, group }`. Le joueur invité : `invited: true`, `ready: true`, premier groupe avec de la place ; `prune` le garde même s'il n'est pas de la guilde. Refus : `not_in_raid`, `not_found`, `already_in_raid`, `busy` (autre lobby), `raid_full`, `member_in_session`. UI : champ + bouton dans `raidHTML`, `tell` de confirmation.
+- L'invité ne voit pas le lobby (onglet Raid d'une autre guilde) ; au lancement il est emmené par `pollLobby` (`partyApi.state().session`).
+- **Tests** : raid-server (invitation hors guilde, gardée, lancée) ✅ ; guild*, raid-ui ✅.
+- ⚠️ À retirer après la bêta : route, `invite`, champ de `raidHTML`, `invited` dans `prune`.

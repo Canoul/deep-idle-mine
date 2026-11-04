@@ -45,7 +45,7 @@ export function createGuildService({ store, accounts, statusOf, inviteCheck = as
   const guildOf = id => state.guilds[byAccount.get(id)] ?? null;
   const nameOf = async id => displayName(await accounts.getAccount(id)) || formatAccountId(id);
   const chiefOf = g => g.members.find(m => m.rank === RANK.chief);
-  const raid = createRaidLobby({ game, guildOf: async id => { await load(); return guildOf(id); }, nameOf });
+  const raid = createRaidLobby({ game, guildOf: async id => { await load(); return guildOf(id); }, nameOf, findByName: text => accounts.findAccountByName(nameKey(text)) });
   const summary = async g => ({ id:g.id, name:g.name, ...guildLevelOf(g.rawXp), xp:guildXpOf(g.rawXp), members:g.members.length, max:GUILD.maxMembers, chief:await nameOf(chiefOf(g).id) });
 
   /* bâtiments vus par le navigateur : niveau, matériaux du prochain niveau, prêt à construire */
@@ -364,6 +364,7 @@ export function createGuildService({ store, accounts, statusOf, inviteCheck = as
     raidLeave: async me => { await raid.leave(me); return view(me); },
     raidKick: async (me, id) => { needId(id); await raid.kick(me, id); return view(me); },
     raidReady: async (me, on) => { await raid.ready(me, on); return view(me); },
+    raidInvite: async (me, name) => { const invited = await raid.invite(me, name); return { ...await view(me), invited }; },
     raidMove: async (me, group, id = null) => { await raid.move(me, group, id); return view(me); },
     /* lancement : la session du raid (comme POST /api/game/start) et la vue de la guilde */
     raidLaunch: async (me, body) => { const r = await raid.launch(me, body); return { ...await view(me), session: r.session }; },
