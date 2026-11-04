@@ -151,6 +151,7 @@ function magma(G){
   G.next.magma = G.t + C.magma.every; b.magmaAt = G.ticks; G.stats.magmas++;
   const hard = [];
   for(const m of actives(G)){
+    if(isTank(G, m)) continue;                                      // les tanks n'en sont jamais la cible (Geoffrey, 04/11 13:37)
     if(!(G.fightRng() < p)) continue;
     /* la ténacité ne joue que pour la spé Mineur */
     if(m.skillTree === 'mineur' && tenacityTry(m, 'cerbere', G.fightRng)){ G.stats.dodges++; continue; }

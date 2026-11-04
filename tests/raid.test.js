@@ -59,6 +59,14 @@ test('Magma : Durci (intouchable), libéré quand les autres le minent ; la tén
   assert.ok(G.stats.freed >= 2 && min.stats.mined > 0);
 });
 
+test('Magma : jamais sur les tanks (ceux qui provoquent Cerbère)', () => {
+  const G = newCerbere(6, { miners: [spec(0, { tree: 'barbare' }), spec(1, { tree: 'logisticien' })] });
+  G.boss.taunts.add(0);
+  C.magma.chance = 1;
+  try { G.next.magma = 0; G.next.bite = G.next.sweep = 1e9; tickCerbere(G); } finally { C.magma.chance = 0.5; }
+  assert.ok(!G.miners[0].stone && G.miners[1].stone);
+});
+
 test('enragé sous 33 % : autoattaque toutes les 7 s', () => {
   const G = newCerbere(5, { miners: [spec(0)], hp: 1000 });
   G.next.bite = G.next.sweep = G.next.magma = 1e9;

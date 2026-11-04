@@ -1876,7 +1876,7 @@ export const RAID = {
   mine: { areas: 2, bands: [['dirt', 25], ['stone', 25], ['hardstone', 25], ['hellstone', 25]], terrainVal: 5, gather: 5 },   // terrainVal ≥ CFG.farVal : un bloc resté loin est aussi visé
   cerbere: {
     w: 30, h: 12, spawn: [1, 2, 3, 4, 5, 1, 2, 3, 4, 5],
-    boss: { name: 'Cerbère', w: 8, h: 6, hp: 100000, knockRes: 100, bossX: 18 },   // 100 000 PV : ~1 victoire sur 8, combat ~4 min, équipe de référence avec tanks à 40 % de ténacité fixe (04/11, Morsure toutes les 20 s qui tue 1 cible, simulation --tank-ten 40)
+    boss: { name: 'Cerbère', w: 8, h: 6, hp: 190000, knockRes: 100, bossX: 18 },   // 190 000 PV : ~1 victoire sur 10, combat ~6-7 min, équipe de référence avec tanks à 40 % de ténacité fixe (04/11 : Morsure /20 s qui tue 1 cible, tanks jamais durcis ; simulation --tank-ten 40)
     bite: { every: 20, targets: 3, show: 1.5 },   // show : s d'affichage de la Morsure (elle ne persiste pas)
     sweep: { every: 5, range: 2, back: 5, high: 3 },
     magma: { every: 30, chance: 0.5 },

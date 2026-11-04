@@ -45,6 +45,6 @@ Chien à trois têtes de lave et des enfers (Cerbère de la mythologie). Sprite 
 30 min, proposer d'abord de réduire les areas, pas de toucher au boss.
 
 ## Questions encore ouvertes (à trancher en route)
-- ~~Durée de la Morsure~~ : sans objet, elle ne persiste pas (Geoffrey, 04/11). PV provisoires : 100 000 (~1 victoire sur 8, combat ~4 min ; tanks à 40 % de ténacité fixe).
+- ~~Durée de la Morsure~~ : sans objet, elle ne persiste pas (Geoffrey, 04/11). PV provisoires : 190 000 (~1 victoire sur 10, combat ~6-7 min ; tanks à 40 % de ténacité fixe). 13:37 : les tanks ne sont jamais la cible du Magma.
 - Ce que voient les joueurs pendant l'attente devant la porte.
 - Nom de l'activité et icône.
