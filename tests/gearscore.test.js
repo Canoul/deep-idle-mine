@@ -45,7 +45,7 @@ test('GS des stats offensives (28/10/2026, Geoffrey) : prix du tableau des ligne
 
 test('ajustements de Geoffrey (27/10/2026) : servent à dessiner les pièces, pas au GS (28/10)', () => {
   assert.deepEqual(UPGRADE.priceAdjust, { damage:2, attackSpeed:2, doubleAttack:2, crit:2, reach:2, knockback:2,
-    damagePct:3, piercing:4, mineSpeed:3, mineSpeedPct:3, tenacity:2, knockRes:3 });
+    damagePct:8, piercing:4, mineSpeed:3, mineSpeedPct:3, tenacity:2, knockRes:3 });
   assert.equal(statPrice('damage'), 40); assert.equal(designPrice('damage'), 80);
   assert.equal(statPrice('mineSpeed'), 1300); assert.equal(designPrice('mineSpeed'), 3900);
   assert.equal(statPrice('knockRes'), 5, 'pas de mesure : base du tableau des lignes (5)'); assert.equal(designPrice('knockRes'), 15);

@@ -7355,3 +7355,14 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   `npm run test:anticheat` 152/152. Navigateur ✅ (appli : case à côté de Reset).
 - ⚠️ Glyphe retiré pendant la session : il revient dans l'inventaire et reste actif dans la session en cours (figé) ; pas
   de doublon possible (le drop lit les glyphes possédés figés au lancement).
+
+## 04/11/2026 — Geoffrey — Dégâts % des pièces : prix de dessin 16 x par % (branche geoffrey/nerf-degats-pct)
+- Cause (enquête He's coming : Infernatiwar ≈ 10 400 points par visite contre ≈ 4 500) : son set « DEGATS DEGATS » associé à
+  He's coming ; rejoué avec ce set (salle avec Nbrick et Croustiflex, scratchpad hc.mjs) : 12 259 points ; sans les
+  Jambières du Golbute : −39 %. `UPGRADE.worth.damagePct` = 2 x par % (mesuré avec 5 dégâts) contre 8 pour la double attaque.
+- `UPGRADE.priceAdjust.damagePct` 3 → 8 (prix de dessin 6 → 16) : sert aux lignes tirées de la Cape inclusive (`rolledPrice`).
+  Pièces écrites à la main dans la config : Jambes en thorium 11,8 ; Jambières du Golbute 12,5 / butin 25 / double 7 ;
+  Cape royale du Gobelin 1,9 ; Plastron de l'équilibre 1,1. GS au prix mesuré : baisse un peu (Plastron 1003 → 994).
+  Runes (`runeDiv`, `UPGRADE.prices`) inchangées.
+- Tests ✅ stuff-balance (Plastron 994, tolérance 0,02), gearscore (priceAdjust), cape-inclusive (ligne 7,8), steel-gear,
+  stuff, rune, wiki, golbute, dps.
