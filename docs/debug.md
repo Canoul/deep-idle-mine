@@ -7176,3 +7176,26 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - Tests ✅ inventory-stack (2), inventaire, sets. Navigateur ✅ (4 Casques en fer simples : une case « 4 », Recycler tout
   → 4 recyclés, 12 Tainted iron et 48 Peaux de gobelin).
 - ⚠️ Le message « ♻ n × … recyclés » peut être effacé par le rafraîchissement suivant de l'inventaire (comme pour une seule pièce).
+
+## 04/11/2026 — Geoffrey — Raid Cerbère côté serveur : lobby de raid de la guilde, session 'raid', vue (branche geoffrey/raid-cerbere)
+- **Lobby** `server/guild/raid.js` (`createRaidLobby({ game, guildOf, nameOf })`, en mémoire comme les groupes) : un par
+  guilde `{ leader, members:[{ account, name, ready }], launching }`, membres de la guilde seulement, `RAID.maxPlayers` au
+  plus, chef = premier arrivé (passe au suivant), une arrivée remet les autres « pas prêt », le chef est toujours prêt ;
+  refus si déjà en session (`game.activeSessionId`). Lancement HORS des files (lobby, guilde) : `startRaid` prend
+  acct + prisonLocks (inv, xp…) qu'un versement tient en attendant `guild.addXp` (sinon interblocage). Vidé après le lancement.
+- `server/guild/service.js` : param `game` (server/main.js le passe), `mine.raid` dans la vue (`max, members[{account,
+  name, ready, leader, me, playing}], leader, size, mine, isLeader, launching, waiting[noms], canLaunch, running` = raid
+  en cours de la guilde `{ id, startedAt, finishAt, players[noms], mine }`), `raidJoin/Leave/Kick/Ready/Launch`, eraseAccount.
+  Routes (`server/guild/routes.js`) : POST `/api/guild/raid/join`, `/leave`, `/ready` `{ready:bool}`, `/kick` `{id}`,
+  `/launch` (`{seed}` en dev ; 201, vue + `session`).
+- `server/game/service.js` : `startRaid(me, members, { guild, seed })` (mêmes refus qu'une instance, `freezePlayer`,
+  prison arrêtée, record `mode:'raid'`, `guild`, `finishAt = startedAt + raidDurationMs`, dev : horloge) ; `raidOfGuild(id)` ;
+  fin : aucun versement ni XP pour le raid (boucle sautée dans `settleWith`), statut done + historique (mode 'raid') ;
+  focus et k hole refusés ; `activeSessionInfo.max` = RAID.maxPlayers. `start({mode:'raid'})` refusé (pas dans MINE_MODES).
+- `src/shared/raid.js` (build / départs / durée), `src/shared/raid-view.js` (`createRaidViewer` : mine/porte = vue de mine
+  de `G.mine` + `mode, phase, raid` ; boss = arène complète ; `applyRaidView` navigateur), `server/game/live-game.js` kind `raid`.
+- **Tests** ✅ raid-server (nouveau, 6), raid, guild*, instance-server, game-service, game-http, game-replay, party*, live,
+  account-delete, admin-khole, admin-session-speed, effects : 286/286 ; anticheat 152/152.
+- ⚠️ Reste : états « Morsure » / « Durci » pas ajoutés à EFFECTS (le test des bulles exige un texte dans src/ui/effects.js,
+  côté navigateur) : la vue de l'arène envoie `bitten` (s) et `stone {hp,max}` par mineur. Lobby perdu au redémarrage.
+  Récompense du raid à définir. Pas vu dans un navigateur (interface à faire).
