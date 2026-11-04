@@ -5,6 +5,7 @@
 import { SKILLS, LEADERBOARD, JUDGMENT } from '../config.js';
 import { towerTime, isBoard } from '../meta/leaderboard.js';
 import { qhelp } from './help.js';
+import { drawPortrait } from '../render/portrait.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -50,7 +51,7 @@ export const rankText = (rank, total) => `${rank}${rank === 1 ? 'er' : 'e'} sur 
 /* podium : 2ᵉ à gauche, 1ᵉʳ au centre, 3ᵉ à droite ; mineur d'apparence de base (le classement n'envoie pas le stuff) */
 export function podiumHtml(top, value){
   return `<div class="lPodium">${[[top[1], 2], [top[0], 1], [top[2], 3]].map(([r, n]) => r
-    ? `<div class="lp lp${n}"><img src="textures/miner.png" alt=""><b class="lpName">${esc(r.name)}</b><small>${esc(value(r))}</small><span class="lpStep">${r.rank}</span></div>`
+    ? `<div class="lp lp${n}"><canvas width="16" height="16"></canvas><b class="lpName">${esc(r.name)}</b><small>${esc(value(r))}</small><span class="lpStep">${r.rank}</span></div>`
     : `<div class="lp lp${n} empty"><span class="lpStep"></span></div>`).join('')}</div>`;
 }
 /* tout le classement dans l'appli ; row : le rendu d'une ligne (boardRow) ; sa place (dans le top ou board.me) collée en bas */
@@ -83,6 +84,12 @@ export function setupLeaderboard({ root, load, moderate = () => {} }){
     $('boardHelp').innerHTML = qhelp(`${info.title}\n${info.help}\nLes ${LEADERBOARD.size} premiers, et ta place si tu n'y es pas.`);
     const b = boards[boardId()];
     if(!b) return;
+    /* appli (04/11/2026) : podium, la suite en lignes, sa place collée en bas */
+    if(document.body.classList.contains('app')){
+      $('boardList').innerHTML = boardAppHtml(b, { value:info.value, row:boardRow });
+      $('boardList').querySelectorAll('.lp canvas').forEach(c => drawPortrait(c, {}, {}));   // mineur de base (pas de stuff au classement)
+      return;
+    }
     $('boardList').innerHTML = !b.rows.length ? '<p class="mut small">Personne n\'est encore classé ici.</p>'
       : b.rows.map(boardRow).join('') + (b.me ? `<div class="lgap">…</div>${boardRow(b.me)}` : '') +
         `<p class="mut small">${b.total} joueur${b.total > 1 ? 's' : ''} classé${b.total > 1 ? 's' : ''}${b.me ? ` · toi : ${rankText(b.me.rank, b.total)}` : ''}</p>`;

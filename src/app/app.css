@@ -314,3 +314,16 @@ body.app .gLeave{margin-top:16px;padding-top:12px;border-top:2px solid var(--sep
 body.app #guildMine .ghouse{max-width:300px;margin:0 auto}   /* la scène moins haute : la Maison tient presque sur un écran */
 body.app #guildMine .ghouse~.bar+p.mut{display:none}           /* « chaque don fait avancer le chantier… » : connu */
 body.app #guildMine .card{padding-top:4px;padding-bottom:4px}
+
+/* ---------- Classement (04/11/2026, Jules ; spec 2026-11-04-appli-classement-design.md) : podium du top 3, sa place collée
+   au-dessus de la barre de l'appli (ancien : sa place seulement après les 50 premiers) ---------- */
+body.app .lPodium{display:grid;grid-template-columns:1fr 1.15fr 1fr;align-items:end;gap:6px;margin:4px 0 8px}
+body.app .lp{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0;font-size:13px;color:var(--mut)}
+body.app .lp canvas{width:40px;height:40px;image-rendering:pixelated} body.app .lp1 canvas{width:56px;height:56px}
+body.app .lpName{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:400 16px/1 var(--f-title);color:#ffe6c4}
+body.app .lp small{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
+body.app .lpStep{width:100%;display:grid;place-items:center;font:400 26px/1 var(--f-title);color:#2a1206;box-shadow:0 0 0 2px #000}
+body.app .lp1 .lpStep{height:62px;background:#ffd23f} body.app .lp2 .lpStep{height:44px;background:#c9c3ba} body.app .lp3 .lpStep{height:32px;background:#d08a4a}
+body.app .lp.empty .lpStep{background:var(--chip)}
+body.app .lMe{position:sticky;bottom:calc(var(--dock-h) + 4px);z-index:3;margin:6px -4px 0;padding:0 4px;background:#2a1408;box-shadow:0 0 0 2px #000,0 -2px 0 4px var(--acc-dk)}
+body.app .lMe .lrow{box-shadow:none}
