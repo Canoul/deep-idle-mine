@@ -7042,7 +7042,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Pas vérifié** ⚠️ Donner / Construire à l'écran (mêmes `data-g` qu'avant) ; une guilde avec beaucoup de membres ; vrai téléphone.
 - **Applis** : pas de plugin ni de code natif.
 
-## 04/11/2026 — Jules — Appli mobile : Classement, podium et sa place en bas (🧪 branche jules/appli-classement)
+## 04/11/2026 — Jules — Appli mobile : Classement, podium et sa place en bas (✅ en ligne le 04/11)
 - **Quoi** : spec et plan `docs/superpowers/{specs,plans}/2026-11-04-appli-classement*.md`. `src/ui/leaderboard.js` :
   `podiumHtml(top, value)` (purs : marches dans l'ordre 2, 1, 3 ; marche vide si moins de 3 classés ; `<canvas>` 16 × 16
   par marche) et `boardAppHtml(board, { value, row })` (podium, lignes à partir du 4ᵉ avec `boardRow`, « N joueurs

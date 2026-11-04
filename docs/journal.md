@@ -25,7 +25,7 @@ Modèle d'entrée :
   `docs/superpowers/specs/2026-11-04-appli-classement-design.md`.
 - **À suivre** : essai sur un vrai téléphone ; les écrans pas encore refaits (Social, Amélioration, Four, Concasseur,
   Recherche) ; les gestes au doigt.
-- **État** : 🧪 sur la branche `jules/appli-classement` (pas en ligne)
+- **État** : ✅ en ligne le 04/11
 
 ## 04/11/2026 — Jules — Appli mobile : la Guilde en onglets
 - **Pour le joueur** : rien sur le site. Dans l'appli, la page de ta guilde a quatre onglets : **Maison** (la maison, le
