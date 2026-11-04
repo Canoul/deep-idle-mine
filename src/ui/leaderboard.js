@@ -45,6 +45,23 @@ export const towerDetail = r => [JUDGMENT.sides[r.side]?.label, r.team?.filter(n
 export const rankText = (rank, total) => `${rank}${rank === 1 ? 'er' : 'e'} sur ${total}`;
 
 /* root : la section de l'onglet ; load(board) : demande un classement au serveur */
+/* ---------- appli (04/11/2026, spec docs/superpowers/specs/2026-11-04-appli-classement-design.md) : podium du top 3, la
+   suite en lignes, sa place collée en bas de l'écran ---------- */
+/* podium : 2ᵉ à gauche, 1ᵉʳ au centre, 3ᵉ à droite ; mineur d'apparence de base (le classement n'envoie pas le stuff) */
+export function podiumHtml(top, value){
+  return `<div class="lPodium">${[[top[1], 2], [top[0], 1], [top[2], 3]].map(([r, n]) => r
+    ? `<div class="lp lp${n}"><img src="textures/miner.png" alt=""><b class="lpName">${esc(r.name)}</b><small>${esc(value(r))}</small><span class="lpStep">${r.rank}</span></div>`
+    : `<div class="lp lp${n} empty"><span class="lpStep"></span></div>`).join('')}</div>`;
+}
+/* tout le classement dans l'appli ; row : le rendu d'une ligne (boardRow) ; sa place (dans le top ou board.me) collée en bas */
+export function boardAppHtml(b, { value, row }){
+  if(!b.rows.length) return `<p class="mut small">Personne n'est encore classé ici.</p>`;
+  const me = b.me ?? b.rows.find(r => r.me) ?? null;
+  return podiumHtml(b.rows.slice(0, 3), value) + b.rows.slice(3).map(row).join('')+
+    `<p class="mut small">${b.total} joueur${b.total > 1 ? 's' : ''} classé${b.total > 1 ? 's' : ''}</p>`+
+    (me ? `<div class="lMe">${row(me)}</div>` : '');
+}
+
 export function setupLeaderboard({ root, load, moderate = () => {} }){
   /* board : bouton choisi (gs, xp, spec, tower, instance) ; sub : sous-onglet choisi de chaque bouton (id de classement) */
   let board = 'gs', boards = {}, boardAt = 0, boardBusy = false;
