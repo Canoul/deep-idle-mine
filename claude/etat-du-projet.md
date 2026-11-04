@@ -164,7 +164,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
     `/api/admin/party-move`) et `sudo node scripts/set-ready.js --name X [--always on|off] [--ready on|off]` (route
     `/api/admin/party-ready`), sans redémarrage.
   - Lobby de raid (04/11) : `sudo node scripts/move-to-raid.js --name X --to Y` (met X dans le lobby de raid où est Y,
-    route `/api/admin/raid-move` ; hors de la guilde : invité prêt), sans redémarrage.
+    route `/api/admin/raid-move` ; hors de la guilde : invité prêt) et `sudo node scripts/set-raid-ready.js --name X
+    [--ready on|off]` (route `/api/admin/raid-ready`), sans redémarrage.
   - Fin de session forcée (29/10) : `sudo node scripts/end-session.js --name X` (route `/api/admin/end-session`, comme « Quitter » :
     sans butin, les autres continuent).
   - Lancement forcé (29/10) : `sudo node scripts/launch-lobby.js --name X` (route `/api/admin/party-launch` : le lobby de X

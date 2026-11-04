@@ -21,6 +21,7 @@
    POST /api/admin/khole {"name":"crousti","map":2} : ouvre un k hole dans sa session en cours (scripts/force-khole.js).
    POST /api/admin/party-move {"name":"crousti","to":"canoul"} : met crousti dans le lobby de canoul (scripts/move-to-lobby.js).
    POST /api/admin/raid-move {"name":"crousti","to":"canoul"} : met crousti dans le lobby de raid où est canoul (scripts/move-to-raid.js).
+   POST /api/admin/raid-ready {"name":"crousti","ready":true} : prêt / pas prêt dans son lobby de raid (scripts/set-raid-ready.js).
    POST /api/admin/end-session {"name":"crousti"} : le sort de sa session en cours, sans butin (scripts/end-session.js).
    POST /api/admin/prison {"name":"crousti"} : l'envoie en prison, hors de son groupe (scripts/send-to-prison.js).
    POST /api/admin/session-speed {"name":"crousti","speed":300} : vitesse de sa session, donc de son lobby (scripts/session-speed.js).
@@ -198,6 +199,14 @@ export function adminRoutes({ accounts, service = null, game, party = null, guil
       const r = await guild.raidAdminMove(acc, host);
       console.log(`Admin : ${acc.name} (${acc.id}) ${r.moved ? 'mis' : 'déjà'} dans le lobby de raid de ${host.name} (guilde ${r.guild}) : ${r.members.map(m => m.name + (m.leader ? ' (chef)' : '')).join(', ')}`);
       return { account: acc.name, host: host.name, ...r };
+    },
+    'POST /api/admin/raid-ready': async ctx => {
+      guard(ctx);
+      if(!guild) throw new HttpError(503, 'no_guild_service', 'Guildes indisponibles sur ce serveur.');
+      const acc = await byName(ctx);
+      const r = await guild.raidAdminReady(acc, ctx.body?.ready ?? true);
+      console.log(`Admin : ${acc.name} (${acc.id}) ${r.members.find(m => m.name === acc.name)?.ready ? 'prêt' : 'pas prêt'} dans le lobby de raid (guilde ${r.guild})`);
+      return { account: acc.name, ...r };
     },
     /* fin de session forcée (29/10/2026, Geoffrey) : comme son bouton « Quitter » */
     'POST /api/admin/end-session': async ctx => {

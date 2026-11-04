@@ -17,7 +17,7 @@ import { ROOT, SERVER } from '../server/config.js';
 import { FAST_SCRYPT, fakeLive } from './helpers.js';
 
 const TOKEN = 'k'.repeat(40);
-const ACC = [['CHIEFAAA', 'canoul'], ['CROUSTIA', 'Crousti'], ['MONSTAAA', 'Monsta']]
+const ACC = [['GGGGGGGG', 'canoul'], ['CCCCCCCC', 'Crousti'], ['MMMMMMMM', 'Monsta']]
   .map(([id, name]) => ({ id, name, nameKey: name.toLowerCase(), guest: false }));
 const [canoul, crousti, monsta] = ACC;
 let base, server, guild;
@@ -73,4 +73,36 @@ test('script move-to-raid.js : message lisible, et ses erreurs', async () => {
   assert.equal(r.ok, false); assert.match(r.out, /--to/);
   r = await run(['--name', 'crousti', '--to', 'crousti']);
   assert.equal(r.ok, false); assert.match(r.out, /même joueur/);
+});
+
+test('raid-ready : met prêt / pas prêt dans son lobby de raid ; le chef reste prêt ; hors lobby refusé', async () => {
+  await guild.raidAdminMove(monsta, canoul).catch(() => {});        // déjà dedans si le script a tourné
+  let r = await post('raid-ready', { name: 'monsta', ready: false });
+  assert.equal(r.status, 200, JSON.stringify(r.data));
+  assert.equal(r.data.members.find(m => m.name === 'Monsta').ready, false);
+  r = await post('raid-ready', { name: 'monsta' });                  // par défaut : prêt
+  assert.equal(r.data.members.find(m => m.name === 'Monsta').ready, true);
+  r = await post('raid-ready', { name: 'canoul', ready: false });
+  assert.equal(r.data.members.find(m => m.name === 'canoul').ready, true, 'le chef reste prêt');
+  assert.equal((await post('raid-ready', { name: 'monsta', ready: 'oui' })).status, 400);
+  await guild.raidKick(canoul, monsta.id);                           // un invité n'a pas de guilde : c'est le chef qui le sort
+  r = await post('raid-ready', { name: 'monsta' });
+  assert.equal(r.status, 404); assert.equal(r.data.error.code, 'not_in_raid');
+});
+
+test('script set-raid-ready.js : message lisible, et ses erreurs', async () => {
+  const envFile = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'raid-')), 'dim.env');
+  fs.writeFileSync(envFile, `DIM_ADMIN_TOKEN=${TOKEN}\n`);
+  const run = args => new Promise(res => {
+    const env = { ...process.env }; delete env.DIM_ADMIN_TOKEN;
+    execFile(process.execPath, ['scripts/set-raid-ready.js', '--url', base, '--env', envFile, ...args], { env, encoding: 'utf8' },
+      (err, out, errOut) => res({ ok: !err, out: out + errOut }));
+  });
+  await guild.raidAdminMove(monsta, canoul);
+  let r = await run(['--name', 'monsta', '--ready', 'off']);
+  assert.ok(r.ok, r.out); assert.match(r.out, /« Monsta » : pas prêt .*Pas encore prêts : Monsta\./);
+  r = await run(['--name', 'monsta']);
+  assert.ok(r.ok, r.out); assert.match(r.out, /« Monsta » : prêt .*Tout le monde est prêt\./);
+  r = await run(['--name', 'monsta', '--ready', 'oui']);
+  assert.equal(r.ok, false); assert.match(r.out, /--ready : on ou off/);
 });

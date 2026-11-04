@@ -7420,3 +7420,8 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - Tests ✅ `tests/admin-raid-move.test.js` (nouveau, 3 : clé, pseudos, hôte sans lobby, invité prêt, rejoué, script et ses
   erreurs), `tests/raid-server.test.js` (+2 : membre / invité, ancien lobby quitté, en session refusé), admin-party, admin,
   guild-service, app-guild : 62/62.
+- Ajout : `adminReady(acc, ready)` (`server/guild/raid.js`, lobby qui contient acc sinon `not_in_raid`, ready booléen
+  sinon 400, chef toujours prêt, refus `raid_launching`), `raidAdminReady`, route `POST /api/admin/raid-ready` (ready absent
+  = true), script `scripts/set-raid-ready.js --name X [--ready on|off]`. Tests `tests/admin-raid-move.test.js` +2 (route,
+  script) : 64/64 avec raid-server, admin, admin-party, guild-service, app-guild. Les ID de compte des tests doivent passer
+  `parseAccountId` (sinon `raidKick` répond « Joueur inconnu »).

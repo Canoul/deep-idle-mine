@@ -368,6 +368,7 @@ export function createGuildService({ store, accounts, statusOf, inviteCheck = as
     raidMove: async (me, group, id = null) => { await raid.move(me, group, id); return view(me); },
     /* administration : met acc dans le lobby de raid de host (server/admin/routes.js) */
     raidAdminMove: (acc, host) => raid.adminMove(acc, host),
+    raidAdminReady: (acc, ready) => raid.adminReady(acc, ready),
     /* lancement : la session du raid (comme POST /api/game/start) et la vue de la guilde */
     raidLaunch: async (me, body) => { const r = await raid.launch(me, body); return { ...await view(me), session: r.session }; },
 
