@@ -25,7 +25,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   Une seule page (`index.html`) avec des onglets (`#lobby`, `#session`, `#jugement`, `#inventaire`…) : la session
   continue de tourner quand on change d'onglet. Chaque onglet a son module dans `src/ui/`.
 - **Bulles « Butin »** (01/11, Jules ; `src/meta/loot-table.js`, `src/ui/loot-tip.js`) : tableau de loot dans la bulle
-  commune, lu dans la config : survol d'un treasure / trésor / coffre dans l'inventaire, « ? Butin » des instances et des
+  commune, lu dans la config : bouton « ? Butin » dans le détail d'un treasure / trésor / coffre de l'inventaire (04/11,
+  Geoffrey ; ancien : au survol ou au toucher de la case, qui cachait « Ouvrir » sur l'appli), « ? Butin » des instances et des
   tours dans le Lobby, « ? Butin des mobs » à côté de « Face aux mobs ».
 - **Aide « ? »** (28/10, Jules) : les explications de l'interface sont des bulles « ? » (survol, toucher), pas des
   paragraphes dans les pages. Tous les textes des pages fixes sont dans `src/ui/help.js` (`HELP`) ; un écran construit
