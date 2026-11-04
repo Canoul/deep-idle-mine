@@ -4,6 +4,8 @@ body.app{--bar-h:calc(30*var(--u));--sub-h:0px;--safe-t:var(--safe-area-inset-to
   --top-h:calc(var(--bar-h) + var(--safe-t) + var(--sub-h));--dock-h:calc(56px + var(--safe-b))}
 body.app.appSubOn{--sub-h:44px}
 body.app #nav,body.app #bgTown{display:none}
+/* Accueil (04/11/2026) : pas de session en fond derrière le Carreau et ses cartes (la prison en fond coupait l'écran en deux) */
+body.app.appHomeOn #bgSession{display:none}
 body.app .topbar{height:calc(var(--bar-h) + var(--safe-t));padding-top:var(--safe-t)}
 body.app.appSubOn .views{padding-top:var(--sub-h)}
 

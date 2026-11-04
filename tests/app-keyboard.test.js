@@ -20,3 +20,9 @@ test('champ où l\'on tape : texte, mot de passe, recherche, zone de texte ; pas
   for(const type of ['checkbox', 'radio', 'submit', 'range']) assert.ok(!isField({ tagName: 'INPUT', type }), type);
   assert.ok(!isField({ tagName: 'BUTTON' })); assert.ok(!isField(null));
 });
+
+test('page raccourcie par le téléphone (Galaxy S22, 04/11) : le clavier n\'est pas compté deux fois', () => {
+  assert.equal(keyboardHeight({ plugin: 330, inner: 780, base: 780 }), 330, 'page pas raccourcie : tout le clavier');
+  assert.equal(keyboardHeight({ plugin: 330, inner: 450, base: 780 }), 0, 'raccourcie d\'autant : rien de plus');
+  assert.equal(keyboardHeight({ plugin: 330, inner: 600, base: 780 }), 150, 'raccourcie en partie : le reste');
+});
