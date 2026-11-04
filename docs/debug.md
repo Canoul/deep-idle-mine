@@ -7410,3 +7410,13 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - Tests ✅ craft (+3), anticheat/craft (+2 : 300 demandes trafiquées / rejouées, matière conservée ; serveur : count texte /
   négatif / décimal / 1001 refusés, rafale du même opId créditée une fois), game-service ; `npm run test:anticheat` 154/154.
 - ⚠️ Écran pas vérifié dans un navigateur (champ, Max, libellé « Craft × N »).
+
+## 04/11/2026 — Geoffrey — Admin : raid-move (branche geoffrey/admin-raid-move)
+- `server/guild/raid.js` `adminMove(acc, host)` (dans la file `serial`) : lobby qui contient host (sinon `host_not_in_raid`),
+  refus `same_account`, `raid_launching`, `raid_full`, `member_in_session` ; retire acc de son autre lobby de raid ; hors
+  guilde → `{ invited:true, ready:true }` (gardé par `prune`), de la guilde → ready false, les autres ne repassent pas « pas
+  prêt ». Déjà dedans : `moved:false`. `server/guild/service.js` `raidAdminMove` ; route `POST /api/admin/raid-move`
+  (`server/admin/routes.js`, nouveau paramètre `guild` passé par `server/app.js`) ; script `scripts/move-to-raid.js`.
+- Tests ✅ `tests/admin-raid-move.test.js` (nouveau, 3 : clé, pseudos, hôte sans lobby, invité prêt, rejoué, script et ses
+  erreurs), `tests/raid-server.test.js` (+2 : membre / invité, ancien lobby quitté, en session refusé), admin-party, admin,
+  guild-service, app-guild : 62/62.
