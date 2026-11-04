@@ -12,6 +12,8 @@ import { pieceName } from '../meta/piece.js';
 import { rcls, rname, rlabel, pname, runeMark, rframe } from './rarity.js';
 import { glyphInfo } from '../meta/glyphs.js';
 import { pxi } from './pxicons.js';
+import { lootHelp } from './loot-tip.js';
+import { lootTableOf } from '../meta/loot-table.js';
 
 const $ = id => document.getElementById(id);
 /* dans l'appli mobile (classe app, src/app/boot.js) : slots plus petits, pas de survol */
@@ -119,7 +121,8 @@ export function infoHtml(s, pinned=false, inv=null, worn=null, furn=null, moveFr
   const unlock = pinned ? unlockHtml(s, furn) : '';
   const recycle = pinned ? recycleHtml(s) : '';
   const move = pinned && Number.isInteger(moveFrom) ? ` <button class="invMove" data-i="${moveFrom}" title="Puis touche la case où le poser">↔ Déplacer</button>` : '';
-  const acts = open + learn + equip + unlock + recycle + move;
+  const loot = lootTableOf(s.item) ? ' ' + lootHelp(`item:${s.item}`, 'Butin') : '';   // tableau de butin à la demande (04/11)
+  const acts = open + loot + learn + equip + unlock + recycle + move;
   /* trois blocs (28/10/2026, Geoffrey) : description, puis les stats (une par ligne), puis les boutons */
   return `<div class="iiDesc">${bits.join(' <span class="mut">·</span> ')}</div>`+
     (stats.length ? `<ul class="iiStats stuffStats">${stats.map(l => `<li>${esc(l)}</li>`).join('')}</ul>` : '')+
