@@ -19,6 +19,8 @@ test('PV : formules du créateur (k = area où naît le mob)', () => {
   assert.equal(mobHp('bestiole', 0), 50); assert.equal(mobHp('mimic', 3), Math.round(50 * 1.15 ** 3));
   assert.equal(mobHp('gobelin', 1), 100); assert.equal(mobHp('gobelin', 5), Math.round(100 * 1.15 ** 4));
   assert.equal(mobHp('occultiste', 4), 150); assert.equal(mobHp('occultiste', 5), 173);   // 150 depuis le 23/10
+  assert.equal(MOBS.minArea.occultiste, 3); assert.equal(mobHp('occultiste', 3), 130);   // une area plus tôt, courbe de PV gardée (04/11)
+  assert.equal(mobHp('golem', 2), 261, 'jamais moins de PV que dans sa première area');
 });
 
 test('tacle : le mob vient au contact du mineur (jamais sur sa case) et le tacle', () => {

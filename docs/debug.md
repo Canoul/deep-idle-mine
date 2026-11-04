@@ -7426,6 +7426,12 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   script) : 64/64 avec raid-server, admin, admin-party, guild-service, app-guild. Les ID de compte des tests doivent passer
   `parseAccountId` (sinon `raidKick` répond « Joueur inconnu »).
 
+## 04/11/2026 — Geoffrey — Composition des mobs, areas 2 à 6 (branche geoffrey/compo-mobs)
+- `src/config.js` : `MOBS.spawnTable` lignes 2 à 6 refaites ; `MOBS.minArea` occultiste 4→3, méphite 3→2, golem 5→4, chair 6→5. Nouvelle clé `MOBS.hpFrom` (area où le mob a `hpBase`, absent = `minArea`) = anciennes `minArea`, pour garder la courbe de PV. `mobHp` = hpBase × 1,15^(max(k, minArea) − hpFrom) : exposant négatif possible dans la nouvelle première area (golem 261 en area 4), jamais moins que dans `minArea` (avant : `Math.max(0, k − minArea)`).
+- `minArea` sert aussi aux pièges (`trapTable`), au spawn du mur et du ver (`spawnFlesh` / `spawnWorm`), à la bulle Butin (`loot-table.js` `from`) et au wiki (`MOB_INFO.hp0` = PV dans la première area, donc 261 pour le golem) : tous suivent sans autre modif.
+- Tests ✅ mobs, goblin, mephite, golem, flesh, mobs-a7, khole, golbute, prison-gobelins-gs, wiki*, trap*, occult* : 143/143 (tests qui figeaient l'ancienne table mis à jour). Simulation 3 mineurs × 5 : areas 3,0, profondeur 191, 0 bloquée.
+- ⚠️ Non vérifié : difficulté réelle des areas 4 et 5 (golem / mur de chair) en stuff fer ; la simulation par défaut ne dépasse pas l'area 3.
+
 ## 04/11/2026 — Geoffrey — Arbres de skills v3 (branche geoffrey/arbres-skills-v3) — ✅ en ligne le 04/11
 - `src/config.js` SKILLS.trees : 5 étages, `col:2` pour all_terrain (Mineur, étage 2), ambidextrous (nouveau, Logisticien
   étage 2, `adds:{ doubleAttack:2 }`, max 3) et demat (Logisticien, étage 3) ; places changées (voir GAME_DESIGN).

@@ -38,7 +38,7 @@ test('tirage : jamais avant l\'area 1 ; 0 à 2 pièges par area, environ 0,5 en 
 
 test('tirage : 5 mobs de la table de l\'area, jamais de mimic ; placement dans les marges, loin du treuil, du donjon et l\'un de l\'autre', () => {
   assert.equal(trapTable(1).mimic, undefined); assert.ok(trapTable(1).gobelin > 0);
-  assert.equal(trapTable(3).occultiste, undefined, 'occultiste seulement à partir de l\'area 4');
+  assert.equal(trapTable(2).occultiste, undefined, 'occultiste seulement à partir de l\'area 3 (04/11)'); assert.ok(trapTable(3).occultiste > 0);
   for(let s=1; s<=400; s++) for(const k of [1, 4, 5]){
     const d = planDungeon(s, k), ps = planTraps(s, k, d);
     for(const p of ps){
