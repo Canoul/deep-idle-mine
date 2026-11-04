@@ -48,6 +48,20 @@ export function createRaidLobby({ game = null, guildOf, nameOf, findByName = asy
   const firstRoom = L => { for(let gr = 1; gr <= RAID.groups; gr++) if(countIn(L, gr) < RAID.groupSize) return gr; return null; };
   const waitingOf = L => L.members.filter(m => m.account !== L.leader && !m.ready);
 
+  /* portrait d'un joueur du lobby (04/11, Geoffrey : pseudo, image du perso, spé) : apparence, aura, spécialisation et son
+     niveau ; gardé 30 s (la vue de la guilde est relue souvent, l'apparence change rarement) */
+  const cards = new Map();                 // compte → { at, card }
+  async function cardOf(account){
+    const c = cards.get(account), now = Date.now();
+    if(c && now - c.at < 30000) return c.card;
+    const tree = await game?.skillTreeOf?.(account).catch(() => null) ?? null;
+    const card = { tree, specLevel: await game?.specLevelOf?.(account, tree).catch(() => null) ?? null,
+                   look: await game?.lookFor?.(account).catch(() => ({})) ?? {}, auras: await game?.aurasFor?.(account).catch(() => ({})) ?? {} };
+    cards.set(account, { at: now, card });
+    if(cards.size > 500) cards.delete(cards.keys().next().value);
+    return card;
+  }
+
   /* ce que voit un membre de la guilde (champ raid de GET /api/guild) */
   async function view(me){
     const g = await guildOf(me.id);
@@ -56,7 +70,7 @@ export function createRaidLobby({ game = null, guildOf, nameOf, findByName = asy
     if(L) prune(g, L);
     const lobby = lobbies.get(g.id) ?? null;
     const members = lobby ? await Promise.all(lobby.members.map(async m => ({ account: m.account, name: m.name, ready: !!m.ready, group: m.group, invited: !!m.invited,
-      leader: m.account === lobby.leader, me: m.account === me.id, playing: await inSession(m.account) }))) : [];
+      leader: m.account === lobby.leader, me: m.account === me.id, playing: await inSession(m.account), ...await cardOf(m.account) }))) : [];
     const mine = members.some(m => m.me);
     const running = await game?.raidOfGuild?.(g.id).catch(() => null) ?? null;
     return { max: RAID.maxPlayers, groups: RAID.groups, groupSize: RAID.groupSize, members, leader: lobby?.leader ?? null, size: members.length, mine,

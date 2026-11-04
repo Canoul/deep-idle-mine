@@ -103,3 +103,10 @@ test('lobby : 2 groupes, rejoindre un groupe, changer de groupe, le chef déplac
   assert.match(lead, /data-g="raidMove" data-id="B" data-group="2">/, 'le chef déplace B');
   assert.match(lead, /data-g="raidMove" data-group="2">Passer dans ce groupe/);
 });
+
+test('lobby : chaque joueur avec son pseudo, son portrait et sa spé', () => {
+  const r = { max: 10, groups: 2, groupSize: 5, leader: 'A', launching: false, waiting: [], canLaunch: false, running: null, size: 1, mine: true, isLeader: true,
+              members: [{ account: 'A', name: 'Canoul', ready: true, group: 1, leader: true, me: true, playing: false, tree: 'barbare', specLevel: 12, look: { pioche: 'Pioche en fer' }, auras: {} }] };
+  const out = raidHTML(r);
+  assert.match(out, /<b>Canoul<\/b>/); assert.match(out, /data-raidpic="A"/); assert.match(out, /Barbare \(SP lvl : 12\)/);
+});

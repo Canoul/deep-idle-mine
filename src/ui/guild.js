@@ -8,6 +8,8 @@ import { guildApi } from '../net/api.js';
 import { rname } from './rarity.js';
 import { statusDot, statusText } from './social.js';
 import { pxi } from './pxicons.js';
+import { specLabel, portraitLook, portraitAuras } from './lobby.js';
+import { drawPortrait } from '../render/portrait.js';
 
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
 const fr = n => Math.round(n).toLocaleString('fr-FR');
@@ -31,8 +33,17 @@ function raidRow(m, r){
   const move = r.isLeader && !m.me && (r.groups ?? 1) > 1 ? `<button class="small" data-g="raidMove" data-id="${esc(m.account)}" data-group="${other}"${room ? '' : ' disabled'}>→ Groupe ${other}</button>` : '';
   const kick = move + (r.isLeader && !m.me ? `<button class="small" data-g="raidKick" data-id="${esc(m.account)}">Sortir</button>` : '');
   const state = m.leader ? '<span class="gxp">Chef du raid</span>' : m.ready ? '<span class="gxp okmsg">Prêt</span>' : '<span class="gxp mut">Pas prêt</span>';
-  return `<div class="frow raidMem${m.me ? ' me' : ''}"><span class="raidCrown">${m.leader ? pxi('crown') : ''}</span><span class="fname"><b>${esc(m.name)}</b>`+
-    `${m.playing ? '<small class="mut">En session</small>' : ''}</span>${state}<span class="fbtns">${kick}</span></div>`;
+  /* pseudo, image du perso, spé (Geoffrey, 04/11) ; le portrait est dessiné après l'affichage (drawRaidPortraits) */
+  const pic = `<span class="av raidAv"><canvas width="16" height="16" data-raidpic="${esc(m.account)}" data-sig="${esc(JSON.stringify([m.look ?? {}, m.auras ?? {}]))}"></canvas></span>`;
+  return `<div class="frow raidMem${m.me ? ' me' : ''}"><span class="raidCrown">${m.leader ? pxi('crown') : ''}</span>${pic}<span class="fname"><b>${esc(m.name)}</b>`+
+    `<small class="mut">${esc(specLabel(m.tree, m.specLevel))}${m.invited ? ' · invité' : ''}${m.playing ? ' · En session' : ''}</small></span>${state}<span class="fbtns">${kick}</span></div>`;
+}
+/* portraits du lobby du raid : apparence et aura envoyées par le serveur (même rendu que les groupes en formation) */
+export function drawRaidPortraits(root, r){
+  for(const cv of root.querySelectorAll('canvas[data-raidpic]')){
+    const m = r?.members?.find(x => x.account === cv.dataset.raidpic);
+    if(m) drawPortrait(cv, portraitLook({ ...m, me: false }), portraitAuras({ ...m, me: false })).catch(() => {});
+  }
 }
 export function raidHTML(r, now = Date.now()){
   if(!r) return `<div class="card"><h2>Raid</h2>${RAID_INTRO}</div>`;
@@ -219,7 +230,7 @@ export function setupGuild({ root, api = guildApi, onChange = () => {}, onRaid =
     put($('guildTabs'), tabs.map(t => `<button data-gtab="${t.id}" class="${t.id === tab ? 'on' : ''}">${t.label}</button>`).join(''));
     $('guildMineTab').hidden = tab !== 'mine'; $('guildRaidTab').hidden = tab !== 'raid'; $('guildSearchTab').hidden = tab !== 'search'; $('guildBoardTab').hidden = tab !== 'board';
     if(st.mine && !holdsPanel(document.activeElement)) put($('guildMine'), app() ? mineAppHTML(st.mine, older, { sub, building:bsel }) : mineHTML(st.mine, older));
-    if(st.mine && tab === 'raid') put($('guildRaid'), raidHTML(st.mine.raid, now()));
+    if(st.mine && tab === 'raid'){ const el = $('guildRaid'), was = el.dataset.html; put(el, raidHTML(st.mine.raid, now())); if(el.dataset.html !== was) drawRaidPortraits(el, st.mine.raid); }
     $('guildPeek').hidden = !peek;
     if(peek) put($('guildPeek'), peekHTML(peek, peekOlder));
     $('guildCreate').hidden = !!st.mine;

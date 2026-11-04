@@ -16,6 +16,11 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 04/11/2026 — Geoffrey — Raid : portrait et spé des joueurs dans le lobby
+- **Pour le joueur** : dans les groupes du lobby du raid, chaque joueur montre son pseudo, l'image de son perso (son stuff)
+  et sa spécialisation avec son niveau (ex. « 🪓 Barbare (SP lvl : 12) »).
+- **État** : 🧪 sur la branche `geoffrey/raid-lobby-joueurs` (pas en ligne)
+
 ## 04/11/2026 — Geoffrey — Raid : inviter un joueur par son pseudo (bêta, temporaire)
 - **Pour le joueur** : dans le lobby du raid, un champ « Pseudo du joueur » et un bouton **Inviter dans le raid** :
   n'importe quel joueur, même d'une autre guilde ou sans guilde, entre directement dans le lobby, prêt, dans le premier
