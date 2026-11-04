@@ -62,6 +62,7 @@ import { setupFurnace } from './ui/furnace.js';
 import { setupCrusher } from './ui/crusher.js';
 import { setupResearch } from './ui/research.js';
 import { setupSkills } from './ui/skills.js';
+import { pointsByTree } from './meta/skills.js';
 import { setupSpells } from './ui/spells.js';
 import { setupSets } from './ui/sets.js';
 import { setupHistory } from './ui/history.js';
@@ -292,7 +293,7 @@ const skills = setupSkills({
   onOp: op => gameApi.skills({ ...op, opId: newOpId() }),
   inSession: () => !!G && !G.over,
   inventory: () => ui.inv,                                   // glyphes possédés (case de glyphe)
-  onChange: (s, r) => { ui.skills = s; if(r?.inventory) setInventory(r.inventory); stuff.setSkills(s); lobby.update({ myTree: s?.tree ?? null }); spells.setContext({ tree: s?.tree ?? null }); setsUI?.refresh(); },   // Stuff : bonus des skills ; lobby et Sorts : sa spécialisation
+  onChange: (s, r) => { ui.skills = s; if(r?.inventory) setInventory(r.inventory); stuff.setSkills(s); lobby.update({ myTree: s?.tree ?? null, myPts: s?.ranks ? pointsByTree(s) : null }); spells.setContext({ tree: s?.tree ?? null }); setsUI?.refresh(); },   // Stuff : bonus des skills ; lobby et Sorts : sa spécialisation
 });
 
 /* sorts : le serveur vérifie et enregistre ; un parchemin appris quitte l'inventaire */

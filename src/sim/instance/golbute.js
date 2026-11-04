@@ -14,8 +14,9 @@
 
    Sorts : Cri de guerre, Cleave, Dash, Hand of Justice et Ulti shen en combat ; Dynamite sur le boss, les golems et le
    cristal ; Inspiration et Fast learner sur le cristal ; Illumination et Bonbonne de zipette : sans effet. */
+import { critMul, backstabMul } from '../skillfx.js';
 import { tenacityChance, tenacityTry } from '../tenacity.js';
-import { INSTANCE, DT, STATS, CFG } from '../../config.js';
+import { INSTANCE, DT, STATS, CFG, SKILLS } from '../../config.js';
 import { mulberry32 } from '../../core/rng.js';
 import { SPELL } from '../../meta/spells.js';
 import { log } from '../log.js';
@@ -87,7 +88,9 @@ const manh = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 export const warcryOf = (G, m) => { const w = G.warcry, c = w && G.t < w.until ? byId(G, w.by) : null;
   return c && manh(c, m) <= SPELL.war_cry.radius ? w : null; };
 const hitT = (G, m) => CFG.attackInterval / Math.max(0.1, (m.carac.attackSpeed ?? 100) / 100 * (1 + (warcryOf(G, m)?.speed || 0)));
-const hitDmg = (G, m) => m.carac.damage * (1 + (m.carac.damagePct || 0) / 100) * (1 + (warcryOf(G, m)?.dmg || 0)) * (chance(G, m.carac.crit || 0) ? 2 : 1);
+/* arbres v2 (04/11) : Crushing ; Dans le dos : visé si un golem le tacle ou si le Golbute (au combat) l'a à portée de son autoattack */
+const golTargeted = (G, m) => G.golems.some(o => o.hp > 0 && o.grab === m.id) || (G.boss.state === 'fight' && grounded(G, m) && gapX(G, m.x) <= C.slam.range);
+const hitDmg = (G, m) => m.carac.damage * (1 + (m.carac.damagePct || 0) / 100) * (1 + (warcryOf(G, m)?.dmg || 0)) * (chance(G, m.carac.crit || 0) ? critMul(m) : 1) * backstabMul(m, golTargeted(G, m));
 const strikeDmg = (G, m) => { let d = hitDmg(G, m); if(chance(G, m.carac.doubleAttack || 0)) d += hitDmg(G, m); return d; };
 const ready = (G, m, id) => m.spells.includes(id) && G.t + 1e-9 >= (m.spellCd[id] || 0);
 const cast = (G, m, id, cdFrom = G.t, mul = 1) => { m.spellCd[id] = cdFrom + SPELL[id].cd * mul; m.stats.spells++; };
@@ -197,7 +200,8 @@ function avalanche(G){
   const hit = [], dodged = [];
   for(const m of alive(G)){
     G.rocks.push({ x: m.x, at: G.ticks });
-    if(tenacityTry(m, 'golbute', G.fightRng, tenDebuffOf(G, m))){ dodged.push(m.name); G.stats.dodges++; continue; }
+    /* Solide sur les appuis (04/11) : contre l'autoattack seulement, pas l'avalanche (elle frappe tout le monde) */
+    if(tenacityTry(m, 'golbute', G.fightRng, tenDebuffOf(G, m) + (m.skill?.steady ? SKILLS.steady.tenacity : 0))){ dodged.push(m.name); G.stats.dodges++; continue; }
     if(G.t > m.dazedUntil + 1e-9) m.dazed = 0;
     m.dazed++; m.dazedUntil = G.t + A.dazed; m.stats.dazed++;
     hit.push(m);

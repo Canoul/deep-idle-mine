@@ -3,6 +3,7 @@
 
    Lucifer est à la place du bloc, il ne meurt pas et ne bouge pas. Le mineur frappe depuis standX, d'autant plus loin qu'il a de la
    portée. 1 dégât infligé = 1 point. Lucifer rugit (Fear) et frappe (recul) à son rythme, sur l'horloge de la salle. */
+import { critMul } from '../skillfx.js';
 import { HES_COMING as HC, COMBAT, CFG, DT } from '../../config.js';
 import { mulberry32 } from '../../core/rng.js';
 import { SPELL } from '../../meta/spells.js';
@@ -30,7 +31,7 @@ const speedOf = (G, m) => m.carac.attackSpeed * (1 + (warcryOf(G, m)?.speed || 0
 const interval = (G, m) => CFG.attackInterval * 100 / speedOf(G, m);
 /* dégâts par seconde affichés, critiques et double attaque en moyenne */
 export const luciferDps = (G, m) => m.carac.damage * (1 + (m.carac.damagePct || 0) / 100) * (1 + (warcryOf(G, m)?.dmg || 0))
-  * (1 + (m.carac.crit || 0) / 100) * (1 + (m.carac.doubleAttack || 0) / 100) / interval(G, m);
+  * (1 + (m.carac.crit || 0) / 100 * (critMul(m) - 1)) * (1 + (m.carac.doubleAttack || 0) / 100) / interval(G, m);   // Crushing (04/11) ; Lucifer vise tout le monde : pas de Dans le dos
 
 export function tickLucifer(G){
   G.t = Math.round((G.t + DT) * 1e6) / 1e6;

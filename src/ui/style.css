@@ -749,7 +749,17 @@ body.phone .chatMore{opacity:1;padding:0 calc(5*var(--u))}
 
 /* ---------- onglet Skills ---------- */
 .skHead{display:flex;align-items:center;gap:calc(4*var(--u));flex-wrap:wrap;margin-bottom:calc(15*var(--u))}
-.skTrees{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:calc(9*var(--u))}
+.skTreeRow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:calc(9*var(--u))}
+/* arbres v2 (04/11/2026) : boutons de spé, points par étage, arbres secondaires, skills de classe */
+.skSpecs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:calc(4*var(--u));margin:0 0 calc(8*var(--u))}
+.skSpecs button{display:flex;flex-direction:column;align-items:center;gap:calc(var(--u));padding:calc(3*var(--u))}
+.skSpecs button .pi{width:calc(10*var(--u));height:calc(10*var(--u))}
+.skSpecs button small{font-size:var(--fs-s);color:var(--mut)}
+.skSpecs button.on small{color:#4a1e08}
+.skTier{position:absolute;left:0;min-width:calc(12*var(--u));font-size:var(--fs-s);color:var(--mut);opacity:.75}
+.skTier.on{color:var(--acc);opacity:.6}
+.skTree.side h3 .small{color:var(--mut)}
+.skNode.cls .skName::after{content:" ★";color:var(--acc)}
 .skTree h3{margin:0 0 calc(4*var(--u));font-size:var(--fs-l);text-align:center}
 .specLvl{margin:0 auto calc(6*var(--u));max-width:calc(120*var(--u))}
 .specLvl .row{display:flex;justify-content:space-between;gap:calc(4*var(--u));margin-bottom:calc(2*var(--u))}
@@ -818,7 +828,7 @@ body.phone .chatMore{opacity:1;padding:0 calc(5*var(--u))}
   #cvWrap,#cvMiWrap,#cvTwWrap,#cvGtWrap,#cvHcWrap,#cvInWrap,.rail,.runL,.runR,.runGrid.mi>aside{margin-bottom:0!important}   /* la page défile : la marge du bas suffit */
   .runGrid{min-height:calc(100dvh - var(--top-h) - var(--dock-h) - 30*var(--u))}
   #cvWrap{min-height:calc(260*var(--u))}
-  .skTrees{grid-template-columns:1fr}
+  .skTreeRow{grid-template-columns:1fr}
   .lobbyCols{grid-template-columns:minmax(0,1fr)}
   #lobby:not(.atMenu) .lobbyCols>.lobbyCol:last-child{order:-1}   /* l'équipe et Lancer d'abord ; au menu, les activités d'abord */
   .invWrap,.stuffMain{grid-template-columns:1fr}
