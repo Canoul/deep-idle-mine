@@ -25,6 +25,7 @@
    POST /api/admin/party-lead {"name":"crousti"} : crousti devient chef de son lobby (scripts/set-leader.js).
    POST /api/admin/party-ready {"name":"crousti","ready":true,"always":true} : prêt / prêt tout le temps (scripts/set-ready.js).
    POST /api/admin/raffle {} : lance un raffle tout de suite, à toute heure (scripts/force-raffle.js).
+   POST /api/admin/app-latest {"platform":"android","version":"1.1.6"} : dernière appli sur le store, « "" » = celle de la config (scripts/set-app-latest.js).
 
    Une requête n'est acceptée que si les TROIS conditions sont réunies, sinon la route répond « Route inconnue » (404),
    comme si elle n'existait pas :
@@ -59,7 +60,7 @@ export function adminAllowed(req, token){
 
 /* accounts : le stockage des comptes (findAccountByName) ; game : le service de jeu (adminGive, adminTake, adminJudgment) ;
    party : le service des groupes (adminMove, adminReady), facultatif ; social : raffle, facultatif */
-export function adminRoutes({ accounts, service = null, game, party = null, moderation = null, social = null, reports = null, eraser = null, token }){
+export function adminRoutes({ accounts, service = null, game, party = null, moderation = null, social = null, reports = null, eraser = null, appLatest = null, token }){
   const guard = ctx => { if(!adminAllowed(ctx.req, token)) throw hidden(); };
   /* compte désigné par son pseudo (champ `field` du corps) */
   const byName = async (ctx, field = 'name') => {
@@ -298,6 +299,13 @@ export function adminRoutes({ accounts, service = null, game, party = null, mode
     'POST /api/admin/prison-stats': async ctx => {
       guard(ctx);
       return { rows: await game.adminPrisonStats() };
+    },
+    'POST /api/admin/app-latest': async ctx => {
+      guard(ctx);
+      if(!appLatest) throw new HttpError(503, 'unavailable', 'Mises à jour de l\'appli non branchées sur ce serveur.');
+      const r = await appLatest.set(ctx.body?.platform, typeof ctx.body?.version === 'string' ? ctx.body.version.trim() : null);
+      console.log(`Admin : dernière appli ${r.platform} ${r.before || '—'} → ${r.after || '—'}`);
+      return r;
     },
     'POST /api/admin/judgment': async ctx => {
       guard(ctx);

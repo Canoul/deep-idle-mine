@@ -7153,3 +7153,15 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** ✅ loot-table (nouveau test : tipAttr sans tableau, bouton à côté de « Ouvrir », rien pour un objet qui ne
   s'ouvre pas), tooltip, inventory, stuff : 39/39. ⚠️ Pas vu à l'écran (pas de navigateur ici) : taille de la rune sur l'appli.
 
+## 04/11/2026 — Geoffrey — Dernière appli des stores en base (ns app_latest) et lue par l'appli
+- **Cause** : `APP_UPDATE.latest.android` resté à 1.1.2 (1.1.5 sur Google Play) : `storeNudge` ne proposait rien aux 1.1.2-1.1.4.
+- `src/config.js` : latest android 1.1.5, `latestTimeout` 3 s. `server/app-update/latest.js` : `createAppLatest({ store })`
+  (`get` : réglé, sinon config ; `set(platform, version)`, "" = retour à la config, version validée `\d+(.\d+){0,3}`).
+  `server/game/store.js` : ns **app_latest** (clé 'state', FREE_NS : aucun compte), `getAppLatest` / `putAppLatest`, PG et
+  fichier. Routes : `GET /api/app/latest` (public) ; `POST /api/admin/app-latest` (clé admin, local) ; `scripts/set-app-latest.js`.
+  `server/main.js` : `appUpdate.latest`. Appli : `src/app/store-nudge.js` `latestOf` (fetch, 3 s, repli config) avant `storeNudge`.
+- **Tests** ✅ app-latest (nouveau : config, admin 404 sans clé ou via relais, 400 valeurs invalides, retour à la config, relu
+  en base, repli de l'appli, fenêtre), app-update, app-update-server, account-delete, admin : verts. ❌ mobile-config « même version
+  iOS qu'Android » : déjà rouge sur main (iOS 1.1.0, Android 1.1.5), sans rapport. ⚠️ Pas essayé sur un téléphone ; les coques
+  avant ce changement (≤ 1.1.3 sur Samsung, mises à jour à chaud cassées) ne reçoivent pas ce code et gardent leur config.
+

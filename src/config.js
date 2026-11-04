@@ -1582,7 +1582,10 @@ export const APP_UPDATE = {
      « Nouvelle version de l'appli » (Mettre à jour → la fiche du store ; Plus tard), au plus une fois toutes les nudgeEvery
      secondes. Non bloquant (bloquant : minNative). ⚠️ Monter latest SEULEMENT quand la version est vraiment en ligne sur le
      store (pas juste envoyée en revue), sinon la fiche n'a pas encore le bouton « Mettre à jour ». */
-  latest:{ android:'1.1.2', ios:'1.1.0' }, nudgeEvery:86400,
+  latest:{ android:'1.1.5', ios:'1.1.0' }, nudgeEvery:86400,   // 04/11 : 1.1.5 en ligne sur Google Play (avant 1.1.2)
+  /* 04/11/2026 (Geoffrey) : la version réglée sur le VPS (scripts/set-app-latest.js, ns app_latest) passe devant latest ; l'appli
+     la demande au serveur (GET /api/app/latest) au démarrage, latest de la config reste le repli sans réseau */
+  latestTimeout:3,
 };
 
 /* ---- Mine instantanée (MI, GAME_DESIGN §6 « Mine instantanée ») *(décisions du créateur, 21/10/2026 ; valeurs

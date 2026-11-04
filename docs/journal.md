@@ -1437,6 +1437,14 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
 
 ---
 
+## 04/11/2026 — Geoffrey — Appli : « Nouvelle version » réglable depuis le VPS, réglée sur 1.1.5
+- **Pour le joueur** : la fenêtre « Nouvelle version de l'appli » (Mettre à jour → Google Play) existait depuis le 03/11, mais
+  elle comparait à la 1.1.2 alors que la 1.1.5 est sur Google Play : personne ne la voyait. Elle compare maintenant à la 1.1.5.
+- **Pour nous** : à chaque nouvelle appli **en ligne** sur Google Play (pas en revue), une commande sur le VPS suffit, sans mise
+  en ligne du jeu : `sudo node /opt/deep-idle-mine/scripts/set-app-latest.js --platform android --version 1.1.6`. La version
+  est gardée en base ; l'appli la demande au serveur à chaque démarrage. « Plus tard » la reporte d'un jour.
+- **État** : ✅ en ligne le 04/11
+
 ## 04/11/2026 — Geoffrey — Inventaire : butin d'un coffre à la demande, marque de rune plus petite
 - **Pour le joueur** : toucher un coffre ou un treasure ne déroule plus son tableau de butin (sur l'appli, il cachait le
   bouton « Ouvrir » : il fallait le fermer avant d'ouvrir). Le tableau est derrière un bouton **« ? Butin »**, à côté de
