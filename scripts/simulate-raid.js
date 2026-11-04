@@ -3,6 +3,7 @@
    arbre de leur spé au maximum (preset dev), stuff T4.5 identifié R4, amélioré +5, une rune R4 sur chaque pièce (lignes
    tirées au hasard). Joue le minage des 2 areas, puis Cerbère avec le temps qui reste (RAID.duration).
      node scripts/simulate-raid.js [--runs 10] [--hp 60000] [--mine-only] [--boss-only] [--seed 1]
+   --tank-ten 40 : tanks (barbares) à 40 % de ténacité fixe face à Cerbère.
    --boss-only : saute le minage (temps restant = --left minutes, 15 par défaut). */
 import { newSession, tick } from '../src/sim/session.js';
 import { newCerbere, tickCerbere } from '../src/sim/raid/cerbere.js';
@@ -10,10 +11,13 @@ import { minerSpecs } from '../src/shared/game.js';
 import { buildPreset } from '../src/shared/dev-presets.js';
 import { rollRune, isPlain, canIdentify } from '../src/meta/piece.js';
 import { mulberry32 } from '../src/core/rng.js';
+import { tenacityChance, penOf } from '../src/sim/tenacity.js';
+import { TENACITY } from '../src/config.js';
 import { RAID, BLOCKS, AREA_Y0, AREA_H, W, DT } from '../src/config.js';
 
 const args = process.argv.slice(2);
 const opt = (k, d) => { const i = args.indexOf('--' + k); return i < 0 ? d : args[i + 1]; };
+const TANK = opt('tank-ten', null) == null ? null : +opt('tank-ten');
 const RUNS = +opt('runs', 10), HP = opt('hp', null) == null ? null : +opt('hp'), SEED0 = +opt('seed', 1);
 
 /* stuff de référence par spé (choix de Claude : la meilleure pièce T4.5, sinon T4, par case) */
@@ -48,6 +52,11 @@ function team(seed){
   const specs = copies.map((c, i) => ({ ...minerSpecs({ mode: 'mine', players: [], bots: 1, botPresets: ['copy:ref' + i], botCopies: [c] })[0],
                                         x: Math.round((i + 0.5) * W / copies.length), home: Math.round((i + 0.5) * W / copies.length) }));
   specs.forEach((s, i) => { s.name = `${TEAM[i].slice(0, 3)}${i}`; s.skillTree = s.skillTree ?? TEAM[i]; });
+  /* --tank-ten 40 (Geoffrey, 04/11) : les tanks (barbares) à 40 % de ténacité fixe face à Cerbère : brute recalculée pour
+     que la courbe donne ce %, après la pénétration ; résilience 100 % (pas de fatigue) */
+  if(TANK != null) for(const s of specs) if(s.skillTree === 'barbare'){
+    s.carac = { ...s.carac, tenacity: TENACITY.k * Math.expm1(TANK / TENACITY.k) + penOf('cerbere'), tenacityResilience: 100 };
+  }
   return specs;
 }
 
@@ -61,7 +70,7 @@ function mine(seed, specs){
 }
 
 const spec0 = team(SEED0)[0];
-console.log(`Équipe : ${TEAM.join(', ')} · ex. ${spec0.name} : minage ${spec0.carac.mineSpeed.toFixed(2)} (+${spec0.carac.mineSpeedPct || 0} %), dégâts ${spec0.carac.damage.toFixed(1)} (+${spec0.carac.damagePct || 0} %), vit. attaque ${spec0.carac.attackSpeed}, ténacité ${spec0.carac.tenacity}, pods ${spec0.carac.pods}, oxygène ${spec0.carac.oxygenMax}`);
+console.log(`Équipe : ${TEAM.join(', ')} · ex. ${spec0.name} : minage ${spec0.carac.mineSpeed.toFixed(2)} (+${spec0.carac.mineSpeedPct || 0} %), dégâts ${spec0.carac.damage.toFixed(1)} (+${spec0.carac.damagePct || 0} %), vit. attaque ${spec0.carac.attackSpeed}, ténacité ${spec0.carac.tenacity.toFixed?.(1) ?? spec0.carac.tenacity} (${tenacityChance(spec0, 'cerbere').toFixed(1)} % face à Cerbère), pods ${spec0.carac.pods}, oxygène ${spec0.carac.oxygenMax}`);
 let wins = 0; const mines = [], left = [];
 for(let r = 0; r < RUNS; r++){
   const seed = SEED0 + r, specs = team(seed);
