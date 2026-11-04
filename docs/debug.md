@@ -7310,3 +7310,23 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   Inventaire) ✅ : le chat s'arrête au-dessus de la barre, `elementFromPoint` dans la marge ne tombe pas sur le chat.
 - ⚠️ Pas vu en session (orbe Oxygène) ni en ville (townWalk), même mécanique.
 - **Applis** : seulement src/ui (copié en entier) : rien à signaler.
+
+## 04/11/2026 — Cerbère : nouveau sprite « Molosse des Enfers », animé (Jules)
+- **Quoi** : `scripts/gen_cerbere.py` réécrit (l'ancien chien de lave de Geoffrey est remplacé). Moteur générique
+  `scripts/gen_sculpt.py` (parties en ellipse / polygone / tube de l'arrière vers l'avant, volumes bombés, facettes de
+  Voronoï en option, clé froide + lave d'en bas, encre ; `merge` : parties fondues sans encre entre elles ; pixels hors
+  parties `'_fx'` cernés d'encre, `'_fl'` lumières sans encre). `base(rage)` = corps fixe encré ; `frame(b, i)` = corps
+  + ce qui bouge (flammes qui respirent et se balancent, flammèches, 40 braises, gueules dont le feu pulse, filets de lave
+  entre les crocs, bave qui tombe, yeux) ; tout est périodique en t = i / FRAMES, la boucle est sans saut.
+- **Textures** : `cerbere` / `cerbere_rage` (image 0, 128 × 96 : lobby de guilde, et repli) ; `cerbere_anim` /
+  `cerbere_rage_anim` (planches 1536 × 96 = 12 images). `TEXTURES` (config) les charge.
+- **Rendu** : src/render/raid.js `cerbereFrame(now)` (pure, exportée) = image de la planche au temps réel (ms) ;
+  `RAID.cerbere.anim = { frames: 12, ms: 90 }` (frames doit valoir `FRAMES` de gen_cerbere.py). Planche pas chargée →
+  l'image fixe comme avant. Boss, zone, règles : inchangés (8 × 6 cases).
+- **Tests** : raid-ui (taille des planches lue dans l'en-tête PNG = 128 × frames sur 96 ; cerbereFrame boucle), raid,
+  raid-server : 29/29 ✅. Sortie du générateur comparée pixel à pixel au prototype validé par Jules : identique ✅. Vu dans
+  le vrai rendu de l'arène (page d'essai sur src/render/raid.js, normal et enragé) ✅.
+- ⚠️ Pas vu dans une vraie partie de raid (10 joueurs), ni sur téléphone. `npm run textures` régénère les mêmes PNG
+  (~3 s pour Cerbère).
+- **Applis** : nouveaux PNG dans textures/ (copié en entier par server/app-update/bundle.js) et src/render : rien à signaler.
+

@@ -2,7 +2,7 @@
    d'affichage de la phase 'boss' (src/shared/raid-view.js applyRaidView), ne la modifie jamais. Les phases 'mine' et
    'door' sont une mine : c'est le rendu de la mine (src/render/canvas.js) qui les dessine.
    Toute l'arène à l'écran (RAID.cerbere.w × h + le sol) : fond de grotte rougeoyant, sol en pierre des enfers, Cerbère
-   (textures/cerbere.png, 8 × 6 cases ; cerbere_rage.png enragé), sa barre de vie, ses trois cibles marquées, l'éclair de
+   (8 × 6 cases, animé : planche textures/cerbere_anim.png, cerbere_rage_anim.png enragé ; 04/11/2026, Jules), sa barre de vie, ses trois cibles marquées, l'éclair de
    la Morsure, la poussière du Balayage, le voile du Magma gazeux ; les mineurs (Durci : bloc de pierre et sa solidité ;
    mordu : halo rouge ; mort : pierre tombale). Chaque entité glisse entre deux envois (src/shared/view.js). */
 import { RAID } from '../config.js';
@@ -12,6 +12,11 @@ import { drawMobFx } from './effects.js';
 import { shownPos } from '../shared/view.js';
 
 export const RD_TILE = 16;
+
+/* image de la planche de Cerbère à l'instant now (ms, temps réel : le feu ne dépend pas de la vitesse du jeu) */
+export function cerbereFrame(now, A = RAID.cerbere.anim){
+  return ((Math.floor(now / A.ms) % A.frames) + A.frames) % A.frames;
+}
 const ARC_MS = 350;
 const FX = { bite: 0.7, sweep: 0.6, magma: 2 };     // durée des effets à l'écran (s de jeu depuis l'attaque)
 
@@ -83,7 +88,11 @@ export function createRaidRenderer(cv){
       }
       ctx.save();
       if(b.rage){ ctx.shadowColor = '#ff3b1a'; ctx.shadowBlur = 12; }
-      blit(b.rage ? 'cerbere_rage' : 'cerbere', px, py, b.rage ? '#a3260f' : '#3c2426', w, h);
+      const sheet = TEX[b.rage ? 'cerbere_rage_anim' : 'cerbere_anim'];
+      if(ready(sheet)){
+        const fw = sheet.naturalWidth / RAID.cerbere.anim.frames;
+        ctx.drawImage(sheet, cerbereFrame(now) * fw, 0, fw, sheet.naturalHeight, px, py, w, h);
+      } else blit(b.rage ? 'cerbere_rage' : 'cerbere', px, py, b.rage ? '#a3260f' : '#3c2426', w, h);
       ctx.restore();
       /* Morsure : éclair rouge sur les gueules */
       const bt = since(G, b.biteAgo, now);
