@@ -34,3 +34,9 @@ export function tenacityTry(m, src, draw, extra = 0){
   m.tenTired = true;
   return true;
 }
+/* une mécanique qui ne fatigue pas (coup qui repousse de Cerbère, Geoffrey 04/11) : tirée sur la chance sans fatigue, elle ne
+   touche pas à m.tenTired (la Morsure qui suit garde toute sa chance) */
+export function tenacityTryFresh(m, src, draw, extra = 0){
+  const t = tenacityOf(m, src, extra);
+  return t > 0 && draw() * 100 < t;
+}
