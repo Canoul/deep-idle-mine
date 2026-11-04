@@ -192,3 +192,9 @@ test('bêta : inviter un joueur par son pseudo dans le lobby, même hors de la g
   const { session } = await guild.raidLaunch(CHIEF);
   assert.ok((await store.getGameSession(session.id)).players.some(p => p.account === OUT.id));
 });
+
+test('lobby : chaque membre vient avec sa spé, son niveau de spé, son apparence et son aura', async () => {
+  const { guild } = await setup(1);
+  const m = (await guild.raidJoin(CHIEF)).mine.raid.members[0];
+  for(const k of ['tree', 'specLevel', 'look', 'auras']) assert.ok(k in m, k);
+});

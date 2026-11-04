@@ -7255,3 +7255,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - L'invité ne voit pas le lobby (onglet Raid d'une autre guilde) ; au lancement il est emmené par `pollLobby` (`partyApi.state().session`).
 - **Tests** : raid-server (invitation hors guilde, gardée, lancée) ✅ ; guild*, raid-ui ✅.
 - ⚠️ À retirer après la bêta : route, `invite`, champ de `raidHTML`, `invited` dans `prune`.
+
+## 04/11/2026 — Raid : portrait et spé dans le lobby (Geoffrey)
+- server/guild/raid.js `cardOf` (cache 30 s) : `tree`, `specLevel`, `look`, `auras` par membre (game.skillTreeOf / specLevelOf / lookFor / aurasFor, comme les groupes en formation). src/ui/guild.js : canvas `data-raidpic` dans `raidRow`, `drawRaidPortraits` après `put` quand le HTML change, `specLabel`.
+- Tests raid-ui, raid-server ✅ ; vérifié dans le navigateur (mode dev, 2 comptes, invitation) ✅.

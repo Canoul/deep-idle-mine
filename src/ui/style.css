@@ -866,6 +866,9 @@ body.phone .chatMore{opacity:1;padding:0 calc(5*var(--u))}
 .raidMem .raidCrown{flex:0 0 calc(6*var(--u));color:var(--acc);display:inline-flex}
 .raidMem.me .fname b{color:var(--acc)}
 .raidGroup{margin-bottom:calc(3*var(--u))}
+.raidMem .raidAv{flex:none;width:calc(28*var(--u));height:calc(28*var(--u));display:grid;place-items:center}
+.raidMem .raidAv canvas{width:calc(24*var(--u));height:calc(24*var(--u));image-rendering:pixelated}
+.raidMem .fname{display:flex;flex-direction:column}
 .raidGroup h3{display:flex;align-items:center;gap:calc(2*var(--u));margin:calc(2*var(--u)) 0}
 .raidGroup h3 button{margin-left:auto}
 .raidBoss{display:block;width:100%;max-width:calc(128*2*var(--u));margin:0 auto calc(2*var(--u));image-rendering:pixelated}
