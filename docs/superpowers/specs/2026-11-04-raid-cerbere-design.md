@@ -28,6 +28,7 @@ Chien à trois têtes de lave et des enfers (Cerbère de la mythologie). Sprite 
 - **Autoattaque** : toutes les **10 s**, sur ses 3 cibles, debuff **« Morsure »** (100 %, la ténacité peut l'éviter, chacun
   son tirage). **Si les 3 cibles sont mordues en même temps, les 3 meurent** (réponse 10 b). Précision de Geoffrey (04/11
   12:07) : si une seule résiste, la Morsure se dissipe pour les 3 ; **l'état ne persiste pas** d'une Morsure à l'autre.
+  13:24 : une **seule** des 3 cibles meurt (au hasard), Morsure toutes les **20 s** (14 s enragé).
 - **Sort 1, Balayage** : toutes les **5 s**, sa patte balaie le raid à **2 cases** : tout le monde est repoussé de **5 cases**
   et **3 de haut** ; la ténacité peut l'éviter.
 - **Sort 2, Magma gazeux** : toutes les **30 s**, gaz de magma pour **tout le raid** : **50 %** de chance par joueur d'être
@@ -44,6 +45,6 @@ Chien à trois têtes de lave et des enfers (Cerbère de la mythologie). Sprite 
 30 min, proposer d'abord de réduire les areas, pas de toucher au boss.
 
 ## Questions encore ouvertes (à trancher en route)
-- ~~Durée de la Morsure~~ : sans objet, elle ne persiste pas (Geoffrey, 04/11). PV provisoires : 15 000 (~1 victoire sur 10).
+- ~~Durée de la Morsure~~ : sans objet, elle ne persiste pas (Geoffrey, 04/11). PV provisoires : 100 000 (~1 victoire sur 8, combat ~4 min ; tanks à 40 % de ténacité fixe).
 - Ce que voient les joueurs pendant l'attente devant la porte.
 - Nom de l'activité et icône.
