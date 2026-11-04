@@ -24,7 +24,7 @@ Modèle d'entrée :
 - **Décisions** (Jules) : zoom de départ ×3 dans l'appli seulement (réglage `CAMERA.appZoom`, provisoire).
 - **À suivre** : essai sur un vrai téléphone ; si la fenêtre de la mine paraît trop basse (≈ 11 lignes visibles), on peut
   la rendre plus haute.
-- **État** : 🧪 sur la branche `jules/zoom-mine-tel` (pas en ligne)
+- **État** : ✅ en ligne le 04/11
 
 ## 04/11/2026 — Jules — Appli mobile : retours après l'essai sur iPhone
 - **Pour le joueur** : rien sur le site. Dans l'appli :

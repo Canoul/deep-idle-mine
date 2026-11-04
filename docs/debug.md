@@ -7104,7 +7104,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   l'Accueil avec la MI choisie à l'écran (test vert).
 - **Applis** : touche `src/app/` (main.js, home*.js, app.css) : rien de natif, mise à jour à chaud.
 
-## 04/11/2026 — Jules — Appli mobile : la mine démarre zoomée (🧪 branche `jules/zoom-mine-tel`)
+## 04/11/2026 — Jules — Appli mobile : la mine démarre zoomée (✅ en ligne le 04/11)
 - **Quoi** : dans l'appli (`body.app`), la caméra de la mine démarre à `CAMERA.appZoom` (3) au lieu de ×1 (50 colonnes sur
   ≈ 390 px de large = ≈ 8 px par case). `createCamera` a un zoom de départ `base` (1 par défaut) : `setBaseZoom(z)` l'applique
   tout de suite (borné à [zmin, maxZoom]) ; `zoomBy(0)` (double appui / double clic) revient à `base` (ancien : ×1) ;
