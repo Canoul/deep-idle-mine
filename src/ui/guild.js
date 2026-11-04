@@ -157,6 +157,9 @@ export function setupGuild({ root, api = guildApi, onChange = () => {} }){
   const $ = id => document.getElementById(id);
   let st = { mine:null, invites:[], requests:[] }, tab = null, list = [], board = [], at = 0, open = null, members = null;
   let older = {}, peek = null, peekOlder = {};        // lignes anciennes du journal déjà demandées ; fiche d'une autre guilde
+  /* appli (04/11/2026) : l'onglet de sa guilde (Maison, Membres, Bâtiments, Journal) et le bâtiment montré */
+  let sub = 'house', bsel = null;
+  const app = () => document.body.classList.contains('app');
   const shown = () => !root.hidden && !document.hidden;
   /* un contenu inchangé n'est pas réécrit : une case ouverte ne se ferme pas à chaque relecture */
   const put = (el, html) => { if(el.dataset.html !== html){ el.innerHTML = html; el.dataset.html = html; } };
@@ -166,7 +169,7 @@ export function setupGuild({ root, api = guildApi, onChange = () => {} }){
     if(!tabs.some(t => t.id === tab)) tab = tabs[0].id;
     put($('guildTabs'), tabs.map(t => `<button data-gtab="${t.id}" class="${t.id === tab ? 'on' : ''}">${t.label}</button>`).join(''));
     $('guildMineTab').hidden = tab !== 'mine'; $('guildSearchTab').hidden = tab !== 'search'; $('guildBoardTab').hidden = tab !== 'board';
-    if(st.mine && !holdsPanel(document.activeElement)) put($('guildMine'), mineHTML(st.mine, older));
+    if(st.mine && !holdsPanel(document.activeElement)) put($('guildMine'), app() ? mineAppHTML(st.mine, older, { sub, building:bsel }) : mineHTML(st.mine, older));
     $('guildPeek').hidden = !peek;
     if(peek) put($('guildPeek'), peekHTML(peek, peekOlder));
     $('guildCreate').hidden = !!st.mine;
@@ -238,6 +241,9 @@ export function setupGuild({ root, api = guildApi, onChange = () => {} }){
     await run(() => name === 'leave' ? api.leave() : api[name](id));
   }
   root.addEventListener('click', e => {
+    const gs = e.target.closest('[data-gsub]'), gb = e.target.closest('[data-gb]');
+    if(gs){ sub = gs.dataset.gsub; render(); return; }
+    if(gb){ bsel = gb.dataset.gb; render(); return; }
     const t = e.target.closest('[data-gtab]');
     if(t){ tab = t.dataset.gtab; say(null); render(); quiet(); return; }
     const f = e.target.closest('[data-gopen]');

@@ -16,6 +16,16 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 04/11/2026 — Jules — Appli mobile : la Guilde en onglets
+- **Pour le joueur** : rien sur le site. Dans l'appli, la page de ta guilde a quatre onglets : **Maison** (la maison, le
+  niveau, le message, les bonus), **Membres** (une ligne par joueur, « Inviter un joueur », et « Quitter la guilde » tout en
+  bas, à part), **Bâtiments** (trois boutons Armurerie / Trésorerie / Forge, un bâtiment à la fois, chaque matière sur une
+  ligne avec « Donner » à droite) et **Journal**. Avant : environ 5 écrans à faire défiler.
+- **Décisions** (Jules) : maquette A (onglets) ; écartée : le tableau de bord à tuiles. Conception :
+  `docs/superpowers/specs/2026-11-04-appli-guilde-design.md`.
+- **À suivre** : le Classement (podium, sa place en bas) ; Maison et Bâtiments défilent encore un peu.
+- **État** : 🧪 sur la branche `jules/appli-guilde` (pas en ligne)
+
 ## 04/11/2026 — Jules — Appli mobile : l'Historique, une ligne par session
 - **Pour le joueur** : rien sur le site. Dans l'appli, le bouton **Session** hors session (l'Historique) montre **une ligne
   par session**, regroupées par jour (« AUJOURD'HUI », « HIER », puis la date) : le type (Mine, Prison, Instance…) et
