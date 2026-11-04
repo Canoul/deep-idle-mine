@@ -75,7 +75,7 @@ export const gameApi = {
   furnace: op          => request('POST', '/api/game/furnace', op),
   crusher: op          => request('POST', '/api/game/crusher', op),   // { action:'load'|'unload'|'collect', slot, item, qty, opId }
   crusherState: ()     => request('GET', '/api/game/crusher'),
-  craft:  (item, opId) => request('POST', '/api/game/craft', { item, opId }),
+  craft:  (item, opId, count = 1) => request('POST', '/api/game/craft', { item, opId, count }),
   inventory: op        => request('POST', '/api/game/inventory', op),         // { action:'sort' } | { action:'move', from, to, item, uid? }
   recycle: uid         => request('POST', '/api/game/recycle', { uid }),      // recycler une pièce de stuff fabriquée
   learn:  (item, opId) => request('POST', '/api/game/learn', { item, opId }),   // utiliser un blueprint

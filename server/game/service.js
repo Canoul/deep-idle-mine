@@ -74,7 +74,7 @@ const fail = (code, status, message, extra) => { throw new GameError(code, statu
 
 const ACTIVE = ['running', 'settling'];
 const CRAFT_ERRORS = { unknown: 'Recette inconnue.', locked: 'Recette pas encore débloquée.',
-                       not_enough: 'Il te manque des ingrédients.' };
+                       not_enough: 'Il te manque des ingrédients.', bad_count: 'Quantité invalide.' };
 const LEARN_ERRORS = { no_use: 'Ce blueprint ne débloque rien pour l\'instant.', known: 'Tu connais déjà cette recette : ton blueprint est gardé.',
                        not_owned: 'Tu n\'as pas ce blueprint.' };
 const SKILL_ERRORS = { unknown: 'Skill inconnu.', other_tree: 'Tu as choisi un autre arbre : fais un reset pour changer.',
@@ -1606,16 +1606,16 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
 
     /* craft : le serveur vérifie la recette et les ingrédients, retire et donne en une fois (opId : une seule fois) */
     async craft(me, body = {}){
-      const { item, opId } = body;
+      const { item, opId, count = 1 } = body;   // count : crafts d'un coup (recette en série), vérifié par craft()
       if(typeof item !== 'string') fail('bad_item', 400, 'Objet inconnu.');
       if(typeof opId !== 'string' || !/^[\w-]{8,64}$/.test(opId)) fail('bad_request', 400, 'Demande invalide.');
       return withLock('inv:' + me.id, async () => {
         const inv = await loadInventory(me.id);
         await loadStuff(me.id, inv);                     // garde les uid uniques (pièces portées comprises)
-        const r = craft(inv, item, opId, random);       // Rune : qualité et lignes tirées par le serveur
+        const r = craft(inv, item, opId, random, count);   // Rune : qualité et lignes tirées par le serveur
         if(r.error) fail(r.error, r.error === 'not_enough' ? 409 : 400, CRAFT_ERRORS[r.error]);
         if(!r.repeated) await store.putInventory(me.id, JSON.parse(serialize(inv)));
-        return { item, ...(r.pieces ? { piece: r.pieces[0] } : {}), inventory: publicInventory(inv) };
+        return { item, count, ...(r.pieces ? { piece: r.pieces[0] } : {}), inventory: publicInventory(inv) };
       });
     },
 

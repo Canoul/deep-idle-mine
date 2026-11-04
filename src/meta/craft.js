@@ -6,9 +6,9 @@
    l'inventaire. Le blueprint est consommé et le nom de la recette rejoint inv.unlocked : débloquée pour toujours.
    Les deux changent ensemble (même inventaire, une seule écriture) : rien ne se perd, rien ne se duplique. */
 import { RECIPES } from '../recipes.js';
-import { RECYCLE, STUFF, FURNACE, RUNE, ITEMS } from '../config.js';
+import { RECYCLE, STUFF, FURNACE, RUNE, ITEMS, CRAFT } from '../config.js';
 import { furnaceRecipeName } from './furnace.js';
-import { countOf, removeItem, addItem, takePiece, CRAFT_MEMORY } from './inventory.js';
+import { countOf, removeItem, addItem, takePiece, isStackable, CRAFT_MEMORY } from './inventory.js';
 import { isStuff, isRune, rollRune, rollCraftedRuneQuality, rolledSpec, rollStats } from './piece.js';
 
 export const recipeOf = item => (typeof item === 'string' && Object.hasOwn(RECIPES, item)) ? RECIPES[item] : null;
@@ -35,6 +35,19 @@ export function needs(inv, item){
 }
 export const canCraft = (inv, item) => isUnlocked(item, inv) && needs(inv, item).every(n => n.have >= n.need);
 
+/* recette en série (04/11/2026) : le produit s'empile et rien n'est tiré au hasard ni pris parmi les pièces de stuff
+   (orbes, clés, matériaux) ; les autres se fabriquent une par une */
+export const inBatch = item => {
+  const r = recipeOf(item);
+  return !!r && isStackable(item) && item !== RUNE.item && !rolledSpec(item) && !Object.keys(r.cost).some(isStuff);
+};
+/* combien de fois on peut la fabriquer avec l'inventaire (au plus CRAFT.maxCount ; 0 ou 1 hors série) */
+export function maxCrafts(inv, item){
+  if(!canCraft(inv, item)) return 0;
+  if(!inBatch(item)) return 1;
+  return Math.min(CRAFT.maxCount, ...needs(inv, item).map(n => Math.floor(n.have / n.need)));
+}
+
 /* don à la guilde (01/11/2026) : retire qty × item, une seule fois par opId. true si c'est fait (ou déjà fait), false s'il
    en manque */
 export function spendFor(inv, item, qty, opId){
@@ -54,24 +67,26 @@ const remember = (inv, opId) => {
 const worth = p => (p.q ? 1 : 0) + (p.plus | 0) + (p.rune ? 1 : 0) + (p.lines?.length ? 1 : 0);
 export const plainestFirst = (inv, item) => inv.slots.filter(s => s && s.item === item && s.uid != null).sort((a, b) => worth(a) - worth(b) || a.uid - b.uid);
 
-/* fabrique item : renvoie { ok, repeated, pieces? } ou { error } (unknown, locked, not_enough).
+/* fabrique item, count fois (count > 1 : seulement une recette en série, voir inBatch ; sinon bad_count) : renvoie
+   { ok, repeated, pieces? } ou { error } (unknown, locked, not_enough, bad_count). Tout ou rien.
    Une Rune (29/10/2026) tire sa qualité (RUNE.craftChances) et ses lignes avec rng, le hasard du serveur : pieces = les
    runes fabriquées. Sans rng, la recette Rune est refusée (unknown) avant de rien retirer. Même chose pour une pièce à
    stats tirées (Cape inclusive, 31/10/2026) : pieces = la pièce et ses stats, révélées dans le pop-up du craft. */
-export function craft(inv, item, opId, rng){
+export function craft(inv, item, opId, rng, count = 1){
   if(inv.crafted.includes(opId)) return { ok:true, repeated:true };
   const r = recipeOf(item);
   if(!r) return { error:'unknown' };
+  if(!Number.isSafeInteger(count) || count < 1 || count > CRAFT.maxCount || (count > 1 && !inBatch(item))) return { error:'bad_count' };
   const rune = item === RUNE.item;
   const rolled = !!rolledSpec(item);
   if((rune || rolled) && typeof rng !== 'function') return { error:'unknown' };
   if(!isUnlocked(item, inv)) return { error:'locked' };
-  if(!canCraft(inv, item)) return { error:'not_enough' };
+  if(!canCraft(inv, item) || maxCrafts(inv, item) < count) return { error:'not_enough' };
   for(const [k, n] of Object.entries(r.cost)){                       // tout est là : vérifié juste avant
     if(isStuff(k)) for(const p of plainestFirst(inv, k).slice(0, n)) takePiece(inv, p.uid);
-    else removeItem(inv, k, n);
+    else removeItem(inv, k, n * count);
   }
-  const slots = addItem(inv, item, r.qty);
+  const slots = addItem(inv, item, r.qty * count);
   remember(inv, opId);
   if(rolled) return { ok:true, repeated:false, pieces:slots.map(i => { const p = Object.assign(inv.slots[i], rollStats(item, rng)); return { ...p, rolled:[...p.rolled] }; }) };
   if(!rune) return { ok:true, repeated:false };

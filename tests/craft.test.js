@@ -107,3 +107,33 @@ test('onglets du Craft (31/10/2026) : les mêmes que l\'inventaire, chaque recet
   assert.match(tabsHtml('all', [], 'recette', 0, true), /data-tab="all"/);
 });
 
+
+/* ---------- craft en série (04/11/2026) ---------- */
+test('en série : orbes, clés et matériaux oui ; stuff, runes, pièces tirées et recettes qui prennent du stuff non', async () => {
+  const { inBatch } = await import('../src/meta/craft.js');
+  for(const n of ['Orbe', 'Orbe supérieur', 'Clé d\'instance I']) assert.equal(inBatch(n), true, n);
+  for(const n of ['Pioche en pierre', 'Rune', 'Cape inclusive', 'Casque en thorium', 'Inconnu']) assert.equal(inBatch(n), false, n);
+});
+
+test('en série : 7 orbes d\'un coup retirent 7 fois la recette, donnent 7 orbes ; maxCrafts suit le plus rare', async () => {
+  const { maxCrafts } = await import('../src/meta/craft.js');
+  const inv = invWith({ 'Tissu sombre':250, 'Vésicule de gaz':300, 'Pierre glissante':75 });
+  assert.equal(maxCrafts(inv, 'Orbe'), 7);                                  // pierres glissantes : 75 / 10
+  assert.equal(craft(inv, 'Orbe', 'op-batch-01', undefined, 7).ok, true);
+  assert.equal(countOf(inv, 'Orbe'), 7);
+  assert.deepEqual([countOf(inv, 'Tissu sombre'), countOf(inv, 'Vésicule de gaz'), countOf(inv, 'Pierre glissante')], [40, 90, 5]);
+  assert.equal(maxCrafts(inv, 'Orbe'), 0);
+  assert.equal(maxCrafts(inv, 'Pioche en pierre'), 0);
+});
+
+test('en série : tout ou rien, quantités invalides refusées, demande rejouée sans effet', async () => {
+  const inv = invWith({ 'Tissu sombre':60, 'Vésicule de gaz':60, 'Pierre glissante':20, 'Lingot de fer':90 });
+  assert.equal(craft(inv, 'Orbe', 'op-batch-02', undefined, 3).error, 'not_enough');
+  for(const bad of [0, -2, 1.5, '2', NaN, Infinity, null, 1001])
+    assert.equal(craft(inv, 'Orbe', 'op-batch-03', undefined, bad).error, 'bad_count', String(bad));
+  assert.equal(craft(inv, 'Pioche en pierre', 'op-batch-04', undefined, 2).error, 'bad_count');   // stuff : un par un
+  assert.deepEqual([countOf(inv, 'Tissu sombre'), countOf(inv, 'Orbe'), countOf(inv, 'Lingot de fer')], [60, 0, 90], 'rien retiré');
+  assert.equal(craft(inv, 'Orbe', 'op-batch-05', undefined, 2).ok, true);
+  assert.equal(craft(inv, 'Orbe', 'op-batch-05', undefined, 2).repeated, true);
+  assert.equal(countOf(inv, 'Orbe'), 2);
+});

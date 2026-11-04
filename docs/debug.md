@@ -7400,3 +7400,13 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   admin-moderation, moderation-ui, admin-take, admin. ⚠️ Pas vu dans le navigateur.
 - ⚠️ Joueur banni par le ban auto du chat : le POST « lu » est refusé (403) → la pop-up revient au rechargement de la page,
   jusqu'à la fin du ban. Compte suspendu : il ne voit rien avant la fin de la suspension.
+
+## 04/11/2026 — Geoffrey — Craft en série (branche geoffrey/craft-quantite)
+- `src/meta/craft.js` : `craft(inv, item, opId, rng, count = 1)` (tout ou rien, `bad_count` si count n'est pas un entier
+  1..`CRAFT.maxCount` ou > 1 hors série) ; `inBatch(item)` (produit empilable, pas Rune, pas `rolledSpec`, aucun ingrédient
+  stuff) ; `maxCrafts(inv, item)`. `src/config.js` `CRAFT = { maxCount:1000 }`. Serveur `game.craft` lit `body.count`
+  (défaut 1, renvoie `count`), message `bad_count`. `src/net/api.js`, `src/main.js` (fenêtre « Tu as obtenu » : qty × count),
+  `src/ui/craft.js` (champ `#craftQty` + `#craftMax` dans `.fqty.craftQty`, seulement si `inBatch`).
+- Tests ✅ craft (+3), anticheat/craft (+2 : 300 demandes trafiquées / rejouées, matière conservée ; serveur : count texte /
+  négatif / décimal / 1001 refusés, rafale du même opId créditée une fois), game-service ; `npm run test:anticheat` 154/154.
+- ⚠️ Écran pas vérifié dans un navigateur (champ, Max, libellé « Craft × N »).

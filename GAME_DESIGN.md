@@ -777,6 +777,7 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 - Les **recettes** sont dans un fichier à part : `src/recipes.js` (ingrédients, quantité obtenue, déblocage).
 - L'onglet montre une **icône par recette disponible**. Un clic montre la recette : chaque ingrédient en **x / besoin** (x = ce que le joueur a dans son inventaire ; rouge s'il en manque, vert sinon).
 - Le bouton **Craft** est grisé tant qu'il manque un ingrédient. Sinon, un clic retire les ingrédients et met l'objet dans l'inventaire (tout ou rien, fait par le serveur ; un double clic ne fabrique qu'une fois).
+- **Craft en série** *(04/11/2026, Geoffrey)* : une recette dont le produit **s'empile** (orbes, clés, matériaux), sans hasard (pas une rune ni une pièce à stats tirées) et qui ne consomme pas de pièce de stuff, a un champ **Quantité** et un bouton **Max** (autant que l'inventaire permet, au plus 1 000 d'un coup : `CRAFT.maxCount`). Tout ou rien, comme un craft simple. Le reste (équipement, runes) se fabrique un par un.
 - Certaines recettes sont **débloquées de base** ; les autres par un **blueprint** (champ `unlock`) *(décision ferme)* :
   - elles sont **secrètes** : l'onglet Craft ne les montre pas tant que le blueprint n'a pas été utilisé ;
   - dans l'Inventaire, un blueprint sélectionné a un bouton **Utiliser** : le blueprint est **consommé**, la recette est **débloquée pour toujours** sur le compte (fait par le serveur, en une fois ; un double clic n'en consomme qu'un) ;
