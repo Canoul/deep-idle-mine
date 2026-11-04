@@ -85,14 +85,17 @@ export function updateHUD(G, ui){
 }
 
 /* jauge de profondeur (à droite de la mine) : de la surface (en haut) au fond de la mine ouverte (en bas), un repère par
-   mineur à sa couleur ; le mineur suivi est entouré. Les repères ne sont recréés que si l'équipe change. */
-function updateRail(G, fm){
+   mineur à sa couleur ; le mineur suivi est entouré. Les repères ne sont recréés que si l'équipe change.
+   Les ids sont le rang dans l'équipe (0, 1, 2…) : d'une session à l'autre ils se répètent, la clé est donc le contenu
+   des repères (id, couleur, nom) et pas les seuls ids (04/11/2026 : initiales échangées entre deux joueurs). */
+export function updateRail(G, fm){
   const box = $('railMarks');
   if(!box) return;
-  const key = G.miners.map(t => t.id).join(','), bottom = Math.max(1, maxRow(G));
-  if(box._key !== key){
-    box.innerHTML = G.miners.map(t => `<span class="mk" data-id="${t.id}" style="--c:${t.color}" title="${esc(t.name)}">${esc(t.name?.[0]?.toUpperCase() ?? '?')}</span>`).join('');
-    box._key = key;
+  const bottom = Math.max(1, maxRow(G));
+  const html = G.miners.map(t => `<span class="mk" data-id="${t.id}" style="--c:${t.color}" title="${esc(t.name)}">${esc(t.name?.[0]?.toUpperCase() ?? '?')}</span>`).join('');
+  if(box._key !== html){
+    box.innerHTML = html;
+    box._key = html;
   }
   for(const el of box.children){
     const t = G.miners.find(x => x.id === +el.dataset.id);
