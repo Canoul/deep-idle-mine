@@ -16,6 +16,13 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 04/11/2026 — Geoffrey — Correctif : galeries à l'aveugle en fin de session
+- **Pour le joueur** : dans les dernières minutes d'une session, un mineur pouvait faire des allers-retours en
+  « creusant une galerie » alors qu'il voyait des minerais juste au-dessus de lui (à la torche ou à la boussole). Il
+  les mine maintenant. Rejoué sur la vraie partie signalée (seed 177078764) : plus aucune galerie à côté d'un minerai
+  connu, 37 blocs minés en plus.
+- **État** : ✅ en ligne le 04/11
+
 ## 04/11/2026 — Geoffrey — Appli : clavier de la connexion (Galaxy S22) et fond de l'Accueil
 - **Pour le joueur** : sur certains téléphones (Galaxy S22), ouvrir le clavier pour taper son pseudo écrasait la fenêtre de connexion (seul le champ restait visible) : le clavier était compté deux fois. Corrigé. L'Accueil n'affiche plus la session en cours (la prison) en fond derrière le Carreau, qui coupait l'écran en deux.
 - **État** : ✅ en ligne le 04/11
@@ -1436,7 +1443,7 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
 - **Pour nous** : à chaque nouvelle appli **en ligne** sur Google Play (pas en revue), une commande sur le VPS suffit, sans mise
   en ligne du jeu : `sudo node /opt/deep-idle-mine/scripts/set-app-latest.js --platform android --version 1.1.6`. La version
   est gardée en base ; l'appli la demande au serveur à chaque démarrage. « Plus tard » la reporte d'un jour.
-- **État** : 🧪 sur la branche `geoffrey/appli-version-store` (pas en ligne)
+- **État** : ✅ en ligne le 04/11
 
 ## 04/11/2026 — Geoffrey — Inventaire : butin d'un coffre à la demande, marque de rune plus petite
 - **Pour le joueur** : toucher un coffre ou un treasure ne déroule plus son tableau de butin (sur l'appli, il cachait le

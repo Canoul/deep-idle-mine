@@ -59,6 +59,10 @@ export const CFG = {
      surface laissent cette part du temps restant à miner (il mine plus haut au lieu d'aller au front pour remonter
      aussitôt). Vitesse estimée d'après sa dernière remontée (secondes par couche, échelles et détours compris). */
   endWorkShare:0.5,
+  /* fin de session (04/11/2026, seed 177078764) : si la profondeur max du trajet n'entre que de moins de capMinRows
+     couches dans l'area la plus profonde, « Plus profond » vise l'area du dessus. Sinon il creusait des galeries dans
+     les 2 ou 3 couches permises en ignorant les minerais vus juste au-dessus (autre area). Valeur provisoire. */
+  capMinRows:10,
 };
 
 /* équipe : le jeu est prévu pour 3 joueurs sur la même carte (même seed, même monde, coffre commun) */
