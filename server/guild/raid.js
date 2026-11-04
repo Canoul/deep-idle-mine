@@ -183,6 +183,42 @@ export function createRaidLobby({ game = null, guildOf, nameOf, findByName = asy
         throw e;
       }
     },
+    /* administration (04/11/2026, Geoffrey ; /api/admin/raid-move, scripts/move-to-raid.js) : met le compte acc dans le
+       lobby de raid où se trouve host, quittant son autre lobby de raid s'il en avait un. Hors de cette guilde, il y entre
+       comme un invité de la bêta (prêt) ; de la guilde, comme s'il avait cliqué « Rejoindre » sans remettre les autres
+       « pas prêt ». { moved, guild, members:[{ name, leader, ready, group, invited }] } */
+    adminMove: (acc, host) => serial(async () => {
+      if(acc.id === host.id) fail('same_account', 400, 'C\'est le même joueur.');
+      const at = [...lobbies].find(([, o]) => o.members.some(m => m.account === host.id));
+      if(!at) fail('host_not_in_raid', 404, `${host.name} n'est dans aucun lobby de raid.`);
+      const [gid, L] = at, list = () => L.members.map(m => ({ name: m.name, leader: m.account === L.leader, ready: !!m.ready, group: m.group, invited: !!m.invited }));
+      if(L.members.some(m => m.account === acc.id)) return { moved: false, guild: gid, members: list() };
+      notLaunching(L);
+      if(L.members.length >= RAID.maxPlayers) fail('raid_full', 409, `Le raid est complet (${RAID.maxPlayers} joueurs).`);
+      const gr = firstRoom(L);
+      if(gr == null) fail('raid_full', 409, `Le raid est complet (${RAID.maxPlayers} joueurs).`);
+      if(await inSession(acc.id)) fail('member_in_session', 409, `${acc.name} est déjà dans une session.`);
+      for(const [oid, o] of lobbies) if(oid !== gid && o.members.some(m => m.account === acc.id)){
+        notLaunching(o);
+        o.members = o.members.filter(m => m.account !== acc.id);
+        fix(oid, o);
+      }
+      const invited = (await guildOf(acc.id))?.id !== gid;
+      L.members.push({ account: acc.id, name: await nameOf(acc.id) || acc.name, ready: invited, group: gr, ...(invited ? { invited: true } : {}) });
+      fix(gid, L);
+      return { moved: true, guild: gid, members: list() };
+    }),
+    /* administration (04/11/2026, Geoffrey ; /api/admin/raid-ready, scripts/set-raid-ready.js) : le met prêt (ready true) ou
+       pas prêt dans son lobby de raid, comme sa case ; le chef reste toujours prêt. { guild, members } comme adminMove */
+    adminReady: (acc, ready) => serial(async () => {
+      if(typeof ready !== 'boolean') fail('bad_request', 400, 'ready : true ou false.');
+      const at = [...lobbies].find(([, o]) => o.members.some(m => m.account === acc.id));
+      if(!at) fail('not_in_raid', 404, `${acc.name} n'est dans aucun lobby de raid.`);
+      const [gid, L] = at;
+      notLaunching(L);
+      L.members.find(m => m.account === acc.id).ready = L.leader === acc.id ? true : ready;
+      return { guild: gid, members: L.members.map(m => ({ name: m.name, leader: m.account === L.leader, ready: !!m.ready, group: m.group, invited: !!m.invited })) };
+    }),
     /* compte supprimé : il sort de tous les lobbies */
     eraseAccount: id => serial(async () => {
       for(const [gid, L] of lobbies) if(!L.launching && L.members.some(m => m.account === id)){ L.members = L.members.filter(m => m.account !== id); fix(gid, L); }

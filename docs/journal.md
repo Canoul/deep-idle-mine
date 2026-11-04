@@ -16,6 +16,13 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 04/11/2026 — Geoffrey — Administration : mettre un joueur dans un lobby de raid, et prêt
+- **Pour le joueur** : rien de visible ; l'équipe peut placer un joueur dans un lobby de raid depuis le VPS :
+  `sudo node /opt/deep-idle-mine/scripts/move-to-raid.js --name crousti --to canoul` (canoul doit être dans un lobby de
+  raid ; hors de la guilde, crousti entre comme un invité, déjà prêt), et le mettre prêt :
+  `sudo node /opt/deep-idle-mine/scripts/set-raid-ready.js --name crousti` (`--ready off` : plus prêt).
+- **État** : ✅ en ligne le 04/11
+
 ## 04/11/2026 — Geoffrey — Craft : plusieurs orbes d'un coup
 - **Pour le joueur** : dans l'onglet Craft, les orbes, orbes supérieurs, clés d'instance et autres matériaux qui
   s'empilent ont un champ **Quantité** et un bouton **Max** : on en fabrique autant qu'on veut en un clic (jusqu'à 1 000).

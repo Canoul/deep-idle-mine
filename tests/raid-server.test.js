@@ -198,3 +198,36 @@ test('lobby : chaque membre vient avec sa spé, son niveau de spé, son apparenc
   const m = (await guild.raidJoin(CHIEF)).mine.raid.members[0];
   for(const k of ['tree', 'specLevel', 'look', 'auras']) assert.ok(k in m, k);
 });
+
+test('administration (raid-move) : met un joueur dans le lobby de raid d\'un autre, membre ou non de la guilde', async () => {
+  const { guild } = await setup(3);
+  const [, , THIRD] = PEOPLE;
+  await rejects(guild.raidAdminMove(OUT, CHIEF), 'host_not_in_raid');
+  await guild.raidJoin(CHIEF);
+  await rejects(guild.raidAdminMove(CHIEF, CHIEF), 'same_account');
+  let r = await guild.raidAdminMove(OUT, CHIEF);                        // hors de la guilde : invité, prêt
+  assert.equal(r.moved, true);
+  assert.deepEqual(r.members.find(m => m.name === OUT.name), { name: OUT.name, leader: false, ready: true, group: 1, invited: true });
+  r = await guild.raidAdminMove(THIRD, OUT);                            // de la guilde, via un invité : comme « Rejoindre »
+  assert.deepEqual(r.members.find(m => m.name === THIRD.name), { name: THIRD.name, leader: false, ready: false, group: 1, invited: false });
+  assert.equal((await guild.raidAdminMove(THIRD, CHIEF)).moved, false, 'déjà dedans : rien');
+  const raid = await raidOf(guild, CHIEF);
+  assert.deepEqual(raid.members.map(m => m.account).sort(), [CHIEF.id, THIRD.id, OUT.id].sort());
+  assert.ok(raid.members.find(m => m.account === OUT.id).ready, 'l\'invité reste prêt');
+});
+
+test('administration (raid-move) : refusé si le joueur est en session ; quitte son ancien lobby de raid', async () => {
+  const { guild, game } = await setup(2);
+  const other = PEOPLE[5];
+  await guild.create(other, 'Les Autres');                            // une 2e guilde, son propre lobby
+  await guild.raidJoin(other);
+  await guild.raidJoin(CHIEF);
+  await guild.raidAdminMove(MAX, other);
+  assert.ok((await raidOf(guild, other)).members.some(m => m.account === MAX.id));
+  await guild.raidAdminMove(MAX, CHIEF);
+  assert.ok(!(await raidOf(guild, other)).members.some(m => m.account === MAX.id), 'sorti de l\'autre lobby');
+  assert.ok((await raidOf(guild, CHIEF)).members.some(m => m.account === MAX.id));
+  await guild.raidLeave(MAX);
+  await game.start(MAX);                                                // une mine normale
+  await rejects(guild.raidAdminMove(MAX, CHIEF), 'member_in_session');
+});
