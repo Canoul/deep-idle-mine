@@ -21,7 +21,7 @@ Modèle d'entrée :
   `sudo node /opt/deep-idle-mine/scripts/move-to-raid.js --name crousti --to canoul` (canoul doit être dans un lobby de
   raid ; hors de la guilde, crousti entre comme un invité, déjà prêt), et le mettre prêt :
   `sudo node /opt/deep-idle-mine/scripts/set-raid-ready.js --name crousti` (`--ready off` : plus prêt).
-- **État** : 🧪 sur la branche `geoffrey/admin-raid-move` (pas en ligne)
+- **État** : ✅ en ligne le 04/11
 
 ## 04/11/2026 — Geoffrey — Craft : plusieurs orbes d'un coup
 - **Pour le joueur** : dans l'onglet Craft, les orbes, orbes supérieurs, clés d'instance et autres matériaux qui

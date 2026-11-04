@@ -7411,7 +7411,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   négatif / décimal / 1001 refusés, rafale du même opId créditée une fois), game-service ; `npm run test:anticheat` 154/154.
 - ⚠️ Écran pas vérifié dans un navigateur (champ, Max, libellé « Craft × N »).
 
-## 04/11/2026 — Geoffrey — Admin : raid-move (branche geoffrey/admin-raid-move)
+## 04/11/2026 — Geoffrey — Admin : raid-move (branche geoffrey/admin-raid-move) — ✅ en ligne le 04/11
 - `server/guild/raid.js` `adminMove(acc, host)` (dans la file `serial`) : lobby qui contient host (sinon `host_not_in_raid`),
   refus `same_account`, `raid_launching`, `raid_full`, `member_in_session` ; retire acc de son autre lobby de raid ; hors
   guilde → `{ invited:true, ready:true }` (gardé par `prune`), de la guilde → ready false, les autres ne repassent pas « pas
