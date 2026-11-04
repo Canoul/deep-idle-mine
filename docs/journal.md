@@ -25,7 +25,7 @@ Modèle d'entrée :
 - **Décisions** : piste « Molosse des Enfers » choisie par Jules parmi trois (Molosse, Gardien antique, Bête d'os), puis
   raffinée. La version générée par Gemini a été écartée. Taille gardée à 8 × 6 cases (passer à 12 × 9 donnerait plus de
   détails mais change la zone du boss : à voir avec Geoffrey).
-- **État** : 🧪 sur la branche `jules/cerbere-molosse` (pas en ligne)
+- **État** : ✅ en ligne le 04/11
 
 ## 04/11/2026 — Geoffrey — Skills : Escalateur 3 rangs max (avant 5)
 - **État** : ✅ en ligne le 04/11
