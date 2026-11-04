@@ -90,7 +90,16 @@ function unlockHtml(s, furn){
 const recycleHtml = s => s.uid != null && recyclable(s.item)
   ? ` <button class="invRecycle" data-uid="${s.uid}" title="${recycleRange(s.item) ? 'Détruit la rune et rend de la Poudre de rêve' : 'Détruit la pièce et rend une partie de ses matériaux'}">♻ Recycler</button>` : '';
 
-function infoHtml(s, pinned=false, inv=null, worn=null, furn=null){
+/* déplacer un objet (glisser-déposer du PC, bouton « Déplacer » de l'appli) : la demande envoyée au serveur, ou null s'il n'y a
+   rien à faire (même case, case de départ vide). L'objet de la case d'arrivée, s'il y en a un, prend la place de from. */
+export function moveOp(inv, from, to){
+  const s = inv.slots[from];
+  if(!s || from === to) return null;
+  return { from, to, item:s.item, ...(s.uid != null ? { uid:s.uid } : {}) };
+}
+
+/* moveFrom (appli, 04/11/2026) : case de l'objet choisi, pour le bouton « Déplacer » (au doigt, pas de glisser-déposer) */
+export function infoHtml(s, pinned=false, inv=null, worn=null, furn=null, moveFrom=null){
   if(!s) return inApp()
     ? '<span class="mut">Touche un objet pour voir son détail.</span>'
     : '<span class="mut">Survole ou clique un objet pour voir son détail.</span>';
@@ -109,7 +118,8 @@ function infoHtml(s, pinned=false, inv=null, worn=null, furn=null){
   const equip = pinned && worn ? equipHtml(s, worn) : '';
   const unlock = pinned ? unlockHtml(s, furn) : '';
   const recycle = pinned ? recycleHtml(s) : '';
-  const acts = open + learn + equip + unlock + recycle;
+  const move = pinned && Number.isInteger(moveFrom) ? ` <button class="invMove" data-i="${moveFrom}" title="Puis touche la case où le poser">↔ Déplacer</button>` : '';
+  const acts = open + learn + equip + unlock + recycle + move;
   /* trois blocs (28/10/2026, Geoffrey) : description, puis les stats (une par ligne), puis les boutons */
   return `<div class="iiDesc">${bits.join(' <span class="mut">·</span> ')}</div>`+
     (stats.length ? `<ul class="iiStats stuffStats">${stats.map(l => `<li>${esc(l)}</li>`).join('')}</ul>` : '')+
@@ -159,7 +169,9 @@ export function renderInventory(inv, fresh=new Set(), actions={}){
   $('invCount').textContent = used ? `${used} slot${used>1?'s':''} utilisé${used>1?'s':''}` : 'Vide : termine une session pour remplir ton inventaire.';
   $('invInfo').innerHTML = infoHtml(null);
 
-  let pinned = null;
+  let pinned = null, moving = null;   // moving (appli) : case de l'objet à déplacer, en attente de la case d'arrivée
+  $('invMoveBar')?.remove(); grid.classList.remove('moving');
+  const stopMove = () => { moving = null; $('invMoveBar')?.remove(); grid.classList.remove('moving'); };
   const at = e => { const c = e.target.closest('.slot'); return c ? inv.slots[+c.dataset.i] || null : undefined; };
   /* survol : souris seulement. Sur un écran tactile, le survol simulé au premier appui changeait la fiche et l'iPhone
      avalait le clic : la pièce n'était jamais choisie, donc pas de bouton « Équiper » (30/10, Geoffrey) */
@@ -168,11 +180,17 @@ export function renderInventory(inv, fresh=new Set(), actions={}){
   grid.onmouseleave = () => { if(!pinned && hover) $('invInfo').innerHTML = infoHtml(null); };
   grid.onclick = e => {
     const c = e.target.closest('.slot'); if(!c) return;
+    if(moving !== null){                            // appli : la case d'arrivée (la case de départ annule)
+      const op = moveOp(inv, moving, +c.dataset.i);
+      stopMove();
+      if(op) actions.onMove?.(op);
+      return;
+    }
     grid.querySelectorAll('.slot.sel').forEach(x => x.classList.remove('sel'));
     const s = inv.slots[+c.dataset.i] || null;
     pinned = (s && pinned !== s) ? s : null;
     if(pinned) c.classList.add('sel');
-    $('invInfo').innerHTML = infoHtml(pinned || s, !!pinned, inv, actions.worn?.(), actions.furnaces?.());
+    $('invInfo').innerHTML = infoHtml(pinned || s, !!pinned, inv, actions.worn?.(), actions.furnaces?.(), inApp() && pinned ? +c.dataset.i : null);
     /* petit écran : la fiche (et ses boutons Équiper, Ouvrir…) est sous la grille, on la fait venir à l'écran */
     if(pinned && matchMedia('(max-width: 1100px)').matches) $('invInfo').scrollIntoView({ behavior:'smooth', block:'nearest' });
   };
@@ -191,13 +209,21 @@ export function renderInventory(inv, fresh=new Set(), actions={}){
     e.preventDefault();
     const c = e.target.closest('.slot'), from = drag; drag = null;
     grid.querySelectorAll('.dropTo').forEach(x => over(x, false));
-    if(!c || from === null || +c.dataset.i === from) return;
-    const s = inv.slots[from];
-    actions.onMove?.({ from, to: +c.dataset.i, item: s.item, ...(s.uid != null ? { uid: s.uid } : {}) });
+    const op = c && from !== null ? moveOp(inv, from, +c.dataset.i) : null;
+    if(op) actions.onMove?.(op);
   };
   $('invInfo').onclick = e => {
-    const b = e.target.closest('.invOpen, .invLearn, .invEquip, .invUnlock, .invRecycle');
+    const b = e.target.closest('.invOpen, .invLearn, .invEquip, .invUnlock, .invRecycle, .invMove');
     if(!b) return;
+    if(b.classList.contains('invMove')){             // appli : on attend la case d'arrivée (rien n'est envoyé avant)
+      moving = +b.dataset.i;
+      const s = inv.slots[moving], bar = document.createElement('div');
+      bar.id = 'invMoveBar'; bar.className = 'invMoveBar';
+      bar.innerHTML = `${s ? iconHtml(s.item) : ''}<span>Touche la case où le poser</span><button>Annuler</button>`;
+      bar.querySelector('button').onclick = stopMove;
+      $('invTabs').before(bar); grid.classList.add('moving');
+      return;
+    }
     if(b.classList.contains('invRecycle')){         // rien n'est envoyé avant la confirmation
       const s = inv.slots.find(x => x?.uid === +b.dataset.uid);
       if(s) showRecycle(s, actions.setsOf?.(s.uid) ?? [], () => actions.onRecycle?.(s.uid));

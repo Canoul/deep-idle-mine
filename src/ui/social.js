@@ -43,6 +43,34 @@ export { energyHTML };   // src/ui/energy-tag.js (31/10)
 /* spécialisation d'une fiche : « ⛏ Mineur », ou null sans arbre choisi */
 export const treeText = skills => { const t = SKILLS.trees.find(x => x.id === skills?.tree); return t ? `${t.icon} ${t.label}` : null; };
 
+/* dans l'appli mobile (classe app, src/app/boot.js) : une ligne courte par ami, le reste dans sa fiche (#frSheet) */
+const inApp = () => !!globalThis.document?.body?.classList.contains('app');
+/* pourquoi on ne peut pas l'inviter ou le rejoindre */
+const whyOf = f => f.together ? 'Déjà dans ton groupe' : f.status === 'session' ? 'En session' : f.status === 'offline' ? 'Hors ligne' : '';
+const statusLine = f => `${energyHTML(f.energy)}${esc(statusText(f))}${f.together ? ' · avec toi' : ''}`;
+
+/* appli (04/11/2026, Jules, spec 2026-11-04-appli-ecrans-fin-design.md) : le bouton utile du moment (Rejoindre s'il a un
+   groupe ouvert, sinon Inviter) et « ⋮ » qui ouvre sa fiche ; mêmes data-* que la ligne du site (même traitement) */
+export function friendRowAppHtml(f){
+  const id = esc(f.id), why = whyOf(f);
+  const main = f.canJoin ? `<button class="on" data-join="${id}">${pxi('arrow')}Rejoindre</button>`
+    : `<button data-invite="${id}"${f.canInvite ? '' : ` disabled title="${esc(why || 'Indisponible')}"`}>${pxi('group')}Inviter</button>`;
+  return `<div class="frow fApp"><span class="fdot ${statusDot(f)}"></span>`+
+    `<span class="fname"><b>${esc(f.name)}</b><small class="mut">${statusLine(f)}</small></span>`+
+    `<span class="fbtns">${main}<button class="x" data-fsheet="${id}" aria-label="Plus d'actions pour ${esc(f.name)}">⋮</button></span></div>`;
+}
+/* fiche d'un ami dans l'appli : toutes ses actions, « Retirer » en rouge, en bas */
+export function friendSheetHtml(f){
+  const id = esc(f.id), name = esc(f.name);   // pourquoi c'est grisé : déjà dans sa ligne d'état (hors ligne, en session, avec toi)
+  return `<button class="frClose" aria-label="Fermer">✕</button>`+
+    `<h3><span class="fdot ${statusDot(f)}"></span>${name}</h3><p class="mut small frStat">${statusLine(f)}</p>`+
+    `<div class="frActs"><button class="on" data-join="${id}"${f.canJoin ? '' : ' disabled'}>${pxi('arrow')}Rejoindre</button>`+
+    `<button data-invite="${id}"${f.canInvite ? '' : ' disabled'}>${pxi('group')}Inviter</button>`+
+    `<button class="w" data-profile="${id}">${pxi('helmet')}Voir son stuff</button>`+
+    `<button data-mod="${id}" data-name="${name}">Signaler / bloquer</button>`+
+    `<button class="frDel" data-remove="${id}" data-name="${name}">✕ Retirer des amis</button></div>`;
+}
+
 /* « 12 joueurs en ligne » */
 export const onlineCountText = n => `${n} joueur${n > 1 ? 's' : ''} en ligne`;
 
@@ -53,9 +81,9 @@ export function setupSocial(h){
   /* bouton Signaler / Bloquer d'une ligne (01/11/2026, src/ui/moderate.js) */
   const modBtn = p => `<button class="x" data-mod="${esc(p.id)}" data-name="${esc(p.name)}" title="Signaler ou bloquer" aria-label="Signaler ou bloquer">⋮</button>`;
   function friendRow(f){
-    const why = f.together ? 'Déjà dans ton groupe' : f.status === 'session' ? 'En session' : f.status === 'offline' ? 'Hors ligne' : '';
+    const why = whyOf(f);
     return `<div class="frow"><span class="fdot ${statusDot(f)}"></span>`+
-      `<span class="fname"><b>${esc(f.name)}</b><small class="mut">${energyHTML(f.energy)}${esc(statusText(f))}${f.together ? ' · avec toi' : ''}</small></span>`+
+      `<span class="fname"><b>${esc(f.name)}</b><small class="mut">${statusLine(f)}</small></span>`+
       `<span class="fbtns"><button data-profile="${esc(f.id)}" title="Voir son équipement, ses stats et son niveau">${pxi('helmet')}Stuff</button>`+
       `<button data-invite="${esc(f.id)}"${f.canInvite ? '' : ` disabled title="${esc(why || 'Indisponible')}"`}>${pxi('group')}Inviter</button>`+
       `<button data-join="${esc(f.id)}"${f.canJoin ? '' : ` disabled title="${esc(why || (f.status === 'lobby' ? 'Groupe complet' : 'Indisponible'))}"`}>${pxi('arrow')}Rejoindre</button>`+
@@ -118,12 +146,31 @@ export function setupSocial(h){
           `<span class="fbtns"><button class="on" data-accept="${esc(r.id)}">Accepter</button><button data-refuse="${esc(r.id)}">Refuser</button></span></div>`).join('')
       : '';
     $('socialReqCard').hidden = !st.incoming.length;
-    $('socialFriends').innerHTML = st.friends.length ? st.friends.map(friendRow).join('')
+    $('socialFriends').innerHTML = st.friends.length ? st.friends.map(inApp() ? friendRowAppHtml : friendRow).join('')
       : '<p class="mut small">Pas encore d\'amis. Ajoute-en un avec son pseudo ci-dessus.</p>';
     $('socialOut').innerHTML = st.outgoing.map(r => `<div class="frow"><span class="fname"><b>${esc(r.name)}</b><small class="mut">demande envoyée · en attente</small></span>`+
       `<span class="fbtns"><button data-remove="${esc(r.id)}">Annuler</button></span></div>`).join('');
     $('socialOutCard').hidden = !st.outgoing.length;
     renderHead(); renderOnline();          // « Demande envoyée » dans la liste Online
+    if(sheetId) openSheet(sheetId);        // fiche ouverte : à jour (fermée si ce n'est plus un ami)
+  }
+
+  /* appli : fiche d'un ami qui monte du bas ; un bouton la ferme puis passe par le même traitement que la liste */
+  let sheetId = null;
+  const closeSheet = () => { sheetId = null; const el = $('frSheet'); if(el) el.hidden = true; };
+  function openSheet(id){
+    const f = st?.friends.find(x => x.id === id);
+    if(!f) return closeSheet();
+    let el = $('frSheet');
+    if(!el){
+      el = document.createElement('div'); el.id = 'frSheet'; el.hidden = true; el.innerHTML = '<div class="box"></div>'; document.body.append(el);
+      el.onclick = e => {
+        if(e.target === el || e.target.closest('.frClose')) return closeSheet();
+        const b = e.target.closest('button'); if(!b || b.disabled) return;
+        closeSheet(); onBtn(b);
+      };
+    }
+    sheetId = id; el.querySelector('.box').innerHTML = friendSheetHtml(f); el.hidden = false;
   }
 
   const msg = (text, ok) => { const m = $('socialMsg'); m.textContent = text; m.className = ok ? 'okmsg small' : 'err small'; m.hidden = !text; };
@@ -143,8 +190,12 @@ export function setupSocial(h){
   };
   $('socialBody').onclick = e => {
     const b = e.target.closest('button'); if(!b || b.disabled) return;
+    onBtn(b);
+  };
+  function onBtn(b){
     const d = b.dataset;
-    if(d.accept) act(() => h.accept(d.accept));
+    if(d.fsheet) openSheet(d.fsheet);
+    else if(d.accept) act(() => h.accept(d.accept));
     else if(d.refuse) act(() => h.refuse(d.refuse));
     else if(d.invite) act(() => h.invite(d.invite), '✔ Invitation envoyée.');
     else if(d.join) act(() => h.join(d.join));
@@ -154,7 +205,7 @@ export function setupSocial(h){
     else if(d.add) act(() => h.request(d.add), r => r.friend ? `✔ ${r.friend} et toi êtes maintenant amis.` : `✔ Demande envoyée à ${r.sent}.`);
     else if(d.remove) (d.name ? ask(`Retirer ${d.name} de tes amis ?`, { ok:'Retirer', danger:true }) : Promise.resolve(true))
       .then(yes => { if(yes) act(() => h.remove(d.remove)); });
-  };
+  }
 
   /* fiche d'un ami : p = { name, stuff, progress, skills } (server/social/service.js) */
   function showProfile(p){

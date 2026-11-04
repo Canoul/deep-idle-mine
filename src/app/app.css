@@ -327,3 +327,67 @@ body.app .lp1 .lpStep{height:62px;background:#ffd23f} body.app .lp2 .lpStep{heig
 body.app .lp.empty .lpStep{background:var(--chip)}
 body.app .lMe{position:sticky;bottom:calc(var(--dock-h) + 4px);z-index:3;margin:6px -4px 0;padding:0 4px;background:#2a1408;box-shadow:0 0 0 2px #000,0 -2px 0 4px var(--acc-dk)}
 body.app .lMe .lrow{box-shadow:none}
+
+/* ---------- Écrans qui restaient (04/11/2026, Jules ; spec 2026-11-04-appli-ecrans-fin-design.md) ---------- */
+/* Inventaire : « Déplacer » puis la case d'arrivée (ancien : glisser-déposer, impossible au doigt) */
+body.app .invMoveBar{display:flex;align-items:center;gap:8px;margin:0 0 6px;padding:4px 8px;font-size:16px;color:#ffe6c4;background:#2a1408;box-shadow:0 0 0 2px var(--acc)}
+body.app .invMoveBar img{width:26px;height:26px;image-rendering:pixelated}
+body.app .invMoveBar button{margin-left:auto}
+body.app .invGrid.moving .slot:not(.sel){outline:1px dashed #7a6656;outline-offset:-6px}
+/* Four : un onglet par four (🔥 il chauffe, 🔒 fermé), le four choisi en grand (ancien : les fours empilés) */
+body.app .fTabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;margin:0 0 8px}
+body.app .fTabs button{min-width:0;padding:0 4px}
+body.app .fTabs button.locked:not(.on){color:var(--mut);opacity:.75}
+body.app section[data-view="four"] #furnEmptyAll{display:none}   /* un four à la fois : son « Tout retirer » suffit */
+body.app #furnList .furn:not(.locked){display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;
+  grid-template-areas:"h mode" "g g" "st st" "rec emp"}
+body.app #furnList .furn:not(.locked) .fhead{display:contents}
+body.app #furnList .fhead h3{grid-area:h;align-self:center}
+body.app #furnList .fhead h3 .mut{display:block;font:400 14px/1.1 var(--f-body)}
+body.app #furnList .fmode{grid-area:mode}
+body.app #furnList .fgrid{grid-area:g}
+body.app #furnList .fstat{grid-area:st;margin:0}
+body.app #furnList .fhelp{grid-area:rec} body.app #furnList .fempty{grid-area:emp}
+body.app #furnList .fgrid{grid-template-columns:auto minmax(0,1fr) auto;gap:8px;max-width:none}
+body.app #furnList .fin{display:grid;grid-template-columns:64px;gap:6px}
+body.app #furnList .fin:has(> :nth-child(3)){grid-template-columns:64px 64px}
+body.app #furnList .fslot{width:64px;height:64px}
+/* Concasseur : cases de 52 px ; les dernières trouvailles dans le panneau « Butin » */
+body.app #crushBody .cgrid{grid-template-columns:repeat(var(--cols),52px);justify-content:center;gap:4px}
+body.app #crushBody .cslot{width:52px;height:52px}
+body.app #cpick .cfindsBox{margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid var(--sep)}
+/* Recherche : les tiers en 4 boutons, une phrase pour un tier fermé, gros bouton */
+body.app .rsTiers{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
+body.app .rsTiers button{min-width:0;padding:0 2px}
+body.app .rsTiers button.locked:not(.on){color:var(--mut)}
+body.app .rsCount{margin:6px 0 0}
+body.app #rsBody .rsBench{justify-content:center}
+body.app #rsBody .rsSlot{width:76px;height:76px}
+body.app #rsGo{width:100%;min-height:56px;font:400 24px/1 var(--f-title)}
+/* Amélioration : les pièces en grille d'icônes (petit carré = équipée, marque courte en bas à droite) */
+body.app .upTiles{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px}
+body.app .upTile{position:relative;width:auto;height:auto;aspect-ratio:1;min-height:0;padding:0;display:grid;place-items:center}
+body.app .upTile img{width:62%;height:62%}
+body.app .upTile.sel{outline:3px solid var(--acc);outline-offset:-3px}
+body.app .upTile.dim{opacity:.4}
+body.app .upEq{position:absolute;left:4px;top:4px;width:7px;height:7px;background:var(--acc);box-shadow:0 0 0 1px #000}
+body.app .upTag{position:absolute;right:3px;bottom:2px;font:400 12px/1 var(--f-title);color:#ffe6c4;text-shadow:1px 1px 0 #000,-1px -1px 0 #000}
+body.app .upStat{display:block;font-size:13px;color:var(--o2)}
+body.app #upBody h3{margin:8px 0 4px;font-size:15px;color:var(--mut);letter-spacing:.05em}
+body.app #upBody .upInfo{display:block;flex:1 1 100%;min-width:0;text-align:left}
+body.app #upBody #upGo{flex:1 1 100%;min-height:52px;font:400 22px/1 var(--f-title)}
+/* Amis : une ligne par ami (le bouton utile et « ⋮ »), sa fiche monte du bas (ancien : 5 boutons sur 2-3 lignes) */
+body.app #socialBody .frow{flex-wrap:nowrap}
+body.app #socialBody .fbtns{width:auto;flex-wrap:nowrap}
+body.app #socialBody .fname small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body.app #frSheet{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;background:rgba(5,3,2,.62)}
+body.app #frSheet[hidden]{display:none}
+body.app #frSheet .box{position:relative;width:100%;margin-bottom:var(--dock-h);padding:4px 8px 10px;
+  border:12px solid transparent;border-image:url(../../textures/ui/panel.png) 6 fill / 12px stretch}
+body.app #frSheet h3{display:flex;align-items:center;gap:8px;margin:0 48px 2px 0;font:400 24px/1.05 var(--f-title);color:#ffe6c4}
+body.app #frSheet .frClose{position:absolute;right:4px;top:4px}
+body.app #frSheet .frStat{margin:0 0 8px}
+body.app .frActs{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+body.app .frActs .w{grid-column:1/3}
+body.app .frActs .frDel{color:#ff9a8a}
+body.app:has(#frSheet:not([hidden])) .guide{display:none}

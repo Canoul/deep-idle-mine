@@ -599,7 +599,11 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   session, 17 écrans). **Guilde** (04/11, en ligne le 04/11 ; spec `2026-11-04-appli-guilde-design.md`) :
   sa guilde en onglets Maison / Membres / Bâtiments / Journal (`mineAppHTML`), un bâtiment à la fois. **Classement** (04/11,
   en ligne le 04/11 ; spec `2026-11-04-appli-classement-design.md`) : podium du top 3 (`podiumHtml`, mineurs
-  d'apparence de base), sa ligne collée en bas (`boardAppHtml`, `.lMe` sticky) ; ancien : liste seule. Étape 2 sur maquettes : Accueil (fait) → Perso (sets en menu,
+  d'apparence de base), sa ligne collée en bas (`boardAppHtml`, `.lMe` sticky) ; ancien : liste seule. **Écrans qui restaient**
+  (04/11, branche `jules/appli-ecrans-fin` ; spec `2026-11-04-appli-ecrans-fin-design.md`) : Inventaire « Déplacer » (ancien :
+  glisser-déposer seulement), Four en onglets (ancien : fours empilés), Concasseur resserré, Recherche en 4 boutons de tier,
+  Amélioration en grille d'icônes (ancien : une carte par pièce), Amis en une ligne + fiche `#frSheet` (ancien : 5 boutons
+  par ami) ; Craft et Chat inchangés. **Étape 2 de l'interface téléphone finie.** Étape 2 sur maquettes : Accueil (fait) → Perso (sets en menu,
   stuff en mannequin, un seul arbre de skills, fiche de sort en panneau du bas) → Historique compact → Guilde en
   onglets → Classement.
   **Visuels des stores** (01/11, Jules, branche `jules/visuels-stores`) : **icône = lampe de mine** (source unique

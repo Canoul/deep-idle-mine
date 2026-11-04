@@ -16,6 +16,23 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 04/11/2026 — Jules — Appli mobile : les derniers écrans (Sac, Amélioration, Amis)
+- **Pour le joueur** : rien sur le site. Dans l'appli :
+  - **Inventaire** : un bouton **Déplacer** dans le détail d'un objet, puis on touche la case où le poser (le glisser-déposer
+    du PC ne marche pas au doigt) ;
+  - **Four** : un onglet par four (🔥 s'il chauffe, 🔒 s'il est fermé), le four choisi en grand ;
+  - **Concasseur** : tient sur un écran ; les dernières trouvailles sont dans le panneau « Butin » ;
+  - **Recherche** : les tiers en 4 boutons ; toucher un tier fermé dit ce qu'il manque ;
+  - **Amélioration** : les pièces en grille d'icônes (petit carré orange = équipée), le nom et les stats de la pièce
+    choisie en haut, gros bouton ;
+  - **Amis** : une ligne par ami avec le bouton utile du moment (Rejoindre ou Inviter) et « ⋮ » qui ouvre sa fiche (Voir son
+    stuff, Signaler, Retirer en rouge).
+- **Décisions** (Jules) : Inventaire A, Four B (onglets), Amélioration B (grille), Amis A. Craft et Chat ne changent pas.
+  Conception : `docs/superpowers/specs/2026-11-04-appli-ecrans-fin-design.md`.
+- **À suivre** : l'étape 2 de l'appli est finie ; essai de Jules sur iPhone (TestFlight). Reste l'écran de session
+  (Geoffrey) et la version PC.
+- **État** : 🧪 sur la branche `jules/appli-ecrans-fin` (pas en ligne)
+
 ## 04/11/2026 — Jules — Appli mobile : le Classement, podium et sa place en bas
 - **Pour le joueur** : rien sur le site. Dans l'appli, le Classement montre les **trois premiers sur un podium** (marches
   or, argent, bronze ; le 2ᵉ à gauche, le 1ᵉʳ au centre, le 3ᵉ à droite, un petit mineur sur chaque marche), puis la suite
