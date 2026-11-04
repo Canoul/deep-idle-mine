@@ -649,8 +649,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 
 ## En attente / hors périmètre
 
-- **Prison et énergie EN LIGNE (30/10/2026, Geoffrey)** : ancien chantier `geoffrey/prison`, fusionné. Énergie : départ **0**
-  pour tous (`ENERGY.start`), mine classique 6 à 12, refus sous 6 ; recharge **seulement en prison, 4 par heure de jeu** (8 par
+- **Prison et énergie EN LIGNE (30/10/2026, Geoffrey)** : ancien chantier `geoffrey/prison`, fusionné. Énergie : départ **100**
+  (`ENERGY.start`, 04/11 ; ancien : 0), mine classique 6 à 12, refus sous 6 ; recharge **seulement en prison, 4 par heure de jeu** (8 par
   heure réelle à ×2 ; ancien 8). Prison : contenu d'après les 10 dernières mines, `oreMul` **0,24** (51 % des minerais de
   canoul, `scripts/simulate-prison-profile.js`), treasures ≈ 28 % (validé par Geoffrey) ; vue zoomée bornée aux colonnes
   entre les barreaux (`camera.setBox`), fond et transitions d'onglet comme la mine, panneau « Butin de la prison (total) ».
