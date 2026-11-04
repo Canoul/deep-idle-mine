@@ -1063,9 +1063,9 @@ Ex. pioche en pierre +3 : 0,2 × 1,09 = 0,218 de vitesse de minage. Épée en fe
   | **Steel ingot** *(23/10/2026)* | 3 Tainted iron + 5 Graphite ingot *(26/10 ; avant 10)* | 50 charbons | 3 min |
 
 ### Concasseur (onglet Concasseur) *(demande du créateur, 21/10/2026 ; valeurs provisoires)*
-- **8 cases d'entrée** (2 rangées de 4) pour les objets de la famille **bloc** (terre, pierre, pierre dure) et, depuis le 28/10/2026, le **minerai de fer**. Une sorte par case, quantité libre.
-- **8 cases de sortie** en dessous pour le butin ; clic sur une case pour la récupérer, ou bouton « Tout récupérer ».
-- Un **cycle par minute**, en temps réel, même page fermée : à la fin du cycle, il concasse **100 blocs** de la **première case qui en a au moins 100**, de haut en bas puis de gauche à droite (case 1 → 8). Une case de moins de 100 est sautée. Les blocs ne sont consommés qu'à la fin du cycle (retirer une case pendant le cycle ne coûte rien).
+- **16 cases d'entrée** (4 rangées de 4) *(04/11/2026, Jules ; avant : 8, en 2 rangées)* pour les objets de la famille **bloc** (terre, pierre, pierre dure) et, depuis le 28/10/2026, le **minerai de fer**. Une sorte par case, quantité libre.
+- **16 cases de sortie** en dessous pour le butin ; clic sur une case pour la récupérer, ou bouton « Tout récupérer ».
+- Un **cycle par minute**, en temps réel, même page fermée : à la fin du cycle, il concasse **100 blocs** de la **première case qui en a au moins 100**, de haut en bas puis de gauche à droite (case 1 → 16). Une case de moins de 100 est sautée. Les blocs ne sont consommés qu'à la fin du cycle (retirer une case pendant le cycle ne coûte rien).
 - **Butin pour 100 blocs** (un tirage par famille : au plus une gemme et un treasure par cycle ; la plupart des cycles ne donnent rien) *(chances données par le créateur le 22/10/2026 ; avant : gemme 0,3 / 0,45 / 0,36 %, treasure 0,01 / 0,015 / 0,02 %)* :
 
   | 100 blocs | Une gemme (rubis, saphir ou jade, 1/3 chacune) | Treasure |

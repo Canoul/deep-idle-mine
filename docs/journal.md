@@ -16,6 +16,13 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 04/11/2026 — Jules — Concasseur : 16 cases d'entrée et 16 de sortie
+- **Pour le joueur** : le concasseur a deux fois plus de place : 16 cases d'entrée (4 rangées de 4) et 16 cases de
+  sortie (avant : 8 et 8). Ce qui était déjà posé reste à sa place.
+- **Décisions** : 16 / 16 ; même vitesse (un lot de 100 par minute, première case qui en a assez, de la case 1 à 16).
+- **À suivre** : la page est plus haute (4 rangées au lieu de 2) ; passer à 2 rangées de 8 sur PC si c'est gênant.
+- **État** : ✅ en ligne le 04/11
+
 ## 04/11/2026 — Jules — Jauge de profondeur : les initiales ne s'échangent plus
 - **Pour le joueur** : dans la barre à droite de la mine, chaque pastille porte bien l'initiale (et la couleur) de son
   mineur. Avant, d'une session à la suivante avec la même équipe dans un autre ordre, les lettres restaient celles de la

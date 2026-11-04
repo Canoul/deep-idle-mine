@@ -7476,3 +7476,12 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - Correctif : la clé est le HTML des pastilles (id, couleur, nom). `updateRail` est exporté pour le test.
 - Tests ✅ `tests/hud-rail.test.js` (nouveau, faux DOM : deux sessions de suite, ordre inversé ; échouait avant le
   correctif), instant-ui, raid-ui, effects, spells : 70/70. ⚠️ Pas revu dans le navigateur.
+
+
+## 04/11/2026 — Jules — Concasseur : 16 cases d'entrée, 16 de sortie
+- Quoi : `CRUSHER.inSlots` / `outSlots` 8 → 16 (`src/config.js`), `cols` reste 4 (4 rangées de 4 ; l'appli garde ses
+  cases de 52 px sur 4 colonnes).
+- Sauvegardes : `sanitizeCrusher` (`src/meta/crusher.js`) refait des tableaux de la taille de la config ; une sauvegarde à
+  8 cases est lue en 16 (cases 1–8 gardées, 9–16 vides). Vérifié à la main ✅.
+- Tests ✅ `tests/crusher.test.js` 16/16 : les 8 écrits en dur sont devenus `CRUSHER.inSlots` / `outSlots`.
+  ⚠️ Pas regardé dans le navigateur (hauteur de l'onglet sur PC).

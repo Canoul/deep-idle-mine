@@ -333,13 +333,13 @@ export const LOOT = {
 };
 
 /* ---- Hors session : concasseur (onglet Concasseur, src/meta/crusher.js) ----
-   8 cases d'entrée (2 rangées de 4) pour les objets de type Bloc, 8 cases de sortie pour le butin.
+   16 cases d'entrée (4 rangées de 4) pour les objets de type Bloc, 16 cases de sortie pour le butin (8 et 8 avant le 04/11/2026).
    Toutes les `time` secondes (temps réel, même page fermée), il concasse `batch` blocs d'une case d'entrée : la
    première qui en a au moins `batch`, de haut en bas puis de gauche à droite. Les blocs sont consommés, le butin
    est tiré par le serveur (même format que LOOT : un tirage par famille, au plus un objet chacune).
    loot : table par bloc (seuls ces blocs vont dans le concasseur). Valeurs provisoires. */
 export const CRUSHER = {
-  inSlots:8, outSlots:8, cols:4, batch:100, time:60,
+  inSlots:16, outSlots:16, cols:4, batch:100, time:60,
   loot: {
     /* chances par lot de 100 blocs (décision du créateur, 22/10/2026) : « Une gemme » = chance d'avoir une gemme (les 3
        gemmes se partagent ce total à parts égales : 0,6 % = 3 × 0,2 %), « Treasure » = chance d'avoir le treasure.
