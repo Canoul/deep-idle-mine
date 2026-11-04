@@ -19,7 +19,7 @@ Modèle d'entrée :
 ## 04/11/2026 — Geoffrey — Raid : portrait et spé des joueurs dans le lobby
 - **Pour le joueur** : dans les groupes du lobby du raid, chaque joueur montre son pseudo, l'image de son perso (son stuff)
   et sa spécialisation avec son niveau (ex. « 🪓 Barbare (SP lvl : 12) »).
-- **État** : 🧪 sur la branche `geoffrey/raid-lobby-joueurs` (pas en ligne)
+- **État** : ✅ en ligne le 04/11
 
 ## 04/11/2026 — Geoffrey — Raid : inviter un joueur par son pseudo (bêta, temporaire)
 - **Pour le joueur** : dans le lobby du raid, un champ « Pseudo du joueur » et un bouton **Inviter dans le raid** :
