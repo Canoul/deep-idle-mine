@@ -20,7 +20,7 @@ Modèle d'entrée :
 - **Pour le joueur** : les areas 2 à 6 changent de composition. Méphite dès l'area 2, occultiste dès l'area 3 (3 %), golem dès l'area 4 (2 %), mur de chair dès l'area 5 (2 %). Moins de bestioles et de gobelins dans ces areas ; mimics à 17 % en areas 5 et 6.
 - **Décisions** : les PV gardent leur courbe : là où un mob existait déjà, rien ne change ; dans sa nouvelle première area, il arrive 15 % plus faible (golem 261 PV en area 4, occultiste 130 en area 3). Area 3 : le 1 % qui manquait au tableau va à l'occultiste (3 %).
 - **À suivre** : voir en jeu si l'area 4 (golem) et l'area 5 (mur de chair) ne deviennent pas trop dures pour un stuff fer.
-- **État** : 🧪 sur la branche `geoffrey/compo-mobs` (pas en ligne)
+- **État** : ✅ en ligne le 04/11
 
 ## 04/11/2026 — Geoffrey — Administration : mettre un joueur dans un lobby de raid, et prêt
 - **Pour le joueur** : rien de visible ; l'équipe peut placer un joueur dans un lobby de raid depuis le VPS :
