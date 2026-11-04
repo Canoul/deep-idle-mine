@@ -7177,6 +7177,70 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   → 4 recyclés, 12 Tainted iron et 48 Peaux de gobelin).
 - ⚠️ Le message « ♻ n × … recyclés » peut être effacé par le rafraîchissement suivant de l'inventaire (comme pour une seule pièce).
 
+## 04/11/2026 — Geoffrey — Raid Cerbère côté serveur : lobby de raid de la guilde, session 'raid', vue (branche geoffrey/raid-cerbere)
+- **Lobby** `server/guild/raid.js` (`createRaidLobby({ game, guildOf, nameOf })`, en mémoire comme les groupes) : un par
+  guilde `{ leader, members:[{ account, name, ready }], launching }`, membres de la guilde seulement, `RAID.maxPlayers` au
+  plus, chef = premier arrivé (passe au suivant), une arrivée remet les autres « pas prêt », le chef est toujours prêt ;
+  refus si déjà en session (`game.activeSessionId`). Lancement HORS des files (lobby, guilde) : `startRaid` prend
+  acct + prisonLocks (inv, xp…) qu'un versement tient en attendant `guild.addXp` (sinon interblocage). Vidé après le lancement.
+- `server/guild/service.js` : param `game` (server/main.js le passe), `mine.raid` dans la vue (`max, members[{account,
+  name, ready, leader, me, playing}], leader, size, mine, isLeader, launching, waiting[noms], canLaunch, running` = raid
+  en cours de la guilde `{ id, startedAt, finishAt, players[noms], mine }`), `raidJoin/Leave/Kick/Ready/Launch`, eraseAccount.
+  Routes (`server/guild/routes.js`) : POST `/api/guild/raid/join`, `/leave`, `/ready` `{ready:bool}`, `/kick` `{id}`,
+  `/launch` (`{seed}` en dev ; 201, vue + `session`).
+- `server/game/service.js` : `startRaid(me, members, { guild, seed })` (mêmes refus qu'une instance, `freezePlayer`,
+  prison arrêtée, record `mode:'raid'`, `guild`, `finishAt = startedAt + raidDurationMs`, dev : horloge) ; `raidOfGuild(id)` ;
+  fin : aucun versement ni XP pour le raid (boucle sautée dans `settleWith`), statut done + historique (mode 'raid') ;
+  focus et k hole refusés ; `activeSessionInfo.max` = RAID.maxPlayers. `start({mode:'raid'})` refusé (pas dans MINE_MODES).
+- `src/shared/raid.js` (build / départs / durée), `src/shared/raid-view.js` (`createRaidViewer` : mine/porte = vue de mine
+  de `G.mine` + `mode, phase, raid` ; boss = arène complète ; `applyRaidView` navigateur), `server/game/live-game.js` kind `raid`.
+- **Tests** ✅ raid-server (nouveau, 6), raid, guild*, instance-server, game-service, game-http, game-replay, party*, live,
+  account-delete, admin-khole, admin-session-speed, effects : 286/286 ; anticheat 152/152.
+- ⚠️ Reste : états « Morsure » / « Durci » pas ajoutés à EFFECTS (le test des bulles exige un texte dans src/ui/effects.js,
+  côté navigateur) : la vue de l'arène envoie `bitten` (s) et `stone {hp,max}` par mineur. Lobby perdu au redémarrage.
+  Récompense du raid à définir. Pas vu dans un navigateur (interface à faire).
+
+## 04/11/2026 — Geoffrey — Raid Cerbère côté navigateur : onglet Raid de la guilde, session 'raid', arène (branche geoffrey/raid-cerbere)
+- **Onglet Raid** (`src/ui/guild.js` `raidHTML`, `guildTabs` + 'raid', `#guildRaidTab` dans index.html) : explication, lobby
+  (couronne du chef, Prêt / Pas prêt, « Sortir » pour le chef), Rejoindre / Quitter le lobby / Je suis prêt, « Lancer le raid »
+  (chef, grisé sans `canLaunch`, « En attente : … »), carte « Raid en cours » (« Retourner au raid » si `running.mine`).
+  `guildApi.raidJoin/Leave/Ready/Kick/Launch` (src/net/api.js). `setupGuild({ onRaid, onRaidWatch, onState, now })` : le chef
+  entre dans la session renvoyée par `/launch` ; un membre est basculé par `pollLobby` (party state `session`) ou par
+  `onState` (onglet Guilde ouvert, `running.mine` sans session → `refresh()`).
+- **Session 'raid'** (`src/main.js`) : `applyRaidView` (G de départ = `emptyView()` + `mode:'raid'`) ; minage et porte : la mine
+  (`#run`, rendu de la mine) + bandeau `#raidBanner` (`raidBannerText` : blocs restants left/total, %, temps restant ; porte :
+  « La grande porte s'ouvre dans X s »), chrono sur RAID.duration, pas de focus. Arène : **panneaux et canvas de l'instance
+  réutilisés** (`#inRun`, `cvIn`, fxBarIn, spellBarIn ; `raidPanes()` bascule #run / #inRun selon `G.phase`), rendu
+  `src/render/raid.js` (toute l'arène, `cerbere` / `cerbere_rage` 8 × 6 cases, barre de vie, cibles marquées, éclair de
+  Morsure, poussière du Balayage, voile du Magma ; Durci : mineur grisé + bloc de pierre + solidité ; mordu : halo rouge ;
+  mort : pierre tombale), HUD `src/ui/raid-hud.js` (`updateRaidHUD` : PV, repère des 33 %, prochaines attaques, cibles,
+  équipe ; `showRaidEnd` : réussite, durée, blocs, PV restants, parts mined / bossDmg / bitten / stoned / freed / dead ;
+  « Retour » → onglet Guilde). Quitter : « Quitter le raid ? ». Fond (`src/ui/backdrop.js`) : mode 'raid' (arène) → canvas cvIn.
+- **Correctif serveur** `src/shared/raid-view.js` : la vue du minage envoie `over` du RAID (avant : celui de la mine, jamais
+  vrai quand le temps s'écoule pendant le minage → le navigateur restait figé jusqu'à no_session).
+- **États** : `bitten` (Morsure, debuff) et `stone` (Durci, contrôle, value = solidité) dans EFFECTS.list, lus par
+  `minerEffects` (m.bitUntil, m.stone) ; Mort dans un raid : src 'raid' (bulle sans le texte du Golbute). Bulles dans src/ui/effects.js.
+- **Textures** : `cerbere_textures()` branché dans scripts/gen_textures.py ; 'cerbere', 'cerbere_rage' dans TEXTURES
+  (`npm run textures` : cerbere*.png identiques, les autres PNG régénérés remis comme avant).
+- **Tests** ✅ raid-ui (nouveau, 9 : onglet, boutons, bandeau, bilan, états, fin vue pendant le minage), guild-ui (sous-onglet
+  Raid), raid, raid-server, effects, guild*, backdrop, app-mode, prison-ui, view : 175/175. ❌ « fortune : le doublon… » et
+  « recycle : un BP du T2… » rouges aussi sans ces changements (sans rapport).
+- **Navigateur** ✅ (Playwright, `npm run dev`, données dans un dossier à part) : lobby vide / chef, lancement solo, minage
+  avec bandeau, fin à ×300 → bilan en 7 s, Retour → Guilde. ⚠️ Porte et arène vues **avec une vue fabriquée** (route
+  `/api/game/view` remplacée par `createRaidViewer` sur une partie Node : un mineur niveau 1 ne mine pas 5 000 blocs en
+  30 min) : porte, arène, Durci, Morsure, rage, équipe, barre d'états (Mort).
+- ⚠️ Pas vu : téléphone / appli (disposition de l'arène dans #inRun au format portrait, onglet Raid à 360 px), à plusieurs
+  comptes (bascule des membres au lancement), `ctx.filter` (grisé du Durci) ignoré par les vieux Safari (le bloc de pierre
+  reste). Les morts au contact sont souvent cachés derrière un vivant (pierres tombales empilées en x = contact).
+- **Applis** : src/, textures/ copiés en entier par server/app-update/bundle.js (copy-web.js) : rien hors paquet.
+
+## 04/11/2026 — Raid Cerbère : 2 groupes de 5 (Geoffrey)
+- **Quoi** : `RAID.groups = 2`, `RAID.groupSize = 5`. Lobby (server/guild/raid.js) : `group` par membre, `join(me, group)` (plein → premier groupe avec de la place), `move(me, group, id?)` (soi, ou un autre pour le chef du raid ; `group_full` 409) ; route `POST /api/guild/raid/group { group, id? }`, `join { group }`. Vue : `groups`, `groupSize`, `members[].group`. `startRaid` garde `players[].group` (`cleanGroup`, défaut par paquets de 5) et refuse des groupes > 5 (`groupsOk`).
+- **Sim** : `src/sim/groups.js` (`sameGroup`, `inspireAt/On/Pct`, `setInspire`) ; `m.group` (null hors raid = comportement d'avant). Inspiration par groupe (`G.inspireG`), Cri de guerre (mine : filtre `sameGroup` ; arène : `G.warcryG`), Bonbonne de zipette par groupe. Anneaux : `raidSpecs` calcule `groupRings` par groupe (src/shared/raid.js). Un ancien enregistrement sans groupes : un seul groupe.
+- **UI** : src/ui/guild.js `raidHTML` : un bloc par groupe (Rejoindre ce groupe / Passer dans ce groupe / → Groupe X pour le chef), `api.raidMove`.
+- **Tests** : raid (groupes : Inspiration, Cri de guerre, anneaux), raid-server (groupes du lobby, déplacement, plein, lancement), raid-ui (HTML) ✅. Simulation : `simulate-raid.js` met 2 barbares, 2 mineurs, 1 logisticien par groupe.
+- ⚠️ Non vérifié dans un navigateur (seulement le HTML testé) ; Hand of Justice, Ulti shen, Dash visent les ennemis ou rejoignent un allié de n'importe quel groupe (ce ne sont pas des buffs).
+
 ## 04/11/2026 — Geoffrey — Concasseur, minerai d'or ; `chance` sur un « always »
 - `CRUSHER.loot['Or']` (config). `rollLoot` (src/meta/loot.js) : une entrée `always` avec `chance` n'est versée que si `rng() <
   chance` (tirage à part, avant sa quantité) ; sans `chance`, aucun tirage de plus : les autres tables (fer, coffres, Golbute)

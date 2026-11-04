@@ -1,5 +1,5 @@
 /* Le monde : grille de blocs, génération déterministe des areas, gravité, déblocage. */
-import { W, AREA_H, AREA_Y0, CFG, BLOCKS, BARRIER, IDS, AREAS, GEN, TREASURE, TREASURE_BLOCK, WINCH, JUDGMENT, GLYPHS, DUNGEON, TRAP, PRISON, CHEST_X } from '../config.js';
+import { W, AREA_H, AREA_Y0, CFG, BLOCKS, BARRIER, IDS, AREAS, GEN, TREASURE, TREASURE_BLOCK, WINCH, JUDGMENT, GLYPHS, DUNGEON, TRAP, PRISON, CHEST_X, RAID } from '../config.js';
 import { pickShare, capOres } from '../meta/prison-profile.js';
 import { mulberry32, hash, shuffle } from '../core/rng.js';
 import { log } from './log.js';
@@ -16,6 +16,8 @@ export const isOre  = t => typeOf(t)==='ore';
 export const isResidue = t => !!t && BLOCKS[t].family==='residu';
 /* ce que l'IA peut viser une fois découvert : minerais, treasures et résidus (Jugement) */
 export const isTarget = t => isOre(t) || typeOf(t)==='treasure' || isResidue(t);
+/* … et dans le raid (04/11/2026), tout le terrain : il faut tout miner */
+export const aimable = (G,t) => isTarget(t) || (!!G.raid && typeOf(t)==='terrain');
 /* objet rapporté par un treasure de l'area k (Treasure T1, T2…) ; le dernier tier couvre les areas au-delà */
 export const treasureItem = k => (TREASURE.tiers.find(t => k <= t.maxArea) || TREASURE.tiers.at(-1)).item;
 /* chance d'un treasure dans l'area k (contenu ck) : moitié moins en prison (PRISON.treasureMul) */
@@ -142,6 +144,7 @@ export function fillComp(r, comp, w=W, h=AREA_H, fracRng=null){
 /* Génère l'area k uniquement depuis seed + k (déterministe), comptes exacts (fillComp), puis donjon, pièges, treasure,
    résidus et k hole par-dessus. */
 export function genArea(G,k){
+  if(G.raid) return genRaidArea(G,k);
   const r = mulberry32(hash(G.seed, k+1));
   /* prison : contenu de l'area max (contentOf), part de minerais × PRISON.oreMul ; remplie sur box.w colonnes, les
      autres colonnes sont des barreaux (hors des comptes de l'area) */
@@ -186,6 +189,21 @@ export function genArea(G,k){
   const ores = {};
   for(const n in counts) if(isOre(IDS[n])) ores[n] = { total:counts[n], left:counts[n] };
   G.areas[k] = {k, comp, counts, oreTotal, oreMined:0, ores, chestChance:chestChanceOf(G, ck), treasure};
+}
+
+/* raid Cerbère (04/11/2026) : area pleine, que du terrain, en bandes de haut en bas (RAID.mine.bands, sur toutes les areas
+   du raid) ; une ligne de mélange à chaque changement de bande ; ni minerai, ni treasure, ni donjon, ni piège */
+function genRaidArea(G,k){
+  const r = mulberry32(hash(G.seed, k+1)), rows = [];
+  for(const [n, h] of RAID.mine.bands) for(let i=0;i<h;i++) rows.push(IDS[n]);
+  const counts = {};
+  for(let ry=0; ry<AREA_H; ry++){
+    const y = k*AREA_H + ry, id = rows[Math.min(y, rows.length-1)], up = rows[Math.max(0, y-1)];
+    const row = new Uint8Array(W);
+    for(let x=0;x<W;x++){ const t = up !== id && r() < 0.5 ? up : id; row[x] = t; const n = oreKey(t); counts[n] = (counts[n]||0)+1; }
+    G.tiles.push(row); G.ladder.push(new Uint8Array(W)); G.seen.push(new Uint8Array(W).fill(1));   // tout est connu : il faut tout miner
+  }
+  G.areas[k] = { k, comp:{}, counts, oreTotal:0, oreMined:0, ores:{}, chestChance:0, treasure:null };
 }
 
 /* clé de composition d'un bloc (IDS) : 3 → 'coal' */
@@ -243,7 +261,7 @@ export const unlockNeed = a => Math.ceil(CFG.unlockRatio*a.oreTotal);
 
 /* Débloque l'area suivante si le seuil de minerais de la dernière area est atteint. Renvoie true si débloquée. */
 export function tryUnlock(G){
-  if(G.khole || G.prison) return false;   // k hole : ce n'est pas la mine ; prison : une seule area, rien à débloquer
+  if(G.khole || G.prison || G.raid) return false;   // raid : toutes les areas sont ouvertes d'emblée   // k hole : ce n'est pas la mine ; prison : une seule area, rien à débloquer
   const k = G.unlockedAreas-1, a = G.areas[k];
   if(a.oreMined < unlockNeed(a)) return false;
   genArea(G, G.unlockedAreas); G.unlockedAreas++;

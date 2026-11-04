@@ -142,6 +142,13 @@ export const guildApi = {
   log:   (id, before) => request('POST', '/api/guild/log', { id, before }),
   give:  (building, item, qty, opId) => request('POST', '/api/guild/give', { building, item, qty, opId }),
   build: id => request('POST', '/api/guild/build', { id }),
+  /* lobby de raid de la guilde (04/11/2026) : chaque action renvoie la vue de la guilde ; lancer : + session (201) */
+  raidJoin:   group => request('POST', '/api/guild/raid/join', group ? { group } : {}),
+  raidMove:   (group, id = null) => request('POST', '/api/guild/raid/group', id ? { group, id } : { group }),
+  raidLeave:  () => request('POST', '/api/guild/raid/leave', {}),
+  raidReady:  ready => request('POST', '/api/guild/raid/ready', { ready }),
+  raidKick:   id => request('POST', '/api/guild/raid/kick', { id }),
+  raidLaunch: seed => request('POST', '/api/guild/raid/launch', Number.isSafeInteger(seed) ? { seed } : {}),
 };
 
 /* Amis (onglet Social) : liste, demandes, présence ; inviter / rejoindre un ami */

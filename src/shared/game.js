@@ -7,7 +7,7 @@
    niveau, pour les caractéristiques ; focus : changements faits pendant la session)
    À partir de lui, buildSession construit la partie que le serveur fait tourner (server/game/live-game.js) ; la même
    seed et les mêmes choix redonnent exactement la même partie (reconstruction après un redémarrage). */
-import { TEAM, PREFS, PREF_OPTIONS, MOBS, DEV_TUNABLES, DEV_SPEC, SKILLS, GAME, SESSION_LEN, DT, MINE_MODES, DEV_TARGETS, RINGS } from '../config.js';
+import { TEAM, PREFS, PREF_OPTIONS, MOBS, DEV_TUNABLES, DEV_SPEC, SKILLS, GAME, SESSION_LEN, DT, MINE_MODES, DEV_TARGETS, RINGS, W } from '../config.js';
 import { newSession, tick, leaveSession, endSession, SESSION_TICKS } from '../sim/session.js';
 import { setFocus } from '../sim/focus.js';
 import { forceKhole } from '../sim/khole.js';
@@ -133,7 +133,9 @@ export function minerSpecs(record){
                        xpPct: ringXpPct(ringsOf(gearOf(i))), spells: spellsOf(i),
                        rings: rings.filter(r => !RINGS.items[r.item].xp || ringsOf(gearOf(i)).some(o => o.item === r.item)) });   // anneaux qui agissent sur lui (affichage, src/sim/effects.js) : le nerd seulement pour son porteur
   if(n <= 1) return [{ ...spec(0), name: players.length ? nameOf(0) : undefined }];
-  return TEAM.slice(0, n).map((t, i) => ({ x: t.x, home: t.home, ...spec(i) }));
+  /* au-delà des 3 places de TEAM (raid, 10 joueurs, 04/11/2026) : répartis sur la largeur */
+  return Array.from({ length: n }, (_, i) => { const t = TEAM[i] ?? { x: Math.round((i + 0.5) * W / n), home: Math.round((i + 0.5) * W / n) };
+    return { x: t.x, home: t.home, ...spec(i) }; });
 }
 
 /* anneaux portés par les joueurs de la session au lancement (RINGS), chacun une fois ; selfGear : le stuff du preset du

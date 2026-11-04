@@ -23,7 +23,7 @@
      visite ; à son retour, l'attente passe dans pausedMs et le run repart où il s'était arrêté.
    Testable seul : on lui passe un stockage, une horloge et la façon de faire tourner les parties (liveRunner). */
 import crypto from 'node:crypto';
-import { GAME, ENERGY, PRISON, PREFS, RESEARCH, FOCUS, FURNACE, MINE_MODES, CHAT, ITEMS, JUDGMENT, KHOLE, TOWER, WIKI, LEADERBOARD, SKILLS, AREAS, treasureItem, goblinChestItem, golbuteChestItem } from '../../src/config.js';
+import { GAME, RAID, ENERGY, PRISON, PREFS, RESEARCH, FOCUS, FURNACE, MINE_MODES, CHAT, ITEMS, JUDGMENT, KHOLE, TOWER, WIKI, LEADERBOARD, SKILLS, AREAS, treasureItem, goblinChestItem, golbuteChestItem } from '../../src/config.js';
 import { sanitizeTowerRecord, betterTower, sanitizeInstanceRecord, betterInstance, recordKey, splitRecordKey } from '../../src/meta/leaderboard.js';
 import { DT } from '../../src/config.js';
 import { sanitizePrefs, sanitizeOverrides, sanitizeDevSpecs, tickAt, realDurationMs, TOTAL_TICKS } from '../../src/shared/game.js';
@@ -36,6 +36,7 @@ import { sanitizeJudgment, addResidues, refresh as refreshJudgment, publicJudgme
          setCount as setJudgmentCount, SIDES as JUDGMENT_SIDES } from '../../src/meta/judgment.js';
 import { towerSide, isTowerMode, towerDurationMs, splitTowerLoot } from '../../src/shared/tower.js';
 import { instanceDef, instanceDurationMs, isInstanceMode, missingKeys, levelsOf } from '../../src/shared/instances.js';
+import { RAID_MODE, isRaidMode, raidDurationMs, cleanGroup, groupsOk } from '../../src/shared/raid.js';
 import { rollChestQuality, rollRune, rolledSpec, rollStats, isRing, canIdentify, qualityDef } from '../../src/meta/piece.js';
 import { sanitizeProgress, creditXp, raiseAreaMax, levelOf, specXpOf, specLevels } from '../../src/meta/level.js';
 import { sanitizeSkills, skillOp, skillRanks, spentPoints } from '../../src/meta/skills.js';
@@ -782,8 +783,9 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           : inst.chest === 'goblin' ? { [goblinChestItem(rollChestQuality(random), rec.level ?? 1)]: 1 }   // niveau 2 : Coffre du Roi Gobelin II (29/10)
           : inst.chest === 'golbute' ? { [golbuteChestItem(rollChestQuality(random))]: 1 } : {};
       }
-      /* versement : seulement aux joueurs de la session encore présents, une seule fois par session */
-      for(const share of summary.shares || []){
+      /* versement : seulement aux joueurs de la session encore présents, une seule fois par session. Raid Cerbère (04/11) :
+         récompense à définir, rien n'est versé (ni objet, ni XP) */
+      for(const share of isRaidMode(rec.mode) ? [] : summary.shares || []){
         if(!share.account || !inSession(rec, share.account) || share.left || hasLeft(rec, share.account)) continue;
         await withLock('inv:' + share.account, async () => {
           const inv = await loadInventory(share.account);
@@ -1167,6 +1169,54 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       });
     },
 
+    /* Raid Cerbère (04/11/2026, spec docs/superpowers/specs/2026-11-04-raid-cerbere-design.md) : lancé par le lobby de raid
+       de la guilde (server/guild/raid.js), jamais par le lobby normal (pas dans MINE_MODES, start le refuse). members :
+       [{account, name}], le chef de raid en premier ; 1 à RAID.maxPlayers. Gratuit (ni clé, ni énergie), pas d'XP,
+       récompense à définir (settleWith ne verse rien). Mêmes refus qu'une instance : session en cours, serveur plein,
+       trop de lancements. Comme une instance : chaque joueur figé au lancement, sa prison arrêtée. body : { guild (id de la
+       guilde du lobby, gardé dans la session), seed (mode dev) }. */
+    async startRaid(me, members = null, body = {}){
+      const list = members?.length ? members : [{ account: me.id, name: displayName(me) }];
+      const players = await Promise.all(list.map(async (p, i) => ({ account: String(p.account), name: String(p.name ?? ''), group: cleanGroup(p.group) ?? 1 + Math.floor(i / RAID.groupSize), ...await guildField(String(p.account)) })));
+      if(players[0].account !== me.id) fail('bad_request', 400, 'Le joueur qui lance doit être le premier.');
+      if(new Set(players.map(p => p.account)).size !== players.length || players.length > RAID.maxPlayers || !groupsOk(players))
+        fail('bad_request', 400, 'Raid invalide.');
+      for(const p of players) await autoEquip(p.account, RAID_MODE);   // set de l'activité, chacun le sien
+      return withLock.many([...players.map(p => 'acct:' + p.account), ...players.flatMap(p => prisonLocks(p.account))], async () => {
+        if(await activeOf(me.id)) fail('session_running', 409, 'Tu as déjà une session en cours.');
+        for(const p of players.slice(1))
+          if(await activeOf(p.account)) fail('member_in_session', 409, `${p.name || 'Un joueur'} est déjà dans une session.`);
+        if((await store.sessionsWithStatus('running')).filter(r => !overdue(r)).length >= (config.maxLive ?? Infinity))
+          fail('server_busy', 503, 'Le serveur fait déjà tourner le maximum de sessions. Réessaie dans quelques minutes.', { retryAfter: 60 });
+        const lim = startLimit.check(me.id);
+        if(!lim.ok) fail('rate_limited', 429, 'Trop de sessions lancées. Réessaie un peu plus tard.', { retryAfter: lim.retryAfter });
+        startLimit.hit(me.id);
+        const prefs = {}, looks = {}, gear = {}, skills = {}, spells = {};
+        for(const p of players){
+          const f = await freezePlayer(p.account);
+          prefs[p.account] = f.prefs; skills[p.account] = f.skills; spells[p.account] = f.spells;
+          looks[p.account] = f.look; gear[p.account] = f.gear;
+        }
+        /* prison : arrêtée après tous les refus, avant la création de la session (jamais deux parties pour un joueur) */
+        for(const p of players)
+          if((await stopPrisonOf(p.account)).stopped) skills[p.account].owned = ownedGlyphs(await loadSkills(p.account), await loadInventory(p.account));
+        const now = clock();
+        const rec = {
+          id: crypto.randomUUID(), mode: RAID_MODE,
+          seed: dev && isInt(body?.seed) && body.seed >= 0 && body.seed < 2**31 ? body.seed : randomSeed(),
+          players, bots: 0, prefs, looks, gear, skills, spells, overrides: null,
+          guild: typeof body?.guild === 'string' && body.guild && body.guild.length <= 64 ? body.guild : null,   // guilde du lobby de raid
+          dev, speed: dev ? null : speed, startedAt: now, finishAt: dev ? null : now + raidDurationMs(speed),
+          leaves: [], focus: [], status: 'running', result: null, seen: [],
+          clock: dev ? { tick: 0, at: now, speed: GAME.devSpeeds[0], paused: false } : null,
+        };
+        await store.putGameSession(rec);
+        ensureLive(rec);
+        for(const fn of startHooks) Promise.resolve().then(() => fn(players.map(p => p.account))).catch(console.error);
+        return { session: publicSession(rec) };
+      });
+    },
+
     /* lance une prison (solo). members : membres de son groupe au lobby (service des groupes), comme start ; plusieurs →
        refus. Une seule prison à la fois ; pas pendant une mine, une tour ou une instance (la mine instantanée et le Bloc
        géant, si). Le mineur est figé maintenant, comme pour une session ; le contenu est celui de son area max. */
@@ -1271,6 +1321,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           if(rec.mode === 'mi') fail('bad_request', 400, 'Pas de focus dans la mine instantanée.');
           if(isTowerMode(rec.mode)) fail('bad_request', 400, 'Pas de focus dans une tour.');
           if(isInstanceMode(rec.mode)) fail('bad_request', 400, 'Pas de focus dans une instance.');
+          if(isRaidMode(rec.mode)) fail('bad_request', 400, 'Pas de focus dans un raid.');
           rec.focus ??= [];
           if(rec.focus.filter(e => e.account === me.id).length >= FOCUS.maxChanges)
             fail('too_many', 429, 'Trop de changements de focus dans cette session.');
@@ -1826,7 +1877,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       return withLock('sess:' + rec0.id, async () => {
         const rec = await store.getGameSession(rec0.id);
         if(rec.status !== 'running' || isDue(rec)) fail('session_over', 409, 'La session est terminée.');
-        if(rec.mode === 'mi' || isTowerMode(rec.mode) || isInstanceMode(rec.mode)) fail('bad_request', 400, 'Seulement dans une mine classique (pas la mine instantanée, une tour ni une instance).');
+        if(rec.mode === 'mi' || isTowerMode(rec.mode) || isInstanceMode(rec.mode) || isRaidMode(rec.mode)) fail('bad_request', 400, 'Seulement dans une mine classique (pas la mine instantanée, une tour ni une instance).');
         if(!ensureLive(rec)) fail('session_over', 409, 'La session est terminée.');
         const r = await live.khole(rec.id, map);
         if(!r.ok) fail('khole_refused', 409, 'Impossible maintenant : déjà dans un k hole (ou un k hole s\'ouvre), ou fin de session trop proche.');
@@ -1912,7 +1963,14 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     activeSessionInfo: async accountId => {
       const rec = await activeOf(accountId);
       return rec ? { mode: rec.mode ?? 'mine', leftMs: rec.finishAt ? Math.max(0, rec.finishAt - clock()) : null,
-                     size: rec.players.filter(p => !hasLeft(rec, p.account)).length, max: GAME.maxPlayers } : await inGiant(accountId);
+                     size: rec.players.filter(p => !hasLeft(rec, p.account)).length, max: isRaidMode(rec.mode) ? RAID.maxPlayers : GAME.maxPlayers } : await inGiant(accountId);
+    },
+    /* raid en cours d'une guilde (lobby de raid, server/guild/raid.js) : { id, startedAt, finishAt, players (encore là) } ou null */
+    raidOfGuild: async guildId => {
+      let rec = null;
+      for(const status of ACTIVE) rec ??= (await store.sessionsWithStatus(status)).find(r => isRaidMode(r.mode) && r.guild === guildId) ?? null;
+      return rec ? { id: rec.id, startedAt: rec.startedAt, finishAt: rec.finishAt,
+                     players: rec.players.filter(p => !hasLeft(rec, p.account)).map(p => ({ account: p.account, name: p.name })) } : null;
     },
     /* comptes qui jouent une session en ce moment (pas partis), navigateur ouvert ou non : la liste Online du Social */
     playersInSession: async () => {

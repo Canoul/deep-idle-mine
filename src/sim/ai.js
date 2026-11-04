@@ -1,7 +1,7 @@
 /* IA du mineur : chaque appel à decide() choisit UNE action. Elle lit m.prefs (préférences) et la config ;
    ajouter un comportement = ajouter une préférence et la lire ici, pas réécrire l'IA. */
 import { W, AREA_H, STATS, CFG, BLOCKS, BARRIER, MOBS, CHEST_X, SKILLS, WINCH, HELP, MULE, DUCK, DT } from '../config.js';
-import { DIRS, isOre, isTarget, isResidue, typeOf, areaOf, areaTop, maxRow, tileAt, isAir, supported, rowDone, fallInfo, landing, ontoLadder } from './world.js';
+import { DIRS, isOre, isTarget, aimable, isResidue, typeOf, areaOf, areaTop, maxRow, tileAt, isAir, supported, rowDone, fallInfo, landing, ontoLadder } from './world.js';
 import { search, firstStep, planReturn, planDown } from './path.js';
 import { stepDir, deepFall } from './actions.js';
 import { startAction, nowOf, idle, curLum, dk, moveT, climbT, mineT, lightR, compassR, baseMoveT, baseWinchT, warcryOf, timeLeft, workLeft } from './mineur.js';
@@ -359,7 +359,7 @@ function decideWork(G,m){
   const known=new Map(ores.map(o=>[o.y*W+o.x,o]));
   for(let y=1;y<=maxRow(G);y++) for(let x=0;x<W;x++){
     const t=G.tiles[y][x];
-    if(isTarget(t) && G.seen[y][x] && !known.has(y*W+x) && !G.mimicCells.has(y*W+x) && !fleshAt(G,x,y)) known.set(y*W+x,{x,y,t});
+    if(aimable(G,t) && G.seen[y][x] && !known.has(y*W+x) && !G.mimicCells.has(y*W+x) && !fleshAt(G,x,y)) known.set(y*W+x,{x,y,t});
   }
   /* coût réel (au temps) pour atteindre chaque minerai : une seule recherche d'itinéraire qui réutilise échelles,
      galeries et passerelles, et compte les échelles à poser. « Voyage futur » = trajet retour ajouté. */
@@ -385,11 +385,11 @@ function decideWork(G,m){
   const inFocus = (y,t) => y<=cap && (!isOre(t) || (A!==null ? areaOf(y)===A : !act.length || areaGood(G,areaOf(y),act)));
   const tg=m.target;
   if(tg?.far){ const t=G.tiles[tg.y][tg.x], rival=oreTakenBy(G,m,tg.x,tg.y);
-    const f = isTarget(t) && tg.y<=cap && !(rival && rival.id<m.id) ? farGoal(G,m,[{...tg,t}]) : null;
+    const f = aimable(G,t) && tg.y<=cap && !(rival && rival.id<m.id) ? farGoal(G,m,[{...tg,t}]) : null;
     if(f){ m.status=targetStatus(t); return goOre(G,m,tg,f.r,f.r.n); }
     m.target=null; }
   else if(tg){ const t=G.tiles[tg.y][tg.x], nb=nbrBest(tg), rival=oreTakenBy(G,m,tg.x,tg.y);
-    if(isTarget(t) && targetVal(G,m,t)!==null && inFocus(tg.y,t) && nb.bn>=0 && !(rival && rival.id<m.id)){ m.status=targetStatus(t); return goOre(G,m,tg,r,nb.bn); }
+    if(aimable(G,t) && targetVal(G,m,t)!==null && inFocus(tg.y,t) && nb.bn>=0 && !(rival && rival.id<m.id)){ m.status=targetStatus(t); return goOre(G,m,tg,r,nb.bn); }
     m.target=null; }
   for(const o of known.values()){
     if(!inFocus(o.y,o.t) || (away && isOre(o.t))) continue;

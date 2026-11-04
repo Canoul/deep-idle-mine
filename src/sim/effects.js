@@ -11,6 +11,7 @@
    sessionBonuses(G, m) → [{ id, src, value? }] : bonus permanents de la session (une seule icône à l'écran).
    Couronne du Roi Gobelin : buff du porteur seul (crownOf, 29/10).
    mobEffects(G, o) → ['stun', 'channel', 'taunt'] : états d'un mob. */
+import { inspireOn, inspireAt } from './groups.js';
 import { EFFECTS, INSTANCE, RINGS } from '../config.js';
 import { SPELL } from '../meta/spells.js';
 
@@ -30,6 +31,8 @@ export function minerEffects(G, m, ctx = {}){
   if(m.fearUntil > G.t) push({ id:'fear', left:left(G, m.fearUntil) });   // He's coming (01/11)
   const cage = G.cages?.some(c => c.id === m.id) && G.boss?.state === 'wait';
   if(cage) push({ id:'caged', left:Math.max(0, r1(INSTANCE.boss.cageMaxWait - (G.boss.t || 0))) });
+  /* Raid 1, Cerbère (04/11/2026) : en pierre (value : solidité qui reste) jusqu'à ce qu'un allié le libère */
+  if(m.stone && !m.dead) push({ id:'stone', value:Math.ceil(m.stone.hp) });
   /* debuffs */
   if(m.fearMark) push({ id:'fear_mark' });   // He's coming (03/11) : prochain Fear plus probable
   if(m.scaredUntil > G.t) push({ id:'scared', left:left(G, m.scaredUntil) });
@@ -40,11 +43,12 @@ export function minerEffects(G, m, ctx = {}){
   if(G.boss && G.boss.hp > 0 && G.boss.focus != null && G.boss.focus === m.id && G.boss.engaged !== false) push({ id:'boss_focus' });
   if(ctx.dark) push({ id:'dark' });
   /* Instance II, le Golbute (30/10/2026) : Sonné (stacks de l'avalanche) et Mort */
-  if(m.dead) push({ id:'dead' });
+  if(m.bitUntil > G.t + 1e-9 && !m.dead) push({ id:'bitten', left:left(G, m.bitUntil) });   // Raid 1 : Morsure (affichage)
+  if(m.dead) push(G.mode === 'raid' ? { id:'dead', src:'raid' } : { id:'dead' });
   else if(m.dazed > 0 && G.t <= (m.dazedUntil ?? 0) + 1e-9) push({ id:'dazed', stacks:m.dazed, left:left(G, m.dazedUntil) });
   /* buffs */
   if(ctx.warcry && G.t < ctx.warcry.until) push({ id:'war_cry', left:left(G, ctx.warcry.until) });
-  if(G.inspire && G.t < G.inspire.until) push({ id:'inspiration', left:left(G, G.inspire.until) });
+  if(inspireOn(G, m)) push({ id:'inspiration', left:left(G, inspireAt(G, m).until) });
   if(m.skill?.ore_rush && G.t < (m.rushUntil ?? -1)) push({ id:'ore_rush', left:left(G, m.rushUntil), value:m.skill.ore_rush });
   if(m.skill?.travel_rush && ctx.travelling) push({ id:'travel_rush', value:m.skill.travel_rush });
   if(m.skill?.braum && m.helping) push({ id:'braum', value:m.skill.braum });

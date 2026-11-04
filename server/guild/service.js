@@ -6,7 +6,9 @@
    Bâtiments (01/11/2026) : spend(compte, objet, quantité, opId) retire les objets de l'inventaire (service de jeu), une seule
    fois par opId ; counts(compte, objets) : ce qu'il possède. Un don se fait HORS de la file : le versement d'une session attend
    addXp en tenant le verrou de l'inventaire, attendre ce verrou dans la file bloquerait les deux. pending réserve la part en cours :
-   deux dons en même temps ne dépassent jamais le coût, et rien n'est compté à la guilde avant d'avoir quitté l'inventaire. */
+   deux dons en même temps ne dépassent jamais le coût, et rien n'est compté à la guilde avant d'avoir quitté l'inventaire.
+   Raid (04/11/2026) : game (service de jeu, facultatif) sert au lobby de raid de la guilde (server/guild/raid.js, champ
+   mine.raid de la vue) ; son lancement aussi se fait hors de la file (même raison que les dons). */
 import crypto from 'node:crypto';
 import { GUILD } from '../../src/config.js';
 import { RANK, canRecruit, canKick, canPromote, canDemote, canTransfer, nextChief, sortMembers, activityOf,
@@ -18,6 +20,7 @@ import { displayName, formatAccountId, nameKey, parseAccountId } from '../../src
 import { nameBanned } from '../moderation/filter.js';
 import { SocialError } from '../social/service.js';
 import { moderate } from '../moderation/filter.js';
+import { createRaidLobby } from './raid.js';
 
 const fail = (code, status, message) => { throw new SocialError(code, status, message); };
 const isId = v => typeof v === 'string' && parseAccountId(v) === v;
@@ -25,7 +28,7 @@ const needId = v => { if(!isId(v)) fail('bad_request', 400, 'Joueur inconnu.'); 
 const needGuildId = v => { if(typeof v !== 'string' || !v || v.length > 64) fail('bad_request', 400, 'Guilde inconnue.'); };
 const needName = me => { if(me.guest || !me.name) fail('guest', 403, 'Choisis un pseudo pour rejoindre une guilde.'); };
 
-export function createGuildService({ store, accounts, statusOf, inviteCheck = async () => () => false, spend = async () => false, counts = async () => ({}), clock = Date.now, makeId = () => crypto.randomUUID() }){
+export function createGuildService({ store, accounts, statusOf, inviteCheck = async () => () => false, spend = async () => false, counts = async () => ({}), clock = Date.now, makeId = () => crypto.randomUUID(), game = null }){
   let state = null, byAccount = new Map(), chain = Promise.resolve();
   const pending = new Map();       // 'guilde:bâtiment:objet' → quantité en cours de don
   const giving = new Set();        // opId des dons en cours : la même demande renvoyée pendant ce temps ne compte pas
@@ -42,6 +45,7 @@ export function createGuildService({ store, accounts, statusOf, inviteCheck = as
   const guildOf = id => state.guilds[byAccount.get(id)] ?? null;
   const nameOf = async id => displayName(await accounts.getAccount(id)) || formatAccountId(id);
   const chiefOf = g => g.members.find(m => m.rank === RANK.chief);
+  const raid = createRaidLobby({ game, guildOf: async id => { await load(); return guildOf(id); }, nameOf });
   const summary = async g => ({ id:g.id, name:g.name, ...guildLevelOf(g.rawXp), xp:guildXpOf(g.rawXp), members:g.members.length, max:GUILD.maxMembers, chief:await nameOf(chiefOf(g).id) });
 
   /* bâtiments vus par le navigateur : niveau, matériaux du prochain niveau, prêt à construire */
@@ -80,7 +84,8 @@ export function createGuildService({ store, accounts, statusOf, inviteCheck = as
     const items = [...new Set(GUILD.buildings.flatMap(b => Object.keys(nextLevel(g, b)?.cost ?? {})))];
     return { id:g.id, name:g.name, ...guildLevelOf(g.rawXp), xp:guildXpOf(g.rawXp), rank, max:GUILD.maxMembers, members:sortMembers(rows), requests,
              message:g.message ? { text:g.message.text, at:g.message.at, name:g.message.by ? await nameOf(g.message.by) : '' } : null, canMessage:canRecruit(rank),
-             buildings:buildingsView(g), canBuild:canBuild(rank), owned:await counts(me.id, items).catch(() => ({})), log:await logRows(g) };
+             buildings:buildingsView(g), canBuild:canBuild(rank), owned:await counts(me.id, items).catch(() => ({})), log:await logRows(g),
+             raid:await raid.view(me) };
   }
   const invitesFor = id => all().filter(g => g.invites.some(i => i.id === id));
   async function view(me){
@@ -228,6 +233,7 @@ export function createGuildService({ store, accounts, statusOf, inviteCheck = as
     /* comptes de la guilde d'un joueur, [] sans guilde (canal Guilde du chat, server/social/service.js) */
     /* compte supprimé : il sort de sa guilde (le suivant devient chef, guilde vide : dissoute), de ses invitations et demandes */
     eraseAccount: id => serial(async () => {
+      await raid.eraseAccount(id);
       await load();
       dropPending(id);
       for(const g of all()) g.invites = g.invites.filter(i => i.by !== id);
@@ -352,6 +358,15 @@ export function createGuildService({ store, accounts, statusOf, inviteCheck = as
       if(!g) return false;
       exit(g, me.id);
     }),
+
+    /* lobby de raid de la guilde (04/11/2026, server/guild/raid.js) : chaque action renvoie la vue, comme les autres */
+    raidJoin: async (me, group = null) => { await raid.join(me, group); return view(me); },
+    raidLeave: async me => { await raid.leave(me); return view(me); },
+    raidKick: async (me, id) => { needId(id); await raid.kick(me, id); return view(me); },
+    raidReady: async (me, on) => { await raid.ready(me, on); return view(me); },
+    raidMove: async (me, group, id = null) => { await raid.move(me, group, id); return view(me); },
+    /* lancement : la session du raid (comme POST /api/game/start) et la vue de la guilde */
+    raidLaunch: async (me, body) => { const r = await raid.launch(me, body); return { ...await view(me), session: r.session }; },
 
     /* XP d'un membre, versée une seule fois par le service de jeu (creditXp) ; sans guilde, rien */
     addXp: (id, xp) => serial(async () => {
