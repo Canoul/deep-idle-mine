@@ -7041,3 +7041,20 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   Membres et Journal sur un écran, Maison 931 px, Bâtiments 851 px (8 matières), largeur 393 ; site PC inchangé (2 colonnes).
 - **Pas vérifié** ⚠️ Donner / Construire à l'écran (mêmes `data-g` qu'avant) ; une guilde avec beaucoup de membres ; vrai téléphone.
 - **Applis** : pas de plugin ni de code natif.
+
+## 04/11/2026 — Jules — Appli mobile : Classement, podium et sa place en bas (✅ en ligne le 04/11)
+- **Quoi** : spec et plan `docs/superpowers/{specs,plans}/2026-11-04-appli-classement*.md`. `src/ui/leaderboard.js` :
+  `podiumHtml(top, value)` (purs : marches dans l'ordre 2, 1, 3 ; marche vide si moins de 3 classés ; `<canvas>` 16 × 16
+  par marche) et `boardAppHtml(board, { value, row })` (podium, lignes à partir du 4ᵉ avec `boardRow`, « N joueurs
+  classés », sa ligne dans `.lMe` : `b.me` s'il est hors de la liste, sinon sa ligne de la liste). `renderBoard` : dans
+  l'appli (`body.app`), `boardAppHtml` puis `drawPortrait(canvas, {}, {})` sur chaque marche (mineur de base, le serveur
+  n'envoie pas le look des classés). `src/app/app.css` : bloc « Classement » (`.lPodium` en grille 1fr 1.15fr 1fr, marches
+  `.lp1/.lp2/.lp3` or / argent / bronze, `.lMe{position:sticky;bottom:calc(var(--dock-h) + 4px)}`).
+- **Tests** ✅ app-leaderboard (nouveau, 2). ⚠️ `leaderboard.test.js` « roi gobelin : record revérifié » rouge sur `main`
+  avant ce chantier (`instance_2`), pas touché ici, signalé à Geoffrey.
+- **Vérifié** ✅ aperçu `?app` 393 × 760 (Test_Mineur, 6 classés à égalité en local → « 1 » sur les trois marches) : 3
+  marches, 3 mineurs dessinés, sa ligne collée en bas, largeur 393, hauteur 784 (la pastille du guide) ; site PC 1280 × 800
+  inchangé (liste, pas de podium ni de `.lMe`).
+- **Pas vérifié** ⚠️ un vrai classement de 50 lignes avec sa place hors du top 50 (`b.me`) ; les onglets Tour céleste et
+  Roi gobelin (détails dans les lignes) ; vrai téléphone.
+- **Applis** : pas de plugin ni de code natif.

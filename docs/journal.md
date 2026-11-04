@@ -16,6 +16,17 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 04/11/2026 — Jules — Appli mobile : le Classement, podium et sa place en bas
+- **Pour le joueur** : rien sur le site. Dans l'appli, le Classement montre les **trois premiers sur un podium** (marches
+  or, argent, bronze ; le 2ᵉ à gauche, le 1ᵉʳ au centre, le 3ᵉ à droite, un petit mineur sur chaque marche), puis la suite
+  en lignes, et **ta place reste collée en bas de l'écran** quand tu fais défiler, même si tu es loin du top 50.
+- **Décisions** (Jules) : maquette A (podium) ; écartée : la liste simple. Les mineurs du podium ont l'apparence de base :
+  le serveur n'envoie pas le stuff des joueurs classés (choix de Claude, à enrichir plus tard). Conception :
+  `docs/superpowers/specs/2026-11-04-appli-classement-design.md`.
+- **À suivre** : essai sur un vrai téléphone ; les écrans pas encore refaits (Social, Amélioration, Four, Concasseur,
+  Recherche) ; les gestes au doigt.
+- **État** : ✅ en ligne le 04/11
+
 ## 04/11/2026 — Jules — Appli mobile : la Guilde en onglets
 - **Pour le joueur** : rien sur le site. Dans l'appli, la page de ta guilde a quatre onglets : **Maison** (la maison, le
   niveau, le message, les bonus), **Membres** (une ligne par joueur, « Inviter un joueur », et « Quitter la guilde » tout en

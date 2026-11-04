@@ -597,7 +597,9 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   (ancien : retirait le sort). **Historique** (04/11, en ligne le 04/11 ; spec
   `2026-11-03-appli-historique-design.md`) : une ligne par session par jour, bilan `#hiSheet` (ancien : une carte dépliée par
   session, 17 écrans). **Guilde** (04/11, en ligne le 04/11 ; spec `2026-11-04-appli-guilde-design.md`) :
-  sa guilde en onglets Maison / Membres / Bâtiments / Journal (`mineAppHTML`), un bâtiment à la fois. Étape 2 sur maquettes : Accueil (fait) → Perso (sets en menu,
+  sa guilde en onglets Maison / Membres / Bâtiments / Journal (`mineAppHTML`), un bâtiment à la fois. **Classement** (04/11,
+  en ligne le 04/11 ; spec `2026-11-04-appli-classement-design.md`) : podium du top 3 (`podiumHtml`, mineurs
+  d'apparence de base), sa ligne collée en bas (`boardAppHtml`, `.lMe` sticky) ; ancien : liste seule. Étape 2 sur maquettes : Accueil (fait) → Perso (sets en menu,
   stuff en mannequin, un seul arbre de skills, fiche de sort en panneau du bas) → Historique compact → Guilde en
   onglets → Classement.
   **Visuels des stores** (01/11, Jules, branche `jules/visuels-stores`) : **icône = lampe de mine** (source unique
