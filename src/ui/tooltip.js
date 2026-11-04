@@ -24,9 +24,11 @@ export function tipPlace({ r, h, view, top = 0, bottom = view, touch = false, ga
 
 /* attribut à mettre sur l'icône d'un objet : bulle pour le stuff, title natif sinon. piece : la pièce elle-même
    (qualité, lignes, niveau), sinon les effets de l'objet de base ; titre dans la couleur de la qualité si identifiée.
-   Un objet qui s'ouvre (treasure, coffre de tour ou d'instance) : bulle avec son tableau de butin (src/ui/loot-tip.js) */
+   Un objet qui s'ouvre (treasure, coffre de tour ou d'instance) : son nom seulement (04/11/2026, Geoffrey : sur l'appli,
+   le tableau de butin s'ouvrait en touchant l'objet et cachait le bouton « Ouvrir ») ; le tableau est derrière un
+   bouton « ? Butin » (lootHelp, src/ui/loot-tip.js) dans le détail de l'objet. */
 export function tipAttr(item, title = item, piece = null){
-  if(lootTableOf(item)) return ` data-tip="${esc(title)}" data-loot="item:${esc(item)}"`;
+  if(lootTableOf(item)) return ` title="${esc(title)}"`;
   const t = stuffTip(piece ?? item), c = pieceColor(piece);
   return t ? ` data-tip="${esc(t)}" data-rarity="${rarityOf(item)}"${c ? ` data-color="${c}"` : ''}` : ` title="${esc(title)}"`;
 }

@@ -87,3 +87,13 @@ test('HTML de la bulle : titre, lignes, clés inconnues', () => {
   assert.match(lootHelp('mobs', 'Butin des mobs'), /data-loot="mobs"/);
   assert.equal(pctText(0.005), '0,5 %');
 });
+
+test('butin à la demande (04/11/2026) : toucher un coffre ne montre que son nom ; le tableau est derrière « ? Butin »', async () => {
+  const { tipAttr } = await import('../src/ui/tooltip.js');
+  const { infoHtml } = await import('../src/ui/inventory.js');
+  const a = tipAttr('Treasure T1', 'Treasure T1 × 3');
+  assert.doesNotMatch(a, /data-loot|data-tip/); assert.match(a, /title="Treasure T1 × 3"/);
+  const h = infoHtml({ item:'Treasure T1', qty:3 }, true, { slots:[{ item:'Treasure T1', qty:3 }] });
+  assert.match(h, /invOpen[^]*data-loot="item:Treasure T1"/);   // à côté de « Ouvrir »
+  assert.doesNotMatch(infoHtml({ item:'Fer', qty:3 }, true, { slots:[] }), /data-loot/);
+});

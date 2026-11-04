@@ -21,7 +21,11 @@ Modèle d'entrée :
   « creusant une galerie » alors qu'il voyait des minerais juste au-dessus de lui (à la torche ou à la boussole). Il
   les mine maintenant. Rejoué sur la vraie partie signalée (seed 177078764) : plus aucune galerie à côté d'un minerai
   connu, 37 blocs minés en plus.
-- **État** : 🧪 sur la branche `geoffrey/fix-fin-session-galerie` (pas en ligne)
+- **État** : ✅ en ligne le 04/11
+
+## 04/11/2026 — Geoffrey — Appli : clavier de la connexion (Galaxy S22) et fond de l'Accueil
+- **Pour le joueur** : sur certains téléphones (Galaxy S22), ouvrir le clavier pour taper son pseudo écrasait la fenêtre de connexion (seul le champ restait visible) : le clavier était compté deux fois. Corrigé. L'Accueil n'affiche plus la session en cours (la prison) en fond derrière le Carreau, qui coupait l'écran en deux.
+- **État** : ✅ en ligne le 04/11
 
 ## 04/11/2026 — Jules — Appli mobile : la mine zoomée sur le mineur
 - **Pour le joueur** : rien sur le site. Dans l'appli, la mine de la session démarre **zoomée ×3** sur son mineur
@@ -1432,6 +1436,13 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
 - **État** : ✅ en ligne le 29/10
 
 ---
+
+## 04/11/2026 — Geoffrey — Inventaire : butin d'un coffre à la demande, marque de rune plus petite
+- **Pour le joueur** : toucher un coffre ou un treasure ne déroule plus son tableau de butin (sur l'appli, il cachait le
+  bouton « Ouvrir » : il fallait le fermer avant d'ouvrir). Le tableau est derrière un bouton **« ? Butin »**, à côté de
+  « Ouvrir ». La petite rune qui marque une pièce runée fait maintenant un tiers de la case : sur l'appli, elle cachait la
+  pièce.
+- **État** : ✅ en ligne le 04/11
 
 ## 29/10/2026 — Jules — Correctif : le Carreau sur téléphone
 - **Pour le joueur** : sur téléphone, toucher l'écran pour marcher ouvrait l'onglet du premier bâtiment touché : on ne
