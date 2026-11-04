@@ -7125,3 +7125,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Fragile** : le renderer est créé une fois pour toutes les sessions ; le zoom choisi en pinçant est gardé d'une session à
   l'autre (comme avant), seul le démarrage de la page et le double appui reprennent `appZoom`.
 - **Applis** : touche src/main.js, src/render/, src/ui/, src/config.js ; rien dans `src/app/` ni `mobile/` : mise à jour à chaud.
+
+### 04/11/2026 — Appli : clavier compté deux fois (Galaxy S22), fond de l'Accueil 🧪
+- Clavier : sur le S22 (Android 14), la WebView est raccourcie par le téléphone ET `--kb-h` ajoutait la hauteur du clavier (plugin Keyboard, en dp) → fenêtre de connexion écrasée, seul « Pseudo » visible (reproduit dans Playwright : viewport 360 × 450 + keyboardWillShow 330). `keyboardHeight({ plugin, inner, base })` retire ce que la page a déjà perdu (`base − inner`) ; `base` = plus grande hauteur vue clavier fermé, remise à zéro au `load` et à chaque rotation (les premières valeurs du chargement sont fausses ; le champ Pseudo peut avoir le focus dès le départ). ✅ tests/app-keyboard (+1), app-* 177 ; Playwright : page non raccourcie → 330 px, raccourcie → 0.
+- Fond : sur l'Accueil de l'appli (`body.appHomeOn`), `#bgSession` caché (la prison en fond, sous le Carreau, coupait l'écran). Pas vu sur téléphone.
