@@ -7366,3 +7366,22 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   Runes (`runeDiv`, `UPGRADE.prices`) inchangées.
 - Tests ✅ stuff-balance (Plastron 994, tolérance 0,02), gearscore (priceAdjust), cape-inclusive (ligne 7,8), steel-gear,
   stuff, rune, wiki, golbute, dps.
+
+## 04/11/2026 — Geoffrey — Lag en ligne : fil principal du serveur saturé par structuredClone (branche geoffrey/fix-lag-sessions)
+- Symptôme (`?perf`) : réponse 1604 ms, envoi toutes les 395 ms, 33,5 ticks/envoi. `top -H` sur le VPS : MainThread
+  99,9 %, WorkerThread (parties) ~0 %, VPS 2 cœurs (50 % global) : monter en gamme n'aurait rien changé.
+- Mesure : profil CPU de 15 s pris à distance (`kill -USR1 <pid>` sur le VPS, tunnel `ssh -L 9229:127.0.0.1:9229
+  root@82.223.196.89`, script CDP Profiler.start/stop, sans redémarrer). 88 % structuredClone ← `copy` ←
+  `store.sessionsOf` ← `activeOf` ; 57 % depuis `social.view` (statusOf → activeSessionInfo pour chaque ami/membre),
+  22 % `activeSessionId`, 20 % `party.state`, 14 % `GET /api/game/view`, 4 % `restedEnergy`.
+- Cause : `sessionsOf` copiait (structuredClone) **tout l'historique** du joueur (sessions done avec leur résumé) avant que
+  `activeOf` n'en garde une ; coût ∝ historique × amis × fréquence des vues.
+- Correctif : `server/game/store.js` `sessionsOf(accountId, keep)` filtre **avant** la copie ; nouveau `lastEndOf(accountId,
+  keep)` (aucune copie). `server/game/service.js` : `activeOf`, `sessionOf` (prison), stèle, `eraseAccount` passent
+  `isActive` ; `restedEnergy` et `lastEndedAt` utilisent `lastEndOf`. Les autres appels (historique, prisonCompos,
+  tableau prison) gardent la liste complète.
+- Tests ✅ `tests/store-sessions.test.js` (nouveau, 4 : keep avant la copie, copies, lastEndOf), game-service, social,
+  energy-server, team-energy, postgres, anticheat/server, anticheat/party : 119/119 (1 sauté).
+- ⚠️ À vérifier en ligne : `?perf` réponse < ~100 ms, `top -H` MainThread bien en dessous de 100 %. Restes possibles
+  (non mesurés) : `sessionsWithStatus` copie aussi les sessions actives (raidOfGuild, playersInSession), et la mémoire du
+  processus (1,1 Go) vient sans doute de l'historique des sessions gardé en mémoire.
