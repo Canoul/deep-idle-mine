@@ -1,6 +1,6 @@
 /* Presets de personnage du mode développeur (DEV_PRESETS), un par spécialisation. Logique pure, partagée par
    scripts/dev-presets.js (comptes locaux) et par les sessions dev (mineurs de test, src/shared/game.js minerSpecs). */
-import { SKILLS, SPELLS, XP, GAME, GLYPHS, DEV_PRESETS } from '../config.js';
+import { SKILLS, SPELLS, XP, GAME, GLYPHS, DEV_PRESETS, RAID } from '../config.js';
 import { createInventory, addItem, serialize } from '../meta/inventory.js';
 import { createStuff, stuffOp, equipSlotFor, gearOf, lookOf, sanitizeStuff } from '../meta/stuff.js';
 import { createSkills, sanitizeSkills } from '../meta/skills.js';
@@ -87,6 +87,6 @@ export function copyMiner(who, snap){
    null ; null si aucun */
 export function sanitizeBotPresets(input){
   if(!Array.isArray(input)) return null;
-  const out = input.slice(0, GAME.maxPlayers).map(t => isPresetTree(t) || isCopyPresetId(t) ? t : null);
+  const out = input.slice(0, Math.max(GAME.maxPlayers, RAID.maxPlayers)).map(t => isPresetTree(t) || isCopyPresetId(t) ? t : null);   // raid : 10 places (04/11)
   return out.some(Boolean) ? out : null;
 }

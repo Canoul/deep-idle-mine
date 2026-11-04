@@ -101,7 +101,7 @@ export const COMBAT = { reach:0.5, knock:0.25, tackleGiveUp:5, tackleLeash:6 };
    suivante, puis tout redevient normal ; la stat tenacityResilience (STATS, 0 pour tout le monde) réduit cette baisse
    (resilience 100 % : plus de fatigue). */
 export const TENACITY = { k:40, max:75, tired:0.5,
-  pen: { gobelin:0, occultiste:0, mephite:0, chien:0, ver:0, chair:0, golem:10, minotaure:10, hescoming:0, giant:0, towerBoss:20, golbute:20 } };
+  pen: { gobelin:0, occultiste:0, mephite:0, chien:0, ver:0, chair:0, golem:10, minotaure:10, hescoming:0, giant:0, towerBoss:20, golbute:20, cerbere:20 } };
 
 export const PREFS = { priority:'minerais', fightMobs:true, helpAllies:false, helpIgnore:[] };
 /* Aider allié : il ne part aider que si le mob est à helpRange cases ou moins (Manhattan). Au-delà, le combat est fini
@@ -1873,7 +1873,7 @@ export const RAID = {
   mine: { areas: 2, bands: [['dirt', 25], ['stone', 25], ['hardstone', 25], ['hellstone', 25]], terrainVal: 5, gather: 5 },   // terrainVal ≥ CFG.farVal : un bloc resté loin est aussi visé
   cerbere: {
     w: 30, h: 12, spawn: [1, 2, 3, 4, 5, 1, 2, 3, 4, 5],
-    boss: { name: 'Cerbère', w: 8, h: 6, hp: 60000, knockRes: 100, bossX: 18 },
+    boss: { name: 'Cerbère', w: 8, h: 6, hp: 25000, knockRes: 100, bossX: 18 },   // 25 000 PV : 3 victoires sur 30 pour l'équipe de référence (04/11, simulation)
     bite: { every: 10, targets: 3, last: 20 },
     sweep: { every: 5, range: 2, back: 5, high: 3 },
     magma: { every: 30, chance: 0.5 },
