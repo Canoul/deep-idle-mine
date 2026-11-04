@@ -8,7 +8,7 @@
    y reste (il n'en vise que les cibles) ; il l'emporte sur le focus minerai, qui ne cherche alors que dans cette area.
    « Plus profond » (pas de focus d'area, pas de focus minerai) : pareil, avec l'area la plus profonde débloquée, qui
    suit chaque déblocage (deepArea). */
-import { FOCUS, BLOCKS, IDS, CFG } from '../config.js';
+import { FOCUS, BLOCKS, IDS, CFG, RAID } from '../config.js';
 import { isOre, oreKey, areaOf, areaTop } from './world.js';
 import { log } from './log.js';
 
@@ -80,7 +80,7 @@ export const oreFocus = (G,m) => focusFar(G,m) ? (Object.hasOwn(m.prefs.focus, '
    Les treasures et autres cibles non-ore gardent leur valeur. */
 export function targetVal(G,m,t){
   const v = BLOCKS[t].val;
-  if(!isOre(t)) return v;
+  if(!isOre(t)) return v ?? (G.raid && BLOCKS[t].type === 'terrain' ? RAID.mine.terrainVal : v);   // raid : tout le terrain se vise (04/11)
   const f = oreFocus(G,m), act = activeOres(f), k = oreKey(t);
   if(act.includes(k)) return FOCUS_VAL;
   return onlyMode(f) ? null : v;

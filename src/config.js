@@ -101,7 +101,7 @@ export const COMBAT = { reach:0.5, knock:0.25, tackleGiveUp:5, tackleLeash:6 };
    suivante, puis tout redevient normal ; la stat tenacityResilience (STATS, 0 pour tout le monde) réduit cette baisse
    (resilience 100 % : plus de fatigue). */
 export const TENACITY = { k:40, max:75, tired:0.5,
-  pen: { gobelin:0, occultiste:0, mephite:0, chien:0, ver:0, chair:0, golem:10, minotaure:10, hescoming:0, giant:0, towerBoss:20, golbute:20 } };
+  pen: { gobelin:0, occultiste:0, mephite:0, chien:0, ver:0, chair:0, golem:10, minotaure:10, hescoming:0, giant:0, towerBoss:20, golbute:20, cerbere:20 } };
 
 export const PREFS = { priority:'minerais', fightMobs:true, helpAllies:false, helpIgnore:[] };
 /* Aider allié : il ne part aider que si le mob est à helpRange cases ou moins (Manhattan). Au-delà, le combat est fini
@@ -168,11 +168,13 @@ export const BLOCKS = {
   23:{name:'Thorium ore', type:'ore', tex:'thorium', w:4, hard:5.5, color:'#7d828c', dot:'#7ee04a', val:7},
   /* barreaux de prison (29/10/2026, PRISON) : bordent la carte de la prison de chaque côté ; incassables, non minables */
   24:{name:'Barreaux de prison', type:'special', tex:'prison_bars', w:0, hard:Infinity, color:'#2a2a33', dot:'#5a5a66', unbreakable:true, noDrop:true},
+  /* pierre des enfers (raid Cerbère, 04/11/2026, Geoffrey) : fond des areas du raid, 2 × la dureté de la pierre dure */
+  25:{name:'Pierre des enfers', type:'terrain', tex:'hellstone', w:3, hard:4.8, color:'#4a1c16', dot:'#ff5a1f', family:'bloc'},
 };
 export const BARRIER = 7, BRIDGE = 8, TREASURE_BLOCK = 10, DUNGEON_WALL = 11, CHEST_BASE = 18, KHOLE_BLOCK = 20;
 /* clés utilisées dans les compositions d'areas ; « air » = case vide (id 0), générée en poches */
 export const IDS = { air:0, dirt:1, stone:2, coal:3, iron:4, gold:5, diamond:6, hardstone:9, residueAngel:12, residueDemon:13, graphite:19,
-                     mithril:21, cobalt:22, thorium:23 };
+                     mithril:21, cobalt:22, thorium:23, hellstone:25 };
 
 /* Constructions du mineur (catégorie build). La passerelle est une tuile de la grille ; l'échelle et la torche
    se posent PAR-DESSUS une case vide (G.ladder, G.torches) : ce ne sont pas des tuiles. */
@@ -650,7 +652,7 @@ export const SKILLS = {
       { id:'ore_oxygen',  row:2, col:0, max:1, specOnly:true, per:1,    icon:'🫧', name:'Second souffle',  desc:'Miner un minerai rend 1 d\'oxygène' },
       { id:'filou',       row:2, col:1, max:3, per:1, adds:{ crit:2 }, icon:'🎲', name:'Filou', desc:'Critique +{crit}' },
       { id:'ore_rush',    row:3, col:0, max:3, per:0.03, icon:'💨', name:'Ruée',            desc:'Vitesse de marche +{v} pendant 3 s après avoir miné un minerai (ne se cumule pas)' },   // max 3 (avant 5)
-      { id:'all_terrain', row:3, col:1, max:3, per:0.05, mult:{ mineSpeed:1 }, raid:true, icon:'🏔', name:'Mineur tout terrain', desc:'Vitesse de minage +{v} dans les instances, les tours, le Bloc géant et He\'s coming' },
+      { id:'all_terrain', row:3, col:1, max:3, per:0.05, mult:{ mineSpeed:1 }, raid:true, icon:'🏔', name:'Mineur tout terrain', desc:'Vitesse de minage +{v} dans les instances, les raids, les tours, le Bloc géant et He\'s coming' },
       /* 23/10 (Geoffrey) : un tirage par remontée, au moment où il part (après un tacle ou un étourdissement), mine classique seulement */
       { id:'lazy_legend', row:4, col:0, max:1, specOnly:true, per:0.05, icon:'💤', name:'Légende de la flemme', desc:'5 % de chance de se téléporter au-dessus du coffre commun quand il doit remonter à la surface (sauf en fin de session)' },
       { id:'rested',      row:4, col:1, max:3, per:0.02, icon:'☕', name:'Reposé', desc:'Après une remontée à la surface : vitesse de minage, de marche et de montée, dégâts +{v} et ténacité +{ten} pendant 3 min (1 min en prison) une fois redescendu au front' },
@@ -691,7 +693,7 @@ export const SKILLS = {
      par rang */
   rested: { time:180, prisonTime:60, tenacity:2 },
   /* Solide sur les appuis (steady) : points de ténacité contre ces mécaniques de boss (clés de TENACITY.pen) */
-  steady: { tenacity:5, sources:['golbute', 'towerBoss', 'minotaure', 'hescoming'] },
+  steady: { tenacity:5, sources:['golbute', 'towerBoss', 'minotaure', 'hescoming', 'cerbere'] },   // cerbere : Morsure (raid, 04/11)
   rushTime: 3,          // s : durée du bonus de vitesse après un minerai (ore_rush), remise à 3 s à chaque minerai
   reconEvery: 2,        // s dans le seau, par mineur, pour 1 d'oxygène (recon, Reconnaissance)
   ravageCrits: 2,       // critiques d'affilée pour une double attaque garantie (ravage, Saccager)
@@ -836,6 +838,9 @@ export const EFFECTS = {
     dazed:        { kind:'debuff',  name:'Sonné',               icon:'rock',      color:'#c9a27a' },
     dead:         { kind:'control', name:'Mort',                icon:'skull',     color:'#9a9a9a' },
     escalator:    { kind:'session', name:'Escalateur',          icon:'ladder',    color:'#6fc2ff' },
+    /* Raid 1, Cerbère (04/11/2026) : Morsure (affichage de bite.show s, elle ne persiste pas) et Durci (en pierre) */
+    bitten:       { kind:'debuff',  name:'Morsure',             icon:'heartbreak',color:'#ff4a2a' },
+    stone:        { kind:'control', name:'Durci',               icon:'rock',      color:'#a39a8f' },
   },
   session: { name:'Bonus de session', icon:'ring', color:'#ffd23f' },
   /* états des mobs et des boss, au-dessus de leur barre de PV */
@@ -857,7 +862,7 @@ export const EFFECTS = {
 
 
 /* textures : fichiers de textures/ (générés par scripts/gen_textures.py) */
-export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold','diamond','graphite','mithril','cobalt','thorium','tunnel','barrier','prison_bars','chest_base','khole','sky','bridge','treasure','treasure_t1','treasure_t2','treasure_t3',
+export const TEXTURES = ['dirt','grass','hellstone','stone','hardstone','coal','iron','gold','diamond','graphite','mithril','cobalt','thorium','tunnel','barrier','prison_bars','chest_base','khole','sky','bridge','treasure','treasure_t1','treasure_t2','treasure_t3',
   'blueprint','bp_parts','gem_ruby','gem_jade','gem_sapphire',
   'ingot_iron','ingot_gold','ingot_tainted','ingot_tainted_gold','ingot_graphite','ingot_steel','furnace_iron','compass_gold','shiny_iron','shiny_gold','pickaxe_stone','helmet_chitin','chest_chitin','legs_chitin','boots_chitin',
   'pickaxe_iron','sword_stone','sword_iron','spear_iron','bow_admin','helmet_iron','chest_iron','legs_iron','boots_iron','belt_goblin',
@@ -865,7 +870,7 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'gloves_tactical','gloves_worker','cape_naingui','straps_goblin','hood_dark','cloud_magic','belt_giant','dark_cloth','gas_vesicle','slippery_stone','dungeon_brick','minotaur','minotaur_black','moon_crystal','orb','orb_superior','pick_goblin','kilt_dark','hat_naab','sword_cardboard','key_instance_1','key_instance_2','angel_feather','angel_feathers',
   'guild_armory','guild_treasury','guild_forge',
   'guild_hall_1','guild_hall_2','guild_hall_3','guild_hall_4','guild_site','guild_wing_armory','guild_wing_treasury','guild_wing_forge','guild_lot',
-  'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon','giant_block','lucifer','lucifer_portal','lucifer_roar1','lucifer_roar2','lucifer_roar3','lucifer_roar4','lucifer_roar5','lucifer_roar6','giant_fountain','giant_torch','instance_spawner','instance_cage','goblin_king','golbute','golbute_crystal','golbute_body','golbute_body_crystal','golbute_arm','golbute_arm_crystal','golbute_rock','chest_golbute',
+  'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon','giant_block','lucifer','lucifer_portal','lucifer_roar1','lucifer_roar2','lucifer_roar3','lucifer_roar4','lucifer_roar5','lucifer_roar6','giant_fountain','giant_torch','instance_spawner','instance_cage','goblin_king','golbute','golbute_crystal','golbute_body','golbute_body_crystal','golbute_arm','golbute_arm_crystal','golbute_rock','chest_golbute','cerbere','cerbere_rage',
   'brick_angel','brick_angel_hard','brick_demon','brick_demon_hard','boss_angel','boss_demon','seraph','imp',
   'crown_goblin_king','mace_goblin_king','cape_goblin_royal','furnace_gold','recipe_chitin','chest_goblin_king','nugget_silver','ingot_silver','shrine_abundance',
   'ingot_mithril','refined_cobalt','refined_thorium','ingot_cobalt','ingot_thorium','minotaur_leather','rotten_flesh','treasure_t4',
@@ -1887,6 +1892,32 @@ export const GIANT = {
   top: 10, poll: 3000, viewPoll: 500,
   readyPoll: 60000,   // ms : carte fermée, le navigateur revérifie l'entrée pour le contour doré du menu du Lobby (01/11/2026)
 };
+/* Raid 1 : Cerbère (04/11/2026, Geoffrey ; spec docs/superpowers/specs/2026-11-04-raid-cerbere-design.md ; src/sim/raid/).
+   Lancé depuis l'onglet Raid de sa guilde, 1 à 10 joueurs, gratuit. duration : temps de jeu total (minage + boss).
+   mine : les areas (0,0) et (0,−1) de la mine (50 × 50), que du terrain en bandes de haut en bas (bands : [bloc, lignes]) ;
+     tout doit être miné ; terrainVal : attrait d'un bloc de terrain pour l'IA (la mine vise les minerais) ; gather : s de
+     rassemblement devant la grande porte avant l'arène.
+   cerbere : arène w × h (1,−1), sans oxygène ; boss w × h au sol à droite (bossX : colonne de gauche), PV hp ; spawn :
+     colonnes d'arrivée (par la porte, à gauche). bite : autoattaque toutes les every s sur targets cibles (d'abord ceux qui
+     le provoquent), Morsure de last s ; si toutes ses cibles sont DÉJÀ mordues, elles meurent. sweep : balayage toutes les
+     every s à range cases, repousse de back cases et high de haut. magma : toutes les every s, chance de « Durci » par
+     joueur (ténacité : seulement la spé Mineur) ; stone : dureté du mineur en pierre (à miner par les autres).
+     rage : sous below de ses PV. Valeurs provisoires (équilibrage : scripts/simulate-raid.js). */
+export const RAID = {
+  maxPlayers: 10, duration: 30 * 60,
+  groups: 2, groupSize: 5,   // 2 groupes de 5 ; les buffs de groupe (sorts, anneaux) restent dans son groupe (Geoffrey, 04/11)
+  mine: { areas: 2, bands: [['dirt', 25], ['stone', 25], ['hardstone', 25], ['hellstone', 25]], terrainVal: 5, gather: 5 },   // terrainVal ≥ CFG.farVal : un bloc resté loin est aussi visé
+  cerbere: {
+    w: 30, h: 12, spawn: [1, 2, 3, 4, 5, 1, 2, 3, 4, 5],
+    boss: { name: 'Cerbère', w: 8, h: 6, hp: 280000, knockRes: 100, bossX: 18 },   // 280 000 PV : ~1 victoire sur 10, combat ~9-10 min, équipe de référence avec tanks à 40 % de ténacité fixe (04/11 : Morsure /30 s qui tue 1 cible, tanks jamais durcis ; simulation --tank-ten 40)
+    bite: { every: 30, targets: 3, show: 1.5 },   // show : s d'affichage de la Morsure (elle ne persiste pas)
+    sweep: { every: 5, range: 2, back: 5, high: 3 },
+    magma: { every: 30, chance: 0.5 },
+    stone: { hard: 50 },
+    rage: { below: 0.33, biteEvery: 21, back: 6, high: 4, chance: 0.65 },
+  },
+};
+
 /* He's coming (01/11/2026, Geoffrey ; src/sim/hescoming/session.js, valeurs provisoires) : le Bloc géant où l'on frappe Lucifer. Tout GIANT,
    sauf : paliers × 24 (03/11/2026, Geoffrey : +50 % puis +100 % ; avant × 8 puis × 12), pépites ÷ 8 (Geoffrey, à la simulation ; essayé : × 25, 4 fois plus dur que le Bloc) ; 1 dégât = 1 point. roar : toutes les every s, Fear de fear s à radius cases ou moins (wander : s
    avant de changer de sens) ; swing : toutes les every s, tous ceux au contact projetés de knock cases, en arc de high cases, en flight s. */
@@ -2040,7 +2071,7 @@ export const LEADERBOARD = { size:50, refresh:30_000, cacheMs:15_000, teamMax:3,
    compte · memory : dernières clés d'opération mémorisées (idempotence). */
 /* idlePerHour (30/10/2026, Geoffrey) : au repos (ni session en cours, ni prison), le compte regagne idlePerHour d'énergie
    par heure de JEU (× GAME.speed par heure réelle), plafonnée à max ; calculée par le serveur à la lecture */
-export const ENERGY = { max: 100, start: 0, cost: { min: 6, max: 12 }, prisonPerHour: 8, idlePerHour: 3,   // prisonPerHour : 8 le 30/10 à 18 h (Geoffrey ; avant 4)
+export const ENERGY = { max: 100, start: 100, cost: { min: 6, max: 12 }, prisonPerHour: 8, idlePerHour: 3,   // prisonPerHour : 8 le 30/10 à 18 h (Geoffrey ; avant 4)
   memory: 200 };
 
 /* Prison (29/10/2026, spec docs/superpowers/specs/2026-10-29-prison-energie-design.md ; src/sim/prison.js) : mode solo,

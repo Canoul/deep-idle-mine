@@ -281,10 +281,10 @@ Le mineur du joueur a un **niveau**, rattaché à son compte, qui monte avec l'*
 
 **Nouveaux skills** (par rang ; les « % » de critique, coup unique, perçage, fortune et ténacité s'ajoutent en points à la stat, ceux des pods et des vitesses multiplient) :
 - **Pioche ensorcelée** : fortune +2 %. **Filou** : critique +2 %. **Organisé** : pods ×(1 + 1 %). **Dématérialisation** : coup unique +2 %. **Cloué au sol** : ténacité +3 %.
-- **Mineur tout terrain** : vitesse de minage +5 % dans les **instances, tours du Jugement, Bloc géant et He's coming**.
+- **Mineur tout terrain** : vitesse de minage +5 % dans les **instances, raids, tours du Jugement, Bloc géant et He's coming**.
 - **Reposé** : après une remontée à la surface, une fois **redescendu au front** (fin de la descente depuis la surface ; pas la première descente de la session), vitesse de minage, de marche et de montée (échelle, seau) et dégâts **+2 %**, ténacité **+2 %**, pendant **3 min** en mine classique et **1 min en prison**. Une nouvelle descente remet le compteur à zéro (pas de cumul). Affiché dans les états du mineur.
 - **Dans le dos** : dégâts **+5 %** quand aucun ennemi ne le vise : aucun mob ne le tacle et aucun boss ne l'a pour cible (Golbute : au combat, à portée de son autoattack ; golems de la Division qui le taclent). Pas dans He's coming (Lucifer vise tout le monde).
-- **Solide sur les appuis** : ténacité **+5 %** contre les mécaniques de boss qui le visent : autoattack du Golbute (pas l'avalanche, qui frappe tout le monde), boss des tours, minotaure, Lucifer (`SKILLS.steady.sources`).
+- **Solide sur les appuis** : ténacité **+5 %** contre les mécaniques de boss qui le visent : autoattack du Golbute (pas l'avalanche, qui frappe tout le monde), boss des tours, minotaure, Lucifer, Morsure de Cerbère (`SKILLS.steady.sources`).
 - **Crushing** : un coup critique fait ×2 × (1 + **10 %**) (×2,6 à 3/3) au lieu de ×2.
 - **Auras** (1 point, étage 6) : **pour tout le groupe, lui compris**, tout le temps ; deux porteurs de la même aura : une seule fois. **Aura d'efficacité** : perçage +2 %. **Aura rassurante** : portée d'attaque +0,1 bloc. **Aura berserk** : critique +2 %. Mine instantanée : pour soi seul (comme les anneaux). Bloc géant et He's coming : tous les présents.
 
@@ -1194,6 +1194,20 @@ Des donjons de groupe à clé : **Instance I (le roi gobelin)** et **Instance II
   Points calculés depuis les x au prix de dessin (`designPrice`).
 - **PV** *(équilibrage du 30/10, simulation)* : compo de référence (1 mineur, 2 barbares, arbre au max avec ses sorts, armure en mithril, pioche et épée **en acier +20 %**, Geoffrey ; *ancien : en fer +20 % → 7 600 PV, 600 coups*). Sans ténacité en plus, elle ne gagne jamais (morte à l'avalanche avant la fin) : la référence est prise **avec 25 % de ténacité chacun**. **10 700 PV** : **40 victoires sur 160** (≈ 9 min 49), **45 %** du temps à miner le cristal. Même compo à 50 % de ténacité : 20/20 ; sans ténacité : 0/20.
 - **Repère, vraie équipe** *(30/10, Geoffrey ; Infernatiwar passé en barbare arbre complet + Dash / Cri de guerre, Croustiflex logisticien, Monsta mineur, leur vrai stuff)* : sans ténacité en plus 0/160 ; +25 % : 0/80 ; **+50 % : 55/80**. Temps du combat à +50 % : phase 1 9 %, cristal 66 % 25 %, phase 2 11 %, Division 9 %, cristal 33 % 25 %, phase 3 (enragé) 13 %, Division 9 % ; les mineurs minent 47 % du temps, frappent 32 %, sont étourdis 17 %. Leur vraie équipe (2 mineurs, 1 logisticien) : 0/80 même à +50 %.
+
+### Raid 1 : Cerbère *(Geoffrey, 04/11/2026 ; valeurs provisoires, `RAID` en config ; spec `docs/superpowers/specs/2026-11-04-raid-cerbere-design.md` ; `src/sim/raid/` ; équilibrage `node scripts/simulate-raid.js`)*
+- **Entrer** : onglet **Raid** de sa guilde, lobby de **1 à 10** membres de la guilde, en **2 groupes de 5** : chacun choisit son groupe, le chef du raid peut déplacer un joueur ; on peut lancer avec des groupes incomplets. Chacun se dit prêt, le chef du raid lance.
+- **Groupes** *(04/11)* : les **buffs de groupe** apportés par chacun ne vont qu'à **son groupe** : Inspiration, Bonbonne de zipette, anneaux (une fois par anneau différent dans le groupe) ; le **Cri de guerre** va aux membres de son groupe **dans le rayon**. **Gratuit**, **pas de récompense** pour l'instant (rien n'est versé, ni objet ni XP).
+- **30 min de jeu au total**, une seule horloge pour les deux phases.
+- **Minage** : les areas (0,0) et (0,−1), 50 × 50 chacune, **que du terrain**, en bandes : terre, pierre, pierre dure, puis **Pierre des enfers** (2 × la dureté de la pierre dure). Pas de mobs, pas de coffre. Règles de la mine (pods, oxygène, allers-retours). Il faut tout miner (**100 %**) ; la **grande porte** s'ouvre alors quand les vivants sont rassemblés devant (5 s).
+- **Arène** (1,−1), **sans oxygène** : **Cerbère** (8 × 6), **280 000 PV**, résistance au recul 100 %. Tous les sorts des joueurs marchent (sauf mort ou en pierre).
+  - **Cibles** : 3 à la fois, **d'abord ceux qui le provoquent** (les **tanks**) ; s'il n'y en a pas assez, il complète avec d'autres joueurs du raid.
+  - **Morsure** (autoattaque) : toutes les **30 s** sur ses 3 cibles, chacune peut l'éviter par la ténacité. **Si aucune ne résiste, une des trois meurt (au hasard)** ; si une seule résiste, elle se dissipe pour les trois. Rien ne persiste d'une Morsure à l'autre.
+  - **Balayage** : toutes les **5 s**, ceux à **2 cases** sont repoussés de **5 cases** et **3 de haut** ; la ténacité peut l'éviter.
+  - **Magma** : toutes les **30 s**, **50 %** de chances par joueur de devenir **Durci** (pierre de dureté 50, intouchable, ne fait rien) ; les autres le libèrent en le minant (les tanks n'aident que si personne d'autre ne peut). **Jamais sur les tanks.** La ténacité ne joue que pour la spé **Mineur**.
+  - **Enragé** sous **33 %** : Morsure toutes les **21 s**, Balayage 6 cases et 4 de haut, Magma 65 %.
+- **Fin** : victoire quand Cerbère tombe. Défaite si tous les joueurs sont morts (ou tous en pierre) ou au bout des 30 min. **Les morts sont définitives.**
+- **Équilibrage** *(04/11, simulation)* : équipe de référence 4 barbares, 4 mineurs, 2 logisticiens, arbre au max, stuff T4.5 identifié R4, +5, une rune R4 par pièce, tanks à **40 % de ténacité** face à Cerbère : minage ≈ 11 min ; Cerbère **≈ 1 victoire sur 10**, combat ≈ 10 min (220 000 PV : 11/40 ; 260 000 : 5/40 ; 300 000 : 3/40). *Anciens : Morsure qui tuait les 3 cibles, toutes les 10 puis 20 s, 15 000 à 190 000 PV.*
 
 ### Mine instantanée (MI) *(décisions du créateur, 21/10/2026 ; valeurs provisoires, `INSTANT_MINE` en config)*
 **Niveau 3 requis** *(03/11/2026, Geoffrey)* : en dessous, scellée dans le lobby (cadenas) et l'inscription est refusée par le serveur.

@@ -16,6 +16,7 @@ from gen_giant import giant_block, giant_fountain, giant_torch   # le Bloc géan
 from gen_king import goblin_king   # le roi gobelin, « roi guerrier balafré » (scripts/gen_king.py, 03/11/2026)
 from gen_worm import worm_textures   # le ver de terre, cuirassé (scripts/gen_worm.py, 03/11/2026)
 from gen_flesh import flesh_wall, flesh_icon   # le mur de chair (scripts/gen_flesh.py, 03/11/2026)
+from gen_cerbere import cerbere_textures   # Cerbère, boss du Raid 1 (scripts/gen_cerbere.py, 04/11/2026)
 from gen_golbute import golbute, golem   # le Golbute de l'Instance II (et sa forme cristallisée) et le golem (scripts/gen_golbute.py, 30/10/2026)
 
 S = 16
@@ -114,6 +115,17 @@ def main():
     for (x, y) in [(2, 3), (3, 4), (4, 4), (5, 5), (10, 9), (11, 10), (12, 10), (12, 11), (7, 12), (8, 13)]:
         rect(hard, x, y, 1, 1, hexc('#2f3238'))
     tex['hardstone'] = hard
+
+    # pierre des enfers (raid Cerbère, 04/11/2026) : roche brun-rouge sombre, veines de lave
+    hell = noisy(hexc('#4a1c16'), 41, 0.12)
+    r = random.Random(41)
+    for _ in range(7):
+        rect(hell, r.randrange(S - 1), r.randrange(S - 1), 2, 2, hexc('#5e241c'))
+    for (x, y) in [(1, 2), (2, 3), (3, 3), (4, 4), (9, 7), (10, 8), (11, 8), (12, 9), (5, 12), (6, 12), (7, 13)]:
+        rect(hell, x, y, 1, 1, hexc('#ff5a1f'))
+    for (x, y) in [(3, 4), (11, 9), (6, 13)]:
+        rect(hell, x, y, 1, 1, hexc('#ffb347'))
+    tex['hellstone'] = hell
 
     # coffre au trésor enfoui : un petit coffre dans la roche
     treasure = noisy(hexc('#7d828c'), 13)
@@ -1640,6 +1652,9 @@ def main():
     for name, (w, h, px) in lucifer_textures().items():
         png_wh(os.path.join(OUT, name + '.png'), w, h, px)
     for name, (w, h, px) in golbute().items():
+        png_wh(os.path.join(OUT, name + '.png'), w, h, px)
+    # Cerbère (Raid 1, 04/11/2026) : 128 × 96 pixels = 8 × 6 cases ; enragé : 'cerbere_rage'
+    for name, (w, h, px) in cerbere_textures().items():
         png_wh(os.path.join(OUT, name + '.png'), w, h, px)
     for name, (w, h, px) in town().items():
         png_wh(os.path.join(OUT, name + '.png'), w, h, px)

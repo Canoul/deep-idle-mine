@@ -27,12 +27,15 @@ test('stats fixes : Pioche ensorcelée (fortune), Filou (critique), Organisé (p
   assert.equal(a.carac.tenacity, l.tenacity, 'même chose en session');
 });
 
-test('Mineur tout terrain : minage +5 %/rang seulement en instance, tour, Bloc géant et He\'s coming', () => {
+test('Mineur tout terrain : minage +5 %/rang seulement en instance, raid, tour, Bloc géant et He\'s coming', async () => {
   const sk = { A: { tree: 'mineur', ranks: { mine_speed: 3, enchanted_pick: 3, all_terrain: 3 } } };
   const mine = specs(sk, 'mine')[0].carac.mineSpeed, prison = specs(sk, 'prison')[0].carac.mineSpeed;
   assert.equal(mine, prison);
   for(const mode of ['instance_1', 'instance_2', 'tower_angel', 'tower_demon', 'giant'])
     assert.ok(Math.abs(specs(sk, mode)[0].carac.mineSpeed - mine * 1.15) < 1e-9, mode);
+  const { raidSpecs } = await import('../src/shared/raid.js');
+  const [r] = raidSpecs({ seed: 1, players: [{ account: 'A', name: 'A', group: 1 }], skills: sk });
+  assert.ok(Math.abs(r.carac.mineSpeed - mine * 1.15) < 1e-9, 'raid Cerbère');
 });
 
 test('auras : tout le groupe, porteur compris ; deux porteurs = une seule fois', () => {

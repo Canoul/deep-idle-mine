@@ -14,7 +14,7 @@ test('pas de guilde : pas de sous-onglet à son nom', () => {
 
 test('avec guilde : sous-onglet au nom de la guilde, échappé', () => {
   const t = guildTabs({ mine:mine({ name:'<script>x' }) });
-  assert.deepEqual(t.map(x => x.id), ['mine', 'search', 'board']);
+  assert.deepEqual(t.map(x => x.id), ['mine', 'raid', 'search', 'board']);
   assert.equal(t[0].label, '&lt;script&gt;x');
 });
 

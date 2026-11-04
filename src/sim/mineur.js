@@ -2,6 +2,7 @@
    Nommé mineur.js et pas miner.js : les bloqueurs anti-minage de cryptomonnaie (liste NoCoin, active par défaut
    dans Opera GX) bloquent tout fichier « /miner.js », et le jeu entier ne démarre plus. Ne pas le renommer. */
 import { restedMul } from './skillfx.js';
+import { inspirePct } from './groups.js';
 import { bleedSlow } from './bleed.js';
 import { STATS, CFG, BLOCKS, PREFS, SPAWN_X, SKILLS, WINCH, GLYPHS, SESSION_LEN } from '../config.js';
 import { lumAt } from './light.js';
@@ -27,6 +28,7 @@ export function createMiner(id, opts={}){
   for(const k of ['torches', 'bridges']) if(Number.isFinite(carac[k])) carac[k] = Math.floor(carac[k]);
   return {
     skill: { ...NO_SKILLS, ...(opts.skills||{}) },
+    group: opts.group ?? null,      // groupe du raid (1, 2…), null ailleurs (src/sim/groups.js)
     skillTree: opts.skillTree ?? null, // arbre de skills choisi (mineur, logisticien, barbare) ou null
     yieldSince: null,               // attend qu'un logisticien pose l'échelle (depuis ce temps)
     winchJob: null,                 // chantier du treuil (logisticien) : { bottom : ligne à atteindre }
@@ -85,7 +87,7 @@ export const mineRate = m => m.carac.mineSpeed*(1+(m.carac.mineSpeedPct||0)/100)
 /* sort Cri de guerre (src/sim/spells.js) : bonus de dégâts et de vitesse d'attaque en cours sur ce mineur, ou null */
 export const warcryOf = (G,m) => m.warcry && G.t < m.warcry.until ? m.warcry : null;
 /* sorts : Inspiration (G.inspire, pour tout le groupe) et Fast learner (m.learned, par type de bloc) */
-const spellMine = (G,m,t) => (1+(G.inspire && G.t<G.inspire.until ? G.inspire.pct : 0))*(1+(m.learned?.[t]||0));
+const spellMine = (G,m,t) => (1+inspirePct(G,m))*(1+(m.learned?.[t]||0));
 /* Némésis du Golbute (30/10/2026) : + blockMinePct % de vitesse de minage sur les blocs de terrain (pas les minerais) */
 const blockMul = (m,t) => BLOCKS[t].type==='terrain' && m.carac.blockMinePct ? 1+m.carac.blockMinePct/100 : 1;
 export const mineT  = (G,m,t) => BLOCKS[t].hard/(mineRate(m)*blockMul(m,t)*dk(G,m)*spellMine(G,m,t)*restedMul(m));

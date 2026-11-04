@@ -29,5 +29,16 @@ export function guildRoutes(guild){
     'POST /api/guild/demote':         write(guild.demote),
     'POST /api/guild/kick':           write(guild.kick),
     'POST /api/guild/transfer':       write(guild.transfer),
+    /* lobby de raid de la guilde (04/11/2026) : rejoindre, quitter, prêt { ready: bool }, sortir un joueur { id } (chef du
+       raid), lancer (chef du raid ; { seed } en mode dev) */
+    'POST /api/guild/raid/join':   async ctx => { needMe(ctx); return guild.raidJoin(ctx.me, ctx.body?.group ?? null); },
+    /* changer de groupe { group, id? } : soi, ou un autre joueur pour le chef du raid (04/11) */
+    'POST /api/guild/raid/group':  async ctx => { needMe(ctx); return guild.raidMove(ctx.me, ctx.body?.group, ctx.body?.id ?? null); },
+    'POST /api/guild/raid/leave':  async ctx => { needMe(ctx); return guild.raidLeave(ctx.me); },
+    'POST /api/guild/raid/ready':  async ctx => { needMe(ctx); return guild.raidReady(ctx.me, ctx.body?.ready); },
+    'POST /api/guild/raid/kick':   write(guild.raidKick),
+    /* bêta, temporaire (04/11) : inviter un joueur par son pseudo { name } */
+    'POST /api/guild/raid/invite': async ctx => { needMe(ctx); return guild.raidInvite(ctx.me, ctx.body?.name); },
+    'POST /api/guild/raid/launch': async ctx => { needMe(ctx); return [201, await guild.raidLaunch(ctx.me, ctx.body ?? {})]; },
   };
 }

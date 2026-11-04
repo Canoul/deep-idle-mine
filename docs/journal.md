@@ -16,6 +16,37 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 04/11/2026 — Geoffrey — Raid : portrait et spé des joueurs dans le lobby
+- **Pour le joueur** : dans les groupes du lobby du raid, chaque joueur montre son pseudo, l'image de son perso (son stuff)
+  et sa spécialisation avec son niveau (ex. « 🪓 Barbare (SP lvl : 12) »).
+- **État** : ✅ en ligne le 04/11
+
+## 04/11/2026 — Geoffrey — Raid : inviter un joueur par son pseudo (bêta, temporaire)
+- **Pour le joueur** : dans le lobby du raid, un champ « Pseudo du joueur » et un bouton **Inviter dans le raid** :
+  n'importe quel joueur, même d'une autre guilde ou sans guilde, entre directement dans le lobby, prêt, dans le premier
+  groupe qui a de la place. Une fenêtre confirme l'invitation. Il part dans la session au lancement (il peut la quitter) ;
+  le chef du raid peut le sortir.
+- **Décisions** : temporaire, le temps de la bêta (pas assez de monde par guilde).
+- **État** : ✅ en ligne le 04/11
+
+## 04/11/2026 — Geoffrey — Raid 1 : Cerbère
+- **Pour le joueur** : nouvel onglet **Raid** dans sa guilde, avec un lobby de 1 à 10 joueurs de la guilde (gratuit,
+  pas de récompense pour l'instant). 30 min au total : il faut d'abord miner **en entier** deux areas de terrain (terre,
+  pierre, pierre dure, puis la nouvelle **Pierre des enfers**, deux fois plus dure), avec les pods et l'oxygène comme
+  dans la mine. Le lobby se joue en **2 groupes de 5** (chacun choisit le sien, le chef du raid peut déplacer) : les
+  buffs de groupe (Inspiration, Cri de guerre, Bonbonne de zipette, anneaux) ne vont qu'à son groupe. Tout miné, la grande porte s'ouvre sur l'arène de **Cerbère**, un chien de lave à trois têtes (8 × 6).
+  - **Morsure** (toutes les 30 s, 21 s enragé) : sur 3 cibles, d'abord ceux qui le provoquent. Si aucune ne résiste
+    (ténacité), une des trois meurt, au hasard ; sinon elle se dissipe.
+  - **Balayage** (toutes les 5 s) : repousse ceux qui sont à 2 cases.
+  - **Magma** (toutes les 30 s) : 50 % de chances pour chacun de devenir **Durci** (en pierre, intouchable), libéré
+    quand les autres le minent. Jamais sur les tanks ; la ténacité ne joue que pour la spé Mineur.
+  - **Enragé** sous 33 %. Morts définitives ; défaite si tout le monde est mort ou au bout des 30 min.
+- **Décisions** : Cerbère 280 000 PV : environ 1 victoire sur 10 et un combat de 10 min pour l'équipe de référence
+  (4 barbares, 4 mineurs, 2 logisticiens, stuff T4.5 +5 et runes R4, tanks à 40 % de ténacité). Valeurs provisoires.
+- **À suivre** : un essai à plusieurs vrais comptes et sur téléphone ; la récompense ; le lobby se vide quand le
+  serveur redémarre.
+- **État** : ✅ en ligne le 04/11
+
 ## 04/11/2026 — Geoffrey — Arbres de skills v2 : spé choisie, deux colonnes, 13 nouveaux skills
 - **Pour le joueur** :
   - en haut de l'onglet Skills, trois boutons pour **choisir sa spécialisation** (en changer rend tous les points) ;
@@ -31,7 +62,7 @@ Modèle d'entrée :
   mine classique (3 min) et prison (1 min) ; auras pour tout le groupe, sans cumul ; Ruée et Pillage passent à 3 rangs.
 - **À suivre** : équilibrage des nouveaux skills (valeurs provisoires) ; regarder comment les joueurs répartissent
   leurs points hors spé.
-- **État** : 🧪 sur la branche `geoffrey/arbres-skills-v2` (pas en ligne)
+- **État** : ✅ en ligne le 04/11
 
 ## 04/11/2026 — Geoffrey — Guilde : l'Armurerie demande 20 Orbes supérieurs (avant 100)
 - **État** : ✅ en ligne le 04/11
@@ -1461,6 +1492,11 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
 - **État** : ✅ en ligne le 29/10
 
 ---
+
+## 04/11/2026 — Geoffrey — Énergie de départ : 100
+- **Pour le joueur** : un nouveau compte commence avec 100 d'énergie (avant 0), comme tout compte qui n'a encore jamais eu
+  d'énergie enregistrée (pas encore lancé de mine classique ni de prison). Les comptes qui ont déjà une énergie la gardent.
+- **État** : ✅ en ligne le 04/11
 
 ## 04/11/2026 — Geoffrey — Concasseur : nouvelle table du minerai d'or
 - **Pour le joueur** : 100 Or concassés donnent maintenant toujours 1 à 50 charbons et 1 à 15 graphites ; une fois sur deux, 1 à

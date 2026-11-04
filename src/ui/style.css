@@ -417,6 +417,12 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .prisonBanner{display:flex;align-items:center;justify-content:center;gap:calc(3*var(--u));padding:calc(2*var(--u)) calc(6*var(--u));
   background:var(--sel);box-shadow:inset 0 calc(-1*var(--u)) 0 var(--acc-dk);font-size:var(--fs-l);font-variant-numeric:tabular-nums;text-align:center}
 .prisonBanner>span:first-child{color:var(--acc)}
+/* raid Cerbère (04/11/2026) : bandeau du minage (barre : blocs minés) ; devant la porte, il rougeoie */
+.raidBanner{flex-wrap:wrap;background:#2a120c;box-shadow:inset 0 calc(-1*var(--u)) 0 #7a2a12}
+.raidBanner>span:first-child{color:#ff8a2a}
+.raidBanner .raidBar{flex:0 1 calc(120*var(--u))}
+.raidBanner .raidBar>i{background:#ff8a2a}
+.raidBanner.door{background:#4a160c;color:#ffd08a}
 .prisonOn #focusCard,.prisonOn #focusAreaCard,.prisonOn:not(.prisonDev) #speedBtns,.prisonOn #pauseBtn,.prisonOn #seedLbl{display:none!important}   /* vitesses : en mode dev seulement (29/10) */
 .lobbyActions .launchCost{align-self:center;color:var(--mut)}
 .lobbyActions .launchCost.err{color:var(--bad)}
@@ -866,6 +872,17 @@ body.phone .chatMore{opacity:1;padding:0 calc(5*var(--u))}
 #socialBody .invHead,#boardBody .invHead{margin-bottom:0}
 .gcols{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:calc(4*var(--u))}
 .gcols>div{display:flex;flex-direction:column;gap:calc(4*var(--u))}
+/* onglet Raid de la guilde (04/11/2026) : couronne du chef du raid, image de Cerbère */
+.raidMem .raidCrown{flex:0 0 calc(6*var(--u));color:var(--acc);display:inline-flex}
+.raidMem.me .fname b{color:var(--acc)}
+.raidGroup{margin-bottom:calc(3*var(--u))}
+.raidMem .raidAv{flex:none;width:calc(28*var(--u));height:calc(28*var(--u));display:grid;place-items:center}
+.raidMem .raidAv canvas{width:calc(24*var(--u));height:calc(24*var(--u));image-rendering:pixelated}
+.raidMem .fname{display:flex;flex-direction:column}
+.raidGroup h3{display:flex;align-items:center;gap:calc(2*var(--u));margin:calc(2*var(--u)) 0}
+.raidGroup h3 button{margin-left:auto}
+.raidBoss{display:block;width:100%;max-width:calc(128*2*var(--u));margin:0 auto calc(2*var(--u));image-rendering:pixelated}
+.raidRunning{box-shadow:inset 0 0 0 var(--u) #7a2a12}
 .gxp{font-size:var(--fs-s);white-space:nowrap}
 /* bâtiments de guilde (01/11/2026) */
 .gbList{display:flex;flex-direction:column;gap:calc(4*var(--u))}
