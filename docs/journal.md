@@ -21,7 +21,7 @@ Modèle d'entrée :
   sortie (avant : 8 et 8). Ce qui était déjà posé reste à sa place.
 - **Décisions** : 16 / 16 ; même vitesse (un lot de 100 par minute, première case qui en a assez, de la case 1 à 16).
 - **À suivre** : la page est plus haute (4 rangées au lieu de 2) ; passer à 2 rangées de 8 sur PC si c'est gênant.
-- **État** : 🧪 sur la branche  (pas en ligne)
+- **État** : 🧪 sur la branche `jules/concasseur-16-cases` (pas en ligne)
 
 ## 04/11/2026 — Jules — Jauge de profondeur : les initiales ne s'échangent plus
 - **Pour le joueur** : dans la barre à droite de la mine, chaque pastille porte bien l'initiale (et la couleur) de son
