@@ -2,7 +2,7 @@
    du thème. Au centre, au-dessus de tout (#dialog). Une à la fois : les suivantes attendent. Entrée = valider, Échap ou
    clic à côté = annuler. Elles ne font que demander : le serveur refait toujours ses vérifications.
      ask(text, { ok, cancel, danger }) → promesse true / false
-     tell(text)                        → promesse, à la fermeture
+     tell(text, { title })             → promesse, à la fermeture ; title : un titre au-dessus du texte (04/11/2026)
      askText(text, value, { maxLength, readOnly, multiline }) → promesse du texte saisi, ou null si annulé ; multiline :
        plusieurs lignes, Entrée va à la ligne (on valide au bouton)
      askMenu(text, [{ id, label, danger }]) → promesse de l'id choisi, ou null si annulé (01/11/2026)
@@ -13,13 +13,13 @@
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
 
 /* contenu de la fenêtre (logique pure, testée) ; kind : 'ask' | 'tell' | 'text' */
-export function dialogHtml({ kind, text, ok = 'OK', cancel = 'Annuler', danger = false, value = '', maxLength = 200, readOnly = false, multiline = false, links = [], actions = [], choices = [], noteLabel = '', noteMax = 200, fields = [] }){
+export function dialogHtml({ kind, text, title = '', ok = 'OK', cancel = 'Annuler', danger = false, value = '', maxLength = 200, readOnly = false, multiline = false, links = [], actions = [], choices = [], noteLabel = '', noteMax = 200, fields = [] }){
   const input = kind === 'text' && multiline
     ? `<textarea class="dlgInput" rows="6" maxlength="${maxLength}" spellcheck="false">${esc(value)}</textarea>`
     : kind === 'text'
     ? `<input class="dlgInput" value="${esc(value)}" maxlength="${maxLength}"${readOnly ? ' readonly' : ''} autocomplete="off" spellcheck="false">` : '';
   const no = kind === 'ask' || kind === 'menu' || kind === 'form' || kind === 'fields' || (kind === 'text' && !readOnly) ? `<button data-dlg="no">${esc(cancel)}</button>` : '';
-  const head = `<div class="box" role="dialog" aria-modal="true"><p class="dlgText">${esc(text).split('\n').join('<br>')}</p>`;
+  const head = `<div class="box" role="dialog" aria-modal="true">${title ? `<h3 class="dlgTitle">${esc(title)}</h3>` : ''}<p class="dlgText">${esc(text).split('\n').join('<br>')}</p>`;
   if(kind === 'menu')
     return head + `<p class="dlgBtns dlgMenu">${actions.map(a => `<button${a.danger ? ' class="danger"' : ''} data-dlg-act="${esc(a.id)}">${esc(a.label)}</button>`).join('')}${no}</p></div>`;
   if(kind === 'fields')
@@ -74,7 +74,7 @@ function open(opts){
 }
 
 export const ask = (text, o = {}) => open({ ...o, kind:'ask', text });
-export const tell = text => open({ kind:'tell', text });
+export const tell = (text, o = {}) => open({ title: o.title, kind:'tell', text });
 export const askText = (text, value = '', o = {}) => open({ ...o, kind:'text', text, value });
 export const askMenu = (text, actions) => open({ kind:'menu', text, actions });
 export const askFields = (text, fields, o = {}) => open({ ...o, kind:'fields', text, fields });

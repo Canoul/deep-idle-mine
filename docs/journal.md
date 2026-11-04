@@ -16,6 +16,14 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 04/11/2026 — Geoffrey — Administration : avertissement en pop-up, ban en minutes
+- **Pour le joueur** : l'équipe peut lui envoyer un message en pop-up (un titre et un texte) : il s'ouvre dans les
+  secondes s'il est en ligne, sinon à sa prochaine visite, et ne revient plus une fois fermé.
+- **Décisions** : ce message ne compte pas comme un avertissement du chat (pas de ban automatique au bout de 3). Un ban
+  peut maintenant durer un nombre de minutes (`--minutes`). Retirer un objet existait déjà (`take-item.js`).
+- **À suivre** : rien.
+- **État** : 🧪 sur la branche `geoffrey/admin-sanctions` (pas en ligne)
+
 ## 04/11/2026 — Geoffrey — Stuff : les dégâts % beaucoup moins forts
 - **Pour le joueur** : les pièces qui donnent des dégâts % en donnent nettement moins : Jambes en thorium 11,8 % (avant
   31,3 %), Jambières du Golbute 12,5 % de dégâts, 7 % de double attaque et 25 % de butin (avant 33,3 / 21,9 / 20 %), Cape

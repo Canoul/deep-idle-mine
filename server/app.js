@@ -37,7 +37,14 @@ export function createApp({ store, root, config = SERVER, service, game, party, 
                    /* administration : depuis le serveur lui-même, avec la clé DIM_ADMIN_TOKEN (server/admin/routes.js) */
                    ...(game && store ? adminRoutes({ accounts: store, service: accounts, game, party, moderation, social, reports, eraser, appLatest: appUpdate?.latest ?? null, token: config.adminToken }) : {}),
                    /* modération du chat (30/10) : ses avertissements et son ban, vus par le joueur */
-                   ...(moderation ? { 'GET /api/moderation/me': async ctx => ctx.me ? moderation.status(ctx.me.id) : { warnings: 0, max: 0, bannedUntil: 0 } } : {}) };
+                   ...(moderation ? { 'GET /api/moderation/me': async ctx => ctx.me ? moderation.status(ctx.me.id) : { warnings: 0, max: 0, bannedUntil: 0 },
+                                      /* message de l'équipe fermé (04/11/2026, scripts/warn.js) : il ne s'affiche plus */
+                                      'POST /api/moderation/notice-seen': async ctx => {
+                                        if(!ctx.me) throw new HttpError(401, 'not_authenticated', 'Connecte-toi pour jouer.');
+                                        if(!Number.isSafeInteger(ctx.body?.id) || ctx.body.id < 1) throw new HttpError(400, 'bad_request', 'id : le numéro du message.');
+                                        if(!await moderation.noticeSeen(ctx.me.id, ctx.body.id)) throw new HttpError(404, 'not_found', 'Message inconnu.');
+                                        return { ok: true };
+                                      } } : {}) };
   let proxyChecked = !config.logProxyCheck;
 
   /* une fois par démarrage : l'adresse retenue et l'en-tête reçu, pour vérifier le réglage des relais en ligne */

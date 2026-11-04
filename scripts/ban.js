@@ -3,6 +3,7 @@
    (3 avertissements, scripts/moderation.js --unban). Sur le VPS :
 
      sudo node /opt/deep-idle-mine/scripts/ban.js --name crousti --days 7 --reason "Harcèlement"
+     sudo node /opt/deep-idle-mine/scripts/ban.js --name crousti --minutes 90 --reason "Spam"      durée en minutes (04/11/2026)
      sudo node /opt/deep-idle-mine/scripts/ban.js --name crousti                                   sans durée = définitif
      sudo node /opt/deep-idle-mine/scripts/ban.js --name crousti --off
 
@@ -17,6 +18,9 @@ if(process.argv.includes('--off')){
   process.exit(0);
 }
 const days = arg('days') === undefined ? undefined : Number(arg('days'));
-if(days !== undefined && (!Number.isSafeInteger(days) || days < 1)) fail('--days : un nombre de jours entier (sans --days : définitif).');
-const r = await adminPost('/api/admin/ban', { name, days, reason: arg('reason'), by: adminBy() });
+const minutes = arg('minutes') === undefined ? undefined : Number(arg('minutes'));
+if(days !== undefined && minutes !== undefined) fail('--days ou --minutes, pas les deux.');
+if(days !== undefined && (!Number.isSafeInteger(days) || days < 1)) fail('--days : un nombre de jours entier (sans durée : définitif).');
+if(minutes !== undefined && (!Number.isSafeInteger(minutes) || minutes < 1)) fail('--minutes : un nombre de minutes entier (sans durée : définitif).');
+const r = await adminPost('/api/admin/ban', { name, days, minutes, reason: arg('reason'), by: adminBy() });
 console.log(`« ${r.account} » suspendu ${r.suspended.until === null ? 'définitivement' : `jusqu'au ${parisTime(r.suspended.until)}`}.`);

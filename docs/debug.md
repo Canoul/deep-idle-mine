@@ -7366,3 +7366,19 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   Runes (`runeDiv`, `UPGRADE.prices`) inchangées.
 - Tests ✅ stuff-balance (Plastron 994, tolérance 0,02), gearscore (priceAdjust), cape-inclusive (ligne 7,8), steel-gear,
   stuff, rune, wiki, golbute, dps.
+
+## 04/11/2026 — Geoffrey — Admin : message de l'équipe en pop-up, ban en minutes (branche geoffrey/admin-sanctions)
+- `scripts/warn.js` → `POST /api/admin/notice` { name, title (1–`MODERATION.noticeTitleMax` 80), text (1–`noticeTextMax` 1000) },
+  pseudo ou ID d'invité, journal `mod_log` action `notice`. Stockage : champ `notices` [{ id, at, by, title, text, seenAt }]
+  de la fiche ns `moderation` (`server/moderation/service.js` : `notice`, `unseenNotices`, `noticeSeen`, gardés
+  `MODERATION.keep`). L'état social (`GET /api/social`, relu toutes les `SOCIAL.poll` ms) porte `notices` (non lus) ;
+  `src/main.js` `showNotices` ouvre `tell(text, { title })` (titre `.dlgTitle`, `src/ui/dialog.js`), puis
+  `POST /api/moderation/notice-seen` { id } (idempotent ; 404 si pas le sien). Set des messages montrés sur la fonction (pas
+  de const : l'état social peut arriver avant la fin du module), clé compte:id.
+- `scripts/ban.js --minutes N` → `/api/admin/ban` { minutes } (1–`banMinutesMax`, refusé avec `days`) ; journal « N min ».
+- Tests ✅ moderation-admin (minutes : valeurs invalides, heure de fin, journal ; notice : textes invalides, compte inconnu,
+  visible seulement par lui, seen idempotent / 401 / 400 / 404, journal), dialog (titre échappé), moderation, social,
+  admin-moderation, moderation-ui, admin-take, admin. ⚠️ Pas vu dans le navigateur.
+- ⚠️ Joueur banni par le ban auto du chat : le POST « lu » est refusé (403) → la pop-up revient au rechargement de la page,
+  jusqu'à la fin du ban. Compte suspendu : il ne voit rien avant la fin de la suspension.
+

@@ -46,7 +46,7 @@ async function player(){
 const say = (p, text) => call('/api/social/chat', { text, channel: 'general' }, p.cookie);
 
 test('routes fermées sans la clé', async () => {
-  for(const r of ['reports', 'chat-delete', 'chat-recent', 'mute', 'ban', 'rename', 'mod-log'])
+  for(const r of ['reports', 'chat-delete', 'chat-recent', 'mute', 'ban', 'rename', 'mod-log', 'notice'])
     assert.equal((await call('/api/admin/' + r, {})).status, 404, r);
 });
 
@@ -103,6 +103,42 @@ test('suspension : connexion refusée avec un message, session en cours coupée 
   assert.match((await call('/api/account/login', { name: p.name, password: PASS })).data.error.message, /jusqu'au/);
   assert.equal((await admin('ban', { name: p.name, off: true })).status, 200);
   assert.equal((await call('/api/account/login', { name: p.name, password: PASS })).status, 200);
+});
+
+test("suspension en minutes : fin à l'heure dite ; minutes invalides ou avec days refusées", async () => {
+  const p = await player();
+  for(const bad of [{ minutes: 0 }, { minutes: 1.5 }, { minutes: '30' }, { minutes: -5 }, { minutes: 1e12 }, { minutes: 30, days: 1 }])
+    assert.equal((await admin('ban', { name: p.name, ...bad })).status, 400, JSON.stringify(bad));
+  const t0 = Date.now(), r = await admin('ban', { name: p.name, minutes: 90, reason: 'Spam' });
+  assert.equal(r.status, 200);
+  assert.ok(Math.abs(r.data.suspended.until - (t0 + 90 * 60e3)) < 5000);
+  assert.equal((await call('/api/account/login', { name: p.name, password: PASS })).data.error.code, 'suspended');
+  const log = (await admin('mod-log', {})).data.rows.find(l => l.action === 'ban' && l.target === p.name);
+  assert.match(log.detail, /90 min : Spam/);
+  await admin('ban', { name: p.name, off: true });
+});
+
+test("message de l'équipe : pop-up dans l'état social jusqu'à fermeture, une fois ; textes vérifiés ; journal", async () => {
+  const p = await player(), other = await player();
+  for(const bad of [{}, { title: 'T' }, { text: 'x' }, { title: '  ', text: 'x' }, { title: 'T', text: 42 }, { title: 'T'.repeat(81), text: 'x' }, { title: 'T', text: 'x'.repeat(1001) }])
+    assert.equal((await admin('notice', { name: p.name, ...bad })).status, 400, JSON.stringify(bad));
+  assert.equal((await admin('notice', { name: 'Personne', title: 'T', text: 'x' })).status, 404);
+  const r = await admin('notice', { name: p.name, title: ' Avertissement ', text: 'Reste poli.\nMerci.' });
+  assert.equal(r.status, 200); assert.equal(r.data.id, 1);
+  let st = (await get('/api/social', p.cookie)).data;
+  assert.deepEqual(st.notices.map(n => [n.id, n.title, n.text]), [[1, 'Avertissement', 'Reste poli.\nMerci.']]);
+  assert.deepEqual((await get('/api/social', other.cookie)).data.notices, [], 'les autres ne le voient pas');
+  assert.equal((await call('/api/moderation/notice-seen', { id: 1 }, other.cookie)).status, 404, 'pas le sien');
+  for(const id of [0, -1, 1.5, '1', null]) assert.equal((await call('/api/moderation/notice-seen', { id }, p.cookie)).status, 400);
+  assert.equal((await call('/api/moderation/notice-seen', { id: 1 })).status, 401);
+  assert.equal((await call('/api/moderation/notice-seen', { id: 1 }, p.cookie)).status, 200);
+  assert.equal((await call('/api/moderation/notice-seen', { id: 1 }, p.cookie)).status, 200, 'deux fois : rien de plus');
+  assert.deepEqual((await get('/api/social', p.cookie)).data.notices, []);
+  assert.equal((await admin('notice', { name: p.name, title: 'Deux', text: 'b' })).data.id, 2);
+  st = (await get('/api/social', p.cookie)).data;
+  assert.deepEqual(st.notices.map(n => n.id), [2]);
+  const log = (await admin('mod-log', {})).data.rows.find(l => l.action === 'notice' && l.target === p.name);
+  assert.equal(log.by, 'geoffrey'); assert.match(log.detail, /Deux : b/);
 });
 
 test('compte invité : les outils le trouvent par son ID (il écrit dans le chat, il n\'a pas de pseudo)', async () => {
