@@ -18,7 +18,7 @@ Modèle d'entrée :
 
 ## 04/11/2026 — Geoffrey — Appli : clavier de la connexion (Galaxy S22) et fond de l'Accueil
 - **Pour le joueur** : sur certains téléphones (Galaxy S22), ouvrir le clavier pour taper son pseudo écrasait la fenêtre de connexion (seul le champ restait visible) : le clavier était compté deux fois. Corrigé. L'Accueil n'affiche plus la session en cours (la prison) en fond derrière le Carreau, qui coupait l'écran en deux.
-- **État** : 🧪 sur la branche `geoffrey/appli-clavier-fond` (pas en ligne)
+- **État** : ✅ en ligne le 04/11
 
 ## 04/11/2026 — Jules — Appli mobile : la mine zoomée sur le mineur
 - **Pour le joueur** : rien sur le site. Dans l'appli, la mine de la session démarre **zoomée ×3** sur son mineur
