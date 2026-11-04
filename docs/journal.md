@@ -24,7 +24,7 @@ Modèle d'entrée :
 - **Décisions** : choix de Claude (Geoffrey : « je te laisse choisir », ~20 min de minage) : 150 Indices, dureté 30,
   150 pods, sous la ligne 40 ; l'équipe de référence met ≈ 18,5 min. Cerbère reste à 280 000 PV (2/40 victoires avec le
   temps qui reste).
-- **État** : 🧪 sur la branche `geoffrey/raid-indices` (pas en ligne)
+- **État** : ✅ en ligne le 04/11
 
 ## 04/11/2026 — Jules — Cerbère redessiné et animé : le « Molosse des Enfers »
 - **Pour le joueur** : dans l'arène du raid, Cerbère est un énorme molosse noir à trois têtes : une tête basse qui gronde
