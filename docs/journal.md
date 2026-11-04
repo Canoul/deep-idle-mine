@@ -16,6 +16,19 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 04/11/2026 — Geoffrey — Raid : les mineurs explorent le noir, treuil dès le début
+- **Pour le joueur** : au minage du raid, quand aucun Indice n'est en vue, chaque mineur part explorer un coin encore dans
+  le noir où personne d'autre ne cherche (avant : ils creusaient tout droit jusqu'au fond puis remontaient). Les mineurs
+  partent répartis sur toute la largeur (avant, certains partaient presque de la même colonne et creusaient le même
+  puits). Le logisticien qui a le Treuil le pose dès le début jusqu'à la 2e area (l'ascenseur avec le glyphe). Contre
+  Cerbère, esquiver le coup qui repousse ne fatigue plus la ténacité : elle reste entière pour la Morsure.
+- **Décisions** : treuil jusqu'en haut de la 2e area (pas jusqu'au fond) ; le coup qui repousse s'esquive toujours, mais sans
+  fatigue.
+- **Chiffres** (simulation, équipe de référence) : 150 Indices rapportés en ≈ 11 min (avant 18,5 ; sur la seed 262283490 :
+  14,9 → 10,4 min). Cerbère toujours ≈ 1 victoire sur 10 : les combats finissent par les morts, pas par le temps.
+- **À suivre** : regarder une vraie partie de raid (rien n'a été vu dans un navigateur).
+- **État** : ✅ en ligne le 04/11
+
 ## 04/11/2026 — Geoffrey — Skills : nouveaux arbres (5 étages, Ambidextre)
 - **Pour le joueur** : les arbres de skills passent à 5 étages ; plusieurs skills changent de place (les auras, Ivresse
   Minérale et Reconnaissance remontent ; Treuil, Escalateur et Mule arrivent plus tôt ; Dématérialisation descend d'un

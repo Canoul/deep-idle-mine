@@ -276,18 +276,24 @@ export function tryUnlock(G){
   genArea(G, G.unlockedAreas); G.unlockedAreas++;
   for(const m of G.miners){ m.exploring=false; m.skipRows.clear(); }
   log(G, `🔓 Area ${k+1} débloquée !`);
-  /* treuil (skill Logisticien) : un logisticien qui a le skill (le premier) va le prolonger jusqu'au haut de la nouvelle
-     area ; de préférence le porteur du sac (Mule), sinon le premier qui a Mule, sinon le premier qui a le Treuil */
-  /* Glyphe Treuil : son porteur passe avant tout le monde et pose un ascenseur, un déblocage sur GLYPHS.liftEvery
-     (1er, 3e, 5e… : k = 0, 2, 4…) ; aux autres déblocages, personne ne part creuser */
+  assignWinch(G, k);
+  return true;
+}
+
+/* treuil (skill Logisticien) : un logisticien qui a le skill (le premier) va le prolonger jusqu'au haut de l'area k+1 ;
+   de préférence le porteur du sac (Mule), sinon le premier qui a Mule, sinon le premier qui a le Treuil */
+/* Glyphe Treuil : son porteur passe avant tout le monde et pose un ascenseur, un déblocage sur GLYPHS.liftEvery
+   (1er, 3e, 5e… : k = 0, 2, 4…) ; aux autres déblocages, personne ne part creuser */
+/* raid (04/11/2026, Geoffrey) : ses areas sont ouvertes d'emblée ; appelé au lancement avec k = areas − 2 (haut de la
+   dernière area) */
+export function assignWinch(G, k){
   const lift=G.miners.find(m=>m.skill?.winch && m.skill?.glyph_winch);
   if(lift){
-    if(k % GLYPHS.liftEvery !== 0) return true;
+    if(k % GLYPHS.liftEvery !== 0) return;
     lift.winchJob={ bottom:Math.max(lift.winchJob?.bottom ?? 0, areaTop(k+1)), lift:true };
     log(G, `🛗 ${lift.name} part installer l'ascenseur jusqu'à l'area ${k+1}`);
-    return true;
+    return;
   }
   const lg=G.miners.find(m=>m.skill?.winch && G.mule?.carrier===m.id) ?? G.miners.find(m=>m.skill?.winch && m.skill?.mule) ?? G.miners.find(m=>m.skill?.winch);
   if(lg){ lg.winchJob={ bottom:Math.max(lg.winchJob?.bottom ?? 0, areaTop(k+1)) }; log(G, `🪣 ${lg.name} part installer le treuil jusqu'à l'area ${k+1}`); }
-  return true;
 }

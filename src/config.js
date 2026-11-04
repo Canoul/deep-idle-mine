@@ -1929,7 +1929,10 @@ export const RAID = {
   /* minage (04/11, Geoffrey 14:48 : « tout miner » remplacé) : clues Indices cachés au hasard dans les 2 areas (moitié par
      area), la porte s'ouvre quand tous sont trouvés ; les areas sont dans le noir comme la mine (on explore) ;
      clueHard / clueVal : dureté et attrait d'un Indice (BLOCKS[26]) ; clueMinDepth : pas dans les clueMinDepth premières lignes */
-  mine: { areas: 2, bands: [['dirt', 25], ['stone', 25], ['hardstone', 25], ['hellstone', 25]], clues: 150, clueHard: RAID_CLUE_HARD, clueMinDepth: 40, lead: true, gather: 5 },   // lead : un Indice trouvé montre le plus proche encore caché
+  mine: { areas: 2, bands: [['dirt', 25], ['stone', 25], ['hardstone', 25], ['hellstone', 25]], clues: 150, clueHard: RAID_CLUE_HARD, clueMinDepth: 40, lead: true, gather: 5,   // lead : un Indice trouvé montre le plus proche encore caché
+     /* scout (04/11 soir, Geoffrey) : sans Indice en vue, on explore le noir par zones de zone × zone cases, chacun la
+        sienne (src/sim/raid/scout.js) ; une zone dont moins de minUnseen des cases restent dans le noir est faite */
+     scout: { zone: 10, minUnseen: 0.5 } },
   cerbere: {
     w: 30, h: 12, spawn: [1, 2, 3, 4, 5, 1, 2, 3, 4, 5],
     boss: { name: 'Cerbère', w: 8, h: 6, hp: 280000, knockRes: 100, bossX: 18 },   // 280 000 PV : ~1 victoire sur 10, combat ~9-10 min, équipe de référence avec tanks à 40 % de ténacité fixe (04/11 : Morsure /30 s qui tue 1 cible, tanks jamais durcis ; simulation --tank-ten 40)

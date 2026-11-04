@@ -14,7 +14,7 @@
    Sorts : Cri de guerre, Dynamite, Dash, Ulti shen en combat ; Inspiration et Fast learner pour libérer un allié ;
    les autres : sans effet. */
 import { inspireOn, inspirePct, setInspire } from '../groups.js';
-import { tenacityTry } from '../tenacity.js';
+import { tenacityTry, tenacityTryFresh } from '../tenacity.js';
 import { critMul, backstabMul } from '../skillfx.js';
 import { RAID, DT, STATS, CFG } from '../../config.js';
 import { mulberry32 } from '../../core/rng.js';
@@ -142,7 +142,8 @@ function sweep(G){
   G.next.sweep = G.t + C.sweep.every; b.sweepAt = G.ticks; G.stats.sweeps++;
   for(const m of actives(G)){
     if(gapX(G, m.x) > C.sweep.range || m.y < G.floorY - high) continue;
-    if(tenacityTry(m, 'cerbere', G.fightRng)){ G.stats.dodges++; continue; }
+    /* la ténacité l'esquive, sans fatiguer (Geoffrey, 04/11 soir : avant, une esquive ici rendait le tank fatigué pour la Morsure) */
+    if(tenacityTryFresh(m, 'cerbere', G.fightRng)){ G.stats.dodges++; continue; }
     let { x, y } = m;
     for(let i = 0; i < high && cerOpen(G, x, y - 1); i++) y--;
     for(let i = 0; i < back && cerOpen(G, x - 1, y); i++) x--;

@@ -1,6 +1,6 @@
 /* IA du mineur : chaque appel à decide() choisit UNE action. Elle lit m.prefs (préférences) et la config ;
    ajouter un comportement = ajouter une préférence et la lire ici, pas réécrire l'IA. */
-import { W, AREA_H, STATS, CFG, BLOCKS, BARRIER, MOBS, CHEST_X, SKILLS, WINCH, HELP, MULE, DUCK, DT } from '../config.js';
+import { W, AREA_H, STATS, CFG, BLOCKS, BARRIER, MOBS, CHEST_X, SKILLS, WINCH, HELP, MULE, DUCK, DT, RAID } from '../config.js';
 import { DIRS, isOre, isTarget, aimable, isResidue, typeOf, areaOf, areaTop, maxRow, tileAt, isAir, supported, rowDone, fallInfo, landing, ontoLadder } from './world.js';
 import { search, firstStep, planReturn, planDown } from './path.js';
 import { stepDir, deepFall } from './actions.js';
@@ -15,6 +15,7 @@ import { landHit } from './actions.js';
 export { tackler } from './mobs.js';
 import { targetVal, dropDepleted, focusGoal, workArea, activeOres, areaGood, oreFocus } from './focus.js';
 import { active, mayEnter, isIn, inRoom, bossOf, hasBarbarian, isBarbarian, front } from './dungeon.js';
+import { zoneOf, zoneOpen, atCore, markScouted, pickZone } from './raid/scout.js';
 
 /* boussole : minerais sur la ligne du mineur, et sur carac.compassRows lignes au-dessus et en dessous (Boussole en or) */
 export function compassScan(G,m,R){
@@ -334,7 +335,7 @@ function decideWork(G,m){
     if(reason && reason!=='fin de session' && workLeft(G)>tRet+12 && dungeonGoal(G,m,true)) return;
     /* Mule : pods pleins et un sac pas plein, plus près que la surface : il va y déposer */
     if(reason==='pods pleins' && muleWorth(G,m,rp)){ m.mode='mule'; log(G, `🎒 ${m.name} va déposer dans le sac`); return decideMule(G,m); }
-    if(reason){ m.mode='return'; m.reason=reason; m.returnStart=G.t; log(G, `↑ ${m.name} remonte : ${reason}`); return decideReturn(G,m,rp); }
+    if(reason){ m.mode='return'; m.reason=reason; m.returnStart=G.t; m.scout=null; log(G, `↑ ${m.name} remonte : ${reason}`); return decideReturn(G,m,rp); }
     if(curLum(G,m)<CFG.torchThreshold && m.torches>0 && !torchByOther(G,m)){ m.status='Pose une torche'; startAction(m,'torch',m.carac.torchTime,{}); return; }
   }
   if(trapGoal(G,m)) return;
@@ -412,7 +413,9 @@ function decideWork(G,m){
   // descend tant que la case du dessous n'est pas une barrière, sauf en phase d'exploration (fond de l'area verrouillé)
   // … et ne passe pas dans une area épuisée pour son focus : il explore la sienne en galeries
   const stopK=focusStop(G,m);
-  const down = !m.exploring && stopK===null && tileAt(G,m.x,m.y+1) !== BARRIER && m.y<cap;
+  /* raid : il ne creuse pas tout droit vers le fond, il explore le noir (scout, plus bas) */
+  const scouting = !!G.raid && !!RAID.mine.scout;
+  const down = !scouting && !m.exploring && stopK===null && tileAt(G,m.x,m.y+1) !== BARRIER && m.y<cap;
   const range = (m.prefs.priority==='minerais'||!down) ? R : 3;
   if(best && Math.abs(best.x-m.x)<=range){ m.target={x:best.x,y:best.y}; m.status=targetStatus(best.t); return goOre(G,m,best,r,bestN); }
   if(away) return changeArea(G,m,goal);
@@ -420,10 +423,33 @@ function decideWork(G,m){
   /* cibles de valeur découvertes hors de portée : il va les chercher avant de creuser à l'aveugle (seed 1832289715) */
   const f = G.khole ? null : farGoal(G,m,[...known.values()].filter(o=>o.y<=cap && (targetVal(G,m,o.t)??0)>=CFG.farVal && !oreTakenBy(G,m,o.x,o.y) && !veinTaken(G,m,o.x,o.y)));
   if(f){ m.target={x:f.o.x,y:f.o.y,far:true}; m.status=targetStatus(f.o.t); return goOre(G,m,f.o,f.r,f.r.n); }
+  if(scouting && scout(G,m)) return;
   const k = stopK ?? (m.exploring && m.exploreArea!=null ? m.exploreArea : G.unlockedAreas-1);
   /* fin de session : galeries au-dessus de la profondeur max, dans l'area de travail (« Plus profond » peut viser l'area
      du dessus quand la profondeur max n'entre que de quelques couches dans la plus profonde, 04/11/2026) */
   explore(G,m, Math.min(k, A ?? Infinity, Math.max(0,areaOf(cap))), cap);
+}
+
+/* raid : aucun Indice connu, il va au centre d'une zone encore dans le noir que personne d'autre n'explore
+   (src/sim/raid/scout.js). Engagement : il garde sa zone tant qu'elle vaut le trajet (sinon va-et-vient entre deux zones
+   à égalité). false : plus aucune zone (il creuse alors des galeries, comme dans la mine). */
+function scout(G,m){
+  for(let tries=0; tries<2; tries++){
+    if(m.scout==null || !zoneOpen(G,m.scout)){
+      m.scout=null;
+      const id=pickZone(G,m,search(G,m,m.x,m.y,true,null).dist);
+      if(id==null) return false;
+      m.scout=id;
+    }
+    const z=zoneOf(m.scout);
+    if(atCore(z,m.x,m.y)){ markScouted(G,m.scout); m.scout=null; continue; }   // arrivé : zone faite, il en prend une autre
+    const r=search(G,m,m.x,m.y,true,(x,y)=>atCore(z,x,y)), s=r && firstStep(r,r.n);
+    if(!s || !(s.dx||s.dy)){ markScouted(G,m.scout); m.scout=null; continue; }   // inatteignable : personne n'y retourne
+    m.target=null; m.exploring=false; m.status='Explore le noir';
+    if(stepDir(G,m,s.dx,s.dy,{noBridge:!s.bridge})) return true;
+    idle(m,0.3); return true;
+  }
+  idle(m,0.3); return true;
 }
 
 function digDown(G,m){

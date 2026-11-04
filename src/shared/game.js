@@ -137,8 +137,11 @@ export function minerSpecs(record){
                        xpPct: ringXpPct(ringsOf(gearOf(i))), spells: spellsOf(i),
                        rings: rings.filter(r => !RINGS.items[r.item].xp || ringsOf(gearOf(i)).some(o => o.item === r.item)) });   // anneaux qui agissent sur lui (affichage, src/sim/effects.js) : le nerd seulement pour son porteur
   if(n <= 1) return [{ ...spec(0), name: players.length ? nameOf(0) : undefined }];
-  /* au-delà des 3 places de TEAM (raid, 10 joueurs, 04/11/2026) : répartis sur la largeur */
-  return Array.from({ length: n }, (_, i) => { const t = TEAM[i] ?? { x: Math.round((i + 0.5) * W / n), home: Math.round((i + 0.5) * W / n) };
+  /* au-delà des 3 places de TEAM (raid, 10 joueurs, 04/11/2026) : tous répartis sur la largeur (avant le 04/11 soir, les 3
+     premiers gardaient les places de TEAM et les autres se mettaient par-dessus : deux mineurs à 1 colonne l'un de l'autre,
+     dans le même puits, seed 262283490) */
+  const spread = i => ({ x: Math.round((i + 0.5) * W / n), home: Math.round((i + 0.5) * W / n) });
+  return Array.from({ length: n }, (_, i) => { const t = n > TEAM.length ? spread(i) : TEAM[i];
     return { x: t.x, home: t.home, ...spec(i) }; });
 }
 

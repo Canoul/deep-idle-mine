@@ -23,6 +23,8 @@ if(opt('clues', null) != null) RAID.mine.clues = +opt('clues');
 if(opt('clue-hard', null) != null) BLOCKS[26].hard = +opt('clue-hard');
 if(opt('clue-w', null) != null) BLOCKS[26].w = +opt('clue-w');
 if(opt('clue-depth', null) != null) RAID.mine.clueMinDepth = +opt('clue-depth');
+/* --no-scout : sans l'exploration du noir par zones (04/11 soir ; comparaison avec l'ancienne IA, qui creusait vers le fond) */
+if(args.includes('--no-scout')) RAID.mine.scout = null;
 const RUNS = +opt('runs', 10), HP = opt('hp', null) == null ? null : +opt('hp'), SEED0 = +opt('seed', 1);
 
 /* stuff de référence par spé (choix de Claude : la meilleure pièce T4.5, sinon T4, par case) */

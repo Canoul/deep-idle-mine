@@ -7411,6 +7411,30 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   négatif / décimal / 1001 refusés, rafale du même opId créditée une fois), game-service ; `npm run test:anticheat` 154/154.
 - ⚠️ Écran pas vérifié dans un navigateur (champ, Max, libellé « Craft × N »).
 
+## 04/11/2026 — Geoffrey — Raid : exploration du noir, treuil au lancement, départ réparti, Balayage sans fatigue (branche geoffrey/raid-ia)
+- **Constat** (seed 262283490 rejouée, équipe de référence de simulate-raid.js) : ~30 % du temps en remontée, ~30 % « Descend
+  par l'existant », tous les mineurs au fond (couche 101) ; pas de treuil (posé seulement par `tryUnlock`, qui ne joue pas en
+  raid) ; `minerSpecs` à plus de 3 joueurs : les 3 premiers aux places de `TEAM` (8, 25, 42), les autres répartis par-dessus
+  (23/25, 42/43 : même puits). simulate-raid.js réécrivait x / home lui-même : la simulation ne le voyait pas. Indice visé par
+  deux mineurs à la fois : jamais vu (0 échantillon), la réservation (`oreTakenBy`) marche.
+- **Quoi** : `src/sim/raid/scout.js` (zones de `RAID.mine.scout.zone` = 10 sur les lignes à Indices, `zoneOpen` : pas dans
+  `G.raid.scouted` et ≥ `minUnseen` 50 % de cases non vues, `pickZone` : la plus proche par `search(...).dist` au centre ±1,
+  hors zones `o.scout` des autres sauf s'il ne reste qu'elles). src/sim/ai.js : `scouting` (G.raid) → `down` faux ;
+  après `farGoal`, `scout(G,m)` (engagement `m.scout`, arrivé au centre ou inatteignable → `markScouted`), sinon `explore`
+  comme avant ; `m.scout = null` à chaque remontée. src/sim/world.js : `assignWinch(G,k)` sorti de `tryUnlock` (même code),
+  appelé par newSession en raid avec k = areas − 2 (bottom = areaTop(1) = 52). src/shared/game.js : n > TEAM.length → tous
+  répartis. src/sim/tenacity.js `tenacityTryFresh` (chance sans fatigue, ne touche pas `m.tenTired`) pour le Balayage
+  (src/sim/raid/cerbere.js `sweep`). simulate-raid.js `--no-scout`.
+- **Tests** ✅ raid-scout (nouveau : zones, réservation, IA qui explore sans descendre au fond, treuil au lancement + ascenseur,
+  pas en mine normale, départ réparti, Balayage sans fatigue), raid, raid-server, raid-ui, winch, glyphs, mule, tenacity,
+  instances, team, instance-sim, lobby, dev-spec, fall (161 verts).
+- **Simulation** : mine normale 3 × 5 identique à main (coffre 4169,2, 0 blocage). Raid `--mine-only --runs 5` : 13,2 min
+  sans exploration (treuil seul), 11,1 avec ; `--runs 10 --tank-ten 40` : 1/10 victoires, PV restants moyens 26 %, combats
+  7,5-13 min (fin par les morts).
+- ⚠️ Pas vu dans un navigateur. Points fragiles : `scout` refait une recherche complète (sans limite) à chaque choix de zone ;
+  `--tank-ten` met la résilience à 100 % : la simulation ne mesure pas l'effet du Balayage sans fatigue (il aide les tanks sans
+  résilience).
+
 ## 04/11/2026 — Geoffrey — Admin : raid-move (branche geoffrey/admin-raid-move) — ✅ en ligne le 04/11
 - `server/guild/raid.js` `adminMove(acc, host)` (dans la file `serial`) : lobby qui contient host (sinon `host_not_in_raid`),
   refus `same_account`, `raid_launching`, `raid_full`, `member_in_session` ; retire acc de son autre lobby de raid ; hors

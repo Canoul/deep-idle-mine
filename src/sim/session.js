@@ -5,7 +5,7 @@ import { shrineOf, shrineEffects } from '../meta/shrines.js';
 import { W, DT, SESSION_LEN, TOP_DIRT_ROWS, STATS, CFG, IDS, CHEST_X, CHEST_BASE, MOBS, SPAWN_X, TEAM, SHINY, FORTUNE, GEAR_RNG, GLYPHS, PRISON, SKILLS, RAID } from '../config.js';
 import { inReach, reachOf, stopAction } from './knock.js';
 import { mulberry32 } from '../core/rng.js';
-import { genArea, maxRow, prisonBox } from './world.js';
+import { genArea, maxRow, prisonBox, assignWinch } from './world.js';
 import { createMiner, curLum } from './mineur.js';
 import { finishAction } from './actions.js';
 import { decide } from './ai.js';
@@ -64,6 +64,7 @@ export function newSession(seed, opts={}){
   if(box) for(let y=1;y<=TOP_DIRT_ROWS;y++) for(let x=0;x<W;x++) if(x<box.x0 || x>=box.x0+box.w) G.tiles[y][x] = PRISON.bars;
   genArea(G,0); G.unlockedAreas = 1;
   if(G.raid) for(let k=1;k<RAID.mine.areas;k++){ genArea(G,k); G.unlockedAreas++; }   // raid : toutes les areas ouvertes d'emblée
+  if(G.raid && RAID.mine.areas > 1) assignWinch(G, RAID.mine.areas - 2);   // … et le treuil part tout de suite jusqu'en haut de la dernière (04/11)
   G.duckBase = G.prison || G.raid ? Infinity : G.unlockedAreas; G.ducks = 0;   // Gallianix : un canard par area débloquée ensuite (src/sim/duck.js) ; jamais en prison
   log(G, `Session démarrée (seed ${seed}, ${G.miners.length} mineur${G.miners.length>1?'s':''})`);
   return G;
