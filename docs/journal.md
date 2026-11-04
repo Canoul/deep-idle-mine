@@ -20,7 +20,7 @@ Modèle d'entrée :
 - **Pour le joueur** : dans l'onglet Craft, les orbes, orbes supérieurs, clés d'instance et autres matériaux qui
   s'empilent ont un champ **Quantité** et un bouton **Max** : on en fabrique autant qu'on veut en un clic (jusqu'à 1 000).
   L'équipement et les runes restent un par un.
-- **État** : 🧪 sur la branche `geoffrey/craft-quantite` (pas en ligne)
+- **État** : ✅ en ligne le 04/11
 
 ## 04/11/2026 — Geoffrey — Administration : avertissement en pop-up, ban en minutes
 - **Pour le joueur** : l'équipe peut lui envoyer un message en pop-up (un titre et un texte) : il s'ouvre dans les

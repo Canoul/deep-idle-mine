@@ -7401,7 +7401,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - ⚠️ Joueur banni par le ban auto du chat : le POST « lu » est refusé (403) → la pop-up revient au rechargement de la page,
   jusqu'à la fin du ban. Compte suspendu : il ne voit rien avant la fin de la suspension.
 
-## 04/11/2026 — Geoffrey — Craft en série (branche geoffrey/craft-quantite)
+## 04/11/2026 — Geoffrey — Craft en série (branche geoffrey/craft-quantite) — ✅ en ligne le 04/11
 - `src/meta/craft.js` : `craft(inv, item, opId, rng, count = 1)` (tout ou rien, `bad_count` si count n'est pas un entier
   1..`CRAFT.maxCount` ou > 1 hors série) ; `inBatch(item)` (produit empilable, pas Rune, pas `rolledSpec`, aucun ingrédient
   stuff) ; `maxCrafts(inv, item)`. `src/config.js` `CRAFT = { maxCount:1000 }`. Serveur `game.craft` lit `body.count`
