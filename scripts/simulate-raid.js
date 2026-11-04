@@ -44,7 +44,9 @@ const slotOf = item => ITEMS[item].slot;
 function team(seed){
   const rnd = mulberry32(seed * 7919 + 13);
   const copies = TEAM.map((t, i) => snapOf(t, i, rnd));
-  const specs = minerSpecs({ mode: 'mine', players: [], bots: TEAM.length, botPresets: TEAM.map((_, i) => 'copy:ref' + i), botCopies: copies });
+  /* les presets de mineurs de test vont par 3 (GAME.maxPlayers) : un mineur à la fois, puis répartis sur la largeur */
+  const specs = copies.map((c, i) => ({ ...minerSpecs({ mode: 'mine', players: [], bots: 1, botPresets: ['copy:ref' + i], botCopies: [c] })[0],
+                                        x: Math.round((i + 0.5) * W / copies.length), home: Math.round((i + 0.5) * W / copies.length) }));
   specs.forEach((s, i) => { s.name = `${TEAM[i].slice(0, 3)}${i}`; s.skillTree = s.skillTree ?? TEAM[i]; });
   return specs;
 }
