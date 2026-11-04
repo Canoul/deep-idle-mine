@@ -84,22 +84,42 @@ export function messageHTML(g){
   return `<div class="card"><h2>Message de guilde</h2>${m ? `<p class="gmsg">${esc(m.text)}</p><p class="mut small">${m.name ? `${esc(m.name)} · ` : ''}${dateOf(m.at)}</p>` : '<p class="mut small">Aucun message pour l\'instant.</p>'}`+
     (g.canMessage ? `<div class="fbtns"><button data-g="message">${m ? 'Modifier' : 'Écrire'}</button></div>` : '')+`</div>`;
 }
+/* morceaux de la page de sa guilde, communs au site (mineHTML) et à l'appli (mineAppHTML, 04/11/2026) */
+const requestsHTML = g => g.requests.length ? `<div class="card"><h2>Demandes reçues</h2>${g.requests.map(r =>
+  `<div class="frow"><span class="fname"><b>${esc(r.name)}</b></span><span class="fbtns"><button class="on" data-g="acceptRequest" data-id="${esc(r.id)}">Accepter</button><button data-g="refuseRequest" data-id="${esc(r.id)}">Refuser</button></span></div>`).join('')}</div>` : '';
+const membersHTML = g => `<div class="card"><h2>Membres <span class="mut">${g.members.length}/${g.max}</span></h2>${g.members.map(memberRow).join('')}</div>`;
+const levelHTML = g => `<div class="card"><h2>Niveau ${g.level}</h2><div class="bar"><i style="width:${g.need ? g.into / g.need * 100 : 100}%"></i></div><p class="mut small">${g.need ? `${fr(g.into)} / ${fr(g.need)} XP` : 'Niveau maximum'} · ${fr(g.xp)} XP au total</p></div>`;
+const bonusHTML = g => `<div class="card"><h2>Bonus actifs</h2>${bonusLabels(g.buildings).map(l => `<p class="small">${esc(l)}</p>`).join('') || `<p class="mut small">Aucun bonus pour l'instant.</p>`}</div>`;
 export function mineHTML(g, older){
-  const pct = g.need ? g.into / g.need * 100 : 100;
-  const requests = g.requests.length ? `<div class="card"><h2>Demandes reçues</h2>${g.requests.map(r =>
-    `<div class="frow"><span class="fname"><b>${esc(r.name)}</b></span><span class="fbtns"><button class="on" data-g="acceptRequest" data-id="${esc(r.id)}">Accepter</button><button data-g="refuseRequest" data-id="${esc(r.id)}">Refuser</button></span></div>`).join('')}</div>` : '';
   return `<div class="gcols"><div>
     ${messageHTML(g)}
-    ${requests}
-    <div class="card"><h2>Membres <span class="mut">${g.members.length}/${g.max}</span></h2>${g.members.map(memberRow).join('')}</div>
+    ${requestsHTML(g)}
+    ${membersHTML(g)}
     <div class="fbtns">${canRecruit(g.rank) ? '<button class="on" data-g="invite">Inviter un joueur</button>' : ''}<button data-g="leave">Quitter la guilde</button></div>
   </div><div>
     <div class="card"><h2>Maison de guilde</h2>${houseHTML(g.buildings)}</div>
-    <div class="card"><h2>Niveau ${g.level}</h2><div class="bar"><i style="width:${pct}%"></i></div><p class="mut small">${g.need ? `${fr(g.into)} / ${fr(g.need)} XP` : 'Niveau maximum'} · ${fr(g.xp)} XP au total</p></div>
-    <div class="card"><h2>Bonus actifs</h2>${bonusLabels(g.buildings).map(l => `<p class="small">${esc(l)}</p>`).join('') || '<p class="mut small">Aucun bonus pour l\'instant.</p>'}</div>
+    ${levelHTML(g)}
+    ${bonusHTML(g)}
     <div class="card"><h2>Bâtiments</h2><div class="gbList">${g.buildings.map(b => buildingHTML(b, { owned:g.owned, canBuild:g.canBuild })).join('')}</div></div>
     ${logHTML(g.log, older)}
   </div></div>`;
+}
+/* appli (04/11/2026, spec docs/superpowers/specs/2026-11-04-appli-guilde-design.md) : sa guilde en 4 onglets ; sub : house,
+   members, buildings, log ; building : le bâtiment montré (le premier sinon). « Quitter » tout en bas des Membres, à part. */
+const SUBS = [['house', 'Maison'], ['members', 'Membres'], ['buildings', 'Bâtiments'], ['log', 'Journal']];
+export function mineAppHTML(g, older, { sub = 'house', building = null } = {}){
+  const tabs = `<div class="gSub">${SUBS.map(([id, label]) => `<button data-gsub="${id}"${id === sub ? ' class="on"' : ''}>${label}</button>`).join('')}</div>`;
+  if(sub === 'members') return tabs + requestsHTML(g) + membersHTML(g)+
+    (canRecruit(g.rank) ? '<div class="fbtns"><button class="on" data-g="invite">Inviter un joueur</button></div>' : '')+
+    '<div class="gLeave"><button data-g="leave">Quitter la guilde</button></div>';
+  if(sub === 'buildings'){
+    const cur = g.buildings.find(b => b.id === building) ?? g.buildings[0];
+    const chips = g.buildings.map(b => { const def = GUILD.buildings.find(x => x.id === b.id);
+      return `<button data-gb="${b.id}"${b === cur ? ' class="on"' : ''}><img src="textures/${def.tex}.png" alt="">${esc(def.name)}</button>`; }).join('');
+    return tabs + `<div class="gbChips">${chips}</div>` + (cur ? buildingHTML(cur, { owned:g.owned, canBuild:g.canBuild }) : '');
+  }
+  if(sub === 'log') return tabs + logHTML(g.log, older);
+  return tabs + requestsHTML(g) + `<div class="card"><h2>Maison de guilde</h2>${houseHTML(g.buildings)}</div>` + levelHTML(g) + messageHTML(g) + bonusHTML(g);
 }
 const place = g => `Niv. ${g.level} · ${g.members}/${g.max} membres · chef : ${esc(g.chief)}`;
 /* membres d'une guilde dépliée : rows = null tant que le serveur n'a pas répondu */
@@ -137,6 +157,9 @@ export function setupGuild({ root, api = guildApi, onChange = () => {} }){
   const $ = id => document.getElementById(id);
   let st = { mine:null, invites:[], requests:[] }, tab = null, list = [], board = [], at = 0, open = null, members = null;
   let older = {}, peek = null, peekOlder = {};        // lignes anciennes du journal déjà demandées ; fiche d'une autre guilde
+  /* appli (04/11/2026) : l'onglet de sa guilde (Maison, Membres, Bâtiments, Journal) et le bâtiment montré */
+  let sub = 'house', bsel = null;
+  const app = () => document.body.classList.contains('app');
   const shown = () => !root.hidden && !document.hidden;
   /* un contenu inchangé n'est pas réécrit : une case ouverte ne se ferme pas à chaque relecture */
   const put = (el, html) => { if(el.dataset.html !== html){ el.innerHTML = html; el.dataset.html = html; } };
@@ -146,7 +169,7 @@ export function setupGuild({ root, api = guildApi, onChange = () => {} }){
     if(!tabs.some(t => t.id === tab)) tab = tabs[0].id;
     put($('guildTabs'), tabs.map(t => `<button data-gtab="${t.id}" class="${t.id === tab ? 'on' : ''}">${t.label}</button>`).join(''));
     $('guildMineTab').hidden = tab !== 'mine'; $('guildSearchTab').hidden = tab !== 'search'; $('guildBoardTab').hidden = tab !== 'board';
-    if(st.mine && !holdsPanel(document.activeElement)) put($('guildMine'), mineHTML(st.mine, older));
+    if(st.mine && !holdsPanel(document.activeElement)) put($('guildMine'), app() ? mineAppHTML(st.mine, older, { sub, building:bsel }) : mineHTML(st.mine, older));
     $('guildPeek').hidden = !peek;
     if(peek) put($('guildPeek'), peekHTML(peek, peekOlder));
     $('guildCreate').hidden = !!st.mine;
@@ -218,6 +241,9 @@ export function setupGuild({ root, api = guildApi, onChange = () => {} }){
     await run(() => name === 'leave' ? api.leave() : api[name](id));
   }
   root.addEventListener('click', e => {
+    const gs = e.target.closest('[data-gsub]'), gb = e.target.closest('[data-gb]');
+    if(gs){ sub = gs.dataset.gsub; render(); return; }
+    if(gb){ bsel = gb.dataset.gb; render(); return; }
     const t = e.target.closest('[data-gtab]');
     if(t){ tab = t.dataset.gtab; say(null); render(); quiet(); return; }
     const f = e.target.closest('[data-gopen]');

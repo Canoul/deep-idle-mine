@@ -294,3 +294,23 @@ body.app #hiSheet .hiIt{height:44px;background:#100b08;box-shadow:inset 0 0 0 2p
 body.app #hiSheet .hiIt i{right:2px;bottom:1px}
 body.app #hiSheet .hiSeed{margin:8px 0 0;text-align:right}
 body.app:has(#hiSheet:not([hidden])) .guide{display:none}
+
+/* ---------- Guilde (04/11/2026, Jules ; spec 2026-11-04-appli-guilde-design.md) : sa guilde en 4 onglets, un bâtiment à la fois,
+   une ligne par matière, « Quitter » tout en bas des Membres (ancien : ≈ 5 écrans, Quitter au milieu) ---------- */
+body.app #guildMine{display:flex;flex-direction:column;gap:8px}
+body.app .gSub{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
+body.app .gSub button{padding:0 2px;font-size:15px}
+body.app .gbChips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+body.app .gbChips button{gap:4px;padding:0 4px;font-size:14px;white-space:nowrap;overflow:hidden}
+body.app .gbChips img{width:20px;height:20px;image-rendering:pixelated}
+body.app .gbuilding .gmat{display:grid;grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"name name btn" "bar bar btn" "nums own btn";
+  align-items:center;gap:2px 8px;padding:4px 0;border-top:2px solid var(--sep)}
+body.app .gbuilding .gmat>.gmatName{grid-area:name;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body.app .gbuilding .gmat>.gxp:nth-child(2){grid-area:nums}
+body.app .gbuilding .gmat>.bar{grid-area:bar;height:14px}
+body.app .gbuilding .gmat>.gxp.mut{grid-area:own;justify-self:end}
+body.app .gbuilding .gmat>button,body.app .gbuilding .gmat>.gxp:last-child:not(:nth-child(2)):not(.mut){grid-area:btn}
+body.app .gLeave{margin-top:16px;padding-top:12px;border-top:2px solid var(--sep);display:flex;justify-content:flex-end}
+body.app #guildMine .ghouse{max-width:300px;margin:0 auto}   /* la scène moins haute : la Maison tient presque sur un écran */
+body.app #guildMine .ghouse~.bar+p.mut{display:none}           /* « chaque don fait avancer le chantier… » : connu */
+body.app #guildMine .card{padding-top:4px;padding-bottom:4px}

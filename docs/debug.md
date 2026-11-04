@@ -7029,3 +7029,15 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - Tests : spells (nouveau test Cleave), hescoming-sim, tower*, instance*, golbute*, effects*, wiki 229/229 ✅. Simulation mine 5 × 3
   avec cleave + war_cry : 0 blocage, profondeur 187.
 
+## 04/11/2026 — Jules — Appli mobile : Guilde en onglets (✅ en ligne le 04/11)
+- **Quoi** : spec et plan `docs/superpowers/{specs,plans}/2026-11-04-appli-guilde*.md`. `src/ui/guild.js` : morceaux communs
+  `requestsHTML`, `membersHTML`, `levelHTML`, `bonusHTML` (le site les assemble comme avant dans `mineHTML`) ;
+  `mineAppHTML(g, older, { sub, building })` (pur) : onglets `data-gsub` (house, members, buildings, log), bâtiments `data-gb`
+  (le premier si inconnu), « Quitter » dans `.gLeave` en bas des Membres ; `setupGuild` : `sub` / `bsel`, rendu appli.
+  `src/app/app.css` : bloc « Guilde » (onglets, boutons de bâtiment, matière en grille nom / barre / donné · tu en as /
+  Donner, scène de la maison réduite à 300 px, phrase d'explication cachée).
+- **Tests** ✅ app-guild (nouveau, 5), guild-ui, guild-buildings, guild-house, app-* : verts.
+- **Vérifié** ✅ aperçu `?app` (Test_Mineur, guilde locale « Les Testeurs » créée pour l'essai, données locales seulement) :
+  Membres et Journal sur un écran, Maison 931 px, Bâtiments 851 px (8 matières), largeur 393 ; site PC inchangé (2 colonnes).
+- **Pas vérifié** ⚠️ Donner / Construire à l'écran (mêmes `data-g` qu'avant) ; une guilde avec beaucoup de membres ; vrai téléphone.
+- **Applis** : pas de plugin ni de code natif.
