@@ -7259,3 +7259,41 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 ## 04/11/2026 — Raid : portrait et spé dans le lobby (Geoffrey)
 - server/guild/raid.js `cardOf` (cache 30 s) : `tree`, `specLevel`, `look`, `auras` par membre (game.skillTreeOf / specLevelOf / lookFor / aurasFor, comme les groupes en formation). src/ui/guild.js : canvas `data-raidpic` dans `raidRow`, `drawRaidPortraits` après `put` quand le HTML change, `specLabel`.
 - Tests raid-ui, raid-server ✅ ; vérifié dans le navigateur (mode dev, 2 comptes, invitation) ✅.
+
+## 04/11/2026 — Geoffrey — Arbres de skills v2 (branche geoffrey/arbres-skills-v2)
+- **Config** (`SKILLS`) : `tierPoints` 3, nœuds avec `col` (0/1), `needs` (« | »), `specOnly` (tous les skills à 1 point),
+  effets génériques `adds` (points), `mult` (× (1 + effet × poids)), `raid` (instances, tours, Bloc géant / He's coming),
+  `aura` (groupe). `SKILLS.rested` { time 180, prisonTime 60, tenacity 2 }, `SKILLS.steady` { tenacity 5, sources }.
+  `needsAll` supprimé. Ruée et Pillage max 3 (avant 5). EFFECTS.rested (buff affiché).
+- **Règles** (`src/meta/skills.js`) : état `{ v:2, tree, ranks, glyphs, ops }`. `blockedReason` : unknown → no_spec →
+  maxed → spec_only → too_deep (hors spé, étage > profondeur de la spé − 1) → needs_tier (3 × (r − 1) points dans
+  l'arbre) → needs_previous (needs) → no_points. `skillOp` : `spec` (autre arbre = ranks {}), `reset` garde la spé.
+  `sanitizeSkills` rejoue la spé puis les autres arbres, étage par étage. `migrateSkills` (sans v:2 → ranks {}),
+  appelée **seulement** au chargement du compte (server/game/service.js loadSkills) : les enregistrements de session et
+  les sets sont relus avec les nouvelles règles, sans reset. `skillRanks` porte v:2. `groupAuras`, `pointsByTree`,
+  `treePoints`, `treeDepth`, `depthCap`, `tierNeed`. `withSkillStats(carac, effects, { raid, auras })`.
+- **Partie** : Solide ne joue pas sur l'avalanche du Golbute (golbute.js : bonus retiré via `extra`). `src/sim/skillfx.js` : `critMul` (Crushing, × 2 × (1 + 10 %/rang)) dans les 4 hitDmg (mine, instance,
+  Golbute, tours) et le DPS de Lucifer ; `backstabMul` (Dans le dos) : mine = tacle (G.mobs), instance = tacle ou
+  boss.focus, tours = tacle ou boss.target / focus, Golbute = golem qui tacle ou boss au combat à portée de l'autoattack ;
+  `trackRested` (session.js stepMiner : fin du mode 'departure' avec trips > 0) → `m.restedNow`, `restedMul` dans moveT,
+  climbT, winchT, mineT, hitDamage ; `tenacityBonus` dans `tenacityOf` (Reposé, Solide pour les sources de boss).
+  `src/shared/game.js` minerSpecs : `raid` depuis MINE_MODES, auras de tous les mineurs (ou `record.skillAuras` : salle du
+  Bloc géant, src/shared/giant-room.js) ; mine instantanée : auras pour soi seul.
+- **Serveur / lobby** : action `spec` (refusée en session), erreurs no_spec / needs_tier / too_deep / spec_only ;
+  `game.skillPointsOf` → party `treePts` → `specLabel(tree, level, pts)` « Logisticien (2/12/1) · SP lvl 3 ».
+- **UI** : `specBarHtml` (bureau), bouton « Choisir la spé » sous les onglets (appli), deux colonnes (`--c` / `--r` en
+  appli), étiquettes d'étage (🔒 + points), ★ sur les skills de classe. Wiki : texte et tableau des arbres (nodeText).
+- **Tests** ✅ skills (réécrit), skills-v2 (nouveau : stats, tout terrain, auras, Crushing, Dans le dos, Reposé, Solide,
+  serveur + migration), app-skills, glyphs, sets, dev-spec, mule, game-service, social, admin-take, hescoming-*, lobby,
+  anticheat/skills (réécrit, 500 suites avec spé) ; `npm run test:anticheat` vert. ❌ déjà rouges sur main, sans rapport :
+  energy « energyOfTicks », leaderboard « roi gobelin », mobile-config « iOS », perf « boîte de mesures »,
+  prison-server « une tour et une instance », tier2 « fortune : le doublon » et « recycle : un BP du T2 », tier4 « recettes du
+  T4 ». dev-spec : attendu du lobby corrigé (He's coming manquait). talents-etage6 : Saccager est à l'étage 4. `npm test` :
+  2298 verts, ces 8 rouges.
+- **Simulation** (3 mineurs × 5) : sans skills identique à avant (coffre 4169,2) ; `--skills mixed` : areas 3,8, profondeur
+  205, coffre 4543, 0 blocage.
+- ⚠️ Fragile : une session en cours pendant la mise en ligne est rejouée avec les règles v2 (ses rangs peuvent être
+  coupés si l'ancien chemin ne tient plus). Navigateur ✅ bureau et appli (Test_Logisticien). Pas essayé sur téléphone.
+- **Raid Cerbère** (arrivé sur main pendant le chantier) : `raidSpecs` passe `raidMode` (Mineur tout terrain), hitDmg de
+  src/sim/raid/cerbere.js avec Crushing et Dans le dos (visé = cible de la Morsure), `cerbere` dans `SKILLS.steady.sources`.
+  Tests raid, raid-server, raid-ui (libellé de spé à jour) ✅. En ligne le 04/11.

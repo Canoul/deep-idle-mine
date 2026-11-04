@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { SKILLS, STATS, CFG, IDS } from '../src/config.js';
-import { createSkills, skillOp, sanitizeSkills, skillEffects, blockedReason, spentPoints, nodeText, slotMastery, behaviourSkills } from '../src/meta/skills.js';
+import { createSkills, skillOp, sanitizeSkills, skillEffects, blockedReason, spentPoints, nodeText, slotMastery, behaviourSkills, NODES, pointsByTree, migrateSkills, skillRanks } from '../src/meta/skills.js';
 import { equippedStats, minerStats } from '../src/meta/stuff.js';
 import { gearScore } from '../src/meta/gearscore.js';
 import { buildSession } from '../src/shared/game.js';
@@ -14,91 +14,138 @@ import { updateMobs } from '../src/sim/mobs.js';
 import { mulberry32 } from '../src/core/rng.js';
 
 let n = 0; const id = () => 'op-sk-' + (++n);
-const learnAll = (st, nodes, points = 99) => { for(const x of nodes) assert.ok(skillOp(st, { action:'learn', node:x, opId:id() }, points).ok, x); return st; };
+/* arbres v2 (04/11) : sans spé, la spé est l'arbre du premier skill appris */
+const learnAll = (st, nodes, points = 99) => { for(const x of nodes){ if(!st.tree) skillOp(st, { action:'spec', tree:NODES[x].tree, opId:id() }, points);
+  const r = skillOp(st, { action:'learn', node:x, opId:id() }, points); assert.ok(r.ok, x + ' : ' + r.error); } return st; };
 const fullTree = tree => SKILLS.trees.find(t => t.id === tree).nodes.flatMap(n => Array(n.max).fill(n.id));
 
-test('arbres demandés : 3 étages (3 / 1 / 5 rangs, + au 4e : Braum 3 pour le Barbare, Légende de la flemme 1 pour le Mineur, Mule 1 pour le Logisticien) ; Logisticien : Échelle de 2 et Treuil côte à côte au 2e étage', () => {
+test('arbres v2 (04/11/2026) : deux colonnes, 6 étages, points max et « | » (needs) comme l\'arbre de Geoffrey', () => {
   assert.deepEqual(SKILLS.trees.map(t => t.label), ['Mineur', 'Logisticien', 'Barbare']);
-  for(const t of SKILLS.trees) for(const r of [1, 2, 3]) assert.ok(t.nodes.some(n => n.row === r), `${t.id} étage ${r}`);
-  for(const t of SKILLS.trees) assert.deepEqual(t.nodes.map(n => n.max), { mineur:[3, 1, 5, 1, 3, 1], logisticien:[3, 1, 1, 5, 1, 3, 1], barbare:[3, 1, 5, 3, 3, 1] }[t.id]);   // 5e étage : maîtrises (28/10) ; 4e étage : Braum (Barbare), Légende de la flemme (Mineur), Mule (Logisticien)
-  const lg = SKILLS.trees.find(t => t.id === 'logisticien').nodes;
-  assert.deepEqual(lg.map(n => [n.id, n.row]), [['travel_rush', 1], ['tall_ladder', 2], ['winch', 2], ['winch_speed', 3], ['mule', 4], ['bench_mastery', 5], ['recon', 6]]);   // 23/10 soir : Bâtisseur supprimé
-  for(const t of SKILLS.trees) for(const n of t.nodes) assert.ok(n.name && n.icon, n.id);
+  const shape = t => t.nodes.map(n => [n.id, n.row, n.col, n.max]);
+  const T = id => SKILLS.trees.find(t => t.id === id);
+  assert.deepEqual(shape(T('mineur')), [['mine_speed', 1, 0, 3], ['enchanted_pick', 1, 1, 3], ['ore_oxygen', 2, 0, 1], ['filou', 2, 1, 3],
+    ['ore_rush', 3, 0, 3], ['all_terrain', 3, 1, 3], ['lazy_legend', 4, 0, 1], ['rested', 4, 1, 3], ['pick_mastery', 5, 0, 3],
+    ['ore_drunk', 6, 0, 1], ['aura_efficiency', 6, 1, 1]]);
+  assert.deepEqual(shape(T('logisticien')), [['travel_rush', 1, 0, 3], ['organized', 1, 1, 3], ['tall_ladder', 2, 0, 1], ['demat', 2, 1, 3],
+    ['winch', 3, 0, 1], ['grounded', 3, 1, 3], ['winch_speed', 4, 0, 5], ['mule', 5, 0, 1], ['bench_mastery', 5, 1, 3],
+    ['aura_reassure', 6, 0, 1], ['recon', 6, 1, 1]]);
+  assert.deepEqual(shape(T('barbare')), [['damage', 1, 0, 3], ['loot', 1, 1, 3], ['taunt', 2, 0, 1], ['backstab', 2, 1, 3],
+    ['steady', 3, 0, 1], ['crushing', 3, 1, 3], ['braum', 4, 0, 3], ['ravage', 4, 1, 1], ['sword_mastery', 5, 0, 3], ['aura_berserk', 6, 1, 1]]);
+  const needs = Object.fromEntries(SKILLS.trees.flatMap(t => t.nodes.filter(n => n.needs).map(n => [n.id, n.needs])));
+  assert.deepEqual(needs, { aura_efficiency:'rested', winch_speed:'winch', mule:'winch_speed', aura_reassure:'mule', steady:'taunt', ravage:'crushing', aura_berserk:'ravage' });
+  assert.deepEqual(SKILLS.trees.map(t => t.nodes.reduce((s, n) => s + n.max, 0)), [25, 25, 22]);
+  for(const t of SKILLS.trees) for(const n of t.nodes){ assert.ok(n.name && n.icon, n.id); assert.equal(!!n.specOnly, n.max === 1, n.id + ' : skill de classe = 1 point'); }
   assert.equal(nodeText('mine_speed', 3), 'Vitesse de minage +6 %');
   assert.equal(nodeText('ore_rush', 0).startsWith('Vitesse de marche +3 %'), true);
+  assert.equal(nodeText('enchanted_pick', 3), 'Fortune +6 %');
+  assert.equal(nodeText('filou', 1), 'Critique +2 %');
+  assert.equal(nodeText('organized', 2), 'Pods +2 %');
+  assert.equal(nodeText('grounded', 3), 'Ténacité +9 %');
+  assert.equal(nodeText('aura_reassure', 1), 'Portée d\'attaque +0,1 bloc pour tout le groupe');
+  assert.equal(nodeText('crushing', 2), 'Dégâts des coups critiques +20 %');
+  assert.match(nodeText('rested', 3), /\+6 % et ténacité \+6 %/);
 });
 
-test('règles : points du niveau, étape précédente au rang max, un seul arbre, reset', () => {
+test('règles : spé choisie d\'abord, 3 points par étage dans l\'arbre, points du niveau, reset (la spé reste)', () => {
   const st = createSkills();
-  assert.equal(skillOp(st, { action:'learn', node:'ore_oxygen', opId:id() }, 9).error, 'needs_previous');
-  learnAll(st, ['mine_speed', 'mine_speed'], 9);
-  assert.equal(skillOp(st, { action:'learn', node:'ore_oxygen', opId:id() }, 9).error, 'needs_previous', 'mine_speed pas encore au max');
-  learnAll(st, ['mine_speed', 'ore_oxygen'], 9);
+  assert.equal(skillOp(st, { action:'learn', node:'mine_speed', opId:id() }, 30).error, 'no_spec', 'sans spé : rien');
+  assert.ok(skillOp(st, { action:'spec', tree:'mineur', opId:id() }, 30).ok);
   assert.equal(st.tree, 'mineur');
-  assert.equal(skillOp(st, { action:'learn', node:'damage', opId:id() }, 9).error, 'other_tree');
-  assert.equal(skillOp(st, { action:'learn', node:'ore_oxygen', opId:id() }, 9).error, 'maxed');
-  assert.equal(skillOp(st, { action:'learn', node:'ore_rush', opId:id() }, 4).error, 'no_points', '4 points déjà dépensés');
-  assert.ok(skillOp(st, { action:'reset', opId:id() }, 9).ok);
-  assert.deepEqual([st.tree, spentPoints(st)], [null, 0]);
-  assert.ok(skillOp(st, { action:'learn', node:'damage', opId:id() }, 9).ok, 'après reset, un autre arbre est libre');
+  assert.equal(skillOp(st, { action:'learn', node:'ore_oxygen', opId:id() }, 30).error, 'needs_tier', 'étage 2 : 3 points d\'abord');
+  learnAll(st, ['mine_speed', 'enchanted_pick'], 30);
+  assert.equal(blockedReason(st, 'filou', 30), 'needs_tier', '2 points : étage 2 fermé');
+  learnAll(st, ['enchanted_pick', 'filou'], 30);
+  assert.equal(blockedReason(st, 'ore_rush', 30), 'needs_tier', '4 points : étage 3 fermé (6)');
+  learnAll(st, ['filou', 'ore_oxygen', 'ore_rush'], 30);
+  assert.equal(blockedReason(st, 'mine_speed', 30), null, 'un étage du dessus reste libre');
+  assert.equal(skillOp(st, { action:'learn', node:'ore_oxygen', opId:id() }, 30).error, 'maxed');
+  assert.equal(skillOp(st, { action:'learn', node:'ore_rush', opId:id() }, 7).error, 'no_points', '7 points déjà dépensés');
+  assert.ok(skillOp(st, { action:'reset', opId:id() }, 30).ok);
+  assert.deepEqual([st.tree, spentPoints(st)], ['mineur', 0], 'reset : points rendus, spé gardée');
   assert.equal(skillOp(st, { action:'learn', node:'x', opId:id() }, 9).error, 'unknown');
+  assert.equal(skillOp(st, { action:'spec', tree:'hacker', opId:id() }, 9).error, 'unknown');
   assert.equal(skillOp(st, { action:'pirater', opId:id() }, 9).error, 'bad_request');
 });
 
-test('étage à deux cases : chacune exige l\'étage 1 (Navette) au max ; l\'étage 3 (Escalateur) exige les deux (23/10/2026)', () => {
-  const st = createSkills();
-  assert.equal(skillOp(st, { action:'learn', node:'winch', opId:id() }, 9).error, 'needs_previous');
-  learnAll(st, ['travel_rush', 'travel_rush', 'travel_rush']);
-  assert.equal(blockedReason(st, 'tall_ladder', 9), null);
-  assert.equal(blockedReason(st, 'winch', 9), null);
-  assert.equal(blockedReason(st, 'winch_speed', 9), 'needs_previous', 'aucune case de l\'étage 2');
-  learnAll(st, ['winch']);
-  assert.equal(blockedReason(st, 'winch_speed', 9), 'needs_previous', 'le Treuil seul ne suffit plus');
-  const other = learnAll(createSkills(), ['travel_rush', 'travel_rush', 'travel_rush', 'tall_ladder']);
-  assert.equal(blockedReason(other, 'winch_speed', 9), 'needs_previous', 'Échelle de 2 seule non plus');
-  learnAll(st, ['tall_ladder']);
-  assert.equal(blockedReason(st, 'winch_speed', 9), null, 'les deux cases ouvrent l\'étage 3');
-  learnAll(st, ['winch_speed']);
-  assert.deepEqual(st.ranks, { travel_rush:3, winch:1, tall_ladder:1, winch_speed:1 });
-  const eff = skillEffects(st);
-  assert.deepEqual([eff.winch, eff.tall_ladder], [1, 1]);
-  assert.equal(blockedReason(learnAll(createSkills(), ['damage', 'damage', 'damage', 'taunt']), 'loot', 9), null, 'les autres arbres : inchangés');
+test('changer de spé remet tous les points à zéro ; la même spé ne change rien', () => {
+  const st = learnAll(createSkills(), ['damage', 'damage', 'loot']);
+  assert.ok(skillOp(st, { action:'spec', tree:'barbare', opId:id() }, 30).ok);
+  assert.equal(spentPoints(st), 3, 'même spé : rien de rendu');
+  assert.ok(skillOp(st, { action:'spec', tree:'logisticien', opId:id() }, 30).ok);
+  assert.deepEqual([st.tree, st.ranks], ['logisticien', {}]);
 });
 
-test('relecture : l\'étage 3 du Logisticien exige les deux cases de l\'étage 2 ; une ancienne sauvegarde avec une seule les perd (points rendus)', () => {
-  assert.deepEqual(sanitizeSkills({ tree:'logisticien', ranks:{ travel_rush:3, tall_ladder:1, winch:1, winch_speed:5 } }, 99).ranks,
-    { travel_rush:3, tall_ladder:1, winch:1, winch_speed:5 });
-  assert.deepEqual(sanitizeSkills({ tree:'logisticien', ranks:{ travel_rush:3, winch:1, winch_speed:2 } }, 99).ranks, { travel_rush:3, winch:1 }, 'Treuil seul');
-  assert.deepEqual(sanitizeSkills({ tree:'logisticien', ranks:{ travel_rush:3, tall_ladder:1, winch_speed:5 } }, 9).ranks, { travel_rush:3, tall_ladder:1 }, 'Échelle de 2 seule');
-  assert.deepEqual(sanitizeSkills({ tree:'logisticien', ranks:{ travel_rush:3, winch_speed:2 } }, 99).ranks, { travel_rush:3 }, 'étage 3 sans étage 2');
-  assert.deepEqual(sanitizeSkills({ tree:'logisticien', ranks:{ travel_rush:2, winch:1 } }, 99).ranks, { travel_rush:2 });
+test('arbres secondaires : jamais aussi profond que la spé ; les skills de classe (1 point) seulement pour leur spé', () => {
+  const st = learnAll(createSkills(), ['travel_rush', 'travel_rush', 'travel_rush']);   // spé Logisticien, profondeur 1
+  assert.equal(blockedReason(st, 'mine_speed', 30), 'too_deep', 'spé à l\'étage 1 : rien ailleurs');
+  learnAll(st, ['demat']);                                                                   // profondeur 2
+  assert.equal(blockedReason(st, 'mine_speed', 30), null);
+  learnAll(st, ['mine_speed', 'mine_speed', 'mine_speed'], 30);
+  assert.equal(blockedReason(st, 'filou', 30), 'too_deep', 'étage 2 du Mineur : la spé n\'est qu\'à l\'étage 2');
+  learnAll(st, ['demat', 'demat', 'organized', 'organized', 'winch']);                        // 9 points, étage 3 atteint
+  assert.equal(blockedReason(st, 'filou', 30), null);
+  assert.equal(blockedReason(st, 'ore_oxygen', 30), 'spec_only', 'Second souffle : skill de classe du Mineur');
+  assert.equal(blockedReason(st, 'ore_rush', 30), 'too_deep', 'étage 3 du Mineur : spé à l\'étage 3');
+  learnAll(st, ['tall_ladder', 'grounded', 'winch_speed']);                                   // spé à l'étage 4
+  assert.equal(blockedReason(st, 'ore_rush', 30), 'needs_tier', 'étage 3 du Mineur : 6 points dans le Mineur');
+  learnAll(st, ['filou', 'filou', 'filou', 'ore_rush']);
+  /* exemple de Geoffrey : spé Logisticien à la profondeur 5 → les autres arbres jusqu'à l'étage 4 */
+  const g = learnAll(createSkills(), ['travel_rush', 'travel_rush', 'travel_rush', 'organized', 'organized', 'organized', 'tall_ladder', 'demat', 'demat', 'demat',
+    'winch', 'grounded', 'winch_speed', 'winch_speed', 'winch_speed', 'winch_speed', 'winch_speed', 'mule']);   // 18 points, étage 5
+  learnAll(g, ['damage', 'damage', 'damage', 'loot', 'loot', 'loot', 'backstab', 'backstab', 'backstab', 'crushing', 'crushing', 'crushing', 'braum'], 99);
+  assert.equal(g.ranks.braum, 1, 'Braum (étage 4) permis');
+  assert.equal(blockedReason(g, 'taunt', 99), 'spec_only', 'Provocation : seulement pour un barbare');
+  assert.equal(blockedReason(g, 'ravage', 99), 'spec_only');
+  learnAll(g, ['braum', 'braum']);
+  assert.equal(blockedReason(g, 'sword_mastery', 99), 'too_deep', 'étage 5 : refusé hors spé');
+  assert.deepEqual(pointsByTree(g), [0, 18, 15]);
 });
 
-test('Logisticien refait (23/10 soir) : une sauvegarde de l\'ancien arbre garde ce qui tient, le reste est rendu', () => {
-  /* ancien chemin complet : Bâtisseur 3, Échelle de 2, Treuil, Navette 5, Mule = 11 points */
-  const old = sanitizeSkills({ tree:'logisticien', ranks:{ build_time:3, tall_ladder:1, winch:1, travel_rush:5, mule:1 } }, 11);
-  assert.deepEqual(old.ranks, { travel_rush:3, tall_ladder:1, winch:1 }, 'Bâtisseur disparu, Navette ramenée à 3, Mule sans Escalateur : perdue');
-  assert.equal(spentPoints(old), 5, '6 points rendus');
-  /* le nouveau chemin complet coûte autant : 3 + 1 + 1 + 5 + 1 = 11 */
-  const all = learnAll(old, ['winch_speed', 'winch_speed', 'winch_speed', 'winch_speed', 'winch_speed', 'mule'], 11);
-  assert.deepEqual(all.ranks, { travel_rush:3, tall_ladder:1, winch:1, winch_speed:5, mule:1 });
+test('« | » : Treuil → Escalateur → Mule → Aura rassurante ; Provocation → Solide ; Crushing → Saccager → Aura berserk ; Reposé → Aura d\'efficacité', () => {
+  const st = learnAll(createSkills(), ['travel_rush', 'travel_rush', 'travel_rush', 'organized', 'organized', 'organized', 'demat', 'demat', 'demat']);
+  assert.equal(blockedReason(st, 'winch_speed', 99), 'needs_previous', '9 points mais pas de Treuil');
+  learnAll(st, ['winch', 'winch_speed']);
+  assert.equal(blockedReason(st, 'mule', 99), 'needs_tier');
+  learnAll(st, ['grounded', 'grounded', 'grounded']);
+  assert.equal(blockedReason(st, 'mule', 99), 'needs_previous', 'Escalateur pas au max');
+  learnAll(st, ['winch_speed', 'winch_speed', 'winch_speed', 'winch_speed', 'mule', 'bench_mastery']);
+  assert.equal(blockedReason(st, 'aura_reassure', 99), null);
+  const b = learnAll(createSkills(), ['damage', 'damage', 'damage', 'backstab', 'backstab', 'backstab']);
+  assert.equal(blockedReason(b, 'steady', 99), 'needs_previous', 'Solide sans Provocation');
+  learnAll(b, ['crushing', 'crushing', 'loot']);
+  assert.equal(blockedReason(b, 'ravage', 99), 'needs_previous', 'Crushing pas au max');
+});
+
+test('relecture : la spé d\'abord, puis les autres arbres, étage par étage ; rangs trafiqués ignorés', () => {
+  assert.deepEqual(sanitizeSkills({ tree:'barbare', ranks:{ damage:99, loot:2 } }, 99).ranks, { damage:3, loot:2 });
+  assert.deepEqual(sanitizeSkills({ tree:'barbare', ranks:{ damage:2, taunt:1 } }, 99).ranks, { damage:2 }, 'étage 2 avec 2 points');
+  assert.deepEqual(sanitizeSkills({ tree:'barbare', ranks:{ damage:3, mine_speed:3 } }, 99).ranks, { damage:3 }, 'spé à l\'étage 1 : pas d\'autre arbre');
+  assert.deepEqual(sanitizeSkills({ tree:'barbare', ranks:{ damage:3, taunt:1, mine_speed:3 } }, 99).ranks, { damage:3, taunt:1, mine_speed:3 }, 'spé à l\'étage 2 : étage 1 ailleurs');
+  assert.deepEqual(sanitizeSkills({ tree:'mineur', ranks:{ mine_speed:3, ore_oxygen:1, ore_rush:3 } }, 2).ranks, { mine_speed:2 }, 'pas plus que les points');
+  assert.deepEqual(sanitizeSkills({ tree:'mineur', ranks:{ mine_speed:3, damage:3 } }).ranks, { mine_speed:3 });
+  assert.deepEqual(sanitizeSkills({ ranks:{ damage:3 } }, 99).ranks, {}, 'sans spé : aucun rang');
+  assert.deepEqual(sanitizeSkills({ tree:'hacker', ranks:{ damage:3 } }, 99).ranks, {});
+  assert.deepEqual(sanitizeSkills({ tree:'mineur', ranks:{ mine_speed:1.5 } }, 99).ranks, {});
+  assert.deepEqual(sanitizeSkills(null), createSkills());
+});
+
+test('migration (arbres v2) : une sauvegarde de compte sans v:2 perd ses rangs, garde spé et glyphes ; idempotent', () => {
+  const old = { tree:'logisticien', ranks:{ travel_rush:3, tall_ladder:1 }, glyphs:{ travel_rush:'Glyphe Navette' }, ops:['a'] };
+  const m = migrateSkills(old);
+  assert.deepEqual([m.v, m.tree, m.ranks, m.glyphs, m.ops], [2, 'logisticien', {}, old.glyphs, ['a']]);
+  assert.equal(migrateSkills(m), m, 'déjà migrée : rien');
+  const st = sanitizeSkills(m, 30);
+  assert.deepEqual([st.v, st.tree, st.ranks], [2, 'logisticien', {}]);
+  assert.equal(migrateSkills(null), null);
+  assert.deepEqual(skillRanks(learnAll(createSkills(), ['damage'])), { v:2, tree:'barbare', ranks:{ damage:1 } });
 });
 
 test('demande rejouée (double clic) : un seul rang', () => {
-  const st = createSkills(), o = id();
+  const st = learnAll(createSkills(), []), o = id();
+  skillOp(st, { action:'spec', tree:'barbare', opId:id() }, 5);
   skillOp(st, { action:'learn', node:'damage', opId:o }, 5);
   assert.ok(skillOp(st, { action:'learn', node:'damage', opId:o }, 5).repeated);
   assert.equal(st.ranks.damage, 1);
-});
-
-test('relecture : rangs trafiqués ignorés (plus que le max, sans l\'étape précédente, autre arbre, plus de points)', () => {
-  assert.deepEqual(sanitizeSkills({ tree:'barbare', ranks:{ damage:99, taunt:1, loot:2 } }, 99).ranks, { damage:3, taunt:1, loot:2 });
-  assert.deepEqual(sanitizeSkills({ tree:'barbare', ranks:{ damage:2, taunt:1 } }, 99).ranks, { damage:2 }, 'taunt sans damage au max');
-  assert.deepEqual(sanitizeSkills({ tree:'barbare', ranks:{ damage:3, mine_speed:3 } }, 99).ranks, { damage:3 }, 'pas d\'autre arbre');
-  assert.deepEqual(sanitizeSkills({ tree:'mineur', ranks:{ mine_speed:3, ore_oxygen:1, ore_rush:5 } }, 2).ranks, { mine_speed:2 }, 'pas plus que les points');
-  assert.deepEqual(sanitizeSkills({ tree:'hacker', ranks:{ damage:3 } }, 99).ranks, {});
-  assert.deepEqual(sanitizeSkills({ tree:'mineur', ranks:{ mine_speed:1.5 } }, 99), createSkills());
-  assert.deepEqual(sanitizeSkills(null), createSkills());
 });
 
 /* ---------- effets en partie ---------- */
@@ -167,12 +214,12 @@ test('Barbare : butin des mobs +3 %/rang = 3 % de chance par rang pour 1 butin e
   m.skill.loot = 1.5; assert.ok(Math.abs(perMob() - 1.5 - 1.5) < 0.03, '150 % : +1 sûr, et +1 encore une fois sur deux');
 });
 
-test('Barbare : Braum à l\'étage 4 (Pillage au max d\'abord), marche et montée +10 %/rang seulement quand il aide', () => {
+test('Barbare : Braum à l\'étage 4 (9 points dans l\'arbre d\'abord), marche et montée +10 %/rang seulement quand il aide', () => {
   const b = SKILLS.trees.find(t => t.id === 'barbare').nodes.find(n => n.id === 'braum');
   assert.deepEqual([b.row, b.max, b.per], [4, 3, 0.1]);
-  assert.deepEqual(sanitizeSkills({ tree:'barbare', ranks:{ damage:3, taunt:1, loot:4, braum:3 } }, 99).ranks,
-    { damage:3, taunt:1, loot:4 }, 'Pillage pas au max : pas de Braum');
-  assert.equal(skillEffects(sanitizeSkills({ tree:'barbare', ranks:{ damage:3, taunt:1, loot:5, braum:3 } }, 99)).braum, 0.3);
+  assert.deepEqual(sanitizeSkills({ tree:'barbare', ranks:{ damage:3, taunt:1, loot:3, backstab:1, braum:3 } }, 99).ranks,
+    { damage:3, taunt:1, loot:3, backstab:1 }, '8 points : pas de Braum');
+  assert.equal(skillEffects(sanitizeSkills({ tree:'barbare', ranks:{ damage:3, taunt:1, loot:3, backstab:2, braum:3 } }, 99)).braum, 0.3);
   const G = worldFrom(['', '@']), m = G.miners[0];
   m.skill.braum = 0.3;
   const [w, c, s] = [moveT(G, m), climbT(G, m), winchT(G, m)];
@@ -221,8 +268,8 @@ test('stats : Pillage s\'ajoute au butin des mobs (3 rangs → +9 %), les skills
   const row = minerStats({}, barb).find(s => s.key === 'looting');
   assert.equal(row.add, 9); assert.equal(row.total, 9); assert.equal(row.mult, 1, 'pas un multiplicateur');
   assert.deepEqual(behaviourSkills(barb).map(k => k.id), ['taunt'], 'Force brute et Pillage sont déjà dans les stats');
-  const log = skillEffects(sanitizeSkills({ tree:'logisticien', ranks:{ travel_rush:3, tall_ladder:1, winch:1, winch_speed:2 } }));
-  const list = behaviourSkills(log);
+  const log = skillEffects(sanitizeSkills({ tree:'logisticien', ranks:{ travel_rush:3, tall_ladder:1, organized:3, demat:1, winch:1, winch_speed:2 } }));
+  const list = behaviourSkills(log);   // Organisé et Dématérialisation : déjà dans les stats
   assert.deepEqual(list.map(k => k.id), ['travel_rush', 'tall_ladder', 'winch', 'winch_speed']);
   assert.match(list[0].text, /\+9 %/); assert.match(list[3].text, /\+10 %/);
   assert.deepEqual(behaviourSkills({}), [], 'aucun skill : rien');
@@ -248,13 +295,13 @@ test('Force brute : 2 % de dégâts de zone par rang (aoeOf), dans le texte du n
 });
 
 /* ---- Légende de la flemme (arbre Mineur, 4e étage, 23/10) ---- */
-test('Légende de la flemme : 4e étage du Mineur (Ruée au max avant), 0/1, 5 %', async () => {
+test('Légende de la flemme : 4e étage du Mineur (9 points dans l\'arbre), 0/1, 5 %', async () => {
   const { SKILLS } = await import('../src/config.js');
   const n = SKILLS.trees.find(t => t.id === 'mineur').nodes.find(x => x.id === 'lazy_legend');
   assert.equal(n.row, 4); assert.equal(n.max, 1); assert.equal(n.per, 0.05);
   const { sanitizeSkills, skillEffects } = await import('../src/meta/skills.js');
-  assert.equal(skillEffects(sanitizeSkills({ tree:'mineur', ranks:{ mine_speed:3, ore_oxygen:1, ore_rush:4, lazy_legend:1 } })).lazy_legend, 0, 'Ruée pas au max : refusé');
-  assert.equal(skillEffects(sanitizeSkills({ tree:'mineur', ranks:{ mine_speed:3, ore_oxygen:1, ore_rush:5, lazy_legend:1 } })).lazy_legend, 0.05);
+  assert.equal(skillEffects(sanitizeSkills({ tree:'mineur', ranks:{ mine_speed:3, ore_oxygen:1, enchanted_pick:2, ore_rush:2, lazy_legend:1 } })).lazy_legend, 0, '8 points : refusé');
+  assert.equal(skillEffects(sanitizeSkills({ tree:'mineur', ranks:{ mine_speed:3, ore_oxygen:1, enchanted_pick:2, ore_rush:3, lazy_legend:1 } })).lazy_legend, 0.05);
 });
 
 test('Légende de la flemme : un tirage par remontée ; réussi = au-dessus du coffre ; jamais en fin de session', async () => {
@@ -307,14 +354,14 @@ test('chiffre des dégâts de zone : « -0,3 », « -1,2 », « -13 », jamais �
   assert.deepEqual([0.345, 1.23, 12.6, 0.01].map(splashText), ['-0,3', '-1,2', '-13', '-0,1']);
 });
 
-test('maîtrises (5e étage, 28/10) : pioche +5 %, épée +5 %, torse +3 % par rang, après le 4e étage au rang max', () => {
+test('maîtrises (5e étage, 28/10) : pioche +5 %, épée +5 %, torse +3 % par rang, avec 12 points dans l\'arbre (04/11)', () => {
   const nodes = { mineur:'pick_mastery', barbare:'sword_mastery', logisticien:'bench_mastery' };
   for(const [tree, node] of Object.entries(nodes)){
     const t = SKILLS.trees.find(x => x.id === tree), n = t.nodes.find(x => x.id === node);
     assert.deepEqual([n.row, n.max], [5, 3], node);
-    const st = learnAll(createSkills(), t.nodes.filter(x => x.row < 4).flatMap(x => Array(x.max).fill(x.id)));
-    assert.ok(blockedReason(st, node, 99), node + ' bloqué sans le 4e étage');
-    learnAll(st, t.nodes.filter(x => x.row >= 4).flatMap(x => Array(x.max).fill(x.id)));
+    const st = learnAll(createSkills(), t.nodes.filter(x => x.row < 3).flatMap(x => Array(x.max).fill(x.id)));
+    assert.equal(blockedReason(st, node, 99), 'needs_tier', node + ' bloqué avec moins de 12 points');
+    learnAll(st, t.nodes.filter(x => x.row >= 3).flatMap(x => Array(x.max).fill(x.id)));
     assert.equal(st.ranks[node], 3);
   }
   assert.equal(nodeText('pick_mastery', 3), 'Les stats données par la pioche +15 %');

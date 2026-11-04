@@ -419,7 +419,14 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   **Navette exige maintenant Échelle de 2 ET Treuil**. Repère (10 parties à 3, avant les corrections du treuil du
   23/10) : 0 blocage, 0 perdu, le sac coûte ≈ 6 s par partie au logisticien (il le reprend en remontant par le
   treuil), effet sur le coffre non mesurable (hasard ±15 %).
-- **Spécialisation** : arbres de skills Mineur (4e étage **Légende de la flemme** depuis le 23/10 : 5 % de se téléporter au coffre à chaque remontée, sauf en fin de session), Logisticien (refait le 23/10 au soir : Navette 3, Échelle de 2 + Treuil, **Escalateur** 5 =
+- **Arbres de skills v2** (04/11/2026, Geoffrey ; branche `geoffrey/arbres-skills-v2`, pas encore en ligne ; GAME_DESIGN §3
+  « Skills ») : spé choisie par 3 boutons (en changer = reset) ; deux colonnes, six étages ; étage r ouvert avec 3 × (r − 1)
+  points dans l'arbre ; « | » (`needs`) : Treuil → Escalateur → Mule → Aura rassurante, Provocation → Solide sur les appuis,
+  Crushing → Saccager → Aura berserk, Reposé → Aura d'efficacité ; autres arbres jamais aussi profonds que la spé (profondeur
+  − 1), skills de classe (1 point) réservés à leur spé ; 13 nouveaux skills (stats, Mineur tout terrain en raid, Reposé,
+  Dans le dos, Solide sur les appuis, Crushing, trois auras de groupe). Lobby « Logisticien (2/12/1) · SP lvl 3 ». Reset de
+  tous les joueurs à la mise en ligne (`migrateSkills`, spé et glyphes gardés). Mineur 25 points, Logisticien 25, Barbare 22.
+- **Spécialisation** *(ancien jusqu'au 04/11 : remplacé par les arbres v2 ci-dessus)* : arbres de skills Mineur (4e étage **Légende de la flemme** depuis le 23/10 : 5 % de se téléporter au coffre à chaque remontée, sauf en fin de session), Logisticien (refait le 23/10 au soir : Navette 3, Échelle de 2 + Treuil, **Escalateur** 5 =
   seau +5 %/rang pour tout le groupe, Mule ; ancien : Bâtisseur 3 en étage 1, Navette 5 en étage 3 ; treuil : seau à 0,85 × la vitesse de montée ;
   ×2 essayé le 22/10 puis retiré, décision Geoffrey et Jules), Barbare (provocation : interrompt la canalisation de l'occultiste sans l'empêcher de relancer, depuis le 21/10 ;
   4e étage **Braum** depuis le 22/10 : marche et montée +10 %/rang quand il va aider) ;
@@ -429,7 +436,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   Calcul de l'amélioration (`pieceBonus(…, extra)`, `slotMastery`), partout où agissent les skills ; pas dans le GS.
 - **XP de spécialisation** (24/10, Geoffrey ; `XP.specPct` / `XP.specCurve`, `src/meta/level.js`) : 50 % de sa part (24/10 ; ancien 10 %)
   d'XP de session (après partage et bonus perso) va à l'arbre de skills figé au lancement ; une XP par arbre (gardée si
-  on change), **même courbe que le niveau du mineur** (1000 ×1,5 ; 24/10, ancienne courbe 100 ×1,5). Affichée onglet Skills (SP lvl + barre), lobby (« Logisticien (SP lvl : 3) ») et bilan.
+  on change), **même courbe que le niveau du mineur** (1000 ×1,5 ; 24/10, ancienne courbe 100 ×1,5). Affichée onglet Skills (SP lvl + barre), lobby (« Logisticien (2/12/1) · SP lvl 3 » depuis les arbres v2 ; ancien « Logisticien (SP lvl : 3) ») et bilan.
   Sert à débloquer des sorts.
 - **Sorts** (24/10, Geoffrey ; `SPELLS` en config, `src/meta/spells.js` règles du compte, `src/sim/spells.js` effets,
   `src/ui/spells.js` onglet, GAME_DESIGN §3 « Sorts ») : onglet Sorts, 4 emplacements dont 2 ouverts (les 2 autres

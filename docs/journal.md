@@ -47,6 +47,23 @@ Modèle d'entrée :
   serveur redémarre.
 - **État** : ✅ en ligne le 04/11
 
+## 04/11/2026 — Geoffrey — Arbres de skills v2 : spé choisie, deux colonnes, 13 nouveaux skills
+- **Pour le joueur** :
+  - en haut de l'onglet Skills, trois boutons pour **choisir sa spécialisation** (en changer rend tous les points) ;
+  - chaque arbre a **deux colonnes et six étages**, et un étage s'ouvre avec 3 points dépensés dans l'arbre ;
+  - on peut mettre des points dans les deux autres arbres, **jamais aussi profond** que dans sa spé, et sans les
+    skills de classe (★, ceux à 1 point) ;
+  - **13 nouveaux skills** : Pioche ensorcelée, Filou, Mineur tout terrain, Reposé, Aura d'efficacité, Organisé,
+    Dématérialisation, Cloué au sol, Aura rassurante, Dans le dos, Solide sur les appuis, Crushing, Aura berserk ;
+  - lobby : « 🪜 Logisticien (2/12/1) · SP lvl 3 » (points dans chaque arbre) ;
+  - **à la mise en ligne, tout le monde est remis à zéro** (reset gratuit) ; la spé et les glyphes posés restent.
+- **Décisions** : Treuil → Escalateur → Mule → Aura rassurante (l'Escalateur descend à l'étage 4, la Mule au 5e) ;
+  changer de spé = reset ; Solide sur les appuis agit contre le Golbute et les boss qui frappent ou taclent ; Reposé :
+  mine classique (3 min) et prison (1 min) ; auras pour tout le groupe, sans cumul ; Ruée et Pillage passent à 3 rangs.
+- **À suivre** : équilibrage des nouveaux skills (valeurs provisoires) ; regarder comment les joueurs répartissent
+  leurs points hors spé.
+- **État** : ✅ en ligne le 04/11
+
 ## 04/11/2026 — Geoffrey — Guilde : l'Armurerie demande 20 Orbes supérieurs (avant 100)
 - **État** : ✅ en ligne le 04/11
 

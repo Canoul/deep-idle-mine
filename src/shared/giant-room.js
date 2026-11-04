@@ -4,6 +4,7 @@
    Les anneaux comptent pour tous les joueurs présents (une fois par anneau différent, comme dans un groupe) : quand
    quelqu'un entre ou sort, les caractéristiques de tous les présents sont recalculées (refreshRoom). */
 import { minerSpecs, groupRings } from './game.js';
+import { sanitizeSkills, skillEffects, groupAuras } from '../meta/skills.js';
 import { newGiant, joinGiant, leaveGiant, tickGiant, giantRate } from '../sim/giant/session.js';
 import { newLucifer, joinLucifer, tickLucifer, luciferDps } from '../sim/hescoming/session.js';
 
@@ -20,7 +21,8 @@ const asRecord = entries => ({
 /* une fiche par joueur (minerSpecs ne fait que des groupes de 3), avec les anneaux de tous les présents */
 function specsOf(entries){
   const rings = groupRings(asRecord(entries));
-  return entries.map(e => minerSpecs({ ...asRecord([e]), rings })[0]);
+  const skillAuras = groupAuras(entries.map(e => skillEffects(sanitizeSkills(e.skills))));   // auras des skills de tous les présents (04/11)
+  return entries.map(e => minerSpecs({ ...asRecord([e]), rings, skillAuras })[0]);
 }
 
 export function newRoom(seed, opts = {}, make = newGiant){

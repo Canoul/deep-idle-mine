@@ -23,8 +23,8 @@ test('nettoyage : arbre connu, niveau entier borné, au plus une entrée par pla
 test('le niveau remplit l\'arbre étage par étage (points = niveau − 1)', () => {
   assert.deepEqual(devSkills({ tree:'barbare', level:1 }).ranks, {}, 'niveau 1 : aucun point');
   assert.deepEqual(devSkills({ tree:'barbare', level:4 }).ranks, { damage:3 }, '3 points : Force brute au max');
-  assert.deepEqual(devSkills({ tree:'barbare', level:5 }).ranks, { damage:3, taunt:1 }, '4 points : + Provocation');
-  assert.deepEqual(devSkills({ tree:'barbare', level:13 }).ranks, { damage:3, taunt:1, loot:5, braum:3 }, 'arbre complet');
+  assert.deepEqual(devSkills({ tree:'barbare', level:5 }).ranks, { damage:3, loot:1 }, '4 points : + Pillage (étage 1, arbres v2)');
+  assert.deepEqual(devSkills({ tree:'barbare', level:13 }).ranks, { damage:3, loot:3, taunt:1, backstab:3, steady:1, crushing:1 }, '12 points, étage par étage');
   assert.equal(devSkills({ tree:'barbare', level:5 }).tree, 'barbare');
 });
 
@@ -76,7 +76,7 @@ test('lobby, mode dev : les tours sont toujours dans « Où miner » et jamais g
   const { mineModes } = await import('../src/ui/lobby.js');
   const j = { sides: { angel: { open: false, done: true }, demon: { open: true, done: true } } };
   const dev = mineModes('mine', false, j, true);
-  assert.deepEqual(dev.map(m => m.id), ['prison', 'mine', 'mi', 'instance_1', 'giant', 'tower_angel', 'tower_demon']);
+  assert.deepEqual(dev.map(m => m.id), ['prison', 'mine', 'mi', 'instance_1', 'giant', 'hescoming', 'tower_angel', 'tower_demon']);
   assert.ok(dev.filter(m => m.id.startsWith('tower')).every(m => !m.disabled));
-  assert.deepEqual(mineModes('mine', false, j).map(m => m.id), ['prison', 'mine', 'mi', 'instance_1', 'giant', 'tower_demon'], 'jeu normal : inchangé');
+  assert.deepEqual(mineModes('mine', false, j).map(m => m.id), ['prison', 'mine', 'mi', 'instance_1', 'giant', 'hescoming', 'tower_demon'], 'jeu normal : inchangé');
 });
