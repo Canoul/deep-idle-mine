@@ -1641,20 +1641,20 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       const { action, opId } = body;
       if(typeof opId !== 'string' || !/^[\w-]{8,64}$/.test(opId)) fail('bad_request', 400, 'Demande invalide.');
       const skillErr = e => fail(e, e === 'unknown' || e === 'bad_request' ? 400 : 409, SKILL_ERRORS[e] ?? 'Demande invalide.');
-      /* glyphes : { action:'glyph_pose' | 'glyph_remove', node } ; l'objet quitte ou rejoint l'inventaire, refusé en session
-         (les glyphes de la session en cours sont figés au lancement) ; inventaire et skills enregistrés ensemble */
+      /* glyphes : { action:'glyph_pose' | 'glyph_remove', node } ; l'objet quitte ou rejoint l'inventaire ; permis pendant une
+         session (04/11/2026, Geoffrey : comme le reste, ça compte pour la suivante : les glyphes de la session en cours sont
+         figés au lancement) ; inventaire et skills enregistrés ensemble */
       if(action === 'glyph_pose' || action === 'glyph_remove') return withLock('inv:' + me.id, () => withLock('skills:' + me.id, async () => {
         const inv = await loadInventory(me.id), points = await pointsOf(me.id), st = await loadSkills(me.id);
         if(st.ops.includes(opId)) return { skills: publicSkills(st, points), inventory: publicInventory(inv) };
-        if(await activeOf(me.id)) fail('session_running', 409, 'Impossible pendant une session : termine-la d\'abord.');
         const r = glyphOp(st, inv, { action: action === 'glyph_pose' ? 'pose' : 'remove', node: body.node, opId });
         if(r.error) skillErr(r.error);
         if(!r.repeated) await store.putInventoryAndSkills(me.id, JSON.parse(serialize(inv)), st);
         return { skills: publicSkills(st, points), inventory: publicInventory(inv) };
       }));
       return withLock('skills:' + me.id, async () => {
-        if(action === 'reset' && await activeOf(me.id)) fail('session_running', 409, 'Reset impossible pendant une session : termine-la d\'abord.');
-        if(action === 'spec' && await activeOf(me.id)) fail('session_running', 409, 'Changement de spécialisation impossible pendant une session : termine-la d\'abord.');
+        /* reset et changement de spé : permis pendant une session (04/11/2026, Geoffrey) ; les skills de la session en cours
+           sont figés au lancement, le changement compte pour la suivante */
         const points = await pointsOf(me.id), st = await loadSkills(me.id);
         const r = skillOp(st, { action, node: body.node, tree: body.tree, opId }, points);
         if(r.error) fail(r.error, r.error === 'unknown' || r.error === 'bad_request' ? 400 : 409, SKILL_ERRORS[r.error] ?? 'Demande invalide.');

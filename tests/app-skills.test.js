@@ -34,12 +34,11 @@ test('fiche : rang max, autre arbre, plus de points → pas de bouton, la raison
   assert.match(skillSheetHtml({ ...st, points:6 }, 'ore_rush'), /Plus de points/);
 });
 
-test('fiche : glyphe posable hors session, pas pendant une session', () => {
+test('fiche : glyphe posable, même pendant une session (04/11)', () => {
   const g = glyphOf('ore_rush'); assert.ok(g, 'Ruée a un glyphe');
   const full = { ...st, ranks:{ ...st.ranks, ore_rush:3 } }, inv = { slots:[{ item:g, qty:1 }] };
   assert.match(skillSheetHtml(full, 'ore_rush', { inv }), /data-gact="glyph_pose"/);
-  assert.doesNotMatch(skillSheetHtml(full, 'ore_rush', { inv, session:true }), /data-gact=/);
-  assert.match(skillSheetHtml(full, 'ore_rush', { inv, session:true }), /après la session/, 'pas de « Clic : » sans bouton');
+  assert.match(skillSheetHtml(full, 'ore_rush', { inv, session:true }), /data-gact="glyph_pose"/, 'permis pendant une session (04/11)');
   assert.doesNotMatch(skillSheetHtml(full, 'ore_rush', { inv }), /Clic/);
 });
 
