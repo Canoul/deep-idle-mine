@@ -47,7 +47,7 @@ test('pièces en acier : au-dessus du fer, même case, recette et blueprint, inh
 
 test('Plastron de l\'équilibre : torse, ses 9 stats, recette du créateur, épique', () => {
   assert.equal(ITEMS[BALANCE].slot, 'torse');
-  assert.deepEqual(ITEMS[BALANCE].stats, { pods:112, oxygenMax:30, mineSpeedPct:3, damagePct:3, attackSpeed:8,
+  assert.deepEqual(ITEMS[BALANCE].stats, { pods:112, oxygenMax:30, mineSpeedPct:3, damagePct:1.1, attackSpeed:8,
                                            tenacity:3, fortune:2, looting:3, torches:8 });
   assert.deepEqual(RECIPES[BALANCE].cost, { 'Steel ingot':50, 'Shiny gold':20, 'Rubis inférieur':1, 'Saphir inférieur':1,
                                             'Jade inférieur':1, 'Résidu angélique':50, 'Résidu démoniaque':50 });

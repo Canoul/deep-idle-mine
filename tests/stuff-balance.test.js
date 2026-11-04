@@ -51,6 +51,6 @@ test('plastrons : hors règle, au-dessus de la valeur de leur tier (torse volont
 
 test('Plastron de l\'équilibre : 2 fois le x de son tier (31/10/2026, Geoffrey)', () => {
   assert.equal(tierOf('Plastron de l\'équilibre'), 3);
-  assert.equal(pieceGS('Plastron de l\'équilibre'), 1003);
-  assert.ok(Math.abs(pieceGS('Plastron de l\'équilibre') / UPGRADE.tiers[3].x - 2) < 0.01);
+  assert.equal(pieceGS('Plastron de l\'équilibre'), 994);   // dégâts % 3 → 1,1 le 04/11 (avant 1003)
+  assert.ok(Math.abs(pieceGS('Plastron de l\'équilibre') / UPGRADE.tiers[3].x - 2) < 0.02);
 });

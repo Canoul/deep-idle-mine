@@ -16,6 +16,16 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 04/11/2026 — Geoffrey — Stuff : les dégâts % beaucoup moins forts
+- **Pour le joueur** : les pièces qui donnent des dégâts % en donnent nettement moins : Jambes en thorium 11,8 % (avant
+  31,3 %), Jambières du Golbute 12,5 % de dégâts, 7 % de double attaque et 25 % de butin (avant 33,3 / 21,9 / 20 %), Cape
+  royale du Gobelin 1,9 % (avant 5 %), Plastron de l'équilibre 1,1 % (avant 3 %), ligne Dégâts % de la Cape inclusive. Les
+  pièces déjà possédées suivent. Les runes ne changent pas.
+- **Décisions** : un % de dégâts était compté comme s'il ne valait presque rien (mesuré sur un mineur à 5 dégâts) ; il coûte
+  maintenant autant qu'un % de double attaque. Les Jambières du Golbute pèsent comme les Jambes en thorium.
+- **À suivre** : les runes de dégâts % (même défaut) ; peut-être les PV des boss, si les combats deviennent trop durs.
+- **État** : ✅ en ligne le 04/11
+
 ## 04/11/2026 — Geoffrey — Skills : reset pendant une session, Ajout rapide
 - **Pour le joueur** : le reset, le changement de spé et les glyphes marchent aussi pendant une session (la session en
   cours ne change pas, ça compte pour la suivante). Dans l'appli, la case **Ajout rapide** ajoute un point d'un toucher,

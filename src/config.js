@@ -1265,7 +1265,7 @@ export const STUFF = {
     'Bottes en acier':     { slot:'pieds',  tex:'boots_steel',   stats:{ speed:2.08 } },   // 27/10 (Geoffrey) : buff +100 x, ≈ 500 x (avant 1,67 ; 25/10 : 1,08)
     'Pioche en acier':     { slot:'pioche', tex:'pickaxe_steel', stats:{ mineSpeed:0.58 } },    // 27/10 (Geoffrey) : buff ≈ +100 x, 0,58 (au centième, comme en session ; avant 0,5 ; 25/10 : nerf, avant 0,6)
     'Épée en acier':       { slot:'epee',   tex:'sword_steel',   set:{ damage:18.5 } },   // remplace les mains nues (5) ; 27/10 (Geoffrey) : buff +100 x (avant 16 ; 24/10 : 13)
-    'Plastron de l\'équilibre': { slot:'torse', tex:'chest_balance', stats:{ pods:112, oxygenMax:30, mineSpeedPct:3, damagePct:3,
+    'Plastron de l\'équilibre': { slot:'torse', tex:'chest_balance', stats:{ pods:112, oxygenMax:30, mineSpeedPct:3, damagePct:1.1,   /* dégâts % 1,1 (04/11, prix de dessin 16 ; avant 3) */
                                    attackSpeed:8, tenacity:3, fortune:2, looting:3, torches:8 } },   // 31/10 (Geoffrey) : pods 112 pour valoir 2 fois le tier 3, ≈ 1 000 x (avant 188, 1 459 x) ; 24/10 : × 1,5 arrondi (avant pods 125, oxygène 20, 2, 2, 5, 2, 1, 2, 5)
     /* tier 4 (Treasure T4, 27/10/2026, Geoffrey) : mithril = même stat que l'acier, à la valeur du T4 (650 x ; plastron
        hors règle, même rapport que l'acier : 137 pods pour 500 x). Thorium et cobalt (T4.5, 750 x) : deux stats à 50/50,
@@ -1278,7 +1278,7 @@ export const STUFF = {
     'Bottes en mithril':   { slot:'pieds',  tex:'boots_mithril',  stats:{ speed:2.71 } },
     'Casque en thorium':   { slot:'casque', tex:'helmet_thorium', stats:{ oxygenMax:94, doubleAttack:11.7 } },   // 23,4 ÷ 2 (Geoffrey, 27/10)
     'Plastron en thorium': { slot:'torse',  tex:'chest_thorium',  stats:{ pods:103, damage:3.85 } },   // 7,7 ÷ 2
-    'Jambes en thorium':   { slot:'jambes', tex:'legs_thorium',   stats:{ climbSpeed:1.5, damagePct:31.3 } },   // 93,8 ÷ 3
+    'Jambes en thorium':   { slot:'jambes', tex:'legs_thorium',   stats:{ climbSpeed:1.5, damagePct:11.8 } },   // dégâts % : 188 x ÷ 16 (04/11 ; avant 31,3, prix de dessin 6)
     'Bottes en thorium':   { slot:'pieds',  tex:'boots_thorium',  stats:{ speed:1.56, crit:7.2 } },   // 14,4 ÷ 2
     'Casque en cobalt':    { slot:'casque', tex:'helmet_cobalt',  stats:{ oxygenMax:94, piercing:13.4 } },   // 53,6 ÷ 4
     'Plastron en cobalt':  { slot:'torse',  tex:'chest_cobalt',   stats:{ pods:103, mineSpeed:0.158 } },   // 0,474 ÷ 3
@@ -1294,10 +1294,10 @@ export const STUFF = {
     'Cape inclusive':      { slot:'cape', tex:'cape_inclusive', rolled:{ lines:4, x:1500 } },
     'Jambières titanesques': { slot:'jambes', tex:'legs_titan',     stats:{ climbSpeed:1.88, speed:1.95, mineSpeed:0.12, knockRes:15.6 } },   // minage 0,361 ÷ 3, recul 46,9 ÷ 3
     /* Coffre du Golbute (Instance II, 30/10/2026, Geoffrey) ; x → points au prix de dessin (designPrice : pods 6, marche
-       240, dégâts % 6, butin des mobs 10, double attaque 16) */
+       240, dégâts % 16 depuis le 04/11 (avant 6), butin des mobs 10, double attaque 16) */
     'Némésis du Golbute':    { slot:'pioche', tex:'pickaxe_nemesis', stats:{ mineSpeed:0.8 }, set:{ blockMinePct:25 } },   // passif : minage × 1,25 sur terre, pierre, pierre dure…
     'Torse de Gollex':       { slot:'torse',  tex:'chest_gollex',    stats:{ pods:167, speed:-1.04 } },   // pods +1 000 x, marche −250 x
-    'Jambières du Golbute':  { slot:'jambes', tex:'legs_golbute',    stats:{ damagePct:33.3, looting:20, doubleAttack:21.9 } },   // 200 x, 200 x, 350 x
+    'Jambières du Golbute':  { slot:'jambes', tex:'legs_golbute',    stats:{ damagePct:12.5, looting:25, doubleAttack:7 } },   // 04/11 (Geoffrey) : même poids que les Jambes en thorium (≈ 562 x) : 200 x, 250 x, 112 x (avant 750 x : 33,3 % / 20 % / 21,9 %, +62 % de DPS en combat)
     'Âme du Golbute':        { slot:'torche', tex:'soul_golbute',    stats:{ torches:10 }, set:{ torchRadius:10, torchTime:0.5, golemOxygen:25 } },   // passif : +25 oxygène quand un golem meurt à 8 cases
     /* butin rare des mobs (MOB_DROPS) : pas craftables. Règle du 27/10/2026 (Geoffrey) : chacune vaut le x du tier 2
        (250, comme une pièce d'armure en fer), partagé à parts égales entre ses stats, aux prix mesurés du GS (worth, gs) ;
@@ -1326,7 +1326,7 @@ export const STUFF = {
     /* coffre du Roi Gobelin (GOBLIN_KING, 27/10/2026, Geoffrey) : pas craftables, valeurs du créateur */
     'Couronne du Roi Gobelin': { slot:'casque', tex:'crown_goblin_king', stats:{ fortune:10 }, set:{ goblinThrall:10 } },   // passif : gobelins asservis à 10 cases
     'Masse du Roi Gobelin':    { slot:'epee',   tex:'mace_goblin_king',  set:{ damage:14 }, stats:{ crit:15 } },          // remplace les mains nues (5), comme une épée
-    'Cape royale du Gobelin':  { slot:'cape',   tex:'cape_goblin_royal', stats:{ damagePct:5, mineSpeedPct:5 } },
+    'Cape royale du Gobelin':  { slot:'cape',   tex:'cape_goblin_royal', stats:{ damagePct:1.9, mineSpeedPct:5 } },   // dégâts % 1,9 (04/11, prix de dessin 16 ; avant 5)
     /* anneaux : aucune stat pour le porteur seul, leur effet de groupe est dans RINGS */
     ...Object.fromEntries(Object.entries(RINGS.items).map(([n, d]) => [n, { slot:RINGS.slot, tex:d.tex }])),
   },
@@ -1420,8 +1420,11 @@ export const UPGRADE = {
      À GARDER si les poids des stats sont resimulés (npm run weights, stat-values) : appliquer ces diviseurs aux nouvelles
      mesures, et le dire dans le rapport. Servent à DESSINER les pièces (src/meta/gearscore.js designPrice) ; le GS, lui, reste
      au prix mesuré (statPrice) : la stat est divisée ET sa valeur en GS aussi (28/10/2026, Geoffrey ; ancien : GS × ajustement). */
+  /* damagePct : 8 depuis le 04/11/2026 (Geoffrey ; avant 3) : le prix mesuré (2 x par %) vient d'un mineur de base à 5 dégâts,
+     où +1 % ne vaut que 0,05 dégât ; avec une épée en acier (≈ 23,5 dégâts), +1 % vaut ≈ 9 x. Prix de dessin 16 x par %, comme
+     la double attaque (+1 % ≈ +1 % de DPS aussi). Pièces seulement : les runes ont leurs propres ratios (runeDiv), inchangés. */
   priceAdjust: { damage:2, attackSpeed:2, doubleAttack:2, crit:2, reach:2, knockback:2,
-                 damagePct:3, piercing:4, mineSpeed:3, mineSpeedPct:3, tenacity:2, knockRes:3 },
+                 damagePct:8, piercing:4, mineSpeed:3, mineSpeedPct:3, tenacity:2, knockRes:3 },
   /* LIGNES DE RUNE (31/10/2026, Geoffrey) : les ajustements offensifs valent aussi pour les runes et les fragments : leur ligne
      donne ce nombre de fois moins de points. Pas pour les lignes d'identification, ni pour minage, ténacité et résistance
      au recul. Les pièces gardent leur %, celles déjà runées suivent. */
