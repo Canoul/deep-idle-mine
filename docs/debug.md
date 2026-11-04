@@ -7059,7 +7059,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   Roi gobelin (détails dans les lignes) ; vrai téléphone.
 - **Applis** : pas de plugin ni de code natif.
 
-## 04/11/2026 — Jules — Appli mobile : écrans qui restaient (🧪 branche jules/appli-ecrans-fin)
+## 04/11/2026 — Jules — Appli mobile : écrans qui restaient (✅ en ligne le 04/11)
 - **Quoi** : spec et plan `docs/superpowers/{specs,plans}/2026-11-04-appli-ecrans-fin*.md`. Tout derrière `body.app` (`inApp()`
   dans chaque module) :
   - `src/ui/inventory.js` : `moveOp(inv, from, to)` (aussi utilisé par le glisser-déposer du PC), `infoHtml(…, moveFrom)`

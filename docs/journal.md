@@ -31,7 +31,7 @@ Modèle d'entrée :
   Conception : `docs/superpowers/specs/2026-11-04-appli-ecrans-fin-design.md`.
 - **À suivre** : l'étape 2 de l'appli est finie ; essai de Jules sur iPhone (TestFlight). Reste l'écran de session
   (Geoffrey) et la version PC.
-- **État** : 🧪 sur la branche `jules/appli-ecrans-fin` (pas en ligne)
+- **État** : ✅ en ligne le 04/11
 
 ## 04/11/2026 — Jules — Appli mobile : le Classement, podium et sa place en bas
 - **Pour le joueur** : rien sur le site. Dans l'appli, le Classement montre les **trois premiers sur un podium** (marches
