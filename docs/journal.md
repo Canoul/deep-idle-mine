@@ -1445,6 +1445,12 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
 
 ---
 
+## 04/11/2026 — Geoffrey — Concasseur : nouvelle table du minerai d'or
+- **Pour le joueur** : 100 Or concassés donnent maintenant toujours 1 à 50 charbons et 1 à 15 graphites ; une fois sur deux, 1 à
+  10 mithrils ; une fois sur quatre, 1 à 2 cobalts (et à part, une fois sur quatre, 1 à 2 thoriums) ; plus 1 % de chaque gemme
+  inférieure et un treasure possible (T1 2 %, T2 1 %, T3 0,5 %, T4 0,25 %). Avant : 1 Terre par lot.
+- **État** : ✅ en ligne le 04/11
+
 ## 04/11/2026 — Geoffrey — Appli : « Nouvelle version » réglable depuis le VPS, réglée sur 1.1.5
 - **Pour le joueur** : la fenêtre « Nouvelle version de l'appli » (Mettre à jour → Google Play) existait depuis le 03/11, mais
   elle comparait à la 1.1.2 alors que la 1.1.5 est sur Google Play : personne ne la voyait. Elle compare maintenant à la 1.1.5.

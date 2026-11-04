@@ -16,11 +16,15 @@ export const canOpen = item => Object.hasOwn(LOOT, item) || (!!chestOf(item) && 
 
 const between = (min, max, rng) => min + Math.floor(rng() * (max - min + 1));
 
-/* butin { nom: quantité } d'une table : tous les « always », puis un tirage par famille (au plus un objet chacune).
+/* butin { nom: quantité } d'une table : tous les « always » (avec chance : seulement si le tirage passe, 04/11/2026 ; sans :
+   toujours, et aucun tirage de plus, les autres tables ne changent pas), puis un tirage par famille (au plus un objet chacune).
    skip(item) : objet qui ne peut pas sortir (learnOnce, recette déjà apprise) : s'il est tiré, ce tirage ne donne rien */
 export function rollLoot(table, rng, skip = () => false){
   const loot = {};
-  for(const a of table.always) loot[a.item] = (loot[a.item] || 0) + between(a.min, a.max, rng);
+  for(const a of table.always){
+    if(a.chance != null && !(rng() < a.chance)) continue;
+    loot[a.item] = (loot[a.item] || 0) + between(a.min, a.max, rng);
+  }
   for(const f of table.oneOf){
     const r = rng();
     let acc = 0;
