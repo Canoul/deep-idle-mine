@@ -1,5 +1,5 @@
 /* Effets des actions du mineur sur le monde, et choix de l'action pour un pas dans une direction. */
-import { W, STATS, CFG, BLOCKS, BRIDGE, MOBS, TREASURE, ITEMS, XP, SKILLS, SHINY, DUNGEON, DUCK, COMBAT, GLYPHS, MOB_DROPS, PRISON, GOLBUTE } from '../config.js';
+import { W, STATS, CFG, BLOCKS, BRIDGE, MOBS, TREASURE, ITEMS, XP, SKILLS, SHINY, DUNGEON, DUCK, COMBAT, GLYPHS, MOB_DROPS, PRISON, GOLBUTE, RAID, IDS } from '../config.js';
 import { mulberry32 } from '../core/rng.js';
 import { areaOf, contentAt, isOre, typeOf, treasureItem, isAir, tileAt, supported, tryUnlock, oreRemoved, oreKey, fallInfo, isWinch } from './world.js';
 import { updateLight } from './light.js';
@@ -142,10 +142,24 @@ export function breakBlock(G,m,x,y){
   }
   if(isOre(t)){ m.stats.ore++; oreMinedIn(G,y,t); gainXp(G,m,XP.ore[oreKey(t)]); oreSkills(G,m); }
   if(typeOf(t)==='treasure') openTreasure(G,m,x,y);
+  if(typeOf(t)==='clue') findClue(G,m,x,y);
 }
 
 /* treasure : un objet Treasure TX (tier selon l'area du treasure) va dans l'inventaire du mineur.
    Aucun minerai : rien ne compte pour le déblocage de l'area. */
+/* Raid 1 (04/11/2026) : un Indice miné va dans le sac (lourd) ; il compte pour le raid une fois déposé au coffre
+   (G.chest.Indice, lu par src/sim/raid/session.js) ; G.raid.found : Indices minés */
+/* … et il mène au suivant : l'Indice encore caché le plus proche devient visible (RAID.mine.lead), pour qu'on ne cherche
+   pas le dernier au hasard dans tout le noir */
+function findClue(G,m,x,y){
+  if(!G.raid) return;
+  G.raid.found = (G.raid.found || 0) + 1; m.stats.clues = (m.stats.clues || 0) + 1;
+  let next = null, best = Infinity;
+  if(RAID.mine.lead) for(let yy = 0; yy < G.tiles.length; yy++) for(let xx = 0; xx < W; xx++)
+    if(G.tiles[yy][xx] === IDS.clue && !G.seen[yy][xx]){ const d = Math.abs(xx - x) + Math.abs(yy - y); if(d < best){ best = d; next = { x: xx, y: yy }; } }
+  if(next) G.seen[next.y][next.x] = 1;
+  log(G, `🔎 ${m.name} trouve un Indice${next ? ' : il mène au suivant' : ''} ! (${G.chest.Indice || 0} / ${RAID.mine.clues} rapportés)`);
+}
 function openTreasure(G,m,x,y){
   const tr=G.treasures.get(y*W+x), item=tr ? tr.item : treasureItem(contentAt(G,y));
   if(tr) tr.opened=true;

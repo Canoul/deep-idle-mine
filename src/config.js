@@ -121,6 +121,8 @@ export const BLOCK_TYPES = ['terrain', 'ore', 'build', 'treasure', 'special'];
 
 /* attrait d'un treasure découvert pour l'IA (val), repris tel quel pour les résidus */
 const TREASURE_VAL = 12;
+/* Raid 1 : Indices (04/11/2026, Geoffrey : une vraie activité de minage à la place de « tout miner ») ; voir RAID.mine */
+const RAID_CLUE_HARD = 30, RAID_CLUE_VAL = 1000, RAID_CLUE_W = 150;
 export const BLOCKS = {
   /* family 'bloc' : dans l'inventaire, objets de type Bloc (ils se concassent : onglet Concasseur, CRUSHER) */
   1:{name:'Terre',   type:'terrain', tex:'dirt',    w:1, hard:0.6, color:'#7a5230', dot:'#8d6240', family:'bloc'},
@@ -170,11 +172,13 @@ export const BLOCKS = {
   24:{name:'Barreaux de prison', type:'special', tex:'prison_bars', w:0, hard:Infinity, color:'#2a2a33', dot:'#5a5a66', unbreakable:true, noDrop:true},
   /* pierre des enfers (raid Cerbère, 04/11/2026, Geoffrey) : fond des areas du raid, 2 × la dureté de la pierre dure */
   25:{name:'Pierre des enfers', type:'terrain', tex:'hellstone', w:3, hard:4.8, color:'#4a1c16', dot:'#ff5a1f', family:'bloc'},
+  /* Raid 1 (04/11/2026) : Indice, caché dans les areas du raid ; lourd (pods) : il compte une fois rapporté au coffre */
+  26:{name:'Indice', type:'clue', tex:'clue', w:RAID_CLUE_W, hard:RAID_CLUE_HARD, color:'#3a1410', dot:'#ffb02e', val:RAID_CLUE_VAL},
 };
 export const BARRIER = 7, BRIDGE = 8, TREASURE_BLOCK = 10, DUNGEON_WALL = 11, CHEST_BASE = 18, KHOLE_BLOCK = 20;
 /* clés utilisées dans les compositions d'areas ; « air » = case vide (id 0), générée en poches */
 export const IDS = { air:0, dirt:1, stone:2, coal:3, iron:4, gold:5, diamond:6, hardstone:9, residueAngel:12, residueDemon:13, graphite:19,
-                     mithril:21, cobalt:22, thorium:23, hellstone:25 };
+                     mithril:21, cobalt:22, thorium:23, hellstone:25, clue:26 };
 
 /* Constructions du mineur (catégorie build). La passerelle est une tuile de la grille ; l'échelle et la torche
    se posent PAR-DESSUS une case vide (G.ladder, G.torches) : ce ne sont pas des tuiles. */
@@ -837,7 +841,7 @@ export const EFFECTS = {
 
 
 /* textures : fichiers de textures/ (générés par scripts/gen_textures.py) */
-export const TEXTURES = ['dirt','grass','hellstone','stone','hardstone','coal','iron','gold','diamond','graphite','mithril','cobalt','thorium','tunnel','barrier','prison_bars','chest_base','khole','sky','bridge','treasure','treasure_t1','treasure_t2','treasure_t3',
+export const TEXTURES = ['dirt','grass','hellstone','clue','stone','hardstone','coal','iron','gold','diamond','graphite','mithril','cobalt','thorium','tunnel','barrier','prison_bars','chest_base','khole','sky','bridge','treasure','treasure_t1','treasure_t2','treasure_t3',
   'blueprint','bp_parts','gem_ruby','gem_jade','gem_sapphire',
   'ingot_iron','ingot_gold','ingot_tainted','ingot_tainted_gold','ingot_graphite','ingot_steel','furnace_iron','compass_gold','shiny_iron','shiny_gold','pickaxe_stone','helmet_chitin','chest_chitin','legs_chitin','boots_chitin',
   'pickaxe_iron','sword_stone','sword_iron','spear_iron','bow_admin','helmet_iron','chest_iron','legs_iron','boots_iron','belt_goblin',
@@ -1881,7 +1885,10 @@ export const GIANT = {
 export const RAID = {
   maxPlayers: 10, duration: 30 * 60,
   groups: 2, groupSize: 5,   // 2 groupes de 5 ; les buffs de groupe (sorts, anneaux) restent dans son groupe (Geoffrey, 04/11)
-  mine: { areas: 2, bands: [['dirt', 25], ['stone', 25], ['hardstone', 25], ['hellstone', 25]], terrainVal: 5, gather: 5 },   // terrainVal ≥ CFG.farVal : un bloc resté loin est aussi visé
+  /* minage (04/11, Geoffrey 14:48 : « tout miner » remplacé) : clues Indices cachés au hasard dans les 2 areas (moitié par
+     area), la porte s'ouvre quand tous sont trouvés ; les areas sont dans le noir comme la mine (on explore) ;
+     clueHard / clueVal : dureté et attrait d'un Indice (BLOCKS[26]) ; clueMinDepth : pas dans les clueMinDepth premières lignes */
+  mine: { areas: 2, bands: [['dirt', 25], ['stone', 25], ['hardstone', 25], ['hellstone', 25]], clues: 150, clueHard: RAID_CLUE_HARD, clueMinDepth: 40, lead: true, gather: 5 },   // lead : un Indice trouvé montre le plus proche encore caché
   cerbere: {
     w: 30, h: 12, spawn: [1, 2, 3, 4, 5, 1, 2, 3, 4, 5],
     boss: { name: 'Cerbère', w: 8, h: 6, hp: 280000, knockRes: 100, bossX: 18 },   // 280 000 PV : ~1 victoire sur 10, combat ~9-10 min, équipe de référence avec tanks à 40 % de ténacité fixe (04/11 : Morsure /30 s qui tue 1 cible, tanks jamais durcis ; simulation --tank-ten 40)

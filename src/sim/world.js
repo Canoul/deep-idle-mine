@@ -15,9 +15,9 @@ export const typeOf = t => t ? BLOCKS[t].type : null;
 export const isOre  = t => typeOf(t)==='ore';
 export const isResidue = t => !!t && BLOCKS[t].family==='residu';
 /* ce que l'IA peut viser une fois découvert : minerais, treasures et résidus (Jugement) */
-export const isTarget = t => isOre(t) || typeOf(t)==='treasure' || isResidue(t);
-/* … et dans le raid (04/11/2026), tout le terrain : il faut tout miner */
-export const aimable = (G,t) => isTarget(t) || (!!G.raid && typeOf(t)==='terrain');
+export const isTarget = t => isOre(t) || typeOf(t)==='treasure' || isResidue(t) || typeOf(t)==='clue';   // clue : Indice du raid (04/11)
+/* ce que l'IA vise (raid compris : les Indices, comme un minerai ; ancien 04/11 : tout le terrain) */
+export const aimable = (G,t) => isTarget(t);
 /* objet rapporté par un treasure de l'area k (Treasure T1, T2…) ; le dernier tier couvre les areas au-delà */
 export const treasureItem = k => (TREASURE.tiers.find(t => k <= t.maxArea) || TREASURE.tiers.at(-1)).item;
 /* chance d'un treasure dans l'area k (contenu ck) : moitié moins en prison (PRISON.treasureMul) */
@@ -201,7 +201,16 @@ function genRaidArea(G,k){
     const y = k*AREA_H + ry, id = rows[Math.min(y, rows.length-1)], up = rows[Math.max(0, y-1)];
     const row = new Uint8Array(W);
     for(let x=0;x<W;x++){ const t = up !== id && r() < 0.5 ? up : id; row[x] = t; const n = oreKey(t); counts[n] = (counts[n]||0)+1; }
-    G.tiles.push(row); G.ladder.push(new Uint8Array(W)); G.seen.push(new Uint8Array(W).fill(1));   // tout est connu : il faut tout miner
+    G.tiles.push(row); G.ladder.push(new Uint8Array(W)); G.seen.push(new Uint8Array(W));   // dans le noir, comme la mine : on explore
+  }
+  /* Indices (Geoffrey, 04/11 14:48) : RAID.mine.clues au total, moitié par area, au hasard (pas dans les clueMinDepth
+     premières lignes de la mine), jamais deux sur la même case */
+  const M = RAID.mine, n = Math.floor(M.clues / M.areas) + (k < M.clues % M.areas ? 1 : 0), y0 = AREA_Y0 + k*AREA_H;
+  const ry0 = k === 0 ? Math.min(AREA_H - 1, M.clueMinDepth) : 0;
+  for(let i=0, tries=0; i<n && tries<1000; tries++){
+    const x = Math.floor(r()*W), y = y0 + ry0 + Math.floor(r()*(AREA_H - ry0));
+    if(G.tiles[y][x] === IDS.clue) continue;
+    counts[oreKey(G.tiles[y][x])]--; G.tiles[y][x] = IDS.clue; counts.clue = (counts.clue||0)+1; i++;
   }
   G.areas[k] = { k, comp:{}, counts, oreTotal:0, oreMined:0, ores:{}, chestChance:0, treasure:null };
 }

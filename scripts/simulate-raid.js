@@ -18,6 +18,11 @@ import { RAID, BLOCKS, AREA_Y0, AREA_H, W, DT } from '../src/config.js';
 const args = process.argv.slice(2);
 const opt = (k, d) => { const i = args.indexOf('--' + k); return i < 0 ? d : args[i + 1]; };
 const TANK = opt('tank-ten', null) == null ? null : +opt('tank-ten');
+/* --clues 20 --clue-hard 60 : nombre et dureté des Indices (essais) */
+if(opt('clues', null) != null) RAID.mine.clues = +opt('clues');
+if(opt('clue-hard', null) != null) BLOCKS[26].hard = +opt('clue-hard');
+if(opt('clue-w', null) != null) BLOCKS[26].w = +opt('clue-w');
+if(opt('clue-depth', null) != null) RAID.mine.clueMinDepth = +opt('clue-depth');
 const RUNS = +opt('runs', 10), HP = opt('hp', null) == null ? null : +opt('hp'), SEED0 = +opt('seed', 1);
 
 /* stuff de référence par spé (choix de Claude : la meilleure pièce T4.5, sinon T4, par case) */
@@ -68,8 +73,9 @@ const terrainLeft = G => { let c = 0; for(let y = AREA_Y0; y < AREA_Y0 + RAID.mi
 function mine(seed, specs){
   const G = newSession(seed, { miners: specs, raid: true });
   const max = Math.round(RAID.duration / DT);
-  while(G.ticks < max){ tick(G); if(G.ticks % 50 === 0 && terrainLeft(G) === 0) break; }
-  return { t: G.t, left: terrainLeft(G) };
+  const marks = [];
+  while(G.ticks < max){ tick(G); if(G.ticks % 50 === 0){ const f = G.chest.Indice || 0; while(marks.length < f) marks.push(G.t); if(f >= RAID.mine.clues) break; } }
+  return { t: G.t, left: Math.max(0, RAID.mine.clues - (G.chest.Indice || 0)), marks };
 }
 
 const spec0 = team(SEED0)[0];
@@ -82,7 +88,7 @@ for(let r = 0; r < RUNS; r++){
     const m = mine(seed, specs);
     mines.push(m.t);
     tLeft = RAID.duration - m.t - RAID.mine.gather;
-    console.log(`run ${r + 1} : minage ${(m.t / 60).toFixed(1)} min${m.left ? ` (reste ${m.left} blocs)` : ''}`);
+    console.log(`run ${r + 1} : minage ${(m.t / 60).toFixed(1)} min${m.left ? ` (reste ${m.left} indices)` : ''} · indices à ${m.marks.map(t => (t / 60).toFixed(1)).join(' ')}`);
     if(args.includes('--mine-only') || m.left) continue;
   }
   const B = newCerbere(seed, { miners: specs, hp: HP ?? RAID.cerbere.boss.hp, ticks: Math.round(Math.max(0, tLeft) / DT) });

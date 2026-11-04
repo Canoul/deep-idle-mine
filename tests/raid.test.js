@@ -3,26 +3,40 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { RAID, BLOCKS, IDS, AREA_Y0, AREA_H, W, STATS, DT } from '../src/config.js';
 import { newSession, tick } from '../src/sim/session.js';
+import { breakBlock } from '../src/sim/actions.js';
 import { newCerbere, tickCerbere, pickTargets, bitten } from '../src/sim/raid/cerbere.js';
-import { newRaid, tickRaid, terrainLeft, leaveRaid } from '../src/sim/raid/session.js';
+import { newRaid, tickRaid, leaveRaid, cluesLeft } from '../src/sim/raid/session.js';
 import './helpers.js';
 
 const C = RAID.cerbere;
 const spec = (i, o = {}) => ({ name: 'M' + i, account: 'A' + i, carac: { ...STATS, damage: 20, mineSpeed: 2, ...(o.carac || {}) }, skills: o.skills || {}, skillTree: o.tree ?? 'mineur', spells: [] });
 
-test('minage : 2 areas pleines, que du terrain en bandes (terre, pierre, pierre dure, pierre des enfers), tout connu, pas de mobs', () => {
+test('minage : 2 areas de terrain en bandes, dans le noir, avec RAID.mine.clues Indices cachés ; un Indice miné compte', () => {
   const G = newSession(5, { miners: [spec(0)], raid: true });
   assert.equal(G.unlockedAreas, 2);
   assert.equal(BLOCKS[IDS.hellstone].hard, 2 * BLOCKS[IDS.hardstone].hard);
   const at = ry => G.tiles[AREA_Y0 + ry];
+  let clues = [];
   for(let ry = 0; ry < 2 * AREA_H; ry++) for(let x = 0; x < W; x++){
-    const t = at(ry)[x]; assert.equal(BLOCKS[t].type, 'terrain', `${x},${ry}`); assert.equal(G.seen[AREA_Y0 + ry][x], 1);
+    const t = at(ry)[x];
+    if(t === IDS.clue){ clues.push([x, ry]); continue; }
+    assert.equal(BLOCKS[t].type, 'terrain', `${x},${ry}`);
   }
-  assert.equal(at(5)[10], IDS.dirt); assert.equal(at(30)[10], IDS.stone); assert.equal(at(60)[10], IDS.hardstone); assert.equal(at(90)[10], IDS.hellstone);
-  assert.equal(terrainLeft(G), 2 * W * AREA_H);
+  assert.equal(clues.length, RAID.mine.clues);
+  assert.equal(clues.filter(([, ry]) => ry < AREA_H).length, Math.ceil(RAID.mine.clues / 2), 'moitié par area');
+  assert.ok(clues.every(([, ry]) => ry >= RAID.mine.clueMinDepth), 'pas tout en haut');
+  assert.equal(G.seen[AREA_Y0 + 40][10], 0, 'dans le noir');
+  assert.equal(at(5)[10] === IDS.clue || at(5)[10] === IDS.dirt, true); assert.ok([IDS.hellstone, IDS.clue].includes(at(90)[10]));
+  /* un Indice miné : dans le sac (lourd), il montre le plus proche encore caché ; il compte une fois au coffre */
+  const [x, ry] = clues[0], m = G.miners[0];
+  breakBlock(G, m, x, AREA_Y0 + ry);
+  assert.equal(G.raid.found, 1); assert.equal(m.stats.clues, 1);
+  assert.equal(m.inv.Indice, 1); assert.equal(m.load, BLOCKS[IDS.clue].w);
+  assert.equal(clues.slice(1).filter(([cx, cy]) => G.seen[AREA_Y0 + cy][cx]).length, 1, 'le suivant est montré');
+  assert.equal(cluesLeft(G), RAID.mine.clues, 'pas encore rapporté');
+  G.chest.Indice = 1; assert.equal(cluesLeft(G), RAID.mine.clues - 1);
   for(let i = 0; i < 3000; i++) tick(G);
   assert.equal(G.mobs.length, 0, 'pas de mobs');
-  assert.ok(terrainLeft(G) < 2 * W * AREA_H, 'il mine');
 });
 
 test('Cerbère : ses 3 cibles d\'abord parmi ceux qui le provoquent ; Morsure sans résistance → une des 3 meurt', () => {
@@ -79,7 +93,7 @@ test('enragé sous 33 % : autoattaque toutes les 7 s', () => {
 test('partie complète : minage → porte (rassemblement) → arène ; temps total limité ; départ d\'un joueur', () => {
   const G = newRaid(7, { miners: [spec(0, { carac: { tenacity: 100 } }), spec(1)], hp: 50 });   // seul en arène : il doit résister aux Morsures
   assert.equal(G.phase, 'mine');
-  for(let y = AREA_Y0; y < AREA_Y0 + 2 * AREA_H; y++) G.mine.tiles[y].fill(0);   // tout miné
+  G.mine.chest.Indice = RAID.mine.clues;                            // tous les Indices rapportés
   for(let i = 0; i < 20; i++) tickRaid(G);
   assert.equal(G.phase, 'door');
   for(let i = 0; i < Math.round(RAID.mine.gather / DT) + 2; i++) tickRaid(G);

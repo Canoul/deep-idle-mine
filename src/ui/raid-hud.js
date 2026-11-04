@@ -13,13 +13,13 @@ const setHtml = (el, h) => { if(el && el._html !== h){ el.innerHTML = h; el._htm
 const fr = n => Math.round(n).toLocaleString('fr-FR');
 const BOSS = RAID.cerbere.boss.name;
 
-/* bandeau des phases de minage : phase, temps restant, blocs restants ; devant la porte, le compte à rebours */
+/* bandeau des phases de minage : phase, temps restant, Indices trouvés (04/11 : à la place des blocs restants) ; devant la porte, le compte à rebours */
 export function raidBannerText(r){
   if(!r) return '';
   const time = `${fmt(r.timeLeft ?? 0)} restantes`;
   if(r.phase === 'door') return `La grande porte s'ouvre dans ${r.doorLeft ?? 0} s · ${time}`;
   const done = r.total ? Math.floor((r.total - r.left) / r.total * 100) : 0;
-  return `Raid ${BOSS} · minage : ${fr(r.left ?? 0)} / ${fr(r.total ?? 0)} blocs restants (${done} %) · ${time}`;
+  return `Raid ${BOSS} · 🔎 Indices rapportés : ${fr((r.total ?? 0) - (r.left ?? 0))} / ${fr(r.total ?? 0)} · ${time}`;
 }
 /* avancement du minage (0 à 100) */
 export const raidMinedPct = r => r?.total ? (r.total - r.left) / r.total * 100 : 0;
@@ -58,15 +58,16 @@ export function raidEndHTML(rec, me){
   const why = s.success ? `${esc(BOSS)} est vaincu en <b>${fmt(s.t)}</b> !`
     : s.bossHp != null ? (s.shares || []).filter(p => !p.left).every(p => p.stats?.dead) ? `Tout le monde est mort : ${esc(BOSS)} tient toujours (${fr(s.bossHp)} / ${fr(s.bossMax)} PV).`
                                                                                           : `Temps écoulé : ${esc(BOSS)} tient toujours (${fr(s.bossHp)} / ${fr(s.bossMax)} PV).`
-    : `Temps écoulé avant la grande porte : ${fr(s.blocksLeft ?? 0)} / ${fr(s.blocksTotal ?? 0)} blocs restaient à miner.`;
-  const facts = [`Durée : ${fmt(s.t)}`, s.mineT != null ? `areas minées en ${fmt(s.mineT)}` : null,
-                 `${fr((s.blocksTotal ?? 0) - (s.blocksLeft ?? 0))} / ${fr(s.blocksTotal ?? 0)} blocs`,
+    : s.clues ? `Temps écoulé avant la grande porte : ${fr((s.blocksTotal ?? 0) - (s.blocksLeft ?? 0))} / ${fr(s.blocksTotal ?? 0)} Indices rapportés.`
+    : `Temps écoulé avant la grande porte : ${fr(s.blocksLeft ?? 0)} / ${fr(s.blocksTotal ?? 0)} blocs restaient à miner.`;   // raid d'avant les Indices
+  const facts = [`Durée : ${fmt(s.t)}`, s.mineT != null ? `${s.clues ? 'Indices rapportés' : 'areas minées'} en ${fmt(s.mineT)}` : null,
+                 `${fr((s.blocksTotal ?? 0) - (s.blocksLeft ?? 0))} / ${fr(s.blocksTotal ?? 0)} ${s.clues ? 'Indices' : 'blocs'}`,
                  s.bossHp != null ? `${esc(BOSS)} : ${fr(s.bossHp)} / ${fr(s.bossMax)} PV` : null, s.deaths ? `${s.deaths} mort${s.deaths > 1 ? 's' : ''}` : null].filter(Boolean);
   return `<h3>🔥 Raid ${esc(BOSS)} : ${s.success ? 'victoire !' : 'échec'}</h3>`+
     `<p>${mine?.left ? 'Tu as quitté le raid avant la fin. ' : ''}${why}</p>`+
     `<p class="mut small">${facts.join(' · ')} · pas de récompense pour l'instant.</p>`+
     (s.shares || []).map(p => `<div class="row share${p.account === me ? ' me' : ''}"><span>${esc(nameOf(p.account) ?? p.miner)}${p.account === me ? ' (toi)' : ''}${p.stats?.dead ? ' 💀' : ''}</span>`+
-      `<span>${p.left ? '<span class="mut">a quitté</span>' : `${fr(p.stats?.mined ?? 0)} blocs · ${fr(p.stats?.bossDmg ?? 0)} dégâts`+
+      `<span>${p.left ? '<span class="mut">a quitté</span>' : `${fr(p.stats?.clues ?? 0)} indice${(p.stats?.clues ?? 0) > 1 ? 's' : ''} · ${fr(p.stats?.mined ?? 0)} blocs · ${fr(p.stats?.bossDmg ?? 0)} dégâts`+
         `<br><small class="mut">mordu ${p.stats?.bitten ?? 0} · durci ${p.stats?.stoned ?? 0} · libérés ${p.stats?.freed ?? 0}${p.stats?.dead ? ' · mort' : ''}</small>`}</span></div>`).join('')+
     '<p style="text-align:right"><button class="on" id="endBack">Retour</button></p>';
 }

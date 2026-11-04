@@ -25,7 +25,7 @@ export const guildTabs = st => [...(st.mine ? [{ id:'mine', label:esc(st.mine.na
    la guilde (server/guild/raid.js), le raid en cours. r : mine.raid de la vue du serveur ; now : heure du serveur (ms). */
 const mins = s => Math.round(s / 60);
 export const RAID_INTRO = `<p class="small">Raid 1 : <b>Cerbère</b>. De 1 à ${RAID.maxPlayers} joueurs de la guilde, ${mins(RAID.duration)} min en tout. `+
-  `Minez d'abord ${RAID.mine.areas} areas à 100 % (rien que du terrain, jusqu'à la pierre des enfers) : la grande porte s'ouvre alors sur l'arène de Cerbère, le chien à trois têtes.</p>`+
+  `Explorez d'abord ${RAID.mine.areas} areas dans le noir (rien que du terrain, jusqu'à la pierre des enfers) pour trouver les ${RAID.mine.clues} 🔎 Indices cachés et les rapporter au coffre (chacun mène au suivant) : la grande porte s'ouvre alors sur l'arène de Cerbère, le chien à trois têtes.</p>`+
   `<p class="small mut">Morts définitives jusqu'à la fin du raid. Gratuit (ni clé, ni énergie) ; pas de récompense pour l'instant.</p>`;
 const left = (r, now) => r.finishAt ? Math.max(0, Math.round((r.finishAt - now) / 60000)) : null;
 function raidRow(m, r){
