@@ -5,7 +5,7 @@
 import { INSTANT_MINE as MI, DT } from '../config.js';
 import { aurasOf } from '../meta/aura.js';
 import { sanitizeLook, sanitizeGear, equippedStats, ringsOf, withRings } from '../meta/stuff.js';
-import { sanitizeSkills, skillEffects, withSkillStats, slotMastery } from '../meta/skills.js';
+import { sanitizeSkills, skillEffects, withSkillStats, slotMastery, groupAuras } from '../meta/skills.js';
 import { withGlyphStats } from '../meta/glyphs.js';
 import { newInstant, leaveInstant, INSTANT_TICKS } from '../sim/instant/session.js';
 
@@ -60,14 +60,14 @@ export const instantTickAt = (elapsedMs, speed) => Math.max(0, Math.min(INSTANT_
 
 /* mineurs de la mine : un par joueur, avec son pseudo, son stuff porté (apparence + caractéristiques) et ses skills
    figés à l'ouverture (revérifiés) ; même calcul que pour une session normale (src/shared/game.js minerSpecs), sauf les
-   anneaux : chacun pour soi, ils ne profitent qu'à leur porteur */
+   anneaux : chacun pour soi, ils ne profitent qu'à leur porteur (les auras des skills aussi, 04/11) */
 export function instantSpecs(record){
   return (record.players || []).map((p, i) => {
     const look = sanitizeLook(record.looks?.[p.account]);
     const st = sanitizeSkills(record.skills?.[p.account]), skills = skillEffects(st);
     return { name: String(p.name || '').slice(0, 24) || 'Joueur ' + (i + 1), account: p.account, look,
              auras: aurasOf(sanitizeGear(record.gear?.[p.account])),
-             carac: withGlyphStats(withRings(withSkillStats(equippedStats(Object.values(look), slotMastery(skills)), skills), ringsOf(Object.values(look))), skills, false), skills, skillTree: st.tree,
+             carac: withGlyphStats(withRings(withSkillStats(equippedStats(Object.values(look), slotMastery(skills)), skills, { auras: groupAuras([skills]) }), ringsOf(Object.values(look))), skills, false), skills, skillTree: st.tree,
              rings: ringsOf(Object.values(look)) };   // pas de Glyphe Mule ici
   });
 }

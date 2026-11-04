@@ -39,7 +39,7 @@ import { instanceDef, instanceDurationMs, isInstanceMode, missingKeys, levelsOf 
 import { RAID_MODE, isRaidMode, raidDurationMs, cleanGroup, groupsOk } from '../../src/shared/raid.js';
 import { rollChestQuality, rollRune, rolledSpec, rollStats, isRing, canIdentify, qualityDef } from '../../src/meta/piece.js';
 import { sanitizeProgress, creditXp, raiseAreaMax, levelOf, specXpOf, specLevels } from '../../src/meta/level.js';
-import { sanitizeSkills, skillOp, skillRanks, spentPoints } from '../../src/meta/skills.js';
+import { sanitizeSkills, skillOp, skillRanks, spentPoints, migrateSkills, pointsByTree } from '../../src/meta/skills.js';
 import { glyphOp, sessionSkills, ownedGlyphs, nodeOfGlyph } from '../../src/meta/glyphs.js';
 import { sanitizeSpells, spellOp, learnScroll, publicSpells, equippedSpells } from '../../src/meta/spells.js';
 import { sanitizeSets, setOp, applySet, snapshot, publicSets, inSomeSet, setForMode, equippedSet } from '../../src/meta/sets.js';
@@ -78,6 +78,9 @@ const CRAFT_ERRORS = { unknown: 'Recette inconnue.', locked: 'Recette pas encore
 const LEARN_ERRORS = { no_use: 'Ce blueprint ne débloque rien pour l\'instant.', known: 'Tu connais déjà cette recette : ton blueprint est gardé.',
                        not_owned: 'Tu n\'as pas ce blueprint.' };
 const SKILL_ERRORS = { unknown: 'Skill inconnu.', other_tree: 'Tu as choisi un autre arbre : fais un reset pour changer.',
+                       no_spec: 'Choisis d\'abord ta spécialisation (en haut de l\'onglet).', needs_tier: 'Étage pas encore ouvert : dépense plus de points dans cet arbre.',
+                       spec_only: 'Skill spécial de classe : seulement pour cette spécialisation.',
+                       too_deep: 'Hors de ta spécialisation, tu ne peux pas aller aussi profond que dans ton arbre principal.',
                        maxed: 'Ce skill est déjà au rang max.', needs_previous: 'Monte d\'abord l\'étape précédente au rang max.',
                        no_points: 'Plus de points de skill : gagne un niveau.', bad_request: 'Demande invalide.',
                        not_max: 'Le skill doit être au rang max pour recevoir son glyphe.', occupied: 'Un glyphe est déjà posé sur ce skill.',
@@ -287,7 +290,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
   const publicProgress = p => ({ xp: p.xp, ...levelOf(p.xp), spec: specLevels(p) });
   /* skills : revérifiés avec les points du niveau (jamais plus de rangs que de points) */
   const pointsOf = async accountId => levelOf((await loadProgress(accountId)).xp).talentPoints;
-  const loadSkills = async accountId => sanitizeSkills(await store.getSkills(accountId), await pointsOf(accountId));
+  /* arbres v2 (04/11/2026) : une sauvegarde d'avant (sans v:2) repart de zéro, spé et glyphes gardés (migrateSkills) */
+  const loadSkills = async accountId => sanitizeSkills(migrateSkills(await store.getSkills(accountId)), await pointsOf(accountId));
   const publicSkills = (st, points) => ({ ...skillRanks(st), points, spent: spentPoints(st), glyphs: { ...st.glyphs } });   // glyphes posés { nœud: objet }
   /* sorts : relus et revérifiés ; ctx = arbre de skills choisi et niveaux de spécialisation (déblocage, needTree) */
   const loadSpells = async accountId => sanitizeSpells(await store.getSpells(accountId));
@@ -1630,7 +1634,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       return Object.fromEntries(items.map(i => [i, countOf(inv, i)]));
     },
 
-    /* skills : { action:'learn', node } ou { action:'reset' } (gratuit, refusé pendant une session : les skills de la
+    /* skills : { action:'learn', node }, { action:'spec', tree } (choisir sa spé : remet les points à zéro, arbres v2 du
+       04/11/2026) ou { action:'reset' } (gratuit, refusé pendant une session : les skills de la
        session en cours sont figés au lancement). opId : une demande renvoyée n'agit qu'une fois. */
     async skills(me, body = {}){
       const { action, opId } = body;
@@ -1649,8 +1654,9 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       }));
       return withLock('skills:' + me.id, async () => {
         if(action === 'reset' && await activeOf(me.id)) fail('session_running', 409, 'Reset impossible pendant une session : termine-la d\'abord.');
+        if(action === 'spec' && await activeOf(me.id)) fail('session_running', 409, 'Changement de spécialisation impossible pendant une session : termine-la d\'abord.');
         const points = await pointsOf(me.id), st = await loadSkills(me.id);
-        const r = skillOp(st, { action, node: body.node, opId }, points);
+        const r = skillOp(st, { action, node: body.node, tree: body.tree, opId }, points);
         if(r.error) fail(r.error, r.error === 'unknown' || r.error === 'bad_request' ? 400 : 409, SKILL_ERRORS[r.error] ?? 'Demande invalide.');
         if(!r.repeated) await store.putSkills(me.id, st);
         return { skills: publicSkills(st, points) };
@@ -2008,6 +2014,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     },
     /* arbre de skills choisi (mineur, logisticien, barbare) ou null : la spécialisation affichée dans le lobby */
     skillTreeOf: async accountId => (await loadSkills(accountId)).tree ?? null,
+    skillPointsOf: async accountId => pointsByTree(await loadSkills(accountId)),   // points par arbre (lobby : « Logisticien (2/12/1) », 04/11)
     /* niveau de spécialisation dans cet arbre (null sans arbre) : « Logisticien (SP lvl : 3) » dans le lobby */
     specLevelOf: async (accountId, tree) => tree ? specLevels(await loadProgress(accountId))[tree]?.level ?? null : null,
     /* apparence (noms des pièces portées, { case: objet }) : le skin de chaque membre dans le lobby */

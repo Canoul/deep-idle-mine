@@ -50,11 +50,14 @@ export const portraitLook = (slot, myLook = {}) => slot.me ? myLook : sanitizeLo
 /* et son aura (src/meta/aura.js), de la même façon */
 export const portraitAuras = (slot, mine = {}) => slot.me ? mine : sanitizeAuras(slot.auras);
 
-/* spécialisation d'un joueur (arbre de skills choisi) : « 🪜 Logisticien (SP lvl : 3) », ou « Sans spécialisation » ;
-   level : son niveau de spécialisation dans cet arbre (absent = pas affiché) */
-export function specLabel(tree, level = null){
+/* spécialisation d'un joueur (arbre de skills choisi) : « 🪜 Logisticien (2/12/1) · SP lvl 3 », ou « Sans spécialisation » ;
+   level : son niveau de spécialisation dans cet arbre (absent = pas affiché) ; pts : points par arbre, dans l'ordre
+   Mineur / Logisticien / Barbare (arbres v2, 04/11/2026 ; absent = pas affiché) */
+export function specLabel(tree, level = null, pts = null){
   const t = SKILLS.trees.find(x => x.id === tree);
-  return t ? `${t.icon} ${t.label}${Number.isSafeInteger(level) ? ` (SP lvl : ${level})` : ''}` : 'Sans spécialisation';
+  if(!t) return 'Sans spécialisation';
+  const p = Array.isArray(pts) && pts.length === SKILLS.trees.length && pts.every(Number.isSafeInteger) ? ` (${pts.join('/')})` : '';
+  return `${t.icon} ${t.label}${p}${Number.isSafeInteger(level) ? ` · SP lvl ${level}` : ''}`;
 }
 
 /* membre que le chef attend : son nom et son temps restant (pas de temps en mode dev) */
@@ -338,7 +341,7 @@ export function setupLobby(h){
       const tags = [s.me && 'Toi', s.leader && 'chef', ready, (s.playing || s.me && locked) && 'en session', s.playing && leftText(s.playingLeftMs), s.away && 'absent',
                     Number.isFinite(gs) && `${gs.toLocaleString('fr-FR')} GS`].filter(Boolean).join(' · ') || 'Prêt';
       return `<div class="pslot${s.me ? ' me' : ''}${s.away ? ' away' : ''}"><span class="av"><canvas width="16" height="16" data-slot="${i}"></canvas></span>`+
-             `<span><b>${esc(s.name)}</b><small class="spec">${esc(s.me && st.myTree !== undefined ? specLabel(st.myTree, st.mySpec?.[st.myTree]?.level) : specLabel(s.tree, s.specLevel))}</small><small>${esc(tags)}</small>${energyGauge(s.me ? st.energy : s.energy)}</span>`+
+             `<span><b>${esc(s.name)}</b><small class="spec">${esc(s.me && st.myTree !== undefined ? specLabel(st.myTree, st.mySpec?.[st.myTree]?.level, st.myPts) : specLabel(s.tree, s.specLevel, s.treePts))}</small><small>${esc(tags)}</small>${energyGauge(s.me ? st.energy : s.energy)}</span>`+
              (slotButtons(st, s).promote ? `<button class="x promote" data-promote="${esc(s.displayId)}" title="Nommer chef">★</button>` : '')+
              (slotButtons(st, s).kick ? `<button class="x" data-kick="${esc(s.displayId)}" title="Retirer du groupe">×</button>` : '')+`</div>`;
     }).join('');

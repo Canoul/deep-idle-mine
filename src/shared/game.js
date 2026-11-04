@@ -13,7 +13,7 @@ import { setFocus } from '../sim/focus.js';
 import { forceKhole } from '../sim/khole.js';
 import { aurasOf } from '../meta/aura.js';
 import { sanitizeLook, sanitizeGear, equippedStats, ringsOf, withRings, ringXpPct } from '../meta/stuff.js';
-import { sanitizeSkills, skillEffects, withSkillStats, slotMastery } from '../meta/skills.js';
+import { sanitizeSkills, skillEffects, withSkillStats, slotMastery, groupAuras } from '../meta/skills.js';
 import { withGlyphStats, nodeOfGlyph } from '../meta/glyphs.js';
 import { sessionSpells } from '../meta/spells.js';
 import { presetMiner, sanitizeBotPresets, isCopyPresetId, copyMiner, COPY_PREFIX } from './dev-presets.js';
@@ -120,7 +120,11 @@ export function minerSpecs(record){
   const rings = record.rings ?? groupRings(record, selfTree || placeTrees[0] ? presetOf(0)?.gear : null);   // Bloc géant : anneaux de tous les présents, passés à part (src/shared/giant-room.js)
   const modeDef = MINE_MODES.find(m => m.id === record.mode);
   const mine = !modeDef?.tower && !modeDef?.giant;   // tour, Bloc géant : pas de Glyphe Mule (son skill n'y agit pas)
-  const caracOf = i => withGlyphStats(withRings(withSkillStats(equippedStats(gearOf(i), slotMastery(skillsOf(i))), skillsOf(i)), rings), skillsOf(i), mine);   // glyphes en dernier ; maîtrises (28/10) : stats de la pièce
+  /* arbres v2 (04/11/2026) : Mineur tout terrain (raid : instances, tours, Bloc géant, He's coming) et auras du groupe
+     (record.skillAuras : Bloc géant, la salle commune les passe à part ; sinon les skills de tous les mineurs) */
+  const raid = !!(modeDef?.instance || modeDef?.tower || modeDef?.giant || record.raidMode);   // raidMode : raid Cerbère (src/shared/raid.js)
+  const auras = record.skillAuras ?? groupAuras(Array.from({ length: Math.max(1, n) }, (_, i) => skillsOf(i)));
+  const caracOf = i => withGlyphStats(withRings(withSkillStats(equippedStats(gearOf(i), slotMastery(skillsOf(i))), skillsOf(i), { raid, auras }), rings), skillsOf(i), mine);   // glyphes en dernier ; maîtrises (28/10) : stats de la pièce
   const treeOf = i => sanitizeSkills(rawSkills(i)).tree;
   /* Anneau du nerd : % d'XP pour son porteur seul, sur sa part du pot (src/sim/session.js shareBySegments) */
   /* sorts figés au lancement (record.spells[compte], revérifiés : connus, bonne spécialisation, slots ouverts) */

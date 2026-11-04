@@ -1,5 +1,6 @@
 /* Données du wiki du joueur, tirées de la config du jeu (logique pure, sans DOM : testable dans Node).
    Le wiki affiche toujours les valeurs actuelles : rien n'est recopié à la main. */
+import { nodeText } from '../meta/skills.js';
 import { STATS, CFG, BLOCKS, IDS, AREAS, AREA_H, W, TREASURE, LOOT, RESEARCH, MOBS, XP, SKILLS, FURNACE, CRUSHER, SHINY,
          STUFF, ITEMS, RARITY, DUCK, mobHp, MOB_INFO as MOB_LOOK, HELP, DUNGEON, TRAP, UPGRADE, INSTANT_MINE, JUDGMENT, TOWER, RUNE, RINGS, SPELLS, COMBAT, GLYPHS, MOB_DROPS, GOBLIN_KING , WIKI, GIANT, MINOTAUR } from '../config.js';
 import { mobLoot } from '../meta/loot-table.js';
@@ -300,8 +301,11 @@ export const xpRows = () => [
   ...Object.entries(XP.mob).map(([k, v]) => ({ what: MOB_LOOK[k]?.name ?? k, tex: MOB_LOOK[k]?.tex, xp: v, kind:'Mob vaincu' })),
 ];
 export const levelRows = (n = 10) => Array.from({ length: n - 1 }, (_, i) => ({ level: i + 2, need: xpForLevel(i + 2) - xpForLevel(i + 1), total: xpForLevel(i + 2) }));
+/* arbres v2 (04/11/2026) : text = effet au rang 1, maxText = effet au rang max (src/meta/skills.js nodeText) ;
+   needsName = le skill exigé (« | ») ; tier = points à dépenser dans l'arbre pour ouvrir l'étage */
 export const skillTrees = () => SKILLS.trees.map(t => ({ ...t, nodes: t.nodes.map(n => ({ ...n,
-  maxText: n.desc.replace('{v}', n.per === 1 ? '' : `${fmt(Math.round(n.per * n.max * 1000) / 10)} %`).replace(/\s+/g, ' ').trim(),
+  text: nodeText(n.id, 1).replace(/\s+/g, ' ').trim(), maxText: nodeText(n.id, n.max).replace(/\s+/g, ' ').trim(),
+  needsName: n.needs ? t.nodes.find(x => x.id === n.needs)?.name ?? null : null, tier: SKILLS.tierPoints * (n.row - 1),
   perText: n.per === 1 ? null : `${fmt(Math.round(n.per * 1000) / 10)} % par rang` })) }));
 
 /* ---------- format ---------- */

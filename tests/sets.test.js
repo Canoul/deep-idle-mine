@@ -86,7 +86,7 @@ test('relecture : sets invalides, doublons et cases inconnues retirés ; nom par
     { id:1, name:'doublon' }, { id:'7' }, null, { id:4, name:'' } ] });
   assert.deepEqual(s.list.map(x => [x.id, x.name]), [[1, 'A'], [4, 'Set 4']]);
   assert.deepEqual(s.list[0].stuff, { pioche:5 });
-  assert.deepEqual(s.list[0].skills, { tree:'barbare', ranks:{ damage:3 } });
+  assert.deepEqual(s.list[0].skills, { v:2, tree:'barbare', ranks:{ damage:3 } });
   assert.deepEqual(s.list[0].spells, ['dash', null]);
   assert.equal(s.nextId, 5); assert.deepEqual(s.ops, ['a']);
   assert.deepEqual(sanitizeSets('n\'importe quoi'), createSets());
@@ -110,10 +110,11 @@ const ME = { id:'AAAA1111', name:'Zoe' };
 test('serveur : un set enregistre et remet stuff, skills et sorts ; créer / enregistrer permis pendant une session', async () => {
   const { game, uid } = await server(), [p1] = uid(PICK);
   await game.stuff(ME, { action:'equip', slot:'pioche', uid:p1, opId:'op-set-w1' });
+  await game.skills(ME, { action:'spec', tree:'barbare', opId:'op-set-k0' });
   await game.skills(ME, { action:'learn', node:'damage', opId:'op-set-k1' });
   await game.spells(ME, { action:'equip', spell:'dash', slot:0, opId:'op-set-p1' });
   let r = await game.sets(ME, { action:'create', opId:'op-set-c1' });
-  assert.deepEqual(r.sets.list[0].skills, { tree:'barbare', ranks:{ damage:1 } });
+  assert.deepEqual(r.sets.list[0].skills, { v:2, tree:'barbare', ranks:{ damage:1 } });
   await game.stuff(ME, { action:'unequip', slot:'pioche', opId:'op-set-w2' });
   await game.skills(ME, { action:'reset', opId:'op-set-k2' });
   r = await game.sets(ME, { action:'equip', id:1, opId:'op-set-e1' });
@@ -140,6 +141,7 @@ test('serveur : un set enregistre et remet stuff, skills et sorts ; créer / enr
    l'équipement figé à son lancement */
 test('serveur : équiper un set pendant une session ; la session en cours ne change pas, la suivante prend le set', async () => {
   const { game, store, uid } = await server(), [p1] = uid(PICK);
+  await game.skills(ME, { action:'spec', tree:'barbare', opId:'op-ses-k0' });
   await game.skills(ME, { action:'learn', node:'damage', opId:'op-ses-k1' });
   await game.sets(ME, { action:'create', opId:'op-ses-c1' });                       // set 1 : sans pioche, damage 1
   await game.stuff(ME, { action:'equip', slot:'pioche', uid:p1, opId:'op-ses-w1' });
