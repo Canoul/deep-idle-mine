@@ -80,7 +80,7 @@ export const oreFocus = (G,m) => focusFar(G,m) ? (Object.hasOwn(m.prefs.focus, '
    Les treasures et autres cibles non-ore gardent leur valeur. */
 export function targetVal(G,m,t){
   const v = BLOCKS[t].val;
-  if(!isOre(t)) return v ?? (G.raid && BLOCKS[t].type === 'terrain' ? RAID.mine.terrainVal : v);   // raid : tout le terrain se vise (04/11)
+  if(!isOre(t)) return v;
   const f = oreFocus(G,m), act = activeOres(f), k = oreKey(t);
   if(act.includes(k)) return FOCUS_VAL;
   return onlyMode(f) ? null : v;

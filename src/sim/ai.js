@@ -326,6 +326,7 @@ function decideWork(G,m){
     if(G.khole);                    // dimension du k hole : pas de surface, aucune remontée (il attend la fin du compteur)
     else if(m.ox<=0) reason='oxygène';   // à 0 d'oxygène il remonte ; la remontée n'en consomme pas (pas de ralentissement)
     else if(m.load>=m.carac.pods-2) reason='pods pleins';
+    else if(G.raid && m.inv?.Indice > 0) reason='rapporte un Indice';   // raid (04/11) : un Indice compte une fois au coffre
     else if(workLeft(G)<=tRet+12) reason='fin de session';
     else if(m.torches<=0) reason='plus de torches';
     /* donjon (25/10/2026, Geoffrey) : aller au donjon, attendre le barbare, le rejoindre et combattre le boss passent
@@ -550,6 +551,7 @@ function decideWinch(G,m){
     if(reason){ /* déjà décidé */ }
     else if(m.ox<=0) reason='oxygène';
     else if(m.load>=m.carac.pods-2) reason='pods pleins';
+    else if(G.raid && m.inv?.Indice > 0) reason='rapporte un Indice';
     else if(left<=m.y/m.carac.climbSpeed*1.25+12) reason='fin de session';
     else if(m.torches<=0) reason='plus de torches';
     if(reason){ m.mode='return'; m.reason=reason; m.returnStart=G.t; return decideReturn(G,m); }

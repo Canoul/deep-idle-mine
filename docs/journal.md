@@ -16,6 +16,16 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 04/11/2026 — Geoffrey — Raid : les Indices remplacent « tout miner »
+- **Pour le joueur** : la première phase du raid n'est plus de miner les 2 areas à 100 %. Elles sont dans le noir, et
+  **150 Indices** y sont cachés (pas tout en haut). Un Indice miné montre le plus proche encore caché ; il pèse 150 pods
+  et son mineur remonte le déposer au coffre. Tous rapportés, la grande porte s'ouvre. Bandeau : « Indices rapportés
+  x / 150 ».
+- **Décisions** : choix de Claude (Geoffrey : « je te laisse choisir », ~20 min de minage) : 150 Indices, dureté 30,
+  150 pods, sous la ligne 40 ; l'équipe de référence met ≈ 18,5 min. Cerbère reste à 280 000 PV (2/40 victoires avec le
+  temps qui reste).
+- **État** : ✅ en ligne le 04/11
+
 ## 04/11/2026 — Jules — Cerbère redessiné et animé : le « Molosse des Enfers »
 - **Pour le joueur** : dans l'arène du raid, Cerbère est un énorme molosse noir à trois têtes : une tête basse qui gronde
   vers les mineurs, une qui rugit vers le haut, une qui se retourne. Gueules béantes en feu, longs crocs, yeux de braise,

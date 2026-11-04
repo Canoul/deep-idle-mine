@@ -100,7 +100,7 @@ test('session de raid : enregistrement, durée, vue de la mine avec l\'en-tête 
   t.now += 5000; await game.pump();
   const { view } = await game.view(CHIEF);
   assert.equal(view.mode, 'raid'); assert.equal(view.phase, 'mine'); assert.ok(view.full && view.rows);
-  assert.equal(view.raid.phase, 'mine'); assert.equal(view.raid.total, 2 * 50 * 50);
+  assert.equal(view.raid.phase, 'mine'); assert.equal(view.raid.total, RAID.mine.clues);
   assert.ok(view.raid.timeLeft > 0 && view.raid.timeLeft <= RAID.duration);
   assert.equal(view.miners.length, 2);
   const M = applyRaidView(view, null, 0);
@@ -135,7 +135,7 @@ test('fin : temps écoulé, réglée une seule fois (status done, aucun objet ni
 test('vue de l\'arène (phase boss) : boss, mineurs (pierre, morsure), en-tête raid', () => {
   const rec = { id: 'r1', mode: 'raid', seed: 7, players: [{ account: 'A', name: 'Zoe' }, { account: 'B', name: 'Max' }], prefs: {}, looks: {}, gear: {}, skills: {}, spells: {}, leaves: [] };
   const g = createLiveGame(rec), G = g.G;
-  for(let y = AREA_Y0; y < AREA_Y0 + 2 * AREA_H; y++) G.mine.tiles[y].fill(0);
+  G.mine.chest.Indice = RAID.mine.clues;                            // tous les Indices rapportés
   g.advance(20);
   let v = g.view(null);
   assert.equal(v.phase, 'door'); assert.ok(v.raid.doorLeft > 0);
