@@ -16,6 +16,11 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 04/11/2026 — Geoffrey — Inventaire : le stuff non identifié s'empile
+- **Pour le joueur** : les pièces de stuff non identifiées, sans amélioration ni rune, d'un même objet tiennent dans une
+  seule case (× n) au lieu d'une case chacune. Leur fiche a un bouton **Recycler tout** (sauf les pièces d'un set).
+- **État** : ✅ en ligne le 04/11
+
 ## 04/11/2026 — Geoffrey — Correctif : galeries à l'aveugle en fin de session
 - **Pour le joueur** : dans les dernières minutes d'une session, un mineur pouvait faire des allers-retours en
   « creusant une galerie » alors qu'il voyait des minerais juste au-dessus de lui (à la torche ou à la boussole). Il
