@@ -29,5 +29,12 @@ export function guildRoutes(guild){
     'POST /api/guild/demote':         write(guild.demote),
     'POST /api/guild/kick':           write(guild.kick),
     'POST /api/guild/transfer':       write(guild.transfer),
+    /* lobby de raid de la guilde (04/11/2026) : rejoindre, quitter, prêt { ready: bool }, sortir un joueur { id } (chef du
+       raid), lancer (chef du raid ; { seed } en mode dev) */
+    'POST /api/guild/raid/join':   async ctx => { needMe(ctx); return guild.raidJoin(ctx.me); },
+    'POST /api/guild/raid/leave':  async ctx => { needMe(ctx); return guild.raidLeave(ctx.me); },
+    'POST /api/guild/raid/ready':  async ctx => { needMe(ctx); return guild.raidReady(ctx.me, ctx.body?.ready); },
+    'POST /api/guild/raid/kick':   write(guild.raidKick),
+    'POST /api/guild/raid/launch': async ctx => { needMe(ctx); return [201, await guild.raidLaunch(ctx.me, ctx.body ?? {})]; },
   };
 }
