@@ -419,7 +419,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   **Navette exige maintenant Échelle de 2 ET Treuil**. Repère (10 parties à 3, avant les corrections du treuil du
   23/10) : 0 blocage, 0 perdu, le sac coûte ≈ 6 s par partie au logisticien (il le reprend en remontant par le
   treuil), effet sur le coffre non mesurable (hasard ±15 %).
-- **Arbres de skills v2** (04/11/2026, Geoffrey ; branche `geoffrey/arbres-skills-v2`, pas encore en ligne ; GAME_DESIGN §3
+- **Arbres de skills v2** (04/11/2026, Geoffrey ; en ligne le 04/11 ; GAME_DESIGN §3
   « Skills ») : spé choisie par 3 boutons (en changer = reset) ; deux colonnes, six étages ; étage r ouvert avec 3 × (r − 1)
   points dans l'arbre ; « | » (`needs`) : Treuil → Escalateur → Mule → Aura rassurante, Provocation → Solide sur les appuis,
   Crushing → Saccager → Aura berserk, Reposé → Aura d'efficacité ; autres arbres jamais aussi profonds que la spé (profondeur
