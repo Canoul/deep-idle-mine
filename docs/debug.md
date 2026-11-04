@@ -7129,3 +7129,13 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 ### 04/11/2026 — Appli : clavier compté deux fois (Galaxy S22), fond de l'Accueil 🧪
 - Clavier : sur le S22 (Android 14), la WebView est raccourcie par le téléphone ET `--kb-h` ajoutait la hauteur du clavier (plugin Keyboard, en dp) → fenêtre de connexion écrasée, seul « Pseudo » visible (reproduit dans Playwright : viewport 360 × 450 + keyboardWillShow 330). `keyboardHeight({ plugin, inner, base })` retire ce que la page a déjà perdu (`base − inner`) ; `base` = plus grande hauteur vue clavier fermé, remise à zéro au `load` et à chaque rotation (les premières valeurs du chargement sont fausses ; le champ Pseudo peut avoir le focus dès le départ). ✅ tests/app-keyboard (+1), app-* 177 ; Playwright : page non raccourcie → 330 px, raccourcie → 0.
 - Fond : sur l'Accueil de l'appli (`body.appHomeOn`), `#bgSession` caché (la prison en fond, sous le Carreau, coupait l'écran). Pas vu sur téléphone.
+
+## 04/11/2026 — Geoffrey — Butin d'un coffre à la demande ; marque de rune en % de la case
+- `src/ui/tooltip.js` `tipAttr` : un objet avec table de butin (`lootTableOf`) n'a plus `data-loot` ni `data-tip`, seulement
+  `title` (au doigt : rien ne s'ouvre en touchant la case). `src/ui/inventory.js` `infoHtml` : `lootHelp('item:<objet>')`
+  (« ? Butin ») après « Ouvrir ». Effet de bord : plus de tableau au survol dans Craft, Historique et Recherche (tipAttr
+  partagé) ; les « ? Butin » du lobby (tours, instances, mobs) ne changent pas.
+- `src/ui/style.css` `.runeMark` : 34 % de la case (max 11 u), dans le coin bas-gauche, au lieu de 11 u fixes.
+- **Tests** ✅ loot-table (nouveau test : tipAttr sans tableau, bouton à côté de « Ouvrir », rien pour un objet qui ne
+  s'ouvre pas), tooltip, inventory, stuff : 39/39. ⚠️ Pas vu à l'écran (pas de navigateur ici) : taille de la rune sur l'appli.
+
