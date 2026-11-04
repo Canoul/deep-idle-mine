@@ -16,6 +16,12 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 04/11/2026 — Jules — Jauge de profondeur : les initiales ne s'échangent plus
+- **Pour le joueur** : dans la barre à droite de la mine, chaque pastille porte bien l'initiale (et la couleur) de son
+  mineur. Avant, d'une session à la suivante avec la même équipe dans un autre ordre, les lettres restaient celles de la
+  session d'avant (Fantom suivi voyait un « L » sur lui, LeTaz un « F »).
+- **État** : 🧪 sur la branche `jules/fix-barre-profondeur` (pas en ligne)
+
 ## 04/11/2026 — Geoffrey — Raid : les mineurs explorent le noir, treuil dès le début
 - **Pour le joueur** : au minage du raid, quand aucun Indice n'est en vue, chaque mineur part explorer un coin encore dans
   le noir où personne d'autre ne cherche (avant : ils creusaient tout droit jusqu'au fond puis remontaient). Les mineurs

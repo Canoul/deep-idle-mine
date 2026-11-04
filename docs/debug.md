@@ -7467,3 +7467,12 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - Tests ✅ skills (+ Ambidextre), skills-v2, talents-etage6, mule, sets, game-service, social, glyphs, winch, dps,
   app-skills, wiki, dev-presets, dev-spec, session, mobs, anticheat skills / glyphs / sets (versions 2 → 3 et étages mis
   à jour). ⚠️ Pas vu dans le navigateur : 3 colonnes au bureau dans un arbre d'environ 300 px, noms longs sur 2 lignes.
+
+## 04/11/2026 — Jules — Jauge de profondeur : initiales échangées entre mineurs (branche jules/fix-barre-profondeur)
+- Signalé par un joueur : pastilles de `#railMarks` avec l'initiale d'un autre mineur (la pastille entourée, au bon
+  endroit, portait la mauvaise lettre). Cause : `updateRail` (`src/ui/hud.js`) ne recréait les pastilles que si la liste
+  des ids changeait ; les ids sont le rang dans l'équipe (`newGame`, `src/sim/session.js` : `createMiner(i, …)`), donc
+  une nouvelle session de même taille, ordre différent, gardait les anciennes lettres et couleurs.
+- Correctif : la clé est le HTML des pastilles (id, couleur, nom). `updateRail` est exporté pour le test.
+- Tests ✅ `tests/hud-rail.test.js` (nouveau, faux DOM : deux sessions de suite, ordre inversé ; échouait avant le
+  correctif), instant-ui, raid-ui, effects, spells : 70/70. ⚠️ Pas revu dans le navigateur.
