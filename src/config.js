@@ -2046,7 +2046,7 @@ export const LEADERBOARD = { size:50, refresh:30_000, cacheMs:15_000, teamMax:3,
    compte · memory : dernières clés d'opération mémorisées (idempotence). */
 /* idlePerHour (30/10/2026, Geoffrey) : au repos (ni session en cours, ni prison), le compte regagne idlePerHour d'énergie
    par heure de JEU (× GAME.speed par heure réelle), plafonnée à max ; calculée par le serveur à la lecture */
-export const ENERGY = { max: 100, start: 0, cost: { min: 6, max: 12 }, prisonPerHour: 8, idlePerHour: 3,   // prisonPerHour : 8 le 30/10 à 18 h (Geoffrey ; avant 4)
+export const ENERGY = { max: 100, start: 100, cost: { min: 6, max: 12 }, prisonPerHour: 8, idlePerHour: 3,   // prisonPerHour : 8 le 30/10 à 18 h (Geoffrey ; avant 4)
   memory: 200 };
 
 /* Prison (29/10/2026, spec docs/superpowers/specs/2026-10-29-prison-energie-design.md ; src/sim/prison.js) : mode solo,
