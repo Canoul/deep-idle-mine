@@ -16,6 +16,9 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 04/11/2026 — Geoffrey — Skills : Escalateur 3 rangs max (avant 5)
+- **État** : ✅ en ligne le 04/11
+
 ## 04/11/2026 — Jules — Chat : plus de zone vide en bas (retour joueur)
 - **Pour le joueur** : quand le chat est assez large pour passer au-dessus de la bulle de gauche de la barre d'action
   (Oxygène, Session…), il gardait en bas une grande zone sombre et vide qui cachait la mine. Maintenant il s'arrête juste
