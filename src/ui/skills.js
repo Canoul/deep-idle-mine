@@ -34,11 +34,12 @@ const NODE_PX = { mine_speed:'pickaxe', ore_oxygen:'bubbles', ore_rush:'feather'
                   ore_drunk:'gem', recon:'target', ravage:'shout',   // étage 6 (01/11)
                   enchanted_pick:'radiance', filou:'coin', all_terrain:'rock', rested:'moon', aura_efficiency:'sun',   // arbres v2 (04/11)
                   organized:'chest', demat:'sparkle', grounded:'lock', aura_reassure:'group',
-                  backstab:'daze', steady:'rock', crushing:'hammer', aura_berserk:'fire' };
+                  backstab:'daze', steady:'rock', crushing:'hammer', aura_berserk:'fire', ambidextrous:'grab' };   // ambidextrous : arbres v3 (04/11)
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const NODE = 58, ROW_H = 112;   // diamètre d'une case, hauteur d'un étage (px)
+const COL_X2 = [30, 70], COL_X3 = [20, 50, 80];   // centre de chaque colonne (% de la largeur), arbre à 2 ou 3 colonnes (v3, 04/11)
 const WHY = { other_tree:'Autre arbre choisi', needs_previous:'Le skill relié au-dessus au max d\'abord', no_points:'Plus de points', maxed:'Rang max',
               no_spec:'Choisis d\'abord ta spé', needs_tier:'Étage fermé : plus de points dans cet arbre', spec_only:'Skill de classe : seulement pour cette spé',
               too_deep:'Hors spé : pas aussi profond que ton arbre principal' };
@@ -156,14 +157,14 @@ export function setupSkills({ onOp, inSession, onChange = () => {}, inventory = 
   }
   addEventListener('resize', () => { if(!$('skillTrees')?.closest('[hidden]')) drawLinks(); });
 
-  /* un arbre façon RPG (arbres v2, 04/11) : deux colonnes de cases rondes, six étages ; une ligne relie un skill à celui
+  /* un arbre façon RPG (arbres v3, 04/11) : deux ou trois colonnes de cases rondes, cinq étages ; une ligne relie un skill à celui
      qu'il exige (« | », needs), allumée quand celui-ci est au max. À gauche de chaque étage : les points à dépenser dans
      l'arbre pour l'ouvrir ; hors spé, les étages trop profonds sont grisés. */
   function treeHtml(t){
     const chosen = st.tree === t.id, pts = treePoints(st, t.id), cap = depthCap(st, t.id);
-    const rows = Math.max(...t.nodes.map(n => n.row));
+    const rows = Math.max(...t.nodes.map(n => n.row)), cols = Math.max(...t.nodes.map(n => n.col)) + 1;
     const pos = {};                                     // id → { x en %, y en px } (centre de la case)
-    for(const n of t.nodes) pos[n.id] = { x:n.col ? 70 : 30, y:(n.row - 1) * ROW_H + NODE / 2 + 6 };
+    for(const n of t.nodes) pos[n.id] = { x:(cols === 3 ? COL_X3 : COL_X2)[n.col], y:(n.row - 1) * ROW_H + NODE / 2 + 6 };
     const h = (rows - 1) * ROW_H + NODE + 40;
     const tiers = Array.from({ length:rows }, (_, i) => i + 1).map(r => {
       const open = pts >= tierNeed(r), deep = r > cap;
@@ -184,10 +185,10 @@ export function setupSkills({ onOp, inSession, onChange = () => {}, inventory = 
              `<span class="skOrb">${NODE_PX[n.id] ? pxi(NODE_PX[n.id]) : n.icon}</span><b class="skRank">${r}/${n.max}</b>${can ? '<i class="skPlus">+</i>' : ''}`+
              `<span class="skName">${esc(n.name)}</span><span class="skTxt">${esc(nodeText(n.id, Math.max(r, 1)))}</span>${glyphHtml(n)}</div>`;
     }).join('');
-    return `<div class="skTree${chosen ? ' chosen' : ''}${st.tree && !chosen ? ' side' : ''}"><h3>${TREE_PX[t.id] ? pxi(TREE_PX[t.id]) : t.icon} ${esc(t.label)}`+
+    return `<div class="skTree${chosen ? ' chosen' : ''}${st.tree && !chosen ? ' side' : ''}${cols === 3 ? ' c3' : ''}"><h3>${TREE_PX[t.id] ? pxi(TREE_PX[t.id]) : t.icon} ${esc(t.label)}`+
       ` <span class="mut small">· ${pts} pts${chosen ? ' · ★ ta spé' : st.tree ? ` · jusqu'à l'étage ${Math.max(0, cap)}` : ''}</span></h3>`+
       specLevelHtml(spec[t.id])+
-      `<div class="skGraph" style="height:${h}px"><svg class="skLinks" aria-hidden="true"></svg>${tiers}${nodes}</div></div>`;
+      `<div class="skGraph" style="height:${h}px;--cols:${cols}"><svg class="skLinks" aria-hidden="true"></svg>${tiers}${nodes}</div></div>`;
   }
 
   /* case de glyphe d'un skill (vide si le skill n'a pas de glyphe) */

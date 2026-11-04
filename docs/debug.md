@@ -7455,3 +7455,15 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - `minArea` sert aussi aux pièges (`trapTable`), au spawn du mur et du ver (`spawnFlesh` / `spawnWorm`), à la bulle Butin (`loot-table.js` `from`) et au wiki (`MOB_INFO.hp0` = PV dans la première area, donc 261 pour le golem) : tous suivent sans autre modif.
 - Tests ✅ mobs, goblin, mephite, golem, flesh, mobs-a7, khole, golbute, prison-gobelins-gs, wiki*, trap*, occult* : 143/143 (tests qui figeaient l'ancienne table mis à jour). Simulation 3 mineurs × 5 : areas 3,0, profondeur 191, 0 bloquée.
 - ⚠️ Non vérifié : difficulté réelle des areas 4 et 5 (golem / mur de chair) en stuff fer ; la simulation par défaut ne dépasse pas l'area 3.
+
+## 04/11/2026 — Geoffrey — Arbres de skills v3 (branche geoffrey/arbres-skills-v3) — ✅ en ligne le 04/11
+- `src/config.js` SKILLS.trees : 5 étages, `col:2` pour all_terrain (Mineur, étage 2), ambidextrous (nouveau, Logisticien
+  étage 2, `adds:{ doubleAttack:2 }`, max 3) et demat (Logisticien, étage 3) ; places changées (voir GAME_DESIGN).
+  Escalateur max 3 gardé (le tableau de Geoffrey disait 5 ; décidé avec lui). `src/meta/skills.js` SKILLS_VERSION 2 → 3 :
+  toute sauvegarde de compte v2 perd ses rangs (`migrateSkills`) ; les sets sont rejoués par `sanitizeSkills` (rangs
+  devenus impossibles ignorés).
+- Affichage : `src/ui/skills.js` colonnes à 30/70 % (2 colonnes) ou 20/50/80 % (3 colonnes, classe `.c3` : cases de 46u au
+  lieu de 60u) ; `--cols` sur `.skGraph` pour la grille de l'appli (`src/app/app.css`). Icône d'Ambidextre : `grab`.
+- Tests ✅ skills (+ Ambidextre), skills-v2, talents-etage6, mule, sets, game-service, social, glyphs, winch, dps,
+  app-skills, wiki, dev-presets, dev-spec, session, mobs, anticheat skills / glyphs / sets (versions 2 → 3 et étages mis
+  à jour). ⚠️ Pas vu dans le navigateur : 3 colonnes au bureau dans un arbre d'environ 300 px, noms longs sur 2 lignes.
