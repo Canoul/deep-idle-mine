@@ -17,7 +17,7 @@ export function setupRunControls(ui, h){
 
 /* Se déplacer dans la mine : molette, glisser (souris ou doigt), flèches ↑ ↓ et PageUp / PageDown.
    Zoomer (30/10) : pincer à deux doigts, ou Ctrl + molette (et pincer sur un pavé tactile) ; zoomée, on glisse aussi
-   à l'horizontale. Double appui / double clic : retour au zoom ×1.
+   à l'horizontale. Double appui / double clic : retour au zoom de départ (×1 ; dans l'appli, CAMERA.appZoom).
    La caméra ne suit plus personne quand on la glisse ; « Suivre » (ou Début, ou un mineur de l'équipe) la ramène.
    cam : { pan(rows), panPixels(dy, dx), zoomAt(f, x, y), follow() } (le rendu) ; isActive() : la session est affichée */
 export function setupCamera(cv, cam, isActive){
@@ -55,7 +55,7 @@ export function setupCamera(cv, cam, isActive){
     if(!pts.size) cv.classList.remove('dragging');
   };
   cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end);
-  cv.addEventListener('dblclick', e => { e.preventDefault(); cam.zoomAt(0, e.clientX, e.clientY); });   // f = 0 : retour au ×1
+  cv.addEventListener('dblclick', e => { e.preventDefault(); cam.zoomAt(0, e.clientX, e.clientY); });   // f = 0 : retour au zoom de départ
   document.addEventListener('keydown', e => {
     if(!isActive() || e.target.closest?.('input, textarea, select')) return;
     const rows = { ArrowUp:-1, ArrowDown:1, PageUp:-3, PageDown:3 }[e.key];

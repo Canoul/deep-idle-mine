@@ -560,7 +560,8 @@ export const FLUID = { bufferMs: 400, catchUp: 0.3, catchUpMs: 500, resetMs: 150
 
 export const CAMERA = { top:-3, margin:4, ease:0.15, wheelRows:3, keyRows:4,
   minRows:20, maxRows:48,
-  maxZoom:4, wheelZoom:0.0025 };   // zoom (30/10, Geoffrey) : pincer à deux doigts ou Ctrl + molette, ×1 (toute la largeur) à ×maxZoom   // lignes visibles : la mine remplit la largeur, et montre autant de lignes que la hauteur en permet
+  maxZoom:4, wheelZoom:0.0025,   // zoom (30/10, Geoffrey) : pincer à deux doigts ou Ctrl + molette, ×1 (toute la largeur) à ×maxZoom   // lignes visibles : la mine remplit la largeur, et montre autant de lignes que la hauteur en permet
+  appZoom:3 };   // appli mobile (04/11/2026, Jules) : zoom de départ de la mine (×1 = 50 colonnes sur la largeur du téléphone, trop loin), aussi celui du double appui. Valeur provisoire
 
 /* ---- Skills (onglet Skills, src/meta/skills.js) ----
    1 point par niveau gagné (XP.talentPerLevel). Trois arbres ; dépenser un point dans un arbre bloque les deux autres

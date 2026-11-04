@@ -16,6 +16,16 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 04/11/2026 — Jules — Appli mobile : la mine zoomée sur le mineur
+- **Pour le joueur** : rien sur le site. Dans l'appli, la mine de la session démarre **zoomée ×3** sur son mineur
+  (avant : toute la largeur de la mine, 50 cases, le mineur minuscule). On peut toujours pincer pour dézoomer (jusqu'à
+  voir toute la largeur) ou zoomer encore ; un double appui revient au zoom de départ. Le fond derrière les autres
+  onglets suit le même zoom.
+- **Décisions** (Jules) : zoom de départ ×3 dans l'appli seulement (réglage `CAMERA.appZoom`, provisoire).
+- **À suivre** : essai sur un vrai téléphone ; si la fenêtre de la mine paraît trop basse (≈ 11 lignes visibles), on peut
+  la rendre plus haute.
+- **État** : 🧪 sur la branche `jules/zoom-mine-tel` (pas en ligne)
+
 ## 04/11/2026 — Jules — Appli mobile : retours après l'essai sur iPhone
 - **Pour le joueur** : rien sur le site. Dans l'appli :
   - **Accueil** : l'activité choisie n'apparaît plus aussi dans les rendez-vous (avant : « Mine instantanée » trois fois,

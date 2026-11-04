@@ -251,5 +251,5 @@ export function createRenderer(cv){
     rows = n; cv.height = rows*TILE; ctx.imageSmoothingEnabled = false; cam.setRows(n);
   }
 
-  return { draw, pan, panPixels, zoomAt, setRows, follow: () => cam.follow(), get free(){ return cam.free; }, get rows(){ return rows; } };
+  return { draw, pan, panPixels, zoomAt, setRows, setBaseZoom: z => cam.setBaseZoom(z), follow: () => cam.follow(), get free(){ return cam.free; }, get rows(){ return rows; } };
 }

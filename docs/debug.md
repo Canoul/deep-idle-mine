@@ -7103,3 +7103,25 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   cette discussion, n'a pas été redémarré). ⚠️ Pas vu : le podium avec la vraie réponse du serveur (test serveur vert) ;
   l'Accueil avec la MI choisie à l'écran (test vert).
 - **Applis** : touche `src/app/` (main.js, home*.js, app.css) : rien de natif, mise à jour à chaud.
+
+## 04/11/2026 — Jules — Appli mobile : la mine démarre zoomée (🧪 branche `jules/zoom-mine-tel`)
+- **Quoi** : dans l'appli (`body.app`), la caméra de la mine démarre à `CAMERA.appZoom` (3) au lieu de ×1 (50 colonnes sur
+  ≈ 390 px de large = ≈ 8 px par case). `createCamera` a un zoom de départ `base` (1 par défaut) : `setBaseZoom(z)` l'applique
+  tout de suite (borné à [zmin, maxZoom]) ; `zoomBy(0)` (double appui / double clic) revient à `base` (ancien : ×1) ;
+  `setBox` (entrée / sortie de prison) remet `max(zmin, base)` (ancien : zmin). Sur le site, `base` = 1 : comportement
+  identique à avant.
+- **Fond de page** : `createBackdrop(…, { mineZoom })` donne le même zoom de départ à sa mine (sa propre caméra) : la
+  transition vers l'onglet Session reste un simple zoom de la même image (sinon saut ×1 → ×3 à la fin). Dans l'appli, le fond
+  (derrière Sac, Perso…) montre donc la mine à ×3, recadrée en plein écran.
+- **Fichiers** : src/config.js (`CAMERA.appZoom`), src/render/camera.js, src/render/canvas.js (`renderer.setBaseZoom`),
+  src/main.js (`mineZoom = appBoot.app ? CAMERA.appZoom : 1`, juste après `createRenderer`, passé aussi au fond),
+  src/ui/backdrop.js, src/ui/controls.js (commentaires).
+- **Tests** ✅ tests/camera.test.js 10 / 10 (+2 : zoom de départ appli, site inchangé), tests/backdrop.test.js vert.
+- **Vérifié** ✅ aperçu `?app` iPhone 15 (393 × 659, Playwright), Test_Mineur, serveur dev local port 8031 : mine à ×3, le mineur
+  au milieu (≈ 23 px), échelles, torches et filons lisibles ; après 15 s à ×60, la caméra suit le mineur à 126 de profondeur.
+- **Pas vérifié** ⚠️ vrai téléphone ; double appui sur iOS (dépend de l'événement `dblclick` sur `#cv`, `touch-action:none`) ;
+  prison dans l'appli (test unitaire seulement) ; l'animation de la transition elle-même (capturée seulement avant et
+  après : fond ×3 derrière Sac, session ×3).
+- **Fragile** : le renderer est créé une fois pour toutes les sessions ; le zoom choisi en pinçant est gardé d'une session à
+  l'autre (comme avant), seul le démarrage de la page et le double appui reprennent `appZoom`.
+- **Applis** : touche src/main.js, src/render/, src/ui/, src/config.js ; rien dans `src/app/` ni `mobile/` : mise à jour à chaud.
