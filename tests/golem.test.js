@@ -18,13 +18,14 @@ const busy = m => { m.action = { type: 'wait', dur: 1e9, t: 0, data: {} }; };
 const sum = row => Object.values(row).reduce((s, v) => s + v, 0);
 const solid = (G, x, y) => G.tiles[y][x] !== 0;
 
-test('config : 10 % des apparitions à partir de l\'area 5 (pris au gobelin), 300 PV +15 %/area, 30 XP, vitesse ×0,5, pas dans les pièges', () => {
+test('config : 2 % en area 4, 13 % en areas 5 et 6, 10 % au-delà (04/11), 300 PV +15 %/area, 30 XP, vitesse ×0,5, pas dans les pièges', () => {
   const T = MOBS.spawnTable;
-  assert.deepEqual(T[5], { gobelin:0.2, occultiste:0.3, mephite:0.2, mimic:0.2, golem:0.1 });
+  assert.deepEqual(T[5], { gobelin:0.15, occultiste:0.3, mephite:0.23, mimic:0.17, golem:0.13, chair:0.02 });
+  assert.deepEqual([T[4].golem, T[5].golem, T[6].golem, T[7].golem, T[8].golem], [0.02, 0.13, 0.13, 0.1, 0.1]);
   for(const row of T) assert.ok(Math.abs(sum(row) - 1) < 1e-9, JSON.stringify(row));
-  assert.ok(T.slice(0, 5).every(r => !('golem' in r)), 'pas avant l\'area 5');
-  assert.equal(MOBS.minArea.golem, 5);
-  assert.equal(mobHp('golem', 5), 300); assert.equal(mobHp('golem', 6), 345);
+  assert.ok(T.slice(0, 4).every(r => !('golem' in r)), 'pas avant l\'area 4');
+  assert.equal(MOBS.minArea.golem, 4);
+  assert.equal(mobHp('golem', 5), 300); assert.equal(mobHp('golem', 6), 345); assert.equal(mobHp('golem', 4), 261);   // courbe de PV gardée (04/11)
   assert.equal(XP.mob.golem, 30);
   assert.equal(MOBS.speed.golem, 0.5);
   assert.ok(!('golem' in trapTable(5)) && !('golem' in trapTable(9)));

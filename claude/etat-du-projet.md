@@ -163,6 +163,9 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   - Lobbies (29/10) : `sudo node scripts/move-to-lobby.js --name X --to Y` (met X dans le lobby de Y, route
     `/api/admin/party-move`) et `sudo node scripts/set-ready.js --name X [--always on|off] [--ready on|off]` (route
     `/api/admin/party-ready`), sans redémarrage.
+  - Lobby de raid (04/11) : `sudo node scripts/move-to-raid.js --name X --to Y` (met X dans le lobby de raid où est Y,
+    route `/api/admin/raid-move` ; hors de la guilde : invité prêt) et `sudo node scripts/set-raid-ready.js --name X
+    [--ready on|off]` (route `/api/admin/raid-ready`), sans redémarrage.
   - Fin de session forcée (29/10) : `sudo node scripts/end-session.js --name X` (route `/api/admin/end-session`, comme « Quitter » :
     sans butin, les autres continuent).
   - Lancement forcé (29/10) : `sudo node scripts/launch-lobby.js --name X` (route `/api/admin/party-launch` : le lobby de X
@@ -357,14 +360,14 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   area débloquée en session, pseudo pris dans une liste en boucle (`DUCK.names`), 50 PV, ne tacle pas, ne tombe jamais
   dans la mine ; les mineurs (« combat » sur Combattre) le chassent à chaque passage au coffre, sac vidé (24/10 ;
   ancien : en fin de session seulement) ; 25 % de **Fragment de cœur** (coffre commun, sans usage pour l'instant). `src/sim/duck.js`.
-- **Mobs** (refonte du 21/10, GAME_DESIGN §5) : bestiole, gobelin (dès l'area 1), mimic, **occultiste** (area 4+,
+- **Mobs** (refonte du 21/10, GAME_DESIGN §5) : bestiole, gobelin (dès l'area 1), mimic, **occultiste** (area 4+, area 3+ depuis le 04/11,
   téléportation + canalisation qui étourdit 5 s, laisse le Tissu sombre ; 150 PV de base depuis le 23/10, ancien 100 ;
-  la Provocation casse la canalisation sans l'empêcher), **méphite** (24/10 : area 3+, 70 PV, **vole** sans gravité ni
+  la Provocation casse la canalisation sans l'empêcher), **méphite** (24/10 : area 3+, area 2+ depuis le 04/11, 70 PV, **vole** sans gravité ni
   échelle, asphyxie −5 d'oxygène / 2 s tant qu'il tacle, non cumulable, Vésicule de gaz ; 5 / 15 / 20 % en areas 3 / 4 / 5+,
-  pris sur le gobelin), **golem de sperme** (26/10 : area 5+, 10 % pris sur le gobelin, **2 × 2 cases**, 300 PV, deux fois
+  pris sur le gobelin), **golem de sperme** (26/10 : area 5+, 10 % pris sur le gobelin ; area 4+ depuis le 04/11, **2 × 2 cases**, 300 PV, deux fois
   plus lent, **creuse** jusqu'au mineur un bloc toutes les 2 s (blocs perdus), escalier puis cheminée, s'agrippe à la roche,
   repousse 0,5 / 1,5 s, ébranle à 33 / 66 / 99 % de PV perdus (étourdi 3 s à 3 cases), Pierre glissante, 30 XP ;
-  `src/sim/golem.js` ; portée depuis sa case la plus proche : `nearCell`, `src/sim/knock.js`), **mur de chair** (28/10 :
+  `src/sim/golem.js` ; portée depuis sa case la plus proche : `nearCell`, `src/sim/knock.js`), **mur de chair** (28/10 ; area 5+ depuis le 04/11, PV des quatre avancés gardés sur leur ancienne courbe :
   area 6+, 2 / 5 / 8 % en areas 6 / 7 / 8+ pris sur le gobelin, **1 × 6 cases**, 200 PV, naît dans la roche à 8-12
   colonnes, avance seulement à l'horizontale sans rien casser ; ses cases sont un **mur** (ni entrée ni minage, `G.flesh`,
   `world.isAir`) ; −10 % de vitesse d'attaque par stack toutes les 2 s à 1,5 case, 9 au plus, 10 s, perdus hors du rayon ;

@@ -27,7 +27,20 @@ Modèle d'entrée :
 - **Chiffres** (simulation, équipe de référence) : 150 Indices rapportés en ≈ 11 min (avant 18,5 ; sur la seed 262283490 :
   14,9 → 10,4 min). Cerbère toujours ≈ 1 victoire sur 10 : les combats finissent par les morts, pas par le temps.
 - **À suivre** : regarder une vraie partie de raid (rien n'a été vu dans un navigateur).
-- **État** : 🧪 sur la branche `geoffrey/raid-ia` (pas en ligne)
+- **État** : ✅ en ligne le 04/11
+
+## 04/11/2026 — Geoffrey — Mobs : méphite, occultiste, golem et mur de chair arrivent une area plus tôt
+- **Pour le joueur** : les areas 2 à 6 changent de composition. Méphite dès l'area 2, occultiste dès l'area 3 (3 %), golem dès l'area 4 (2 %), mur de chair dès l'area 5 (2 %). Moins de bestioles et de gobelins dans ces areas ; mimics à 17 % en areas 5 et 6.
+- **Décisions** : les PV gardent leur courbe : là où un mob existait déjà, rien ne change ; dans sa nouvelle première area, il arrive 15 % plus faible (golem 261 PV en area 4, occultiste 130 en area 3). Area 3 : le 1 % qui manquait au tableau va à l'occultiste (3 %).
+- **À suivre** : voir en jeu si l'area 4 (golem) et l'area 5 (mur de chair) ne deviennent pas trop dures pour un stuff fer.
+- **État** : ✅ en ligne le 04/11
+
+## 04/11/2026 — Geoffrey — Administration : mettre un joueur dans un lobby de raid, et prêt
+- **Pour le joueur** : rien de visible ; l'équipe peut placer un joueur dans un lobby de raid depuis le VPS :
+  `sudo node /opt/deep-idle-mine/scripts/move-to-raid.js --name crousti --to canoul` (canoul doit être dans un lobby de
+  raid ; hors de la guilde, crousti entre comme un invité, déjà prêt), et le mettre prêt :
+  `sudo node /opt/deep-idle-mine/scripts/set-raid-ready.js --name crousti` (`--ready off` : plus prêt).
+- **État** : ✅ en ligne le 04/11
 
 ## 04/11/2026 — Geoffrey — Craft : plusieurs orbes d'un coup
 - **Pour le joueur** : dans l'onglet Craft, les orbes, orbes supérieurs, clés d'instance et autres matériaux qui

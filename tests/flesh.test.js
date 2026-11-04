@@ -29,14 +29,14 @@ const corridor = () => {
 };
 const MID = 8;   // case du bas d'un mur qui couvre la ligne 6 du couloir (lignes 3 à 8)
 
-test('config : 2 / 5 / 8 % en areas 6 / 7 / 8+ (pris sur le gobelin), 200 PV, 40 XP, 1 × 6, pas dans les pièges', () => {
+test('config : 2 / 5 / 5 / 8 % en areas 5 / 6 / 7 / 8+ (04/11), 200 PV, 40 XP, 1 × 6, pas dans les pièges', () => {
   const T = MOBS.spawnTable;
-  assert.deepEqual(T[5], { gobelin:0.2, occultiste:0.3, mephite:0.2, mimic:0.2, golem:0.1 }, 'area 5 inchangée');
-  assert.deepEqual([T[6].chair, T[7].chair, T[8].chair], [0.02, 0.05, 0.08]);
-  assert.deepEqual([T[6].gobelin, T[7].gobelin, T[8].gobelin], [0.18, 0.15, 0.12]);
+  assert.deepEqual(T[5], { gobelin:0.15, occultiste:0.3, mephite:0.23, mimic:0.17, golem:0.13, chair:0.02 });
+  assert.deepEqual([T[5].chair, T[6].chair, T[7].chair, T[8].chair], [0.02, 0.05, 0.05, 0.08]);
+  assert.deepEqual([T[5].gobelin, T[6].gobelin, T[7].gobelin, T[8].gobelin], [0.15, 0.15, 0.15, 0.12]);
   for(const row of T) assert.ok(Math.abs(sum(row) - 1) < 1e-9, JSON.stringify(row));
-  assert.ok(T.slice(0, 6).every(r => !('chair' in r)));
-  assert.equal(MOBS.minArea.chair, 6); assert.equal(mobHp('chair', 6), 200);
+  assert.ok(T.slice(0, 5).every(r => !('chair' in r)));
+  assert.equal(MOBS.minArea.chair, 5); assert.equal(mobHp('chair', 6), 200); assert.equal(mobHp('chair', 5), 174);   // courbe de PV gardée (04/11)
   assert.equal(XP.mob.chair, 40); assert.equal(C.h, 6); assert.equal(C.maxStacks, 9);
   assert.ok(!('chair' in trapTable(8)));
   assert.equal(ITEMS['Rotten flesh'].cat, 'material');

@@ -414,19 +414,25 @@ export const MOBS = {
   spawnTable: [
     { bestiole:0.8, mimic:0.2 },
     { bestiole:0.6, gobelin:0.2, mimic:0.2 },
-    { bestiole:0.4, gobelin:0.4, mimic:0.2 },
-    { bestiole:0.2, gobelin:0.55, mephite:0.05, mimic:0.2 },   // méphite : 24/10 (Geoffrey), pris sur le gobelin (avant 0,6)
-    { gobelin:0.55, occultiste:0.1, mephite:0.15, mimic:0.2 },  // avant gobelin 0,7
-    { gobelin:0.2, occultiste:0.3, mephite:0.2, mimic:0.2, golem:0.1 },   // golem : 26/10 (Geoffrey), pris sur le gobelin (avant 0,3 ; et 0,5 encore avant)
-    /* mur de chair (28/10/2026, Geoffrey) : 2 / 5 / 8 % en areas 6 / 7 / 8+, pris sur le gobelin (avant : la ligne de l'area 5) */
-    { gobelin:0.18, occultiste:0.3, mephite:0.2, mimic:0.2, golem:0.1, chair:0.02 },
+    /* 04/11/2026 (Geoffrey) : areas 2 à 6 refaites, méphite, occultiste, golem et mur de chair arrivent une area plus
+       tôt (avant : 2 { bestiole 0,4, gobelin 0,4, mimic 0,2 } ; 3 { bestiole 0,2, gobelin 0,55, méphite 0,05, mimic 0,2 } ;
+       4 { gobelin 0,55, occultiste 0,1, méphite 0,15, mimic 0,2 } ; 5 { gobelin 0,2, occultiste 0,3, méphite 0,2,
+       mimic 0,2, golem 0,1 } ; 6 { gobelin 0,18, occultiste 0,3, méphite 0,2, mimic 0,2, golem 0,1, chair 0,02 }) */
+    { bestiole:0.35, gobelin:0.4, mephite:0.05, mimic:0.2 },
+    { bestiole:0.15, gobelin:0.55, occultiste:0.03, mephite:0.07, mimic:0.2 },
+    { gobelin:0.5, occultiste:0.11, mephite:0.17, mimic:0.2, golem:0.02 },
+    { gobelin:0.15, occultiste:0.3, mephite:0.23, mimic:0.17, golem:0.13, chair:0.02 },
+    { gobelin:0.15, occultiste:0.3, mephite:0.2, mimic:0.17, golem:0.13, chair:0.05 },
     /* Chien de magma, pris sur le mimic, et Vers de terre, pris sur l'occultiste (31/10/2026, Geoffrey) : 5 / 8 % en areas 7 / 8+ */
     { gobelin:0.15, occultiste:0.25, mephite:0.2, mimic:0.15, golem:0.1, chair:0.05, chien:0.05, ver:0.05 },
     { gobelin:0.12, occultiste:0.22, mephite:0.2, mimic:0.12, golem:0.1, chair:0.08, chien:0.08, ver:0.08 },
   ],
-  /* PV = hpBase × hpGrowth^(k − minArea) : minArea = première area où le mob peut apparaître */
+  /* PV = hpBase × hpGrowth^(k − hpFrom) : minArea = première area où le mob peut apparaître ; hpFrom = area où il a
+     hpBase (absent = minArea). 04/11 (Geoffrey) : quatre mobs avancés d'une area gardent leur courbe de PV, ils y
+     arrivent donc 15 % plus faibles (golem 261 PV en area 4) */
   hpBase:  { bestiole:50, gobelin:100, mimic:50, occultiste:150, mephite:70, golem:300, chair:200, chien:200, ver:300 },   // occultiste : 150 le 23/10 (avant 100)
-  minArea: { bestiole:0,  gobelin:1,   mimic:0,  occultiste:4,   mephite:3,  golem:5, chair:6, chien:7, ver:7 },
+  minArea: { bestiole:0,  gobelin:1,   mimic:0,  occultiste:3,   mephite:2,  golem:4, chair:5, chien:7, ver:7 },   // avant le 04/11 : occultiste 4, méphite 3, golem 5, chair 6
+  hpFrom:  { occultiste:4, mephite:3, golem:5, chair:6 },
   hpGrowth: 1.15,
   /* rythme des apparitions (tous types confondus), selon k = dernière area débloquée (intensité de la partie) */
   spawnDelay: (rng, k) => (40 + rng()*30) / (1 + 0.15*k),
@@ -516,8 +522,8 @@ export const DUCK = {
   salt: 0x6a11a41,
 };
 
-/* PV d'un mob de ce type né dans l'area k */
-export const mobHp = (type, k) => Math.round(MOBS.hpBase[type] * MOBS.hpGrowth ** Math.max(0, k - MOBS.minArea[type]));
+/* PV d'un mob de ce type né dans l'area k (jamais moins que dans sa première area, minArea) */
+export const mobHp = (type, k) => Math.round(MOBS.hpBase[type] * MOBS.hpGrowth ** (Math.max(k, MOBS.minArea[type]) - (MOBS.hpFrom[type] ?? MOBS.minArea[type])));
 
 /* Niveau du mineur (GAME_DESIGN §3, « Niveau et XP »). L'XP de la session va dans un pot commun, partagé à parts égales
    entre les joueurs présents à la fin (comme le coffre) et versé par le serveur.
