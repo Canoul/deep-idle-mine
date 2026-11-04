@@ -7125,3 +7125,17 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Fragile** : le renderer est créé une fois pour toutes les sessions ; le zoom choisi en pinçant est gardé d'une session à
   l'autre (comme avant), seul le démarrage de la page et le double appui reprennent `appZoom`.
 - **Applis** : touche src/main.js, src/render/, src/ui/, src/config.js ; rien dans `src/app/` ni `mobile/` : mise à jour à chaud.
+
+## 04/11/2026 — Geoffrey — Fin de session : galeries dans 2 couches, minerais du dessus ignorés (branche geoffrey/fix-fin-session-galerie)
+- Signalement : « à partir de 2 min, allers-retours et « Creuse une galerie » alors qu'il a capté des minerais », seed
+  177078764 (Croustiflex, Infernatiwar, Monsta). Rejeu exact de l'enregistrement de la session (`buildSession` +
+  `applyDueEvents`, résultat identique : 4928 blocs, 29 allers-retours). Le défaut n'apparaît qu'aux **2 dernières
+  minutes** (t ≥ 3440) : Monsta en y 352, `tripCap` 353, `deepArea` = 7 (area de la profondeur max), or l'area 7 ne
+  commence qu'en 351 : 3 couches permises. Minerais de l'area 6 (y 348-351, à 1-4 cases) refusés par `inFocus` (pas
+  l'area de travail), ceux de l'area 7 sous 353 refusés par le cap → `explore` dans 3 couches (« Change de galerie »).
+- Correctif : `deepArea` (src/sim/focus.js) : si `tripCap − areaTop(k) + 1 < CFG.capMinRows` (10), l'area du dessus ;
+  `explore` borné aussi par l'area de travail (src/sim/ai.js). Rejeu : 0 s de galerie à côté d'un minerai connu (avant :
+  64 s), 4965 blocs (avant 4928).
+- Tests ✅ focus (test « Plus profond en fin de session » complété : +5 couches → area du dessus, +capMinRows−1 → la
+  plus profonde, +15 → la plus profonde), deep-ores, end-depth, admin-end-session. Simulation 5 × 3 mineurs : 0 blocage,
+  coffre 4169 pods (main : 4141), allers-retours 28,4 (main 28,6).

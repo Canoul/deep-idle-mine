@@ -8,8 +8,8 @@
    y reste (il n'en vise que les cibles) ; il l'emporte sur le focus minerai, qui ne cherche alors que dans cette area.
    « Plus profond » (pas de focus d'area, pas de focus minerai) : pareil, avec l'area la plus profonde débloquée, qui
    suit chaque déblocage (deepArea). */
-import { FOCUS, BLOCKS, IDS } from '../config.js';
-import { isOre, oreKey, areaOf } from './world.js';
+import { FOCUS, BLOCKS, IDS, CFG } from '../config.js';
+import { isOre, oreKey, areaOf, areaTop } from './world.js';
 import { log } from './log.js';
 
 export const ORE_KEYS = Object.keys(IDS).filter(n => isOre(IDS[n]));
@@ -40,7 +40,10 @@ export function focusArea(G,m){
    de session, l'area la plus profonde qu'il peut encore atteindre (profondeur max du trajet, m.tripCap). */
 export function deepArea(G,m){
   if(focusArea(G,m) !== null || activeOres(oreFocus(G,m)).length) return null;
-  const k = capArea(G,m);
+  let k = capArea(G,m);
+  /* fin de session (04/11/2026) : la profondeur max du trajet n'entre que de quelques couches dans l'area k (moins de
+     CFG.capMinRows) : il travaille dans l'area du dessus, où sont les minerais qu'il peut encore atteindre */
+  if(k > 0 && Number.isFinite(m.tripCap) && m.tripCap - areaTop(k) + 1 < CFG.capMinRows) k--;
   return areaDepleted(G,k) ? null : k;
 }
 /* area de la profondeur max du trajet (m.tripCap), bornée aux areas débloquées */

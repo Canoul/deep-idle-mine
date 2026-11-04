@@ -16,6 +16,13 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 04/11/2026 — Geoffrey — Correctif : galeries à l'aveugle en fin de session
+- **Pour le joueur** : dans les dernières minutes d'une session, un mineur pouvait faire des allers-retours en
+  « creusant une galerie » alors qu'il voyait des minerais juste au-dessus de lui (à la torche ou à la boussole). Il
+  les mine maintenant. Rejoué sur la vraie partie signalée (seed 177078764) : plus aucune galerie à côté d'un minerai
+  connu, 37 blocs minés en plus.
+- **État** : 🧪 sur la branche `geoffrey/fix-fin-session-galerie` (pas en ligne)
+
 ## 04/11/2026 — Jules — Appli mobile : la mine zoomée sur le mineur
 - **Pour le joueur** : rien sur le site. Dans l'appli, la mine de la session démarre **zoomée ×3** sur son mineur
   (avant : toute la largeur de la mine, 50 cases, le mineur minuscule). On peut toujours pincer pour dézoomer (jusqu'à
