@@ -32,7 +32,7 @@ Modèle d'entrée :
   (4 barbares, 4 mineurs, 2 logisticiens, stuff T4.5 +5 et runes R4, tanks à 40 % de ténacité). Valeurs provisoires.
 - **À suivre** : un essai à plusieurs vrais comptes et sur téléphone ; la récompense ; le lobby se vide quand le
   serveur redémarre.
-- **État** : 🧪 sur la branche `geoffrey/raid-cerbere` (pas en ligne)
+- **État** : ✅ en ligne le 04/11
 
 ## 04/11/2026 — Geoffrey — Guilde : l'Armurerie demande 20 Orbes supérieurs (avant 100)
 - **État** : ✅ en ligne le 04/11
