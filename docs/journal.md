@@ -1431,7 +1431,7 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
   bouton « Ouvrir » : il fallait le fermer avant d'ouvrir). Le tableau est derrière un bouton **« ? Butin »**, à côté de
   « Ouvrir ». La petite rune qui marque une pièce runée fait maintenant un tiers de la case : sur l'appli, elle cachait la
   pièce.
-- **État** : 🧪 sur la branche `geoffrey/butin-bouton` (pas en ligne)
+- **État** : ✅ en ligne le 04/11
 
 ## 29/10/2026 — Jules — Correctif : le Carreau sur téléphone
 - **Pour le joueur** : sur téléphone, toucher l'écran pour marcher ouvrait l'onglet du premier bâtiment touché : on ne
