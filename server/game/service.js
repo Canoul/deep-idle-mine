@@ -265,7 +265,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     const busy = !!await activeOf(accountId) || prisonRec?.state === 'running' || prisonRec?.state === 'waiting';
     if(e.at == null){ e.at = now; return { e, changed: true }; }   // premier calcul : le repos compte à partir d'ici
     if(busy){ e.at = now; return { e, changed: false }; }
-    const lastEnd = (await store.sessionsOf(accountId)).reduce((m, s) => Math.max(m, Number.isFinite(s?.endedAt) ? s.endedAt : 0), prisonRec?.endedAt ?? 0);
+    const lastEnd = Math.max(await store.lastEndOf(accountId), prisonRec?.endedAt ?? 0);
     return { e, changed: settleIdle(e, Math.max(e.at, lastEnd), now, GAME.speed) > 0 };
   };
   const loadEnergy = async accountId => {
@@ -357,8 +357,9 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
   const inSession = (rec, accountId) => rec.players.some(p => p.account === accountId);
   const hasLeft = (rec, accountId) => rec.leaves.some(l => l.account === accountId);
 
+  const isActive = s => ACTIVE.includes(s.status);
   async function activeOf(accountId){
-    return (await store.sessionsOf(accountId)).find(s => ACTIVE.includes(s.status) && !hasLeft(s, accountId)) ?? null;
+    return (await store.sessionsOf(accountId, isActive)).find(s => !hasLeft(s, accountId)) ?? null;
   }
 
   /* ---------- parties en direct ---------- */
@@ -699,8 +700,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     return jobs;
   }
   /* sessions qui empêchent de lancer une prison : mine, tour, instance (pas la mine instantanée) */
-  const sessionOf = async accountId => (await store.sessionsOf(accountId))
-    .find(s => ACTIVE.includes(s.status) && !hasLeft(s, accountId) && s.mode !== 'mi') ?? null;
+  const sessionOf = async accountId => (await store.sessionsOf(accountId, isActive))
+    .find(s => !hasLeft(s, accountId) && s.mode !== 'mi') ?? null;
   /* retard joué à une vue de la prison : au plus un paquet et le rejeu d'un run (au-delà, pump finit le rattrapage) */
   const catchUpBudget = p => prisonTickAt(cfg.batchMs, p.speed) + Math.ceil(cfg.runMax / DT);
   /* Visite du joueur (state, vue de la prison) : notée (touchPrison, lastSeenAt écrit au plus toutes les seenWriteMs ;
@@ -1051,7 +1052,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
             stele = shrineOf(body.stele)?.tower === side ? body.stele : null;
             heroic = body.heroic === true ? heroicFor(sanitizeShrines({ active: { heroique: 1 } })) : null;
           } else {
-            const sh = sanitizeShrines(await store.getShrines(me.id)), mine = (await store.sessionsOf(me.id)).filter(s => ACTIVE.includes(s.status) && s.steleOwner === me.id);
+            const sh = sanitizeShrines(await store.getShrines(me.id)), mine = await store.sessionsOf(me.id, s => isActive(s) && s.steleOwner === me.id);
             const free = (id, key) => id && !mine.some(s => s[key] === id) ? id : null;
             stele = free(steleFor(sh, side), 'stele'); heroic = free(heroicFor(sh), 'heroic');
           }
@@ -1496,7 +1497,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
        versements en cours attendus : après ça, plus rien n'écrit pour ce compte. Sans erreur s'il n'a rien en cours. */
     async eraseAccount(accountId, who){
       await api_prisonStop(accountId);
-      for(const s of (await store.sessionsOf(accountId)).filter(x => ACTIVE.includes(x.status))){
+      for(const s of await store.sessionsOf(accountId, isActive)){
         if(!hasLeft(s, accountId)) await leaveSession(accountId).catch(() => {});
         await settle(s.id).catch(() => {});        // l'heure est passée : la fin qui était due, tant qu'il est encore là
         await settling.get(s.id)?.catch(() => {});
@@ -2026,7 +2027,6 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     levelFor: async accountId => levelOf((await loadProgress(accountId)).xp).level,
     aurasFor: async accountId => aurasOf(gearOf(await loadStuff(accountId, await loadInventory(accountId)))),
     /* heure de fin de sa dernière session terminée (0 si aucune) : le groupe compte son délai d'absence à partir d'elle */
-    lastEndedAt: async accountId => Math.max(0, ...(await store.sessionsOf(accountId))
-      .filter(s => s.status === 'done' && !hasLeft(s, accountId)).map(s => s.endedAt || 0)),
+    lastEndedAt: async accountId => store.lastEndOf(accountId, s => s.status === 'done' && !hasLeft(s, accountId)),
   };
 }

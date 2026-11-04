@@ -22,7 +22,14 @@ Modèle d'entrée :
 - **Décisions** : ce message ne compte pas comme un avertissement du chat (pas de ban automatique au bout de 3). Un ban
   peut maintenant durer un nombre de minutes (`--minutes`). Retirer un objet existait déjà (`take-item.js`).
 - **À suivre** : rien.
-- **État** : 🧪 sur la branche `geoffrey/admin-sanctions` (pas en ligne)
+- **État** : ✅ en ligne le 04/11
+
+## 04/11/2026 — Geoffrey — Lag du jeu en ligne : corrigé
+- **Pour le joueur** : le jeu ne rame plus. Le serveur mettait plus d'1,5 s à répondre à chaque demande (mineur qui avance
+  par à-coups, onglets lents), parce que pour savoir si un ami était en session, il recopiait tout l'historique de ses
+  sessions, et ça pour chaque ami et membre de guilde, toutes les quelques secondes. Il ne regarde plus que les sessions en cours.
+- **À suivre** : vérifier en ligne avec `?perf` dans l'adresse (« réponse » doit retomber sous ~100 ms).
+- **État** : ✅ en ligne le 04/11
 
 ## 04/11/2026 — Geoffrey — Stuff : les dégâts % beaucoup moins forts
 - **Pour le joueur** : les pièces qui donnent des dégâts % en donnent nettement moins : Jambes en thorium 11,8 % (avant
