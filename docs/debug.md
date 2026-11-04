@@ -7330,3 +7330,12 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   (~3 s pour Cerbère).
 - **Applis** : nouveaux PNG dans textures/ (copié en entier par server/app-update/bundle.js) et src/render : rien à signaler.
 
+
+## 04/11/2026 — Geoffrey — Skills : liens « | » tracés d'après la mise en page (branche geoffrey/skills-liens)
+- `src/ui/skills.js` `drawLinks` : après chaque rendu (bureau et appli, et au redimensionnement), un SVG par arbre (taille
+  réelle de `.skGraph`) ; pour chaque case `data-needs`, un crochet de la case exigée à celle qui l'exige (gauche des
+  cases ; à droite pour la colonne de droite au bureau), flèche (`marker`), pointillé ou orange (`data-open` : skill exigé
+  au max). Bulle « Exige … au rang max », fiche de l'appli `.skNeed`. Ancien : lignes centre à centre en % (cachées par
+  le nom et la case de glyphe), maillon de 14 px dans l'appli.
+- Tests mis à jour pour l'Escalateur max 3 (skills, mule ; la valeur était partie en ligne sans tests). ✅ skills, mule,
+  glyphs, winch, dps, app-skills, skills-v2. Navigateur ✅ bureau et appli (?app).

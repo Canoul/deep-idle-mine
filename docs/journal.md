@@ -16,6 +16,12 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 04/11/2026 — Geoffrey — Skills : liens de dépendance bien visibles
+- **Pour le joueur** : dans l'onglet Skills, un skill qui en exige un autre y est relié par un trait épais avec une
+  flèche, sur le côté des cases : pointillé tant que le skill exigé n'est pas au max, orange quand il l'est. Sa bulle
+  et sa fiche (appli) disent « Exige … au rang max ».
+- **État** : 🧪 sur la branche `geoffrey/skills-liens` (pas en ligne)
+
 ## 04/11/2026 — Jules — Cerbère redessiné et animé : le « Molosse des Enfers »
 - **Pour le joueur** : dans l'arène du raid, Cerbère est un énorme molosse noir à trois têtes : une tête basse qui gronde
   vers les mineurs, une qui rugit vers le haut, une qui se retourne. Gueules béantes en feu, longs crocs, yeux de braise,
