@@ -7260,6 +7260,12 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - server/guild/raid.js `cardOf` (cache 30 s) : `tree`, `specLevel`, `look`, `auras` par membre (game.skillTreeOf / specLevelOf / lookFor / aurasFor, comme les groupes en formation). src/ui/guild.js : canvas `data-raidpic` dans `raidRow`, `drawRaidPortraits` après `put` quand le HTML change, `specLabel`.
 - Tests raid-ui, raid-server ✅ ; vérifié dans le navigateur (mode dev, 2 comptes, invitation) ✅.
 
+## 04/11/2026 — Raid : Indices à rapporter (remplace « tout miner », Geoffrey)
+- **Quoi** : bloc 26 `Indice` (type `clue`, tex `clue`, `RAID_CLUE_*` en tête de BLOCKS : dureté 30, val 1000, 150 pods), `IDS.clue`. `genRaidArea` : `seen` à 0 (dans le noir), `RAID.mine.clues` posés au hasard (moitié par area, pas au-dessus de `clueMinDepth` dans l'area 0). `isTarget` vise `clue` ; `aimable` = `isTarget` (ancien : tout le terrain) ; `targetVal` sans `terrainVal`. `breakBlock` → `findClue` (src/sim/actions.js) : `G.raid.found++`, `m.stats.clues`, montre (`seen`) l'Indice caché le plus proche (`RAID.mine.lead`). IA (src/sim/ai.js, 2 chaînes de raisons) : `G.raid && m.inv.Indice > 0` → remonte ('rapporte un Indice'). Porte : `cluesLeft(M) = clues − G.chest.Indice` (src/sim/raid/session.js). Bilan : `clues: true`, parts `stats.clues` ; ancien bilan (blocs) toujours lisible (raid-hud).
+- **Équilibrage** (simulate-raid.js `--clues --clue-hard --clue-w --clue-depth`, équipe de référence, 2 seeds) : 10 Indices sans rapport : 7-9 trouvés en 30 min (les derniers jamais) ; avec « mène au suivant » mais sans remonter : traîne (le dernier reste dans un sac) ; avec la remontée : 100 → 12 min, 120 → 13, 150 (ligne ≥ 40) → 18,5, 100 dureté 240 → 19. Retenu 150 / 30 / 150 pods / 40.
+- **Tests** : raid (bandes, noir, Indices, sac, suivant montré, coffre), raid-server, raid-ui ✅. Simulation mine normale 5 sessions : voir plus bas.
+- ⚠️ Pas vérifié dans un navigateur (texture `clue`, bandeau).
+
 ## 04/11/2026 — Geoffrey — Arbres de skills v2 (branche geoffrey/arbres-skills-v2)
 - **Config** (`SKILLS`) : `tierPoints` 3, nœuds avec `col` (0/1), `needs` (« | »), `specOnly` (tous les skills à 1 point),
   effets génériques `adds` (points), `mult` (× (1 + effet × poids)), `raid` (instances, tours, Bloc géant / He's coming),

@@ -54,3 +54,7 @@ Chien à trois têtes de lave et des enfers (Cerbère de la mythologie). Sprite 
 - Le lobby de 10 se joue en **2 groupes de 5**. Chacun choisit son groupe ; le chef du raid peut déplacer un joueur ; on peut lancer avec des groupes incomplets.
 - Les buffs de groupe apportés par chacun (Inspiration, Bonbonne de zipette, anneaux) ne vont qu'à son groupe ; le Cri de guerre aux membres de son groupe dans le rayon.
 - Équilibrage (2 barbares, 2 mineurs, 1 logisticien par groupe) : 280 000 PV → 3/40, 240 000 → 11/40 ; on garde 280 000.
+
+
+## Indices (Geoffrey, 04/11 14:48 : « tout miner » remplacé)
+- 150 Indices cachés dans les 2 areas dans le noir (sous la ligne 40), dureté 30, 150 pods ; un Indice miné montre le plus proche encore caché ; le mineur remonte le rapporter au coffre ; tous rapportés → la porte. ≈ 18,5 min pour l'équipe de référence.

@@ -44,20 +44,21 @@ test('membre : Prêt bascule, Quitter ; raid en cours : y retourner si on en est
   assert.ok(!/raidWatch/.test(raidHTML(raid({ running:{ ...run, mine:false } }), 0)));
 });
 
-test('bandeau : blocs restants, temps, porte', () => {
-  assert.match(raidBannerText({ phase:'mine', left:250, total:1000, timeLeft:1500, doorLeft:null }), /250 \/ 1.000 blocs restants \(75 %\) · 25:00 restantes/);
+test('bandeau : Indices trouvés, temps, porte', () => {
+  assert.match(raidBannerText({ phase:'mine', left:4, total:10, timeLeft:1500, doorLeft:null }), /Indices rapportés : 6 \/ 10 · 25:00 restantes/);
   assert.match(raidBannerText({ phase:'door', left:0, total:1000, timeLeft:1200, doorLeft:4 }), /La grande porte s'ouvre dans 4 s/);
   assert.equal(raidMinedPct({ left:250, total:1000 }), 75);
 });
 
 test('bilan : victoire, échec avant la porte, parts de chacun', () => {
   const share = (o = {}) => ({ miner:'A', account:'A', left:false, stats:{ mined:120, bossDmg:3400, bitten:2, stoned:1, freed:3, dead:false }, ...o });
-  const rec = s => ({ players:[{ account:'A', name:'Alice' }, { account:'B', name:'Bob' }], result:{ success:false, t:1800, mineT:900, blocksLeft:0, blocksTotal:5000, bossHp:4000, bossMax:15000, deaths:1, shares:[share(), share({ account:'B', miner:'B', stats:{ mined:5, bossDmg:0, bitten:1, stoned:0, freed:0, dead:true } })], ...s } });
+  const rec = s => ({ players:[{ account:'A', name:'Alice' }, { account:'B', name:'Bob' }], result:{ success:false, t:1800, mineT:900, blocksLeft:0, blocksTotal:10, clues:true, bossHp:4000, bossMax:15000, deaths:1, shares:[share(), share({ account:'B', miner:'B', stats:{ mined:5, bossDmg:0, bitten:1, stoned:0, freed:0, dead:true } })], ...s } });
   const win = raidEndHTML(rec({ success:true, t:1500, bossHp:0 }), 'A');
   assert.match(win, /victoire/); assert.match(win, /Alice \(toi\)/); assert.match(win, /3.400 dégâts/); assert.match(win, /mordu 2 · durci 1 · libérés 3/);
   assert.match(win, /Bob 💀/);
   assert.match(raidEndHTML(rec({}), 'A'), /Temps écoulé : Cerbère tient toujours \(4.000 \/ 15.000 PV\)/);
-  assert.match(raidEndHTML(rec({ bossHp:null, bossMax:null, blocksLeft:800 }), 'A'), /avant la grande porte : 800 \/ 5.000/);
+  assert.match(raidEndHTML(rec({ bossHp:null, bossMax:null, blocksLeft:3 }), 'A'), /avant la grande porte : 7 \/ 10 Indices rapportés/);
+  assert.match(raidEndHTML(rec({ bossHp:null, bossMax:null, blocksLeft:800, blocksTotal:5000, clues:undefined }), 'A'), /800 \/ 5.000 blocs restaient/, 'raid d\'avant les Indices');
 });
 
 test('états : Morsure (affichage), Durci (solidité), Mort au raid ; bulles', () => {

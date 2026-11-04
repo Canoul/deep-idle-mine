@@ -127,6 +127,19 @@ def main():
         rect(hell, x, y, 1, 1, hexc('#ffb347'))
     tex['hellstone'] = hell
 
+    # Indice (raid Cerbère, 04/11/2026) : roche sombre marquée d'une rune ardente (trois crocs dans un cercle)
+    clue = noisy(hexc('#3a1410'), 43, 0.10)
+    ring = [(5, 2), (6, 2), (7, 2), (8, 2), (9, 2), (10, 2), (4, 3), (11, 3), (3, 4), (12, 4), (2, 5), (13, 5), (2, 6), (13, 6),
+            (2, 7), (13, 7), (2, 8), (13, 8), (2, 9), (13, 9), (2, 10), (13, 10), (3, 11), (12, 11), (4, 12), (11, 12),
+            (5, 13), (6, 13), (7, 13), (8, 13), (9, 13), (10, 13)]
+    for (x, y) in ring:
+        rect(clue, x, y, 1, 1, hexc('#c8401a'))
+    for fx in (5, 7, 10):
+        for k in range(4):
+            rect(clue, fx + (1 if k > 1 and fx == 7 else 0), 5 + k, 1, 1, hexc('#ffb02e' if k < 3 else '#fff0a0'))
+    rect(clue, 7, 10, 2, 1, hexc('#ffb02e'))
+    tex['clue'] = clue
+
     # coffre au trésor enfoui : un petit coffre dans la roche
     treasure = noisy(hexc('#7d828c'), 13)
     rect(treasure, 2, 5, 12, 9, hexc('#8a5a2b'))

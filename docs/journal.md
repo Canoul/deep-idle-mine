@@ -20,13 +20,23 @@ Modèle d'entrée :
 - **Pour le joueur** : le reset, le changement de spé et les glyphes marchent aussi pendant une session (la session en
   cours ne change pas, ça compte pour la suivante). Dans l'appli, la case **Ajout rapide** ajoute un point d'un toucher,
   sans ouvrir la fiche du skill.
-- **État** : 🧪 sur la branche `geoffrey/skills-liens` (pas en ligne)
+- **État** : ✅ en ligne le 04/11
 
 ## 04/11/2026 — Geoffrey — Skills : liens de dépendance bien visibles
 - **Pour le joueur** : dans l'onglet Skills, un skill qui en exige un autre y est relié par un trait épais avec une
   flèche, sur le côté des cases : pointillé tant que le skill exigé n'est pas au max, orange quand il l'est. Sa bulle
   et sa fiche (appli) disent « Exige … au rang max ».
-- **État** : 🧪 sur la branche `geoffrey/skills-liens` (pas en ligne)
+- **État** : ✅ en ligne le 04/11
+
+## 04/11/2026 — Geoffrey — Raid : les Indices remplacent « tout miner »
+- **Pour le joueur** : la première phase du raid n'est plus de miner les 2 areas à 100 %. Elles sont dans le noir, et
+  **150 Indices** y sont cachés (pas tout en haut). Un Indice miné montre le plus proche encore caché ; il pèse 150 pods
+  et son mineur remonte le déposer au coffre. Tous rapportés, la grande porte s'ouvre. Bandeau : « Indices rapportés
+  x / 150 ».
+- **Décisions** : choix de Claude (Geoffrey : « je te laisse choisir », ~20 min de minage) : 150 Indices, dureté 30,
+  150 pods, sous la ligne 40 ; l'équipe de référence met ≈ 18,5 min. Cerbère reste à 280 000 PV (2/40 victoires avec le
+  temps qui reste).
+- **État** : ✅ en ligne le 04/11
 
 ## 04/11/2026 — Jules — Cerbère redessiné et animé : le « Molosse des Enfers »
 - **Pour le joueur** : dans l'arène du raid, Cerbère est un énorme molosse noir à trois têtes : une tête basse qui gronde
