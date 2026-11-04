@@ -16,6 +16,17 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 04/11/2026 — Jules — Cerbère redessiné et animé : le « Molosse des Enfers »
+- **Pour le joueur** : dans l'arène du raid, Cerbère est un énorme molosse noir à trois têtes : une tête basse qui gronde
+  vers les mineurs, une qui rugit vers le haut, une qui se retourne. Gueules béantes en feu, longs crocs, yeux de braise,
+  colliers de fer à pointes, chaîne brisée, crinière de flammes. Il est **animé** : la crinière et la queue en feu
+  ondulent, des braises montent, la bave de lave coule et tombe en gouttes, les gorges et les yeux pulsent. Enragé, son
+  pelage vire au rouge braise et son feu devient plus haut et plus blanc. Même taille et mêmes règles qu'avant.
+- **Décisions** : piste « Molosse des Enfers » choisie par Jules parmi trois (Molosse, Gardien antique, Bête d'os), puis
+  raffinée. La version générée par Gemini a été écartée. Taille gardée à 8 × 6 cases (passer à 12 × 9 donnerait plus de
+  détails mais change la zone du boss : à voir avec Geoffrey).
+- **État** : ✅ en ligne le 04/11
+
 ## 04/11/2026 — Geoffrey — Skills : Escalateur 3 rangs max (avant 5)
 - **État** : ✅ en ligne le 04/11
 
