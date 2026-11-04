@@ -7468,7 +7468,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   app-skills, wiki, dev-presets, dev-spec, session, mobs, anticheat skills / glyphs / sets (versions 2 → 3 et étages mis
   à jour). ⚠️ Pas vu dans le navigateur : 3 colonnes au bureau dans un arbre d'environ 300 px, noms longs sur 2 lignes.
 
-## 04/11/2026 — Jules — Jauge de profondeur : initiales échangées entre mineurs (branche jules/fix-barre-profondeur)
+## 04/11/2026 — Jules — Jauge de profondeur : initiales échangées entre mineurs (branche jules/fix-barre-profondeur) — ✅ en ligne le 04/11
 - Signalé par un joueur : pastilles de `#railMarks` avec l'initiale d'un autre mineur (la pastille entourée, au bon
   endroit, portait la mauvaise lettre). Cause : `updateRail` (`src/ui/hud.js`) ne recréait les pastilles que si la liste
   des ids changeait ; les ids sont le rang dans l'équipe (`newGame`, `src/sim/session.js` : `createMiner(i, …)`), donc

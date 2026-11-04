@@ -20,7 +20,7 @@ Modèle d'entrée :
 - **Pour le joueur** : dans la barre à droite de la mine, chaque pastille porte bien l'initiale (et la couleur) de son
   mineur. Avant, d'une session à la suivante avec la même équipe dans un autre ordre, les lettres restaient celles de la
   session d'avant (Fantom suivi voyait un « L » sur lui, LeTaz un « F »).
-- **État** : 🧪 sur la branche `jules/fix-barre-profondeur` (pas en ligne)
+- **État** : ✅ en ligne le 04/11
 
 ## 04/11/2026 — Geoffrey — Raid : les mineurs explorent le noir, treuil dès le début
 - **Pour le joueur** : au minage du raid, quand aucun Indice n'est en vue, chaque mineur part explorer un coin encore dans
