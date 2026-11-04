@@ -7198,7 +7198,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   appelée **seulement** au chargement du compte (server/game/service.js loadSkills) : les enregistrements de session et
   les sets sont relus avec les nouvelles règles, sans reset. `skillRanks` porte v:2. `groupAuras`, `pointsByTree`,
   `treePoints`, `treeDepth`, `depthCap`, `tierNeed`. `withSkillStats(carac, effects, { raid, auras })`.
-- **Partie** : `src/sim/skillfx.js` : `critMul` (Crushing, × 2 × (1 + 10 %/rang)) dans les 4 hitDmg (mine, instance,
+- **Partie** : Solide ne joue pas sur l'avalanche du Golbute (golbute.js : bonus retiré via `extra`). `src/sim/skillfx.js` : `critMul` (Crushing, × 2 × (1 + 10 %/rang)) dans les 4 hitDmg (mine, instance,
   Golbute, tours) et le DPS de Lucifer ; `backstabMul` (Dans le dos) : mine = tacle (G.mobs), instance = tacle ou
   boss.focus, tours = tacle ou boss.target / focus, Golbute = golem qui tacle ou boss au combat à portée de l'autoattack ;
   `trackRested` (session.js stepMiner : fin du mode 'departure' avec trips > 0) → `m.restedNow`, `restedMul` dans moveT,

@@ -16,7 +16,7 @@
    cristal ; Inspiration et Fast learner sur le cristal ; Illumination et Bonbonne de zipette : sans effet. */
 import { critMul, backstabMul } from '../skillfx.js';
 import { tenacityChance, tenacityTry } from '../tenacity.js';
-import { INSTANCE, DT, STATS, CFG } from '../../config.js';
+import { INSTANCE, DT, STATS, CFG, SKILLS } from '../../config.js';
 import { mulberry32 } from '../../core/rng.js';
 import { SPELL } from '../../meta/spells.js';
 import { log } from '../log.js';
@@ -200,7 +200,8 @@ function avalanche(G){
   const hit = [], dodged = [];
   for(const m of alive(G)){
     G.rocks.push({ x: m.x, at: G.ticks });
-    if(tenacityTry(m, 'golbute', G.fightRng, tenDebuffOf(G, m))){ dodged.push(m.name); G.stats.dodges++; continue; }
+    /* Solide sur les appuis (04/11) : contre l'autoattack seulement, pas l'avalanche (elle frappe tout le monde) */
+    if(tenacityTry(m, 'golbute', G.fightRng, tenDebuffOf(G, m) + (m.skill?.steady ? SKILLS.steady.tenacity : 0))){ dodged.push(m.name); G.stats.dodges++; continue; }
     if(G.t > m.dazedUntil + 1e-9) m.dazed = 0;
     m.dazed++; m.dazedUntil = G.t + A.dazed; m.stats.dazed++;
     hit.push(m);

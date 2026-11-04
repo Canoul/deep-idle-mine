@@ -10,6 +10,7 @@ import { tenacityOf } from '../src/sim/tenacity.js';
 import { hitDamage } from '../src/sim/actions.js';
 import { moveT, mineT } from '../src/sim/mineur.js';
 import { worldFrom } from './helpers.js';
+import { tickGolbute } from '../src/sim/instance/golbute.js';
 import { IDS } from '../src/config.js';
 
 const full = tree => ({ tree, ranks: Object.fromEntries(SKILLS.trees.find(t => t.id === tree).nodes.map(n => [n.id, n.max])) });
@@ -92,6 +93,17 @@ test('Solide sur les appuis : +5 de ténacité contre les mécaniques de boss se
   for(const src of ['golbute', 'towerBoss', 'minotaure', 'hescoming']) assert.equal(tenacityBonus(m, src), 5, src);
   assert.equal(tenacityBonus(m, 'gobelin'), 0); assert.equal(tenacityBonus(m, null), 0);
   assert.ok(tenacityOf(m, 'golbute') > 0); assert.equal(tenacityOf(m, 'gobelin'), 0);
+});
+
+test('Solide sur les appuis : l\'avalanche du Golbute n\'en profite pas, l\'autoattack si', async () => {
+  const { newGolbute, slamChance } = await import('../src/sim/instance/golbute.js');
+  const { INSTANCE } = await import('../src/config.js');
+  const mk = steady => newGolbute(3, { miners: [{ name: 'B', account: 'B', carac: { damage: 0, mineSpeed: 0, tenacity: 30 }, skills: steady ? { steady: 1 } : {} }] });
+  const a = mk(false), b = mk(true);
+  assert.ok(slamChance(b, b.miners[0]) < slamChance(a, a.miners[0]), 'autoattack : moins de chances d\'être propulsé');
+  const dodges = G => { G.boss.cd = Infinity; G.next.split = Infinity; G.fightRng = (() => { let i = 0; return () => (i++ % 100) / 100; })();
+    const n = Math.round((INSTANCE.golbute.avalanche.every * 5 + 1) / 0.1); for(let i = 0; i < n && !G.over; i++) tickGolbute(G); return G.stats.dodges; };
+  assert.equal(dodges(mk(true)), dodges(mk(false)), 'avalanche : même esquive avec ou sans le skill');
 });
 
 /* ---------- serveur ---------- */

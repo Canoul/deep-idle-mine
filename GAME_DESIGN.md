@@ -284,7 +284,7 @@ Le mineur du joueur a un **niveau**, rattaché à son compte, qui monte avec l'*
 - **Mineur tout terrain** : vitesse de minage +5 % dans les **instances, tours du Jugement, Bloc géant et He's coming**.
 - **Reposé** : après une remontée à la surface, une fois **redescendu au front** (fin de la descente depuis la surface ; pas la première descente de la session), vitesse de minage, de marche et de montée (échelle, seau) et dégâts **+2 %**, ténacité **+2 %**, pendant **3 min** en mine classique et **1 min en prison**. Une nouvelle descente remet le compteur à zéro (pas de cumul). Affiché dans les états du mineur.
 - **Dans le dos** : dégâts **+5 %** quand aucun ennemi ne le vise : aucun mob ne le tacle et aucun boss ne l'a pour cible (Golbute : au combat, à portée de son autoattack ; golems de la Division qui le taclent). Pas dans He's coming (Lucifer vise tout le monde).
-- **Solide sur les appuis** : ténacité **+5 %** contre les mécaniques de boss qui le visent : autoattack et avalanche du Golbute, boss des tours, minotaure, Lucifer (`SKILLS.steady.sources`).
+- **Solide sur les appuis** : ténacité **+5 %** contre les mécaniques de boss qui le visent : autoattack du Golbute (pas l'avalanche, qui frappe tout le monde), boss des tours, minotaure, Lucifer (`SKILLS.steady.sources`).
 - **Crushing** : un coup critique fait ×2 × (1 + **10 %**) (×2,6 à 3/3) au lieu de ×2.
 - **Auras** (1 point, étage 6) : **pour tout le groupe, lui compris**, tout le temps ; deux porteurs de la même aura : une seule fois. **Aura d'efficacité** : perçage +2 %. **Aura rassurante** : portée d'attaque +0,1 bloc. **Aura berserk** : critique +2 %. Mine instantanée : pour soi seul (comme les anneaux). Bloc géant et He's coming : tous les présents.
 
