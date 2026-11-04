@@ -806,6 +806,9 @@ export const EFFECTS = {
     dazed:        { kind:'debuff',  name:'Sonné',               icon:'rock',      color:'#c9a27a' },
     dead:         { kind:'control', name:'Mort',                icon:'skull',     color:'#9a9a9a' },
     escalator:    { kind:'session', name:'Escalateur',          icon:'ladder',    color:'#6fc2ff' },
+    /* Raid 1, Cerbère (04/11/2026) : Morsure (affichage de bite.show s, elle ne persiste pas) et Durci (en pierre) */
+    bitten:       { kind:'debuff',  name:'Morsure',             icon:'heartbreak',color:'#ff4a2a' },
+    stone:        { kind:'control', name:'Durci',               icon:'rock',      color:'#a39a8f' },
   },
   session: { name:'Bonus de session', icon:'ring', color:'#ffd23f' },
   /* états des mobs et des boss, au-dessus de leur barre de PV */
@@ -835,7 +838,7 @@ export const TEXTURES = ['dirt','grass','hellstone','stone','hardstone','coal','
   'gloves_tactical','gloves_worker','cape_naingui','straps_goblin','hood_dark','cloud_magic','belt_giant','dark_cloth','gas_vesicle','slippery_stone','dungeon_brick','minotaur','minotaur_black','moon_crystal','orb','orb_superior','pick_goblin','kilt_dark','hat_naab','sword_cardboard','key_instance_1','key_instance_2','angel_feather','angel_feathers',
   'guild_armory','guild_treasury','guild_forge',
   'guild_hall_1','guild_hall_2','guild_hall_3','guild_hall_4','guild_site','guild_wing_armory','guild_wing_treasury','guild_wing_forge','guild_lot',
-  'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon','giant_block','lucifer','lucifer_portal','lucifer_roar1','lucifer_roar2','lucifer_roar3','lucifer_roar4','lucifer_roar5','lucifer_roar6','giant_fountain','giant_torch','instance_spawner','instance_cage','goblin_king','golbute','golbute_crystal','golbute_body','golbute_body_crystal','golbute_arm','golbute_arm_crystal','golbute_rock','chest_golbute',
+  'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon','giant_block','lucifer','lucifer_portal','lucifer_roar1','lucifer_roar2','lucifer_roar3','lucifer_roar4','lucifer_roar5','lucifer_roar6','giant_fountain','giant_torch','instance_spawner','instance_cage','goblin_king','golbute','golbute_crystal','golbute_body','golbute_body_crystal','golbute_arm','golbute_arm_crystal','golbute_rock','chest_golbute','cerbere','cerbere_rage',
   'brick_angel','brick_angel_hard','brick_demon','brick_demon_hard','boss_angel','boss_demon','seraph','imp',
   'crown_goblin_king','mace_goblin_king','cape_goblin_royal','furnace_gold','recipe_chitin','chest_goblin_king','nugget_silver','ingot_silver','shrine_abundance',
   'ingot_mithril','refined_cobalt','refined_thorium','ingot_cobalt','ingot_thorium','minotaur_leather','rotten_flesh','treasure_t4',
