@@ -7125,3 +7125,13 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Fragile** : le renderer est créé une fois pour toutes les sessions ; le zoom choisi en pinçant est gardé d'une session à
   l'autre (comme avant), seul le démarrage de la page et le double appui reprennent `appZoom`.
 - **Applis** : touche src/main.js, src/render/, src/ui/, src/config.js ; rien dans `src/app/` ni `mobile/` : mise à jour à chaud.
+
+## 04/11/2026 — Geoffrey — Butin d'un coffre à la demande ; marque de rune en % de la case
+- `src/ui/tooltip.js` `tipAttr` : un objet avec table de butin (`lootTableOf`) n'a plus `data-loot` ni `data-tip`, seulement
+  `title` (au doigt : rien ne s'ouvre en touchant la case). `src/ui/inventory.js` `infoHtml` : `lootHelp('item:<objet>')`
+  (« ? Butin ») après « Ouvrir ». Effet de bord : plus de tableau au survol dans Craft, Historique et Recherche (tipAttr
+  partagé) ; les « ? Butin » du lobby (tours, instances, mobs) ne changent pas.
+- `src/ui/style.css` `.runeMark` : 34 % de la case (max 11 u), dans le coin bas-gauche, au lieu de 11 u fixes.
+- **Tests** ✅ loot-table (nouveau test : tipAttr sans tableau, bouton à côté de « Ouvrir », rien pour un objet qui ne
+  s'ouvre pas), tooltip, inventory, stuff : 39/39. ⚠️ Pas vu à l'écran (pas de navigateur ici) : taille de la rune sur l'appli.
+

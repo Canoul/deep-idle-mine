@@ -1426,6 +1426,13 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
 
 ---
 
+## 04/11/2026 — Geoffrey — Inventaire : butin d'un coffre à la demande, marque de rune plus petite
+- **Pour le joueur** : toucher un coffre ou un treasure ne déroule plus son tableau de butin (sur l'appli, il cachait le
+  bouton « Ouvrir » : il fallait le fermer avant d'ouvrir). Le tableau est derrière un bouton **« ? Butin »**, à côté de
+  « Ouvrir ». La petite rune qui marque une pièce runée fait maintenant un tiers de la case : sur l'appli, elle cachait la
+  pièce.
+- **État** : ✅ en ligne le 04/11
+
 ## 29/10/2026 — Jules — Correctif : le Carreau sur téléphone
 - **Pour le joueur** : sur téléphone, toucher l'écran pour marcher ouvrait l'onglet du premier bâtiment touché : on ne
   pouvait pas se promener. Maintenant, au doigt, on marche là où on touche et on n'entre jamais tout seul ; devant une
