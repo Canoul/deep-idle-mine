@@ -7213,7 +7213,9 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   serveur + migration), app-skills, glyphs, sets, dev-spec, mule, game-service, social, admin-take, hescoming-*, lobby,
   anticheat/skills (réécrit, 500 suites avec spé) ; `npm run test:anticheat` vert. ❌ déjà rouges sur main, sans rapport :
   energy « energyOfTicks », leaderboard « roi gobelin », mobile-config « iOS », perf « boîte de mesures »,
-  prison-server « une tour et une instance ». dev-spec : attendu du lobby corrigé (He's coming manquait).
+  prison-server « une tour et une instance », tier2 « fortune : le doublon » et « recycle : un BP du T2 », tier4 « recettes du
+  T4 ». dev-spec : attendu du lobby corrigé (He's coming manquait). talents-etage6 : Saccager est à l'étage 4. `npm test` :
+  2298 verts, ces 8 rouges.
 - **Simulation** (3 mineurs × 5) : sans skills identique à avant (coffre 4169,2) ; `--skills mixed` : areas 3,8, profondeur
   205, coffre 4543, 0 blocage.
 - ⚠️ Fragile : une session en cours pendant la mise en ligne est rejouée avec les règles v2 (ses rangs peuvent être
