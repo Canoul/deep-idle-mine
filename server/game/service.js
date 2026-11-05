@@ -32,7 +32,8 @@ import { prisonCompos, pickCompo } from '../../src/meta/prison-profile.js';
 import { sanitizeFocus } from '../../src/sim/focus.js';
 import { displayName } from '../../src/shared/account.js';
 import { createInventory, deserialize, serialize, creditSession, addItem, removeItem, countOf, sortInventory, moveSlot } from '../../src/meta/inventory.js';
-import { sanitizeJudgment, addResidues, refresh as refreshJudgment, publicJudgment, isOpen as towerOpen, anyOpen as anyTowerOpen, hasWon, markDone,
+import { sanitizeDaily, rollDaily, publicDaily, dailyFx, dailyCost, dailyOn } from '../../src/shared/daily.js';
+import { sanitizeJudgment, addResidues, refresh as refreshJudgment, publicJudgment, isOpen as towerOpen, anyOpen as anyTowerOpen, residuesOn, hasWon, markDone,
          setCount as setJudgmentCount, SIDES as JUDGMENT_SIDES } from '../../src/meta/judgment.js';
 import { towerSide, isTowerMode, towerDurationMs, splitTowerLoot } from '../../src/shared/tower.js';
 import { instanceDef, instanceDurationMs, isInstanceMode, missingKeys, levelsOf } from '../../src/shared/instances.js';
@@ -156,6 +157,10 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
                                     /* mode dev : copies de vrais joueurs pour les mineurs de test, { pseudo: copie } (data/presets/) */
                                     devCopies = () => ({}),
                                     devLiveCopies = null,
+                                    /* événement du jour (05/11/2026) : tiré seulement si true (server/main.js) ; false dans les tests, qui
+                                       restent déterministes (un test l'active ou passe dailyPick pour imposer l'événement) */
+                                    dailyEvents = false,
+                                    dailyPick = null,
                                     /* hasard du butin, imprévisible, dans [0, 1[ : 48 bits aléatoires (randomInt refuse 2**48) */
                                     random = () => crypto.randomBytes(6).readUIntBE(0, 6) / 2**48,
                                     /* modération du chat (server/moderation/service.js, 30/10) : avertit l'auteur d'un mot interdit ; absente = rien */
@@ -246,11 +251,24 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
      Une tour dont la jauge est pleine s'ouvre à la lecture (refresh), et c'est enregistré. */
   /* Une tour qui vient de s'ouvrir (son numéro d'ouverture a avancé, quelle que soit la cause : résidus, réouverture,
      admin) est annoncée sur Discord une fois, après l'enregistrement (sous le verrou : jamais deux fois). */
+  /* événement du jour (05/11/2026, src/shared/daily.js) : tiré au premier besoin après minuit (heure de Paris), enregistré
+     (ns daily) ; renvoie son id. Gardé en mémoire : un seul serveur écrit cet état. */
+  let dailyState = null;
+  const currentDaily = () => !dailyEvents ? Promise.resolve(null) : withLock('daily', async () => {
+    dailyState ??= sanitizeDaily(await store.getDaily?.());
+    if(rollDaily(dailyState, clock(), dailyPick ?? random)) await store.putDaily?.(dailyState);
+    return dailyState.id;
+  });
+  /* événement du jour où tombe l'heure t (un run de prison rejoué hors ligne prend celui du jour de son début) */
+  const dailyAt = async t => { await currentDaily(); return dailyOn(dailyState, t); };
+  /* règles du Jugement du jour (Cataclysme) : en direct, pas figées */
+  const judgmentRules = async () => { const fx = dailyFx(await currentDaily()); return { cap: fx.towerCap ?? undefined, together: fx.towersTogether }; };
   const withJudgment = fn => withLock('judgment', async () => {
+    const rules = await judgmentRules();
     const j = sanitizeJudgment(await store.getJudgment());
     const openings = Object.fromEntries(JUDGMENT_SIDES.map(s => [s, j[s].opening]));
-    const opened = refreshJudgment(j, clock());
-    const r = await fn(j);
+    const opened = refreshJudgment(j, clock(), rules);
+    const r = await fn(j, rules);
     if(opened || r?.save) await store.putJudgment(j);
     for(const s of JUDGMENT_SIDES) if(j[s].opening > openings[s]) shout(towerOpenMessage(s));
     return r?.value ?? r;
@@ -566,6 +584,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
          pour toute la prison ; une pièce de Découverte équipée ensuite ne comptait jamais). Le pseudo reste celui de
          l'entrée. Rangés avec la prison : un run rejoué après un redémarrage garde les siens. */
       p.specs = { name: p.specs?.name, ...await freezePlayer(p.account) };
+      p.daily = await dailyAt(p.runStartedAt);   // événement du jour du début du run (05/11)
     }
     runEnded.delete(key); runOwner.delete(key); payoutTries.delete(key); crashes.delete(key); live.close(key);
     await store.putPrison(p.account, p);
@@ -804,7 +823,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           /* trésor de tour très rare : annoncé sur Discord, une seule fois (comme le versement) */
           for(const item of Object.keys(share.bag || {})) shout(treasureMessage(who, item));
           /* résidus versés : ils remplissent les jauges du Jugement (une seule fois, comme le versement) */
-          await withJudgment(j => ({ save: addResidues(j, share.bag, clock()) }));
+          await withJudgment((j, rules) => ({ save: addResidues(j, share.bag, clock(), rules) }));
           /* tour réussie : « déjà faite » pour l'ouverture où elle a été lancée (pas une ouverture suivante) */
           if(side && summary.success)
             await withJudgment(j => ({ save: j[side].opening === rec.opening && markDone(j, side, share.account, rec.level ?? 1) }));
@@ -1066,7 +1085,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           opening = t.opening;
         }
         /* mine classique : pas de résidus si une tour du Jugement est ouverte au lancement (23/10, figé dans la session) */
-        const residues = side || inst ? null : await withJudgment(j => ({ value: !anyTowerOpen(j, clock()) }));
+        const residues = side || inst ? null : await withJudgment((j, rules) => ({ value: residuesOn(j, clock(), rules) }));
         if(await activeOf(me.id)) fail('session_running', 409, 'Tu as déjà une session en cours.');
         for(const p of players.slice(1))
           if(await activeOf(p.account)) fail('member_in_session', 409, `${p.name || 'Un joueur'} est déjà dans une session.`);
@@ -1084,11 +1103,12 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           if(miss.length) fail('no_key', 409, `Il faut une ${inst.key} par joueur : ${miss.map(p => p.name || 'un joueur').join(', ')} n'en ${miss.length > 1 ? 'ont' : 'a'} pas.`);
         }
         /* énergie : chaque joueur doit pouvoir payer (vérifié avant de compter le lancement ; rien n'est débité ici) */
+        const daily = await currentDaily();   // événement du jour, figé au lancement (05/11)
         const energies = {};
         if(energyLocks.length){
           for(const p of players) energies[p.account] = await loadEnergy(p.account);
-          const poor = players.filter(p => !canPay(energies[p.account]));
-          if(poor.length) fail('no_energy', 409, `Pas assez d'énergie (${ENERGY.cost.min} au moins) : ${poor.map(p => p.name || 'Un joueur').join(', ')}. L'énergie se recharge en prison (Lobby, « Où miner », Prison).`);
+          const poor = players.filter(p => !canPay(energies[p.account], dailyCost(ENERGY.cost.min, daily)));
+          if(poor.length) fail('no_energy', 409, `Pas assez d'énergie (${dailyCost(ENERGY.cost.min, daily)} au moins) : ${poor.map(p => p.name || 'Un joueur').join(', ')}. L'énergie se recharge en prison (Lobby, « Où miner », Prison).`);
         }
         const now = clock();
         const prefs = {}, looks = {}, gear = {}, skills = {}, spells = {}, statsAt = {};
@@ -1150,6 +1170,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           ...(modulation ? { modulation: { gsMax: TOWER.modulation.gsMax } } : {}),
           ...(residues === false ? { residues: false } : {}),
           ...(shrines.length ? { shrines } : {}),
+          ...(daily ? { daily } : {}),   // événement du jour, figé au lancement (05/11)
           ...(stele ? { stele } : {}), ...(heroic ? { heroic } : {}),
           ...((stele || heroic) && !dev ? { steleOwner: me.id } : {}),
           ...(mode === 'mine' && !dev ? { statsAt } : {}),
@@ -1161,7 +1182,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           rec.energy = {};
           for(const p of players){
             /* dès 6 d'énergie le lancement réussit toujours : le coût est plafonné à l'énergie restante (jamais négative) */
-            const cost = Math.min(rollCost(random), Math.floor(energies[p.account].value));
+            const cost = Math.min(dailyCost(rollCost(random), daily), Math.floor(energies[p.account].value));   // Jour férié (05/11)
             if(!spendEnergy(energies[p.account], rec.id, cost)) throw new Error('énergie : débit impossible après la vérification (bug)');
             rec.energy[p.account] = cost;
           }
@@ -1261,7 +1282,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         const specs = { name: displayName(me), ...await guildField(me.id), ...await freezePlayer(me.id) };
         const runSpeed = dev && GAME.devSpeeds.includes(body?.speed) ? body.speed : speed;
         await loadEnergy(me.id);   // repos soldé jusqu'à l'entrée en prison (30/10/2026)
-        const p = newPrisonRecord({ id: crypto.randomUUID(), account: me.id, seed: randomSeed(), specs, areaMax: area, profile, now: clock(), speed: runSpeed });
+        const p = newPrisonRecord({ id: crypto.randomUUID(), account: me.id, seed: randomSeed(), specs, areaMax: area, profile, now: clock(), speed: runSpeed, daily: await currentDaily() });
         await store.putPrison(me.id, p);
         (await indexOfPrisons()).add(me.id);
         openRun(p);
@@ -1297,9 +1318,11 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           looks[p.account] = lookOf(st);
           gear[p.account] = gearOf(st);      // pièces complètes : seulement pour l'aura (src/meta/aura.js)
         }
+        const daily = await dailyAt(slot);   // MI abondante (05/11) : l'événement du jour de l'ouverture
         const rec = {
           id, mode: 'mi', seed: randomSeed(), players: ok, bots: 0, prefs: {}, looks, gear, skills, overrides: null,
-          dev: false, speed: GAME.speed, startedAt: slot, finishAt: slot + instantDurationMs(GAME.speed),
+          ...(daily ? { daily } : {}),
+          dev: false, speed: GAME.speed, startedAt: slot, finishAt: slot + instantDurationMs(GAME.speed, daily),
           leaves: [], focus: [], status: 'running', result: null, seen: [], clock: null,
         };
         await store.putGameSession(rec);
@@ -1824,8 +1847,11 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
 
     /* historique : ses sessions terminées (gardées config.keepEnded), les plus récentes d'abord, avec la seed et SA part */
     /* onglet Jugement : les deux jauges, les tours ouvertes et ce que ce joueur a déjà fait */
+    /* événement du jour (05/11/2026) : son id (raffle), et ce que voit le navigateur */
+    dailyId: () => currentDaily(),
+    async daily(){ await currentDaily(); return publicDaily(dailyState, clock()); },
     async judgment(me){
-      return withJudgment(j => ({ value: publicJudgment(j, clock(), me.id) }));
+      return withJudgment((j, rules) => ({ value: { ...publicJudgment(j, clock(), me.id, rules), daily: publicDaily(dailyState, clock()) } }));   // withJudgment a tiré l'événement   // daily : bandeau du Lobby (05/11)
     },
     /* classements : valeurs de tous les comptes (le service social classe et met les pseudos) */
     leaderboardData,

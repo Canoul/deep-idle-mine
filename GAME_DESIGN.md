@@ -693,6 +693,23 @@ Onglet Guilde : sa guilde (si on en a une), Rechercher, Leaderboard. Dans Recher
 - **Journal des dons** : sous les bâtiments, sans limite, jamais effacé (même si la guilde disparaît, en base). Public, comme les bâtiments : bouton **Voir** dans Rechercher.
 - **Nom au-dessus de la tête** : sous le pseudo, en plus petit, `< Nom de la guilde >`, dans la mine, en prison et dans le Carreau. En session, c'est la guilde du lancement.
 
+### Événement du jour *(05/11/2026, Geoffrey ; `DAILY` en config, `src/shared/daily.js`)*
+
+Un événement par jour, de **minuit à minuit** (heure de Paris), tiré au hasard par le serveur, **chances égales**. **Jamais le même deux fois en moins de 3 jours** (les événements des 2 jours d'avant sont exclus). Affiché en bandeau en haut du **Lobby** (nom, effet, temps restant). Les effets sont **figés au lancement** d'une partie, comme les skills (une session lancée à 23 h 50 garde l'événement de la veille jusqu'à sa fin ; la prison prend celui du jour du début de **chaque run** ; la MI celui de son ouverture), sauf les jauges du Jugement (en direct) et le raffle (au début du raffle). Valeurs provisoires :
+
+| Événement | Effet |
+|---|---|
+| Mine abondante | +2 points de terrain changés en minerais (comme la Shrine d'abondance, qui fait 5 ; cumulable), mine classique et prison |
+| Jour férié | coût en énergie d'une mine × 0,67, arrondi (6-12 → 4-8) ; seuil pour lancer 4 au lieu de 6 |
+| Invasion | mobs qui apparaissent 25 % plus souvent à partir de l'area 5, mine classique (pas la prison) |
+| Cataclysme | les deux tours peuvent être ouvertes en même temps (aucune jauge en pause, résidus dans toutes les mines) ; jauge pleine à **150** au lieu de 200. Une tour ouverte garde ses 4 h après minuit ; le lendemain, une jauge entre 150 et 200 garde sa valeur |
+| MI abondante | mine instantanée 71 × 71 (deux fois plus de cases) et 10 min de jeu (deux fois plus) |
+| Multivers | k hole 5 fois plus fréquent (2 % → 10 % par area ; prison 1 % → 5 %) |
+| Pouvoir au peuple | 3 gagnants différents à chaque raffle, chacun le lot complet (3 inscrits ou moins : tous gagnent) |
+| Héritage | +5 % d'XP de session (mine classique, prison ; l'XP de spécialisation suit), multiplié avec l'Anneau du nerd |
+
+*Retiré avant la mise en ligne : « Grâce divine » (meilleures boîtes de tour).*
+
 ### Raffle *(31/10/2026, Geoffrey ; `RAFFLE` en config)*
 
 **Bulle** *(05/11/2026, Geoffrey ; `RAFFLE.popupMs`)* : au début d'un raffle, chaque joueur qui a le jeu ouvert (compte avec pseudo, pas encore inscrit) reçoit une bulle comme une invitation, **30 s**, avec « Participer » (= `!join`) ; aucune notification du téléphone. But : récompenser ceux qui jouent activement.

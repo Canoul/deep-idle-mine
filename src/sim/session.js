@@ -2,6 +2,7 @@
    Ne touche ni au DOM ni au canvas : tourne aussi bien dans le navigateur que dans Node (tests, simulate). */
 import { trackRested } from './skillfx.js';
 import { shrineOf, shrineEffects } from '../meta/shrines.js';
+import { dailyDef, dailyFx } from '../shared/daily.js';   // événement du jour (05/11)
 import { W, DT, SESSION_LEN, TOP_DIRT_ROWS, STATS, CFG, IDS, CHEST_X, CHEST_BASE, MOBS, SPAWN_X, TEAM, SHINY, FORTUNE, GEAR_RNG, GLYPHS, PRISON, SKILLS, RAID } from '../config.js';
 import { inReach, reachOf, stopAction } from './knock.js';
 import { mulberry32 } from '../core/rng.js';
@@ -45,7 +46,11 @@ export function newSession(seed, opts={}){
   };
   if(opts.raid){ G.raid = { left: null }; G.endAt = Infinity; }   // raid Cerbère (04/11) : src/sim/raid/session.js
   if(opts.prison){ G.prison = { areaMax: Math.max(0, opts.prison.areaMax | 0), profile: sanitizeProfile(opts.prison.profile), goblinMul: opts.prison.goblinMul ?? 1 }; G.endAt = Infinity; }
-  G.oreBonus = shrineEffects(G.shrines).orePoints;
+  /* événement du jour (05/11/2026, DAILY, src/shared/daily.js ; figé au lancement, prison : à chaque run) : minerais (avec la
+     Shrine d'abondance), k hole, mobs, XP */
+  G.daily = dailyDef(opts.daily) ? opts.daily : null;
+  G.dailyFx = dailyFx(G.daily);
+  G.oreBonus = shrineEffects(G.shrines).orePoints + G.dailyFx.orePoints;
   /* Escalateur (skill Logisticien) : le seau du treuil va plus vite pour tout le groupe ; le meilleur rang des mineurs
      présents au lancement compte, sans cumul (figé, comme le stuff) */
   G.winchBoost = Math.max(0, ...G.miners.map(m => m.skill.winch_speed || 0));
@@ -253,7 +258,7 @@ function shareBySegments(G, present){
     prevChest = mk.chest; prevXp = Math.floor(mk.xp);
   });
   /* bonus d'XP personnel (Anneau du nerd, m.xpPct) : sur SA part, après le partage ; seul le bonus n'est pas partagé */
-  for(const [m, v] of xp) xp.set(m, Math.floor(v * (1 + (m.xpPct || 0) / 100)));
+  for(const [m, v] of xp) xp.set(m, Math.floor(v * (1 + (m.xpPct || 0) / 100) * (G.dailyFx?.xpMul ?? 1)));   // × Héritage (05/11)
   return { bags, xp, segments };
 }
 

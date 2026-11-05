@@ -1645,6 +1645,18 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
 
 ---
 
+## 05/11/2026 — Geoffrey — Événement du jour
+- **Pour le joueur** : chaque jour (minuit à minuit, heure de Paris), un événement tiré au hasard, jamais le même deux
+  fois en 3 jours, affiché en bandeau en haut du Lobby : Mine abondante (+2 % de minerais, mine et prison), Jour férié
+  (énergie des mines −33 %, 6-12 → 4-8), Invasion (+25 % de mobs dès l'area 5), Cataclysme (les deux tours ensemble,
+  jauges pleines à 150), MI abondante (71 × 71, 10 min), Multivers (k hole × 5), Pouvoir au peuple (3 gagnants au
+  raffle), Héritage (+5 % d'XP).
+- **Décisions** : Geoffrey : la liste, figé au lancement, bandeau dans le Lobby (pas sur le Carreau pour l'instant), MI
+  71 × 71 ; « Grâce divine » retirée. Valeurs de détail proposées par Claude (voir GAME_DESIGN, Événement du jour).
+- **À suivre** : l'indicateur d'énergie basse (barre du haut) reste à 6 un jour férié ; Invasion et Mine abondante trop
+  petites pour être mesurées en simulation (vérifiées par les tests).
+- **État** : ✅ en ligne le 05/11
+
 ## 05/11/2026 — Geoffrey — Raffle : bulle de 30 s pour les joueurs en ligne
 - **Pour le joueur** : quand un raffle commence, une bulle apparaît en haut à gauche (comme une invitation) pendant
   **30 secondes** : « Raffle : <lot> à gagner ! Tirage dans 2 min », avec un bouton **Participer** (= `!join`). Seulement

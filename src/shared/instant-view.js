@@ -30,7 +30,7 @@ function minerView(G, m){
 export function createInstantViewer(G){
   return function view(){
     return {
-      mode: 'mi', tick: G.ticks, t: G.t, over: G.over, w: G.w, h: G.h,
+      mode: 'mi', tick: G.ticks, t: G.t, over: G.over, w: G.w, h: G.h, duration: G.duration,
       tiles: G.tiles.map((r, y) => Array.from(r, (v, x) => G.seen[y][x] ? enc36(v) : '0').join('')),
       seen: G.seen.map(r => r.join('')),
       feathers: [...G.feathers].filter(([k]) => G.seen[Math.floor(k / G.w)][k % G.w]), heapsLeft: G.feathers.size, ladders: ladderList(G), miners: G.miners.map(m => minerView(G, m)), stats: G.stats, log: G.log.slice(0, 50),
@@ -53,7 +53,7 @@ export function instantPos(m){
    envois (29/10/2026 : avant, ils avançaient par petits bonds à chaque envoi) */
 export function applyInstantView(v, prev = null, now = (globalThis.performance?.now() ?? 0), speed = 0){
   const G = {
-    mode: 'mi', ticks: v.tick, t: v.t, over: v.over, w: v.w, h: v.h,
+    mode: 'mi', ticks: v.tick, t: v.t, over: v.over, w: v.w, h: v.h, duration: v.duration,
     tiles: v.tiles.map(s => Uint8Array.from(s, c => parseInt(c, 36))),
     seen: (v.seen ?? v.tiles.map(s => '1'.repeat(s.length))).map(s => Uint8Array.from(s, c => c === '1' ? 1 : 0)),
     feathers: new Map(v.feathers), heapsLeft: v.heapsLeft ?? v.feathers.length, ladder: ladderRows(v), miners: v.miners, stats: v.stats, log: v.log,

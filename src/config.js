@@ -2183,6 +2183,27 @@ export const CHAT = { channels:[{ id:'general', label:'Général' }, { id:'mp', 
    everyMax après la fin du précédent, de openHour à closeHour (heure de timeZone). Tombé dans le créneau fermé : à la
    réouverture, plus 0 à lateMax. joinMs : temps pour taper command. lots : un seul tiré, chance en part de 1 (total 1) ;
    energy : points d'énergie ; rune : objet rune, qualité tirée avec les chances de l'identification. */
+/* Événement du jour (05/11/2026, Geoffrey ; src/shared/daily.js, server : ns daily) : un événement par jour (minuit à minuit,
+   heure de Paris), tiré au hasard par le serveur, chances égales ; jamais le même que les noRepeat jours d'avant (2 : pas deux
+   fois en moins de 3 jours). Effets figés au lancement d'une partie (comme les skills ; prison : à chaque run), sauf les
+   jauges du Jugement (en direct) et le raffle (au début du raffle). Affiché dans le Lobby. Valeurs provisoires.
+   orePoints : points de terrain changés en minerais (comme la Shrine d'abondance), mine classique et prison ·
+   energyMul : coût d'une mine × (arrondi, 1 au moins), le seuil pour lancer aussi · mobSpawnMul : mobs qui apparaissent
+   × plus souvent dès l'area mobFrom, mine classique · towerCap : jauge pleine du Jugement, towersTogether : les deux tours
+   ouvertes ensemble · miW / miH / miDuration : mine instantanée · kholeMul : chance du k hole (mine et prison) ·
+   raffleWinners : gagnants d'un raffle · xpMul : XP de session (mine classique, prison). */
+export const DAILY = { timeZone:'Europe/Paris', noRepeat:2, keep:10, poll:60_000,
+  list:[
+    { id:'abondante', name:'Mine abondante', icon:'⛏', desc:'+2 % de minerais dans les mines et la prison', orePoints:2 },
+    { id:'ferie', name:'Jour férié', icon:'🏖', desc:'Énergie : les mines coûtent 33 % de moins', energyMul:0.67 },
+    { id:'invasion', name:'Invasion', icon:'⚔', desc:'+25 % de mobs dans la mine à partir de l\'area 5', mobSpawnMul:1.25, mobFrom:5 },
+    { id:'cataclysme', name:'Cataclysme', icon:'🌋', desc:'Les tours de l\'Ange et du Démon peuvent s\'ouvrir en même temps ; jauges pleines à 150 au lieu de 200', towerCap:150, towersTogether:true },
+    { id:'mi', name:'MI abondante', icon:'💎', desc:'Mine instantanée deux fois plus grande (71 × 71) et deux fois plus longue', miW:71, miH:71, miDuration:600 },
+    { id:'multivers', name:'Multivers', icon:'🌀', desc:'k hole 5 fois plus fréquents', kholeMul:5 },
+    { id:'peuple', name:'Pouvoir au peuple', icon:'🎟', desc:'3 gagnants à chaque raffle', raffleWinners:3 },
+    { id:'heritage', name:'Héritage', icon:'📜', desc:'+5 % d\'XP', xpMul:1.05 },
+  ] };
+
 /* popupMs (05/11/2026, Geoffrey) : bulle « Raffle en cours » chez les joueurs qui ont le jeu ouvert (pas de notification du
    téléphone) */
 export const RAFFLE = { name:'Raffle', command:'!join', joinMs:120e3, popupMs:30e3,   /* 01/11 (Geoffrey) : avant 40 s */ everyMin:30*60e3, everyMax:60*60e3,   /* 31/10 (Geoffrey) : avant 45 à 120 min */  openHour:8, closeHour:2, lateMax:75*60e3, timeZone:'Europe/Paris',

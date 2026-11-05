@@ -7536,3 +7536,29 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 ## 05/11/2026 — Appli : activité des amis tronquée (Geoffrey)
 - `body.app #socialBody .fname small` : `white-space:normal` (ancien : `nowrap` + ellipsis). Vérifié en image (Chromium 360 px, 3 amis).
 
+## 05/11/2026 — Événement du jour (Geoffrey)
+- **Config / logique** : `DAILY` (src/config.js), `src/shared/daily.js` (`rollDaily`, `dailyCandidates` : exclut les ids des
+  `noRepeat` jours d'avant d'après les dates, `dailyFx`, `dailyOn(st, t)`, `publicDaily`, `dailyCost`). État ns **daily**
+  (clé 'state', `FREE_NS` ; store `getDaily` / `putDaily`).
+- **Serveur** (server/game/service.js) : `currentDaily()` (verrou 'daily', tirage au premier appel du jour) seulement si
+  `createGameService({ dailyEvents: true })` (server/main.js) : **coupé par défaut, donc dans tous les tests** ;
+  `dailyAt(t)`. Figé : `rec.daily` (start, tous modes ; openInstant : jour de l'ouverture), `p.daily` de la prison (jour de
+  `runStartedAt` à chaque run, `newPrisonRecord`, `runRecord` → `buildPrisonRun` → `newPrisonRun` → `newSession`). Énergie :
+  `canPay(e, dailyCost(min))`, coût `dailyCost(rollCost())`. Jugement en direct : `withJudgment(fn(j, rules))`,
+  `rules = { cap, together }` passé à refresh / addResidues / publicJudgment / paused / `residuesOn` (src/meta/judgment.js).
+  `judgment()` renvoie aussi `daily` (bandeau). API : `dailyId()`, `daily()`.
+- **Partie** : `newSession` : `G.daily`, `G.dailyFx`, `G.oreBonus += orePoints` ; k hole `× kholeMul` (world.js genArea) ;
+  mobs `spawnTimer /= mobSpawnMul` hors prison dès `mobFrom` (mobs.js spawnMobs) ; XP `× xpMul` (session.js shareBySegments).
+  MI : `newInstant(seed, { w, h, duration })`, `G.duration`, `G.endTicks` ; `buildInstant` lit `record.daily` ;
+  `instantDurationMs(speed, daily)` ; vue `duration` ; HUD, orbes et caméra lisent la taille et la durée de la partie.
+- **Raffle** : `createRaffle({ winners })` (social → `game.dailyId()`), `current.count`, `current.winners` (ancien : `winner`,
+  relu par `sanitizeRaffle`), payés une fois chacun (clé = id du raffle) ; message système `winners` (+ `winner` = le premier) ;
+  le navigateur relit l'inventaire si `winners` le contient.
+- **Lobby** : `#dailyBanner` (index.html), `src/ui/daily.js` (`renderDaily`), rempli par `pollJudgment` (src/main.js).
+- **Tests** ✅ `tests/daily.test.js` (14 : tirage 300 jours, candidats, relecture, Jour férié, Mine abondante, Multivers mesuré
+  sur 300 mines, Héritage / Invasion, Cataclysme, MI, raffle à 3 gagnants, serveur figé + lendemain, bandeau) ; energy,
+  judgment, raffle, instant, prison, khole, account-delete, store, game-service, shrine, mi : 315/318, ❌ 3 déjà rouges sur `main`
+  (energy « part de 0 », energyOfTicks, prison « tour et instance terminent la prison ») ; anticheat 154/154 ; simulation 5
+  sessions à 3 : 0 bloquée. Vu dans Chromium : bandeau du Lobby (Cataclysme imposé dans data/game.json), jauges à 150.
+- ⚠️ Pas vu en vrai : MI abondante à l'écran (HUD et caméra), raffle à 3 gagnants dans le chat. `src/ui/energy-tag.js` et
+  `#navEnergy` marquent encore « bas » sous 6 un jour férié (le serveur accepte dès 4).
