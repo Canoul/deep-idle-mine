@@ -7655,3 +7655,9 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   loot-table, inventory ; `npm run test:anticheat` 159/159. ❌ rarity « liste du créateur » : déjà rouge sur main (Casque en
   arkonite BP, glyphes…), sans rapport. ⚠️ Pas vu à l'écran.
 
+## 05/11/2026 — Geoffrey — Guilde : spé principale des membres
+- `mainSpec(progress)` (src/meta/level.js) : arbre au plus d'XP de spé (égalité : premier de SKILLS.trees), `{ tree, level }`, null
+  sans XP. `server/guild/service.js` mineView : `spec` par membre (`store.getProgress`). `src/ui/guild.js` `specChip` (classe `tr-*`)
+  dans `memberRow`, avant l'XP de guilde ; style `.gspec`. Seulement sa propre guilde (pas le dépliage d'une autre guilde).
+- **Tests** ✅ guild-service (nouveau test), guild-ui, guild, app-guild, guild-bank : 65/65.
+

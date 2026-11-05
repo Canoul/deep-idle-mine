@@ -1,6 +1,6 @@
 /* Onglet Guilde (31/10/2026, Geoffrey) : sa guilde, recherche, classement. Le serveur fait foi : chaque case et chaque bouton
    viennent de ce qu'il renvoie (actions d'un membre, demandes), et il revérifie tout. */
-import { GUILD, ITEMS, RAID } from '../config.js';
+import { GUILD, ITEMS, RAID, SKILLS } from '../config.js';
 import { RANK_LABEL, canRecruit } from '../shared/guild.js';
 import { houseState } from '../shared/guild-house.js';
 import { ask, askText, tell } from './dialog.js';
@@ -108,13 +108,18 @@ export function raidHTML(r, now = Date.now()){
   </div><div><div class="card"><h2>Cerbère</h2><img class="raidBoss" src="textures/cerbere.png" alt="Cerbère">${RAID_INTRO}</div></div></div>`;
 }
 
+/* spécialisation principale d'un membre (05/11/2026) : icône, nom de l'arbre et niveau, dans la couleur de l'arbre */
+export const specChip = s => {
+  const t = s && SKILLS.trees.find(x => x.id === s.tree);
+  return t ? `<span class="gspec tr-${esc(t.id)}" title="Spécialisation principale : ${esc(t.label)}, SP lvl ${s.level}">${t.icon ?? ''} ${esc(t.label)} ${s.level}</span>` : '';
+};
 function memberRow(m){
   const actions = Object.keys(ACTION_LABEL).filter(k => m.actions[k]);
   const box = actions.length ? `<select class="gact" data-gact data-id="${esc(m.id)}" aria-label="Actions sur ${esc(m.name)}"><option value="">Actions</option>${actions.map(k => `<option value="${k}">${ACTION_LABEL[k]}</option>`).join('')}</select>` : '';
   /* inviter dans son lobby (01/11/2026, Geoffrey) ; le serveur dit si c'est possible, comme dans Social */
   const why = m.status === 'session' ? 'En session' : m.status === 'offline' ? 'Hors ligne' : 'Déjà dans ton groupe, ou tu es en session';
   const invite = m.me ? '' : `<button data-g="lobbyInvite" data-id="${esc(m.id)}" data-name="${esc(m.name)}"${m.canInvite ? '' : ` disabled title="${why}"`}>${pxi('group')}Inviter</button>`;
-  return `<div class="frow gmem"><span class="fdot ${statusDot(m)}"></span><span class="fname"><b>${esc(m.name)}</b><small class="mut">${RANK_LABEL[m.rank]} · ${esc(statusText(m))}</small></span><span class="gxp">${fr(m.xp)} XP</span><span class="fbtns">${invite}${box}</span></div>`;
+  return `<div class="frow gmem"><span class="fdot ${statusDot(m)}"></span><span class="fname"><b>${esc(m.name)}</b><small class="mut">${RANK_LABEL[m.rank]} · ${esc(statusText(m))}</small></span>${specChip(m.spec)}<span class="gxp">${fr(m.xp)} XP</span><span class="fbtns">${invite}${box}</span></div>`;
 }
 /* bâtiments (01/11/2026) : image, niveau, bonus, matériaux du prochain niveau. opts : owned (ce que je possède), canBuild ;
    sans owned, lecture seule (fiche d'une autre guilde) */

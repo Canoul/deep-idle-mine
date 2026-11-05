@@ -1700,6 +1700,12 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
 
 ---
 
+## 05/11/2026 — Geoffrey — Guilde : spécialisation principale de chaque membre
+- **Pour le joueur** : dans l'onglet Guilde, liste des membres de sa guilde, chaque membre affiche sa spécialisation principale
+  (l'arbre où il a le plus d'XP de spé) et son niveau, dans la couleur de l'arbre : « ⛏ Mineur 12 ». Rien s'il n'a pas encore
+  d'XP de spé.
+- **État** : ✅ en ligne le 05/11
+
 ## 05/11/2026 — Geoffrey — Onglet Boutique : le Coffre affilié contre 20 émeraudes
 - **Pour le joueur** : nouvel onglet **Boutique** (touche B ; dans l'appli : famille Sac) pour acheter des objets exclusifs
   avec ses émeraudes. Pour l'instant un seul article, le **Coffre affilié** (20 émeraudes) : il arrive dans l'inventaire et
