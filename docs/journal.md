@@ -16,6 +16,11 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 05/11/2026 — Geoffrey — Appli : activité des amis en entier
+- **Pour le joueur** : dans l'appli (Social, Mes amis), l'activité d'un ami n'est plus coupée (« Dans le l… ») : elle passe
+  sur deux ou trois lignes (« En session · Tour de l'Ange (3/3) · reste 7 min »). Rien ne change sur le site.
+- **État** : ✅ en ligne le 05/11
+
 ## 05/11/2026 — Geoffrey — Sorts : 3e emplacement au niveau 15, 4e au niveau 20
 - **Pour le joueur** : les deux emplacements de sorts verrouillés s'ouvrent avec le niveau du mineur : le 3e au niveau 15,
   le 4e au niveau 20 (cadenas « Niveau 15 / 20 » avant).
