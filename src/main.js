@@ -12,6 +12,7 @@
    - mine instantanée (session mode 'mi') : inscription dans le Lobby, rappels depuis tous les onglets
      (src/ui/instant-lobby.js) ; à l'heure, le serveur l'ouvre et le navigateur bascule sur Session, où elle a son
      propre affichage (src/render/instant.js, src/ui/instant-hud.js). */
+import { parseReferralCode } from './shared/referral.js';
 import { applyRarityColors } from './ui/rarity.js';
 import { GAME, HES_COMING, PARTY, SESSION_LEN, INSTANT_MINE, STATS, SOCIAL, CAMERA, JUDGMENT, TOWER, MINE_MODES, INSTANCE, GUIDE, PRISON, ENERGY, DT, RAID, RAFFLE } from './config.js';
 import { emptyView, applyView, shownPos } from './shared/view.js';
@@ -995,6 +996,12 @@ async function refresh(waited){
 
 lobbyActivity = () => lobby.activity();   // set par activité (03/11)
 /* ---------- démarrage ---------- */
+/* parrainage (05/11/2026) : lien ?ref=CODE : le code est gardé dans ce navigateur jusqu'à ce qu'un compte soit connecté, puis
+   envoyé une fois (le serveur refuse s'il y a déjà un parrain, si c'est trop tard ou si c'est son propre code) */
+try {
+  const ref = parseReferralCode(new URLSearchParams(location.search).get('ref') ?? '');
+  if(ref) localStorage.setItem('dim.ref', ref);
+} catch {}
 await appBoot.update;                      // appli : dernière version du jeu d'abord (la page peut se recharger dedans)
 await appBoot.native;
 Object.assign(acct, await bootAccount(accountUI));
@@ -1006,6 +1013,10 @@ if(acct.offline) showNoSession();
 else {
   try { info = await gameApi.info(); await refresh(); }
   catch(e){ acct.offline = true; showNoSession(); }
+  let ref = null;
+  try { ref = localStorage.getItem('dim.ref'); } catch {}
+  if(ref && acct.account && !acct.offline) gameApi.setReferral(ref).then(r => notify.flash(`🎁 Parrain : ${r.by.name}`)).catch(() => {})
+    .finally(() => { try { localStorage.removeItem('dim.ref'); } catch {} });
 }
 startInstant();
 pollSocial();

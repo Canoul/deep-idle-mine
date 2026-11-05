@@ -22,15 +22,16 @@
      toutes les PRISON.batchMs quand il est absent (moteur fermé entre deux), arrêtée (waiting) 24 h après sa dernière
      visite ; à son retour, l'attente passe dans pausedMs et le run repart où il s'était arrêté.
    Testable seul : on lui passe un stockage, une horloge et la façon de faire tourner les parties (liveRunner). */
+import { parseReferralCode, referralCode, referralRefusal, REFERRAL_ERRORS } from '../../src/shared/referral.js';
 import crypto from 'node:crypto';
-import { GAME, INSTANCE, RAID, ENERGY, PRISON, PREFS, RESEARCH, FOCUS, FURNACE, MINE_MODES, CHAT, ITEMS, JUDGMENT, KHOLE, TOWER, WIKI, LEADERBOARD, SKILLS, AREAS, treasureItem, goblinChestItem, golbuteChestItem } from '../../src/config.js';
+import { GAME, INSTANCE, RAID, ENERGY, PRISON, PREFS, RESEARCH, FOCUS, FURNACE, MINE_MODES, CHAT, ITEMS, JUDGMENT, KHOLE, TOWER, WIKI, LEADERBOARD, SKILLS, AREAS, REFERRAL, treasureItem, goblinChestItem, golbuteChestItem } from '../../src/config.js';
 import { sanitizeTowerRecord, betterTower, sanitizeInstanceRecord, betterInstance, recordKey, splitRecordKey } from '../../src/meta/leaderboard.js';
 import { DT } from '../../src/config.js';
 import { sanitizePrefs, sanitizeOverrides, sanitizeDevSpecs, tickAt, realDurationMs, TOTAL_TICKS } from '../../src/shared/game.js';
 import { sanitizeBotPresets, isCopyPresetId, COPY_PREFIX } from '../../src/shared/dev-presets.js';
 import { prisonCompos, pickCompo } from '../../src/meta/prison-profile.js';
 import { sanitizeFocus } from '../../src/sim/focus.js';
-import { displayName } from '../../src/shared/account.js';
+import { displayName, nameKey } from '../../src/shared/account.js';
 import { createInventory, deserialize, serialize, creditSession, addItem, removeItem, countOf, sortInventory, moveSlot, isStackable } from '../../src/meta/inventory.js';
 import { sanitizeDaily, rollDaily, publicDaily, dailyFx, dailyCost, dailyOn } from '../../src/shared/daily.js';
 import { sanitizeJudgment, addResidues, refresh as refreshJudgment, publicJudgment, isOpen as towerOpen, anyOpen as anyTowerOpen, residuesOn, hasWon, markDone,
@@ -165,6 +166,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
                                     random = () => crypto.randomBytes(6).readUIntBE(0, 6) / 2**48,
                                     /* modération du chat (server/moderation/service.js, 30/10) : avertit l'auteur d'un mot interdit ; absente = rien */
                                     moderation = null,
+                                    /* comptes (parrainage, 05/11/2026) : compte par ID, par clé de pseudo ; absents = pas de parrainage d'office */
+                                    accountOf = async () => null, accountByName = async () => null,
                                     /* comptes bloqués par un joueur (server/social/service.js, 01/11) : leurs messages lui sont masqués */
                                     blockedOf = async () => new Set(),
                                     /* XP d'un joueur tout juste créditée (server/guild/service.js), une seule fois par session */
@@ -357,6 +360,43 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     const sk = await loadSkills(accountId), inv = await loadInventory(accountId), st = await loadStuff(accountId, inv);
     return { prefs: await loadPrefs(accountId), skills: { ...await frozenSkills(accountId, sk), owned: ownedGlyphs(sk, inv) },
              spells: equippedSpells(await loadSpells(accountId), await spellCtx(accountId)), look: lookOf(st), gear: gearOf(st) };
+  }
+
+  /* ---------- parrainage (05/11/2026, Geoffrey ; REFERRAL, src/shared/referral.js) ---------- */
+  let legacyId;   // compte de REFERRAL.legacyName (Canoul), cherché une fois
+  const legacyReferrer = async () => legacyId !== undefined ? legacyId
+    : (legacyId = (await accountByName(nameKey(REFERRAL.legacyName)))?.id ?? null);
+  /* fiche de parrainage d'un compte ; un compte créé avant la mise en ligne, sans fiche, est affilié d'office à Canoul */
+  async function referralOf(accountId){
+    const r = await store.getReferral(accountId);
+    if(r) return r;
+    const acc = await accountOf(accountId), leg = await legacyReferrer();
+    return acc && Number.isFinite(acc.createdAt) && acc.createdAt < REFERRAL.legacyBefore && leg && leg !== accountId
+      ? { by: leg, at: null, legacy: true } : null;
+  }
+  /* niveau atteint : le filleul et son parrain reçoivent la récompense, une seule fois (fiche done), sous les verrous des deux
+     inventaires et de la fiche ; parrain d'office (legacy) : rien pour lui (REFERRAL.legacyPaysReferrer) ; parrain disparu : rien */
+  async function settleReferral(accountId){
+    const first = await referralOf(accountId);
+    if(!first?.by || first.done) return null;
+    if(levelOf((await loadProgress(accountId)).xp).level < REFERRAL.level) return null;
+    return withLock.many(['inv:' + accountId, 'inv:' + first.by, 'ref:' + accountId], async () => {
+      const r = await referralOf(accountId);
+      if(!r?.by || r.done) return null;
+      const pay = (!r.legacy || REFERRAL.legacyPaysReferrer) && r.by !== accountId && !!(await accountOf(r.by));
+      const mine = await loadInventory(accountId);
+      await loadStuff(accountId, mine);
+      addItem(mine, REFERRAL.item, REFERRAL.qty);
+      const invs = [[accountId, JSON.parse(serialize(mine))]];
+      if(pay){
+        const theirs = await loadInventory(r.by);
+        await loadStuff(r.by, theirs);
+        addItem(theirs, REFERRAL.item, REFERRAL.qty);
+        invs.push([r.by, JSON.parse(serialize(theirs))]);
+      }
+      await store.putReferralAndInventories(accountId, { ...r, done: true, doneAt: clock(), paid: pay }, invs);
+      return { given: REFERRAL.qty, paid: pay };
+    });
   }
 
   /* ce que le navigateur voit d'une session */
@@ -977,6 +1017,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
 
     /* état du joueur : inventaire, préférences, session en cours, et résultat d'une session terminée pas encore vu */
     async state(me, waitedId = null){
+      try { await settleReferral(me.id); } catch(e){ console.error('Parrainage :', e.message); }   // récompense du parrainage au niveau voulu (05/11)
       const list = await store.sessionsOf(me.id);
       const active = list.find(s => ACTIVE.includes(s.status) && !hasLeft(s, me.id)) ?? null;
       /* bilan à montrer : seulement celui de sa DERNIÈRE session finie, s'il ne l'a pas vu (30/10/2026, Geoffrey). Avant :
@@ -2038,6 +2079,29 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     },
     /* donner une récompense du Bloc géant : sous le verrou de l'inventaire ; fn(inv) ajoute les objets et renvoie
        { player, … } (état du joueur à écrire AVEC l'inventaire) ou null (rien à donner, rien n'est écrit) */
+    /* parrainage : ce que voit le joueur (son code, son parrain, ses filleuls, s'il peut encore entrer un code) */
+    async referral(me){
+      await settleReferral(me.id).catch(e => console.error('Parrainage :', e.message));
+      const r = await referralOf(me.id), level = levelOf((await loadProgress(me.id)).xp).level;
+      const by = r?.by ? await accountOf(r.by) : null;
+      const kids = await store.referralsBy(me.id);
+      return { code: referralCode(me.id), id: me.id, level, need: REFERRAL.level, item: REFERRAL.item, qty: REFERRAL.qty,
+               by: r?.by ? { name: by ? displayName(by) : '(compte supprimé)', legacy: !!r.legacy } : null, done: !!r?.done,
+               canSet: !r?.by && level < REFERRAL.level,
+               referees: kids.length, rewarded: kids.filter(k => k.done && k.paid).length };
+    },
+    /* entrer le code d'un parrain : { code } ; refusé si déjà un parrain, trop tard, son propre code, inconnu ou un filleul */
+    async setReferral(me, body = {}){
+      const code = parseReferralCode(body.code);
+      return withLock('ref:' + me.id, async () => {
+        const rec = await referralOf(me.id), level = levelOf((await loadProgress(me.id)).xp).level;
+        const target = code ? await accountOf(code) : null;
+        const why = referralRefusal({ me: me.id, rec, level, code, target, targetRec: target ? await referralOf(code) : null });
+        if(why) fail(why, why === 'bad_code' || why === 'unknown_code' ? 400 : 409, REFERRAL_ERRORS[why]);
+        await store.putReferral(me.id, { by: code, at: clock() });
+        return { ok: true, by: { name: displayName(target), legacy: false } };
+      });
+    },
     async giantGrant(accountId, fn, key = 'Giant'){
       return withLock('inv:' + accountId, async () => {
         const inv = await loadInventory(accountId);

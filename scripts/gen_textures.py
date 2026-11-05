@@ -226,7 +226,7 @@ def main():
         rect(g, 5, 5, 2, 1, hexc('#ffffff'))
         tex[name] = g
     # gemmes (Treasure T4, 27/10) : plus grandes, deux facettes claires, liseré sombre
-    for name, base in [('gem_ruby_fine', '#e0203f'), ('gem_jade_fine', '#2fc277'), ('gem_sapphire_fine', '#2f63f0'), ('gem_topaz', '#f0a020')]:
+    for name, base in [('gem_ruby_fine', '#e0203f'), ('gem_jade_fine', '#2fc277'), ('gem_sapphire_fine', '#2f63f0'), ('gem_topaz', '#f0a020'), ('emerald', '#17d27a')]:   # emerald : parrainage (05/11)
         g = blank()
         c = hexc(base)
         rect(g, 5, 1, 6, 1, shade(c, 1.35))

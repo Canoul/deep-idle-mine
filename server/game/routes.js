@@ -60,6 +60,9 @@ export function gameRoutes(game){
     'POST /api/game/skills': async ctx => { needMe(ctx); return game.skills(ctx.me, obj(ctx.body)); },
     'POST /api/game/sets': async ctx => { needMe(ctx); return game.sets(ctx.me, obj(ctx.body)); },
     'POST /api/game/spells': async ctx => { needMe(ctx); return game.spells(ctx.me, obj(ctx.body)); },
+    /* parrainage (05/11/2026) : son code, son parrain, ses filleuls ; entrer le code d'un parrain { code } */
+    'GET /api/game/referral': async ctx => { needMe(ctx); return game.referral(ctx.me); },
+    'POST /api/game/referral': async ctx => { needMe(ctx); return game.setReferral(ctx.me, obj(ctx.body)); },
     'POST /api/game/upgrade': async ctx => { needMe(ctx); return game.upgrade(ctx.me, obj(ctx.body)); },
     'POST /api/game/inventory': async ctx => { needMe(ctx); return game.inventory(ctx.me, obj(ctx.body)); },
     'POST /api/game/recycle': async ctx => { needMe(ctx); return game.recycle(ctx.me, obj(ctx.body)); },
