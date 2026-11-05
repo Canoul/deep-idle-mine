@@ -7623,6 +7623,10 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   157/157. ❌ prison-server « une tour et une instance » déjà rouge sur main. Navigateur ✅ (fenêtre en dev).
 - ⚠️ La récompense d'un compte d'avant arrive à sa première connexion (state) ; Canoul : `legacyPaysReferrer:false`.
 
+## 05/11/2026 — Appli : « 💾 Enregistrer » dans la ligne du set (Geoffrey)
+- **Quoi** : src/ui/sets.js `setsBarHtml(current, last, busy)` : sans set correspondant à l'équipement, bouton `data-act="quickSave"` → `save` dans le dernier set équipé / enregistré (`lastId`, localStorage `dim.lastSet`, mis à jour quand l'équipement correspond à un set, à l'équipement, à l'enregistrement), sinon `create`. Sans confirmation (la pop-up `savedText` confirme). CSS dans src/ui/style.css (`body.app .setBarRow`, `.setQuick`), pas dans src/app/ (rien qui touche les applis natives).
+- **Tests** : sets (setsBarHtml) ✅, app* ✅ ; navigateur `?app` 390 px : bouton, pop-up, set créé ✅.
+
 ## 05/11/2026 — Recherche : tiers à area, tier 5 (Geoffrey)
 - `RESEARCH.tiers[].area` (T3 5, T4 7, T5 9) ; T5 `items:['Casque en arkonite BP']` (pas de `from`), cost 1000, recycle 40-60 (provisoire).
   Item `Casque en arkonite BP` (blueprint, épique, sans recette).

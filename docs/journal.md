@@ -16,6 +16,12 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 05/11/2026 — Geoffrey — Appli : bouton « 💾 Enregistrer » à côté du set
+- **Pour le joueur** : dans l'appli (Skills, Stuff, Sorts, Lobby), quand tu modifies ton équipement, la ligne du set
+  affiche « Set : x (modifié) » et un bouton **💾 Enregistrer** : un toucher enregistre tout (stuff, skills, sorts) dans le
+  dernier set équipé ou enregistré, sans passer par le menu des sets ; sans set, il en crée un. La pop-up confirme.
+- **État** : ✅ en ligne le 05/11
+
 ## 05/11/2026 — Geoffrey — Recherche : areas à atteindre et tier 5
 - **Pour le joueur** : à la Table de recherche, il faut maintenant avoir **déjà atteint une area** pour ouvrir un tier :
   area 5 pour le tier 3, area 7 pour le tier 4, area 9 pour le tier 5 (en plus des recettes, comme avant). Le tier fermé

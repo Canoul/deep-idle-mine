@@ -304,3 +304,12 @@ test('serveur : le set de l\'activité est équipé au lancement (mine, prison) 
   assert.equal(await game.autoEquip(ME.id, 'giant'), null, 'déjà équipé : rien');
   assert.equal(await game.autoEquip(ME.id, 'instance_1'), null, 'aucun set associé : rien');
 });
+
+test('appli : « 💾 Enregistrer » à côté du set quand l\'équipement ne correspond plus à aucun set (05/11)', async () => {
+  const { setsBarHtml } = await import('../src/ui/sets.js');
+  assert.doesNotMatch(setsBarHtml({ id:1, name:'barb' }), /quickSave/, 'équipement = un set : pas de bouton');
+  const mod = setsBarHtml(null, { id:2, name:'mineur' });
+  assert.match(mod, /data-act="quickSave"/); assert.match(mod, /mineur<\/b> <small class="mut">\(modifié\)/);
+  assert.match(setsBarHtml(null, null), /nouveau set/);
+  assert.match(setsBarHtml(null, { id:2, name:'x' }, true), /quickSave" disabled/);
+});
