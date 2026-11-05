@@ -23,7 +23,7 @@ export function miFrame(fx, fy, cols, rows, w, h){
 
 export function createInstantRenderer(cv){
   const ctx = cv.getContext('2d'), T = MI_TILE;
-  let cols = MI.camCols, rows = MI.camMinRows, cam = null;
+  let cols = MI.camCols, rows = MI.camMinRows, cam = null, mineH = MI.h;   // mineH : hauteur de la mine affichée (MI abondante, 05/11)
   const resize = () => { cv.width = cols * T; cv.height = rows * T; ctx.imageSmoothingEnabled = false; };
   resize();
   const TEX = loadTextures();
@@ -36,6 +36,7 @@ export function createInstantRenderer(cv){
 
   /* me : ID du compte du joueur (la caméra le suit ; son mineur est entouré et dessiné au-dessus des autres) */
   function draw(G, me){
+    mineH = G.h ?? MI.h;
     const now = performance.now();
     const mine = G.miners.find(m => m.account === me), follow = mine ?? G.miners[0];
     const [fx, fy] = follow ? shownPos(G, follow, now) : [G.w / 2, 0];
@@ -75,7 +76,7 @@ export function createInstantRenderer(cv){
   }
   /* lignes visibles : selon la hauteur de la place (src/ui/fit.js, fitInstant) */
   function setRows(n){
-    n = Math.max(MI.camMinRows, Math.min(MI.h + 2, Math.round(n)));
+    n = Math.max(MI.camMinRows, Math.min(mineH + 2, Math.round(n)));
     if(n !== rows){ rows = n; resize(); }
   }
   return { draw, setRows, get cols(){ return cols; }, get rows(){ return rows; } };

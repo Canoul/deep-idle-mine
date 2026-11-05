@@ -55,14 +55,15 @@ export function sanitizePrison(p){
     lastBatchAt: isNum(p.lastBatchAt) ? p.lastBatchAt : null,
     endedAt: isNum(p.endedAt) ? p.endedAt : null,
     totals: sanitizeTotals(p.totals), away: sanitizeTotals(p.away),
+    daily: typeof p.daily === 'string' ? p.daily : null,   // événement du jour du run en cours (05/11)
     lastAbsence: isObj(p.lastAbsence) && isNum(p.lastAbsence.from) && isNum(p.lastAbsence.to) && p.lastAbsence.from <= p.lastAbsence.to
       ? { from: p.lastAbsence.from, to: p.lastAbsence.to } : null,
   };
 }
 
 /* nouvelle prison : run 1, qui commence maintenant */
-export function newPrisonRecord({ id, account, seed, specs, areaMax = 0, profile = null, now, speed = GAME.speed }){
-  return { id, account, seed, run: 1, specs, areaMax, profile, speed, startedAt: now, runStartedAt: now, pausedMs: 0, state: 'running',
+export function newPrisonRecord({ id, account, seed, specs, areaMax = 0, profile = null, now, speed = GAME.speed, daily = null }){
+  return { id, account, seed, run: 1, specs, areaMax, profile, speed, daily, startedAt: now, runStartedAt: now, pausedMs: 0, state: 'running',
            lastSeenAt: now, lastBatchAt: null, endedAt: null, totals: noTotals(), away: noTotals(), lastAbsence: null };
 }
 
@@ -71,7 +72,7 @@ export const runId = p => `prison:${p.id}:${p.run}`;
 
 /* pseudo-session pour le moteur (server/game/live-game.js) */
 export const runRecord = p => ({
-  id: runId(p), mode: 'prison', seed: p.seed, run: p.run, specs: p.specs, areaMax: p.areaMax, profile: p.profile ?? null,
+  id: runId(p), mode: 'prison', seed: p.seed, run: p.run, specs: p.specs, areaMax: p.areaMax, profile: p.profile ?? null, daily: p.daily ?? null,
   players: [{ account: p.account, name: String(p.specs?.name ?? ''), ...(p.specs?.guild ? { guild: String(p.specs.guild) } : {}) }], leaves: [], focus: [],
 });
 
@@ -80,7 +81,7 @@ export function buildPrisonRun(rec){
   const a = rec.players[0].account, s = rec.specs || {};
   const miner = minerSpecs({ mode: 'prison', players: rec.players, prefs: { [a]: s.prefs }, looks: { [a]: s.look },
                              gear: { [a]: s.gear }, skills: { [a]: s.skills }, spells: { [a]: s.spells } })[0];
-  return newPrisonRun(rec.seed, { miner, areaMax: rec.areaMax, profile: rec.profile ?? null, run: rec.run, id: rec.id, account: a, goblinMul: prisonGoblinMul(gearScore(s.gear)) });
+  return newPrisonRun(rec.seed, { miner, areaMax: rec.areaMax, profile: rec.profile ?? null, run: rec.run, id: rec.id, account: a, goblinMul: prisonGoblinMul(gearScore(s.gear)), daily: rec.daily ?? null });
 }
 
 /* ticks de jeu joués après elapsedMs de temps réel à la vitesse speed (pas de plafond : un run peut durer plus d'une heure) */

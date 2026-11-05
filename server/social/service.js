@@ -41,6 +41,7 @@ import crypto from 'node:crypto';
 import { createChat } from '../game/chat.js';
 import { createRaffle } from './raffle.js';
 import { isRaffleJoin } from '../../src/shared/raffle.js';
+import { dailyFx } from '../../src/shared/daily.js';   // Pouvoir au peuple (05/11)
 import { RAFFLE } from '../../src/config.js';
 import { chatChannel, sanitizeChatPrefs } from '../../src/shared/chat.js';
 
@@ -119,7 +120,9 @@ export function createSocialService({ store, accounts, party, game, clock = Date
   const blockedSet = async id => new Set((await load(id)).blocked);
   const saveChat = () => serial(() => store.putGlobalChat(chat.room(GLOBAL)));
   const raffle = createRaffle({ store, clock, random, give: (id, key, lot) => game.raffleGive(id, key, lot),
-    announce: async (text, winner) => { await chatReady(); chat.system(GLOBAL, RAFFLE.name, text, CHAT.channels[0].id, winner ? { winner } : {}); await saveChat(); } });
+    winners: async () => dailyFx(await game.dailyId?.()).raffleWinners,   // Pouvoir au peuple (05/11)
+    /* winners : comptes gagnants (leur navigateur relit l'inventaire) ; winner = le premier (ancien champ, gardé) */
+    announce: async (text, winners = []) => { await chatReady(); chat.system(GLOBAL, RAFFLE.name, text, CHAT.channels[0].id, winners.length ? { winner: winners[0], winners } : {}); await saveChat(); } });
 
   /* l'ami visé : par pseudo d'abord, sinon par ID (« 7K3Q-9XHP ») */
   async function findTarget(input){

@@ -19,10 +19,11 @@ export const INSTANT_TICKS = Math.round(MI.duration/DT);
 
 /* opts.miners : liste de { name, account, color, look, carac, skills } (un joueur = un mineur), dans l'ordre de
    départ (de gauche à droite) ; opts.id : id unique de la partie (sert à ne verser le butin qu'une fois) */
+/* opts.w / opts.h / opts.duration (s de jeu) : taille et durée (MI abondante, 05/11/2026) ; sinon celles de MI */
 export function newInstant(seed, opts={}){
   seed = seed ?? ((Math.random()*2**31)|0);
   const specs = opts.miners ?? [{}];
-  const world = genInstantMine(seed);
+  const world = genInstantMine(seed, opts.w ?? MI.w, opts.h ?? MI.h);
   const cols = spawnColumns(specs.length, world.w);
   const G = {
     mode:'mi', seed, t:0, ticks:0, over:false, ...world,
@@ -31,6 +32,7 @@ export function newInstant(seed, opts={}){
     seen: world.tiles.map((r, y) => new Uint8Array(r.length).fill(y === 0 ? 1 : 0)),   // cases découvertes (surface : oui)
     log:[], stats:{ mined:0, contested:0, feathers:0, shiny:0, ladders:0 }, summary:null,
     miners: specs.map((s,i) => createInstantMiner(i, s, cols[i])),
+    duration: opts.duration ?? MI.duration, endTicks: Math.round((opts.duration ?? MI.duration)/DT),
   };
   G.id = opts.id ?? `mi-${seed}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,8)}`;
   G.roster = [...G.miners];             // tous les joueurs, y compris ceux qui sont partis ; G.miners = les présents
@@ -63,7 +65,7 @@ export function tickInstant(G){
   const n = G.miners.length;
   const order = G.miners.map((m,i) => ({ m, k:remaining(m), r:(i+G.ticks)%n })).sort((a,b) => a.k-b.k || a.r-b.r);
   for(const { m } of order) if(G.miners.includes(m)){ stepMiner(G, m); revealAround(G, m); }
-  if(G.ticks >= INSTANT_TICKS) endInstant(G);
+  if(G.ticks >= (G.endTicks ?? INSTANT_TICKS)) endInstant(G);
 }
 
 /* découverte : les cases à au plus discoverMax (au moins 1) du mineur, comme dans la mine normale en pleine lumière.
@@ -161,7 +163,7 @@ export function endInstant(G){
 /* partie complète d'un coup (tests, simulation) ; opts.onTick(G) après chaque tick */
 export function runInstant(seed, opts={}){
   const G = newInstant(seed, opts);
-  for(let i=0; i<=INSTANT_TICKS && !G.over; i++){ tickInstant(G); opts.onTick?.(G, i); }
+  for(let i=0; i<=G.endTicks && !G.over; i++){ tickInstant(G); opts.onTick?.(G, i); }
   return G;
 }
 

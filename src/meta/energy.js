@@ -24,7 +24,8 @@ export function settleIdle(e, from, now, speed){
   return tenth(e.value - before);
 }
 
-export const canPay = e => e.value >= ENERGY.cost.min;
+/* min : seuil pour lancer (Jour férié, 05/11 : dailyCost(ENERGY.cost.min, …)) */
+export const canPay = (e, min = ENERGY.cost.min) => e.value >= min;
 /* coût entier tiré dans cost.min..cost.max ; random : fonction → [0, 1[ */
 export const rollCost = random =>
   ENERGY.cost.min + Math.min(ENERGY.cost.max - ENERGY.cost.min, Math.floor(random() * (ENERGY.cost.max - ENERGY.cost.min + 1)));

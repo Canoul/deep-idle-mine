@@ -81,6 +81,7 @@ import { setupGuild } from './ui/guild.js';
 import { setupLeaderboard } from './ui/leaderboard.js';
 import { setupJudgment } from './ui/judgment.js';
 import { setupNotify } from './ui/notify.js';
+import { renderDaily } from './ui/daily.js';   // bandeau « Événement du jour » du Lobby (05/11)
 import { setupObtained } from './ui/obtained.js';
 import { recipeOf } from './meta/craft.js';
 import { createAccountUI, bootAccount, renderNavAccount } from './ui/account.js';
@@ -615,7 +616,7 @@ let judgmentTimer = null;
 async function pollJudgment(){
   clearTimeout(judgmentTimer);
   if(acct.offline || !acct.account) return;
-  try { const j = await gameApi.judgment(); judgment.set(j); town.setJudgment(j?.value?.sides ?? j?.sides); nav.badge('lobby', judgment.pending()); lobby.update({ judgment: judgment.view(), judgmentPending: judgment.pending() }); }
+  try { const j = await gameApi.judgment(); renderDaily($('dailyBanner'), (j?.value ?? j)?.daily, serverNow()); judgment.set(j); town.setJudgment(j?.value?.sides ?? j?.sides); nav.badge('lobby', judgment.pending()); lobby.update({ judgment: judgment.view(), judgmentPending: judgment.pending() }); }
   catch(e){ console.warn(e); }
   judgmentTimer = setTimeout(pollJudgment, document.hidden ? JUDGMENT.poll * 4 : JUDGMENT.poll);
 }
@@ -657,7 +658,7 @@ const gchat = setupChat({ prefix:'gchat', get: after => socialApi.chat(after), p
                           paused: () => document.hidden || gchatDock.folded, time: true,
                           show: gchatTabs.show, line: chatLine, sent: gchatTabs.sent,
                           /* gagnant d'un raffle : son lot est sur le serveur, à relire tout de suite */
-                          fresh: list => { if(list.some(m => m.winner && m.winner === acct.account?.id)) gameApi.state().then(st => { setInventory(st.inventory); setEnergy(st.energy); }).catch(() => {}); },
+                          fresh: list => { if(list.some(m => m.winner && (m.winner === acct.account?.id || m.winners?.includes(acct.account?.id)))) gameApi.state().then(st => { setInventory(st.inventory); setEnergy(st.energy); }).catch(() => {}); },
                           parse: text => { const msg = parseChatInput(text, gchatTabs.channel(), gchatTabs.target()); return msg.lobby ? { ...msg, lobby: lobby.pubContext() } : msg; } });
 /* signaler, bloquer (01/11/2026) : fiche d'un joueur, menu d'un message */
 const moderate = setupModeration({ report: body => moderationApi.report(body),
@@ -1106,8 +1107,8 @@ function frame(now){
     }
     updateEffects(ui.tab==='session' ? shown : null);
     updateSpellBars(ui.tab==='session' ? shown : null);
-    updateNavSession(rec ? shown : null, waiting, isRd() ? RAID.duration : ins ? INSTANCE.duration : tw ? TOWER.duration : mi ? INSTANT_MINE.duration : SESSION_LEN);
-    updateOrbs(shown, mi || tw || ins || rb, rb || rm ? RAID.duration : ins ? INSTANCE.duration : tw ? TOWER.duration : undefined);
+    updateNavSession(rec ? shown : null, waiting, isRd() ? RAID.duration : ins ? INSTANCE.duration : tw ? TOWER.duration : mi ? (shown?.duration ?? INSTANT_MINE.duration) : SESSION_LEN);
+    updateOrbs(shown, mi || tw || ins || rb, rb || rm ? RAID.duration : ins ? INSTANCE.duration : tw ? TOWER.duration : mi ? (shown?.duration ?? INSTANT_MINE.duration) : undefined);
     if(ui.tab==='session'){
       ins || rb ? fitCanvas($('cvIn'), $('cvInWrap')) : tw ? fitCanvas($('cvTw'), $('cvTwWrap')) : mi ? fitInstant($('cvMi'), $('cvMiWrap'), miRenderer, MI_TILE) : fitMine($('cv'), $('cvWrap'), renderer, CAMERA, TILE);   // la mine remplit la place libre
       const bm = rb ? 'raid' : ins ? 'instance' : tw ? 'tower' : mi ? 'mi' : 'mine';

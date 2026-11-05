@@ -3,6 +3,7 @@
    - répartition des inscrits en mines d'au plus MI.maxPerMine joueurs, de tailles égales ;
    - construction et rejeu de la partie depuis l'enregistrement du serveur (seed, joueurs, stuff, skills, départs). */
 import { INSTANT_MINE as MI, DT } from '../config.js';
+import { dailyFx } from './daily.js';   // MI abondante (05/11)
 import { aurasOf } from '../meta/aura.js';
 import { sanitizeLook, sanitizeGear, equippedStats, ringsOf, withRings } from '../meta/stuff.js';
 import { sanitizeSkills, skillEffects, withSkillStats, slotMastery, groupAuras } from '../meta/skills.js';
@@ -54,7 +55,7 @@ export function splitMines(list, max = MI.maxPerMine){
 }
 
 /* durée réelle d'une mine instantanée (ms) à la vitesse speed */
-export const instantDurationMs = speed => MI.duration / speed * 1000;
+export const instantDurationMs = (speed, daily = null) => (dailyFx(daily).miDuration ?? MI.duration) / speed * 1000;   // MI abondante (05/11)
 export { INSTANT_TICKS };
 export const instantTickAt = (elapsedMs, speed) => Math.max(0, Math.min(INSTANT_TICKS, Math.floor(elapsedMs / 1000 * speed / DT + 1e-9)));
 
@@ -72,7 +73,12 @@ export function instantSpecs(record){
   });
 }
 
-export const buildInstant = record => newInstant(record.seed, { miners: instantSpecs(record), id: record.id });
+/* MI abondante (événement du jour, 05/11/2026, figé à l'ouverture : record.daily) : plus grande et plus longue */
+export function buildInstant(record){
+  const fx = dailyFx(record.daily);
+  return newInstant(record.seed, { miners: instantSpecs(record), id: record.id,
+    ...(fx.miW ? { w: fx.miW, h: fx.miH } : {}), ...(fx.miDuration ? { duration: fx.miDuration } : {}) });
+}
 
 /* départs dont le moment est venu (tick ≤ ticks déjà joués) ; renvoie le nombre appliqué */
 export function applyDueInstantLeaves(G, record){

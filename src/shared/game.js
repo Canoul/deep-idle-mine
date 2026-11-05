@@ -158,6 +158,7 @@ export function buildSession(record){
     id: record.id,
     noResidues: record.residues === false,          // une tour du Jugement était ouverte au lancement (23/10)
     shrines: record.shrines,                        // shrines actifs du chef au lancement (28/10)
+    daily: record.daily,                            // événement du jour, figé au lancement (05/11)
   });
 }
 
