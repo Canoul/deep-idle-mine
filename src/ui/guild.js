@@ -10,6 +10,9 @@ import { statusDot, statusText } from './social.js';
 import { pxi } from './pxicons.js';
 import { specLabel, portraitLook, portraitAuras } from './lobby.js';
 import { drawPortrait } from '../render/portrait.js';
+import { slotHtml, tabsHtml, tabSlots } from './inventory.js';
+import { gridSize } from '../meta/inventory.js';
+import { INVENTORY } from '../config.js';
 
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
 const fr = n => Math.round(n).toLocaleString('fr-FR');
@@ -19,7 +22,35 @@ const ACTION_LABEL = { promote:'Passer officier', demote:'Rétrograder', transfe
 export const holdsPanel = el => !!el?.matches('[data-gact]');
 
 /* sous-onglets : celui de sa guilde n'existe que si on en a une */
-export const guildTabs = st => [...(st.mine ? [{ id:'mine', label:esc(st.mine.name) }, { id:'raid', label:'Raid' }] : []), { id:'search', label:'Rechercher' }, { id:'board', label:'Leaderboard' }];
+export const guildTabs = st => [...(st.mine ? [{ id:'mine', label:esc(st.mine.name) }, { id:'bank', label:'Banque' }, { id:'raid', label:'Raid' }] : []), { id:'search', label:'Rechercher' }, { id:'board', label:'Leaderboard' }];   // Banque : 05/11
+
+/* Banque de guilde (05/11/2026, Geoffrey ; server/guild/service.js, src/meta/guild-bank.js). v : vue du serveur
+   ({ bank:{ slots }, canUse, recipes, mine }) ; opts : sub ('chest' | 'craft'), btab / mtab (onglets des deux grilles).
+   En haut l'inventaire de la guilde, en bas le sien : toucher un de ses objets propose de le donner (définitif). */
+const BANK_SUBS = [['chest', 'Coffre'], ['craft', 'Craft']];
+function gridHTML(slots, tab, kind, min){
+  const inv = { slots }, n = gridSize(inv, INVENTORY.cols, min), shown = tabSlots(inv, tab, n);
+  const cells = shown.map(i => slotHtml(slots[i] || null, i, new Set())).join('');
+  return `<div class="invTabs" data-bgrid="${kind}">${tabsHtml(tab, slots.filter(Boolean).map(s => s.item), 'objet')}</div>`+
+    `<div class="invGrid gbGrid" data-bgrid="${kind}" style="--cols:${INVENTORY.cols}">${cells || '<p class="mut invNone">Rien ici.</p>'}</div>`;
+}
+const costLine = c => `<span class="${c.have >= c.need ? '' : 'mut'}">${itemIcon(c.item)}${fr(c.have)} / ${fr(c.need)} ${rname(c.item)}</span>`;
+function bankCraftHTML(v){
+  return `<div class="card"><h2>Craft de guilde</h2><p class="mut small">Avec les objets de la banque ; ce qui est fabriqué reste dans la banque.${v.canUse ? '' : ' Seuls le chef et les officiers peuvent crafter.'}</p>`+
+    v.recipes.map(r => `<div class="gbCraft"><span class="gmatName">${itemIcon(r.item)}<b>${rname(r.item)}</b>${r.qty > 1 ? ` × ${r.qty}` : ''}</span>`+
+      (v.canUse ? `<button class="small${r.max ? ' on' : ''}" data-g="bankCraft" data-item="${esc(r.item)}"${r.max ? '' : ' disabled'}>Fabriquer${r.max ? ` (${fr(r.max)} max)` : ''}</button>` : '<span></span>')+
+      `<span class="gbCost small">${r.cost.map(costLine).join(' · ')}</span></div>`).join('')+`</div>`;
+}
+export function bankHTML(v, { sub = 'chest', btab = 'all', mtab = 'all' } = {}){
+  const tabs = `<div class="gSub">${BANK_SUBS.map(([id, label]) => `<button data-gbank="${id}"${id === sub ? ' class="on"' : ''}>${label}</button>`).join('')}</div>`;
+  if(sub === 'craft') return tabs + bankCraftHTML(v);
+  const used = v.bank.slots.length;
+  return tabs + `<div class="card"><h2>Banque de guilde <span class="mut">${used} objet${used > 1 ? 's' : ''}</span></h2>`+
+      `<p class="mut small">${v.canUse ? 'Tu peux t\'en servir pour les bâtiments (bouton « De la banque ») et le craft de guilde.' : 'Seuls le chef et les officiers peuvent s\'en servir (bâtiments, craft de guilde).'}</p>`+
+      gridHTML(v.bank.slots, btab, 'bank', INVENTORY.cols * 2)+`</div>`+
+    `<div class="card"><h2>Ton inventaire</h2><p class="mut small">Touche un objet pour le donner à la banque. Un don est définitif (pas de retrait). Ni stuff, ni rune.</p>`+
+      gridHTML(v.mine.map(s => ({ item:s.item, qty:s.qty })), mtab, 'mine', INVENTORY.cols)+`</div>`;
+}
 
 /* onglet Raid (04/11/2026, Geoffrey ; spec docs/superpowers/specs/2026-11-04-raid-cerbere-design.md) : le lobby de raid de
    la guilde (server/guild/raid.js), le raid en cours. r : mine.raid de la vue du serveur ; now : heure du serveur (ms). */
@@ -89,13 +120,15 @@ function memberRow(m){
    sans owned, lecture seule (fiche d'une autre guilde) */
 const itemIcon = item => ITEMS[item]?.tex ? `<img src="textures/${ITEMS[item].tex}.png" alt="">` : '';
 const dateOf = at => new Date(at).toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit' });
-function materialRow(b, m, owned){
+function materialRow(b, m, owned, bank = null){
   const left = m.need - m.have, can = owned && left > 0 && (owned[m.item] ?? 0) > 0;
+  const inBank = bank?.[m.item] ?? 0;   // banque de guilde (05/11) : chef et officiers seulement (bank = null sinon)
   return `<div class="gmat"><span class="gmatName">${itemIcon(m.item)}${rname(m.item)}</span><span class="gxp">${fr(m.have)} / ${fr(m.need)}</span>`+
     `<div class="bar"><i style="width:${m.have / m.need * 100}%"></i></div>`+
-    (owned ? `<span class="gxp mut">Tu en as ${fr(owned[m.item] ?? 0)}</span>${left > 0 ? `<button class="small" data-g="give" data-b="${b.id}" data-item="${esc(m.item)}"${can ? '' : ' disabled'}>Donner</button>` : '<span class="gxp">Complet</span>'}` : '')+`</div>`;
+    (owned ? `<span class="gxp mut">Tu en as ${fr(owned[m.item] ?? 0)}${bank ? ` · banque ${fr(inBank)}` : ''}</span>${left > 0 ? `<span class="gmatBtns"><button class="small" data-g="give" data-b="${b.id}" data-item="${esc(m.item)}"${can ? '' : ' disabled'}>Donner</button>`+
+      (bank ? `<button class="small" data-g="bankGive" data-b="${b.id}" data-item="${esc(m.item)}"${inBank > 0 ? '' : ' disabled'}>De la banque</button>` : '')+'</span>' : '<span class="gxp">Complet</span>'}` : '')+`</div>`;
 }
-export function buildingHTML(b, { owned = null, canBuild = false } = {}){
+export function buildingHTML(b, { owned = null, canBuild = false, bank = null } = {}){
   const def = GUILD.buildings.find(x => x.id === b.id), next = def.levels[b.level];
   const done = def.levels.slice(0, b.level).map(l => l.label).join(' · ');
   const head = `<div class="gbHead"><img src="textures/${def.tex}.png" alt=""><span class="fname"><b>${esc(def.name)}</b>`+
@@ -103,7 +136,7 @@ export function buildingHTML(b, { owned = null, canBuild = false } = {}){
   if(!next) return `<div class="gbuilding">${head}</div>`;
   const state = !b.ready ? '' : canBuild ? `<div class="fbtns"><button class="on" data-g="build" data-id="${b.id}">Construire</button></div>`
     : '<p class="mut small">Tout est réuni : le chef ou un officier peut lancer la construction.</p>';
-  return `<div class="gbuilding">${head}<p class="small">Niveau ${b.level + 1} : ${esc(next.label)}</p>${b.materials.map(m => materialRow(b, m, owned)).join('')}${state}</div>`;
+  return `<div class="gbuilding">${head}<p class="small">Niveau ${b.level + 1} : ${esc(next.label)}</p>${b.materials.map(m => materialRow(b, m, owned, canBuild ? bank : null)).join('')}${state}</div>`;
 }
 /* maison de guilde (02/11/2026, Jules) : la maison au centre avance avec tous les dons, chaque annexe passe du terrain vide
    au chantier puis au bâtiment construit ; positions en % de la scène (GUILD.house), elle suit la largeur de la colonne */
@@ -124,7 +157,9 @@ export function houseHTML(rows){
 const logLine = r => {
   const name = esc(GUILD.buildings.find(b => b.id === r.building)?.name ?? '');
   return `<div class="glogRow"><span class="mut">${dateOf(r.at)}</span> <b>${esc(r.name)}</b> ${r.kind === 'build'
-    ? `a construit ${name} niveau ${r.level}` : `a donné ${fr(r.qty)} ${rname(r.item)} pour ${name}`}</div>`;
+    ? `a construit ${name} niveau ${r.level}` : r.kind === 'deposit' ? `a déposé ${fr(r.qty)} ${rname(r.item)} à la banque`
+    : r.kind === 'craft' ? `a fabriqué ${fr(r.qty)} ${rname(r.item)} avec la banque`
+    : `a donné ${fr(r.qty)} ${rname(r.item)} pour ${name}${r.fromBank ? ' (banque de guilde)' : ''}`}</div>`;
 };
 /* le journal : du plus récent au plus ancien, jamais effacé, lu par écrans (next : lignes plus anciennes à demander) */
 export const logHTML = (log, older = []) => {
@@ -158,7 +193,7 @@ export function mineHTML(g, older){
     <div class="card"><h2>Maison de guilde</h2>${houseHTML(g.buildings)}</div>
     ${levelHTML(g)}
     ${bonusHTML(g)}
-    <div class="card"><h2>Bâtiments</h2><div class="gbList">${g.buildings.map(b => buildingHTML(b, { owned:g.owned, canBuild:g.canBuild })).join('')}</div></div>
+    <div class="card"><h2>Bâtiments</h2><div class="gbList">${g.buildings.map(b => buildingHTML(b, { owned:g.owned, canBuild:g.canBuild, bank:g.bank })).join('')}</div></div>
     ${logHTML(g.log, older)}
   </div></div>`;
 }
@@ -174,7 +209,7 @@ export function mineAppHTML(g, older, { sub = 'house', building = null } = {}){
     const cur = g.buildings.find(b => b.id === building) ?? g.buildings[0];
     const chips = g.buildings.map(b => { const def = GUILD.buildings.find(x => x.id === b.id);
       return `<button data-gb="${b.id}"${b === cur ? ' class="on"' : ''}><img src="textures/${def.tex}.png" alt="">${esc(def.name)}</button>`; }).join('');
-    return tabs + `<div class="gbChips">${chips}</div>` + (cur ? buildingHTML(cur, { owned:g.owned, canBuild:g.canBuild }) : '');
+    return tabs + `<div class="gbChips">${chips}</div>` + (cur ? buildingHTML(cur, { owned:g.owned, canBuild:g.canBuild, bank:g.bank }) : '');
   }
   if(sub === 'log') return tabs + logHTML(g.log, older);
   return tabs + requestsHTML(g) + `<div class="card"><h2>Maison de guilde</h2>${houseHTML(g.buildings)}</div>` + levelHTML(g) + messageHTML(g) + bonusHTML(g);
@@ -219,6 +254,7 @@ export function setupGuild({ root, api = guildApi, onChange = () => {}, onRaid =
   let older = {}, peek = null, peekOlder = {};        // lignes anciennes du journal déjà demandées ; fiche d'une autre guilde
   /* appli (04/11/2026) : l'onglet de sa guilde (Maison, Membres, Bâtiments, Journal) et le bâtiment montré */
   let sub = 'house', bsel = null;
+  let bankView = null, bankSub = 'chest', btab = 'all', mtab = 'all';   // banque de guilde (05/11)
   const app = () => document.body.classList.contains('app');
   const shown = () => !root.hidden && !document.hidden;
   /* un contenu inchangé n'est pas réécrit : une case ouverte ne se ferme pas à chaque relecture */
@@ -228,6 +264,8 @@ export function setupGuild({ root, api = guildApi, onChange = () => {}, onRaid =
     const tabs = guildTabs(st);
     if(!tabs.some(t => t.id === tab)) tab = tabs[0].id;
     put($('guildTabs'), tabs.map(t => `<button data-gtab="${t.id}" class="${t.id === tab ? 'on' : ''}">${t.label}</button>`).join(''));
+    $('guildBankTab').hidden = tab !== 'bank';
+    if(st.mine && tab === 'bank' && bankView) put($('guildBank'), bankHTML(bankView, { sub:bankSub, btab, mtab }));
     $('guildMineTab').hidden = tab !== 'mine'; $('guildRaidTab').hidden = tab !== 'raid'; $('guildSearchTab').hidden = tab !== 'search'; $('guildBoardTab').hidden = tab !== 'board';
     if(st.mine && !holdsPanel(document.activeElement)) put($('guildMine'), app() ? mineAppHTML(st.mine, older, { sub, building:bsel }) : mineHTML(st.mine, older));
     if(st.mine && tab === 'raid'){ const el = $('guildRaid'), was = el.dataset.html; put(el, raidHTML(st.mine.raid, now())); if(el.dataset.html !== was) drawRaidPortraits(el, st.mine.raid); }
@@ -250,6 +288,7 @@ export function setupGuild({ root, api = guildApi, onChange = () => {}, onRaid =
       try { members = { id, rows:(await api.members(id)).members }; } catch { if(open === id) open = null; }
     }
     if(tab === 'board') board = (await api.board()).guilds;
+    if(tab === 'bank' && st.mine) bankView = await api.bank();
     render();
   }
   const quiet = () => refresh().catch(e => console.warn(e));
@@ -269,6 +308,33 @@ export function setupGuild({ root, api = guildApi, onChange = () => {}, onRaid =
     if(!Number.isSafeInteger(qty) || qty <= 0){ say('Quantité invalide.'); return; }
     await run(() => api.give(building, item, qty, crypto.randomUUID()));
   }
+  /* banque (05/11) : quantité demandée (toute la pile par défaut) */
+  async function askQty(text, def){
+    const t = await askText(text, String(def), { maxLength:12, ok:'Valider' });
+    if(t === null || t === undefined || t === '') return null;
+    const qty = Number(String(t).replace(/\s/g, ''));
+    if(!Number.isSafeInteger(qty) || qty <= 0){ say('Quantité invalide.'); return null; }
+    return qty;
+  }
+  async function bankDeposit(item){
+    const have = bankView?.mine.filter(s => s.item === item).reduce((n, s) => n + s.qty, 0) ?? 0;
+    if(!have) return;
+    const qty = await askQty(`Donner combien de ${item} à la banque de guilde ? Tu en as ${fr(have)}. Un don est définitif.`, have);
+    if(qty) await run(async () => { bankView = await api.bankDeposit(item, qty, crypto.randomUUID()); });
+  }
+  async function bankGive(building, item){
+    const m = st.mine?.buildings.find(b => b.id === building)?.materials.find(x => x.item === item);
+    if(!m) return;
+    const inBank = st.mine.bank?.[item] ?? 0, left = m.need - m.have;
+    const qty = await askQty(`Prendre combien de ${item} dans la banque pour ce bâtiment ? La banque en a ${fr(inBank)}, il en manque ${fr(left)}.`, Math.min(inBank, left));
+    if(qty) await run(() => api.bankGive(building, item, qty, crypto.randomUUID()));
+  }
+  async function bankCraft(item){
+    const r = bankView?.recipes.find(x => x.item === item);
+    if(!r?.max) return;
+    const n = await askQty(`Fabriquer combien de fois ${item} avec la banque ? (${fr(r.max)} au plus)`, 1);
+    if(n) await run(async () => { bankView = await api.bankCraft(item, n, crypto.randomUUID()); });
+  }
   /* lignes plus anciennes du journal affiché */
   async function more(){
     const inPeek = !!peek && tab === 'search', log = inPeek ? peek.log : st.mine.log, cur = inPeek ? peekOlder : older;
@@ -279,6 +345,8 @@ export function setupGuild({ root, api = guildApi, onChange = () => {}, onRaid =
   }
   async function action(name, id, el){
     if(name === 'give') return give(el.dataset.b, el.dataset.item);
+    if(name === 'bankGive') return bankGive(el.dataset.b, el.dataset.item);
+    if(name === 'bankCraft') return bankCraft(el.dataset.item);
     if(name === 'more') return run(more);
     if(name === 'peek') return run(async () => { peek = await api.peek(id); peekOlder = {}; });
     if(name === 'invite'){
@@ -325,6 +393,17 @@ export function setupGuild({ root, api = guildApi, onChange = () => {}, onRaid =
     await run(() => name === 'leave' ? api.leave() : api[name](id));
   }
   root.addEventListener('click', e => {
+    /* banque (05/11) : sous-onglet, onglets des grilles, objet de son inventaire à donner */
+    const bs = e.target.closest('[data-gbank]');
+    if(bs){ bankSub = bs.dataset.gbank; render(); return; }
+    const grid = e.target.closest('[data-bgrid]');
+    if(grid){
+      const t = e.target.closest('[data-tab]');
+      if(t){ if(grid.dataset.bgrid === 'bank') btab = t.dataset.tab; else mtab = t.dataset.tab; render(); return; }
+      const c = e.target.closest('.slot');
+      if(c && grid.dataset.bgrid === 'mine'){ const s = bankView?.mine[+c.dataset.i]; if(s) bankDeposit(s.item); }
+      return;
+    }
     const gs = e.target.closest('[data-gsub]'), gb = e.target.closest('[data-gb]');
     if(gs){ sub = gs.dataset.gsub; render(); return; }
     if(gb){ bsel = gb.dataset.gb; render(); return; }

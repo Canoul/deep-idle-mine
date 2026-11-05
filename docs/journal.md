@@ -1669,6 +1669,16 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
 
 ---
 
+## 05/11/2026 — Geoffrey — Banque de guilde
+- **Pour le joueur** : nouvel onglet **Banque** dans sa guilde. En haut l'inventaire de la guilde (mêmes onglets, rangé), en
+  bas le sien : toucher un objet propose de le donner à la banque avec la quantité voulue (définitif, ni stuff ni rune).
+  Le chef et les officiers s'en servent : bouton **« De la banque »** à côté de « Donner » sur les bâtiments, et sous-onglet
+  **Craft** (toutes les recettes sauf le stuff : fours, gemmes, orbes, Clé d'instance I ; sans plan ; le résultat reste dans
+  la banque). Tout passe au journal de la guilde.
+- **Décisions** : Geoffrey. Choix de Claude : pas de retrait vers un inventaire (non demandé, évite qu'un officier vide la
+  banque), seulement des objets empilables, la banque se range toute seule.
+- **État** : ✅ en ligne le 05/11
+
 ## 05/11/2026 — Geoffrey — Correctif : les auras des skills dans les bonus de session
 - **Pour le joueur** : l'Aura rassurante, l'Aura berserk et l'Aura d'efficacité s'appliquaient bien, mais ne se voyaient
   nulle part en session. Elles apparaissent maintenant dans l'icône dorée « Bonus de session » (avec les anneaux, les

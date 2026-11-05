@@ -59,7 +59,7 @@ const social = createSocialService({ store: gameStore, accounts: store, party, g
 /* signalements (01/11) : en base, et sur le salon Discord privé de modération si DIM_DISCORD_MOD_WEBHOOK est défini */
 const reports = createReportService({ store: gameStore, accounts: store, social, game, announce: createDiscordAnnouncer({ url: SERVER.discordModWebhook }) });
 /* guildes : créées après les amis (présence des membres) ; game et social ne les appellent qu'une fois le serveur lancé */
-const guild = createGuildService({ store: gameStore, accounts: store, statusOf: id => social.statusOf(id), inviteCheck: me => social.inviteCheck(me), spend: game.guildSpend, counts: game.itemCounts, game });
+const guild = createGuildService({ store: gameStore, accounts: store, statusOf: id => social.statusOf(id), inviteCheck: me => social.inviteCheck(me), spend: game.guildSpend, counts: game.itemCounts, itemsOf: id => game.stackItems(id), game });
 /* Bloc géant : salle commune, visites, scores du jour, récompenses */
 const giant = createGiantService({ store: gameStore, game, dev: GAME_SERVER.dev });
 /* He's coming : le même service, sa partie et ses fiches */

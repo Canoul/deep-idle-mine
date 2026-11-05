@@ -7587,3 +7587,23 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   `data-tiphold` n'ouvre sa bulle qu'après 450 ms sans bouger de plus de 10 px (pointermove / up / cancel annulent). Souris : survol.
 - Tests stat-help, dps, tooltip, stuff* ✅ ; vérifié dans Chromium (appui bref : rien ; appui long : bulle ; survol : bulle).
 
+
+## 05/11/2026 — Banque de guilde (Geoffrey)
+- **Logique** : `src/meta/guild-bank.js` (`sanitizeBank`, `bankable` : empilable, ni stuff ni rune, `deposit`, `take`, `bankRecipes` :
+  `inBatch` et pas de stuff, coûts tous « bankable », `bankCraft`, `seen` / `remember` : opIds, `GUILD.bank.opMemory`). Banque
+  rangée (`sortInventory`) à chaque changement. Stockage : ns **guild_bank**, clé = id de guilde (`FREE_NS`), store
+  `getGuildBank`, `putGuildBank`, `putGuildsAndBank` (une écriture pour un don de bâtiment depuis la banque).
+- **Serveur** (server/guild/service.js) : `bank(me)` (vue + recettes + `itemsOf` : objets empilables de l'inventaire,
+  `game.stackItems`), `bankDeposit` (comme `give` : réservation de l'opId dans la file, `spend` hors de la file, ajout une
+  fois par opId), `bankGive` et `bankCraft` (chef / officier : `canBuild`, dans la file). `mineView.bank` : quantités en
+  banque des matériaux des bâtiments. Routes `GET /api/guild/bank`, `POST /api/guild/bank/{deposit,give,craft}`. L'objet
+  renvoyé par `createGuildService` s'appelle maintenant `api` (les méthodes de la banque se rappellent entre elles).
+- **Navigateur** (src/ui/guild.js) : onglet `bank` (`guildTabs`), `bankHTML` (sous-onglets Coffre / Craft, grilles avec
+  `slotHtml` exporté de src/ui/inventory.js, `data-bgrid`), bouton `bankGive` dans `materialRow` (chef / officier), lignes du
+  journal `deposit`, `craft`, `fromBank`. `#guildBankTab` (index.html), styles `.gbGrid`, `.gbCraft`, `.gmatBtns`.
+- **Tests** ✅ `tests/guild-bank.test.js` (7 : logique, dépôt et opId rejoué, dépôts simultanés, craft réservé, don de bâtiment
+  ramené et rejoué, relu après redémarrage, affichage) ; guild*, app-guild, chat-guild, account-delete, store, inventory, craft :
+  161/161 (guild-ui : onglet Banque ajouté) ; anticheat 154/154. Vu dans Chromium : dépôts, craft de 2 Orbes, « De la banque »
+  sur la Forge (5 000 Diamants), journal.
+- ⚠️ Une guilde dissoute garde sa ligne guild_bank (orpheline, sans effet). Comme `give`, un plantage entre la sortie de
+  l'inventaire et l'entrée en banque perdrait le dépôt.
