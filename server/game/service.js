@@ -49,6 +49,7 @@ import { canOpen, openTreasure, openAll } from '../../src/meta/loot.js';
 import { sanitizeFurnaces, furnaceOp, advance } from '../../src/meta/furnace.js';
 import { sanitizeCrusher, crusherOp, advance as advanceCrusher, publicCrusher } from '../../src/meta/crusher.js';
 import { craft, learn, recycleStuff, spendFor } from '../../src/meta/craft.js';
+import { buy as shopBuy } from '../../src/meta/shop.js';
 import { research, recycle } from '../../src/meta/research.js';
 import { sanitizeEnergy, canPay, rollCost, spendEnergy, creditEnergy, energyOfTicks, publicEnergy, settleIdle } from '../../src/meta/energy.js';
 import { cleanTime, sanitizePrison, newPrisonRecord, runId, runRecord, prisonTickAt, publicPrison, prisonDueMs, touchPrison, isPresent, batchDue,
@@ -77,6 +78,7 @@ const fail = (code, status, message, extra) => { throw new GameError(code, statu
 const ACTIVE = ['running', 'settling'];
 const CRAFT_ERRORS = { unknown: 'Recette inconnue.', locked: 'Recette pas encore débloquée.',
                        not_enough: 'Il te manque des ingrédients.', bad_count: 'Quantité invalide.' };
+const SHOP_ERRORS = { unknown: 'Article inconnu.', bad_count: 'Quantité invalide.', not_enough: 'Il te manque des émeraudes.' };
 const LEARN_ERRORS = { no_use: 'Ce blueprint ne débloque rien pour l\'instant.', known: 'Tu connais déjà cette recette : ton blueprint est gardé.',
                        not_owned: 'Tu n\'as pas ce blueprint.' };
 const SKILL_ERRORS = { unknown: 'Skill inconnu.', other_tree: 'Tu as choisi un autre arbre : fais un reset pour changer.',
@@ -1699,6 +1701,22 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         if(r.error) fail(r.error, r.error === 'not_enough' ? 409 : 400, CRAFT_ERRORS[r.error]);
         if(!r.repeated) await store.putInventory(me.id, JSON.parse(serialize(inv)));
         return { item, count, ...(r.pieces ? { piece: r.pieces[0] } : {}), inventory: publicInventory(inv) };
+      });
+    },
+
+    /* Boutique (05/11/2026, src/meta/shop.js) : { id, count?, opId } ; émeraudes retirées et objet ajouté en une écriture,
+       une seule fois par opId */
+    async shop(me, body = {}){
+      const { id, opId } = body, count = body.count ?? 1;
+      if(typeof id !== 'string') fail('bad_item', 400, SHOP_ERRORS.unknown);
+      if(typeof opId !== 'string' || !/^[\w-]{8,64}$/.test(opId)) fail('bad_request', 400, 'Demande invalide.');
+      return withLock('inv:' + me.id, async () => {
+        const inv = await loadInventory(me.id);
+        await loadStuff(me.id, inv);
+        const r = shopBuy(inv, { id, count, opId });
+        if(r.error) fail(r.error, r.error === 'not_enough' ? 409 : 400, SHOP_ERRORS[r.error]);
+        if(!r.repeated) await store.putInventory(me.id, JSON.parse(serialize(inv)));
+        return { id, count, inventory: publicInventory(inv) };
       });
     },
 

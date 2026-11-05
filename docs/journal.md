@@ -1696,6 +1696,15 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
 
 ---
 
+## 05/11/2026 — Geoffrey — Onglet Boutique : le Coffre affilié contre 20 émeraudes
+- **Pour le joueur** : nouvel onglet **Boutique** (touche B ; dans l'appli : famille Sac) pour acheter des objets exclusifs
+  avec ses émeraudes. Pour l'instant un seul article, le **Coffre affilié** (20 émeraudes) : il arrive dans l'inventaire et
+  s'ouvre comme un treasure : 50 plumes d'ange, 50 cristaux de pleine lune, 200 poudres de rêve, 10 000 charbons, 5 barres
+  d'argent.
+- **Décisions** : « silver ingot » = la Barre d'argent ; le coffre est un objet à ouvrir (pas un contenu versé directement) ;
+  pas de bâtiment au Carreau (choix de Claude).
+- **État** : ✅ en ligne le 05/11
+
 ## 05/11/2026 — Geoffrey — Banque de guilde
 - **Pour le joueur** : nouvel onglet **Banque** dans sa guilde. En haut l'inventaire de la guilde (mêmes onglets, rangé), en
   bas le sien : toucher un objet propose de le donner à la banque avec la quantité voulue (définitif, ni stuff ni rune).

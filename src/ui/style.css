@@ -1272,3 +1272,13 @@ button.danger{color:var(--bad)}
 body.app .setBarRow{display:flex;gap:6px;align-items:stretch}
 body.app .setBarRow .setBar{flex:1 1 auto;min-width:0;width:auto}
 body.app .setQuick{flex:none;white-space:nowrap;font-size:var(--fs)}
+/* Boutique (05/11/2026, src/ui/shop.js) */
+.shopWallet{display:flex;align-items:center;gap:calc(3*var(--u));margin:0 0 calc(6*var(--u))}
+.shopWallet img,.shopPrice img,.shopList img,.shopIco img{width:calc(16*var(--u));height:calc(16*var(--u));image-rendering:pixelated;vertical-align:middle}
+.shopGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(calc(150*var(--u)),1fr));gap:calc(6*var(--u))}
+.shopHead{display:flex;align-items:center;gap:calc(5*var(--u))}
+.shopIco img{width:calc(32*var(--u));height:calc(32*var(--u))}
+.shopPrice{display:flex;align-items:center;gap:calc(2*var(--u));margin-top:calc(2*var(--u))}
+.shopList{list-style:none;margin:calc(5*var(--u)) 0;padding:0}
+.shopList li{display:flex;align-items:center;gap:calc(3*var(--u));padding:calc(1*var(--u)) 0}
+.shopBuy{width:100%}

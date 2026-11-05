@@ -14,7 +14,7 @@
      propre affichage (src/render/instant.js, src/ui/instant-hud.js). */
 import { parseReferralCode } from './shared/referral.js';
 import { applyRarityColors } from './ui/rarity.js';
-import { GAME, HES_COMING, PARTY, SESSION_LEN, INSTANT_MINE, STATS, SOCIAL, CAMERA, JUDGMENT, TOWER, MINE_MODES, INSTANCE, GUIDE, PRISON, ENERGY, DT, RAID, RAFFLE } from './config.js';
+import { GAME, HES_COMING, PARTY, SESSION_LEN, INSTANT_MINE, STATS, SOCIAL, CAMERA, JUDGMENT, TOWER, MINE_MODES, INSTANCE, GUIDE, PRISON, ENERGY, DT, RAID, RAFFLE, SHOP } from './config.js';
 import { emptyView, applyView, shownPos } from './shared/view.js';
 import { applyInstantView } from './shared/instant-view.js';
 import { createInstantRenderer, MI_TILE } from './render/instant.js';
@@ -80,6 +80,7 @@ import { setupGuide } from './ui/guide.js';
 import { setupSocial } from './ui/social.js';
 import { setupGuild } from './ui/guild.js';
 import { setupLeaderboard } from './ui/leaderboard.js';
+import { setupShop } from './ui/shop.js';
 import { setupJudgment } from './ui/judgment.js';
 import { setupNotify } from './ui/notify.js';
 import { renderDaily } from './ui/daily.js';   // bandeau « Événement du jour » du Lobby (05/11)
@@ -252,6 +253,14 @@ const upgradeUI = setupUpgrade({
 });
 
 /* craft et stuff : même principe, le serveur fait l'action et renvoie l'inventaire (et le stuff) à jour */
+/* Boutique (05/11) : le serveur retire les émeraudes et donne l'objet */
+const shop = setupShop({
+  onBuy: async id => {
+    const r = await gameApi.shop(id, newOpId());
+    setInventory(r.inventory, { [SHOP.items.find(o => o.id === id)?.item]: 1 });
+    obtained.show({ title:'Tu as obtenu', entry: SHOP.items.find(o => o.id === id)?.item, qty: r.count ?? 1 });
+  },
+});
 const craft = setupCraft({
   onCraft: async (item, count = 1) => {
     const r = await gameApi.craft(item, newOpId(), count);
@@ -956,7 +965,7 @@ function showResult(st){
 /* inventaire envoyé par le serveur ; bag : objets qui viennent d'arriver (mis en évidence) */
 function setInventory(inv, bag){
   ui.inv = { slots: inv?.slots ?? [], unlocked: inv?.unlocked ?? [] };
-  furnace.setInventory(ui.inv); crusher.setInventory(ui.inv); craft.setInventory(ui.inv); stuff.setInventory(ui.inv); research.setInventory(ui.inv); upgradeUI.setInventory(ui.inv);
+  furnace.setInventory(ui.inv); crusher.setInventory(ui.inv); craft.setInventory(ui.inv); shop.setInventory(ui.inv); stuff.setInventory(ui.inv); research.setInventory(ui.inv); upgradeUI.setInventory(ui.inv);
   spells.setInventory(ui.inv); skills?.refresh();   // skills : la case de glyphe dépend de l'inventaire
   lobby.update({});                                  // carte des instances : les clés du joueur (27/10)
   if(bag) ui.inv.slots.forEach((s, i) => { if(s && bag[s.item]) ui.fresh.add(i); });

@@ -330,6 +330,17 @@ export const LOOT = {
       ]},
     ],
   },
+  /* Coffre affilié (05/11/2026, Geoffrey) : s'achète à la Boutique (SHOP), contenu fixe */
+  'Coffre affilié': {
+    always: [
+      { item:'Plume d\'ange',          min:50,    max:50 },
+      { item:'Cristal de pleine lune', min:50,    max:50 },
+      { item:'Poudre de rêve',         min:200,   max:200 },
+      { item:'Charbon',                min:10000, max:10000 },
+      { item:'Barre d\'argent',        min:5,     max:5 },
+    ],
+    oneOf: [],
+  },
 };
 
 /* ---- Hors session : concasseur (onglet Concasseur, src/meta/crusher.js) ----
@@ -892,7 +903,7 @@ export const TEXTURES = ['dirt','grass','hellstone','clue','stone','hardstone','
   'gloves_tactical','gloves_worker','cape_naingui','straps_goblin','hood_dark','cloud_magic','belt_giant','dark_cloth','gas_vesicle','slippery_stone','dungeon_brick','minotaur','minotaur_black','moon_crystal','orb','orb_superior','pick_goblin','kilt_dark','hat_naab','sword_cardboard','key_instance_1','key_instance_2','angel_feather','angel_feathers',
   'guild_armory','guild_treasury','guild_forge',
   'guild_hall_1','guild_hall_2','guild_hall_3','guild_hall_4','guild_site','guild_wing_armory','guild_wing_treasury','guild_wing_forge','guild_lot',
-  'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon','giant_block','lucifer','lucifer_portal','lucifer_roar1','lucifer_roar2','lucifer_roar3','lucifer_roar4','lucifer_roar5','lucifer_roar6','giant_fountain','giant_torch','instance_spawner','instance_cage','goblin_king','golbute','golbute_crystal','golbute_body','golbute_body_crystal','golbute_arm','golbute_arm_crystal','golbute_rock','chest_golbute','cerbere','cerbere_rage','cerbere_anim','cerbere_rage_anim',
+  'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon','chest_affiliate','giant_block','lucifer','lucifer_portal','lucifer_roar1','lucifer_roar2','lucifer_roar3','lucifer_roar4','lucifer_roar5','lucifer_roar6','giant_fountain','giant_torch','instance_spawner','instance_cage','goblin_king','golbute','golbute_crystal','golbute_body','golbute_body_crystal','golbute_arm','golbute_arm_crystal','golbute_rock','chest_golbute','cerbere','cerbere_rage','cerbere_anim','cerbere_rage_anim',
   'brick_angel','brick_angel_hard','brick_demon','brick_demon_hard','boss_angel','boss_demon','seraph','imp',
   'crown_goblin_king','mace_goblin_king','cape_goblin_royal','furnace_gold','recipe_chitin','chest_goblin_king','nugget_silver','ingot_silver','seal_demon','emerald','shrine_abundance',
   'ingot_mithril','refined_cobalt','refined_thorium','ingot_cobalt','ingot_thorium','minotaur_leather','rotten_flesh','treasure_t4',
@@ -1204,6 +1215,7 @@ export const RARITY = {
     'Topaze':'rare', 'Saphir':'rare', 'Rubis':'rare', 'Jade':'rare', 'Saphir BP':'rare', 'Rubis BP':'rare', 'Jade BP':'rare',
     'Clé d\'instance I BP':'inhabituel', 'Cuir de minotaure':'rare', 'Sceau démoniaque':'rare',   // sceau : 05/11
     'Émeraude':'legendaire',   // parrainage (REFERRAL, 05/11)
+    'Coffre affilié':'legendaire',   // Boutique (SHOP, 05/11)
     ...Object.fromEntries(['Pioche', 'Épée'].flatMap(p => [[`${p} en mithril`, 'inhabituel'], [`${p} en mithril BP`, 'inhabituel']])),   // 05/11
     ...Object.fromEntries(['Casque', 'Plastron', 'Jambes', 'Bottes'].flatMap(p => [[`${p} en mithril`, 'inhabituel'], [`${p} en mithril BP`, 'inhabituel'],
       [`${p} en thorium`, 'rare'], [`${p} en thorium BP`, 'rare'], [`${p} en cobalt`, 'rare'], [`${p} en cobalt BP`, 'rare']])),
@@ -1530,6 +1542,11 @@ export const UPGRADE = {
    récompense au niveau `level` ; legacyPaysReferrer : leur parrain reçoit aussi sa part (true depuis le 05/11 13 h, Geoffrey ; les
    comptes récompensés avant, sans sa part, la lui versent au rattrapage : server/game/service.js settleReferral). */
 export const REFERRAL = { item:'Émeraude', qty:10, level:5, legacyName:'canoul', legacyBefore:Date.UTC(2026, 10, 5, 11, 11), legacyPaysReferrer:true };   // 05/11 13 h (Geoffrey) : Canoul reçoit aussi sa part (avant false)
+/* Boutique (05/11/2026, Geoffrey ; onglet Boutique, src/meta/shop.js, POST /api/game/shop) : objets exclusifs payés en
+   currency (les Émeraudes du parrainage). Un achat = un exemplaire de item contre price ; le serveur vérifie tout. */
+export const SHOP = { currency:'Émeraude', maxCount:99, items: [
+  { id:'affilie', item:'Coffre affilié', price:20 },
+] };
 
 export const ITEMS = {
   ...Object.fromEntries(Object.values(BLOCKS).filter(b => !b.noDrop && !b.unbreakable)
@@ -1571,6 +1588,7 @@ export const ITEMS = {
   'Clé d\'instance II': { cat:'key', tex:'key_instance_2', w:1, stack:true },           // Treasure T4 (10 %) ; ouvre l'Instance II, le Golbute (30/10)
   'Orbe supérieur': { cat:'material', tex:'orb_superior', w:1, stack:true },   // 31/10 (Geoffrey) : se crafte de base ; sans usage pour l'instant
   'Orbe': { cat:'material', tex:'orb', w:1, stack:true },
+  'Coffre affilié': { cat:'treasure', tex:'chest_affiliate', w:1, stack:true },   // 05/11 (Geoffrey) : Boutique (SHOP), contenu fixe (LOOT)
   'Émeraude': { cat:'material', tex:'emerald', w:1, stack:true },   // 05/11 (Geoffrey) : récompense du parrainage (REFERRAL) ; sans usage pour l'instant
   'Sceau démoniaque': { cat:'material', tex:'seal_demon', w:1, stack:true },   // 05/11 (Geoffrey) : 1 par joueur présent à la victoire d'une instance (INSTANCE.seal) ; sans usage pour l'instant   // 30/10 (Geoffrey) : se crafte de base ; 31/10 : sert à la Clé d'instance I
   'Cristal de pleine lune': { cat:'material', tex:'moon_crystal', w:1, stack:true },   // butin du minotaure (DUNGEON.loot) ; plus dans le Treasure T3 depuis le 01/11/2026 ; après LOOT pour garder son poids
