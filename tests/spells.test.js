@@ -4,7 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { SPELLS, STATS, IDS, BRIDGE, COMBAT } from '../src/config.js';
 const COMBAT_KNOCK = COMBAT.knock;
-import { createSpells, spellOp, learnScroll, sanitizeSpells, equippedSpells, sessionSpells, isUnlocked, publicSpells, unlockText } from '../src/meta/spells.js';
+import { createSpells, spellOp, learnScroll, sanitizeSpells, equippedSpells, sessionSpells, isUnlocked, publicSpells, unlockText, openSlotsFor } from '../src/meta/spells.js';
 import { createInventory, addItem, countOf } from '../src/meta/inventory.js';
 import { worldFrom } from './helpers.js';
 import { startAction, moveT, mineT } from '../src/sim/mineur.js';
@@ -48,13 +48,13 @@ test('équiper : débloqué, bonne spécialisation, slot ouvert ; un sort une se
   assert.deepEqual(spellOp(st, { action:'equip', spell:'dash', slot:0, opId:'op1' }, BARB5), { ok:true, repeated:false });
   st.learned.push('ulti_shen');
   spellOp(st, { action:'equip', spell:'ulti_shen', slot:1, opId:'op2' }, BARB5);
-  assert.deepEqual(st.slots, ['dash', 'ulti_shen']);
+  assert.deepEqual(st.slots, ['dash', 'ulti_shen', null, null]);
   spellOp(st, { action:'equip', spell:'dash', slot:1, opId:'op3' }, BARB5);
-  assert.deepEqual(st.slots, ['ulti_shen', 'dash'], 'déjà équipé ailleurs : échange');
+  assert.deepEqual(st.slots, ['ulti_shen', 'dash', null, null], 'déjà équipé ailleurs : échange');
   assert.deepEqual(spellOp(st, { action:'equip', spell:'dash', slot:0, opId:'op3' }, BARB5), { ok:true, repeated:true });
-  assert.deepEqual(st.slots, ['ulti_shen', 'dash']);
+  assert.deepEqual(st.slots, ['ulti_shen', 'dash', null, null]);
   spellOp(st, { action:'unequip', slot:0, opId:'op4' }, BARB5);
-  assert.deepEqual(st.slots, [null, 'dash']);
+  assert.deepEqual(st.slots, [null, 'dash', null, null]);
   assert.deepEqual(spellOp(st, { action:'bidule', slot:0, opId:'op5' }, BARB5), { error:'bad_request' });
 });
 
@@ -72,15 +72,16 @@ test('parchemin : consommé à l\'apprentissage, une seule fois ; refusé sans p
   assert.deepEqual(st.learned, ['ulti_shen']);
 });
 
-test('relecture : sorts inconnus, doublons et slots verrouillés retirés ; au lancement, seulement ce qui est encore valide', () => {
+test('relecture : sorts inconnus et doublons retirés ; au lancement, seulement ce qui est encore valide', () => {
   const st = sanitizeSpells({ learned:['ulti_shen', 'ulti_shen', 'dash', 'x'], slots:['dash', 'dash', 'illumination', 'ulti_shen'], ops:[1, 'a'] });
-  assert.deepEqual(st, { learned:['ulti_shen'], slots:['dash', null], ops:['a'] });
+  assert.deepEqual(st, { learned:['ulti_shen'], slots:['dash', null, 'illumination', 'ulti_shen'], ops:['a'] }, '4 emplacements gardés (ouverts selon le niveau, 05/11)');
+  st.slots[2] = st.slots[3] = null;
   assert.deepEqual(sanitizeSpells(null), createSpells());
   st.slots[1] = 'ulti_shen';
   assert.deepEqual(equippedSpells(st, BARB5), ['dash', 'ulti_shen']);
   assert.deepEqual(equippedSpells(st, { tree:null, spec:{ barbare:5 } }), ['ulti_shen'], 'reset des skills : Dash n\'agit plus');
   assert.deepEqual(equippedSpells(st, { tree:'barbare', spec:{ barbare:2 } }), ['ulti_shen']);
-  assert.deepEqual(sessionSpells(['dash', 'dash', 'illumination', 'ulti_shen', 'fast_learner'], 'barbare'), ['dash', 'ulti_shen']);
+  assert.deepEqual(sessionSpells(['dash', 'dash', 'illumination', 'ulti_shen', 'fast_learner', 'cleave'], 'barbare'), ['dash', 'ulti_shen', 'fast_learner', 'cleave'], 'au plus 4 (le serveur a vérifié le niveau au lancement)');
   assert.deepEqual(sessionSpells('dash', 'barbare'), []);
   const pub = publicSpells(st, BARB5);
   assert.deepEqual([pub.openSlots, pub.slotCount], [2, 4]);
@@ -495,4 +496,18 @@ test('grimoire : débloqués devant, puis parchemin en poche, autre spé, pas d�
   const st = { a:'locked', b:'other', c:'ready', d:'learn', e:'equipped', f:'locked', g:'ready' };
   const order = grimoireOrder(Object.keys(st).map(id => ({ id })), id => ({ status: st[id] })).map(s => s.id);
   assert.deepEqual(order, ['c', 'e', 'g', 'd', 'b', 'a', 'f']);
+});
+
+test('emplacements de sorts : 2 au départ, 3e au niveau 15, 4e au niveau 20 du mineur (05/11/2026)', () => {
+  assert.deepEqual(SPELLS.slotLevels, [1, 1, 15, 20]);
+  assert.deepEqual([1, 14, 15, 19, 20, 72].map(openSlotsFor), [2, 2, 3, 3, 4, 4]);
+  assert.equal(openSlotsFor(undefined), 2, 'niveau inconnu : les deux premiers');
+  const st = createSpells(); st.learned.push('ulti_shen', 'cleave', 'fast_learner');
+  assert.deepEqual(spellOp(st, { action:'equip', spell:'cleave', slot:2, opId:'l1' }, { ...BARB5, level:14 }), { error:'slot_locked' });
+  assert.ok(spellOp(st, { action:'equip', spell:'cleave', slot:2, opId:'l2' }, { ...BARB5, level:15 }).ok);
+  assert.deepEqual(spellOp(st, { action:'equip', spell:'fast_learner', slot:3, opId:'l3' }, { ...BARB5, level:19 }), { error:'slot_locked' });
+  assert.ok(spellOp(st, { action:'equip', spell:'fast_learner', slot:3, opId:'l4' }, { ...BARB5, level:20 }).ok);
+  assert.deepEqual(equippedSpells(st, { ...BARB5, level:20 }), ['cleave', 'fast_learner']);
+  assert.deepEqual(equippedSpells(st, { ...BARB5, level:15 }), ['cleave'], 'niveau trop bas : l\'emplacement fermé n\'agit pas');
+  assert.equal(publicSpells(st, { ...BARB5, level:20 }).openSlots, 4);
 });

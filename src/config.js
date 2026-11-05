@@ -741,7 +741,9 @@ export const SETS = { max:20, nameMax:24, opMemory:50,
 export const SPELLS = {
   /* par sort : icon (emoji, wiki), px (icône pixel de src/ui/pxicons.js : onglet Sorts et barre en session), short (une
      ligne sous le nom, fiche de l'onglet Sorts), desc (le détail) */
-  slots: 4, openSlots: 2,
+  /* slotLevels (05/11/2026, Geoffrey) : niveau du mineur qui ouvre chaque emplacement (3e au niveau 15, 4e au 20) ;
+     openSlots : ceux ouverts sans niveau connu (les deux premiers) */
+  slots: 4, openSlots: 2, slotLevels: [1, 1, 15, 20],
   opMemory: 50,
   list: [
     /* course de range cases au plus, à speed × sa vitesse de marche, qui suit le terrain (marche, descend, saute un bloc) ;

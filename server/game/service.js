@@ -302,8 +302,9 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
              skills: publicSkills(await loadSkills(accountId), await pointsOf(accountId)),
              spells: publicSpells(await loadSpells(accountId), await spellCtx(accountId)) };
   };
-  const spellCtx = async accountId => ({ tree: (await loadSkills(accountId)).tree,
-    spec: Object.fromEntries(Object.entries(specLevels(await loadProgress(accountId))).map(([t, s]) => [t, s.level])) });
+  const spellCtx = async accountId => { const pr = await loadProgress(accountId);
+    return { tree: (await loadSkills(accountId)).tree, level: levelOf(pr.xp).level,   // niveau du mineur : emplacements de sorts (05/11)
+             spec: Object.fromEntries(Object.entries(specLevels(pr)).map(([t, s]) => [t, s.level])) }; };
   /* Set par activité (03/11/2026, Geoffrey) : avant de lancer ou d'entrer dans une activité (mode), le set que le joueur
      lui a associé est équipé, comme avec « Équiper » ; rien s'il n'y en a pas, s'il est déjà équipé, ou si le joueur est
      en session (son équipement figé ne change pas, le prochain lancement s'en chargera). Jamais d'erreur : un set
@@ -318,7 +319,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         const skills = await loadSkills(accountId), spells = await loadSpells(accountId);
         if(equippedSet([set], stuff.worn, skills, spells.slots)) return null;
         const ctx = await spellCtx(accountId);
-        const r = applySet(sets, { id: set.id, opId: 'auto-' + crypto.randomUUID() }, { inv, stuff, skills, spells, points: await pointsOf(accountId), spec: ctx.spec });
+        const r = applySet(sets, { id: set.id, opId: 'auto-' + crypto.randomUUID() }, { inv, stuff, skills, spells, points: await pointsOf(accountId), spec: ctx.spec, level: ctx.level });
         if(r.error) return null;
         await store.putLoadout(accountId, { inventory: JSON.parse(serialize(inv)), stuff, skills, spells, sets });
         return { set: set.name, missing: r.missing };
@@ -1705,7 +1706,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         const skills = await loadSkills(me.id), spells = await loadSpells(me.id);
         if(action === 'equip'){
           const ctx = await spellCtx(me.id);
-          const r = applySet(sets, { id: body.id, opId }, { inv, stuff, skills, spells, points: await pointsOf(me.id), spec: ctx.spec });
+          const r = applySet(sets, { id: body.id, opId }, { inv, stuff, skills, spells, points: await pointsOf(me.id), spec: ctx.spec, level: ctx.level });
           if(r.error) err(r.error);
           await store.putLoadout(me.id, { inventory: JSON.parse(serialize(inv)), stuff, skills, spells, sets });
           return { ...await setsReply(me.id, sets), missing: r.missing };
