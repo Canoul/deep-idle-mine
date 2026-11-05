@@ -1624,7 +1624,7 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
   Roi Gobelin (10 Steel ingot, 3 Orbes), Cape royale du Gobelin (20 Shiny gold, 25 Cuir de minotaure). L'Arc de l'Admin et
   les 9 anneaux restent non recyclables.
 - **Décisions** : quantités de Geoffrey.
-- **État** : 🧪 sur la branche `geoffrey/recyclage-uniques` (pas en ligne)
+- **État** : ✅ en ligne le 05/11
 
 ## 04/11/2026 — Geoffrey — Énergie de départ : 100
 - **Pour le joueur** : un nouveau compte commence avec 100 d'énergie (avant 0), comme tout compte qui n'a encore jamais eu
