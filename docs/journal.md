@@ -1654,6 +1654,10 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
 
 ---
 
+## 05/11/2026 — Geoffrey — Cape inclusive : + 50 Cuirs de minotaure à la recette
+- **Pour le joueur** : la Cape inclusive demande maintenant aussi 50 Cuirs de minotaure, en plus du reste de sa recette.
+- **État** : ✅ en ligne le 05/11
+
 ## 05/11/2026 — Geoffrey — Événement du jour
 - **Pour le joueur** : chaque jour (minuit à minuit, heure de Paris), un événement tiré au hasard, jamais le même deux
   fois en 3 jours, affiché en bandeau en haut du Lobby : Mine abondante (+2 % de minerais, mine et prison), Jour férié
