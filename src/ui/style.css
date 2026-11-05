@@ -1267,3 +1267,8 @@ button.danger{color:var(--bad)}
 .craftQty{max-width:calc(120*var(--u));margin-top:calc(4*var(--u))}   /* quantité d'un craft en série (04/11/2026) */
 /* nom d'une stat avec sa bulle d'aide (05/11/2026) : souligné en pointillés ; au doigt, l'appui long ne sélectionne pas le texte */
 .statName{cursor:help;border-bottom:1px dotted var(--mut, #8a7a6a);-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+
+/* appli (05/11/2026) : « Set : x ▾ » et le bouton « 💾 Enregistrer » sur une ligne (src/ui/sets.js setsBarHtml) */
+body.app .setBarRow{display:flex;gap:6px;align-items:stretch}
+body.app .setBarRow .setBar{flex:1 1 auto;min-width:0;width:auto}
+body.app .setQuick{flex:none;white-space:nowrap;font-size:var(--fs)}

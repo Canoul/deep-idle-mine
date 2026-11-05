@@ -38,8 +38,11 @@ export function activityLineHtml({ list = [], byActivity = {} }, mode, { busy = 
 
 /* appli (03/11/2026, spec docs/superpowers/specs/2026-11-03-appli-perso-sets-stuff-design.md) : une ligne « Set : x ▾ »
    dans les hôtes, et le menu qui monte du bas (#setsSheet) ; mêmes data-act que le panneau du site, plus sheet / close / more */
-export const setsBarHtml = current =>
-  `<button class="setBar" data-act="sheet"><span>Set : ${current ? `<b>${esc(current.name)}</b>` : '<span class="mut">aucun</span>'}</span><span>▾</span></button>`;
+/* last (05/11, Geoffrey : « galère pour enregistrer les modifs ») : le dernier set équipé ou enregistré ; si l'équipement
+   actuel ne correspond plus à aucun set, un bouton l'y enregistre en un toucher (sans set : il en crée un) */
+export const setsBarHtml = (current, last = null, busy = false) =>
+  `<div class="setBarRow"><button class="setBar" data-act="sheet"><span>Set : ${current ? `<b>${esc(current.name)}</b>` : last ? `<b>${esc(last.name)}</b> <small class="mut">(modifié)</small>` : '<span class="mut">aucun</span>'}</span><span>▾</span></button>`+
+  (current ? '' : `<button class="setQuick on" data-act="quickSave"${busy ? ' disabled' : ''} title="${last ? `Enregistrer ton équipement actuel dans « ${esc(last.name)} »` : 'Enregistrer ton équipement actuel dans un nouveau set'}">💾 Enregistrer</button>`)+`</div>`;
 /* more : l'id du set dont « ⋯ » est déplié (Enregistrer, Renommer, Supprimer) */
 export function setsSheetHtml({ list = [], max = 20 }, { current = null, locked = false, busy = false, msg = '', more = null } = {}){
   const off = busy ? ' disabled' : '';
@@ -67,6 +70,10 @@ export function equippedText(name, missing = 0, inSession = false){
    onDone(texte) : la pop-up de confirmation */
 export function setupSets({ onOp, onLoadout = () => {}, inSession = () => false, current = () => null, onDone = () => {}, activity = () => null }){
   let st = { list:[], max:20 }, busy = false, msg = '', sheet = false, more = null;
+  /* dernier set équipé ou enregistré (bouton « Enregistrer » de l'appli) ; gardé dans ce navigateur */
+  let lastId = null;
+  try { lastId = +localStorage.getItem('dim.lastSet') || null; } catch {}
+  const setLast = id => { lastId = id; try { localStorage.setItem('dim.lastSet', String(id ?? '')); } catch {} };
   const $ = id => document.getElementById(id);
   const app = () => document.body.classList.contains('app');
   /* menu de l'appli : créé une fois ; un toucher sur le fond (ou le bouton retour d'Android, src/app/device.js) le ferme */
@@ -78,7 +85,9 @@ export function setupSets({ onOp, onLoadout = () => {}, inSession = () => false,
 
   function render(){
     const c = current(), cur = c ? equippedSet(st.list, c.worn, c.skills, c.spells) : null;
-    const html = app() ? setsBarHtml(cur) : setsHtml(st, { locked:inSession(), busy, msg, current:cur });
+    if(cur && cur.id !== lastId) setLast(cur.id);
+    const last = st.list.find(s => s.id === lastId) ?? null;
+    const html = app() ? setsBarHtml(cur, last, busy) : setsHtml(st, { locked:inSession(), busy, msg, current:cur });
     const line = st.list.length ? activityLineHtml(st, activity(), { busy }) : '';   // Lobby seulement (03/11)
     for(const h of HOSTS){ const el = $(h), x = h === 'setsLobby' ? line + html : html; if(el && el._html !== x && !el.contains(document.activeElement?.closest?.('select'))){ el.innerHTML = x; el._html = x; } }
     if(!app()) return;
@@ -102,9 +111,15 @@ export function setupSets({ onOp, onLoadout = () => {}, inSession = () => false,
     if(act === 'close') return close();
     if(act === 'more'){ more = more === id ? null : id; return render(); }
     if(act === 'create') return send({ action:'create' }, (r, before) => savedText(r.sets.list.find(s => !before.some(o => o.id === s.id))?.name ?? 'ton nouveau set'));
+    /* appli : « 💾 Enregistrer » : dans le dernier set équipé, sinon un nouveau set (un toucher, la pop-up confirme) */
+    if(act === 'quickSave'){
+      const last = st.list.find(s => s.id === lastId);
+      if(last) return send({ action:'save', id:last.id }, () => savedText(last.name));
+      return send({ action:'create' }, (r, before) => { const n = r.sets.list.find(s => !before.some(o => o.id === s.id)); if(n) setLast(n.id); return savedText(n?.name ?? 'ton nouveau set'); });
+    }
     if(!set) return;
-    if(act === 'equip') send({ action:'equip', id }, r => { sheet = false; more = null; return equippedText(set.name, r.missing, inSession()); });
-    else if(act === 'save'){ if(await ask(`Remplacer « ${set.name} » par ton équipement actuel ?`, { ok:'Enregistrer' })) send({ action:'save', id }, () => savedText(set.name)); }
+    if(act === 'equip') send({ action:'equip', id }, r => { sheet = false; more = null; setLast(id); return equippedText(set.name, r.missing, inSession()); });
+    else if(act === 'save'){ if(await ask(`Remplacer « ${set.name} » par ton équipement actuel ?`, { ok:'Enregistrer' })) send({ action:'save', id }, () => { setLast(id); return savedText(set.name); }); }
     else if(act === 'rename'){ const name = await askText('Nom du set', set.name, { ok:'Renommer', maxLength:24 }); if(name != null && name.trim()) send({ action:'rename', id, name }); }
     else if(act === 'delete'){ if(await ask(`Supprimer « ${set.name} » ?`, { ok:'Supprimer', danger:true })) send({ action:'delete', id }); }
   }
