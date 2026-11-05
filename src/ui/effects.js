@@ -1,12 +1,13 @@
 /* États du mineur en haut à droite de la mine (28/10/2026, Geoffrey ; EFFECTS en config, src/sim/effects.js).
    Une rangée d'icônes : contrôles et debuffs (bordure rouge), buffs (verte), puis UNE icône « Bonus de session »
-   (dorée) dont la bulle liste anneaux, shrines, Escalateur et couronne. Sous chaque icône : secondes restantes ou
+   (dorée) dont la bulle liste anneaux, shrines, Escalateur et auras des skills. Sous chaque icône : secondes restantes ou
    nombre de stacks. Bulle au survol / toucher (data-tip, src/ui/tooltip.js).
    Les icônes sont des nœuds gardés d'une image à l'autre (une par état) : la bulle ouverte ne saute pas quand le
    temps restant change. effectTip / bonusTip sont purs (testés). */
 import { EFFECTS, SHRINES, CFG, MOBS, COMBAT, INSTANCE, GLYPHS, GOBLIN_KING, HES_COMING, RAID } from '../config.js';
 import { SPELL } from '../meta/spells.js';
 import { ringLines } from '../meta/stuff.js';
+import { NODES, nodeText } from '../meta/skills.js';   // auras des skills (05/11)
 import { pxi } from './pxicons.js';
 
 const pct = v => `${Math.round(v * 1000) / 10} %`.replace('.', ',');
@@ -75,6 +76,7 @@ export function bonusLine(b){
     case 'ring': return `${b.src}${b.value ? ` +${b.value}` : ''} : ${ringLines(b.src, b.value).map(l => l.replace(/^Groupe · /, '')).join(', ')}`;
     case 'shrine': { const s = SHRINES.list[b.src]; return s ? `${s.name} : ${s.desc}` : ''; }
     case 'escalator': return `Escalateur : seau du treuil +${pct(b.value)}`;
+    case 'aura': { const n = NODES[b.src]; return n ? `${n.name} : ${nodeText(b.src, 1)}` : ''; }   // auras des skills (05/11)
   }
   return '';
 }

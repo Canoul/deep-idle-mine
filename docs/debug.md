@@ -7572,3 +7572,12 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   (server/game/service.js, toutes instances), ligne dans `instanceLootTable`, texture `seal_demon`. Versement par `creditSession` : une fois.
 - Tests : instance-server (nouveau), rarity, golbute*, loot-table, inventory, wiki* ✅ ; anticheat ✅.
 
+
+## 05/11/2026 — Auras des skills affichées dans les bonus de session (Geoffrey)
+- **Cause** : les auras (nœuds `aura` des arbres v2, `groupAuras`) sont ajoutées aux stats au lancement (src/shared/game.js),
+  mais `sessionBonuses` (src/sim/effects.js) ne listait que anneaux, shrines, Escalateur.
+- **Correctif** : `sessionBonuses` ajoute `{ id:'aura', src:<nœud> }` pour chaque nœud à aura appris par un joueur de
+  `G.roster` (partis compris : figé au lancement) ; MI : le mineur seul (chacun pour soi). `EFFECTS.list.aura` (session),
+  `bonusLine` (src/ui/effects.js) : « nom : nodeText ». Vues mine, tours, instances, MI (déjà `bonus: sessionBonuses`).
+- **Tests** ✅ `tests/effects.test.js` (groupe, parti, MI, texte) ; effects, skills, view, tower : 133/133. Vérifié sur une vraie
+  session construite (`buildSession`, logisticien arbre complet) : l'aura est dans la vue envoyée au navigateur.
