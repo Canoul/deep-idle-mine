@@ -1258,3 +1258,5 @@ button.danger{color:var(--bad)}
 .banBar{position:fixed;top:0;left:0;right:0;z-index:9999;padding:calc(3*var(--u)) calc(6*var(--u));background:#5a0f0f;color:#ffd9d9;
   text-align:center;font-size:calc(9*var(--u));box-shadow:0 calc(var(--u)) 0 #2a0505}
 .craftQty{max-width:calc(120*var(--u));margin-top:calc(4*var(--u))}   /* quantité d'un craft en série (04/11/2026) */
+/* nom d'une stat avec sa bulle d'aide (05/11/2026) : souligné en pointillés ; au doigt, l'appui long ne sélectionne pas le texte */
+.statName{cursor:help;border-bottom:1px dotted var(--mut, #8a7a6a);-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}

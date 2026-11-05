@@ -13,10 +13,11 @@ test('chaque stat affichée a une explication', () => {
   for(const k of keys) assert.ok(STAT_HELP[k]?.length > 10, k);
 });
 
-test('carte des stats : une bulle « ? » par stat, plus le gear score et le DPS', () => {
+test('carte des stats : la bulle est sur le nom de chaque stat (souris dessus, doigt maintenu), plus le gear score et le DPS ; plus de bouton « ? »', () => {
   const html = statsHTML({}, {}), rows = minerStats({}, {});
-  const tips = html.match(/class="qhelp"/g) ?? [];
+  const tips = html.match(/class="statName"[^>]*data-tiphold="1"/g) ?? [];
   assert.equal(tips.length, rows.length + 2);
+  assert.ok(!html.includes('class="qhelp"'), 'plus de bouton « ? » (05/11)');
   assert.ok(html.includes('data-tipkind="help"'));
   const esc = s => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   assert.ok(html.includes(esc(STAT_HELP.tenacity).slice(0, 40)), 'texte de la ténacité');

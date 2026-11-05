@@ -16,6 +16,12 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 05/11/2026 — Geoffrey — Stats du mineur : la bulle sur le nom de la stat
+- **Pour le joueur** : plus de bouton « ? » à chaque ligne. L'explication d'une stat s'affiche en **posant la souris sur son
+  nom** (souligné en pointillés), ou en **maintenant le doigt dessus** sur téléphone (un appui bref ou un défilement ne
+  l'ouvre pas). Pareil pour le Gear score et le DPS.
+- **État** : ✅ en ligne le 05/11
+
 ## 05/11/2026 — Geoffrey — Sceau démoniaque
 - **Pour le joueur** : nouvel objet rare, le **Sceau démoniaque**. Chaque boss d'instance vaincu (roi gobelin, niveaux 1 et 2,
   et Golbute) en donne **1 à chaque joueur encore là**, en plus de son coffre. Rien en cas d'échec ni pour un joueur parti.
