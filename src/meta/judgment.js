@@ -40,17 +40,23 @@ export function sanitizeJudgment(raw){
 }
 
 export const isOpen = (j, side, now) => now < j[side].openUntil;
+/* règles du jour (événement Cataclysme, 05/11/2026, src/shared/daily.js) : rules = { cap, together } ; cap : jauge pleine
+   (sinon JUDGMENT.cap), together : les deux tours peuvent être ouvertes ensemble (aucune pause) */
+const capOf = rules => rules?.cap ?? JUDGMENT.cap;
 /* une des deux tours est-elle ouverte ? (23/10 : plus de résidus dans les mines lancées pendant une ouverture) */
 export const anyOpen = (j, now) => SIDES.some(s => isOpen(j, s, now));
+/* une mine lancée maintenant a-t-elle des résidus ? Pas pendant une ouverture, sauf un jour où les deux tours peuvent être
+   ouvertes ensemble (Cataclysme : les deux jauges se remplissent) */
+export const residuesOn = (j, now, rules) => !!rules?.together || !anyOpen(j, now);
 /* la jauge de ce camp est en pause : l'AUTRE tour est ouverte (23/10, Geoffrey) */
-export const paused = (j, side, now) => SIDES.some(s => s !== side && isOpen(j, s, now));
+export const paused = (j, side, now, rules) => !rules?.together && SIDES.some(s => s !== side && isOpen(j, s, now));
 
 /* ouvre les tours dont la jauge est pleine et qui sont fermées ; true si quelque chose a changé */
-export function refresh(j, now){
+export function refresh(j, now, rules){
   let changed = false;
   for(const s of SIDES){
     const g = j[s];
-    if(g.count >= JUDGMENT.cap && !isOpen(j, s, now) && !paused(j, s, now)){   // une tour à la fois (23/10)
+    if(g.count >= capOf(rules) && !isOpen(j, s, now) && !paused(j, s, now, rules)){   // une tour à la fois (23/10)
       g.count = 0; g.opening++; g.openUntil = now + OPEN_MS;
       j.done[s] = { opening: g.opening, accounts: [] };
       changed = true;
@@ -60,24 +66,24 @@ export function refresh(j, now){
 }
 
 /* résidus d'un sac versé à un joueur (bag : { objet: quantité }) ; true si une jauge a bougé */
-export function addResidues(j, bag, now){
+export function addResidues(j, bag, now, rules){
   let changed = false;
   for(const s of SIDES){
     const n = bag?.[JUDGMENT.sides[s].item];
-    if(!Number.isSafeInteger(n) || n <= 0 || paused(j, s, now)) continue;   // l'autre tour est ouverte : ignorés
+    if(!Number.isSafeInteger(n) || n <= 0 || paused(j, s, now, rules)) continue;   // l'autre tour est ouverte : ignorés
     const g = j[s], before = g.count;
-    g.count = Math.min(JUDGMENT.cap, g.count + n);
+    g.count = Math.min(capOf(rules), g.count + n);
     if(g.count !== before) changed = true;
   }
-  return refresh(j, now) || changed;
+  return refresh(j, now, rules) || changed;
 }
 
 /* administration (25/10/2026, Geoffrey) : règle la jauge d'un camp à count (0 à cap), même en pause ; pleine, la tour
    ouvre comme d'habitude (refresh). false si le camp ou la valeur est invalide (rien ne change). */
-export function setCount(j, side, count, now){
+export function setCount(j, side, count, now, rules){
   if(!SIDES.includes(side) || !Number.isSafeInteger(count) || count < 0 || count > JUDGMENT.cap) return false;
   j[side].count = count;
-  refresh(j, now);
+  refresh(j, now, rules);
   return true;
 }
 
@@ -98,10 +104,10 @@ export function markDone(j, side, account, level = 1){
 }
 
 /* ce que voit un joueur (onglet Jugement, lobby) */
-export function publicJudgment(j, now, account){
+export function publicJudgment(j, now, account, rules){
   const sides = {};
-  for(const s of SIDES) sides[s] = { count: j[s].count, cap: JUDGMENT.cap, open: isOpen(j, s, now), openUntil: j[s].openUntil,
+  for(const s of SIDES) sides[s] = { count: Math.min(j[s].count, capOf(rules)), cap: capOf(rules), open: isOpen(j, s, now), openUntil: j[s].openUntil,
                                      done: !!account && hasWon(j, s, account),
-                                     doneLevels: account ? doneLevels(j, s, account) : [], paused: paused(j, s, now) };
-  return { sides, now, residues: !anyOpen(j, now) };
+                                     doneLevels: account ? doneLevels(j, s, account) : [], paused: paused(j, s, now, rules) };
+  return { sides, now, residues: residuesOn(j, now, rules) };
 }

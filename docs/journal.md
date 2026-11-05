@@ -25,6 +25,34 @@ Modèle d'entrée :
   280 000 PV, 3/40 victoires de l'équipe de référence (avant 2/40), combat ≈ 9 min.
 - **État** : 🧪 sur la branche `geoffrey/cerbere-dynamique` (pas en ligne)
 
+## 05/11/2026 — Geoffrey — Appli : activité des amis en entier
+- **Pour le joueur** : dans l'appli (Social, Mes amis), l'activité d'un ami n'est plus coupée (« Dans le l… ») : elle passe
+  sur deux ou trois lignes (« En session · Tour de l'Ange (3/3) · reste 7 min »). Rien ne change sur le site.
+- **État** : ✅ en ligne le 05/11
+
+## 05/11/2026 — Geoffrey — Sorts : 3e emplacement au niveau 15, 4e au niveau 20
+- **Pour le joueur** : les deux emplacements de sorts verrouillés s'ouvrent avec le niveau du mineur : le 3e au niveau 15,
+  le 4e au niveau 20 (cadenas « Niveau 15 / 20 » avant).
+
+## 05/11/2026 — Geoffrey — Appli : plus de place pour les recettes du four
+- **Pour le joueur** : dans l'appli, la fenêtre « Recettes » du four n'affiche plus le paragraphe qui explique ce que fait
+  le four : la liste des recettes prend toute la place et se fait défiler plus facilement. Rien ne change sur le site.
+- **État** : ✅ en ligne le 05/11
+
+## 05/11/2026 — Geoffrey — Épée et Pioche en mithril
+- **Pour le joueur** : deux nouvelles armes. **Épée en mithril** : 21 dégâts (+16 sur les mains nues ; acier 18,5), avec
+  30 Mithril ingot, 10 Orbe et 30 Steel ingot. **Pioche en mithril** : +0,7 de vitesse de minage (acier +0,58), avec 40
+  Mithril ingot, 100 Pierre glissante et 30 Steel ingot. Plans : dans les Treasure T4 (1 % chacun) et à la Table de
+  recherche (tier 4, première étape, avec l'armure en mithril).
+- **Décisions** : valeurs de Geoffrey. Choix de Claude, à valider : où trouver les plans (comme l'armure en mithril).
+- **État** : ✅ en ligne le 05/11
+
+## 05/11/2026 — Geoffrey — Stats du mineur : une bulle « ? » par stat
+- **Pour le joueur** : dans l'onglet Stuff (site et appli), chaque ligne de « Stats du mineur » a une bulle « ? » qui
+  explique ce que fait la stat (aussi le Gear score et le DPS). Les textes sont ceux du wiki ; ceux de la ténacité et de
+  la résistance au recul sont mis à jour (boss, Fear de Lucifer, pièces qui en donnent).
+- **État** : ✅ en ligne le 05/11
+
 ## 04/11/2026 — Jules — Concasseur : 16 cases d'entrée et 16 de sortie
 - **Pour le joueur** : le concasseur a deux fois plus de place : 16 cases d'entrée (4 rangées de 4) et 16 cases de
   sortie (avant : 8 et 8). Ce qui était déjà posé reste à sa place.
@@ -1625,6 +1653,34 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
 - **État** : ✅ en ligne le 29/10
 
 ---
+
+## 05/11/2026 — Geoffrey — Événement du jour
+- **Pour le joueur** : chaque jour (minuit à minuit, heure de Paris), un événement tiré au hasard, jamais le même deux
+  fois en 3 jours, affiché en bandeau en haut du Lobby : Mine abondante (+2 % de minerais, mine et prison), Jour férié
+  (énergie des mines −33 %, 6-12 → 4-8), Invasion (+25 % de mobs dès l'area 5), Cataclysme (les deux tours ensemble,
+  jauges pleines à 150), MI abondante (71 × 71, 10 min), Multivers (k hole × 5), Pouvoir au peuple (3 gagnants au
+  raffle), Héritage (+5 % d'XP).
+- **Décisions** : Geoffrey : la liste, figé au lancement, bandeau dans le Lobby (pas sur le Carreau pour l'instant), MI
+  71 × 71 ; « Grâce divine » retirée. Valeurs de détail proposées par Claude (voir GAME_DESIGN, Événement du jour).
+- **À suivre** : l'indicateur d'énergie basse (barre du haut) reste à 6 un jour férié ; Invasion et Mine abondante trop
+  petites pour être mesurées en simulation (vérifiées par les tests).
+- **État** : ✅ en ligne le 05/11
+
+## 05/11/2026 — Geoffrey — Raffle : bulle de 30 s pour les joueurs en ligne
+- **Pour le joueur** : quand un raffle commence, une bulle apparaît en haut à gauche (comme une invitation) pendant
+  **30 secondes** : « Raffle : <lot> à gagner ! Tirage dans 2 min », avec un bouton **Participer** (= `!join`). Seulement
+  pour qui a le jeu ouvert, pas sur l'écran de verrouillage du téléphone. Elle ne revient pas une fois fermée, et part
+  dès qu'on participe.
+- **État** : ✅ en ligne le 05/11
+
+## 05/11/2026 — Geoffrey — Recyclage des pièces uniques du Golbute et du Roi Gobelin
+- **Pour le joueur** : 7 pièces qui ne se recyclaient pas rendent maintenant des matériaux fixes : Némésis du Golbute
+  (10 Thorium ingot, 10 Cobalt ingot), Torse de Gollex (20 Mithril ingot), Jambières du Golbute (18 Mithril ingot), Âme du
+  Golbute (2 Orbes supérieurs), Couronne du Roi Gobelin (1 Rubis, 1 Jade et 1 Saphir inférieurs, 10 Steel ingot), Masse du
+  Roi Gobelin (10 Steel ingot, 3 Orbes), Cape royale du Gobelin (20 Shiny gold, 25 Cuir de minotaure). L'Arc de l'Admin et
+  les 9 anneaux restent non recyclables.
+- **Décisions** : quantités de Geoffrey.
+- **État** : ✅ en ligne le 05/11
 
 ## 04/11/2026 — Geoffrey — Énergie de départ : 100
 - **Pour le joueur** : un nouveau compte commence avec 100 d'énergie (avant 0), comme tout compte qui n'a encore jamais eu

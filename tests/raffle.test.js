@@ -14,11 +14,11 @@ import { fakeLive } from './helpers.js';
 const paris = (d, h, m = 0) => Date.UTC(2026, 9, d, h - 1, m);   // heure d'hiver depuis le 25/10/2026 : UTC+1
 const ZOE = { id:'AAAA1111', name:'Zoe', guest:false }, MAX = { id:'BBBB2222', name:'Max', guest:false }, GUEST = { id:'CCCC3333', name:null, guest:true };
 
-function setup({ random = () => 0, store = createMemoryGameStore(), start = paris(28, 12) } = {}){
+function setup({ random = () => 0, store = createMemoryGameStore(), start = paris(28, 12), party = null } = {}){
   let now = start;
   const clock = () => now;
   const game = createGameService({ store, liveRunner:fakeLive(rec => ({ id:rec.id, shares:[] })), clock, randomSeed:() => 7 });
-  const social = createSocialService({ store, game, clock, random, party:null,
+  const social = createSocialService({ store, game, clock, random, party,
     accounts:{ getAccount: async id => [ZOE, MAX, GUEST].find(a => a.id === id) ?? null, findAccountByName: async () => null } });
   /* lance un raffle : premier passage = heure du prochain, puis on y va */
   const open = async () => { await social.raffleTick(); now = (await store.getRaffle()).nextAt; await social.raffleTick(); };
@@ -178,4 +178,21 @@ test('chat : message du jeu gardé après relecture, !join seulement écrit tel 
 test('affichage : un message du jeu sans préfixe de canal, texte échappé', () => {
   const html = chatLine({ system:true, at:0, text:'<b>x</b>', channel:'general', name:'Raffle' }, 'me');
   assert.ok(html.includes('chSystem') && html.includes('&lt;b&gt;') && !html.includes('[Général]'));
+});
+
+test('bulle du raffle (05/11) : l\'état social donne le raffle en cours, inscrit ou pas ; rien sans raffle, après la fin, ni pour un invité', async () => {
+  const t = setup({ party: { groupOf: () => null, invitesOf: () => [] } });   // l'état social lit les groupes
+  assert.equal((await t.social.state(ZOE)).raffle, null, 'pas de raffle');
+  await t.open();
+  const r = (await t.social.state(ZOE)).raffle;
+  assert.ok(r && r.id.startsWith('raffle:'), JSON.stringify(r));
+  assert.equal(r.lot, lotLabel(rollLot(() => 0)));
+  assert.equal(r.joined, false);
+  assert.equal(r.endsAt, t.clock() + RAFFLE.joinMs);
+  assert.equal((await t.social.state(GUEST)).raffle, null, 'un invité ne peut pas participer');
+  await t.social.chatPost(ZOE, { text: RAFFLE.command });
+  assert.equal((await t.social.state(ZOE)).raffle.joined, true, 'inscrit : plus de bulle');
+  assert.equal((await t.social.state(MAX)).raffle.joined, false);
+  t.advance(RAFFLE.joinMs);
+  assert.equal((await t.social.state(MAX)).raffle, null, 'fini');
 });

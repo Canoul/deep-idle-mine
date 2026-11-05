@@ -425,6 +425,8 @@ function spawnMobs(G){
   if(G.spawnTimer>0) return;
   const k=contentOf(G, G.unlockedAreas-1);   // intensité : la dernière area débloquée (prison : son contenu)
   G.spawnTimer = MOBS.spawnDelay(G.rng, k) * (G.prison ? PRISON.spawnDelayMul : 1);   // prison : 3 fois moins de tirages (solo)
+  /* Invasion (événement du jour, 05/11) : mine classique, dès l'area mobFrom, des tirages mobSpawnMul fois plus souvent */
+  const fx = G.dailyFx; if(fx && fx.mobSpawnMul !== 1 && !G.prison && k >= fx.mobFrom) G.spawnTimer /= fx.mobSpawnMul;
   const n=G.miners.length; if(!n) return;
   const m=G.miners[G.spawnTurn % n]; G.spawnTurn++;
   if(m.y<=0) return;

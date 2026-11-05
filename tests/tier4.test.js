@@ -34,13 +34,13 @@ test('four : 10 mithril, 5 cobalt, 5 thorium (+ 10 charbon) ; alliages cobalt et
   }
 });
 
-test('Treasure T4 : areas 7 et 8 ; toujours mithril, cobalt, thorium et BP parts ; 1er jet 12,5 %', () => {
+test('Treasure T4 : areas 7 et 8 ; toujours mithril, cobalt, thorium et BP parts ; 1er jet 15 % (pioche et épée en mithril : 05/11)', () => {
   assert.equal(TREASURE.tiers.find(t => t.item === 'Treasure T4').maxArea, 8);
   assert.equal(TREASURE.tiers.find(t => t.item === 'Treasure T3').maxArea, 6);
   const t = LOOT['Treasure T4'];
   assert.deepEqual(t.always.map(a => [a.item, a.min, a.max]), [['Mithril ore', 20, 40], ['Cobalt ore', 5, 10], ['Thorium ore', 5, 10], ['Blueprint parts', 12, 14]]);
   const first = t.oneOf[0].items;
-  assert.equal(Math.round(first.reduce((s, i) => s + i.chance, 0) * 1e4) / 1e4, 0.13);
+  assert.equal(Math.round(first.reduce((s, i) => s + i.chance, 0) * 1e4) / 1e4, 0.15);
   for(const p of PIECES){
     assert.equal(first.find(i => i.item === `${p} en mithril BP`).chance, 0.01);
     assert.equal(first.find(i => i.item === `${p} en thorium BP`).chance, 0.005);
@@ -125,4 +125,18 @@ test('Treasure T4 (30/10) : Clé d\'instance II, son propre tirage à 10 %', () 
   for(let i = 0; i < 20000; i++) if(rollLoot(LOOT['Treasure T4'], rng)['Clé d\'instance II']) n++;
   assert.ok(n / 20000 > 0.09 && n / 20000 < 0.11, `${n / 200} %`);
   assert.equal(ITEMS['Clé d\'instance II'].cat, 'key');
+});
+
+/* armes en mithril (05/11/2026, Geoffrey) */
+test('Épée et Pioche en mithril : stats, recettes, plans (Treasure T4 et recherche, étape 1), tier 4 des runes', async () => {
+  const { STUFF, UPGRADE, RESEARCH } = await import('../src/config.js');
+  assert.deepEqual(STUFF.items['Épée en mithril'].set, { damage:21 });
+  assert.deepEqual(STUFF.items['Pioche en mithril'].stats, { mineSpeed:0.7 });
+  assert.deepEqual(RECIPES['Épée en mithril'], { cost:{ 'Mithril ingot':30, 'Orbe':10, 'Steel ingot':30 }, qty:1, unlock:'Épée en mithril BP' });
+  assert.deepEqual(RECIPES['Pioche en mithril'], { cost:{ 'Mithril ingot':40, 'Pierre glissante':100, 'Steel ingot':30 }, qty:1, unlock:'Pioche en mithril BP' });
+  const first = LOOT['Treasure T4'].oneOf.find(f => f.family === 'blueprint').items.map(i => i.item);
+  assert.ok(first.includes('Épée en mithril BP') && first.includes('Pioche en mithril BP'));
+  const st1 = RESEARCH.tiers.find(t => t.tier === 4).stages[0];
+  assert.ok(st1.includes('Épée en mithril BP') && st1.includes('Pioche en mithril BP'));
+  assert.ok(UPGRADE.tiers[4].items.includes('Épée en mithril') && UPGRADE.tiers[4].items.includes('Pioche en mithril'));
 });

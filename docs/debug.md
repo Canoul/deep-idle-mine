@@ -7489,3 +7489,80 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 ## 05/11/2026 — Cerbère : bond du Magma, pénétration seulement sur les tanks (Geoffrey)
 - **Quoi** : `RAID.cerbere.magma` { leap 4, leapT 0.35, breath 1.2, stay 2.5, backT 0.35 } ; src/sim/raid/cerbere.js : `leap` (au `next.magma`, b.x += leap, `breathAt`, `returnAt`), `magma` au `breathAt` (souffle : Durci comme avant), `comeBack` au `returnAt` (case = tank actif au sol le plus avancé + 1, sinon `bossX` ; bornée pour laisser la place au prochain bond) ; `moveBoss` (b.move { from, to, at, dur } ; repousse un mineur pris sous lui). `penSrc` : 'cerbere' (pen 20) pour les tanks, 'cerbere_soft' (pen 0, dans `SKILLS.steady.sources`) pour les autres, dans Morsure, Balayage, Magma. Vue : `boss.move { from, to, ago, dur }`, `boss.breathIn`. Rendu (src/render/raid.js) : glissé + arc pendant `move`, lueur des gueules avant le souffle, cône de feu 0,9 s.
 - **Tests** : raid (bond, souffle, retour au tank repoussé ; penSrc ; Magma via `breathe`) ✅, raid-server, raid-ui, skills ✅. Vérifié dans le navigateur (vue fabriquée par la simulation) ✅. Simulation `--boss-only --left 11.5 --tank-ten 40` : 3/40, 9,1 min.
+
+## 05/11/2026 — Bulles d'aide des stats (Geoffrey)
+- `src/meta/stat-help.js` (nouveau, `STAT_HELP`) : textes déplacés de `src/wiki/data.js` (le wiki l'importe ; pas dans src/wiki,
+  que le paquet de l'appli n'embarque pas). `statsHTML` (src/ui/stuff.js) : `qhelp(label + texte)` sur chaque ligne, Gear score et
+  DPS (avant : `title`). Textes revus : ténacité, résistance au recul.
+- Tests : `tests/stat-help.test.js` (3), dps, wiki, stuff*, help* 40/40 ✅. Vérifié en image (Chromium, bulle au survol).
+
+## 05/11/2026 — Recyclage fixe des pièces uniques (Golbute, Roi Gobelin) (Geoffrey)
+- **Quoi** : `recycle:{…}` ajouté dans `STUFF.items` (src/config.js) pour Némésis du Golbute, Torse de Gollex, Jambières du
+  Golbute, Âme du Golbute, Couronne, Masse et Cape royale du Roi Gobelin ; lu par `fixedRefund` (src/meta/craft.js), même
+  chemin que le butin rare des mobs. Restent non recyclables : Arc de l'Admin, anneaux (exclus par `recyclable`).
+- **Tests** ✅ `tests/recycle.test.js` (nouveau : les 7 rendus, recyclage réel dans un inventaire, Arc et anneaux refusés) ;
+  `tests/goblin-king.test.js` : compare les pièces sans `recycle`, et la Cape à dégâts % 1,9 (❌ déjà rouge sur `main`
+  depuis le 04/11 : le test attendait encore 5) ; recycle, mob-drops, wiki, goblin, golbute : 78/78 ; anticheat 154/154.
+
+## 05/11/2026 — Raffle : bulle de 30 s (Geoffrey)
+- **Quoi** : `raffle.current(me)` (server/social/raffle.js) → `{ id, lot, endsAt, joined }` ou null (pas de raffle, fini,
+  invité, sans pseudo) ; ajouté à l'état social (`raffle`, server/social/service.js), donc reçu par le poll social
+  (`SOCIAL.poll` 4 s, 20 s onglet caché). `syncNotifs` (src/main.js) : bulle clé `r:<id>`, `ttl: RAFFLE.popupMs` (30 s,
+  src/config.js) ; Participer = `socialApi.say({ text: RAFFLE.command })`, réponse en `notify.flash`. `src/ui/notify.js` :
+  durée par bulle (`it.ttl`, sinon `NOTIFY.popupMs`). Rien dans src/app/notifs (pas de notification du téléphone).
+- **Tests** ✅ `tests/raffle.test.js` (état social : raffle, joined, invité, fin), `tests/notify.test.js` (ttl par bulle) ;
+  raffle, notify, admin-raffle, social : 52/52. Vérifié dans Chromium (dev, raffle forcé) : bulle affichée, Participer →
+  « Tu participes au raffle », bulle partie.
+
+## 05/11/2026 — Épée et Pioche en mithril (Geoffrey)
+- `STUFF.items` (`set.damage 21`, `stats.mineSpeed 0.7`), `RECIPES`, `UPGRADE.tiers[4]`, rareté inhabituelle (pièce + BP), BP dans le 1er jet
+  du Treasure T4 (0,01 chacun : le jet passe de 13 à 15 %) et `RESEARCH.tiers[4].stages[0]` (10 plans). Textures `sword_mithril`,
+  `pickaxe_mithril`, `skins/sword_mithril`, `skins/pick_mithril` (gen_textures.py) ; `src/skins.js`.
+- ⚠️ `gen_textures.py` réécrit aussi d'autres textures (boss, ville, Lucifer… venues d'autres scripts) : seules les 4 nouvelles
+  sont gardées, les autres remises comme avant.
+- Tests : tier4 (nouveau test), research (étapes 10 / 8 / 2), rarity, stuff*, wiki*, skins, gearscore, craft, loot, rune 133/134 ;
+  le rouge (« recettes du T4 », Clé d'instance I avec 5 Orbe) l'était déjà sur main.
+
+
+## 05/11/2026 — Geoffrey — Emplacements de sorts selon le niveau du mineur (branche geoffrey/sorts-slots-niveau)
+- `SPELLS.slotLevels` [1, 1, 15, 20] ; `openSlotsFor(level)` / `openSlotsOf(ctx)` (src/meta/spells.js ; sans niveau : openSlots 2).
+  État des sorts : 4 cases (avant 2) ; `spellOp` refuse `slot_locked` au-delà des cases ouvertes ; `equippedSpells` ne fige
+  que les cases ouvertes ; `sessionSpells` au plus 4 (le serveur a vérifié au lancement) ; `publicSpells.openSlots` selon le
+  niveau. Serveur : `spellCtx` porte `level` (levelOf(xp)) ; `applySet` reçoit `level` (sets : 4 cases, seules les ouvertes
+  remplies). UI : cadenas « Niveau n », prochain emplacement pris parmi les cases ouvertes. Wiki : texte généré.
+- Tests ✅ spells (+ test des niveaux), sets, game-service, app-spells, dev-presets, tower-spells, giant-service,
+  dev-live-copies, glyphs, hescoming-service, raid-server, wiki ; `npm run test:anticheat` 154/154 (attendus à 4 cases).
+
+## 05/11/2026 — Appli : fenêtre « Recettes » du four (Geoffrey)
+- Paragraphe d'explication marqué `frecAbout` (src/ui/furnace.js), caché par `body.app #fpick .frecAbout` (src/app/app.css) ; la liste
+  (`.frecBox .frecs`, flex 1) récupère la hauteur. Site inchangé. Tests furnace*, app* 223/223 ✅. Pas vu sur un vrai téléphone.
+
+## 05/11/2026 — Appli : activité des amis tronquée (Geoffrey)
+- `body.app #socialBody .fname small` : `white-space:normal` (ancien : `nowrap` + ellipsis). Vérifié en image (Chromium 360 px, 3 amis).
+
+## 05/11/2026 — Événement du jour (Geoffrey)
+- **Config / logique** : `DAILY` (src/config.js), `src/shared/daily.js` (`rollDaily`, `dailyCandidates` : exclut les ids des
+  `noRepeat` jours d'avant d'après les dates, `dailyFx`, `dailyOn(st, t)`, `publicDaily`, `dailyCost`). État ns **daily**
+  (clé 'state', `FREE_NS` ; store `getDaily` / `putDaily`).
+- **Serveur** (server/game/service.js) : `currentDaily()` (verrou 'daily', tirage au premier appel du jour) seulement si
+  `createGameService({ dailyEvents: true })` (server/main.js) : **coupé par défaut, donc dans tous les tests** ;
+  `dailyAt(t)`. Figé : `rec.daily` (start, tous modes ; openInstant : jour de l'ouverture), `p.daily` de la prison (jour de
+  `runStartedAt` à chaque run, `newPrisonRecord`, `runRecord` → `buildPrisonRun` → `newPrisonRun` → `newSession`). Énergie :
+  `canPay(e, dailyCost(min))`, coût `dailyCost(rollCost())`. Jugement en direct : `withJudgment(fn(j, rules))`,
+  `rules = { cap, together }` passé à refresh / addResidues / publicJudgment / paused / `residuesOn` (src/meta/judgment.js).
+  `judgment()` renvoie aussi `daily` (bandeau). API : `dailyId()`, `daily()`.
+- **Partie** : `newSession` : `G.daily`, `G.dailyFx`, `G.oreBonus += orePoints` ; k hole `× kholeMul` (world.js genArea) ;
+  mobs `spawnTimer /= mobSpawnMul` hors prison dès `mobFrom` (mobs.js spawnMobs) ; XP `× xpMul` (session.js shareBySegments).
+  MI : `newInstant(seed, { w, h, duration })`, `G.duration`, `G.endTicks` ; `buildInstant` lit `record.daily` ;
+  `instantDurationMs(speed, daily)` ; vue `duration` ; HUD, orbes et caméra lisent la taille et la durée de la partie.
+- **Raffle** : `createRaffle({ winners })` (social → `game.dailyId()`), `current.count`, `current.winners` (ancien : `winner`,
+  relu par `sanitizeRaffle`), payés une fois chacun (clé = id du raffle) ; message système `winners` (+ `winner` = le premier) ;
+  le navigateur relit l'inventaire si `winners` le contient.
+- **Lobby** : `#dailyBanner` (index.html), `src/ui/daily.js` (`renderDaily`), rempli par `pollJudgment` (src/main.js).
+- **Tests** ✅ `tests/daily.test.js` (14 : tirage 300 jours, candidats, relecture, Jour férié, Mine abondante, Multivers mesuré
+  sur 300 mines, Héritage / Invasion, Cataclysme, MI, raffle à 3 gagnants, serveur figé + lendemain, bandeau) ; energy,
+  judgment, raffle, instant, prison, khole, account-delete, store, game-service, shrine, mi : 315/318, ❌ 3 déjà rouges sur `main`
+  (energy « part de 0 », energyOfTicks, prison « tour et instance terminent la prison ») ; anticheat 154/154 ; simulation 5
+  sessions à 3 : 0 bloquée. Vu dans Chromium : bandeau du Lobby (Cataclysme imposé dans data/game.json), jauges à 150.
+- ⚠️ Pas vu en vrai : MI abondante à l'écran (HUD et caméra), raffle à 3 gagnants dans le chat. `src/ui/energy-tag.js` et
+  `#navEnergy` marquent encore « bas » sous 6 un jour férié (le serveur accepte dès 4).

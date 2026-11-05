@@ -36,11 +36,20 @@ export const isRaffleJoin = text => typeof text === 'string' && text.trim().toLo
 const validLot = lot => !!lot && RAFFLE.lots.some(l => l.item === lot.item && l.qty === lot.qty && l.energy === lot.energy && l.rune === lot.rune)
   && (!lot.rune || UPGRADE.qualities.some(d => d.q === lot.q));
 /* état enregistré, relu et revérifié : { nextAt, current: null | { id, lot, endsAt, players:[{ id, name }], winner? } } */
+const winnersOf = (c, players) => {
+  const ids = new Set(players.map(p => p.id)), seen = new Set();
+  return (Array.isArray(c.winners) ? c.winners : c.winner ? [c.winner] : [])
+    .filter(w => w && ids.has(w.id) && !seen.has(w.id) && seen.add(w.id)).map(w => ({ id: w.id, name: String(w.name) }));
+};
 export function sanitizeRaffle(raw){
   const c = raw?.current;
   const ok = c && typeof c.id === 'string' && Number.isFinite(c.endsAt) && validLot(c.lot) && Array.isArray(c.players);
   const seen = new Set();
   const players = ok ? c.players.filter(p => p && typeof p.id === 'string' && typeof p.name === 'string' && !seen.has(p.id) && seen.add(p.id)) : [];
   return { nextAt: Number.isFinite(raw?.nextAt) ? raw.nextAt : null,
-           current: ok ? { id: c.id, lot: c.lot, endsAt: c.endsAt, players, ...(players.some(p => p.id === c.winner?.id) ? { winner: c.winner } : {}) } : null };
+           current: ok ? { id: c.id, lot: c.lot, endsAt: c.endsAt, players,
+                           /* count : gagnants de ce raffle (Pouvoir au peuple, 05/11 ; 1 par défaut) ; winners : tirés, gardés avant d'être
+                              payés (ancien : winner, un seul) */
+                           count: Number.isSafeInteger(c.count) && c.count >= 1 && c.count <= 10 ? c.count : 1,
+                           ...(winnersOf(c, players).length ? { winners: winnersOf(c, players) } : {}) } : null };
 }

@@ -41,3 +41,28 @@ test('recycler : refusé pour une pièce d\'un set, un objet non recyclable, un 
   for(const bad of ['1', 1.5, NaN, Infinity, null, undefined, {}]) assert.equal(recycleStuff(inv, bad).error, 'bad_request');
   assert.equal(countOf(inv, 'Épée en fer'), 1);
 });
+
+/* 05/11/2026 (Geoffrey) : pièces uniques du Golbute et du Roi Gobelin, recyclables en quantités fixes ; l'Arc de l'Admin
+   et les anneaux restent non recyclables */
+test('pièces uniques : recyclage en quantités fixes (Golbute, Roi Gobelin)', () => {
+  const want = {
+    'Némésis du Golbute':      { 'Thorium ingot':10, 'Cobalt ingot':10 },
+    'Torse de Gollex':         { 'Mithril ingot':20 },
+    'Jambières du Golbute':    { 'Mithril ingot':18 },
+    'Âme du Golbute':          { 'Orbe supérieur':2 },
+    'Couronne du Roi Gobelin': { 'Rubis inférieur':1, 'Jade inférieur':1, 'Saphir inférieur':1, 'Steel ingot':10 },
+    'Masse du Roi Gobelin':    { 'Steel ingot':10, 'Orbe':3 },
+    'Cape royale du Gobelin':  { 'Shiny gold':20, 'Cuir de minotaure':25 },
+  };
+  for(const [item, r] of Object.entries(want)){
+    assert.equal(recyclable(item), true, item);
+    assert.deepEqual(recycleRefund(item), r, item);
+    const inv = createInventory();
+    const [slot] = addItem(inv, item, 1);
+    const res = recycleStuff(inv, inv.slots[slot].uid);
+    assert.ok(res.ok, item + ' ' + JSON.stringify(res));
+    assert.equal(countOf(inv, item), 0);
+    for(const [k, n] of Object.entries(r)) assert.equal(countOf(inv, k), n, `${item} → ${k}`);
+  }
+  for(const item of ['Arc de l\'Admin', 'Anneau du tigre', 'Anneau en pierre']) assert.equal(recyclable(item), false, item);
+});

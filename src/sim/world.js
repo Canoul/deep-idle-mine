@@ -175,7 +175,7 @@ export function genArea(G,k){
   if(!G.noResidues && !G.prison) placeResidues(G.seed, ck, grid, counts, box ? box.w*AREA_H : grid.length);   // pas de résidus si une tour était ouverte au lancement (23/10), ni en prison (30/10/2026)
   /* k hole (KHOLE) : tirage à part, posé en dernier, hors du donjon et des pièges */
   const kh = placeKhole(G.seed, k, grid, counts, [...(dp ? [{ x0:dp.x0, ry0:dp.ry0, w:DUNGEON.size, h:DUNGEON.size }] : []),
-    ...traps.map(p => ({ x0:p.x0, ry0:p.ry0, w:TRAP.w+2, h:TRAP.h+2 }))], G.prison ? PRISON.kholeMul : 1);   // prison : 2 fois moins (29/10)
+    ...traps.map(p => ({ x0:p.x0, ry0:p.ry0, w:TRAP.w+2, h:TRAP.h+2 }))], (G.prison ? PRISON.kholeMul : 1) * (G.dailyFx?.kholeMul ?? 1));   // prison : 2 fois moins (29/10) ; Multivers × 5 (05/11)
   for(let ry=0; ry<AREA_H; ry++){
     G.tiles.push(grid.slice(ry*W,(ry+1)*W));
     G.ladder.push(new Uint8Array(W));

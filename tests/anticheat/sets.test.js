@@ -55,6 +55,6 @@ test('set trafiqué : uid inconnu, objet en tas, case inconnue, même anneau deu
   assert.deepEqual(Object.entries(r.stuff).filter(([, p]) => p).map(([k, p]) => [k, p.uid]), [['anneau1', ring]]);
   assert.deepEqual(await pieces(game), before);
   assert.deepEqual(r.skills.ranks, {}, 'niveau 1 : aucun point, aucun rang');
-  assert.deepEqual(r.spells.slots, [null, null]);
+  assert.deepEqual(r.spells.slots, [null, null, null, null]);
   assert.equal(r.inventory.slots.find(s => s?.item === 'Charbon').qty, 5);
 });

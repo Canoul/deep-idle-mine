@@ -310,6 +310,12 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .inSession{display:flex;align-items:center;justify-content:space-between;gap:calc(4*var(--u));flex-wrap:wrap;margin-bottom:calc(15*var(--u));
   padding:calc(3*var(--u)) calc(6*var(--u));background:var(--sel);box-shadow:0 0 0 var(--u) var(--acc),calc(2*var(--u)) calc(2*var(--u)) 0 #000}
 .inSession .pi{color:var(--acc);margin-right:calc(2*var(--u))}
+/* événement du jour (05/11/2026, src/ui/daily.js) */
+.dailyBanner{display:flex;align-items:center;gap:calc(5*var(--u));margin-bottom:calc(12*var(--u));padding:calc(3*var(--u)) calc(6*var(--u));
+  background:var(--sel);box-shadow:0 0 0 var(--u) var(--acc),calc(2*var(--u)) calc(2*var(--u)) 0 #000}
+.dailyBanner .dIcon{font-size:1.6em}
+.dailyBanner .dText{flex:1;min-width:0}
+.dailyBanner .dLeft{white-space:nowrap}
 .actList{display:flex;flex-direction:column;gap:calc(3*var(--u))}
 .actBtn{width:100%;justify-content:flex-start;gap:calc(6*var(--u));min-height:calc(30*var(--u));padding:calc(3*var(--u)) calc(8*var(--u));text-align:left}
 .actBtn.ready{outline:calc(2*var(--u)) solid var(--gold, #ffd23f);outline-offset:calc(-2*var(--u))}   /* entrée disponible (Bloc géant, He's coming) */

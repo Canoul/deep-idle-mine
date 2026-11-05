@@ -71,3 +71,19 @@ test('pop-up flash : texte échappé, sans bouton, fermée au bout de flashMs, m
   assert.equal(root.children.length, 0);
   delete globalThis.document;
 });
+
+test('pop-up : une durée propre à une bulle (it.ttl, raffle 30 s) ; les autres gardent popupMs', async t => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const root = fakeDom();
+  const { setupNotify } = await import('../src/ui/notify.js');
+  const { RAFFLE } = await import('../src/config.js');
+  const n = setupNotify(root);
+  n.sync([{ ...item('r:raffle:1'), ttl: RAFFLE.popupMs }, item('f:7')]);
+  assert.equal(RAFFLE.popupMs, 30_000);
+  t.mock.timers.tick(NOTIFY.popupMs);
+  assert.equal(root.children.length, 1, 'la bulle du raffle reste après popupMs');
+  t.mock.timers.tick(RAFFLE.popupMs - NOTIFY.popupMs);
+  assert.equal(root.children.length, 0, 'fermée au bout de 30 s');
+  n.sync([{ ...item('r:raffle:1'), ttl: RAFFLE.popupMs }]);
+  assert.equal(root.children.length, 0, 'ne revient pas');
+});

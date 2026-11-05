@@ -6,7 +6,8 @@
 import { RAFFLE } from '../../src/config.js';
 import { nextRaffleAt, raffleOpen, rollLot, lotLabel, lotPlural, sanitizeRaffle } from '../../src/shared/raffle.js';
 
-export function createRaffle({ store, give, announce, clock = Date.now, random }){
+/* winners() : nombre de gagnants d'un raffle qui commence (événement du jour Pouvoir au peuple, 05/11/2026) ; 1 par défaut */
+export function createRaffle({ store, give, announce, clock = Date.now, random, winners = async () => 1 }){
   let state = null, chain = Promise.resolve();
   /* une étape à la fois : un !join ne se croise jamais avec le tirage */
   const serial = fn => { const run = chain.catch(() => {}).then(fn); chain = run.catch(() => {}); return run; };
@@ -15,18 +16,27 @@ export function createRaffle({ store, give, announce, clock = Date.now, random }
 
   async function start(now){
     const lot = rollLot(random);
-    state.current = { id: `raffle:${now}`, lot, endsAt: now + RAFFLE.joinMs, players: [] };
+    const count = Math.max(1, Math.min(10, (await winners()) | 0));
+    state.current = { id: `raffle:${now}`, lot, endsAt: now + RAFFLE.joinMs, players: [], count };
     state.nextAt = null;
     await save();
-    await announce(`[${RAFFLE.name}] ${lotLabel(lot)} ${lotPlural(lot) ? 'seront attribués' : 'sera attribué'} aléatoirement à quelqu'un dans le chat dans ${RAFFLE.joinMs / 60e3} min`);
+    await announce(count > 1 ? `[${RAFFLE.name}] ${lotLabel(lot)} pour ${count} gagnants, tirés au sort dans le chat dans ${RAFFLE.joinMs / 60e3} min`
+      : `[${RAFFLE.name}] ${lotLabel(lot)} ${lotPlural(lot) ? 'seront attribués' : 'sera attribué'} aléatoirement à quelqu'un dans le chat dans ${RAFFLE.joinMs / 60e3} min`);
     await announce(`${RAFFLE.command} pour participer`);
   }
   async function draw(now){
     const c = state.current;
-    if(!c.winner && c.players.length){ c.winner = c.players[Math.floor(random() * c.players.length)]; await save(); }
-    if(c.winner) await give(c.winner.id, c.id, c.lot);
-    const n = c.players.length;
-    await announce(c.winner ? `[${RAFFLE.name}] ${c.winner.name} a gagné ${lotLabel(c.lot)} sur ${n} participant${n > 1 ? 's' : ''}` : `[${RAFFLE.name}] Personne n'a participé, le lot est perdu`, c.winner?.id);
+    /* les gagnants (count, différents) sont tirés et gardés avant d'être payés : une fin relancée paie les mêmes, une fois */
+    if(!c.winners?.length && c.players.length){
+      const pool = [...c.players], out = [];
+      while(out.length < (c.count ?? 1) && pool.length) out.push(pool.splice(Math.floor(random() * pool.length), 1)[0]);
+      c.winners = out; await save();
+    }
+    const won = c.winners ?? [];
+    for(const w of won) await give(w.id, c.id, c.lot);
+    const n = c.players.length, names = won.map(w => w.name);
+    const who = names.length > 1 ? `${names.slice(0, -1).join(', ')} et ${names.at(-1)} ont` : `${names[0]} a`;
+    await announce(won.length ? `[${RAFFLE.name}] ${who} gagné ${lotLabel(c.lot)} sur ${n} participant${n > 1 ? 's' : ''}` : `[${RAFFLE.name}] Personne n'a participé, le lot est perdu`, won.map(w => w.id));
     state.current = null;
     state.nextAt = nextRaffleAt(now, random);
     await save();
@@ -54,9 +64,17 @@ export function createRaffle({ store, give, announce, clock = Date.now, random }
       await load();
       if(!state.current) return;
       state.current.players = state.current.players.filter(p => p.id !== id);
-      if(state.current.winner?.id === id) delete state.current.winner;
+      if(state.current.winners) state.current.winners = state.current.winners.filter(w => w.id !== id);
       await save();
     }),
+    /* raffle en cours, pour la bulle des joueurs qui ont le jeu ouvert (05/11) : { id, lot, endsAt, joined } ; null s'il n'y
+       en a pas, s'il est fini, ou pour un compte qui ne peut pas participer (invité, sans pseudo) */
+    current: async me => {
+      await load();
+      const c = state.current;
+      if(!c || clock() >= c.endsAt || !me || me.guest || !me.name) return null;
+      return { id: c.id, lot: lotLabel(c.lot), endsAt: c.endsAt, joined: c.players.some(p => p.id === me.id) };
+    },
     /* !join : le texte de la réponse, pour ce joueur seul */
     join: me => serial(async () => {
       await load();

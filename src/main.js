@@ -13,7 +13,7 @@
      (src/ui/instant-lobby.js) ; à l'heure, le serveur l'ouvre et le navigateur bascule sur Session, où elle a son
      propre affichage (src/render/instant.js, src/ui/instant-hud.js). */
 import { applyRarityColors } from './ui/rarity.js';
-import { GAME, HES_COMING, PARTY, SESSION_LEN, INSTANT_MINE, STATS, SOCIAL, CAMERA, JUDGMENT, TOWER, MINE_MODES, INSTANCE, GUIDE, PRISON, ENERGY, DT, RAID } from './config.js';
+import { GAME, HES_COMING, PARTY, SESSION_LEN, INSTANT_MINE, STATS, SOCIAL, CAMERA, JUDGMENT, TOWER, MINE_MODES, INSTANCE, GUIDE, PRISON, ENERGY, DT, RAID, RAFFLE } from './config.js';
 import { emptyView, applyView, shownPos } from './shared/view.js';
 import { applyInstantView } from './shared/instant-view.js';
 import { createInstantRenderer, MI_TILE } from './render/instant.js';
@@ -81,6 +81,7 @@ import { setupGuild } from './ui/guild.js';
 import { setupLeaderboard } from './ui/leaderboard.js';
 import { setupJudgment } from './ui/judgment.js';
 import { setupNotify } from './ui/notify.js';
+import { renderDaily } from './ui/daily.js';   // bandeau « Événement du jour » du Lobby (05/11)
 import { setupObtained } from './ui/obtained.js';
 import { recipeOf } from './meta/craft.js';
 import { createAccountUI, bootAccount, renderNavAccount } from './ui/account.js';
@@ -549,6 +550,15 @@ function syncNotifs(){
     ...(lfgFound && !lfgFound.error && !G ? [{ key: 'lfg:' + lfgFound.at, icon: pxi('group'),
       text: `Groupe trouvé : <b>${esc(lfgFound.names.join(', '))}</b>`,
       actions: [{ label: 'Voir le lobby', primary: true, run: async () => nav.show('lobby') }] }] : []),
+    /* raffle en cours (05/11, Geoffrey) : bulle de RAFFLE.popupMs, seulement pour qui a le jeu ouvert ; jamais de
+       notification du téléphone. Participer = !join, la réponse arrive dans le chat et en petite confirmation */
+    ...(st.raffle && !st.raffle.joined ? [{ key: 'r:' + st.raffle.id, icon: '🎟', ttl: RAFFLE.popupMs,
+      text: `<b>${esc(RAFFLE.name)}</b> : ${esc(st.raffle.lot)} à gagner ! Tirage dans ${Math.max(1, Math.ceil((st.raffle.endsAt - serverNow()) / 60e3))} min`,
+      actions: [{ label: 'Participer', primary: true, run: async () => {
+        const r = await socialApi.say({ text: RAFFLE.command });
+        if(r?.message?.text) notify.flash(r.message.text);
+        pollSocial();
+      } }] }] : []),
     ...st.partyInvites.map(i => ({ key: 'p:' + i.code + ':' + i.at, icon: pxi('group'), text: `<b>${esc(i.from)}</b> vous a invité dans son lobby${i.full ? ' <span class="mut">(complet)</span>' : ''}`,
       actions: [{ label: 'Rejoindre', primary: true, run: () => joinParty(() => partyApi.join(i.code)) },
                 { label: 'Décliner', run: async () => { await partyApi.decline(i.code); pollSocial(); } }] })),
@@ -606,7 +616,7 @@ let judgmentTimer = null;
 async function pollJudgment(){
   clearTimeout(judgmentTimer);
   if(acct.offline || !acct.account) return;
-  try { const j = await gameApi.judgment(); judgment.set(j); town.setJudgment(j?.value?.sides ?? j?.sides); nav.badge('lobby', judgment.pending()); lobby.update({ judgment: judgment.view(), judgmentPending: judgment.pending() }); }
+  try { const j = await gameApi.judgment(); renderDaily($('dailyBanner'), (j?.value ?? j)?.daily, serverNow()); judgment.set(j); town.setJudgment(j?.value?.sides ?? j?.sides); nav.badge('lobby', judgment.pending()); lobby.update({ judgment: judgment.view(), judgmentPending: judgment.pending() }); }
   catch(e){ console.warn(e); }
   judgmentTimer = setTimeout(pollJudgment, document.hidden ? JUDGMENT.poll * 4 : JUDGMENT.poll);
 }
@@ -648,7 +658,7 @@ const gchat = setupChat({ prefix:'gchat', get: after => socialApi.chat(after), p
                           paused: () => document.hidden || gchatDock.folded, time: true,
                           show: gchatTabs.show, line: chatLine, sent: gchatTabs.sent,
                           /* gagnant d'un raffle : son lot est sur le serveur, à relire tout de suite */
-                          fresh: list => { if(list.some(m => m.winner && m.winner === acct.account?.id)) gameApi.state().then(st => { setInventory(st.inventory); setEnergy(st.energy); }).catch(() => {}); },
+                          fresh: list => { if(list.some(m => m.winner && (m.winner === acct.account?.id || m.winners?.includes(acct.account?.id)))) gameApi.state().then(st => { setInventory(st.inventory); setEnergy(st.energy); }).catch(() => {}); },
                           parse: text => { const msg = parseChatInput(text, gchatTabs.channel(), gchatTabs.target()); return msg.lobby ? { ...msg, lobby: lobby.pubContext() } : msg; } });
 /* signaler, bloquer (01/11/2026) : fiche d'un joueur, menu d'un message */
 const moderate = setupModeration({ report: body => moderationApi.report(body),
@@ -1097,8 +1107,8 @@ function frame(now){
     }
     updateEffects(ui.tab==='session' ? shown : null);
     updateSpellBars(ui.tab==='session' ? shown : null);
-    updateNavSession(rec ? shown : null, waiting, isRd() ? RAID.duration : ins ? INSTANCE.duration : tw ? TOWER.duration : mi ? INSTANT_MINE.duration : SESSION_LEN);
-    updateOrbs(shown, mi || tw || ins || rb, rb || rm ? RAID.duration : ins ? INSTANCE.duration : tw ? TOWER.duration : undefined);
+    updateNavSession(rec ? shown : null, waiting, isRd() ? RAID.duration : ins ? INSTANCE.duration : tw ? TOWER.duration : mi ? (shown?.duration ?? INSTANT_MINE.duration) : SESSION_LEN);
+    updateOrbs(shown, mi || tw || ins || rb, rb || rm ? RAID.duration : ins ? INSTANCE.duration : tw ? TOWER.duration : mi ? (shown?.duration ?? INSTANT_MINE.duration) : undefined);
     if(ui.tab==='session'){
       ins || rb ? fitCanvas($('cvIn'), $('cvInWrap')) : tw ? fitCanvas($('cvTw'), $('cvTwWrap')) : mi ? fitInstant($('cvMi'), $('cvMiWrap'), miRenderer, MI_TILE) : fitMine($('cv'), $('cvWrap'), renderer, CAMERA, TILE);   // la mine remplit la place libre
       const bm = rb ? 'raid' : ins ? 'instance' : tw ? 'tower' : mi ? 'mi' : 'mine';

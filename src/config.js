@@ -314,7 +314,7 @@ export const LOOT = {
         { item:'Gants de boucher BP',       chance:0.01 },
         { item:'Jambières titanesques BP',  chance:0.005 },
         { item:'Cape inclusive BP',         chance:0.005 },
-        ...['Casque', 'Plastron', 'Jambes', 'Bottes'].map(p => ({ item:`${p} en mithril BP`, chance:0.01 })),
+        ...['Casque', 'Plastron', 'Jambes', 'Bottes', 'Pioche', 'Épée'].map(p => ({ item:`${p} en mithril BP`, chance:0.01 })),   // pioche et épée : 05/11
         ...['thorium', 'cobalt'].flatMap(m => ['Casque', 'Plastron', 'Jambes', 'Bottes'].map(p => ({ item:`${p} en ${m} BP`, chance:0.005 }))),
       ]},
       /* 2e jet : chacun son tirage, seulement si la recette n'est pas apprise (28/10, Geoffrey : plus la Clé d'instance I
@@ -388,7 +388,7 @@ export const RESEARCH = {
        sont apprises (règle commune, tierUnlocked). stages : le tirage se fait dans la première étape dont une recette
        reste à apprendre (chances égales) ; l'étape suivante s'ouvre quand toutes ses recettes sont apprises. */
     { tier:4, label:'Tier 4', from:'Treasure T4', cost:250, recycle:{ min:25, max:40 }, stages:[
-      [...['Casque', 'Plastron', 'Jambes', 'Bottes'].map(p => `${p} en mithril BP`),
+      [...['Casque', 'Plastron', 'Jambes', 'Bottes', 'Pioche', 'Épée'].map(p => `${p} en mithril BP`),   // pioche et épée : 05/11
        'Lunettes de luxe BP', 'Bottes de chantier BP', 'Ceinture golémique BP', 'Gants de boucher BP'],
       ['thorium', 'cobalt'].flatMap(m => ['Casque', 'Plastron', 'Jambes', 'Bottes'].map(p => `${p} en ${m} BP`)),
       ['Jambières titanesques BP', 'Cape inclusive BP'],
@@ -741,7 +741,9 @@ export const SETS = { max:20, nameMax:24, opMemory:50,
 export const SPELLS = {
   /* par sort : icon (emoji, wiki), px (icône pixel de src/ui/pxicons.js : onglet Sorts et barre en session), short (une
      ligne sous le nom, fiche de l'onglet Sorts), desc (le détail) */
-  slots: 4, openSlots: 2,
+  /* slotLevels (05/11/2026, Geoffrey) : niveau du mineur qui ouvre chaque emplacement (3e au niveau 15, 4e au 20) ;
+     openSlots : ceux ouverts sans niveau connu (les deux premiers) */
+  slots: 4, openSlots: 2, slotLevels: [1, 1, 15, 20],
   opMemory: 50,
   list: [
     /* course de range cases au plus, à speed × sa vitesse de marche, qui suit le terrain (marche, descend, saute un bloc) ;
@@ -879,7 +881,7 @@ export const TEXTURES = ['dirt','grass','hellstone','clue','stone','hardstone','
   'blueprint','bp_parts','gem_ruby','gem_jade','gem_sapphire',
   'ingot_iron','ingot_gold','ingot_tainted','ingot_tainted_gold','ingot_graphite','ingot_steel','furnace_iron','compass_gold','shiny_iron','shiny_gold','pickaxe_stone','helmet_chitin','chest_chitin','legs_chitin','boots_chitin',
   'pickaxe_iron','sword_stone','sword_iron','spear_iron','bow_admin','helmet_iron','chest_iron','legs_iron','boots_iron','belt_goblin',
-  'lamp_incandescent','pickaxe_steel','sword_steel','helmet_steel','chest_steel','legs_steel','boots_steel','chest_balance',
+  'lamp_incandescent','pickaxe_steel','sword_steel','pickaxe_mithril','sword_mithril','helmet_steel','chest_steel','legs_steel','boots_steel','chest_balance',
   'gloves_tactical','gloves_worker','cape_naingui','straps_goblin','hood_dark','cloud_magic','belt_giant','dark_cloth','gas_vesicle','slippery_stone','dungeon_brick','minotaur','minotaur_black','moon_crystal','orb','orb_superior','pick_goblin','kilt_dark','hat_naab','sword_cardboard','key_instance_1','key_instance_2','angel_feather','angel_feathers',
   'guild_armory','guild_treasury','guild_forge',
   'guild_hall_1','guild_hall_2','guild_hall_3','guild_hall_4','guild_site','guild_wing_armory','guild_wing_treasury','guild_wing_forge','guild_lot',
@@ -1194,6 +1196,7 @@ export const RARITY = {
     'Mithril ingot':'inhabituel', 'Refined cobalt':'inhabituel', 'Refined thorium':'inhabituel', 'Cobalt ingot':'rare', 'Thorium ingot':'rare',
     'Topaze':'rare', 'Saphir':'rare', 'Rubis':'rare', 'Jade':'rare', 'Saphir BP':'rare', 'Rubis BP':'rare', 'Jade BP':'rare',
     'Clé d\'instance I BP':'inhabituel', 'Cuir de minotaure':'rare',
+    ...Object.fromEntries(['Pioche', 'Épée'].flatMap(p => [[`${p} en mithril`, 'inhabituel'], [`${p} en mithril BP`, 'inhabituel']])),   // 05/11
     ...Object.fromEntries(['Casque', 'Plastron', 'Jambes', 'Bottes'].flatMap(p => [[`${p} en mithril`, 'inhabituel'], [`${p} en mithril BP`, 'inhabituel'],
       [`${p} en thorium`, 'rare'], [`${p} en thorium BP`, 'rare'], [`${p} en cobalt`, 'rare'], [`${p} en cobalt BP`, 'rare']])),
     ...Object.fromEntries(['Lunettes de luxe', 'Bottes de chantier', 'Ceinture golémique', 'Gants de boucher'].flatMap(n => [[n, 'rare'], [`${n} BP`, 'rare']])),
@@ -1273,7 +1276,10 @@ export const STUFF = {
     'Jambes en acier':     { slot:'jambes', tex:'legs_steel',    stats:{ climbSpeed:2 } },   // 27/10 (Geoffrey) : buff +100 x, 500 x (avant 1,6 ; 25/10 : 1,08)
     'Bottes en acier':     { slot:'pieds',  tex:'boots_steel',   stats:{ speed:2.08 } },   // 27/10 (Geoffrey) : buff +100 x, ≈ 500 x (avant 1,67 ; 25/10 : 1,08)
     'Pioche en acier':     { slot:'pioche', tex:'pickaxe_steel', stats:{ mineSpeed:0.58 } },    // 27/10 (Geoffrey) : buff ≈ +100 x, 0,58 (au centième, comme en session ; avant 0,5 ; 25/10 : nerf, avant 0,6)
-    'Épée en acier':       { slot:'epee',   tex:'sword_steel',   set:{ damage:18.5 } },   // remplace les mains nues (5) ; 27/10 (Geoffrey) : buff +100 x (avant 16 ; 24/10 : 13)
+    'Épée en acier':       { slot:'epee',   tex:'sword_steel',   set:{ damage:18.5 } },
+    /* armes en mithril (05/11/2026, Geoffrey) : épée +16 dégâts sur les mains nues (21), pioche +0,7 de vitesse de minage */
+    'Pioche en mithril':   { slot:'pioche', tex:'pickaxe_mithril', stats:{ mineSpeed:0.7 } },
+    'Épée en mithril':     { slot:'epee',   tex:'sword_mithril',   set:{ damage:21 } },   // remplace les mains nues (5) : +16   // remplace les mains nues (5) ; 27/10 (Geoffrey) : buff +100 x (avant 16 ; 24/10 : 13)
     'Plastron de l\'équilibre': { slot:'torse', tex:'chest_balance', stats:{ pods:112, oxygenMax:30, mineSpeedPct:3, damagePct:1.1,   /* dégâts % 1,1 (04/11, prix de dessin 16 ; avant 3) */
                                    attackSpeed:8, tenacity:3, fortune:2, looting:3, torches:8 } },   // 31/10 (Geoffrey) : pods 112 pour valoir 2 fois le tier 3, ≈ 1 000 x (avant 188, 1 459 x) ; 24/10 : × 1,5 arrondi (avant pods 125, oxygène 20, 2, 2, 5, 2, 1, 2, 5)
     /* tier 4 (Treasure T4, 27/10/2026, Geoffrey) : mithril = même stat que l'acier, à la valeur du T4 (650 x ; plastron
@@ -1304,10 +1310,14 @@ export const STUFF = {
     'Jambières titanesques': { slot:'jambes', tex:'legs_titan',     stats:{ climbSpeed:1.88, speed:1.95, mineSpeed:0.12, knockRes:15.6 } },   // minage 0,361 ÷ 3, recul 46,9 ÷ 3
     /* Coffre du Golbute (Instance II, 30/10/2026, Geoffrey) ; x → points au prix de dessin (designPrice : pods 6, marche
        240, dégâts % 16 depuis le 04/11 (avant 6), butin des mobs 10, double attaque 16) */
-    'Némésis du Golbute':    { slot:'pioche', tex:'pickaxe_nemesis', stats:{ mineSpeed:0.8 }, set:{ blockMinePct:25 } },   // passif : minage × 1,25 sur terre, pierre, pierre dure…
-    'Torse de Gollex':       { slot:'torse',  tex:'chest_gollex',    stats:{ pods:167, speed:-1.04 } },   // pods +1 000 x, marche −250 x
-    'Jambières du Golbute':  { slot:'jambes', tex:'legs_golbute',    stats:{ damagePct:12.5, looting:25, doubleAttack:7 } },   // 04/11 (Geoffrey) : même poids que les Jambes en thorium (≈ 562 x) : 200 x, 250 x, 112 x (avant 750 x : 33,3 % / 20 % / 21,9 %, +62 % de DPS en combat)
-    'Âme du Golbute':        { slot:'torche', tex:'soul_golbute',    stats:{ torches:10 }, set:{ torchRadius:10, torchTime:0.5, golemOxygen:25 } },   // passif : +25 oxygène quand un golem meurt à 8 cases
+    'Némésis du Golbute':    { slot:'pioche', tex:'pickaxe_nemesis', stats:{ mineSpeed:0.8 }, set:{ blockMinePct:25 },
+                             recycle:{ 'Thorium ingot':10, 'Cobalt ingot':10 } },   // passif : minage × 1,25 sur terre, pierre, pierre dure…
+    'Torse de Gollex':       { slot:'torse',  tex:'chest_gollex',    stats:{ pods:167, speed:-1.04 },
+                             recycle:{ 'Mithril ingot':20 } },   // pods +1 000 x, marche −250 x
+    'Jambières du Golbute':  { slot:'jambes', tex:'legs_golbute',    stats:{ damagePct:12.5, looting:25, doubleAttack:7 },
+                             recycle:{ 'Mithril ingot':18 } },   // 04/11 (Geoffrey) : même poids que les Jambes en thorium (≈ 562 x) : 200 x, 250 x, 112 x (avant 750 x : 33,3 % / 20 % / 21,9 %, +62 % de DPS en combat)
+    'Âme du Golbute':        { slot:'torche', tex:'soul_golbute',    stats:{ torches:10 }, set:{ torchRadius:10, torchTime:0.5, golemOxygen:25 },
+                             recycle:{ 'Orbe supérieur':2 } },   // passif : +25 oxygène quand un golem meurt à 8 cases
     /* butin rare des mobs (MOB_DROPS) : pas craftables. Règle du 27/10/2026 (Geoffrey) : chacune vaut le x du tier 2
        (250, comme une pièce d'armure en fer), partagé à parts égales entre ses stats, aux prix mesurés du GS (worth, gs) ;
        une stat de combat (STUFF.combatStats) n'en reçoit que STUFF.combatOnStuff (la moitié) : le mineur se bat peu dans
@@ -1333,9 +1343,12 @@ export const STUFF = {
     'Épée cassée en carton': { slot:'epee', tex:'sword_cardboard', set:{ damage:7 },      // remplace les mains nues (5), comme une épée
                                recycle:{ 'Chitine':20 } },
     /* coffre du Roi Gobelin (GOBLIN_KING, 27/10/2026, Geoffrey) : pas craftables, valeurs du créateur */
-    'Couronne du Roi Gobelin': { slot:'casque', tex:'crown_goblin_king', stats:{ fortune:10 }, set:{ goblinThrall:10 } },   // passif : gobelins asservis à 10 cases
-    'Masse du Roi Gobelin':    { slot:'epee',   tex:'mace_goblin_king',  set:{ damage:14 }, stats:{ crit:15 } },          // remplace les mains nues (5), comme une épée
-    'Cape royale du Gobelin':  { slot:'cape',   tex:'cape_goblin_royal', stats:{ damagePct:1.9, mineSpeedPct:5 } },   // dégâts % 1,9 (04/11, prix de dessin 16 ; avant 5)
+    'Couronne du Roi Gobelin': { slot:'casque', tex:'crown_goblin_king', stats:{ fortune:10 }, set:{ goblinThrall:10 },
+                             recycle:{ 'Rubis inférieur':1, 'Jade inférieur':1, 'Saphir inférieur':1, 'Steel ingot':10 } },   // passif : gobelins asservis à 10 cases
+    'Masse du Roi Gobelin':    { slot:'epee',   tex:'mace_goblin_king',  set:{ damage:14 }, stats:{ crit:15 },
+                             recycle:{ 'Steel ingot':10, 'Orbe':3 } },          // remplace les mains nues (5), comme une épée
+    'Cape royale du Gobelin':  { slot:'cape',   tex:'cape_goblin_royal', stats:{ damagePct:1.9, mineSpeedPct:5 },
+                             recycle:{ 'Shiny gold':20, 'Cuir de minotaure':25 } },   // dégâts % 1,9 (04/11, prix de dessin 16 ; avant 5)
     /* anneaux : aucune stat pour le porteur seul, leur effet de groupe est dans RINGS */
     ...Object.fromEntries(Object.entries(RINGS.items).map(([n, d]) => [n, { slot:RINGS.slot, tex:d.tex }])),
   },
@@ -1463,7 +1476,7 @@ export const UPGRADE = {
                        'Bottes en acier','Plastron de l\'équilibre',
                        'Masse du Roi Gobelin','Cape royale du Gobelin'] },   // stuff du Roi Gobelin : tier 3 (Geoffrey, 27/10)
     /* tier 4 (27/10/2026, Geoffrey) : 650 x (avant 600, Couronne seule) ; mithril et pièces spéciales du Treasure T4 */
-    4: { x:650, items:['Couronne du Roi Gobelin', 'Casque en mithril', 'Plastron en mithril', 'Jambes en mithril', 'Bottes en mithril',
+    4: { x:650, items:['Couronne du Roi Gobelin', 'Pioche en mithril', 'Épée en mithril', 'Casque en mithril', 'Plastron en mithril', 'Jambes en mithril', 'Bottes en mithril',
                        'Lunettes de luxe', 'Bottes de chantier', 'Ceinture golémique', 'Gants de boucher'] },
     /* tier 4.5 (27/10/2026, Geoffrey) : 750 x, thorium, cobalt, Jambières titanesques */
     '4.5': { x:750, items:[...['thorium', 'cobalt'].flatMap(m => ['Casque', 'Plastron', 'Jambes', 'Bottes'].map(p => `${p} en ${m}`)),
@@ -2172,7 +2185,30 @@ export const CHAT = { channels:[{ id:'general', label:'Général' }, { id:'mp', 
    everyMax après la fin du précédent, de openHour à closeHour (heure de timeZone). Tombé dans le créneau fermé : à la
    réouverture, plus 0 à lateMax. joinMs : temps pour taper command. lots : un seul tiré, chance en part de 1 (total 1) ;
    energy : points d'énergie ; rune : objet rune, qualité tirée avec les chances de l'identification. */
-export const RAFFLE = { name:'Raffle', command:'!join', joinMs:120e3,   /* 01/11 (Geoffrey) : avant 40 s */ everyMin:30*60e3, everyMax:60*60e3,   /* 31/10 (Geoffrey) : avant 45 à 120 min */  openHour:8, closeHour:2, lateMax:75*60e3, timeZone:'Europe/Paris',
+/* Événement du jour (05/11/2026, Geoffrey ; src/shared/daily.js, server : ns daily) : un événement par jour (minuit à minuit,
+   heure de Paris), tiré au hasard par le serveur, chances égales ; jamais le même que les noRepeat jours d'avant (2 : pas deux
+   fois en moins de 3 jours). Effets figés au lancement d'une partie (comme les skills ; prison : à chaque run), sauf les
+   jauges du Jugement (en direct) et le raffle (au début du raffle). Affiché dans le Lobby. Valeurs provisoires.
+   orePoints : points de terrain changés en minerais (comme la Shrine d'abondance), mine classique et prison ·
+   energyMul : coût d'une mine × (arrondi, 1 au moins), le seuil pour lancer aussi · mobSpawnMul : mobs qui apparaissent
+   × plus souvent dès l'area mobFrom, mine classique · towerCap : jauge pleine du Jugement, towersTogether : les deux tours
+   ouvertes ensemble · miW / miH / miDuration : mine instantanée · kholeMul : chance du k hole (mine et prison) ·
+   raffleWinners : gagnants d'un raffle · xpMul : XP de session (mine classique, prison). */
+export const DAILY = { timeZone:'Europe/Paris', noRepeat:2, keep:10, poll:60_000,
+  list:[
+    { id:'abondante', name:'Mine abondante', icon:'⛏', desc:'+2 % de minerais dans les mines et la prison', orePoints:2 },
+    { id:'ferie', name:'Jour férié', icon:'🏖', desc:'Énergie : les mines coûtent 33 % de moins', energyMul:0.67 },
+    { id:'invasion', name:'Invasion', icon:'⚔', desc:'+25 % de mobs dans la mine à partir de l\'area 5', mobSpawnMul:1.25, mobFrom:5 },
+    { id:'cataclysme', name:'Cataclysme', icon:'🌋', desc:'Les tours de l\'Ange et du Démon peuvent s\'ouvrir en même temps ; jauges pleines à 150 au lieu de 200', towerCap:150, towersTogether:true },
+    { id:'mi', name:'MI abondante', icon:'💎', desc:'Mine instantanée deux fois plus grande (71 × 71) et deux fois plus longue', miW:71, miH:71, miDuration:600 },
+    { id:'multivers', name:'Multivers', icon:'🌀', desc:'k hole 5 fois plus fréquents', kholeMul:5 },
+    { id:'peuple', name:'Pouvoir au peuple', icon:'🎟', desc:'3 gagnants à chaque raffle', raffleWinners:3 },
+    { id:'heritage', name:'Héritage', icon:'📜', desc:'+5 % d\'XP', xpMul:1.05 },
+  ] };
+
+/* popupMs (05/11/2026, Geoffrey) : bulle « Raffle en cours » chez les joueurs qui ont le jeu ouvert (pas de notification du
+   téléphone) */
+export const RAFFLE = { name:'Raffle', command:'!join', joinMs:120e3, popupMs:30e3,   /* 01/11 (Geoffrey) : avant 40 s */ everyMin:30*60e3, everyMax:60*60e3,   /* 31/10 (Geoffrey) : avant 45 à 120 min */  openHour:8, closeHour:2, lateMax:75*60e3, timeZone:'Europe/Paris',
   lots:[
     { chance:0.30, item:'Chitine', qty:100 },
     { chance:0.01, item:'Treasure T4', qty:1 },
