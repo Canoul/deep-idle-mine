@@ -31,7 +31,7 @@ import { sanitizeBotPresets, isCopyPresetId, COPY_PREFIX } from '../../src/share
 import { prisonCompos, pickCompo } from '../../src/meta/prison-profile.js';
 import { sanitizeFocus } from '../../src/sim/focus.js';
 import { displayName } from '../../src/shared/account.js';
-import { createInventory, deserialize, serialize, creditSession, addItem, removeItem, countOf, sortInventory, moveSlot } from '../../src/meta/inventory.js';
+import { createInventory, deserialize, serialize, creditSession, addItem, removeItem, countOf, sortInventory, moveSlot, isStackable } from '../../src/meta/inventory.js';
 import { sanitizeDaily, rollDaily, publicDaily, dailyFx, dailyCost, dailyOn } from '../../src/shared/daily.js';
 import { sanitizeJudgment, addResidues, refresh as refreshJudgment, publicJudgment, isOpen as towerOpen, anyOpen as anyTowerOpen, residuesOn, hasWon, markDone,
          setCount as setJudgmentCount, SIDES as JUDGMENT_SIDES } from '../../src/meta/judgment.js';
@@ -1654,6 +1654,11 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         if(!known) await store.putInventory(accountId, JSON.parse(serialize(inv)));
         return true;
       });
+    },
+    /* objets empilables de l'inventaire, dans l'ordre de l'inventaire (dépôt à la banque de guilde, 05/11/2026) */
+    async stackItems(accountId){
+      const inv = await loadInventory(accountId);
+      return inv.slots.filter(s => s && isStackable(s.item) && s.qty > 0).map(s => ({ item: s.item, qty: s.qty }));
     },
     /* quantités possédées de ces objets (écran des bâtiments) */
     async itemCounts(accountId, items){

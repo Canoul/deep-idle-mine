@@ -141,6 +141,11 @@ export const guildApi = {
   peek:  id => request('POST', '/api/guild/peek', { id }),
   log:   (id, before) => request('POST', '/api/guild/log', { id, before }),
   give:  (building, item, qty, opId) => request('POST', '/api/guild/give', { building, item, qty, opId }),
+  /* banque de guilde (05/11/2026) */
+  bank:        ()                          => request('GET', '/api/guild/bank'),
+  bankDeposit: (item, qty, opId)           => request('POST', '/api/guild/bank/deposit', { item, qty, opId }),
+  bankGive:    (building, item, qty, opId) => request('POST', '/api/guild/bank/give', { building, item, qty, opId }),
+  bankCraft:   (item, count, opId)         => request('POST', '/api/guild/bank/craft', { item, count, opId }),
   build: id => request('POST', '/api/guild/build', { id }),
   /* lobby de raid de la guilde (04/11/2026) : chaque action renvoie la vue de la guilde ; lancer : + session (201) */
   raidJoin:   group => request('POST', '/api/guild/raid/join', group ? { group } : {}),

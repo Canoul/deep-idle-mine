@@ -75,7 +75,7 @@ export function inventoryCells(inv, shown){
   return cells;
 }
 
-function slotHtml(s, i, fresh, n = 1){
+export function slotHtml(s, i, fresh, n = 1){   // exportée : banque de guilde (05/11)
   if(!s) return `<div class="slot empty" data-i="${i}"></div>`;
   const q = isStackable(s.item) ? `<span class="q">${fmtQty(s.qty, { short:inApp() })}</span>` : n > 1 ? `<span class="q">${fmtQty(n, { short:inApp() })}</span>` : s.plus > 0 ? `<span class="q">+${s.plus}</span>` : '';
   return `<div class="slot${rcls(s.item)}${fresh.has(i)?' fresh':''}"${rframe(s)} data-i="${i}" draggable="true"${tipAttr(s.item, `${pieceName(s)} × ${fullQty(n > 1 ? n : s.qty)}`, s.uid != null ? s : null)}>${iconHtml(s.item)}${runeMark(s)}${q}</div>`;

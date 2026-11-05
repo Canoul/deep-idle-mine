@@ -905,6 +905,13 @@ body.phone .chatMore{opacity:1;padding:0 calc(5*var(--u))}
 .gbHead img{width:calc(32*var(--u));height:calc(32*var(--u));flex:none}
 .gmat{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:var(--u) calc(3*var(--u));margin-top:calc(2*var(--u))}
 .gmat .bar{grid-column:1/-1}
+/* banque de guilde (05/11/2026, src/ui/guild.js bankHTML) */
+.gbGrid{margin-top:calc(2*var(--u))}
+.gbGrid .slot{cursor:pointer}
+.gbCraft{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:var(--u) calc(3*var(--u));margin-top:calc(3*var(--u))}
+.gbCraft .gbCost{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:var(--u) calc(4*var(--u))}
+.gbCraft .gbCost img,.gbCraft .gmatName img{width:calc(8*var(--u));height:calc(8*var(--u));image-rendering:pixelated;vertical-align:middle}
+.gmatBtns{display:flex;gap:var(--u);justify-self:end}
 .gmatName{display:flex;align-items:center;gap:calc(2*var(--u));min-width:0;overflow-wrap:anywhere}
 .gmatName img{width:calc(12*var(--u));height:calc(12*var(--u));flex:none}
 .glog{max-height:calc(120*var(--u));overflow-y:auto;font-size:var(--fs-s)}
