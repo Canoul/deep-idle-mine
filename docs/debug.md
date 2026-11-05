@@ -7607,3 +7607,18 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   sur la Forge (5 000 Diamants), journal.
 - ⚠️ Une guilde dissoute garde sa ligne guild_bank (orpheline, sans effet). Comme `give`, un plantage entre la sortie de
   l'inventaire et l'entrée en banque perdrait le dépôt.
+
+## 05/11/2026 — Geoffrey — Parrainage (branche geoffrey/parrainage)
+- `REFERRAL` (config) ; objet `Émeraude` (légendaire, texture `emerald` dans gen_textures.py, seule texture régénérée gardée).
+  `src/shared/referral.js` (code = ID de compte, `parseReferralCode`, `referralLink`, `referralRefusal`, messages).
+- Stockage : ns **referral** (GAME_NS, ACCOUNT_NS, effacé avec le compte) : { by, at, legacy?, done, doneAt, paid } ;
+  `putReferralAndInventories` écrit la fiche et les inventaires en une fois ; `referralsBy` (filleuls enregistrés).
+- `server/game/service.js` : `referralOf` (sans fiche, compte créé avant `legacyBefore` → { by: compte de « canoul »,
+  legacy }) ; `settleReferral` (niveau ≥ 5, verrous inv: des deux comptes + ref:, une fois, parrain d'office non payé)
+  appelé par `state` (sondé par le navigateur) et `referral` ; `referral(me)`, `setReferral(me, { code })` (verrou ref:).
+  `createGameService` reçoit `accountOf` / `accountByName` (server/main.js : comptes). Routes GET/POST /api/game/referral.
+- Navigateur : `gameApi.referral` / `setReferral` ; Mon compte → `referralHtml` (code, lien, filleuls, parrain ou formulaire ;
+  appli : lien du site, SITE.url) ; `?ref=CODE` gardé dans localStorage `dim.ref`, envoyé après connexion puis effacé.
+- Tests ✅ referral (5), anticheat/referral (3), rarity, account-delete, game-service, inventory, wiki ; `npm run test:anticheat`
+  157/157. ❌ prison-server « une tour et une instance » déjà rouge sur main. Navigateur ✅ (fenêtre en dev).
+- ⚠️ La récompense d'un compte d'avant arrive à sa première connexion (state) ; Canoul : `legacyPaysReferrer:false`.

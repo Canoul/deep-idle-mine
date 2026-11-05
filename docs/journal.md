@@ -16,6 +16,16 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 05/11/2026 — Geoffrey — Parrainage : 10 Émeraudes au niveau 5
+- **Pour le joueur** : dans Mon compte, bouton **🎁 Parrainer un ami** : ton code et ton lien à donner. Un nouveau joueur entre
+  le code d'un ami (ou arrive par son lien) ; à son niveau 5, lui et son parrain reçoivent **10 Émeraudes** (nouvel objet
+  légendaire). Tous les comptes créés avant aujourd'hui 12 h 11 ont Canoul pour parrain et reçoivent leurs 10 Émeraudes
+  dès le niveau 5 (tout de suite s'ils l'ont).
+- **Décisions** : le code = l'ID de compte ; un code s'entre avant le niveau 5, sans parrain, jamais le sien ni celui d'un
+  filleul ; Canoul ne reçoit rien pour les comptes d'avant (à confirmer).
+- **À suivre** : à quoi servent les Émeraudes.
+- **État** : ✅ en ligne le 05/11
+
 ## 05/11/2026 — Geoffrey — Stats du mineur : la bulle sur le nom de la stat
 - **Pour le joueur** : plus de bouton « ? » à chaque ligne. L'explication d'une stat s'affiche en **posant la souris sur son
   nom** (souligné en pointillés), ou en **maintenant le doigt dessus** sur téléphone (un appui bref ou un défilement ne

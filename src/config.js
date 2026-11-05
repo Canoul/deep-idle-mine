@@ -888,7 +888,7 @@ export const TEXTURES = ['dirt','grass','hellstone','clue','stone','hardstone','
   'guild_hall_1','guild_hall_2','guild_hall_3','guild_hall_4','guild_site','guild_wing_armory','guild_wing_treasury','guild_wing_forge','guild_lot',
   'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon','giant_block','lucifer','lucifer_portal','lucifer_roar1','lucifer_roar2','lucifer_roar3','lucifer_roar4','lucifer_roar5','lucifer_roar6','giant_fountain','giant_torch','instance_spawner','instance_cage','goblin_king','golbute','golbute_crystal','golbute_body','golbute_body_crystal','golbute_arm','golbute_arm_crystal','golbute_rock','chest_golbute','cerbere','cerbere_rage','cerbere_anim','cerbere_rage_anim',
   'brick_angel','brick_angel_hard','brick_demon','brick_demon_hard','boss_angel','boss_demon','seraph','imp',
-  'crown_goblin_king','mace_goblin_king','cape_goblin_royal','furnace_gold','recipe_chitin','chest_goblin_king','nugget_silver','ingot_silver','seal_demon','shrine_abundance',
+  'crown_goblin_king','mace_goblin_king','cape_goblin_royal','furnace_gold','recipe_chitin','chest_goblin_king','nugget_silver','ingot_silver','seal_demon','emerald','shrine_abundance',
   'ingot_mithril','refined_cobalt','refined_thorium','ingot_cobalt','ingot_thorium','minotaur_leather','rotten_flesh','treasure_t4',
   'gem_topaz','gem_ruby_fine','gem_jade_fine','gem_sapphire_fine','glasses_luxury','boots_worksite','belt_golem','gloves_butcher','legs_titan','cape_inclusive',
   'helmet_mithril','chest_mithril','legs_mithril','boots_mithril','helmet_thorium','chest_thorium','legs_thorium','boots_thorium',
@@ -1197,6 +1197,7 @@ export const RARITY = {
     'Mithril ingot':'inhabituel', 'Refined cobalt':'inhabituel', 'Refined thorium':'inhabituel', 'Cobalt ingot':'rare', 'Thorium ingot':'rare',
     'Topaze':'rare', 'Saphir':'rare', 'Rubis':'rare', 'Jade':'rare', 'Saphir BP':'rare', 'Rubis BP':'rare', 'Jade BP':'rare',
     'Clé d\'instance I BP':'inhabituel', 'Cuir de minotaure':'rare', 'Sceau démoniaque':'rare',   // sceau : 05/11
+    'Émeraude':'legendaire',   // parrainage (REFERRAL, 05/11)
     ...Object.fromEntries(['Pioche', 'Épée'].flatMap(p => [[`${p} en mithril`, 'inhabituel'], [`${p} en mithril BP`, 'inhabituel']])),   // 05/11
     ...Object.fromEntries(['Casque', 'Plastron', 'Jambes', 'Bottes'].flatMap(p => [[`${p} en mithril`, 'inhabituel'], [`${p} en mithril BP`, 'inhabituel'],
       [`${p} en thorium`, 'rare'], [`${p} en thorium BP`, 'rare'], [`${p} en cobalt`, 'rare'], [`${p} en cobalt BP`, 'rare']])),
@@ -1514,6 +1515,14 @@ export const UPGRADE = {
    stack : true = les exemplaires s'empilent dans un seul slot, sans maximum ;
            false = chaque exemplaire prend son propre slot (stuff : chaque pièce aura ses propres stats)
    Les blocs qui se ramassent sont ajoutés automatiquement. Un objet absent du catalogue s'empile par défaut. */
+/* Parrainage (05/11/2026, Geoffrey ; server/game/service.js referral, src/shared/referral.js) : dans « Mon compte », bouton
+   « Parrainer un ami » : son code (son ID de compte) et son lien (?ref=CODE). Un nouveau joueur entre le code d'un ami (ou
+   arrive par son lien) : quand il atteint le niveau `level`, lui ET son parrain reçoivent `qty` × `item` (une seule fois).
+   On ne peut entrer un code que sans parrain, avant le niveau `level`, jamais le sien ni celui d'un de ses filleuls.
+   legacyBefore : les comptes créés avant (mise en ligne du parrainage) sont affiliés à `legacyName` (Canoul) et reçoivent la
+   récompense au niveau `level` ; legacyPaysReferrer : le parrain de ces comptes ne reçoit rien (choix de Claude, à valider). */
+export const REFERRAL = { item:'Émeraude', qty:10, level:5, legacyName:'canoul', legacyBefore:Date.UTC(2026, 10, 5, 11, 11), legacyPaysReferrer:false };
+
 export const ITEMS = {
   ...Object.fromEntries(Object.values(BLOCKS).filter(b => !b.noDrop && !b.unbreakable)
     .map(b => [b.name, { cat:b.family ?? b.type, tex:b.tex, w:b.w, stack:true }])),
@@ -1553,6 +1562,7 @@ export const ITEMS = {
   'Clé d\'instance II': { cat:'key', tex:'key_instance_2', w:1, stack:true },           // Treasure T4 (10 %) ; ouvre l'Instance II, le Golbute (30/10)
   'Orbe supérieur': { cat:'material', tex:'orb_superior', w:1, stack:true },   // 31/10 (Geoffrey) : se crafte de base ; sans usage pour l'instant
   'Orbe': { cat:'material', tex:'orb', w:1, stack:true },
+  'Émeraude': { cat:'material', tex:'emerald', w:1, stack:true },   // 05/11 (Geoffrey) : récompense du parrainage (REFERRAL) ; sans usage pour l'instant
   'Sceau démoniaque': { cat:'material', tex:'seal_demon', w:1, stack:true },   // 05/11 (Geoffrey) : 1 par joueur présent à la victoire d'une instance (INSTANCE.seal) ; sans usage pour l'instant   // 30/10 (Geoffrey) : se crafte de base ; 31/10 : sert à la Clé d'instance I
   'Cristal de pleine lune': { cat:'material', tex:'moon_crystal', w:1, stack:true },   // butin du minotaure (DUNGEON.loot) ; plus dans le Treasure T3 depuis le 01/11/2026 ; après LOOT pour garder son poids
   ...Object.fromEntries(Object.entries(STUFF.items).map(([n, d]) => [n, { cat:'stuff', slot:d.slot, tex:d.tex, stats:d.stats ?? {}, set:d.set ?? {}, w:0, stack:false }])),

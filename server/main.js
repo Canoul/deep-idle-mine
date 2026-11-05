@@ -43,7 +43,8 @@ if(renamed.rows) console.log(`Objets renommés : ${renamed.rows} ligne(s)`, rena
 /* mode dev : copies de vrais joueurs pour les mineurs de test (data/presets/*.json, server/game/dev-copies.js) */
 /* modération du chat (30/10) : un joueur banni voit sa prison arrêtée */
 const moderation = createModerationService({ store: gameStore, onBan: id => game.prisonStop({ id }).catch(() => {}) });
-const game = createGameService({ store: gameStore, announce: createDiscordAnnouncer({ url: SERVER.discordWebhook }), moderation, blockedOf: id => social.blockedOf(id),
+const game = createGameService({ store: gameStore, accountOf: id => store.getAccount(id), accountByName: key => store.findAccountByName(key),   // parrainage (05/11)
+                                 announce: createDiscordAnnouncer({ url: SERVER.discordWebhook }), moderation, blockedOf: id => social.blockedOf(id),
                                  dailyEvents: true,   // événement du jour (05/11/2026)
                                  onXp: (id, xp) => guild.addXp(id, xp), guildNameOf: id => guild.nameOf(id), guildBonusOf: id => guild.bonusOf(id),
                                  devCopies: () => readDevCopies(path.join(SERVER.dataDir, 'presets')),
