@@ -7528,3 +7528,8 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   remplies). UI : cadenas « Niveau n », prochain emplacement pris parmi les cases ouvertes. Wiki : texte généré.
 - Tests ✅ spells (+ test des niveaux), sets, game-service, app-spells, dev-presets, tower-spells, giant-service,
   dev-live-copies, glyphs, hescoming-service, raid-server, wiki ; `npm run test:anticheat` 154/154 (attendus à 4 cases).
+
+## 05/11/2026 — Appli : fenêtre « Recettes » du four (Geoffrey)
+- Paragraphe d'explication marqué `frecAbout` (src/ui/furnace.js), caché par `body.app #fpick .frecAbout` (src/app/app.css) ; la liste
+  (`.frecBox .frecs`, flex 1) récupère la hauteur. Site inchangé. Tests furnace*, app* 223/223 ✅. Pas vu sur un vrai téléphone.
+
