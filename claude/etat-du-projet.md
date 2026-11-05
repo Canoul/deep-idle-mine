@@ -253,8 +253,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   prorata dans toutes les areas. D'autres shrines prévus.
   **Stèles des tours** (30/10, Geoffrey ; `SHRINES.list` exorcisme / pacte, `TOWER.stele`) : shrines d'une tour de leur camp lancée par le chef : une charge,
   consommée à la victoire (ancien : 3 tours décomptées au lancement), activable / désactivable par le chef (`off`, `POST /api/party/stele`), visibles dans le lobby de leur tour seulement. **Exorcisme** (Tour du Démon, 240 Stonebricks angéliques),
-  **Pacte** (Tour de l'Ange, 240 démoniaques). À la mort du boss, le boss de l'autre camp s'écrase sur le toit (projection
-  10 cases), casse le treuil, 5 mobs de l'autre camp à 150 % PV par étage, boss à 150 % PV ; même chrono, victoire = 2e
+  **Pacte** (Tour de l'Ange, 240 démoniaques). À la mort du boss, le boss de l'autre camp s'écrase sur le toit (tout le toit et la trappe
+  expulsés à coup sûr, sans ténacité, projetés 3 cases au-dessus puis hors de la tour, 05/11 ; ancien : 10 cases à plat, ténacité), casse le treuil, 5 mobs de l'autre camp à 150 % PV par étage, boss à 150 % PV ; même chrono, victoire = 2e
   boss tué. Bonus : **trésor béni** (anneaux × 2) via `RUNE.luck`, coefficient générique (variantes R1-R7 générées).
   ⚠️ À équilibrer : en simulation, 2,5 / 40 tue le 1er boss vers 8 min 17, jamais le 2e.
 - **Recherche de groupe (LFG)** (22/10, Geoffrey ; GAME_DESIGN §6 « Jouer à plusieurs ») : bouton dans le Lobby
