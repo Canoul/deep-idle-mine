@@ -16,6 +16,9 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 05/11/2026 — Geoffrey — He's coming : 1 pépite d'argent par 1 000 points (avant 800)
+- **État** : ✅ en ligne le 05/11
+
 ## 05/11/2026 — Geoffrey — Cerbère plus dynamique : bond du Magma, pénétration seulement sur les tanks
 - **Pour le joueur** : pour son Magma, Cerbère bondit de 4 cases en arrière (on le voit sauter), ses gueules rougeoient,
   il crache un cône de feu, puis il revient d'un bond au contact des tanks (même s'ils ont été repoussés). Les mineurs

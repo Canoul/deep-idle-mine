@@ -1968,7 +1968,7 @@ export const RAID = {
    avant de changer de sens) ; swing : toutes les every s, tous ceux au contact projetés de knock cases, en arc de high cases, en flight s. */
 /* tiers : Cristaux de pleine lune à la place des Plumes d'ange du Bloc géant, mêmes quantités (01/11/2026, Geoffrey) */
 export const HES_COMING = { ...GIANT, bossName:'Lucifer',
-  tiers: GIANT.tiers.map(({ min, items:{ 'Plume d\'ange':n, ...items } }) => ({ min:min * 24, items:n ? { 'Cristal de pleine lune':n, ...items } : items })), nugget: { ...GIANT.nugget, per:GIANT.nugget.per * 8 },
+  tiers: GIANT.tiers.map(({ min, items:{ 'Plume d\'ange':n, ...items } }) => ({ min:min * 24, items:n ? { 'Cristal de pleine lune':n, ...items } : items })), nugget: { ...GIANT.nugget, per:1000 }   /* 1 pépite par 1000 points (05/11, Geoffrey ; avant 800) */,
   roar: { every:30, radius:3, fear:15, wander:1, markBonus:0.5 },   // markBonus (03/11/2026, Geoffrey) : Fear esquivé par la ténacité → le suivant a × (1 + markBonus) de chance de prendre (debuff « Marqué »)
   swing: { every:5, knock:4, high:2, flight:0.6 },
   /* animation du rugissement (02/11/2026, Jules ; src/render/hescoming.js luciferFrame, images de scripts/gen_lucifer.py),
