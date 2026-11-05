@@ -1658,7 +1658,7 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
 - **Pour le joueur** : l'Aura rassurante, l'Aura berserk et l'Aura d'efficacité s'appliquaient bien, mais ne se voyaient
   nulle part en session. Elles apparaissent maintenant dans l'icône dorée « Bonus de session » (avec les anneaux, les
   shrines et l'Escalateur), chez tous les joueurs du groupe : « Aura berserk : Critique +2 % pour tout le groupe ».
-- **État** : ✅ en ligne le 05/11
+- **État** : 🧪 sur la branche `geoffrey/aura-buff` (pas en ligne)
 
 ## 05/11/2026 — Geoffrey — Cape inclusive : + 50 Cuirs de minotaure à la recette
 - **Pour le joueur** : la Cape inclusive demande maintenant aussi 50 Cuirs de minotaure, en plus du reste de sa recette.
