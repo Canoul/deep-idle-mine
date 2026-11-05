@@ -16,6 +16,15 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 05/11/2026 — Geoffrey — Cerbère plus dynamique : bond du Magma, pénétration seulement sur les tanks
+- **Pour le joueur** : pour son Magma, Cerbère bondit de 4 cases en arrière (on le voit sauter), ses gueules rougeoient,
+  il crache un cône de feu, puis il revient d'un bond au contact des tanks (même s'ils ont été repoussés). Les mineurs
+  au corps à corps doivent le suivre. Sa pénétration de ténacité ne vaut plus que contre les tanks : les autres joueurs
+  esquivent Morsure, Balayage et Magma avec toute leur ténacité.
+- **Décisions** : timing (choix de Claude) : souffle 1,2 s après le bond, retour 2,5 s après. Équilibrage inchangé :
+  280 000 PV, 3/40 victoires de l'équipe de référence (avant 2/40), combat ≈ 9 min.
+- **État** : 🧪 sur la branche `geoffrey/cerbere-dynamique` (pas en ligne)
+
 ## 04/11/2026 — Jules — Concasseur : 16 cases d'entrée et 16 de sortie
 - **Pour le joueur** : le concasseur a deux fois plus de place : 16 cases d'entrée (4 rangées de 4) et 16 cases de
   sortie (avant : 8 et 8). Ce qui était déjà posé reste à sa place.

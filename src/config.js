@@ -101,7 +101,7 @@ export const COMBAT = { reach:0.5, knock:0.25, tackleGiveUp:5, tackleLeash:6 };
    suivante, puis tout redevient normal ; la stat tenacityResilience (STATS, 0 pour tout le monde) réduit cette baisse
    (resilience 100 % : plus de fatigue). */
 export const TENACITY = { k:40, max:75, tired:0.5,
-  pen: { gobelin:0, occultiste:0, mephite:0, chien:0, ver:0, chair:0, golem:10, minotaure:10, hescoming:0, giant:0, towerBoss:20, golbute:30, cerbere:20 } };   // golbute 20 → 30 (04/11/2026, Geoffrey)
+  pen: { gobelin:0, occultiste:0, mephite:0, chien:0, ver:0, chair:0, golem:10, minotaure:10, hescoming:0, giant:0, towerBoss:20, golbute:30, cerbere:20, cerbere_soft:0 } };   // golbute 20 → 30 (04/11/2026, Geoffrey)
 
 export const PREFS = { priority:'minerais', fightMobs:true, helpAllies:false, helpIgnore:[] };
 /* Aider allié : il ne part aider que si le mob est à helpRange cases ou moins (Manhattan). Au-delà, le combat est fini
@@ -706,7 +706,7 @@ export const SKILLS = {
      par rang */
   rested: { time:180, prisonTime:60, tenacity:2 },
   /* Solide sur les appuis (steady) : points de ténacité contre ces mécaniques de boss (clés de TENACITY.pen) */
-  steady: { tenacity:5, sources:['golbute', 'towerBoss', 'minotaure', 'hescoming', 'cerbere'] },   // cerbere : Morsure (raid, 04/11)
+  steady: { tenacity:5, sources:['golbute', 'towerBoss', 'minotaure', 'hescoming', 'cerbere', 'cerbere_soft'] },   // cerbere : Morsure (raid, 04/11)
   rushTime: 3,          // s : durée du bonus de vitesse après un minerai (ore_rush), remise à 3 s à chaque minerai
   reconEvery: 2,        // s dans le seau, par mineur, pour 1 d'oxygène (recon, Reconnaissance)
   ravageCrits: 2,       // critiques d'affilée pour une double attaque garantie (ravage, Saccager)
@@ -1938,7 +1938,9 @@ export const RAID = {
     boss: { name: 'Cerbère', w: 8, h: 6, hp: 280000, knockRes: 100, bossX: 18 },   // 280 000 PV : ~1 victoire sur 10, combat ~9-10 min, équipe de référence avec tanks à 40 % de ténacité fixe (04/11 : Morsure /30 s qui tue 1 cible, tanks jamais durcis ; simulation --tank-ten 40)
     bite: { every: 30, targets: 3, show: 1.5 },   // show : s d'affichage de la Morsure (elle ne persiste pas)
     sweep: { every: 5, range: 2, back: 5, high: 3 },
-    magma: { every: 30, chance: 0.5 },
+    /* Magma (Geoffrey, 05/11 : du dynamisme) : il bondit de leap cases en arrière (leapT s), souffle breath s après le début
+       du bond, puis retourne au contact des tanks stay s après (backT s de trajet) */
+    magma: { every: 30, chance: 0.5, leap: 4, leapT: 0.35, breath: 1.2, stay: 2.5, backT: 0.35 },
     stone: { hard: 50 },
     rage: { below: 0.33, biteEvery: 21, back: 6, high: 4, chance: 0.65 },
     /* animation du sprite (04/11/2026, Jules ; scripts/gen_cerbere.py, src/render/raid.js cerbereFrame) : planche

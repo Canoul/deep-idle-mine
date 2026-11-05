@@ -7485,3 +7485,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   8 cases est lue en 16 (cases 1–8 gardées, 9–16 vides). Vérifié à la main ✅.
 - Tests ✅ `tests/crusher.test.js` 16/16 : les 8 écrits en dur sont devenus `CRUSHER.inSlots` / `outSlots`.
   ⚠️ Pas regardé dans le navigateur (hauteur de l'onglet sur PC).
+
+## 05/11/2026 — Cerbère : bond du Magma, pénétration seulement sur les tanks (Geoffrey)
+- **Quoi** : `RAID.cerbere.magma` { leap 4, leapT 0.35, breath 1.2, stay 2.5, backT 0.35 } ; src/sim/raid/cerbere.js : `leap` (au `next.magma`, b.x += leap, `breathAt`, `returnAt`), `magma` au `breathAt` (souffle : Durci comme avant), `comeBack` au `returnAt` (case = tank actif au sol le plus avancé + 1, sinon `bossX` ; bornée pour laisser la place au prochain bond) ; `moveBoss` (b.move { from, to, at, dur } ; repousse un mineur pris sous lui). `penSrc` : 'cerbere' (pen 20) pour les tanks, 'cerbere_soft' (pen 0, dans `SKILLS.steady.sources`) pour les autres, dans Morsure, Balayage, Magma. Vue : `boss.move { from, to, ago, dur }`, `boss.breathIn`. Rendu (src/render/raid.js) : glissé + arc pendant `move`, lueur des gueules avant le souffle, cône de feu 0,9 s.
+- **Tests** : raid (bond, souffle, retour au tank repoussé ; penSrc ; Magma via `breathe`) ✅, raid-server, raid-ui, skills ✅. Vérifié dans le navigateur (vue fabriquée par la simulation) ✅. Simulation `--boss-only --left 11.5 --tank-ten 40` : 3/40, 9,1 min.

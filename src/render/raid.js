@@ -78,7 +78,10 @@ export function createRaidRenderer(cv){
 
     const b = G.boss, byId = new Map(G.miners.map(m => [m.id, m]));
     if(b && b.hp > 0){
-      const px = b.x * T, py = (b.y - b.h + 1) * T, w = b.w * T, h = b.h * T;
+      /* bond du Magma (05/11) : glissé de from à to en dur s, avec un saut (arc) ; sinon à sa case */
+      const mv = b.move, mt = mv ? since(G, mv.ago, now) : Infinity, k = mv && mt < mv.dur ? Math.min(1, mt / mv.dur) : 1;
+      const bx = mv && k < 1 ? mv.from + (mv.to - mv.from) * k : b.x, lift = k < 1 ? Math.sin(k * Math.PI) * T * 1.5 : 0;
+      const px = bx * T, py = (b.y - b.h + 1) * T - lift, w = b.w * T, h = b.h * T;
       /* Balayage : la patte balaie RAID.cerbere.sweep.range cases devant lui (poussière) */
       const sw = since(G, b.sweepAgo, now);
       if(sw < FX.sweep){
@@ -94,6 +97,22 @@ export function createRaidRenderer(cv){
         ctx.drawImage(sheet, cerbereFrame(now) * fw, 0, fw, sheet.naturalHeight, px, py, w, h);
       } else blit(b.rage ? 'cerbere_rage' : 'cerbere', px, py, b.rage ? '#a3260f' : '#3c2426', w, h);
       ctx.restore();
+      /* Magma : il prend son souffle (gueules qui rougeoient), puis crache un cône de feu vers la gauche */
+      const bw = b.breathIn;
+      if(bw != null && bw > 0){
+        const a = 0.35 + 0.25 * Math.sin(now / 70), cx = px + w * 0.15, cy = py + h * 0.4, r = h * 0.45;
+        const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+        g.addColorStop(0, `rgba(255,220,120,${a})`); g.addColorStop(1, 'rgba(255,90,20,0)');
+        ctx.fillStyle = g; ctx.fillRect(cx - r, cy - r, 2 * r, 2 * r);
+      }
+      const mgs = since(G, b.magmaAgo, now);
+      if(mgs < 0.9){
+        const fk = 1 - mgs / 0.9, mouthY = py + h * 0.35, len = (px) * Math.min(1, mgs / 0.25 + 0.2);
+        const grad = ctx.createLinearGradient(px, 0, px - len, 0);
+        grad.addColorStop(0, `rgba(255,240,160,${fk * 0.9})`); grad.addColorStop(0.4, `rgba(255,120,30,${fk * 0.7})`); grad.addColorStop(1, 'rgba(160,30,10,0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath(); ctx.moveTo(px + 4, mouthY - 6); ctx.lineTo(px - len, mouthY - h * 0.6); ctx.lineTo(px - len, (b.y + 1) * T); ctx.lineTo(px + 4, mouthY + 10); ctx.closePath(); ctx.fill();
+      }
       /* Morsure : éclair rouge sur les gueules */
       const bt = since(G, b.biteAgo, now);
       if(bt < FX.bite){ ctx.fillStyle = `rgba(255,40,20,${(1 - bt / FX.bite) * 0.35})`; ctx.fillRect(px, py, w, h); }
