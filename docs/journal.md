@@ -23,7 +23,7 @@ Modèle d'entrée :
   esquivent Morsure, Balayage et Magma avec toute leur ténacité.
 - **Décisions** : timing (choix de Claude) : souffle 1,2 s après le bond, retour 2,5 s après. Équilibrage inchangé :
   280 000 PV, 3/40 victoires de l'équipe de référence (avant 2/40), combat ≈ 9 min.
-- **État** : 🧪 sur la branche `geoffrey/cerbere-dynamique` (pas en ligne)
+- **État** : ✅ en ligne le 05/11
 
 ## 05/11/2026 — Geoffrey — Appli : activité des amis en entier
 - **Pour le joueur** : dans l'appli (Social, Mes amis), l'activité d'un ami n'est plus coupée (« Dans le l… ») : elle passe
