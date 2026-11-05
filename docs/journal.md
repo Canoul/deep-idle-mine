@@ -20,7 +20,7 @@ Modèle d'entrée :
 - **Pour le joueur** : dans l'appli (Skills, Stuff, Sorts, Lobby), quand tu modifies ton équipement, la ligne du set
   affiche « Set : x (modifié) » et un bouton **💾 Enregistrer** : un toucher enregistre tout (stuff, skills, sorts) dans le
   dernier set équipé ou enregistré, sans passer par le menu des sets ; sans set, il en crée un. La pop-up confirme.
-- **État** : 🧪 sur la branche `geoffrey/skills-enregistrer-mobile` (pas en ligne)
+- **État** : ✅ en ligne le 05/11
 
 ## 05/11/2026 — Geoffrey — Recherche : areas à atteindre et tier 5
 - **Pour le joueur** : à la Table de recherche, il faut maintenant avoir **déjà atteint une area** pour ouvrir un tier :
