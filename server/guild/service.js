@@ -14,7 +14,7 @@ import { GUILD } from '../../src/config.js';
 import { RANK, canRecruit, canKick, canPromote, canDemote, canTransfer, nextChief, sortMembers, activityOf,
          cleanGuildName, cleanGuildMessage, guildNameKey, guildNameError, sanitizeGuilds, buildingDef, buildingLevel, nextLevel, missing, buildingReady,
          canBuild, guildBonus } from '../../src/shared/guild.js';
-import { guildXpOf, guildLevelOf } from '../../src/meta/level.js';
+import { guildXpOf, guildLevelOf, mainSpec } from '../../src/meta/level.js';
 import { houseState } from '../../src/shared/guild-house.js';
 import { displayName, formatAccountId, nameKey, parseAccountId } from '../../src/shared/account.js';
 import { nameBanned } from '../moderation/filter.js';
@@ -85,6 +85,7 @@ export function createGuildService({ store, accounts, statusOf, inviteCheck = as
       const st = await statusOf(m.id) ?? { status:'offline' };
       return { ...st, id:m.id, name:await nameOf(m.id), rank:m.rank, xp:guildXpOf(m.rawXp), activity:activityOf(st.status),
         me:m.id === me.id, canInvite:m.id !== me.id && invitable(m.id, st),
+        spec:mainSpec(await store.getProgress?.(m.id)),   // spécialisation principale (05/11)
         actions:m.id === me.id ? { kick:false, promote:false, demote:false, transfer:false }
           : { kick:canKick(rank, m.rank), promote:canPromote(rank, m.rank), demote:canDemote(rank, m.rank), transfer:canTransfer(rank, m.rank) } };
     }));

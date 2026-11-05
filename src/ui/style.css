@@ -1282,3 +1282,5 @@ body.app .setQuick{flex:none;white-space:nowrap;font-size:var(--fs)}
 .shopList{list-style:none;margin:calc(5*var(--u)) 0;padding:0}
 .shopList li{display:flex;align-items:center;gap:calc(3*var(--u));padding:calc(1*var(--u)) 0}
 .shopBuy{width:100%}
+/* guilde : spécialisation principale d'un membre (05/11/2026), couleur de l'arbre (.tr-*) */
+.gspec{font-size:var(--fs-s);white-space:nowrap;color:var(--c,var(--mut))}
