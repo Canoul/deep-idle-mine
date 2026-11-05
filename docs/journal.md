@@ -1655,7 +1655,7 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
   71 × 71 ; « Grâce divine » retirée. Valeurs de détail proposées par Claude (voir GAME_DESIGN, Événement du jour).
 - **À suivre** : l'indicateur d'énergie basse (barre du haut) reste à 6 un jour férié ; Invasion et Mine abondante trop
   petites pour être mesurées en simulation (vérifiées par les tests).
-- **État** : 🧪 sur la branche `geoffrey/evenements-quotidiens` (pas en ligne)
+- **État** : ✅ en ligne le 05/11
 
 ## 05/11/2026 — Geoffrey — Raffle : bulle de 30 s pour les joueurs en ligne
 - **Pour le joueur** : quand un raffle commence, une bulle apparaît en haut à gauche (comme une invitation) pendant
