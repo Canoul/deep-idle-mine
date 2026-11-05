@@ -7638,3 +7638,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - Tests : research 21/21 (tests T3/T4 existants passent areaMax 9), area-max 7/7, app-ecrans, game-service ✅ ; anticheat 157/157 ✅.
 - ⚠️ Déjà rouges sur main, sans lien : loot « fortune : le doublon… », tier2 « recycle : un BP du T2 rend 30 à 45 ».
 
+
+## 05/11/2026 — Geoffrey — Parrainage : part du parrain d'office (branche geoffrey/parrainage-canoul)
+- `REFERRAL.legacyPaysReferrer` true. `settleReferral` : fiche done sans `paid` et parrain payable → `payLater` (verrous inv: du
+  parrain + ref:, une fois, `paidLate`). Tests ✅ referral (6, + rattrapage en rafale), anticheat 157/157.

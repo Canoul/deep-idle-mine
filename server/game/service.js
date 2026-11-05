@@ -374,11 +374,27 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     return acc && Number.isFinite(acc.createdAt) && acc.createdAt < REFERRAL.legacyBefore && leg && leg !== accountId
       ? { by: leg, at: null, legacy: true } : null;
   }
+  /* le parrain d'une fiche a-t-il droit à sa part ? (parrain d'office : seulement si REFERRAL.legacyPaysReferrer) */
+  const payable = r => !r.legacy || REFERRAL.legacyPaysReferrer;
+  /* fiche déjà récompensée sans la part du parrain (avant le réglage du 05/11 13 h) : on la lui verse, une fois */
+  async function payLater(accountId){
+    const r0 = await store.getReferral(accountId);
+    return withLock.many(['inv:' + r0.by, 'ref:' + accountId], async () => {
+      const r = await store.getReferral(accountId);
+      if(!r?.done || r.paid || !payable(r) || r.by === accountId || !(await accountOf(r.by))) return null;
+      const theirs = await loadInventory(r.by);
+      await loadStuff(r.by, theirs);
+      addItem(theirs, REFERRAL.item, REFERRAL.qty);
+      await store.putReferralAndInventories(accountId, { ...r, paid: true, paidLate: clock() }, [[r.by, JSON.parse(serialize(theirs))]]);
+      return { paid: true };
+    });
+  }
   /* niveau atteint : le filleul et son parrain reçoivent la récompense, une seule fois (fiche done), sous les verrous des deux
      inventaires et de la fiche ; parrain d'office (legacy) : rien pour lui (REFERRAL.legacyPaysReferrer) ; parrain disparu : rien */
   async function settleReferral(accountId){
     const first = await referralOf(accountId);
-    if(!first?.by || first.done) return null;
+    if(!first?.by) return null;
+    if(first.done) return first.paid || !payable(first) ? null : payLater(accountId);   // rattrapage : sa part au parrain (05/11 13 h)
     if(levelOf((await loadProgress(accountId)).xp).level < REFERRAL.level) return null;
     return withLock.many(['inv:' + accountId, 'inv:' + first.by, 'ref:' + accountId], async () => {
       const r = await referralOf(accountId);

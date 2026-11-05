@@ -435,7 +435,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - **Parrainage** (05/11/2026, Geoffrey ; `REFERRAL`, src/shared/referral.js, ns `referral`) : Mon compte → « Parrainer un ami »
   (code = ID de compte, lien `?ref=`) ; code d'un parrain entré avant le niveau 5 ; au niveau 5, filleul et parrain reçoivent
   10 Émeraudes (objet légendaire, sans usage pour l'instant), une fois. Comptes créés avant le 05/11 12 h 11 : affiliés à
-  Canoul (récompense pour eux, rien pour Canoul).
+  Canoul (10 pour eux et 10 pour Canoul, depuis le 05/11 13 h).
 - **Arbres de skills v2** *(ancien depuis l'après-midi du 04/11 pour la place des skills : remplacé par les v3 ci-dessus)*
   (04/11/2026, Geoffrey ; en ligne le 04/11 ; GAME_DESIGN §3
   « Skills ») : spé choisie par 3 boutons (en changer = reset) ; deux colonnes, six étages ; étage r ouvert avec 3 × (r − 1)
