@@ -16,6 +16,13 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 05/11/2026 — Geoffrey — Stèles : le 2e boss expulse tout le monde
+- **Pour le joueur** : quand le 2e boss (Pacte / Exorcisme) s'écrase sur le toit, **tous** les mineurs du toit sont expulsés
+  de la tour, sans exception : la ténacité ne l'évite plus. Ils sont projetés **en hauteur** puis au-delà du mur, et
+  retombent dehors au pied de la tour (avant : projetés à plat, certains retombaient dans la trappe du toit). Un mineur
+  qui redescend par la trappe pendant la chute du boss est expulsé aussi.
+- **État** : 🧪 sur la branche `geoffrey/stele-expulsion` (pas en ligne)
+
 ## 05/11/2026 — Geoffrey — Parrainage : 10 Émeraudes au niveau 5
 - **Pour le joueur** : dans Mon compte, bouton **🎁 Parrainer un ami** : ton code et ton lien à donner. Un nouveau joueur entre
   le code d'un ami (ou arrive par son lien) ; à son niveau 5, lui et son parrain reçoivent **10 Émeraudes** (nouvel objet

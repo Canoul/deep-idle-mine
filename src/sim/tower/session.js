@@ -961,6 +961,9 @@ function startPhase2(G){
     G.winchBroken = true;
     for(const m of G.miners) m.winchJob = null;
   }
+  /* expulsés à l'écrasement (05/11) : ceux qui sont sur le toit ou dans la trappe juste dessous quand il commence à tomber,
+     même s'ils en descendent pendant la chute */
+  G.crashIds = G.miners.filter(m => onTop(G, m) || waitPoint(G, m)).map(m => m.id);
   for(const m of G.miners) if(!onTop(G, m)) m.fell = true;   // pas sur le toit : regroupement avant d'y monter (TOWER.regroup)
   const mhp = MB.hp * G.lv.hp * S.mobHp;
   let made = 0;
@@ -983,7 +986,7 @@ function stepJump(G){
   if(a.crash){                                        // phase 2 : chute depuis le ciel, puis l'écrasement
     const p = Math.min(1, a.t / TOWER.stele.fall);
     b.lift = TOWER.stele.fallHigh * (1 - p);
-    if(p >= 1) landBoss(G, TOWER.stele.crashKnock);
+    if(p >= 1) crashLand(G);
     return;
   }
   if(a.stage === 'fly'){
@@ -1011,6 +1014,26 @@ function landBoss(G, n = B.jumpKnock){
     if(resists(m)){ log(G, `💪 ${m.name} résiste à l'atterrissage`); continue; }
     m.action = { type: 'stun', dur: B.jumpStun, t: 0, data: { cause: 'land' } }; m.status = 'Étourdi (atterrissage)';
     m.stats.stunned = (m.stats.stunned || 0) + 1;
+  }
+}
+
+/* écrasement du 2e boss (stèle, 05/11/2026, Geoffrey) : chaque mineur sur le toit ou dans la trappe juste dessous est expulsé à
+   coup sûr (pas de ténacité) : projeté TOWER.stele.crashHigh cases au-dessus du toit, puis au-delà du mur de son côté ; il
+   retombe dehors jusqu'au sol et remonte (regroupement). Ancien : 10 cases à l'horizontale au ras du toit, ténacité, et un
+   mineur poussé au-dessus de la trappe retombait dans la tour. */
+function crashLand(G){
+  const b = G.boss;
+  b.air = null; b.lift = 0; b.cd = B.hitEvery; b.moveCd = 0;
+  log(G, `💥 ${b.name} s'écrase sur le toit !`);
+  const y = Math.max(0, G.roof - 1 - TOWER.stele.crashHigh);
+  for(const m of [...G.miners]){
+    const marked = G.crashIds?.includes(m.id) && m.x >= G.x0 && m.x <= G.x1;   // encore dans la tour
+    if(!marked && !onTop(G, m) && !waitPoint(G, m)) continue;
+    const dir = m.x + 0.5 < bossMid(G) ? -1 : 1;
+    m.x = dir < 0 ? Math.max(0, G.x0 - 2) : Math.min(G.w - 1, G.x1 + 2);
+    m.y = y; m.kx = 0; m.ky = 0; m.action = null; m.knocked = true; m.fallN = 0; m.hop = G.ticks; m.fell = true;
+    G.stats.knocks++; m.stats.knocked++;
+    log(G, `💥 ${b.name} projette ${m.name} hors de la tour !`);
   }
 }
 

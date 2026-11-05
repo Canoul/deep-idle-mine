@@ -2495,7 +2495,10 @@ export const TOWER = {
      de la tour ; la ténacité peut l'éviter), puis étourdi comme à un atterrissage s'il est resté dessus. Un treuil posé est
      cassé (plus de treuil de la partie) ; sans treuil, le logisticien peut encore le poser. mobs mobs de l'autre camp par étage (étages floors), réveillés, PV × mobHp ; boss PV × bossHp (par-dessus le
      niveau). Même chrono ; victoire = le 2e boss tué (sinon rien). */
-  stele: { fallHigh: 10, fall: 0.8, crashKnock: 10, mobs: 5, floors: [0, 1, 2, 3, 4, 5], mobHp: 1.5, bossHp: 1.5 },
+  /* crashHigh (05/11/2026, Geoffrey) : à l'écrasement du 2e boss, tous les mineurs du toit (et de la trappe juste dessous) sont
+     expulsés à coup sûr (pas de ténacité), projetés crashHigh cases au-dessus du toit puis au-delà du mur de leur côté ; ils
+     retombent dehors, au pied de la tour (ancien : crashKnock 10 cases à l'horizontale, ténacité, et retombée dans la trappe) */
+  stele: { fallHigh: 10, fall: 0.8, crashKnock: 10, crashHigh: 3, mobs: 5, floors: [0, 1, 2, 3, 4, 5], mobHp: 1.5, bossHp: 1.5 },
   sides: {
     angel: { tower:'Tour de l\'Ange',  boss:'Ange',  brick:14, hard:15, bossTex:'boss_angel', icon:'😇', mob:'Séraphin',  mobTex:'seraph' },
     demon: { tower:'Tour du Démon', boss:'Démon', brick:16, hard:17, bossTex:'boss_demon', icon:'😈', mob:'Diablotin', mobTex:'imp' },

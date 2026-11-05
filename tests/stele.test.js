@@ -89,13 +89,20 @@ function toPhase2(miners, before = () => {}){
 }
 const untilLanded = G => { while(G.boss.air && !G.over) tickTower(G); };
 
-test('2e boss : la ténacité évite sa projection (100 % : personne ne tombe ; 0 % : tout le toit tombe)', () => {
+/* 05/11/2026 (Geoffrey) : expulsion garantie, pas de ténacité ; projetés en hauteur puis au-delà du mur, ils retombent dehors */
+test('2e boss : tout le toit est expulsé hors de la tour, même avec 100 % de ténacité ; projeté en hauteur, il retombe dehors', () => {
   const team = t => [M('A', { mineSpeed: 6, damage: 400, tenacity: t }), M('B', { mineSpeed: 6, damage: 400, tenacity: t })];
-  for(const [t, stays] of [[100, true], [0, false]]){
-    const G = toPhase2(team(t)), on = G.miners.filter(m => m.y === G.roof - 1).length;
-    assert.ok(on > 0, 'du monde sur le toit à l\'arrivée du boss');
+  for(const t of [100, 0]){
+    const G = toPhase2(team(t)), onRoof = G.miners.filter(m => m.y === G.roof - 1);
+    assert.ok(onRoof.length > 0, 'du monde sur le toit à l\'arrivée du boss');
     untilLanded(G);
-    assert.equal(G.miners.some(m => m.knocked || m.y > G.roof - 1), !stays, `ténacité ${t}`);
+    for(const m of onRoof){
+      assert.ok(m.x < G.x0 || m.x > G.x1, `ténacité ${t} : ${m.name} hors de la tour`);
+      assert.ok(m.y < G.roof - 1, `ténacité ${t} : ${m.name} projeté au-dessus du toit`);
+      assert.equal(m.knocked, true); assert.equal(m.fell, true, 'regroupement en remontant');
+    }
+    for(let k = 0; k < 200 && onRoof.some(m => m.y < G.floor); k++) tickTower(G);
+    for(const m of onRoof) assert.ok(m.x < G.x0 || m.x > G.x1, `${m.name} retombé dehors, pas dans la trappe`);
   }
 });
 

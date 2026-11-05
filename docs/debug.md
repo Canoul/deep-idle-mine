@@ -7622,3 +7622,12 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - Tests ✅ referral (5), anticheat/referral (3), rarity, account-delete, game-service, inventory, wiki ; `npm run test:anticheat`
   157/157. ❌ prison-server « une tour et une instance » déjà rouge sur main. Navigateur ✅ (fenêtre en dev).
 - ⚠️ La récompense d'un compte d'avant arrive à sa première connexion (state) ; Canoul : `legacyPaysReferrer:false`.
+
+## 05/11/2026 — Stèles : expulsion garantie au 2e boss (Geoffrey)
+- Causes : `landBoss(G, crashKnock)` tirait la ténacité (`tenacityTry 'towerBoss'`) et `knock` poussait de 10 cases au ras du toit
+  (`towerAir` sur la ligne roof − 1) : au-dessus de la trappe, le mineur retombait dans la tour ; un mineur de la trappe n'était pas visé.
+- Correctif : `crashLand(G)` (src/sim/tower/session.js) : mineurs de `G.crashIds` (sur le toit ou à `waitPoint` au début de la chute,
+  `startPhase2`) encore dans la tour, plus ceux du toit / de la trappe à l'écrasement : posés à `roof − 1 − TOWER.stele.crashHigh` (3), en
+  x0 − 2 ou x1 + 2, `knocked`, `fell` ; ils tombent jusqu'au sol. `crashKnock` n'est plus lu.
+- Tests : stele (test remplacé : 100 % et 0 % de ténacité expulsés, retombés dehors), tower* 80/80 ✅. 40 tours à 3 : 83/83 expulsés, 0 coincé.
+
