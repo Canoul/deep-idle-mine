@@ -16,6 +16,12 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 05/11/2026 — Geoffrey — Stats du mineur : une bulle « ? » par stat
+- **Pour le joueur** : dans l'onglet Stuff (site et appli), chaque ligne de « Stats du mineur » a une bulle « ? » qui
+  explique ce que fait la stat (aussi le Gear score et le DPS). Les textes sont ceux du wiki ; ceux de la ténacité et de
+  la résistance au recul sont mis à jour (boss, Fear de Lucifer, pièces qui en donnent).
+- **État** : 🧪 sur la branche `geoffrey/aide-stats` (pas en ligne)
+
 ## 04/11/2026 — Jules — Concasseur : 16 cases d'entrée et 16 de sortie
 - **Pour le joueur** : le concasseur a deux fois plus de place : 16 cases d'entrée (4 rangées de 4) et 16 cases de
   sortie (avant : 8 et 8). Ce qui était déjà posé reste à sa place.
