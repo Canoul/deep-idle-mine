@@ -1623,6 +1623,15 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
 
 ---
 
+## 05/11/2026 — Geoffrey — Recyclage des pièces uniques du Golbute et du Roi Gobelin
+- **Pour le joueur** : 7 pièces qui ne se recyclaient pas rendent maintenant des matériaux fixes : Némésis du Golbute
+  (10 Thorium ingot, 10 Cobalt ingot), Torse de Gollex (20 Mithril ingot), Jambières du Golbute (18 Mithril ingot), Âme du
+  Golbute (2 Orbes supérieurs), Couronne du Roi Gobelin (1 Rubis, 1 Jade et 1 Saphir inférieurs, 10 Steel ingot), Masse du
+  Roi Gobelin (10 Steel ingot, 3 Orbes), Cape royale du Gobelin (20 Shiny gold, 25 Cuir de minotaure). L'Arc de l'Admin et
+  les 9 anneaux restent non recyclables.
+- **Décisions** : quantités de Geoffrey.
+- **État** : ✅ en ligne le 05/11
+
 ## 04/11/2026 — Geoffrey — Énergie de départ : 100
 - **Pour le joueur** : un nouveau compte commence avec 100 d'énergie (avant 0), comme tout compte qui n'a encore jamais eu
   d'énergie enregistrée (pas encore lancé de mine classique ni de prison). Les comptes qui ont déjà une énergie la gardent.
