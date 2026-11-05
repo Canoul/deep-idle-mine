@@ -16,6 +16,14 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 05/11/2026 — Geoffrey — Épée et Pioche en mithril
+- **Pour le joueur** : deux nouvelles armes. **Épée en mithril** : 21 dégâts (+16 sur les mains nues ; acier 18,5), avec
+  30 Mithril ingot, 10 Orbe et 30 Steel ingot. **Pioche en mithril** : +0,7 de vitesse de minage (acier +0,58), avec 40
+  Mithril ingot, 100 Pierre glissante et 30 Steel ingot. Plans : dans les Treasure T4 (1 % chacun) et à la Table de
+  recherche (tier 4, première étape, avec l'armure en mithril).
+- **Décisions** : valeurs de Geoffrey. Choix de Claude, à valider : où trouver les plans (comme l'armure en mithril).
+- **État** : 🧪 sur la branche `geoffrey/armes-mithril` (pas en ligne)
+
 ## 05/11/2026 — Geoffrey — Stats du mineur : une bulle « ? » par stat
 - **Pour le joueur** : dans l'onglet Stuff (site et appli), chaque ligne de « Stats du mineur » a une bulle « ? » qui
   explique ce que fait la stat (aussi le Gear score et le DPS). Les textes sont ceux du wiki ; ceux de la ténacité et de

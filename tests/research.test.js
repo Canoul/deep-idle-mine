@@ -169,7 +169,7 @@ test('tier 4 : fermé tant qu\'une recette des tiers 1 à 3 manque ; 250 parts �
 /* tier 4 en trois étapes (28/10/2026, Geoffrey) : mithril + pièces spéciales, puis thorium et cobalt, puis les Jambières */
 test('tier 4 : étapes = tous les plans du 1er jet du Treasure T4, chacun une fois', () => {
   const stages = RESEARCH.tiers.find(t => t.tier === 4).stages;
-  assert.deepEqual(stages.map(s => s.length), [8, 8, 2]);
+  assert.deepEqual(stages.map(s => s.length), [10, 8, 2]);   // étape 1 : + pioche et épée en mithril (05/11)
   assert.deepEqual([...stages.flat()].sort(), [...tierBlueprints(4)].sort());
   for(const bp of stages.flat()) assert.ok(RECIPES[Object.keys(RECIPES).find(r => RECIPES[r].unlock === bp)], bp + ' débloque une recette');
 });
@@ -178,7 +178,7 @@ test('tier 4 : on tire dans l\'étape en cours ; la suivante s\'ouvre quand tout
   const [S1, S2, S3] = RESEARCH.tiers.find(t => t.tier === 4).stages;
   const inv = knowsTiers(T1, T2, T3);
   assert.deepEqual(researchStage(inv, 4), { index:0, count:3, pool:S1 });
-  assert.deepEqual(researchOdds(inv, 4).map(o => o.chance), S1.map(() => 1 / 8), 'chances égales');
+  assert.deepEqual(researchOdds(inv, 4).map(o => o.chance), S1.map(() => 1 / S1.length), 'chances égales');
   for(let k = 0; k < 50; k++){ addAll(inv, { [PARTS]:250 }); assert.ok(S1.includes(research(inv, 4, id(), Math.random).item)); }
   const s1 = knowsTiers(T1, T2, T3, S1.slice(1));
   assert.deepEqual(researchPool(s1, 4), [S1[0]], 'un plan de l\'étape 1 en stock ne suffit pas : il faut l\'apprendre');

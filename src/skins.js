@@ -62,6 +62,7 @@ export const SKIN = {
     'Pioche en pierre': 'skins/pick_stone',            // pierre : grise
     'Pioche en fer':    'skins/pick_iron',             // fer : acier clair
     'Pioche en acier':  'skins/pick_steel',            // acier : gris bleuté
+    'Pioche en mithril': 'skins/pick_mithril',         // mithril : turquoise pâle (05/11)
     'Piolet de gobelin': 'skins/pick_goblin',          // manche d'os, tête verte
   },
   /* arme sortie pour frapper un mob : l'épée équipée, sinon la pioche (mains nues + pioche) */
@@ -70,6 +71,7 @@ export const SKIN = {
     'Épée en fer':      'skins/sword_iron',
     'Lance en fer':     'skins/spear_iron',
     'Épée en acier':    'skins/sword_steel',
+    'Épée en mithril':  'skins/sword_mithril',          // 05/11
     'Épée cassée en carton': 'skins/sword_cardboard',   // lame brisée, morceau de scotch
     'Masse du Roi Gobelin': 'skins/mace_goblin_king',   // 27/10 : manche de bois, tête de fer
     'Arc de l\'Admin':  'skins/bow_admin',              // 01/11 : arc doré, corde au repos, regard vers la droite
