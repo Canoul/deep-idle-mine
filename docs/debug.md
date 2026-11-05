@@ -7485,3 +7485,11 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   8 cases est lue en 16 (cases 1–8 gardées, 9–16 vides). Vérifié à la main ✅.
 - Tests ✅ `tests/crusher.test.js` 16/16 : les 8 écrits en dur sont devenus `CRUSHER.inSlots` / `outSlots`.
   ⚠️ Pas regardé dans le navigateur (hauteur de l'onglet sur PC).
+
+## 05/11/2026 — Recyclage fixe des pièces uniques (Golbute, Roi Gobelin) (Geoffrey)
+- **Quoi** : `recycle:{…}` ajouté dans `STUFF.items` (src/config.js) pour Némésis du Golbute, Torse de Gollex, Jambières du
+  Golbute, Âme du Golbute, Couronne, Masse et Cape royale du Roi Gobelin ; lu par `fixedRefund` (src/meta/craft.js), même
+  chemin que le butin rare des mobs. Restent non recyclables : Arc de l'Admin, anneaux (exclus par `recyclable`).
+- **Tests** ✅ `tests/recycle.test.js` (nouveau : les 7 rendus, recyclage réel dans un inventaire, Arc et anneaux refusés) ;
+  `tests/goblin-king.test.js` : compare les pièces sans `recycle`, et la Cape à dégâts % 1,9 (❌ déjà rouge sur `main`
+  depuis le 04/11 : le test attendait encore 5) ; recycle, mob-drops, wiki, goblin, golbute : 78/78 ; anticheat 154/154.

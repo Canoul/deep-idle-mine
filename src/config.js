@@ -1304,10 +1304,14 @@ export const STUFF = {
     'Jambières titanesques': { slot:'jambes', tex:'legs_titan',     stats:{ climbSpeed:1.88, speed:1.95, mineSpeed:0.12, knockRes:15.6 } },   // minage 0,361 ÷ 3, recul 46,9 ÷ 3
     /* Coffre du Golbute (Instance II, 30/10/2026, Geoffrey) ; x → points au prix de dessin (designPrice : pods 6, marche
        240, dégâts % 16 depuis le 04/11 (avant 6), butin des mobs 10, double attaque 16) */
-    'Némésis du Golbute':    { slot:'pioche', tex:'pickaxe_nemesis', stats:{ mineSpeed:0.8 }, set:{ blockMinePct:25 } },   // passif : minage × 1,25 sur terre, pierre, pierre dure…
-    'Torse de Gollex':       { slot:'torse',  tex:'chest_gollex',    stats:{ pods:167, speed:-1.04 } },   // pods +1 000 x, marche −250 x
-    'Jambières du Golbute':  { slot:'jambes', tex:'legs_golbute',    stats:{ damagePct:12.5, looting:25, doubleAttack:7 } },   // 04/11 (Geoffrey) : même poids que les Jambes en thorium (≈ 562 x) : 200 x, 250 x, 112 x (avant 750 x : 33,3 % / 20 % / 21,9 %, +62 % de DPS en combat)
-    'Âme du Golbute':        { slot:'torche', tex:'soul_golbute',    stats:{ torches:10 }, set:{ torchRadius:10, torchTime:0.5, golemOxygen:25 } },   // passif : +25 oxygène quand un golem meurt à 8 cases
+    'Némésis du Golbute':    { slot:'pioche', tex:'pickaxe_nemesis', stats:{ mineSpeed:0.8 }, set:{ blockMinePct:25 },
+                             recycle:{ 'Thorium ingot':10, 'Cobalt ingot':10 } },   // passif : minage × 1,25 sur terre, pierre, pierre dure…
+    'Torse de Gollex':       { slot:'torse',  tex:'chest_gollex',    stats:{ pods:167, speed:-1.04 },
+                             recycle:{ 'Mithril ingot':20 } },   // pods +1 000 x, marche −250 x
+    'Jambières du Golbute':  { slot:'jambes', tex:'legs_golbute',    stats:{ damagePct:12.5, looting:25, doubleAttack:7 },
+                             recycle:{ 'Mithril ingot':18 } },   // 04/11 (Geoffrey) : même poids que les Jambes en thorium (≈ 562 x) : 200 x, 250 x, 112 x (avant 750 x : 33,3 % / 20 % / 21,9 %, +62 % de DPS en combat)
+    'Âme du Golbute':        { slot:'torche', tex:'soul_golbute',    stats:{ torches:10 }, set:{ torchRadius:10, torchTime:0.5, golemOxygen:25 },
+                             recycle:{ 'Orbe supérieur':2 } },   // passif : +25 oxygène quand un golem meurt à 8 cases
     /* butin rare des mobs (MOB_DROPS) : pas craftables. Règle du 27/10/2026 (Geoffrey) : chacune vaut le x du tier 2
        (250, comme une pièce d'armure en fer), partagé à parts égales entre ses stats, aux prix mesurés du GS (worth, gs) ;
        une stat de combat (STUFF.combatStats) n'en reçoit que STUFF.combatOnStuff (la moitié) : le mineur se bat peu dans
@@ -1333,9 +1337,12 @@ export const STUFF = {
     'Épée cassée en carton': { slot:'epee', tex:'sword_cardboard', set:{ damage:7 },      // remplace les mains nues (5), comme une épée
                                recycle:{ 'Chitine':20 } },
     /* coffre du Roi Gobelin (GOBLIN_KING, 27/10/2026, Geoffrey) : pas craftables, valeurs du créateur */
-    'Couronne du Roi Gobelin': { slot:'casque', tex:'crown_goblin_king', stats:{ fortune:10 }, set:{ goblinThrall:10 } },   // passif : gobelins asservis à 10 cases
-    'Masse du Roi Gobelin':    { slot:'epee',   tex:'mace_goblin_king',  set:{ damage:14 }, stats:{ crit:15 } },          // remplace les mains nues (5), comme une épée
-    'Cape royale du Gobelin':  { slot:'cape',   tex:'cape_goblin_royal', stats:{ damagePct:1.9, mineSpeedPct:5 } },   // dégâts % 1,9 (04/11, prix de dessin 16 ; avant 5)
+    'Couronne du Roi Gobelin': { slot:'casque', tex:'crown_goblin_king', stats:{ fortune:10 }, set:{ goblinThrall:10 },
+                             recycle:{ 'Rubis inférieur':1, 'Jade inférieur':1, 'Saphir inférieur':1, 'Steel ingot':10 } },   // passif : gobelins asservis à 10 cases
+    'Masse du Roi Gobelin':    { slot:'epee',   tex:'mace_goblin_king',  set:{ damage:14 }, stats:{ crit:15 },
+                             recycle:{ 'Steel ingot':10, 'Orbe':3 } },          // remplace les mains nues (5), comme une épée
+    'Cape royale du Gobelin':  { slot:'cape',   tex:'cape_goblin_royal', stats:{ damagePct:1.9, mineSpeedPct:5 },
+                             recycle:{ 'Shiny gold':20, 'Cuir de minotaure':25 } },   // dégâts % 1,9 (04/11, prix de dessin 16 ; avant 5)
     /* anneaux : aucune stat pour le porteur seul, leur effet de groupe est dans RINGS */
     ...Object.fromEntries(Object.entries(RINGS.items).map(([n, d]) => [n, { slot:RINGS.slot, tex:d.tex }])),
   },
