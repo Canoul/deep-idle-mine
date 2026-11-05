@@ -853,6 +853,7 @@ export const EFFECTS = {
     dazed:        { kind:'debuff',  name:'Sonné',               icon:'rock',      color:'#c9a27a' },
     dead:         { kind:'control', name:'Mort',                icon:'skull',     color:'#9a9a9a' },
     escalator:    { kind:'session', name:'Escalateur',          icon:'ladder',    color:'#6fc2ff' },
+    aura:         { kind:'session', name:'Aura',                icon:'sparkle',   color:'#ffd23f' },   // auras des skills (05/11)
     /* Raid 1, Cerbère (04/11/2026) : Morsure (affichage de bite.show s, elle ne persiste pas) et Durci (en pierre) */
     bitten:       { kind:'debuff',  name:'Morsure',             icon:'heartbreak',color:'#ff4a2a' },
     stone:        { kind:'control', name:'Durci',               icon:'rock',      color:'#a39a8f' },
