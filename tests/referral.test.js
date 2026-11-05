@@ -65,16 +65,17 @@ test('niveau 5 atteint : 10 Émeraudes pour le filleul ET le parrain, une seule 
   assert.equal((await game.referral(me('BBBB2222'))).done, true);
 });
 
-test('comptes d\'avant : affiliés à Canoul, 10 Émeraudes au niveau 5 (déjà atteint : tout de suite) ; Canoul ne reçoit rien', async () => {
+test('comptes d\'avant : affiliés à Canoul, 10 Émeraudes au niveau 5 (déjà atteint : tout de suite), et 10 pour Canoul (05/11 13 h)', async () => {
   const { game, me, store, gems } = await setup([{ id: 'CANO0001', name: 'canoul', createdAt: OLD - 1e6 }, { id: 'OLDD0001', name: 'Vieux', createdAt: OLD },
                                                  { id: 'OLDD0002', name: 'Lent', createdAt: OLD }, { id: 'NEWW0001', name: 'Neuf', createdAt: NEW }]);
   await store.putProgress('OLDD0001', { xp: LV5 * 10, credited: [] });
   const info = await game.referral(me('OLDD0001'));
   assert.deepEqual([info.by.name, info.by.legacy, info.done, info.canSet], ['canoul', true, true, false]);
   assert.equal(await gems('OLDD0001'), 10);
-  assert.equal(await gems('CANO0001'), 0, 'Canoul : rien pour les comptes d\'avant');
+  assert.equal(await gems('CANO0001'), 10, 'Canoul : sa part aussi (legacyPaysReferrer)');
   await game.state(me('OLDD0001'));
   assert.equal(await gems('OLDD0001'), 10, 'une seule fois');
+  assert.equal(await gems('CANO0001'), 10, 'une seule fois pour Canoul aussi');
   await store.putProgress('OLDD0002', { xp: 0, credited: [] });
   assert.equal((await game.referral(me('OLDD0002'))).by.name, 'canoul');
   await assert.rejects(game.setReferral(me('OLDD0002'), { code: 'NEWW0001' }), { code: 'already' }, 'déjà affilié : pas de code');
@@ -91,4 +92,14 @@ test('fenêtre « Parrainer un ami » : code, lien, filleuls, parrain ou case po
   assert.match(h, /3 \(1 récompense reçue\)/);
   const k = referralHtml({ ...base, by: { name: 'Ana' }, canSet: false, done: false }, 'https://deepmineidle.fr');
   assert.match(k, /Ana/); assert.doesNotMatch(k, /data-mode="referral"/); assert.match(k, /tu es niveau 2/);
+});
+
+test('rattrapage : un compte récompensé avant le réglage (sans la part de Canoul) la lui verse une fois', async () => {
+  const { game, me, store, gems } = await setup([{ id: 'CANO0001', name: 'canoul', createdAt: OLD - 1e6 }, { id: 'OLDD0001', name: 'Vieux', createdAt: OLD }]);
+  await store.putProgress('OLDD0001', { xp: LV5 * 10, credited: [] });
+  await store.putReferral('OLDD0001', { by: 'CANO0001', at: null, legacy: true, done: true, doneAt: 1, paid: false });   // versé avant 13 h
+  await Promise.all([game.state(me('OLDD0001')), game.state(me('OLDD0001')), game.referral(me('OLDD0001'))]);
+  await game.state(me('OLDD0001'));
+  assert.deepEqual([await gems('CANO0001'), await gems('OLDD0001')], [10, 0], 'Canoul : sa part une fois ; le filleul ne reçoit rien de plus');
+  assert.equal((await store.getReferral('OLDD0001')).paid, true);
 });

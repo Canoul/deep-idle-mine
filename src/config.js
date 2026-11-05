@@ -1527,8 +1527,9 @@ export const UPGRADE = {
    arrive par son lien) : quand il atteint le niveau `level`, lui ET son parrain reçoivent `qty` × `item` (une seule fois).
    On ne peut entrer un code que sans parrain, avant le niveau `level`, jamais le sien ni celui d'un de ses filleuls.
    legacyBefore : les comptes créés avant (mise en ligne du parrainage) sont affiliés à `legacyName` (Canoul) et reçoivent la
-   récompense au niveau `level` ; legacyPaysReferrer : le parrain de ces comptes ne reçoit rien (choix de Claude, à valider). */
-export const REFERRAL = { item:'Émeraude', qty:10, level:5, legacyName:'canoul', legacyBefore:Date.UTC(2026, 10, 5, 11, 11), legacyPaysReferrer:false };
+   récompense au niveau `level` ; legacyPaysReferrer : leur parrain reçoit aussi sa part (true depuis le 05/11 13 h, Geoffrey ; les
+   comptes récompensés avant, sans sa part, la lui versent au rattrapage : server/game/service.js settleReferral). */
+export const REFERRAL = { item:'Émeraude', qty:10, level:5, legacyName:'canoul', legacyBefore:Date.UTC(2026, 10, 5, 11, 11), legacyPaysReferrer:true };   // 05/11 13 h (Geoffrey) : Canoul reçoit aussi sa part (avant false)
 
 export const ITEMS = {
   ...Object.fromEntries(Object.values(BLOCKS).filter(b => !b.noDrop && !b.unbreakable)
