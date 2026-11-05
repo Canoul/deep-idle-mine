@@ -314,7 +314,7 @@ export const LOOT = {
         { item:'Gants de boucher BP',       chance:0.01 },
         { item:'Jambières titanesques BP',  chance:0.005 },
         { item:'Cape inclusive BP',         chance:0.005 },
-        ...['Casque', 'Plastron', 'Jambes', 'Bottes'].map(p => ({ item:`${p} en mithril BP`, chance:0.01 })),
+        ...['Casque', 'Plastron', 'Jambes', 'Bottes', 'Pioche', 'Épée'].map(p => ({ item:`${p} en mithril BP`, chance:0.01 })),   // pioche et épée : 05/11
         ...['thorium', 'cobalt'].flatMap(m => ['Casque', 'Plastron', 'Jambes', 'Bottes'].map(p => ({ item:`${p} en ${m} BP`, chance:0.005 }))),
       ]},
       /* 2e jet : chacun son tirage, seulement si la recette n'est pas apprise (28/10, Geoffrey : plus la Clé d'instance I
@@ -388,7 +388,7 @@ export const RESEARCH = {
        sont apprises (règle commune, tierUnlocked). stages : le tirage se fait dans la première étape dont une recette
        reste à apprendre (chances égales) ; l'étape suivante s'ouvre quand toutes ses recettes sont apprises. */
     { tier:4, label:'Tier 4', from:'Treasure T4', cost:250, recycle:{ min:25, max:40 }, stages:[
-      [...['Casque', 'Plastron', 'Jambes', 'Bottes'].map(p => `${p} en mithril BP`),
+      [...['Casque', 'Plastron', 'Jambes', 'Bottes', 'Pioche', 'Épée'].map(p => `${p} en mithril BP`),   // pioche et épée : 05/11
        'Lunettes de luxe BP', 'Bottes de chantier BP', 'Ceinture golémique BP', 'Gants de boucher BP'],
       ['thorium', 'cobalt'].flatMap(m => ['Casque', 'Plastron', 'Jambes', 'Bottes'].map(p => `${p} en ${m} BP`)),
       ['Jambières titanesques BP', 'Cape inclusive BP'],
@@ -879,7 +879,7 @@ export const TEXTURES = ['dirt','grass','hellstone','clue','stone','hardstone','
   'blueprint','bp_parts','gem_ruby','gem_jade','gem_sapphire',
   'ingot_iron','ingot_gold','ingot_tainted','ingot_tainted_gold','ingot_graphite','ingot_steel','furnace_iron','compass_gold','shiny_iron','shiny_gold','pickaxe_stone','helmet_chitin','chest_chitin','legs_chitin','boots_chitin',
   'pickaxe_iron','sword_stone','sword_iron','spear_iron','bow_admin','helmet_iron','chest_iron','legs_iron','boots_iron','belt_goblin',
-  'lamp_incandescent','pickaxe_steel','sword_steel','helmet_steel','chest_steel','legs_steel','boots_steel','chest_balance',
+  'lamp_incandescent','pickaxe_steel','sword_steel','pickaxe_mithril','sword_mithril','helmet_steel','chest_steel','legs_steel','boots_steel','chest_balance',
   'gloves_tactical','gloves_worker','cape_naingui','straps_goblin','hood_dark','cloud_magic','belt_giant','dark_cloth','gas_vesicle','slippery_stone','dungeon_brick','minotaur','minotaur_black','moon_crystal','orb','orb_superior','pick_goblin','kilt_dark','hat_naab','sword_cardboard','key_instance_1','key_instance_2','angel_feather','angel_feathers',
   'guild_armory','guild_treasury','guild_forge',
   'guild_hall_1','guild_hall_2','guild_hall_3','guild_hall_4','guild_site','guild_wing_armory','guild_wing_treasury','guild_wing_forge','guild_lot',
@@ -1194,6 +1194,7 @@ export const RARITY = {
     'Mithril ingot':'inhabituel', 'Refined cobalt':'inhabituel', 'Refined thorium':'inhabituel', 'Cobalt ingot':'rare', 'Thorium ingot':'rare',
     'Topaze':'rare', 'Saphir':'rare', 'Rubis':'rare', 'Jade':'rare', 'Saphir BP':'rare', 'Rubis BP':'rare', 'Jade BP':'rare',
     'Clé d\'instance I BP':'inhabituel', 'Cuir de minotaure':'rare',
+    ...Object.fromEntries(['Pioche', 'Épée'].flatMap(p => [[`${p} en mithril`, 'inhabituel'], [`${p} en mithril BP`, 'inhabituel']])),   // 05/11
     ...Object.fromEntries(['Casque', 'Plastron', 'Jambes', 'Bottes'].flatMap(p => [[`${p} en mithril`, 'inhabituel'], [`${p} en mithril BP`, 'inhabituel'],
       [`${p} en thorium`, 'rare'], [`${p} en thorium BP`, 'rare'], [`${p} en cobalt`, 'rare'], [`${p} en cobalt BP`, 'rare']])),
     ...Object.fromEntries(['Lunettes de luxe', 'Bottes de chantier', 'Ceinture golémique', 'Gants de boucher'].flatMap(n => [[n, 'rare'], [`${n} BP`, 'rare']])),
@@ -1273,7 +1274,10 @@ export const STUFF = {
     'Jambes en acier':     { slot:'jambes', tex:'legs_steel',    stats:{ climbSpeed:2 } },   // 27/10 (Geoffrey) : buff +100 x, 500 x (avant 1,6 ; 25/10 : 1,08)
     'Bottes en acier':     { slot:'pieds',  tex:'boots_steel',   stats:{ speed:2.08 } },   // 27/10 (Geoffrey) : buff +100 x, ≈ 500 x (avant 1,67 ; 25/10 : 1,08)
     'Pioche en acier':     { slot:'pioche', tex:'pickaxe_steel', stats:{ mineSpeed:0.58 } },    // 27/10 (Geoffrey) : buff ≈ +100 x, 0,58 (au centième, comme en session ; avant 0,5 ; 25/10 : nerf, avant 0,6)
-    'Épée en acier':       { slot:'epee',   tex:'sword_steel',   set:{ damage:18.5 } },   // remplace les mains nues (5) ; 27/10 (Geoffrey) : buff +100 x (avant 16 ; 24/10 : 13)
+    'Épée en acier':       { slot:'epee',   tex:'sword_steel',   set:{ damage:18.5 } },
+    /* armes en mithril (05/11/2026, Geoffrey) : épée +16 dégâts sur les mains nues (21), pioche +0,7 de vitesse de minage */
+    'Pioche en mithril':   { slot:'pioche', tex:'pickaxe_mithril', stats:{ mineSpeed:0.7 } },
+    'Épée en mithril':     { slot:'epee',   tex:'sword_mithril',   set:{ damage:21 } },   // remplace les mains nues (5) : +16   // remplace les mains nues (5) ; 27/10 (Geoffrey) : buff +100 x (avant 16 ; 24/10 : 13)
     'Plastron de l\'équilibre': { slot:'torse', tex:'chest_balance', stats:{ pods:112, oxygenMax:30, mineSpeedPct:3, damagePct:1.1,   /* dégâts % 1,1 (04/11, prix de dessin 16 ; avant 3) */
                                    attackSpeed:8, tenacity:3, fortune:2, looting:3, torches:8 } },   // 31/10 (Geoffrey) : pods 112 pour valoir 2 fois le tier 3, ≈ 1 000 x (avant 188, 1 459 x) ; 24/10 : × 1,5 arrondi (avant pods 125, oxygène 20, 2, 2, 5, 2, 1, 2, 5)
     /* tier 4 (Treasure T4, 27/10/2026, Geoffrey) : mithril = même stat que l'acier, à la valeur du T4 (650 x ; plastron
@@ -1470,7 +1474,7 @@ export const UPGRADE = {
                        'Bottes en acier','Plastron de l\'équilibre',
                        'Masse du Roi Gobelin','Cape royale du Gobelin'] },   // stuff du Roi Gobelin : tier 3 (Geoffrey, 27/10)
     /* tier 4 (27/10/2026, Geoffrey) : 650 x (avant 600, Couronne seule) ; mithril et pièces spéciales du Treasure T4 */
-    4: { x:650, items:['Couronne du Roi Gobelin', 'Casque en mithril', 'Plastron en mithril', 'Jambes en mithril', 'Bottes en mithril',
+    4: { x:650, items:['Couronne du Roi Gobelin', 'Pioche en mithril', 'Épée en mithril', 'Casque en mithril', 'Plastron en mithril', 'Jambes en mithril', 'Bottes en mithril',
                        'Lunettes de luxe', 'Bottes de chantier', 'Ceinture golémique', 'Gants de boucher'] },
     /* tier 4.5 (27/10/2026, Geoffrey) : 750 x, thorium, cobalt, Jambières titanesques */
     '4.5': { x:750, items:[...['thorium', 'cobalt'].flatMap(m => ['Casque', 'Plastron', 'Jambes', 'Bottes'].map(p => `${p} en ${m}`)),

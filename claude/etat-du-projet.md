@@ -208,7 +208,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   consommé, `plainestFirst` dans `src/meta/craft.js`) ; Lunettes de luxe, Bottes de chantier, Ceinture golémique, Gants de
   boucher, Jambières titanesques ; gemmes Topaze / Saphir / Rubis / Jade ; BP Clé d'instance I ; Cuir de minotaure (1 à 3
   par minotaure, `DUNGEON.leather`) ; Rotten flesh (sans source). T4 des runes : 650 x (Couronne comprise, ancien : 600 x).
-  Pas d'épée, lance ni pioche de ces métaux (pas de recette) ; pas de tier 4 à la Table de recherche.
+  **Épée et Pioche en mithril** (05/11, Geoffrey : dégâts 21, soit +16 ; minage +0,7 ; plans dans le Treasure T4 et à l'étape 1 de la
+  recherche tier 4) ; pas de lance, ni d'arme en thorium / cobalt (**ancien** : aucune arme de ces métaux) ; pas de tier 4 à la Table de recherche.
 - **Ajustements de prix de Geoffrey** (27/10, `UPGRADE.priceAdjust`, `statPrice` dans `src/meta/gearscore.js`) : ses choix, pas
   des mesures. Points d'une stat pour 1 x divisés : offensives ÷ 2, dégâts % ÷ 3, perçage ÷ 4, minage (fixe et %) ÷ 3,
   ténacité ÷ 2, résistance au recul ÷ 3 (base 5 x). Remplacent la demi-valeur des stats de combat (`STUFF.combatOnStuff`
