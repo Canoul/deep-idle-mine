@@ -7622,3 +7622,15 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - Tests ✅ referral (5), anticheat/referral (3), rarity, account-delete, game-service, inventory, wiki ; `npm run test:anticheat`
   157/157. ❌ prison-server « une tour et une instance » déjà rouge sur main. Navigateur ✅ (fenêtre en dev).
 - ⚠️ La récompense d'un compte d'avant arrive à sa première connexion (state) ; Canoul : `legacyPaysReferrer:false`.
+
+## 05/11/2026 — Recherche : tiers à area, tier 5 (Geoffrey)
+- `RESEARCH.tiers[].area` (T3 5, T4 7, T5 9) ; T5 `items:['Casque en arkonite BP']` (pas de `from`), cost 1000, recycle 40-60 (provisoire).
+  Item `Casque en arkonite BP` (blueprint, épique, sans recette).
+- `src/meta/research.js` : `tierArea`, `areaReached`, `tierOpen` ; `research(inv, t, opId, rng, now, areaMax = 0)` → `area_locked`
+  (vérifié après `tier_locked`, avant toute dépense) ; `tierBlueprints` lit `items` ; `treasureBlueprintsDone` ne compte le tier
+  suivant que s'il a un Treasure (`from`) : T4 inchangé.
+- Serveur : `research` lit `areaMaxOf` (hors verrou inv) ; `state` envoie `progress.areaMax` ; **mode dev : areaMax = AREAS.length**
+  (tout ouvert, comme la prison). UI : `setupResearch().setAreaMax` (appelé par `setProgress`), `tierWhyHtml/tierChipsHtml(inv, t, areaMax)`.
+- Tests : research 21/21 (tests T3/T4 existants passent areaMax 9), area-max 7/7, app-ecrans, game-service ✅ ; anticheat 157/157 ✅.
+- ⚠️ Déjà rouges sur main, sans lien : loot « fortune : le doublon… », tier2 « recycle : un BP du T2 rend 30 à 45 ».
+

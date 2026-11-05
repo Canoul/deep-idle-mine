@@ -375,7 +375,10 @@ export const CRUSHER = {
    tiers : recherche d'un blueprint du tier : cost Blueprint parts (tout ou rien), un blueprint tiré parmi ceux de la
            table de butin `from` dont la recette n'est pas encore apprise. Un tier n'est ouvert que quand le joueur a
            appris TOUTES les recettes du tier d'avant (les blueprints qui ne débloquent encore rien ne comptent pas).
-   recycle (par tier) : un blueprint de ce tier détruit rend entre min et max Blueprint parts. Valeurs provisoires. */
+   recycle (par tier) : un blueprint de ce tier détruit rend entre min et max Blueprint parts. Valeurs provisoires.
+   area (05/11/2026, Geoffrey) : en plus, le tier ne s'ouvre qu'au joueur qui a déjà atteint cette area en mine classique
+           (areaMax du compte, numérotée comme dans le jeu) : T3 area 5, T4 area 7, T5 area 9.
+   items : plans du tier quand il n'a pas de Treasure (`from`) : tier 5 (05/11). */
 export const RESEARCH = {
   parts: 'Blueprint parts',
   tiers: [
@@ -383,16 +386,19 @@ export const RESEARCH = {
     { tier:2, label:'Tier 2', from:'Treasure T2', cost:150, recycle:{ min:15, max:30 } },   // 30/10 (Geoffrey) : avant 30 à 45 (28/10 : avant 40 à 70)
     /* tier 3 (23/10/2026, Geoffrey) : recherche à 200 parts (26/10 ; avant 150). weights : poids d'un blueprint dans le
        tirage (1 par défaut) ; le plan épique sort 4 fois moins souvent que chaque autre */
-    { tier:3, label:'Tier 3', from:'Treasure T3', cost:200, recycle:{ min:20, max:35 }, weights:{ 'Plastron de l\'équilibre BP':0.25 } },   // recyclage 30/10 (Geoffrey) : avant 45 à 60 (28/10 : avant 40 à 70)
+    { tier:3, label:'Tier 3', from:'Treasure T3', cost:200, recycle:{ min:20, max:35 }, area:5, weights:{ 'Plastron de l\'équilibre BP':0.25 } },   // recyclage 30/10 (Geoffrey) : avant 45 à 60 (28/10 : avant 40 à 70)
     /* tier 4 (28/10/2026, Geoffrey) : plans du 1er jet du Treasure T4, ouvert quand toutes les recettes des tiers 1 à 3
        sont apprises (règle commune, tierUnlocked). stages : le tirage se fait dans la première étape dont une recette
        reste à apprendre (chances égales) ; l'étape suivante s'ouvre quand toutes ses recettes sont apprises. */
-    { tier:4, label:'Tier 4', from:'Treasure T4', cost:250, recycle:{ min:25, max:40 }, stages:[
+    { tier:4, label:'Tier 4', from:'Treasure T4', cost:250, recycle:{ min:25, max:40 }, area:7, stages:[
       [...['Casque', 'Plastron', 'Jambes', 'Bottes', 'Pioche', 'Épée'].map(p => `${p} en mithril BP`),   // pioche et épée : 05/11
        'Lunettes de luxe BP', 'Bottes de chantier BP', 'Ceinture golémique BP', 'Gants de boucher BP'],
       ['thorium', 'cobalt'].flatMap(m => ['Casque', 'Plastron', 'Jambes', 'Bottes'].map(p => `${p} en ${m} BP`)),
       ['Jambières titanesques BP', 'Cape inclusive BP'],
     ] },
+    /* tier 5 (05/11/2026, Geoffrey) : pas de Treasure T5, les plans sont listés ici. Casque en arkonite BP : l'objet existe
+       mais ne débloque encore aucune recette (il reste donc toujours dans le tirage). Recyclage : valeur provisoire. */
+    { tier:5, label:'Tier 5', items:['Casque en arkonite BP'], cost:1000, recycle:{ min:40, max:60 }, area:9 },
   ],
   recentMs: 120_000,   // 01/11 (Geoffrey) : un plan sorti de la recherche ne peut pas ressortir pendant ce temps (valeur provisoire)
   opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
@@ -1204,6 +1210,7 @@ export const RARITY = {
     ...Object.fromEntries(['Lunettes de luxe', 'Bottes de chantier', 'Ceinture golémique', 'Gants de boucher'].flatMap(n => [[n, 'rare'], [`${n} BP`, 'rare']])),
     'Jambières titanesques':'epique', 'Jambières titanesques BP':'epique',
     'Cape inclusive':'epique', 'Cape inclusive BP':'epique',
+    'Casque en arkonite BP':'epique',   // 05/11 : plan du tier 5 de la recherche
     ...Object.fromEntries(Object.keys(GOBLIN_CHEST_ITEMS).map(n => [n, RUNE.treasureRarity])),
     ...Object.fromEntries(Object.keys(GOLBUTE_CHEST_ITEMS).map(n => [n, RUNE.treasureRarity])),
     ...Object.fromEntries(Object.entries(RINGS.items).map(([n, d]) => [n, d.rarity])),
@@ -1545,6 +1552,7 @@ export const ITEMS = {
   ...GOBLIN_CHEST_ITEMS,
   ...GOLBUTE_CHEST_ITEMS,                                                               // coffres du Golbute (GOLBUTE, 30/10)                                                                // coffres du Roi Gobelin (GOBLIN_KING, 27/10)
   'Four en or BP':     { cat:'blueprint', tex:'blueprint', stack:true },                // coffre du Roi Gobelin
+  'Casque en arkonite BP': { cat:'blueprint', tex:'blueprint', stack:true },            // recherche tier 5 (05/11) ; pas encore de recette
   'Clé d\'instance I BP': { cat:'blueprint', tex:'blueprint', stack:true },             // ancien (28/10) : plus de source, la recette est de base ; un exemplaire gardé se recycle
   'Recette : Chitine': { cat:'blueprint', tex:'recipe_chitin', stack:true },            // débloque Peau de gobelin → Chitine au four
   'Pépite d\'argent':  { cat:'material',  tex:'nugget_silver', w:1, stack:true },       // récompense du bloc géant (GIANT.nugget, 27/10)
