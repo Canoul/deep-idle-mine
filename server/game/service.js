@@ -23,7 +23,7 @@
      visite ; à son retour, l'attente passe dans pausedMs et le run repart où il s'était arrêté.
    Testable seul : on lui passe un stockage, une horloge et la façon de faire tourner les parties (liveRunner). */
 import crypto from 'node:crypto';
-import { GAME, RAID, ENERGY, PRISON, PREFS, RESEARCH, FOCUS, FURNACE, MINE_MODES, CHAT, ITEMS, JUDGMENT, KHOLE, TOWER, WIKI, LEADERBOARD, SKILLS, AREAS, treasureItem, goblinChestItem, golbuteChestItem } from '../../src/config.js';
+import { GAME, INSTANCE, RAID, ENERGY, PRISON, PREFS, RESEARCH, FOCUS, FURNACE, MINE_MODES, CHAT, ITEMS, JUDGMENT, KHOLE, TOWER, WIKI, LEADERBOARD, SKILLS, AREAS, treasureItem, goblinChestItem, golbuteChestItem } from '../../src/config.js';
 import { sanitizeTowerRecord, betterTower, sanitizeInstanceRecord, betterInstance, recordKey, splitRecordKey } from '../../src/meta/leaderboard.js';
 import { DT } from '../../src/config.js';
 import { sanitizePrefs, sanitizeOverrides, sanitizeDevSpecs, tickAt, realDurationMs, TOTAL_TICKS } from '../../src/shared/game.js';
@@ -807,6 +807,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         share.bag = !(summary.success && here) ? {}
           : inst.chest === 'goblin' ? { [goblinChestItem(rollChestQuality(random), rec.level ?? 1)]: 1 }   // niveau 2 : Coffre du Roi Gobelin II (29/10)
           : inst.chest === 'golbute' ? { [golbuteChestItem(rollChestQuality(random))]: 1 } : {};
+        /* Sceau démoniaque (05/11/2026, Geoffrey) : un pour chaque joueur présent à la victoire, toutes les instances */
+        if(summary.success && here && INSTANCE.seal?.item) share.bag[INSTANCE.seal.item] = INSTANCE.seal.qty;
       }
       /* versement : seulement aux joueurs de la session encore présents, une seule fois par session. Raid Cerbère (04/11) :
          récompense à définir, rien n'est versé (ni objet, ni XP) */

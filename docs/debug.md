@@ -7566,3 +7566,9 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   sessions à 3 : 0 bloquée. Vu dans Chromium : bandeau du Lobby (Cataclysme imposé dans data/game.json), jauges à 150.
 - ⚠️ Pas vu en vrai : MI abondante à l'écran (HUD et caméra), raffle à 3 gagnants dans le chat. `src/ui/energy-tag.js` et
   `#navEnergy` marquent encore « bas » sous 6 un jour férié (le serveur accepte dès 4).
+
+## 05/11/2026 — Sceau démoniaque (Geoffrey)
+- `ITEMS['Sceau démoniaque']` (material, rare), `INSTANCE.seal { item, qty:1 }`, ajouté au `share.bag` des présents à la victoire
+  (server/game/service.js, toutes instances), ligne dans `instanceLootTable`, texture `seal_demon`. Versement par `creditSession` : une fois.
+- Tests : instance-server (nouveau), rarity, golbute*, loot-table, inventory, wiki* ✅ ; anticheat ✅.
+

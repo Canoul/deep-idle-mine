@@ -16,6 +16,12 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 05/11/2026 — Geoffrey — Sceau démoniaque
+- **Pour le joueur** : nouvel objet rare, le **Sceau démoniaque**. Chaque boss d'instance vaincu (roi gobelin, niveaux 1 et 2,
+  et Golbute) en donne **1 à chaque joueur encore là**, en plus de son coffre. Rien en cas d'échec ni pour un joueur parti.
+  Visible dans la bulle « ? Butin » des instances. Pas encore d'usage.
+- **État** : ✅ en ligne le 05/11
+
 ## 05/11/2026 — Geoffrey — He's coming : 1 pépite d'argent par 1 000 points (avant 800)
 - **État** : ✅ en ligne le 05/11
 

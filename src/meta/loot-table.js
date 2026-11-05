@@ -60,7 +60,7 @@ export function instanceLootTable(id, level = 1){
   const lv = inst.chest === 'goblin' && INSTANCE.levels[level] ? level : 1;
   const chest = inst.chest === 'goblin' ? goblinChestItem(1, lv).replace(/ R1$/, '') : golbuteChestItem(1).replace(/ R1$/, '');
   const t = lootTableOf(inst.chest === 'goblin' ? goblinChestItem(1, lv) : golbuteChestItem(1));
-  return { title:`${inst.label} : ${chest}`, sub:'Un coffre pour chaque joueur encore là à la victoire.',
+  return { title:`${inst.label} : ${chest}`, sub:`Un coffre pour chaque joueur encore là à la victoire${INSTANCE.seal ? `, et ${INSTANCE.seal.qty} ${INSTANCE.seal.item}` : ''}.`,
            groups:[qualityGroup('du coffre'), ...t.groups], notes:t.notes };
 }
 
