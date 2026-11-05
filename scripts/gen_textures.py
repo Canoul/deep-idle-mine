@@ -1171,6 +1171,8 @@ def main():
     tex['chest_goblin_king'] = tower_chest(hexc('#6b4a22'), hexc('#3e2a12'), gold, hexc('#4f7d32'), [(6, 9), (9, 9), (7, 11), (8, 11)])
     # coffre du Golbute (30/10) : coffre de pierre grise, ferrures sombres, cristal bleu au centre
     tex['chest_golbute'] = tower_chest(hexc('#80868f'), hexc('#4d5259'), hexc('#2f3238'), hexc('#7fd6ff'), [(7, 9), (8, 9), (7, 10), (8, 10), (7, 11), (8, 11)])
+    # coffre affilié (05/11, Boutique) : bois sombre, ferrures dorées, émeraude au centre
+    tex['chest_affiliate'] = tower_chest(hexc('#3d5a3a'), hexc('#22331f'), hexc('#d9a93c'), hexc('#3ddc84'), [(7, 9), (8, 9), (7, 10), (8, 10)])
 
     # butin rare des mobs (26/10/2026) : icônes d'inventaire
     # lanières en cuir du gobelin : deux sangles de cuir croisées, rivets dorés

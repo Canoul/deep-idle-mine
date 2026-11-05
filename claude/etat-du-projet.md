@@ -299,6 +299,9 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   Colosse de pierre voûté en facettes, gros contour noir, yeux de braise, cœur et éclats de cristal, fers brisés aux
   poignets ; forme cristallisée = même silhouette en cristal taillé. 80 × 80 (ancien : rectangles plats). Le **golem**
   (mob des mines, golems de la Division) suit le même style (32 × 32, bête voûtée, éclats de cristal ; ancien : blocs gris).
+- **Boutique** (05/11, Geoffrey ; `SHOP`, `src/meta/shop.js`, `src/ui/shop.js`, `POST /api/game/shop`) : onglet d'objets exclusifs
+  payés en Émeraudes (parrainage). Article : Coffre affilié, 20 émeraudes (50 plumes, 50 cristaux, 200 poudres de rêve, 10 000
+  charbons, 5 barres d'argent). Pas de bâtiment au Carreau ; famille Sac dans l'appli.
 - **Fenêtres de validation** (28/10, Geoffrey) : plus aucun `confirm` / `alert` / `prompt` du navigateur ; tout passe
   par `src/ui/dialog.js` (`ask`, `tell`, `askText`, promesses ; `#dialog` au-dessus de tout). Nouveau code : les utiliser.
 

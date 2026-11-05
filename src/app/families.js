@@ -5,7 +5,7 @@ import { TABS, CHAT_TAB } from '../ui/nav.js';
 export const FAMILIES = [
   { id:'accueil', label:'Accueil', icon:'house',   tabs:['lobby'] },
   { id:'session', label:'Session', icon:'pickaxe', tabs:['session', 'historique'] },
-  { id:'sac',     label:'Sac',     icon:'bag',     tabs:['inventaire', 'craft', 'four', 'concasseur', 'recherche'] },   // ordre de Jules (03/11)
+  { id:'sac',     label:'Sac',     icon:'bag',     tabs:['inventaire', 'craft', 'four', 'concasseur', 'recherche', 'boutique'] },   // ordre de Jules (03/11) ; Boutique (05/11) au bout
   { id:'perso',   label:'Perso',   icon:'helmet',  tabs:['stuff', 'amelioration', 'skills', 'sorts'] },
   { id:'social',  label:'Social',  icon:'group',   tabs:['classement', 'guilde', 'social', 'chat'] },
 ];

@@ -7642,3 +7642,16 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 ## 05/11/2026 — Geoffrey — Parrainage : part du parrain d'office (branche geoffrey/parrainage-canoul)
 - `REFERRAL.legacyPaysReferrer` true. `settleReferral` : fiche done sans `paid` et parrain payable → `payLater` (verrous inv: du
   parrain + ref:, une fois, `paidLate`). Tests ✅ referral (6, + rattrapage en rafale), anticheat 157/157.
+
+## 05/11/2026 — Geoffrey — Boutique
+- Config : `SHOP` (currency Émeraude, maxCount 99, items `{ id:'affilie', item:'Coffre affilié', price:20 }`), `ITEMS['Coffre
+  affilié']` (cat treasure, tex `chest_affiliate`, rareté légendaire), `LOOT['Coffre affilié']` (always fixes, en dernier dans
+  LOOT : le wiki lit LOOT dans l'ordre). Texture : `scripts/gen_textures.py` (tower_chest vert, émeraude) ; seule
+  `textures/chest_affiliate.png` gardée (le script régénérait d'autres PNG légèrement différents : remis comme avant).
+- `src/meta/shop.js` `buy(inv, { id, count, opId })` (tout ou rien, opId dans `inv.crafted`), `affordable`. Serveur : `game.shop`
+  (verrou `inv:`), `POST /api/game/shop`. UI : `src/ui/shop.js` (`shopHtml`, `setupShop`, confirmation `ask`), `#shopBody`,
+  onglet `boutique` (nav, `noBuilding`, touche b), famille Sac de l'appli, aide « ? » `shop`.
+- **Tests** ✅ shop (nouveau), anticheat/shop (nouveau : 400 suites trafiquées, serveur), nav, app-families, town, wiki,
+  loot-table, inventory ; `npm run test:anticheat` 159/159. ❌ rarity « liste du créateur » : déjà rouge sur main (Casque en
+  arkonite BP, glyphes…), sans rapport. ⚠️ Pas vu à l'écran.
+
