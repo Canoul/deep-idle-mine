@@ -9,6 +9,8 @@ import { newRaid, tickRaid, leaveRaid, cluesLeft } from '../src/sim/raid/session
 import './helpers.js';
 
 const C = RAID.cerbere;
+/* Magma (05/11) : bond en arrière, puis le souffle C.magma.breath s plus tard */
+const breathe = G => { for(let i = 0; i < 100 && G.boss.magmaAt == null && !G.over; i++) tickCerbere(G); };
 const spec = (i, o = {}) => ({ name: 'M' + i, account: 'A' + i, carac: { ...STATS, damage: 20, mineSpeed: 2, ...(o.carac || {}) }, skills: o.skills || {}, skillTree: o.tree ?? 'mineur', spells: [] });
 
 test('minage : 2 areas de terrain en bandes, dans le noir, avec RAID.mine.clues Indices cachés ; un Indice miné compte', () => {
@@ -63,7 +65,7 @@ test('Cerbère : une cible qui résiste dissipe la Morsure pour les 3 ; rien ne 
 test('Magma : Durci (intouchable), libéré quand les autres le minent ; la ténacité ne joue que pour la spé Mineur', () => {
   const G = newCerbere(4, { miners: [spec(0, { tree: 'barbare', carac: { tenacity: 100 } }), spec(1, { tree: 'mineur', carac: { tenacity: 100 } }), spec(2, { tree: 'logisticien' })] });
   C.magma.chance = 1;
-  try { G.next.magma = 0; G.next.bite = G.next.sweep = 1e9; tickCerbere(G); } finally { C.magma.chance = 0.5; }
+  try { G.next.magma = 0; G.next.bite = G.next.sweep = 1e9; breathe(G); } finally { C.magma.chance = 0.5; }
   const [bar, min, log] = G.miners;
   assert.ok(bar.stone, 'barbare : la ténacité ne joue pas'); assert.ok(!min.stone, 'mineur : la ténacité joue'); assert.ok(log.stone);
   assert.ok(!pickTargets(G).includes(bar), 'en pierre : pas ciblé');
@@ -77,7 +79,7 @@ test('Magma : jamais sur les tanks (ceux qui provoquent Cerbère)', () => {
   const G = newCerbere(6, { miners: [spec(0, { tree: 'barbare' }), spec(1, { tree: 'logisticien' })] });
   G.boss.taunts.add(0);
   C.magma.chance = 1;
-  try { G.next.magma = 0; G.next.bite = G.next.sweep = 1e9; tickCerbere(G); } finally { C.magma.chance = 0.5; }
+  try { G.next.magma = 0; G.next.bite = G.next.sweep = 1e9; breathe(G); } finally { C.magma.chance = 0.5; }
   assert.ok(!G.miners[0].stone && G.miners[1].stone);
 });
 
@@ -128,4 +130,31 @@ test('groupes : Inspiration et Cri de guerre ne vont qu\'à son groupe ; les ann
   assert.deepEqual(S.map(s => s.group), [1, 1, 2]);
   assert.ok(S[1].rings.some(r => r.item === 'Anneau en pierre') && !S[2].rings.some(r => r.item === 'Anneau en pierre'));
   assert.ok(S[1].carac.tenacity > S[2].carac.tenacity);
+});
+
+test('Magma : il bondit de C.magma.leap cases en arrière, souffle, puis revient au contact des tanks', () => {
+  const G = newCerbere(9, { miners: [spec(0, { tree: 'barbare', skills: { taunt: 1 } }), spec(1)] });
+  G.next.bite = G.next.sweep = 1e9; G.next.magma = 0; G.boss.taunts.add(0);
+  const x0 = G.boss.x, ch = C.magma.chance; C.magma.chance = 0;                // personne en pierre : la partie continue
+  tickCerbere(G);
+  assert.equal(G.boss.x, x0 + C.magma.leap, 'bond en arrière'); assert.equal(G.boss.move.from, x0);
+  assert.equal(G.boss.magmaAt, null, 'il souffle un peu après');
+  breathe(G);
+  assert.ok(G.boss.magmaAt != null);
+  /* le tank est resté loin (repoussé) : Cerbère revient jusqu'à lui */
+  G.boss.taunts.add(0); const tank = G.miners[0]; tank.x = 6; tank.y = G.floorY; tank.action = { type: 'wait', t: 0, dur: 1e9, data: {} };
+  for(let i = 0; i < 100 && G.boss.returnAt != null; i++) tickCerbere(G);
+  assert.equal(G.boss.x, Math.max(...G.miners.filter(m => G.boss.taunts.has(m.id) && m.y === G.floorY).map(m => m.x)) + 1, 'au contact du tank le plus avancé');
+  assert.ok(G.boss.x + G.boss.w <= G.w - C.magma.leap, 'de la place pour le prochain bond');
+  C.magma.chance = ch;
+});
+
+test('pénétration de ténacité de Cerbère : seulement contre les tanks', async () => {
+  const { penSrc } = await import('../src/sim/raid/cerbere.js');
+  const fs = await import('node:fs');
+  const cfg = fs.readFileSync(new URL('../src/config.js', import.meta.url), 'utf8');   // les tests neutralisent TENACITY.pen
+  assert.match(cfg, /cerbere:[1-9]\d*, cerbere_soft:0 \}/);
+  const G = newCerbere(10, { miners: [spec(0), spec(1)] });
+  G.boss.taunts.add(0);
+  assert.equal(penSrc(G, G.miners[0]), 'cerbere'); assert.equal(penSrc(G, G.miners[1]), 'cerbere_soft');
 });

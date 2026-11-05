@@ -40,7 +40,10 @@ function arenaView(G){
     mode: 'raid', phase: 'boss', tick: G.ticks, t: G.t, over: G.over, w: B.w, h: B.h, floorY: B.floorY,
     tiles: B.tiles.map(r => Array.from(r, enc36).join('')),
     boss: { name: b.name, hp: Math.ceil(b.hp), maxhp: b.maxhp, x: b.x, y: b.y, w: b.w, h: b.h, rage: b.rage,
-            biteAgo: ago(B, b.biteAt), sweepAgo: ago(B, b.sweepAt), magmaAgo: ago(B, b.magmaAt), targets: [...b.targets] },
+            biteAgo: ago(B, b.biteAt), sweepAgo: ago(B, b.sweepAt), magmaAgo: ago(B, b.magmaAt), targets: [...b.targets],
+            /* bond du Magma (05/11) : déplacement à animer, et souffle qui arrive (s) */
+            move: b.move ? { from: b.move.from, to: b.move.to, ago: ago(B, b.move.at), dur: b.move.dur } : null,
+            breathIn: b.breathAt != null ? Math.max(0, Math.round((b.breathAt - B.t) * 10) / 10) : null },
     next: { bite: Math.max(0, Math.ceil(B.next.bite - B.t)), sweep: Math.max(0, Math.ceil(B.next.sweep - B.t)), magma: Math.max(0, Math.ceil(B.next.magma - B.t)) },
     miners: B.miners.map(m => arenaMiner(B, m)), stats: B.stats, log: B.log.slice(0, LOG),
     raid: raidHeader(G),

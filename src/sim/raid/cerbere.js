@@ -35,7 +35,7 @@ export function newCerbere(seed, opts = {}){
     w, h, tiles, floorY: h - 1,
     rng: mulberry32(seed ^ 0x2545f491), fightRng: mulberry32(seed ^ 0x51f15e5d),
     boss: { name: B.name, hp: opts.hp ?? B.hp, maxhp: opts.hp ?? B.hp, w: B.w, h: B.h, x: B.bossX, y: h - 1, knockRes: B.knockRes,
-            rage: false, biteAt: null, sweepAt: null, magmaAt: null, targets: [], taunts: new Set() },
+            rage: false, biteAt: null, sweepAt: null, magmaAt: null, targets: [], taunts: new Set(), move: null, breathAt: null, returnAt: null },
     next: { bite: C.bite.every, sweep: C.sweep.every, magma: C.magma.every },
     inspire: null, warcry: null, log: [],
     stats: { dmg: 0, bossDmg: 0, bites: 0, bitten: 0, sweeps: 0, knocks: 0, magmas: 0, stoned: 0, freed: 0, dodges: 0, deaths: 0, mineT: 0, fightT: 0 },
@@ -77,6 +77,8 @@ const alive = G => G.miners.filter(m => !m.dead);
 const actives = G => G.miners.filter(active);
 /* tank : il provoque Cerbère (skill de provocation, coup porté) ; ce sont ceux qu'il attaque d'abord */
 export const isTank = (G, m) => G.boss.taunts.has(m.id);
+/* pénétration de ténacité de Cerbère : seulement contre les tanks (Geoffrey, 05/11) ; les autres : 'cerbere_soft' (0) */
+export const penSrc = (G, m) => isTank(G, m) ? 'cerbere' : 'cerbere_soft';
 
 /* ---------- vitesses et coups ---------- */
 const mineRate = (G, m) => m.carac.mineSpeed * (1 + (m.carac.mineSpeedPct || 0) / 100) * (1 + inspirePct(G, m)) * (1 + (m.learned || 0));
@@ -124,7 +126,7 @@ function bite(G){
      à l'autre (bitUntil : simple affichage, bite.show s). */
   const hit = [], dodged = [];
   for(const m of ts){
-    if(tenacityTry(m, 'cerbere', G.fightRng)){ dodged.push(m); G.stats.dodges++; continue; }
+    if(tenacityTry(m, penSrc(G, m), G.fightRng)){ dodged.push(m); G.stats.dodges++; continue; }
     m.bitUntil = G.t + B.show; m.stats.bitten++; G.stats.bitten++; hit.push(m);
   }
   if(!dodged.length){
@@ -143,7 +145,7 @@ function sweep(G){
   for(const m of actives(G)){
     if(gapX(G, m.x) > C.sweep.range || m.y < G.floorY - high) continue;
     /* la ténacité l'esquive, sans fatiguer (Geoffrey, 04/11 soir : avant, une esquive ici rendait le tank fatigué pour la Morsure) */
-    if(tenacityTryFresh(m, 'cerbere', G.fightRng)){ G.stats.dodges++; continue; }
+    if(tenacityTryFresh(m, penSrc(G, m), G.fightRng)){ G.stats.dodges++; continue; }
     let { x, y } = m;
     for(let i = 0; i < high && cerOpen(G, x, y - 1); i++) y--;
     for(let i = 0; i < back && cerOpen(G, x - 1, y); i++) x--;
@@ -152,15 +154,41 @@ function sweep(G){
   }
 }
 
+/* Magma, en trois temps (05/11) : bond en arrière (leap), souffle (magma), retour au contact des tanks (comeBack).
+   b.move : { from, to, at (tick), dur (s) } pour l'animation du déplacement ; b.x change d'un coup (la simulation). */
+function moveBoss(G, to, dur){
+  const b = G.boss;
+  b.move = { from: b.x, to, at: G.ticks, dur };
+  b.x = to;
+  /* un mineur pris sous lui (il revient sur une case occupée) est repoussé devant lui */
+  for(const m of G.miners) if(!m.dead && m.y > b.y - b.h && m.y <= b.y && m.x >= b.x && m.x < b.x + b.w){
+    m.x = Math.max(0, b.x - 1); m.kx = 0; m.action = null; m.knocked = true; m.hop = G.ticks;
+  }
+}
+function leap(G){
+  const b = G.boss, M = C.magma;
+  G.next.magma = G.t + M.every;
+  moveBoss(G, Math.min(G.w - b.w, b.x + M.leap), M.leapT);
+  b.breathAt = G.t + M.breath; b.returnAt = G.t + M.stay;
+  log(G, `🐾 ${b.name} bondit en arrière…`);
+}
+function comeBack(G){
+  const b = G.boss, M = C.magma, home = C.boss.bossX;
+  const tanks = actives(G).filter(m => isTank(G, m) && m.y === G.floorY && m.x < b.x);
+  const to = tanks.length ? Math.max(...tanks.map(m => m.x)) + 1 : home;
+  b.returnAt = null;
+  moveBoss(G, Math.max(1, Math.min(G.w - b.w - M.leap, to)), M.backT);
+  log(G, `🐾 ${b.name} revient au contact${tanks.length ? ' des tanks' : ''}`);
+}
 function magma(G){
   const b = G.boss, p = rage(G) ? C.rage.chance : C.magma.chance;
-  G.next.magma = G.t + C.magma.every; b.magmaAt = G.ticks; G.stats.magmas++;
+  b.breathAt = null; b.magmaAt = G.ticks; G.stats.magmas++;
   const hard = [];
   for(const m of actives(G)){
     if(isTank(G, m)) continue;                                      // les tanks n'en sont jamais la cible (Geoffrey, 04/11 13:37)
     if(!(G.fightRng() < p)) continue;
     /* la ténacité ne joue que pour la spé Mineur */
-    if(m.skillTree === 'mineur' && tenacityTry(m, 'cerbere', G.fightRng)){ G.stats.dodges++; continue; }
+    if(m.skillTree === 'mineur' && tenacityTry(m, penSrc(G, m), G.fightRng)){ G.stats.dodges++; continue; }
     m.stone = { hp: C.stone.hard, max: C.stone.hard }; m.action = null; m.status = 'Durci'; m.knocked = false;
     m.stats.stoned++; G.stats.stoned++; hard.push(m.name);
   }
@@ -181,7 +209,9 @@ function stepBoss(G){
   if(G.over || b.hp <= 0) return;
   if(G.t + 1e-9 >= G.next.bite){ bite(G); if(G.over) return; }
   if(G.t + 1e-9 >= G.next.sweep) sweep(G);
-  if(G.t + 1e-9 >= G.next.magma) magma(G);
+  if(b.breathAt == null && b.returnAt == null && G.t + 1e-9 >= G.next.magma) leap(G);
+  if(b.breathAt != null && G.t + 1e-9 >= b.breathAt){ magma(G); if(G.over) return; }
+  if(b.returnAt != null && G.t + 1e-9 >= b.returnAt) comeBack(G);
 }
 
 function damageBoss(G, m, dmg){
