@@ -7510,6 +7510,32 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   raffle, notify, admin-raffle, social : 52/52. Vérifié dans Chromium (dev, raffle forcé) : bulle affichée, Participer →
   « Tu participes au raffle », bulle partie.
 
+## 05/11/2026 — Épée et Pioche en mithril (Geoffrey)
+- `STUFF.items` (`set.damage 21`, `stats.mineSpeed 0.7`), `RECIPES`, `UPGRADE.tiers[4]`, rareté inhabituelle (pièce + BP), BP dans le 1er jet
+  du Treasure T4 (0,01 chacun : le jet passe de 13 à 15 %) et `RESEARCH.tiers[4].stages[0]` (10 plans). Textures `sword_mithril`,
+  `pickaxe_mithril`, `skins/sword_mithril`, `skins/pick_mithril` (gen_textures.py) ; `src/skins.js`.
+- ⚠️ `gen_textures.py` réécrit aussi d'autres textures (boss, ville, Lucifer… venues d'autres scripts) : seules les 4 nouvelles
+  sont gardées, les autres remises comme avant.
+- Tests : tier4 (nouveau test), research (étapes 10 / 8 / 2), rarity, stuff*, wiki*, skins, gearscore, craft, loot, rune 133/134 ;
+  le rouge (« recettes du T4 », Clé d'instance I avec 5 Orbe) l'était déjà sur main.
+
+
+## 05/11/2026 — Geoffrey — Emplacements de sorts selon le niveau du mineur (branche geoffrey/sorts-slots-niveau)
+- `SPELLS.slotLevels` [1, 1, 15, 20] ; `openSlotsFor(level)` / `openSlotsOf(ctx)` (src/meta/spells.js ; sans niveau : openSlots 2).
+  État des sorts : 4 cases (avant 2) ; `spellOp` refuse `slot_locked` au-delà des cases ouvertes ; `equippedSpells` ne fige
+  que les cases ouvertes ; `sessionSpells` au plus 4 (le serveur a vérifié au lancement) ; `publicSpells.openSlots` selon le
+  niveau. Serveur : `spellCtx` porte `level` (levelOf(xp)) ; `applySet` reçoit `level` (sets : 4 cases, seules les ouvertes
+  remplies). UI : cadenas « Niveau n », prochain emplacement pris parmi les cases ouvertes. Wiki : texte généré.
+- Tests ✅ spells (+ test des niveaux), sets, game-service, app-spells, dev-presets, tower-spells, giant-service,
+  dev-live-copies, glyphs, hescoming-service, raid-server, wiki ; `npm run test:anticheat` 154/154 (attendus à 4 cases).
+
+## 05/11/2026 — Appli : fenêtre « Recettes » du four (Geoffrey)
+- Paragraphe d'explication marqué `frecAbout` (src/ui/furnace.js), caché par `body.app #fpick .frecAbout` (src/app/app.css) ; la liste
+  (`.frecBox .frecs`, flex 1) récupère la hauteur. Site inchangé. Tests furnace*, app* 223/223 ✅. Pas vu sur un vrai téléphone.
+
+## 05/11/2026 — Appli : activité des amis tronquée (Geoffrey)
+- `body.app #socialBody .fname small` : `white-space:normal` (ancien : `nowrap` + ellipsis). Vérifié en image (Chromium 360 px, 3 amis).
+
 ## 05/11/2026 — Événement du jour (Geoffrey)
 - **Config / logique** : `DAILY` (src/config.js), `src/shared/daily.js` (`rollDaily`, `dailyCandidates` : exclut les ids des
   `noRepeat` jours d'avant d'après les dates, `dailyFx`, `dailyOn(st, t)`, `publicDaily`, `dailyCost`). État ns **daily**

@@ -16,6 +16,28 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 05/11/2026 — Geoffrey — Appli : activité des amis en entier
+- **Pour le joueur** : dans l'appli (Social, Mes amis), l'activité d'un ami n'est plus coupée (« Dans le l… ») : elle passe
+  sur deux ou trois lignes (« En session · Tour de l'Ange (3/3) · reste 7 min »). Rien ne change sur le site.
+- **État** : ✅ en ligne le 05/11
+
+## 05/11/2026 — Geoffrey — Sorts : 3e emplacement au niveau 15, 4e au niveau 20
+- **Pour le joueur** : les deux emplacements de sorts verrouillés s'ouvrent avec le niveau du mineur : le 3e au niveau 15,
+  le 4e au niveau 20 (cadenas « Niveau 15 / 20 » avant).
+
+## 05/11/2026 — Geoffrey — Appli : plus de place pour les recettes du four
+- **Pour le joueur** : dans l'appli, la fenêtre « Recettes » du four n'affiche plus le paragraphe qui explique ce que fait
+  le four : la liste des recettes prend toute la place et se fait défiler plus facilement. Rien ne change sur le site.
+- **État** : ✅ en ligne le 05/11
+
+## 05/11/2026 — Geoffrey — Épée et Pioche en mithril
+- **Pour le joueur** : deux nouvelles armes. **Épée en mithril** : 21 dégâts (+16 sur les mains nues ; acier 18,5), avec
+  30 Mithril ingot, 10 Orbe et 30 Steel ingot. **Pioche en mithril** : +0,7 de vitesse de minage (acier +0,58), avec 40
+  Mithril ingot, 100 Pierre glissante et 30 Steel ingot. Plans : dans les Treasure T4 (1 % chacun) et à la Table de
+  recherche (tier 4, première étape, avec l'armure en mithril).
+- **Décisions** : valeurs de Geoffrey. Choix de Claude, à valider : où trouver les plans (comme l'armure en mithril).
+- **État** : ✅ en ligne le 05/11
+
 ## 05/11/2026 — Geoffrey — Stats du mineur : une bulle « ? » par stat
 - **Pour le joueur** : dans l'onglet Stuff (site et appli), chaque ligne de « Stats du mineur » a une bulle « ? » qui
   explique ce que fait la stat (aussi le Gear score et le DPS). Les textes sont ceux du wiki ; ceux de la ténacité et de

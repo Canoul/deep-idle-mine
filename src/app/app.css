@@ -381,7 +381,8 @@ body.app #upBody #upGo{flex:1 1 100%;min-height:52px;font:400 22px/1 var(--f-tit
 /* Amis : une ligne par ami (le bouton utile et « ⋮ »), sa fiche monte du bas (ancien : 5 boutons sur 2-3 lignes) */
 body.app #socialBody .frow{flex-wrap:nowrap}
 body.app #socialBody .fbtns{width:auto;flex-wrap:nowrap}
-body.app #socialBody .fname small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* activité de l'ami : sur plusieurs lignes au besoin (05/11/2026, Geoffrey ; ancien : une ligne coupée « Dans le l… ») */
+body.app #socialBody .fname small{white-space:normal;overflow-wrap:anywhere;line-height:1.15}
 body.app #frSheet{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;background:rgba(5,3,2,.62)}
 body.app #frSheet[hidden]{display:none}
 body.app #frSheet .box{position:relative;width:100%;margin-bottom:var(--dock-h);padding:4px 8px 10px;
@@ -400,3 +401,5 @@ body.app .hiNow{display:grid;grid-template-columns:32px minmax(0,1fr) auto;align
 body.app .hiNow b{font:400 19px/1.05 var(--f-title);color:#ffe6c4;font-weight:400}
 body.app.appLive .hiNow{display:none}
 body.app .hiPast{text-transform:uppercase}
+/* Four, fenêtre « Recettes » (05/11/2026, Geoffrey) : sans le paragraphe d'explication, la liste des recettes prend la place */
+body.app #fpick .frecAbout{display:none}

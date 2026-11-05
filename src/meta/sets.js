@@ -13,7 +13,7 @@ import { SETS, SPELLS } from '../config.js';
 import { SLOT_IDS, fits } from './stuff.js';
 import { takePiece, putPiece } from './inventory.js';
 import { sanitizeSkills, skillRanks } from './skills.js';
-import { spellOf, equipBlocked } from './spells.js';
+import { spellOf, equipBlocked, openSlotsOf } from './spells.js';
 
 export const createSets = () => ({ list:[], nextId:1, ops:[], byActivity:{} });
 
@@ -64,7 +64,7 @@ export function equippedSet(list, worn, skills, spellSlots){
   return (list ?? []).find(s =>
     SLOT_IDS.every(k => (s.stuff?.[k] ?? null) === (worn?.[k]?.uid ?? null)) &&
     (s.skills?.tree ?? null) === (skills.tree ?? null) && ranks(s.skills?.ranks) === mine &&
-    Array.from({ length:SPELLS.openSlots }, (_, i) => (s.spells?.[i] ?? null) === (spellSlots[i] ?? null)).every(Boolean)
+    Array.from({ length:SPELLS.slots }, (_, i) => (s.spells?.[i] ?? null) === (spellSlots[i] ?? null)).every(Boolean)
   ) ?? null;
 }
 
@@ -95,7 +95,7 @@ export function setOp(sets, op, current){
 /* Équipe le set id : modifie inv, stuff, skills et spells sur place. points : points de skill du niveau ; spec : niveaux
    de spécialisation { arbre: niveau } (déblocage des sorts). Idempotent par opId (sets.ops).
    Renvoie { ok, repeated, missing } (missing : pièces du set introuvables) ou { error }. */
-export function applySet(sets, op, { inv, stuff, skills, spells, points, spec }){
+export function applySet(sets, op, { inv, stuff, skills, spells, points, spec, level }){
   if(sets.ops.includes(op.opId)) return { ok:true, repeated:true, missing:0 };
   const set = setOf(sets, op.id);
   if(!set) return { error:'unknown' };
@@ -114,10 +114,10 @@ export function applySet(sets, op, { inv, stuff, skills, spells, points, spec })
   const sk = sanitizeSkills(set.skills, points);
   skills.tree = sk.tree; skills.ranks = sk.ranks;
   /* sorts : ceux du set encore équipables (débloqués, spécialisation du set), chacun une fois */
-  const ctx = { tree:sk.tree, spec };
-  spells.slots = Array.from({ length:SPELLS.openSlots }, (_, i) => {
+  const ctx = { tree:sk.tree, spec, level }, open = openSlotsOf(ctx);   // emplacements ouverts au niveau du mineur (05/11)
+  spells.slots = Array.from({ length:SPELLS.slots }, (_, i) => {
     const id = set.spells[i];
-    return id && !equipBlocked(spells, id, ctx) && set.spells.indexOf(id) === i ? id : null;
+    return i < open && id && !equipBlocked(spells, id, ctx) && set.spells.indexOf(id) === i ? id : null;
   });
   remember(sets, op.opId);
   return { ok:true, repeated:false, missing };
@@ -138,7 +138,7 @@ export function sanitizeSets(raw){
     ids.add(s.id);
     const stuff = {};
     for(const k of SLOT_IDS){ const u = s.stuff?.[k]; if(Number.isSafeInteger(u) && u >= 0) stuff[k] = u; }
-    const spells = Array.from({ length:SPELLS.openSlots }, (_, i) => spellOf(s.spells?.[i]) ? s.spells[i] : null);
+    const spells = Array.from({ length:SPELLS.slots }, (_, i) => spellOf(s.spells?.[i]) ? s.spells[i] : null);
     out.list.push({ id:s.id, name:cleanName(s.name) ?? 'Set ' + s.id, stuff, skills:skillRanks(sanitizeSkills(s.skills)), spells });
   }
   out.nextId = Math.max(Number.isSafeInteger(raw?.nextId) ? raw.nextId : 1, ...out.list.map(s => s.id + 1), 1);

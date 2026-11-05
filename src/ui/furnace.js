@@ -196,7 +196,7 @@ export function setupFurnace({ onOp }){
       `<div class="fqty"><input id="fpickQty" type="number" min="1" step="1" inputmode="numeric" placeholder="Fournées">`+
       `<button id="fpickHalf" title="La moitié du maximum">Moitié</button><button id="fpickMax">Max</button><button class="on" id="fpickOk"${pick ? '' : ' disabled'}>Lancer</button></div>`+
       `<p class="mut small" id="fpickInfo"></p><p class="err" id="fpickErr" hidden></p>`+
-      `<p class="mut small">Le four pose lui-même les ingrédients et le charbon pour le nombre de fournées choisi, en plus de ce qu'il contient déjà. Ils ne sont consommés qu'à la fin de chaque produit. Changer de recette rend à l'inventaire ce qui ne sert plus (le produit en cours est annulé, rien n'est perdu).</p>`+
+      `<p class="mut small frecAbout">Le four pose lui-même les ingrédients et le charbon pour le nombre de fournées choisi, en plus de ce qu'il contient déjà. Ils ne sont consommés qu'à la fin de chaque produit. Changer de recette rend à l'inventaire ce qui ne sert plus (le produit en cours est annulé, rien n'est perdu).</p>`+   // caché dans l'appli (05/11) : plus de place pour la liste
       `<p style="text-align:right"><button id="fpickClose">Fermer</button></p>`;
     $('fpick').hidden = false;
     const qty = $('fpickQty'), maxOf = () => rows.find(r => r.rec.out === pick)?.max ?? 0;
