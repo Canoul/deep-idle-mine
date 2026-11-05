@@ -16,6 +16,11 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 05/11/2026 — Geoffrey — Appli : plus de place pour les recettes du four
+- **Pour le joueur** : dans l'appli, la fenêtre « Recettes » du four n'affiche plus le paragraphe qui explique ce que fait
+  le four : la liste des recettes prend toute la place et se fait défiler plus facilement. Rien ne change sur le site.
+- **État** : ✅ en ligne le 05/11
+
 ## 05/11/2026 — Geoffrey — Épée et Pioche en mithril
 - **Pour le joueur** : deux nouvelles armes. **Épée en mithril** : 21 dégâts (+16 sur les mains nues ; acier 18,5), avec
   30 Mithril ingot, 10 Orbe et 30 Steel ingot. **Pioche en mithril** : +0,7 de vitesse de minage (acier +0,58), avec 40

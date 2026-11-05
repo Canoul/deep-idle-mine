@@ -7519,3 +7519,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - Tests : tier4 (nouveau test), research (étapes 10 / 8 / 2), rarity, stuff*, wiki*, skins, gearscore, craft, loot, rune 133/134 ;
   le rouge (« recettes du T4 », Clé d'instance I avec 5 Orbe) l'était déjà sur main.
 
+## 05/11/2026 — Appli : fenêtre « Recettes » du four (Geoffrey)
+- Paragraphe d'explication marqué `frecAbout` (src/ui/furnace.js), caché par `body.app #fpick .frecAbout` (src/app/app.css) ; la liste
+  (`.frecBox .frecs`, flex 1) récupère la hauteur. Site inchangé. Tests furnace*, app* 223/223 ✅. Pas vu sur un vrai téléphone.
+
