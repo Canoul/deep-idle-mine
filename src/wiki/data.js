@@ -318,7 +318,7 @@ const TREE_OF = id => SKILLS.trees.find(t => t.id === id);
 export const spellRows = () => SPELLS.list.map(s => ({ id: s.id, name: s.name, icon: s.icon, desc: s.desc, cd: s.cd,
   unlock: s.unlock.scroll ? { scroll: s.unlock.scroll } : { tree: TREE_OF(s.unlock.tree), level: s.unlock.level },
   needTree: s.needTree ? TREE_OF(s.needTree) : null }));
-export const spellInfo = () => ({ slots: SPELLS.slots, open: SPELLS.openSlots });
+export const spellInfo = () => ({ slots: SPELLS.slots, open: SPELLS.openSlots, levels: [...SPELLS.slotLevels] });
 /* XP de spécialisation : % de sa part d'XP ; même courbe que le niveau du mineur ? */
 export const specInfo = () => ({ pct: XP.specPct, sameCurve: XP.specCurve.first === XP.curve.first && XP.specCurve.factor === XP.curve.factor,
   first: XP.specCurve.first, factor: XP.specCurve.factor, trees: SKILLS.trees.map(t => ({ icon: t.icon, label: t.label })) });

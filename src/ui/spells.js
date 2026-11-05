@@ -1,5 +1,5 @@
 /* Onglet Sorts (refonte du 28/10/2026, piste A « la barre de sorts ») :
-   - en haut, la barre de sorts telle qu'elle s'affiche en session : SPELLS.slots emplacements, dont SPELLS.openSlots
+   - en haut, la barre de sorts telle qu'elle s'affiche en session : SPELLS.slots emplacements, dont ceux ouverts au niveau du mineur (SPELLS.slotLevels, 05/11 ; avant SPELLS.openSlots)
      ouverts ; clic sur un sort de la barre = le retirer ;
    - dessous à gauche, le grimoire : tous les sorts en tuiles, filtrés par spécialisation (ou parchemins), avec leur état ;
    - à droite, la fiche du sort choisi : description, chiffres (tirés de la config), et l'action possible (mettre dans la
@@ -84,14 +84,17 @@ export function spellInfoHtml(st, cur, { ctx = { tree:null, spec:{} }, owned = 0
 /* onOp({ action:'equip', spell, slot } | { action:'unequip', slot } | { action:'learn', item }) → promesse de la réponse
    du serveur ({ spells, inventory? }) ; onInventory(inv) : inventaire renvoyé après un parchemin appris */
 export function setupSpells({ onOp, onInventory = () => {}, onChange = () => {} }){
-  let st = { learned:[], slots:Array(SPELLS.openSlots).fill(null) }, ctx = { tree:null, spec:{} }, inv = { slots:[] };
+  let st = { learned:[], slots:Array(SPELLS.slots).fill(null) }, ctx = { tree:null, spec:{} }, inv = { slots:[] };
   let sel = 0, cur = null, picked = false, tab = 'all', busy = false, msg = '';   // picked : le joueur a choisi le sort de la fiche
 
   const owned = id => SPELL[id].unlock.scroll ? countOf(inv, SPELL[id].unlock.scroll) : 0;
   const statusOf = id => spellStatus(st, id, ctx, owned(id));
   const level = tree => ctx.spec?.[tree] ?? 1;
   /* emplacement où ira le prochain sort : celui choisi s'il est libre, sinon le premier libre, sinon celui choisi */
-  const target = () => !st.slots[sel] ? sel : (st.slots.includes(null) ? st.slots.indexOf(null) : sel);
+  /* prochain emplacement : celui choisi s'il est libre, sinon le premier libre parmi les emplacements OUVERTS (niveau du mineur, 05/11) */
+  const open = () => st.openSlots ?? SPELLS.openSlots;
+  const target = () => { const free = st.slots.slice(0, open()).indexOf(null);
+    return sel < open() && !st.slots[sel] ? sel : free >= 0 ? free : Math.min(sel, open() - 1); };
 
   function renderSpec(){
     const t = ctx.tree && TREE[ctx.tree];
@@ -104,8 +107,8 @@ export function setupSpells({ onOp, onInventory = () => {}, onChange = () => {} 
     const next = target();
     $('spellSlots').innerHTML = Array.from({ length:SPELLS.slots }, (_, i) => {
       const num = `<span class="spNum">${NUM[i] ?? i + 1}</span>`;
-      if(i >= SPELLS.openSlots)
-        return `<div class="spSock locked">${num}<div class="spSockBtn">${pxi('lock')}</div><span class="spSockName mut">Verrouillé</span><span class="spCd">&nbsp;</span></div>`;
+      if(i >= (st.openSlots ?? SPELLS.openSlots))   // ouvert au niveau du mineur (SPELLS.slotLevels, 05/11)
+        return `<div class="spSock locked" data-tip="${esc(`Se débloque au niveau ${SPELLS.slotLevels[i]} du mineur`)}">${num}<div class="spSockBtn">${pxi('lock')}</div><span class="spSockName mut">Niveau ${SPELLS.slotLevels[i]}</span><span class="spCd">&nbsp;</span></div>`;
       const id = st.slots[i], s = id && SPELL[id];
       if(!s)
         return `<div class="spSock empty${i === next ? ' next' : ''}" data-slot="${i}" role="button" tabindex="0" data-tip="Emplacement libre : choisis un sort dans le grimoire, ou glisse-le ici">`+

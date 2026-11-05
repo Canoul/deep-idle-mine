@@ -708,8 +708,8 @@ test('sorts par le serveur : parchemin appris (consommé, une fois), équiper v�
   await game.skills(A, { action:'learn', node:'damage', opId:'op-spell-05' });
   await game.spells(A, { action:'equip', spell:'dash', slot:0, opId:'op-spell-06' });
   r = await game.spells(A, { action:'equip', spell:'ulti_shen', slot:1, opId:'op-spell-07' });
-  assert.deepEqual(r.spells.slots, ['dash', 'ulti_shen']);
-  assert.deepEqual((await game.state(A)).spells.slots, ['dash', 'ulti_shen']);
+  assert.deepEqual(r.spells.slots, ['dash', 'ulti_shen', null, null]);
+  assert.deepEqual((await game.state(A)).spells.slots, ['dash', 'ulti_shen', null, null]);
   await game.skills(A, { action:'spec', tree:'mineur', opId:'op-spell-08' });                 // plus barbare : Dash ne part pas (le reset garde la spé, 04/11)
   const { session } = await game.start(A, {});
   assert.deepEqual((await store.getGameSession(session.id)).spells[A.id], ['ulti_shen']);

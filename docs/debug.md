@@ -7509,3 +7509,12 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** ✅ `tests/raffle.test.js` (état social : raffle, joined, invité, fin), `tests/notify.test.js` (ttl par bulle) ;
   raffle, notify, admin-raffle, social : 52/52. Vérifié dans Chromium (dev, raffle forcé) : bulle affichée, Participer →
   « Tu participes au raffle », bulle partie.
+
+## 05/11/2026 — Geoffrey — Emplacements de sorts selon le niveau du mineur (branche geoffrey/sorts-slots-niveau)
+- `SPELLS.slotLevels` [1, 1, 15, 20] ; `openSlotsFor(level)` / `openSlotsOf(ctx)` (src/meta/spells.js ; sans niveau : openSlots 2).
+  État des sorts : 4 cases (avant 2) ; `spellOp` refuse `slot_locked` au-delà des cases ouvertes ; `equippedSpells` ne fige
+  que les cases ouvertes ; `sessionSpells` au plus 4 (le serveur a vérifié au lancement) ; `publicSpells.openSlots` selon le
+  niveau. Serveur : `spellCtx` porte `level` (levelOf(xp)) ; `applySet` reçoit `level` (sets : 4 cases, seules les ouvertes
+  remplies). UI : cadenas « Niveau n », prochain emplacement pris parmi les cases ouvertes. Wiki : texte généré.
+- Tests ✅ spells (+ test des niveaux), sets, game-service, app-spells, dev-presets, tower-spells, giant-service,
+  dev-live-copies, glyphs, hescoming-service, raid-server, wiki ; `npm run test:anticheat` 154/154 (attendus à 4 cases).

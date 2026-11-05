@@ -266,7 +266,8 @@ function level(){
 /* ---------- sorts ---------- */
 function spells(){
   const s = D.spellInfo();
-  $('w-spells-rule').innerHTML = `<b>${s.slots} emplacements</b>, dont <b>${s.open} ouverts</b> pour l'instant (les autres ont un cadenas).`;
+  $('w-spells-rule').innerHTML = `<b>${s.slots} emplacements</b> : <b>${s.open} ouverts</b> dès le départ, ` +
+    s.levels.slice(s.open).map((l, i) => `le ${s.open + i + 1}e au <b>niveau ${l}</b>`).join(', ') + ` du mineur (cadenas avant).`;
   $('w-spells').innerHTML = table(['Sort', 'Comment le débloquer', 'Réservé à', 'Effet', '#Recharge'], D.spellRows().map(r => tr([
     `<b>${r.icon} ${esc(r.name)}</b>`,
     r.unlock.scroll ? `Apprendre le ${item(r.unlock.scroll)}` : `${r.unlock.tree.icon} ${esc(r.unlock.tree.label)} : niveau de spé <b>${r.unlock.level}</b>`,

@@ -74,10 +74,10 @@ test('équiper : skills remis (revérifiés avec les points) et sorts encore éq
   k.skills.tree = null; k.skills.ranks = {}; k.spells.slots = [null, null];
   applySet(sets, { id:1, opId:'e1' }, { ...k, points:4, spec:{ barbare:5 } });
   assert.deepEqual([k.skills.tree, k.skills.ranks], ['barbare', { damage:3, taunt:1 }]);
-  assert.deepEqual(k.spells.slots, ['dash', 'ulti_shen']);
+  assert.deepEqual(k.spells.slots, ['dash', 'ulti_shen', null, null]);
   applySet(sets, { id:1, opId:'e2' }, { ...k, points:2, spec:{ barbare:4 } });
   assert.deepEqual(k.skills.ranks, { damage:2 }, 'pas assez de points : les rangs en trop sont rendus');
-  assert.deepEqual(k.spells.slots, [null, 'ulti_shen'], 'Dash pas débloqué : retiré');
+  assert.deepEqual(k.spells.slots, [null, 'ulti_shen', null, null], 'Dash pas débloqué : retiré');
 });
 
 test('relecture : sets invalides, doublons et cases inconnues retirés ; nom par défaut', () => {
@@ -87,7 +87,7 @@ test('relecture : sets invalides, doublons et cases inconnues retirés ; nom par
   assert.deepEqual(s.list.map(x => [x.id, x.name]), [[1, 'A'], [4, 'Set 4']]);
   assert.deepEqual(s.list[0].stuff, { pioche:5 });
   assert.deepEqual(s.list[0].skills, { v:3, tree:'barbare', ranks:{ damage:3 } });
-  assert.deepEqual(s.list[0].spells, ['dash', null]);
+  assert.deepEqual(s.list[0].spells, ['dash', null, 'ulti_shen', null]);   // 4 emplacements (05/11)
   assert.equal(s.nextId, 5); assert.deepEqual(s.ops, ['a']);
   assert.deepEqual(sanitizeSets('n\'importe quoi'), createSets());
 });
@@ -119,7 +119,7 @@ test('serveur : un set enregistre et remet stuff, skills et sorts ; créer / enr
   await game.skills(ME, { action:'reset', opId:'op-set-k2' });
   r = await game.sets(ME, { action:'equip', id:1, opId:'op-set-e1' });
   assert.equal(r.stuff.pioche.uid, p1);
-  assert.deepEqual([r.skills.tree, r.skills.ranks, r.spells.slots], ['barbare', { damage:1 }, ['dash', null]]);
+  assert.deepEqual([r.skills.tree, r.skills.ranks, r.spells.slots], ['barbare', { damage:1 }, ['dash', null, null, null]]);
   assert.equal(r.missing, 0);
   assert.deepEqual((await game.state(ME)).sets.list.map(s => s.name), ['Set 1']);
   /* 28/10/2026 (Geoffrey) : enregistrer et créer sont permis pendant une session (rien ne bouge : le set note l'équipement) */
