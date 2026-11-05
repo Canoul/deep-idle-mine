@@ -19,6 +19,13 @@ Modèle d'entrée :
 ## 05/11/2026 — Geoffrey — Sorts : 3e emplacement au niveau 15, 4e au niveau 20
 - **Pour le joueur** : les deux emplacements de sorts verrouillés s'ouvrent avec le niveau du mineur : le 3e au niveau 15,
   le 4e au niveau 20 (cadenas « Niveau 15 / 20 » avant).
+
+## 05/11/2026 — Geoffrey — Épée et Pioche en mithril
+- **Pour le joueur** : deux nouvelles armes. **Épée en mithril** : 21 dégâts (+16 sur les mains nues ; acier 18,5), avec
+  30 Mithril ingot, 10 Orbe et 30 Steel ingot. **Pioche en mithril** : +0,7 de vitesse de minage (acier +0,58), avec 40
+  Mithril ingot, 100 Pierre glissante et 30 Steel ingot. Plans : dans les Treasure T4 (1 % chacun) et à la Table de
+  recherche (tier 4, première étape, avec l'armure en mithril).
+- **Décisions** : valeurs de Geoffrey. Choix de Claude, à valider : où trouver les plans (comme l'armure en mithril).
 - **État** : ✅ en ligne le 05/11
 
 ## 05/11/2026 — Geoffrey — Stats du mineur : une bulle « ? » par stat

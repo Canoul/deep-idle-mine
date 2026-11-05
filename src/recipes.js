@@ -52,6 +52,9 @@ export const RECIPES = {
   'Bottes en acier':     { cost: { 'Steel ingot': 8,  'Tainted gold': 4, 'Shiny iron': 10, 'Tissu sombre': 10 }, qty: 1, unlock: 'Bottes en acier BP' },
   'Pioche en acier':     { cost: { 'Steel ingot': 20, 'Shiny gold': 10, 'Diamant': 10 },      qty: 1, unlock: 'Pioche en acier BP' },
   'Épée en acier':       { cost: { 'Steel ingot': 10, 'Shiny gold': 10, 'Diamant': 10 },      qty: 1, unlock: 'Épée en acier BP' },
+  /* armes en mithril (05/11/2026, Geoffrey) */
+  'Épée en mithril':     { cost: { 'Mithril ingot': 30, 'Orbe': 10, 'Steel ingot': 30 },       qty: 1, unlock: 'Épée en mithril BP' },
+  'Pioche en mithril':   { cost: { 'Mithril ingot': 40, 'Pierre glissante': 100, 'Steel ingot': 30 }, qty: 1, unlock: 'Pioche en mithril BP' },
   'Plastron de l\'équilibre': { cost: { 'Steel ingot': 50, 'Shiny gold': 20, 'Rubis inférieur': 1, 'Saphir inférieur': 1,
                          'Jade inférieur': 1, 'Résidu angélique': 50, 'Résidu démoniaque': 50 }, qty: 1, unlock: 'Plastron de l\'équilibre BP' },
 

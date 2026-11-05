@@ -7510,6 +7510,16 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   raffle, notify, admin-raffle, social : 52/52. Vérifié dans Chromium (dev, raffle forcé) : bulle affichée, Participer →
   « Tu participes au raffle », bulle partie.
 
+## 05/11/2026 — Épée et Pioche en mithril (Geoffrey)
+- `STUFF.items` (`set.damage 21`, `stats.mineSpeed 0.7`), `RECIPES`, `UPGRADE.tiers[4]`, rareté inhabituelle (pièce + BP), BP dans le 1er jet
+  du Treasure T4 (0,01 chacun : le jet passe de 13 à 15 %) et `RESEARCH.tiers[4].stages[0]` (10 plans). Textures `sword_mithril`,
+  `pickaxe_mithril`, `skins/sword_mithril`, `skins/pick_mithril` (gen_textures.py) ; `src/skins.js`.
+- ⚠️ `gen_textures.py` réécrit aussi d'autres textures (boss, ville, Lucifer… venues d'autres scripts) : seules les 4 nouvelles
+  sont gardées, les autres remises comme avant.
+- Tests : tier4 (nouveau test), research (étapes 10 / 8 / 2), rarity, stuff*, wiki*, skins, gearscore, craft, loot, rune 133/134 ;
+  le rouge (« recettes du T4 », Clé d'instance I avec 5 Orbe) l'était déjà sur main.
+
+
 ## 05/11/2026 — Geoffrey — Emplacements de sorts selon le niveau du mineur (branche geoffrey/sorts-slots-niveau)
 - `SPELLS.slotLevels` [1, 1, 15, 20] ; `openSlotsFor(level)` / `openSlotsOf(ctx)` (src/meta/spells.js ; sans niveau : openSlots 2).
   État des sorts : 4 cases (avant 2) ; `spellOp` refuse `slot_locked` au-delà des cases ouvertes ; `equippedSpells` ne fige

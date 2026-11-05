@@ -921,6 +921,28 @@ def main():
     rect(sword, 1, 14, 2, 1, hexc('#4de8f0'))
     tex['sword_steel'] = sword
 
+    # pioche et épée en mithril (05/11/2026) : mêmes formes que l'acier, métal turquoise pâle (lingot de mithril), manche
+    # sombre, pommeau de l'épée en saphir
+    pick = blank()
+    for i in range(10):
+        rect(pick, 3 + i, 13 - i, 2, 2, hexc('#3b2a1e'))
+    for x, y in [(4, 3), (5, 2), (6, 2), (7, 2), (8, 2), (9, 2), (10, 3), (11, 4), (12, 5), (12, 6), (13, 7), (13, 8)]:
+        rect(pick, x, y, 2, 2, hexc('#8fd6d2'))
+    rect(pick, 5, 2, 4, 1, hexc('#e0fffc'))
+    rect(pick, 3, 4, 2, 2, hexc('#4a8f8b'))
+    rect(pick, 13, 9, 2, 2, hexc('#4a8f8b'))
+    tex['pickaxe_mithril'] = pick
+    sword = blank()
+    for i in range(9):
+        rect(sword, 5 + i, 9 - i, 2, 2, hexc('#8fd6d2'))
+    for i in range(8):
+        rect(sword, 6 + i, 9 - i, 1, 1, hexc('#e0fffc'))
+    rect(sword, 3, 9, 5, 2, hexc('#2e4f5c'))
+    rect(sword, 4, 8, 2, 4, hexc('#2e4f5c'))
+    rect(sword, 2, 12, 2, 2, hexc('#3b2a1e'))
+    rect(sword, 1, 14, 2, 1, hexc('#3f6fe0'))
+    tex['sword_mithril'] = sword
+
     # plastron de l'équilibre : forme du plastron, moitié gauche blanc-or (ange), moitié droite rouge sombre (démon)
     chest = blank()
     for x0, base, hi, lo in [(0, '#e8f4ff', '#ffffff', '#ffd23f'), (8, '#7a1f2a', '#ff3b3b', '#3a0f16')]:
@@ -1509,12 +1531,19 @@ def main():
     rect(sk_sword_sl, 3, 10, 5, 2, hexc('#2f3a48'))
     rect(sk_sword_sl, 2, 12, 2, 3, hexc('#5c3a1a'))
     tex['skins/sword_steel'] = sk_sword_sl
+    sk_sword_mi = blank()   # épée en mithril (05/11)
+    for i in range(9):
+        rect(sk_sword_mi, 5 + i, 10 - i, 2, 2, hexc('#8fd6d2'))
+    rect(sk_sword_mi, 3, 10, 5, 2, hexc('#2e4f5c'))
+    rect(sk_sword_mi, 2, 12, 2, 3, hexc('#3b2a1e'))
+    tex['skins/sword_mithril'] = sk_sword_mi
 
     # pioches tenues en main (manche en bas à gauche, tête en haut à droite) : bois = marron, pierre = grise
     for name, head, light, dark in [('skins/pick_wood', '#7a4f2a', '#a0703f', '#4f321a'),
                                     ('skins/pick_stone', '#8d939c', '#c3c8cf', '#5f646c'),
                                     ('skins/pick_iron', '#b8bec7', '#eef0f3', '#6f7680'),
-                                    ('skins/pick_steel', '#6f8197', '#c3d3e4', '#3a4656')]:
+                                    ('skins/pick_steel', '#6f8197', '#c3d3e4', '#3a4656'),
+                                    ('skins/pick_mithril', '#8fd6d2', '#e0fffc', '#4a8f8b')]:   # 05/11
         pk = blank()
         for i in range(9):
             rect(pk, 2 + i, 13 - i, 2, 2, hexc('#8a5a2b'))
