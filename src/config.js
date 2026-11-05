@@ -888,7 +888,7 @@ export const TEXTURES = ['dirt','grass','hellstone','clue','stone','hardstone','
   'guild_hall_1','guild_hall_2','guild_hall_3','guild_hall_4','guild_site','guild_wing_armory','guild_wing_treasury','guild_wing_forge','guild_lot',
   'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon','giant_block','lucifer','lucifer_portal','lucifer_roar1','lucifer_roar2','lucifer_roar3','lucifer_roar4','lucifer_roar5','lucifer_roar6','giant_fountain','giant_torch','instance_spawner','instance_cage','goblin_king','golbute','golbute_crystal','golbute_body','golbute_body_crystal','golbute_arm','golbute_arm_crystal','golbute_rock','chest_golbute','cerbere','cerbere_rage','cerbere_anim','cerbere_rage_anim',
   'brick_angel','brick_angel_hard','brick_demon','brick_demon_hard','boss_angel','boss_demon','seraph','imp',
-  'crown_goblin_king','mace_goblin_king','cape_goblin_royal','furnace_gold','recipe_chitin','chest_goblin_king','nugget_silver','ingot_silver','shrine_abundance',
+  'crown_goblin_king','mace_goblin_king','cape_goblin_royal','furnace_gold','recipe_chitin','chest_goblin_king','nugget_silver','ingot_silver','seal_demon','shrine_abundance',
   'ingot_mithril','refined_cobalt','refined_thorium','ingot_cobalt','ingot_thorium','minotaur_leather','rotten_flesh','treasure_t4',
   'gem_topaz','gem_ruby_fine','gem_jade_fine','gem_sapphire_fine','glasses_luxury','boots_worksite','belt_golem','gloves_butcher','legs_titan','cape_inclusive',
   'helmet_mithril','chest_mithril','legs_mithril','boots_mithril','helmet_thorium','chest_thorium','legs_thorium','boots_thorium',
@@ -1196,7 +1196,7 @@ export const RARITY = {
     /* Treasure T4 (27/10/2026, Geoffrey) */
     'Mithril ingot':'inhabituel', 'Refined cobalt':'inhabituel', 'Refined thorium':'inhabituel', 'Cobalt ingot':'rare', 'Thorium ingot':'rare',
     'Topaze':'rare', 'Saphir':'rare', 'Rubis':'rare', 'Jade':'rare', 'Saphir BP':'rare', 'Rubis BP':'rare', 'Jade BP':'rare',
-    'Clé d\'instance I BP':'inhabituel', 'Cuir de minotaure':'rare',
+    'Clé d\'instance I BP':'inhabituel', 'Cuir de minotaure':'rare', 'Sceau démoniaque':'rare',   // sceau : 05/11
     ...Object.fromEntries(['Pioche', 'Épée'].flatMap(p => [[`${p} en mithril`, 'inhabituel'], [`${p} en mithril BP`, 'inhabituel']])),   // 05/11
     ...Object.fromEntries(['Casque', 'Plastron', 'Jambes', 'Bottes'].flatMap(p => [[`${p} en mithril`, 'inhabituel'], [`${p} en mithril BP`, 'inhabituel'],
       [`${p} en thorium`, 'rare'], [`${p} en thorium BP`, 'rare'], [`${p} en cobalt`, 'rare'], [`${p} en cobalt BP`, 'rare']])),
@@ -1552,7 +1552,8 @@ export const ITEMS = {
   'Clé d\'instance I': { cat:'key', tex:'key_instance_1', w:1, stack:true },            // Treasure T3 ; ouvre l'Instance I (INSTANCE)
   'Clé d\'instance II': { cat:'key', tex:'key_instance_2', w:1, stack:true },           // Treasure T4 (10 %) ; ouvre l'Instance II, le Golbute (30/10)
   'Orbe supérieur': { cat:'material', tex:'orb_superior', w:1, stack:true },   // 31/10 (Geoffrey) : se crafte de base ; sans usage pour l'instant
-  'Orbe': { cat:'material', tex:'orb', w:1, stack:true },   // 30/10 (Geoffrey) : se crafte de base ; 31/10 : sert à la Clé d'instance I
+  'Orbe': { cat:'material', tex:'orb', w:1, stack:true },
+  'Sceau démoniaque': { cat:'material', tex:'seal_demon', w:1, stack:true },   // 05/11 (Geoffrey) : 1 par joueur présent à la victoire d'une instance (INSTANCE.seal) ; sans usage pour l'instant   // 30/10 (Geoffrey) : se crafte de base ; 31/10 : sert à la Clé d'instance I
   'Cristal de pleine lune': { cat:'material', tex:'moon_crystal', w:1, stack:true },   // butin du minotaure (DUNGEON.loot) ; plus dans le Treasure T3 depuis le 01/11/2026 ; après LOOT pour garder son poids
   ...Object.fromEntries(Object.entries(STUFF.items).map(([n, d]) => [n, { cat:'stuff', slot:d.slot, tex:d.tex, stats:d.stats ?? {}, set:d.set ?? {}, w:0, stack:false }])),
 };
@@ -1792,6 +1793,9 @@ export const INSTANCE = {
     { id:'instance_2', label:'Instance II',  sub:'Le Golbute', key:'Clé d\'instance II', keyFrom:'Treasure T4 (10 %)', ready:true, chest:'golbute' },
     { id:'instance_3', label:'Instance III', ready:false },
   ],
+  /* Sceau démoniaque (05/11/2026, Geoffrey) : boss d'une instance vaincu (toutes les instances, tous les niveaux) → qty pour chaque
+     joueur encore présent, en plus de son coffre (server/game/service.js) */
+  seal: { item:'Sceau démoniaque', qty:1 },
   duration: 600,                    // 10 min de jeu (27/10, Geoffrey ; avant 30 min)
   /* 27/10 (Geoffrey) : 5 cases d'air entre deux rebords (un tous les 6 ; avant 5), 3 rebords par côté (6 spawners ;
      4 essayés puis retirés), salle de 28 de large (avant 20) et 24 de haut (avant 20), plateforme du roi à 21 du sol */

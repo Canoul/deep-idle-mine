@@ -7567,6 +7567,12 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - ⚠️ Pas vu en vrai : MI abondante à l'écran (HUD et caméra), raffle à 3 gagnants dans le chat. `src/ui/energy-tag.js` et
   `#navEnergy` marquent encore « bas » sous 6 un jour férié (le serveur accepte dès 4).
 
+## 05/11/2026 — Sceau démoniaque (Geoffrey)
+- `ITEMS['Sceau démoniaque']` (material, rare), `INSTANCE.seal { item, qty:1 }`, ajouté au `share.bag` des présents à la victoire
+  (server/game/service.js, toutes instances), ligne dans `instanceLootTable`, texture `seal_demon`. Versement par `creditSession` : une fois.
+- Tests : instance-server (nouveau), rarity, golbute*, loot-table, inventory, wiki* ✅ ; anticheat ✅.
+
+
 ## 05/11/2026 — Auras des skills affichées dans les bonus de session (Geoffrey)
 - **Cause** : les auras (nœuds `aura` des arbres v2, `groupAuras`) sont ajoutées aux stats au lancement (src/shared/game.js),
   mais `sessionBonuses` (src/sim/effects.js) ne listait que anneaux, shrines, Escalateur.

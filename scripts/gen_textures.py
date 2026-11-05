@@ -596,6 +596,20 @@ def main():
     rect(orb, 5, 5, 2, 1, oh)                                       # reflet
     tex['orb'] = orb
 
+    # Sceau démoniaque (05/11/2026) : disque de cire rouge sombre, bord ondulé, corne et pentagramme gravés, lueur de braise
+    seal = blank()
+    sd, sm, sl, glow = hexc('#3a0d10'), hexc('#7a1a1f'), hexc('#b8323a'), hexc('#ff9a3c')
+    for yy, (x0, w) in enumerate([(5, 6), (3, 10), (2, 12), (2, 12), (1, 14), (1, 14), (1, 14), (1, 14), (2, 12), (2, 12), (3, 10), (5, 6)], start=2):
+        rect(seal, x0, yy, w, 1, sm)
+        rect(seal, x0, yy, 1, 1, sd); rect(seal, x0 + w - 1, yy, 1, 1, sd)
+    for x, y in [(4, 2), (11, 2), (1, 6), (14, 9), (4, 13), (11, 13)]:
+        rect(seal, x, y, 1, 1, sd)                                  # bord ondulé
+    rect(seal, 3, 4, 3, 1, sl); rect(seal, 3, 5, 1, 2, sl)          # lumière
+    for x, y in [(7, 4), (8, 4), (5, 7), (10, 7), (6, 10), (9, 10), (7, 8), (8, 8), (6, 6), (9, 6)]:
+        rect(seal, x, y, 1, 1, glow)                                # pentagramme gravé
+    rect(seal, 5, 3, 1, 2, sd); rect(seal, 10, 3, 1, 2, sd)         # cornes
+    tex['seal_demon'] = seal
+
     # Orbe supérieur (31/10) : même sphère, rouge sang, cerclée d'or
     orb2 = blank()
     sd, sm, sl, sh, sg = hexc('#4a0d16'), hexc('#a31f2e'), hexc('#e0606a'), hexc('#ffe6e0'), hexc('#e8b84a')

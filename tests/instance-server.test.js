@@ -201,3 +201,20 @@ test('Instance II gagnée : un Coffre du Golbute (R1 à R7) par joueur encore l�
   assert.equal(golb(await inv2(store, A.id)).length, 1, 'toujours là');
 });
 
+
+/* Sceau démoniaque (05/11/2026, Geoffrey) : 1 pour chaque joueur présent à la victoire d'une instance ; rien en cas d'échec ni pour un parti */
+test('Sceau démoniaque (05/11) : 1 par joueur présent à la victoire ; parti ou échec : rien ; une seule fois', async () => {
+  const { INSTANCE, ITEMS } = await import('../src/config.js');
+  const { rarityOf } = await import('../src/meta/rarity.js');
+  const SEAL = INSTANCE.seal.item;
+  assert.equal(SEAL, 'Sceau démoniaque'); assert.ok(ITEMS[SEAL]?.stack); assert.equal(rarityOf(SEAL), 'rare');
+  const { rec, inv, game } = await ended({ success: true, leftB: true });
+  assert.equal(countOf(await inv(A.id), SEAL), 1);
+  assert.equal(countOf(await inv(B.id), SEAL), 0, 'parti avant la fin : rien');
+  await game.settle(rec.id);
+  assert.equal(countOf(await inv(A.id), SEAL), 1, 'fin rejouée : pas de deuxième sceau');
+  const lost = await ended({ success: false });
+  assert.equal(countOf(await lost.inv(A.id), SEAL), 0, 'échec : rien');
+  const two = await ended({ success: true, level: 2 });
+  assert.equal(countOf(await two.inv(A.id), SEAL), 1, 'niveau 2 aussi');
+});
