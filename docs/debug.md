@@ -7533,3 +7533,6 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - Paragraphe d'explication marqué `frecAbout` (src/ui/furnace.js), caché par `body.app #fpick .frecAbout` (src/app/app.css) ; la liste
   (`.frecBox .frecs`, flex 1) récupère la hauteur. Site inchangé. Tests furnace*, app* 223/223 ✅. Pas vu sur un vrai téléphone.
 
+## 05/11/2026 — Appli : activité des amis tronquée (Geoffrey)
+- `body.app #socialBody .fname small` : `white-space:normal` (ancien : `nowrap` + ellipsis). Vérifié en image (Chromium 360 px, 3 amis).
+
