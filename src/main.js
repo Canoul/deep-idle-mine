@@ -13,7 +13,7 @@
      (src/ui/instant-lobby.js) ; à l'heure, le serveur l'ouvre et le navigateur bascule sur Session, où elle a son
      propre affichage (src/render/instant.js, src/ui/instant-hud.js). */
 import { applyRarityColors } from './ui/rarity.js';
-import { GAME, HES_COMING, PARTY, SESSION_LEN, INSTANT_MINE, STATS, SOCIAL, CAMERA, JUDGMENT, TOWER, MINE_MODES, INSTANCE, GUIDE, PRISON, ENERGY, DT, RAID } from './config.js';
+import { GAME, HES_COMING, PARTY, SESSION_LEN, INSTANT_MINE, STATS, SOCIAL, CAMERA, JUDGMENT, TOWER, MINE_MODES, INSTANCE, GUIDE, PRISON, ENERGY, DT, RAID, RAFFLE } from './config.js';
 import { emptyView, applyView, shownPos } from './shared/view.js';
 import { applyInstantView } from './shared/instant-view.js';
 import { createInstantRenderer, MI_TILE } from './render/instant.js';
@@ -549,6 +549,15 @@ function syncNotifs(){
     ...(lfgFound && !lfgFound.error && !G ? [{ key: 'lfg:' + lfgFound.at, icon: pxi('group'),
       text: `Groupe trouvé : <b>${esc(lfgFound.names.join(', '))}</b>`,
       actions: [{ label: 'Voir le lobby', primary: true, run: async () => nav.show('lobby') }] }] : []),
+    /* raffle en cours (05/11, Geoffrey) : bulle de RAFFLE.popupMs, seulement pour qui a le jeu ouvert ; jamais de
+       notification du téléphone. Participer = !join, la réponse arrive dans le chat et en petite confirmation */
+    ...(st.raffle && !st.raffle.joined ? [{ key: 'r:' + st.raffle.id, icon: '🎟', ttl: RAFFLE.popupMs,
+      text: `<b>${esc(RAFFLE.name)}</b> : ${esc(st.raffle.lot)} à gagner ! Tirage dans ${Math.max(1, Math.ceil((st.raffle.endsAt - serverNow()) / 60e3))} min`,
+      actions: [{ label: 'Participer', primary: true, run: async () => {
+        const r = await socialApi.say({ text: RAFFLE.command });
+        if(r?.message?.text) notify.flash(r.message.text);
+        pollSocial();
+      } }] }] : []),
     ...st.partyInvites.map(i => ({ key: 'p:' + i.code + ':' + i.at, icon: pxi('group'), text: `<b>${esc(i.from)}</b> vous a invité dans son lobby${i.full ? ' <span class="mut">(complet)</span>' : ''}`,
       actions: [{ label: 'Rejoindre', primary: true, run: () => joinParty(() => partyApi.join(i.code)) },
                 { label: 'Décliner', run: async () => { await partyApi.decline(i.code); pollSocial(); } }] })),

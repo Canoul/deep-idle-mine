@@ -191,6 +191,8 @@ export function createSocialService({ store, accounts, party, game, clock = Date
       blocked: await Promise.all(s.blocked.map(async id => ({ id, displayId: formatAccountId(id), name: await nameOf(id) }))),
       /* messages de l'équipe pas encore lus (pop-up, scripts/warn.js) */
       notices: await moderation?.unseenNotices?.(me.id) ?? [],
+      /* raffle en cours (bulle de 30 s, 05/11) : null sans raffle ou déjà inscrit côté navigateur */
+      raffle: await raffle.current(me),
     };
   }
 

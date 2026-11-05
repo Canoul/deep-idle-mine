@@ -695,6 +695,8 @@ Onglet Guilde : sa guilde (si on en a une), Rechercher, Leaderboard. Dans Recher
 
 ### Raffle *(31/10/2026, Geoffrey ; `RAFFLE` en config)*
 
+**Bulle** *(05/11/2026, Geoffrey ; `RAFFLE.popupMs`)* : au début d'un raffle, chaque joueur qui a le jeu ouvert (compte avec pseudo, pas encore inscrit) reçoit une bulle comme une invitation, **30 s**, avec « Participer » (= `!join`) ; aucune notification du téléphone. But : récompenser ceux qui jouent activement.
+
 Tirage au sort dans le chat global, 30 à 60 min après la fin du précédent, de **8 h à 2 h** (heure de Paris). Tombé la nuit : entre 8 h et 9 h 15. Le lot est annoncé dans Général ; on a **2 min** pour taper `!join` *(01/11/2026, Geoffrey ; avant 40 s)*, jamais publié, avec une réponse visible par le joueur seul (inscrit, déjà inscrit, pas de raffle, pseudo requis). Un seul gagnant, tiré parmi les inscrits, annoncé à tous avec le nombre de participants (« toto a gagné 100 Chitine sur 12 participants »). Sans inscrit, le lot est perdu et le chat le dit. Réservé aux comptes avec un pseudo.
 
 | Chance | Lot |

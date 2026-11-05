@@ -7499,3 +7499,13 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** ✅ `tests/recycle.test.js` (nouveau : les 7 rendus, recyclage réel dans un inventaire, Arc et anneaux refusés) ;
   `tests/goblin-king.test.js` : compare les pièces sans `recycle`, et la Cape à dégâts % 1,9 (❌ déjà rouge sur `main`
   depuis le 04/11 : le test attendait encore 5) ; recycle, mob-drops, wiki, goblin, golbute : 78/78 ; anticheat 154/154.
+
+## 05/11/2026 — Raffle : bulle de 30 s (Geoffrey)
+- **Quoi** : `raffle.current(me)` (server/social/raffle.js) → `{ id, lot, endsAt, joined }` ou null (pas de raffle, fini,
+  invité, sans pseudo) ; ajouté à l'état social (`raffle`, server/social/service.js), donc reçu par le poll social
+  (`SOCIAL.poll` 4 s, 20 s onglet caché). `syncNotifs` (src/main.js) : bulle clé `r:<id>`, `ttl: RAFFLE.popupMs` (30 s,
+  src/config.js) ; Participer = `socialApi.say({ text: RAFFLE.command })`, réponse en `notify.flash`. `src/ui/notify.js` :
+  durée par bulle (`it.ttl`, sinon `NOTIFY.popupMs`). Rien dans src/app/notifs (pas de notification du téléphone).
+- **Tests** ✅ `tests/raffle.test.js` (état social : raffle, joined, invité, fin), `tests/notify.test.js` (ttl par bulle) ;
+  raffle, notify, admin-raffle, social : 52/52. Vérifié dans Chromium (dev, raffle forcé) : bulle affichée, Participer →
+  « Tu participes au raffle », bulle partie.
