@@ -7581,3 +7581,9 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   `bonusLine` (src/ui/effects.js) : « nom : nodeText ». Vues mine, tours, instances, MI (déjà `bonus: sessionBonuses`).
 - **Tests** ✅ `tests/effects.test.js` (groupe, parti, MI, texte) ; effects, skills, view, tower : 133/133. Vérifié sur une vraie
   session construite (`buildSession`, logisticien arbre complet) : l'aura est dans la vue envoyée au navigateur.
+
+## 05/11/2026 — Stats : bulle sur le nom (Geoffrey)
+- `statsHTML` : `holdTip` met `data-tip` + `data-tiphold` sur le nom (`.statName`) ; plus de `qhelp`. `setupTooltips` : au doigt, un élément
+  `data-tiphold` n'ouvre sa bulle qu'après 450 ms sans bouger de plus de 10 px (pointermove / up / cancel annulent). Souris : survol.
+- Tests stat-help, dps, tooltip, stuff* ✅ ; vérifié dans Chromium (appui bref : rien ; appui long : bulle ; survol : bulle).
+
