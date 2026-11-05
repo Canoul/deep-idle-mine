@@ -22,7 +22,7 @@ Modèle d'entrée :
   Mithril ingot, 100 Pierre glissante et 30 Steel ingot. Plans : dans les Treasure T4 (1 % chacun) et à la Table de
   recherche (tier 4, première étape, avec l'armure en mithril).
 - **Décisions** : valeurs de Geoffrey. Choix de Claude, à valider : où trouver les plans (comme l'armure en mithril).
-- **État** : 🧪 sur la branche `geoffrey/armes-mithril` (pas en ligne)
+- **État** : ✅ en ligne le 05/11
 
 ## 05/11/2026 — Geoffrey — Stats du mineur : une bulle « ? » par stat
 - **Pour le joueur** : dans l'onglet Stuff (site et appli), chaque ligne de « Stats du mineur » a une bulle « ? » qui
