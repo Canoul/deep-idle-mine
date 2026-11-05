@@ -14,6 +14,8 @@
 import { inspireOn, inspireAt } from './groups.js';
 import { EFFECTS, INSTANCE, RINGS } from '../config.js';
 import { SPELL } from '../meta/spells.js';
+import { NODES } from '../meta/skills.js';
+const AURA_NODES = Object.values(NODES).filter(n => n.aura);   // Aura rassurante, berserk, d'efficacité (04/11)
 
 const r1 = v => Math.round(v * 10) / 10;
 const left = (G, until) => Math.max(0, r1(until - G.t));
@@ -89,6 +91,10 @@ export function sessionBonuses(G, m){
   for(const r of m.rings || []) out.push({ id:'ring', src:r.item, value:r.plus || 0 });
   for(const id of G.shrines || []) out.push({ id:'shrine', src:id });
   if(G.winchBoost > 0) out.push({ id:'escalator', value:G.winchBoost });
+  /* auras des skills (05/11/2026) : bonus de groupe figés au lancement (src/meta/skills.js groupAuras) ; tous les joueurs
+     lancés comptent (roster, partis compris). Mine instantanée : chacun pour soi, ses propres auras */
+  const team = G.mode === 'mi' ? [m] : G.roster?.length ? G.roster : G.miners?.length ? G.miners : [m];
+  for(const n of AURA_NODES) if(team.some(x => x?.skill?.[n.id] > 0)) out.push({ id:'aura', src:n.id });
   return out;
 }
 

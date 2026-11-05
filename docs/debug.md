@@ -7566,3 +7566,12 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   sessions à 3 : 0 bloquée. Vu dans Chromium : bandeau du Lobby (Cataclysme imposé dans data/game.json), jauges à 150.
 - ⚠️ Pas vu en vrai : MI abondante à l'écran (HUD et caméra), raffle à 3 gagnants dans le chat. `src/ui/energy-tag.js` et
   `#navEnergy` marquent encore « bas » sous 6 un jour férié (le serveur accepte dès 4).
+
+## 05/11/2026 — Auras des skills affichées dans les bonus de session (Geoffrey)
+- **Cause** : les auras (nœuds `aura` des arbres v2, `groupAuras`) sont ajoutées aux stats au lancement (src/shared/game.js),
+  mais `sessionBonuses` (src/sim/effects.js) ne listait que anneaux, shrines, Escalateur.
+- **Correctif** : `sessionBonuses` ajoute `{ id:'aura', src:<nœud> }` pour chaque nœud à aura appris par un joueur de
+  `G.roster` (partis compris : figé au lancement) ; MI : le mineur seul (chacun pour soi). `EFFECTS.list.aura` (session),
+  `bonusLine` (src/ui/effects.js) : « nom : nodeText ». Vues mine, tours, instances, MI (déjà `bonus: sessionBonuses`).
+- **Tests** ✅ `tests/effects.test.js` (groupe, parti, MI, texte) ; effects, skills, view, tower : 133/133. Vérifié sur une vraie
+  session construite (`buildSession`, logisticien arbre complet) : l'aura est dans la vue envoyée au navigateur.
