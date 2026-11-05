@@ -71,3 +71,23 @@ test('une fin de mine ne masque pas l\'historique plus profond (rattrapage avant
   advance(realDurationMs()); await game.pump();
   assert.equal(await game.areaMaxOf(ME.id), 5);
 });
+
+/* table de recherche (05/11/2026) : tiers à area ; le serveur lit l'area max du compte, l'état l'envoie au navigateur */
+test('recherche : T3 refusé (area_locked, rien payé) sous l\'area 5, accepté une fois l\'area 5 atteinte ; l\'état donne areaMax', async () => {
+  const { createInventory, addAll, countOf, serialize } = await import('../src/meta/inventory.js');
+  const { learn, recipeOfBlueprint } = await import('../src/meta/craft.js');
+  const { tierBlueprints, PARTS } = await import('../src/meta/research.js');
+  const { game, store } = setup();
+  const inv = createInventory(); let n = 0;
+  for(const bp of [...tierBlueprints(1), ...tierBlueprints(2)]) if(recipeOfBlueprint(bp)){ addAll(inv, { [bp]:1 }); learn(inv, bp, 'l' + (++n)); }
+  addAll(inv, { [PARTS]:200 });
+  await store.putInventory(ME.id, JSON.parse(serialize(inv)));
+  await store.putSessionStats([{ key:'s1:'+ME.id, value:{ session:'s1', account:ME.id, areas:4 } }]);
+  assert.equal((await game.state(ME)).progress.areaMax, 4);
+  await assert.rejects(game.research(ME, { action:'research', tier:3, opId:'op-area-1' }), { code:'area_locked' });
+  await store.putSessionStats([{ key:'s2:'+ME.id, value:{ session:'s2', account:ME.id, areas:5 } }]);
+  await store.putProgress(ME.id, { ...(await store.getProgress(ME.id)), areaMax:0 });   // rattrapage depuis l'historique
+  const r = await game.research(ME, { action:'research', tier:3, opId:'op-area-2' });
+  assert.ok(tierBlueprints(3).includes(r.item));
+  assert.equal(countOf({ slots:r.inventory.slots }, PARTS), 0);
+});

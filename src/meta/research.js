@@ -7,7 +7,8 @@
      seulement les plans de la première étape pas finie (researchStage). Un plan sorti de la recherche depuis moins de
      RESEARCH.recentMs ne peut pas ressortir (recentPlans) : s'il ne reste que ceux-là, la recherche est refusée, sans dépense.
    - Un tier n'est ouvert que si le joueur a appris TOUTES les recettes de tous les tiers inférieurs (tierUnlocked). Les blueprints
-     qui ne débloquent encore aucune recette (Four en fer, Boussole en or) ne comptent pas.
+     qui ne débloquent encore aucune recette (Four en fer, Boussole en or) ne comptent pas. Et (05/11/2026) s'il a déjà atteint
+     l'area RESEARCH.tiers[t].area (areaReached ; areaMax du compte, donné par le serveur) : tierOpen = les deux.
    - Recycle : un blueprint (n'importe lequel) est détruit et rend entre min et max Blueprint parts, selon le tier du
      blueprint (RESEARCH.tiers[].recycle).
    Chaque demande a un opId : une demande renvoyée (double clic, rechargement) rend le même résultat sans rien refaire
@@ -23,6 +24,7 @@ export const tierOf = t => RESEARCH.tiers.find(x => x.tier === t) ?? null;
 /* blueprints d'un tier : la famille « blueprint » de la table de butin de son Treasure */
 export const tierBlueprints = t => {
   const def = tierOf(t);
+  if(def?.items) return [...def.items];   // tier sans Treasure (tier 5, 05/11)
   return def ? (LOOT[def.from]?.oneOf.find(f => f.family === 'blueprint')?.items.map(i => i.item) ?? []) : [];
 };
 const notLearned = inv => bp => { const r = recipeOfBlueprint(bp); return !r || !isUnlocked(r, inv); };
@@ -62,18 +64,23 @@ export const recipesLeft = (inv, t) => tierBlueprints(t).map(recipeOfBlueprint).
    (31/10/2026, Geoffrey). Le dernier tier n'a pas de tier suivant : il n'est pas concerné. */
 export const treasureBlueprintsDone = (inv, item) => {
   const t = RESEARCH.tiers.find(d => d.from === item)?.tier;
-  return !!tierOf(t + 1) && recipesLeft(inv, t).length === 0 && recipesLeft(inv, t + 1).length === 0;
+  return !!tierOf(t + 1)?.from && recipesLeft(inv, t).length === 0 && recipesLeft(inv, t + 1).length === 0;
 };
 /* tier ouvert : le premier toujours ; les suivants quand toutes les recettes de TOUS les tiers inférieurs sont apprises
    (25/10, Geoffrey : avant, seulement le tier juste d'avant ; des BP du T2 trouvés dans des Treasures ouvraient le T3
    avec un T1 incomplet) */
 export const tierUnlocked = (inv, t) => RESEARCH.tiers.every(d => d.tier >= t || recipesLeft(inv, d.tier).length === 0);
+/* area à atteindre pour ce tier (0 = aucune) ; atteinte ? (areaMax : index de la plus profonde area débloquée) */
+export const tierArea = t => tierOf(t)?.area ?? 0;
+export const areaReached = (t, areaMax) => (Number.isSafeInteger(areaMax) ? areaMax : 0) >= tierArea(t);
+/* tier ouvert : recettes des tiers inférieurs apprises ET area atteinte */
+export const tierOpen = (inv, t, areaMax) => tierUnlocked(inv, t) && areaReached(t, areaMax);
 /* tiers inférieurs à t dont il reste des recettes à apprendre : [{ tier, label, left }] (ce qui bloque le tier t) */
 export const tiersBlocking = (inv, t) => RESEARCH.tiers.filter(d => d.tier < t)
   .map(d => ({ tier: d.tier, label: d.label, left: recipesLeft(inv, d.tier).length })).filter(d => d.left > 0);
 /* un blueprint (pas les parts) */
 export const isBlueprint = item => typeof item === 'string' && ITEMS[item]?.cat === 'blueprint' && item !== PARTS;
-export const canResearch = (inv, t) => !!tierOf(t) && tierUnlocked(inv, t) && researchPool(inv, t).length > 0 && countOf(inv, PARTS) >= tierOf(t).cost;
+export const canResearch = (inv, t, areaMax) => !!tierOf(t) && tierOpen(inv, t, areaMax) && researchPool(inv, t).length > 0 && countOf(inv, PARTS) >= tierOf(t).cost;
 
 /* plans sortis de la recherche depuis moins de RESEARCH.recentMs (now : heure du serveur, ms) */
 export const recentPlans = (inv, now) => new Set(inv.research
@@ -85,13 +92,15 @@ function remember(inv, entry){
 }
 const replay = (inv, opId, kind) => { const p = inv.research.find(e => e.id === opId); return p ? (p.kind === kind ? { ...p.result, repeated:true } : { error:'bad_request' }) : null; };
 
-/* Recherche au tier t : renvoie { ok, item, repeated } ou { error } (bad_tier, tier_locked, nothing_left, too_recent,
-   not_enough). now : heure du serveur (ms), retenue pour recentPlans ; sans now, pas de règle des plans récents */
-export function research(inv, t, opId, rng, now = null){
+/* Recherche au tier t : renvoie { ok, item, repeated } ou { error } (bad_tier, tier_locked, area_locked, nothing_left,
+   too_recent, not_enough). now : heure du serveur (ms), retenue pour recentPlans ; sans now, pas de règle des plans récents.
+   areaMax : area max du compte (serveur) ; absente = 0, les tiers à area restent fermés */
+export function research(inv, t, opId, rng, now = null, areaMax = 0){
   const prev = replay(inv, opId, 'research'); if(prev) return prev;
   const def = tierOf(t);
   if(!def) return { error:'bad_tier' };
   if(!tierUnlocked(inv, t)) return { error:'tier_locked' };
+  if(!areaReached(t, areaMax)) return { error:'area_locked' };
   const recent = recentPlans(inv, now), left = researchPool(inv, t), pool = left.filter(bp => !recent.has(bp));
   if(!left.length) return { error:'nothing_left' };
   if(!pool.length) return { error:'too_recent' };

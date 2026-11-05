@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { RESEARCH, LOOT } from '../src/config.js';
 import { createInventory, addAll, countOf, serialize, deserialize } from '../src/meta/inventory.js';
-import { research, recycle, recentPlans, researchPool, researchStage, researchOdds, tierBlueprints, tierUnlocked, canResearch, PARTS } from '../src/meta/research.js';
+import { research, recycle, recentPlans, researchPool, researchStage, researchOdds, tierBlueprints, tierUnlocked, canResearch, treasureBlueprintsDone, PARTS } from '../src/meta/research.js';
 import { RECIPES } from '../src/recipes.js';
 import { learn, recipeOfBlueprint } from '../src/meta/craft.js';
 import { TABS } from '../src/ui/nav.js';
@@ -15,10 +15,10 @@ const fixed = v => () => v;
 const T1 = LOOT['Treasure T1'].oneOf.find(f => f.family === 'blueprint').items.map(i => i.item);
 
 test('config : tier 1 = 100 parts (recycle 10 à 20), tier 2 = 150 (15 à 30), tier 3 = 200 (20 à 35), tier 4 = 250 (25 à 40) (30/10) ; onglet présent', () => {
-  assert.deepEqual(RESEARCH.tiers.map(t => [t.tier, t.cost]), [[1, 100], [2, 150], [3, 200], [4, 250]]);
+  assert.deepEqual(RESEARCH.tiers.map(t => [t.tier, t.cost]), [[1, 100], [2, 150], [3, 200], [4, 250], [5, 1000]]);   // T5 : 05/11
   assert.deepEqual(tierBlueprints(1), T1);
   assert.equal(T1.length, 10);   // + Lance en fer BP (25/10)
-  assert.deepEqual(RESEARCH.tiers.map(t => t.recycle), [{ min:10, max:20 }, { min:15, max:30 }, { min:20, max:35 }, { min:25, max:40 }]);
+  assert.deepEqual(RESEARCH.tiers.slice(0, 4).map(t => t.recycle), [{ min:10, max:20 }, { min:15, max:30 }, { min:20, max:35 }, { min:25, max:40 }]);
   assert.ok(TABS.some(t => t.id === 'recherche' && t.ready));
 });
 
@@ -37,7 +37,7 @@ test('recherche : pas assez de parts → rien ne bouge ; tier inconnu refusé', 
   const inv = invWith({ [PARTS]:99 });
   assert.equal(research(inv, 1, id(), fixed(0)).error, 'not_enough');
   assert.equal(countOf(inv, PARTS), 99);
-  for(const t of [0, 5, '1', null, 1.5]) assert.equal(research(invWith({ [PARTS]:500 }), t, id(), fixed(0)).error, 'bad_tier');
+  for(const t of [0, 6, '1', null, 1.5]) assert.equal(research(invWith({ [PARTS]:500 }), t, id(), fixed(0)).error, 'bad_tier');
   assert.equal(canResearch(inv, 1), false);
 });
 
@@ -103,11 +103,11 @@ test('tier 3 : fermé tant que les recettes du tier 2 ne sont pas toutes apprise
   assert.deepEqual(tierBlueprints(3), T3);
   const half = knowsTiers(T1, T2.slice(1)); addAll(half, { [PARTS]:500 });
   assert.equal(tierUnlocked(half, 3), false);
-  assert.equal(research(half, 3, id(), fixed(0)).error, 'tier_locked');
+  assert.equal(research(half, 3, id(), fixed(0), null, 9).error, 'tier_locked');
   assert.equal(countOf(half, PARTS), 500, 'rien payé');
   const all = knowsTiers(T1, T2); addAll(all, { [PARTS]:210 });
-  assert.ok(tierUnlocked(all, 3) && canResearch(all, 3));
-  const r = research(all, 3, id(), fixed(0));
+  assert.ok(tierUnlocked(all, 3) && canResearch(all, 3, 9));
+  const r = research(all, 3, id(), fixed(0), null, 9);
   assert.ok(r.ok && T3.includes(r.item));
   assert.equal(countOf(all, PARTS), 10, '200 parts');
 });
@@ -120,11 +120,11 @@ test('tier 3 : le plan épique pèse 4 fois moins que chaque autre plan', () => 
   assert.ok(Math.abs(odds[EPIC] - 0.25 / 6.25) < 1e-12, '4 % de chance avec les 7 plans possibles');
   /* tirages réels : fréquence du plan épique ≈ 4 % */
   let s = 7, epic = 0; const rng = () => (s = (s * 16807) % 2147483647) / 2147483647, N = 20000;
-  for(let i = 0; i < N; i++){ const v = knowsTiers(T1, T2); addAll(v, { [PARTS]:200 }); if(research(v, 3, id(), rng).item === EPIC) epic++; }
+  for(let i = 0; i < N; i++){ const v = knowsTiers(T1, T2); addAll(v, { [PARTS]:200 }); if(research(v, 3, id(), rng, null, 9).item === EPIC) epic++; }
   assert.ok(Math.abs(epic / N - 0.04) < 0.006, `fréquence ${epic / N}`);
   /* en bout de tirage (rng proche de 1) : le dernier plan possible, jamais hors de la liste */
   const v = knowsTiers(T1, T2); addAll(v, { [PARTS]:200 });
-  assert.equal(research(v, 3, id(), fixed(0.9999999)).item, T3.at(-1));
+  assert.equal(research(v, 3, id(), fixed(0.9999999), null, 9).item, T3.at(-1));
 });
 
 test('tier 3 : un plan appris sort du tirage ; recycler un plan T3 rend 20 à 35 parts', () => {
@@ -140,7 +140,7 @@ test('tier 3 : fermé tant que TOUS les tiers inférieurs ne sont pas finis (tou
   assert.equal(tierUnlocked(inv, 2), false, 'le T2 aussi reste fermé (une recette du T1 manque)');
   assert.equal(tierUnlocked(inv, 3), false);
   assert.equal(canResearch(inv, 3), false);
-  assert.equal(research(inv, 3, id(), fixed(0)).error, 'tier_locked');
+  assert.equal(research(inv, 3, id(), fixed(0), null, 9).error, 'tier_locked');
   assert.equal(countOf(inv, PARTS), 500, 'rien payé');
   const all = knowsTiers(T1, T2);
   assert.equal(tierUnlocked(all, 3), true);
@@ -152,13 +152,13 @@ test('tier 4 : fermé tant qu\'une recette des tiers 1 à 3 manque ; 250 parts �
   assert.ok(T4.includes('Casque en mithril BP') && T4.includes('Jambières titanesques BP'));
   assert.ok(!T4.includes('Saphir BP'), 'les plans du 2e jet (clé, gemmes) ne sortent pas de la recherche');
   const part = knowsTiers(T1, T2, T3.slice(1)); addAll(part, { [PARTS]:250 });
-  assert.equal(research(part, 4, id(), fixed(0)).error, 'tier_locked');
+  assert.equal(research(part, 4, id(), fixed(0), null, 9).error, 'tier_locked');
   assert.equal(countOf(part, PARTS), 250, 'rien payé');
   const inv = knowsTiers(T1, T2, T3); addAll(inv, { [PARTS]:249 });
   assert.equal(tierUnlocked(inv, 4), true);
-  assert.equal(research(inv, 4, id(), fixed(0)).error, 'not_enough');
+  assert.equal(research(inv, 4, id(), fixed(0), null, 9).error, 'not_enough');
   addAll(inv, { [PARTS]:1 });
-  const r = research(inv, 4, id(), fixed(0.5));
+  const r = research(inv, 4, id(), fixed(0.5), null, 9);
   assert.ok(r.ok && T4.includes(r.item), r.item);
   assert.equal(countOf(inv, PARTS), 0);
   addAll(inv, { 'Casque en mithril BP':2 });
@@ -179,17 +179,17 @@ test('tier 4 : on tire dans l\'étape en cours ; la suivante s\'ouvre quand tout
   const inv = knowsTiers(T1, T2, T3);
   assert.deepEqual(researchStage(inv, 4), { index:0, count:3, pool:S1 });
   assert.deepEqual(researchOdds(inv, 4).map(o => o.chance), S1.map(() => 1 / S1.length), 'chances égales');
-  for(let k = 0; k < 50; k++){ addAll(inv, { [PARTS]:250 }); assert.ok(S1.includes(research(inv, 4, id(), Math.random).item)); }
+  for(let k = 0; k < 50; k++){ addAll(inv, { [PARTS]:250 }); assert.ok(S1.includes(research(inv, 4, id(), Math.random, null, 9).item)); }
   const s1 = knowsTiers(T1, T2, T3, S1.slice(1));
   assert.deepEqual(researchPool(s1, 4), [S1[0]], 'un plan de l\'étape 1 en stock ne suffit pas : il faut l\'apprendre');
   const s2 = knowsTiers(T1, T2, T3, S1, S2.slice(0, 3));
   assert.deepEqual(researchStage(s2, 4), { index:1, count:3, pool:S2.slice(3) }, 'les plans appris via un trésor sortent du tirage');
   const s3 = knowsTiers(T1, T2, T3, S1, S2);
   addAll(s3, { [PARTS]:250 });
-  assert.ok(S3.includes(research(s3, 4, id(), fixed(0.5)).item), 'dernière étape : Jambières ou Cape inclusive');
+  assert.ok(S3.includes(research(s3, 4, id(), fixed(0.5), null, 9).item), 'dernière étape : Jambières ou Cape inclusive');
   const all = knowsTiers(T1, T2, T3, S1, S2, S3); addAll(all, { [PARTS]:250 });
   assert.equal(researchStage(all, 4), null);
-  assert.equal(research(all, 4, id(), fixed(0)).error, 'nothing_left');
+  assert.equal(research(all, 4, id(), fixed(0), null, 9).error, 'nothing_left');
   assert.equal(countOf(all, PARTS), 250, 'rien payé');
 });
 
@@ -222,4 +222,50 @@ test('plan récent : gardé après un redémarrage ; une date trafiquée ne bloq
   const rec = invWith({ 'Épée en fer BP':1 });
   recycle(rec, 'Épée en fer BP', id(), fixed(0));
   assert.equal(recentPlans(rec, Date.now()).size, 0);
+});
+
+/* restrictions d'area (05/11/2026, Geoffrey) : T3 area 5, T4 area 7, T5 area 9 ; tier 5 à 1000 parts, Casque en arkonite BP */
+const knowsAll4 = () => { const inv = knowsTiers(T1, T2, T3); for(const bp of tierBlueprints(4)){ const r = recipeOfBlueprint(bp); if(r){ addAll(inv, { [bp]:1 }); learn(inv, bp, id()); } } return inv; };
+
+test('areas : T1 et T2 sans condition ; T3 dès l\'area 5, T4 dès l\'area 7, T5 dès l\'area 9 (refus sans dépense avant)', () => {
+  assert.deepEqual(RESEARCH.tiers.map(t => [t.tier, t.area ?? 0]), [[1, 0], [2, 0], [3, 5], [4, 7], [5, 9]]);
+  const t2 = knowsTiers(T1); addAll(t2, { [PARTS]:150 }); assert.ok(research(t2, 2, id(), fixed(0), null, 0).ok, 'T2 sans area');
+  for(const [tier, need, inv, cost] of [[3, 5, knowsTiers(T1, T2), 200], [4, 7, knowsTiers(T1, T2, T3), 250], [5, 9, knowsAll4(), 1000]]){
+    addAll(inv, { [PARTS]:cost });
+    assert.equal(tierUnlocked(inv, tier), true, `T${tier} : recettes OK`);
+    for(const a of [0, need - 1, undefined, NaN, '9', 2.5]) assert.equal(research(inv, tier, id(), fixed(0), null, a).error, 'area_locked', `T${tier} area ${a}`);
+    assert.equal(canResearch(inv, tier, need - 1), false);
+    assert.equal(countOf(inv, PARTS), cost, 'rien payé');
+    assert.equal(canResearch(inv, tier, need), true);
+    assert.ok(research(inv, tier, id(), fixed(0), null, need).ok, `T${tier} à l'area ${need}`);
+    assert.equal(countOf(inv, PARTS), 0);
+  }
+});
+
+test('tier 5 : 1000 parts → Casque en arkonite BP (blueprint épique qui ne débloque encore rien, il ressort toujours) ; fermé tant que le T4 n\'est pas appris', () => {
+  assert.deepEqual(tierBlueprints(5), ['Casque en arkonite BP']);
+  assert.equal(recipeOfBlueprint('Casque en arkonite BP'), null);
+  const part = knowsTiers(T1, T2, T3); addAll(part, { [PARTS]:1000 });
+  assert.equal(research(part, 5, id(), fixed(0), null, 9).error, 'tier_locked');
+  const inv = knowsAll4(); addAll(inv, { [PARTS]:999 });
+  assert.equal(research(inv, 5, id(), fixed(0), null, 9).error, 'not_enough');
+  addAll(inv, { [PARTS]:1001 });
+  assert.equal(research(inv, 5, id(), fixed(0), null, 9).item, 'Casque en arkonite BP');
+  assert.equal(research(inv, 5, id(), fixed(0), 1_000_000, 9).item, 'Casque en arkonite BP', 'sans recette : toujours dans le tirage');
+  assert.equal(countOf(inv, 'Casque en arkonite BP'), 2);
+  assert.ok(recycle(inv, 'Casque en arkonite BP', id(), fixed(0)).parts > 0);
+});
+
+test('tier 5 sans Treasure : les Treasure T4 continuent de donner des plans comme avant', () => {
+  assert.equal(treasureBlueprintsDone(knowsAll4(), 'Treasure T4'), false);
+});
+
+test('écran : le tier fermé dit l\'area à atteindre (et les recettes s\'il en manque)', async () => {
+  const { tierWhyHtml, tierChipsHtml } = await import('../src/ui/research.js');
+  const inv = knowsTiers(T1, T2);
+  assert.match(tierWhyHtml(inv, 3, 4), /Tier 3 : atteins l'area 5 en mine/);
+  assert.equal(tierWhyHtml(inv, 3, 5), '');
+  assert.match(tierWhyHtml(inv, 4, 0), /apprends encore .* du Tier 3, et atteins l'area 7/);
+  assert.match(tierChipsHtml(inv, 1, 4), /🔒 Tier 3/);
+  assert.doesNotMatch(tierChipsHtml(inv, 1, 5), /🔒 Tier 3/);
 });
