@@ -1623,6 +1623,13 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
 
 ---
 
+## 05/11/2026 — Geoffrey — Raffle : bulle de 30 s pour les joueurs en ligne
+- **Pour le joueur** : quand un raffle commence, une bulle apparaît en haut à gauche (comme une invitation) pendant
+  **30 secondes** : « Raffle : <lot> à gagner ! Tirage dans 2 min », avec un bouton **Participer** (= `!join`). Seulement
+  pour qui a le jeu ouvert, pas sur l'écran de verrouillage du téléphone. Elle ne revient pas une fois fermée, et part
+  dès qu'on participe.
+- **État** : ✅ en ligne le 05/11
+
 ## 05/11/2026 — Geoffrey — Recyclage des pièces uniques du Golbute et du Roi Gobelin
 - **Pour le joueur** : 7 pièces qui ne se recyclaient pas rendent maintenant des matériaux fixes : Némésis du Golbute
   (10 Thorium ingot, 10 Cobalt ingot), Torse de Gollex (20 Mithril ingot), Jambières du Golbute (18 Mithril ingot), Âme du

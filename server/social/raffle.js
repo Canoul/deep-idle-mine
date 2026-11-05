@@ -57,6 +57,14 @@ export function createRaffle({ store, give, announce, clock = Date.now, random }
       if(state.current.winner?.id === id) delete state.current.winner;
       await save();
     }),
+    /* raffle en cours, pour la bulle des joueurs qui ont le jeu ouvert (05/11) : { id, lot, endsAt, joined } ; null s'il n'y
+       en a pas, s'il est fini, ou pour un compte qui ne peut pas participer (invité, sans pseudo) */
+    current: async me => {
+      await load();
+      const c = state.current;
+      if(!c || clock() >= c.endsAt || !me || me.guest || !me.name) return null;
+      return { id: c.id, lot: lotLabel(c.lot), endsAt: c.endsAt, joined: c.players.some(p => p.id === me.id) };
+    },
     /* !join : le texte de la réponse, pour ce joueur seul */
     join: me => serial(async () => {
       await load();
