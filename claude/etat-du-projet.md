@@ -356,6 +356,9 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - **Nerf des pioches** (25/10, Geoffrey) : fer +0,4 (520 x ; ancien +0,5), acier +0,5 (650 x ; ancien +0,6).
   Table de recherche **tier 3** (en ligne le 23/10) : **200 parts** (26/10 ; ancien : 150), plans du T3, plan
   épique 4 fois moins probable (poids 0,25), recyclage **45 à 60** (28/10 ; ancien 40 à 70). (Ancien : pas de tier 3.)
+  **Areas requises** (05/11, Geoffrey) : T3 area 5, T4 area 7, T5 area 9 déjà atteinte (`RESEARCH.tiers[].area`, `areaMax` du
+  compte ; serveur : `area_locked` ; l'état envoie `progress.areaMax`). **Tier 5** (05/11) : 1000 parts, `items:['Casque en arkonite BP']`
+  (épique, pas encore de recette ; pas de Treasure T5, les Treasure T4 donnent toujours leurs plans).
   **Tier 4** (28/10, Geoffrey) : **250 parts**, plans du 1er jet du Treasure T4, ouvert quand toutes les recettes des
   tiers 1 à 3 sont apprises, **en 3 étapes** (mithril + pièces spéciales → thorium et cobalt → Jambières titanesques et Cape inclusive,
   chaque étape ouverte quand les recettes de la précédente sont apprises), recyclage **60 à 75** ; tier 2 : recyclage **30 à 45** (28/10 ; ancien 40 à 70).

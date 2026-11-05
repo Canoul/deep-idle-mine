@@ -96,7 +96,7 @@ const SHRINE_ERRORS = { bad_shrine: 'Shrine inconnu.', bad_item: 'Ce shrine ne d
 const SET_ERRORS = { unknown: 'Set introuvable.', too_many: 'Tu as déjà le nombre maximum de sets.',
                      bad_name: 'Nom vide ou trop long.', session_running: 'Impossible pendant une session : termine-la d\'abord.',
                      bad_request: 'Demande invalide.' };
-const RESEARCH_ERRORS = { bad_tier: 'Tier de recherche inconnu.', tier_locked: 'Apprends d\'abord toutes les recettes des tiers inférieurs.', nothing_left: 'Tu as appris tous les blueprints de ce tier.',
+const RESEARCH_ERRORS = { bad_tier: 'Tier de recherche inconnu.', tier_locked: 'Apprends d\'abord toutes les recettes des tiers inférieurs.', area_locked: 'Tu n\'as pas encore atteint l\'area demandée pour ce tier.', nothing_left: 'Tu as appris tous les blueprints de ce tier.',
                           too_recent: `Les plans restants de ce tier viennent de sortir : apprends-les, ou réessaie dans ${RESEARCH.recentMs / 60_000} min au plus.`,
                           not_enough: 'Il te faut plus de Blueprint parts.', bad_item: 'Seul un blueprint se recycle.',
                           not_owned: 'Tu n\'as pas ce blueprint.', bad_request: 'Demande invalide.' };
@@ -308,7 +308,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     if(pr.areaMax !== before) await store.putProgress(accountId, pr);
     return pr.areaMax;
   });
-  const publicProgress = p => ({ xp: p.xp, ...levelOf(p.xp), spec: specLevels(p) });
+  const publicProgress = p => ({ xp: p.xp, ...levelOf(p.xp), spec: specLevels(p), areaMax: p.areaMax | 0 });   // areaMax : tiers de la recherche (05/11)
   /* skills : revérifiés avec les points du niveau (jamais plus de rangs que de points) */
   const pointsOf = async accountId => levelOf((await loadProgress(accountId)).xp).talentPoints;
   /* arbres v2 (04/11/2026) : une sauvegarde d'avant (sans v:2) repart de zéro, spé et glyphes gardés (migrateSkills) */
@@ -1033,7 +1033,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       const crusher = await withCrusher(me.id, (_, c) => publicCrusher(c, clock()));
       return { inventory: publicInventory(inv), furnaces: publicFurnaces(await loadFurnaces(me.id)), crusher,
                stuff: (await loadStuff(me.id, inv)).worn,
-               progress: publicProgress(await loadProgress(me.id)),
+               progress: { ...publicProgress(await loadProgress(me.id)), areaMax: dev ? AREAS.length : await areaMaxOf(me.id) },
                energy: publicEnergy(await loadEnergy(me.id)),
                skills: publicSkills(await loadSkills(me.id), await pointsOf(me.id)),
                spells: publicSpells(await loadSpells(me.id), await spellCtx(me.id)),
@@ -1795,10 +1795,11 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       const { action, opId } = body;
       if(action !== 'research' && action !== 'recycle') fail('bad_request', 400, 'Demande invalide.');
       if(typeof opId !== 'string' || !/^[\w-]{8,64}$/.test(opId)) fail('bad_request', 400, 'Demande invalide.');
+      const areaMax = action !== 'research' ? 0 : dev ? AREAS.length : await areaMaxOf(me.id);   // tiers à area (05/11) ; mode dev : tous ouverts, comme la prison
       return withLock('inv:' + me.id, async () => {
         const inv = await loadInventory(me.id);
-        const r = action === 'research' ? research(inv, body.tier, opId, random, clock()) : recycle(inv, body.item, opId, random);
-        if(r.error) fail(r.error, ['not_enough', 'not_owned', 'nothing_left', 'too_recent', 'tier_locked'].includes(r.error) ? 409 : 400, RESEARCH_ERRORS[r.error]);
+        const r = action === 'research' ? research(inv, body.tier, opId, random, clock(), areaMax) : recycle(inv, body.item, opId, random);
+        if(r.error) fail(r.error, ['not_enough', 'not_owned', 'nothing_left', 'too_recent', 'tier_locked', 'area_locked'].includes(r.error) ? 409 : 400, RESEARCH_ERRORS[r.error]);
         if(!r.repeated){
           await store.putInventory(me.id, JSON.parse(serialize(inv)));
           if(action === 'research') markFound([r.item], displayName(me));   // tier 4 : un plan secret sorti de la recherche le révèle aussi (28/10)

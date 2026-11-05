@@ -22,6 +22,13 @@ Modèle d'entrée :
   dernier set équipé ou enregistré, sans passer par le menu des sets ; sans set, il en crée un. La pop-up confirme.
 - **État** : 🧪 sur la branche `geoffrey/skills-enregistrer-mobile` (pas en ligne)
 
+## 05/11/2026 — Geoffrey — Recherche : areas à atteindre et tier 5
+- **Pour le joueur** : à la Table de recherche, il faut maintenant avoir **déjà atteint une area** pour ouvrir un tier :
+  area 5 pour le tier 3, area 7 pour le tier 4, area 9 pour le tier 5 (en plus des recettes, comme avant). Le tier fermé
+  dit ce qui manque.
+- **Tier 5** : 1000 Blueprint parts, donne le **Casque en arkonite BP** (épique), qui ne débloque pas encore de recette.
+- **État** : ✅ en ligne le 05/11
+
 ## 05/11/2026 — Geoffrey — Parrainage : 10 Émeraudes au niveau 5
 - **Pour le joueur** : dans Mon compte, bouton **🎁 Parrainer un ami** : ton code et ton lien à donner. Un nouveau joueur entre
   le code d'un ami (ou arrive par son lien) ; à son niveau 5, lui et son parrain reçoivent **10 Émeraudes** (nouvel objet
