@@ -7486,6 +7486,12 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - Tests ✅ `tests/crusher.test.js` 16/16 : les 8 écrits en dur sont devenus `CRUSHER.inSlots` / `outSlots`.
   ⚠️ Pas regardé dans le navigateur (hauteur de l'onglet sur PC).
 
+## 05/11/2026 — Bulles d'aide des stats (Geoffrey)
+- `src/meta/stat-help.js` (nouveau, `STAT_HELP`) : textes déplacés de `src/wiki/data.js` (le wiki l'importe ; pas dans src/wiki,
+  que le paquet de l'appli n'embarque pas). `statsHTML` (src/ui/stuff.js) : `qhelp(label + texte)` sur chaque ligne, Gear score et
+  DPS (avant : `title`). Textes revus : ténacité, résistance au recul.
+- Tests : `tests/stat-help.test.js` (3), dps, wiki, stuff*, help* 40/40 ✅. Vérifié en image (Chromium, bulle au survol).
+
 ## 05/11/2026 — Recyclage fixe des pièces uniques (Golbute, Roi Gobelin) (Geoffrey)
 - **Quoi** : `recycle:{…}` ajouté dans `STUFF.items` (src/config.js) pour Némésis du Golbute, Torse de Gollex, Jambières du
   Golbute, Âme du Golbute, Couronne, Masse et Cape royale du Roi Gobelin ; lu par `fixedRefund` (src/meta/craft.js), même
