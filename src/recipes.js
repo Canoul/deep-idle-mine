@@ -87,4 +87,5 @@ export const RECIPES = {
   'Orbe supérieur':      { cost: { 'Rotten flesh': 20, 'Chair de vers': 20, 'Peau de chien de magma': 20 }, qty: 1, unlock: null },   // 31/10 (Geoffrey) : de base
   'Orbe':                { cost: { 'Tissu sombre': 30, 'Vésicule de gaz': 30, 'Pierre glissante': 10 }, qty: 1, unlock: null },   // 30/10 (Geoffrey) : de base
   'Clé d\'instance I':   { cost: { 'Barre d\'argent': 1, 'Orbe': 5 }, qty: 1, unlock: null },   // 31/10 (Geoffrey) ; ancien : 250 Peau de gobelin, 20 Pierre glissante, 50 Tissu sombre, 1 Barre d'argent ; 28/10 : de base (avant : Clé d'instance I BP, Treasure T4)
+  'Clé d\'instance II':  { cost: { 'Barre d\'argent': 2, 'Orbe supérieur': 1 }, qty: 1, unlock: null },   // 05/11 (Geoffrey) : de base
 };

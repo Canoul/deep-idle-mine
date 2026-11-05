@@ -16,6 +16,10 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 05/11/2026 — Geoffrey — Craft : Clé d'instance II de base
+- **Pour le joueur** : la Clé d'instance II se fabrique au Craft, sans blueprint : 2 Barres d'argent et 1 Orbe supérieur.
+- **État** : ✅ en ligne le 05/11
+
 ## 05/11/2026 — Geoffrey — Parrainage : Canoul reçoit aussi ses Émeraudes pour les comptes d'avant
 - **Pour le joueur** : rien ne change pour les filleuls ; Canoul reçoit 10 Émeraudes par compte d'avant arrivé au niveau 5 (ceux déjà récompensés lui versent sa part à leur prochaine connexion).
 - **État** : ✅ en ligne le 05/11
