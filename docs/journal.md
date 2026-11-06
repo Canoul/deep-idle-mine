@@ -16,6 +16,14 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 06/11/2026 — Geoffrey — Échelle : le plus rapide la pose, dans tous les modes
+- **Pour le joueur** : quand plusieurs mineurs doivent poser une échelle sur la même case, c'est le plus rapide à monter
+  qui la pose (le logisticien avec Échelle de 2), même s'il arrive après : celui qui avait commencé s'arrête et
+  attend. À vitesse égale, le premier garde la main. Avant : le premier arrivé la posait (et en mine, les deux la
+  posaient en même temps).
+- **Décisions** : une seule règle pour tous les modes (mine, raid, instances, tours, mine instantanée, et les suivants).
+- **État** : 🧪 sur la branche `geoffrey/echelle-logisticien` (pas en ligne)
+
 ## 06/11/2026 — Geoffrey — Noms plus corrects pour les stores : Bonbonne d'oxygène, Ralliement, Garde du corps, Golem gluant
 - **Pour le joueur** : quatre noms changent, rien d'autre. **Bonbonne de zipette** → **Bonbonne d'oxygène** (sort du Logisticien), **Ulti shen** → **Ralliement** (sort à parchemin, « Parchemin « Ralliement » »), **Braum** → **Garde du corps** (skill du Barbare et « Glyphe Garde du corps »), **Golem de sperme** → **Golem gluant** (mob). Pseudo du Gallianix « Cuiseuse de sperme » → **« Ex d'Infernatiwar »**. Sorts appris, skills, parchemins et glyphes déjà dans les sacs : tout est gardé, renommé au démarrage du serveur. « K hole » garde son nom (choix de Geoffrey).
 - **D'où ça vient** : les trois premiers sont le travail de Jules du 02/11 (branche `jules/nom-bonbonne-oxygene`, jamais fusionnée, 328 commits de retard) : refait à l'identique sur le jeu actuel plutôt que fusionné (11 fichiers en conflit). Le Golem gluant est ajouté par Geoffrey.
