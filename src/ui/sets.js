@@ -63,6 +63,9 @@ export function equippedText(name, missing = 0, inSession = false){
   const pieces = missing > 1 ? `${missing} pièces introuvables` : `${missing} pièce introuvable`;
   return (missing ? `Set « ${name} » équipé : ${pieces}` : `Set « ${name} » bien équipé`)+(inSession ? '. Il compte dès la prochaine session.' : '');
 }
+/* set de l'activité équipé tout seul au lancement (06/11/2026) : was / now : le set porté avant / après (equipped()) ;
+   null s'il n'a pas changé */
+export const autoSetText = (was, now) => now && now.id !== was?.id ? `Set « ${now.name} » équipé : c'est le set défini pour cette activité` : null;
 
 /* onOp(op) → promesse de la réponse du serveur ({ sets, inventory, stuff, skills, spells, missing? }) ;
    onLoadout(réponse) : l'équipement a peut-être changé ; inSession() : une session est en cours ;
@@ -133,6 +136,8 @@ export function setupSets({ onOp, onLoadout = () => {}, inSession = () => false,
 
   render();
   /* setsOf(uid) : noms des sets qui retiennent cette pièce (elle ne se recycle pas) */
+  /* equipped() : le set porté d'après ce que la page connaît (null : aucun) */
   return { set(s){ if(s){ st = s; render(); } }, refresh: render,
+           equipped: () => { const c = current(); return c ? equippedSet(st.list, c.worn, c.skills, c.spells) : null; },
            setsOf: uid => st.list.filter(s => Object.values(s.stuff ?? {}).includes(uid)).map(s => s.name) };
 }
