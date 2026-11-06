@@ -1054,6 +1054,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
                stuff: (await loadStuff(me.id, inv)).worn,
                progress: { ...publicProgress(await loadProgress(me.id)), areaMax: dev ? AREAS.length : await areaMaxOf(me.id) },
                energy: publicEnergy(await loadEnergy(me.id)),
+               geanteLeft: geanteLeft(await store.sessionsOf(me.id), clock()),   // Mines géantes qu'il peut encore lancer aujourd'hui (06/11)
                skills: publicSkills(await loadSkills(me.id), await pointsOf(me.id)),
                spells: publicSpells(await loadSpells(me.id), await spellCtx(me.id)),
                sets: publicSets(sanitizeSets(await store.getSets(me.id))),
@@ -1116,7 +1117,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       const inst = modeDef.instance ? instanceDef(mode) : null;
       if(modeDef.instance && !inst?.ready) fail('mode_not_ready', 400, `${modeDef.label} : bientôt disponible.`);
       /* énergie (29/10) : seule la mine classique en coûte, hors mode dev ; verrou par compte, bots exclus (seuls les vrais joueurs) */
-      const energyLocks = (mode === 'mine' || isGeante(mode)) && !dev ? players.map(p => 'energy:' + p.account) : [];   // Mine géante : mêmes règles (06/11)
+      const energyLocks = mode === 'mine' && !dev ? players.map(p => 'energy:' + p.account) : [];   // la Mine géante ne coûte pas d'énergie (06/11, Geoffrey)
       /* verrous : compte, et ceux d'un versement de prison (inventaire, XP, énergie, prison) : le lancement peut arrêter la
          prison d'un joueur (29/10) ; ils couvrent aussi les clés d'instance et l'énergie */
       return withLock.many([...players.map(p => 'acct:' + p.account), ...players.flatMap(p => prisonLocks(p.account))], async () => {

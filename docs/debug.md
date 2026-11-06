@@ -7692,3 +7692,10 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **À vérifier** : vrai groupe de 5 en ligne ; mithril (mesuré en acier seulement) ; coût serveur d'une partie de 5 × 2 h ; dans
   l'appli, la mine de 70 colonnes à l'écran.
 
+## 06/11/2026 — Geoffrey — Mine géante : sans énergie, carte du Lobby
+- `server/game/service.js` : `energyLocks` seulement pour `mine` (la Mine géante ne coûte plus rien) ; `state()` renvoie `geanteLeft`
+  (`geanteLeft(sessionsOf)`). `src/main.js` `setGeante(st)` à chaque `state` → `lobby.update({ geanteLeft })`. `src/ui/lobby.js` :
+  `geanteText(left)` dans `#launchCost` (classe `err` à 0, bulle), `launchFor` grisé à 0 (hors dev), texte de l'activité. Seul son
+  compteur est connu du navigateur : celui des autres joueurs, c'est le serveur qui le refuse (`geante_daily`, en les nommant).
+- **Tests** ✅ geante (pas d'énergie, `state().geanteLeft`, texte, Lancer grisé à 0), lobby, team-energy, energy-server, wiki.
+
