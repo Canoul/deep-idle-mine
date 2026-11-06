@@ -1771,7 +1771,7 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
 
 ---
 
-## 06/11/2026 — Set par activité : option « Aucun » et Mine géante (Geoffrey) 🧪
+## 06/11/2026 — Set par activité : option « Aucun » et Mine géante (Geoffrey) ✅ en ligne le 06/11
 
 - Dans le Lobby, la liste « Set défini pour … » commence par **Aucun** (avec une majuscule, plus visible) : choisir Aucun = rien n'est équipé tout seul, ton équipement ne change pas au lancement.
 - La **Mine géante (5 joueurs)** a maintenant sa ligne « Set défini pour la Mine géante » : elle n'en avait pas.
