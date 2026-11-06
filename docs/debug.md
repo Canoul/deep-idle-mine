@@ -7847,3 +7847,8 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - Tests : `node --test tests/sets.test.js` ✅ 17/17 (setActivity('geante'), ligne Mine géante, « Aucun » choisi par défaut).
 - ⚠️ Pas vérifié en vraie partie à 5 (le lancement géante passe par le même `start` que la mine).
 
+
+## 06/11/2026 — Appli : matériaux des chantiers de guilde qui se chevauchaient (Geoffrey)
+- **Cause** : src/app/app.css plaçait `.gmat` sur 3 colonnes (« nums own btn ») mais les boutons sont dans un `<span class="gmatBtns">` (banque de guilde, 05/11) sans `grid-area` : placé au hasard, les deux textes tenaient dans des colonnes trop étroites (nowrap) et se chevauchaient.
+- **Correction** : src/ui/style.css (`body.app .gbuilding .gmat.gmat`, passe devant app.css) : 2 colonnes, « name btn / bar btn / nums own », `.gmatBtns` en `btn`. Rien dans src/app/.
+- **Vérifié** : aperçu `?app` 412 px ✅ (pas avec la police pixel de l'appli, plus large : à regarder sur téléphone).
