@@ -7907,6 +7907,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   src/main.js `judgmentBadge()` : sur l'onglet Lobby, les clés en cours sont notées vues (`localStorage['dim.judgmentSeen']`) ;
   appelé par pollJudgment et à l'ouverture du Lobby. `judgment.pending()` reste pour le repère du bouton Jugement du Lobby.
 - Tests : tests/judgment.test.js (+1), tests/nav.test.js ✅. ⚠️ Pas vu à l'écran ; appli : même `nav.badge`, rien dans src/app/.
+
 ## 06/11/2026 — Lobby : description d'activité coupée (Mine géante) (Jules)
 - **Cause** : les lignes du menu des activités sont des `<button class="actBtn">` ; la règle de base `button{white-space:nowrap}` (src/ui/style.css) empêchait la description (`.actText small`) de revenir à la ligne, la longue phrase de la Mine géante sortait du bouton.
 - **Correction** : `.actText{…;white-space:normal}` (src/ui/style.css). Le titre et la description passent à la ligne si besoin.
