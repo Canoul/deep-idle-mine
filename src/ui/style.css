@@ -575,14 +575,14 @@ body.phone .chatMore{opacity:1;padding:0 calc(5*var(--u))}
 /* ---------- fenêtres (treasure, stuff, four, concasseur) : visibles seulement avec leur onglet (elles sont dedans) ----------
    Calées sur l'écran entre la barre du haut et la barre d'action, jamais plus grandes : au-delà, la fenêtre défile
    (28/10/2026). */
-#loot,#spick,#fpick,#cpick,#fview{position:fixed;top:var(--top-h);bottom:var(--dock-h);left:0;right:0;background:rgba(8,5,4,.8);display:flex;
+#loot,#spick,#spvPick,#fpick,#cpick,#fview{position:fixed;top:var(--top-h);bottom:var(--dock-h);left:0;right:0;background:rgba(8,5,4,.8);display:flex;
   align-items:flex-start;justify-content:center;padding:6vh calc(6*var(--u)) calc(4*var(--u));z-index:9}
-#loot .box,#spick .box,#fpick .box,#cpick .box,#fview .box{max-height:100%;overflow:auto;overscroll-behavior:contain}
+#loot .box,#spick .box,#spvPick .box,#fpick .box,#cpick .box,#fview .box{max-height:100%;overflow:auto;overscroll-behavior:contain}
 /* barre de défilement fine et sombre (comme les colonnes de la session) pour toutes les fenêtres qui défilent */
-#loot .box,#spick .box,#fpick .box,#cpick .box,#fview .box,#account .box,#end .box,#obtained .box,#notifs,.guide .gBody,.frecs{
+#loot .box,#spick .box,#spvPick .box,#fpick .box,#cpick .box,#fview .box,#account .box,#end .box,#obtained .box,#notifs,.guide .gBody,.frecs{
   scrollbar-width:thin;scrollbar-color:var(--line) transparent}
-#loot .box,#spick .box,#fpick .box,#cpick .box{max-width:calc(220*var(--u));width:96%}
-#loot h3,#spick h3,#fpick h3,#cpick h3,#fview h3{margin:0 0 calc(4*var(--u));color:var(--acc-lt);font-size:var(--fs-xl);display:flex;align-items:center;gap:calc(3*var(--u))}
+#loot .box,#spick .box,#spvPick .box,#fpick .box,#cpick .box{max-width:calc(220*var(--u));width:96%}
+#loot h3,#spick h3,#spvPick h3,#fpick h3,#cpick h3,#fview h3{margin:0 0 calc(4*var(--u));color:var(--acc-lt);font-size:var(--fs-xl);display:flex;align-items:center;gap:calc(3*var(--u))}
 /* fiche d'un ami (onglet Social) : les cases du stuff à gauche, les stats à droite, rien de cliquable */
 #fview{padding-top:3vh}
 #fview .box{max-width:calc(580*var(--u));width:96%}
@@ -590,7 +590,7 @@ body.phone .chatMore{opacity:1;padding:0 calc(5*var(--u))}
 #fview .stuffStatsCard{margin-top:0;max-width:none}
 #fview .stuffSlot,#fview .stuffSlot .slot{cursor:default}
 #fview h3 button{margin-left:auto;font-size:var(--fs)}
-#loot img,#fpick img,#cpick img,#spick img{width:calc(16*var(--u));height:calc(16*var(--u))}
+#loot img,#fpick img,#cpick img,#spick img,#spvPick img{width:calc(16*var(--u));height:calc(16*var(--u))}
 .lootRare{color:var(--acc-lt);margin-bottom:calc(3*var(--u))}
 .lootList{display:flex;flex-direction:column;gap:var(--u)}
 .lootRow{display:grid;grid-template-columns:calc(16*var(--u)) 1fr auto;align-items:center;gap:calc(3*var(--u));padding:var(--u) calc(3*var(--u));background:var(--chip)}
@@ -1311,3 +1311,75 @@ body.app .gbuilding .gmat.gmat{grid-template-columns:minmax(0,1fr) auto;grid-tem
 body.app .gbuilding .gmat.gmat>.gmatBtns{grid-area:btn;align-self:center}
 body.app .gbuilding .gmat.gmat>.gxp:nth-child(2){grid-area:nums;min-width:0}
 body.app .gbuilding .gmat.gmat>.gxp.mut{grid-area:own;justify-self:end}
+
+/* ---------- Stuff : sous-onglet « Aperçu set » (06/11/2026, Geoffrey ; src/ui/set-preview.js) ----------
+   Bureau : la liste des sets à gauche, le mannequin du set et ses stats à côté, ses sorts dessous, puis les trois arbres.
+   Appli : une seule colonne, liste (en puces), mannequin, arbres, sorts, stats ; les boutons Enregistrer restent en bas. */
+#spvPick[hidden]{display:none}
+.stuffViews{margin:0 0 calc(5*var(--u))}
+.stuffOnPreview .setLay{display:none}
+.spvLay{display:grid;grid-template-columns:minmax(0,1fr) calc(150*var(--u));gap:calc(6*var(--u)) calc(9*var(--u));align-items:start;
+  grid-template-areas:"list acts" "doll stats" "spells stats" "skills skills"}
+.spvList{grid-area:list;display:flex;flex-wrap:wrap;align-items:flex-end;gap:calc(3*var(--u)) calc(8*var(--u))}
+.spvList>h2{flex-basis:100%}
+.spvDoll{grid-area:doll;min-width:0}.spvStats{grid-area:stats}.spvSpells{grid-area:spells}.spvSkills{grid-area:skills;min-width:0}
+#spvList{display:flex;flex-direction:column;gap:calc(2*var(--u));flex:1 1 calc(200*var(--u));min-width:0}
+.spvSets{display:flex;flex-wrap:wrap;gap:var(--u)}
+.spvSet{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:calc(90*var(--u))}
+.spvNew{display:flex;flex-wrap:wrap;gap:var(--u)}
+.spvNew button{font-size:var(--fs-s)}
+.spvName{display:flex;flex-direction:column;gap:var(--u);flex:0 1 calc(90*var(--u))}
+.spvName input{width:100%;box-sizing:border-box}
+.spvActs{grid-area:acts;display:flex;flex-direction:column;gap:var(--u);align-self:stretch;justify-content:center}
+.spvState{margin:var(--u) 0 0}
+.spvMiss{margin:calc(2*var(--u)) 0 0}
+.spvSkills .skHead{margin-bottom:calc(4*var(--u))}
+.fopt.on{box-shadow:0 0 0 var(--u) var(--acc)}
+/* « − » : retirer un rang (arbres de l'Aperçu set seulement), à gauche de la case, en face du « + » */
+.skMinus{position:absolute;top:-4px;left:50%;transform:translateX(calc(-14px - 10*var(--u)));width:calc(10*var(--u));height:calc(10*var(--u));display:grid;place-items:center;
+  font-style:normal;cursor:pointer;background:var(--chip);color:var(--acc-lt);box-shadow:0 0 0 var(--u) #000;z-index:2}
+.skMinus:hover{background:var(--acc);color:#2a1206}
+@media (max-width:700px){ .spvLay{grid-template-columns:1fr;grid-template-areas:"list" "doll" "skills" "spells" "stats" "acts"} }
+body.app .stuffViews{display:flex;width:100%;margin:0 0 8px}
+body.app .stuffViews>button{flex:1}
+body.app .spvLay{grid-template-columns:minmax(0,1fr);grid-template-areas:"list" "doll" "skills" "spells" "stats" "acts";gap:8px}
+body.app .spvList{padding:6px 8px}
+body.app .spvList>h2{display:none}
+body.app .spvSet{max-width:48%;min-height:40px}
+body.app .spvList{flex-direction:column;align-items:stretch}
+body.app :is(#spvList,.spvName){flex:none}
+body.app .spvNew button{flex:1;min-height:40px}
+body.app .spvName{flex-direction:row;align-items:center}
+body.app .spvName input{flex:1}
+body.app .spvActs{position:sticky;bottom:var(--dock-h,0px);z-index:5;flex-direction:row;flex-wrap:wrap;padding:6px 8px;margin:0}
+body.app .spvActs>button{flex:1;min-height:44px}
+body.app .spvActs>p{flex-basis:100%;margin:0}
+/* mannequin du set : le même que l'onglet Stuff de l'appli (src/app/app.css, #stuffGrid) */
+body.app #spvGrid{grid-template-columns:52px minmax(0,1fr) 52px;grid-auto-flow:column;grid-template-rows:repeat(7,52px);gap:4px;padding:4px;align-items:center}
+body.app #spvGrid .stuffSlot{display:block;width:52px;height:52px}
+body.app #spvGrid .stuffSlot:nth-child(-n+6){grid-column:1}
+body.app #spvGrid .stuffSlot:nth-child(n+7){grid-column:3}
+body.app #spvGrid .stuffSlot .slot{position:relative;width:52px;height:52px;display:grid;place-items:center}
+body.app #spvGrid .stuffSlot img{width:32px;height:32px}
+body.app #spvGrid .stuffSlot :is(.slbl,.sname){display:none}
+body.app #spvGrid .stuffSlot .splus{display:block;position:absolute;right:0;bottom:-2px;font:400 14px/1 var(--f-title);color:#ffe6c4;text-shadow:1px 1px 0 #000}
+body.app #spvGrid .stuffHero{grid-column:2;grid-row:1/8;order:0}
+body.app #spvGrid .stuffHero canvas{width:144px;height:144px}
+/* arbres du set : les mêmes que l'onglet Skills de l'appli (src/app/app.css, #skillTrees) */
+body.app #spvTrees .skTree{border:0;border-image:none;padding:0;background:none}
+body.app #spvTrees .skTree>h3,body.app #spvTrees .skTree .specLvl{display:none}
+body.app #spvTrees .skGraph{height:auto!important;display:grid;grid-template-columns:repeat(var(--cols,2),minmax(0,1fr));gap:14px 16px;margin:0;padding:2px 0 2px 12px}
+body.app #spvTrees .skNode{position:relative;left:auto!important;top:auto!important;transform:none;width:auto;
+  display:grid;grid-template-columns:50px minmax(0,1fr) auto;grid-template-rows:auto auto;column-gap:10px;align-items:center;text-align:left;grid-column:var(--c);grid-row:var(--r);cursor:pointer}
+body.app #spvTrees .skTier{display:none}
+body.app #spvTrees .skOrb{position:relative;z-index:1;grid-row:1/3;width:50px;height:50px}
+body.app #spvTrees .skOrb .pi{width:26px;height:26px}
+body.app #spvTrees .skRank{top:auto;bottom:-6px;left:28px;transform:none;z-index:2}
+body.app #spvTrees .skPlus{top:-4px;left:38px;transform:none;z-index:2}
+body.app #spvTrees .skMinus{top:-4px;left:-6px;transform:none;width:22px;height:22px;font-size:18px}
+body.app #spvTrees .skName{grid-column:2;align-self:end;padding:0;background:none;font:400 18px/1.05 var(--f-title);color:#ffe6c4}
+body.app #spvTrees .skNode.off .skName{color:var(--mut);opacity:1}
+body.app #spvTrees .skTxt{grid-column:2;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;align-self:start;font-size:14px;line-height:1.15;color:var(--mut)}
+body.app #spvPick{align-items:flex-end;justify-content:stretch;padding:0}
+body.app #spvPick .box{width:100%;max-width:none;max-height:85%}
+body.app:has(#spvPick:not([hidden])) .guide{display:none}

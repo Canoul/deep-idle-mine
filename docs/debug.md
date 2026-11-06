@@ -7858,6 +7858,34 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - Tests : `tests/spellbar-below.test.js` ✅ (faux DOM) ; app-spells, spells, tower-spells, fit, hud-rail ✅. Vérifié à l'écran (Playwright, Pixel 7, `?app`) : mine ✅ sorts sous le canvas ; bascule large ↔ étroit ✅.
 - ⚠️ Pas vu à l'écran dans les événements (tours, instance, Bloc géant, He's coming) : la barre se met entre le canvas (60 % de la hauteur) et la colonne d'infos, qui rétrécit d'autant.
 
+## 06/11/2026 — Stuff : sous-onglet « Aperçu set » (Geoffrey, branche `geoffrey/apercu-set`)
+- **Quoi** : composer un set sans rien équiper. Serveur : `POST /api/game/sets` `{ action:'edit', id:<n>|null, name?, stuff:{case: uid},
+  skills:{ tree, ranks }, spells:[id|null] (≤ SPELLS.slots), equip?:true, opId }`. `checkDraft` (src/meta/sets.js) revérifie : cases
+  connues, uid entiers à soi (inventaire ou porté, `not_owned`), bonne case (`wrong_slot`), jamais deux fois le même objet (`same_ring`),
+  arbre connu, rangs rejoués par `sanitizeSkills(…, points du niveau)` (surplus rendu), sorts connus (sinon `bad_request`) gardés si
+  équipables avec la spé du set et dans un emplacement ouvert (sinon null). `setOp` 'edit' : id null = nouveau set (garde-fou `SETS.max`),
+  sinon remplace (`unknown` si absent) ; nom optionnel (`bad_name`). `equip:true` : `applySet` dans la même écriture (`putLoadout`),
+  opId interne `<opId>-eq` ; une demande rejouée renvoie l'état sans rien refaire. Permis pendant une session (comme save/equip). Réponse :
+  `setsReply` + `id` (+ `missing` si équipé).
+- **Client** : src/ui/set-preview.js (brouillon local ; `draftOf`, `draftKey`, `slotChoices`, `poolOf`, HTML testés), branché dans
+  src/main.js (`setPreview`, ctx : inventaire, stuff porté, skills et sorts publics, progression, sets). Sous-onglets `#stuffViews`
+  (« Stuff porté | Aperçu set »), conteneur `#setPreview`, choix `#spvPick` (index.html). Section `.stuffOnPreview` cache `.setLay`.
+  src/ui/skills.js : `treeHtml(t, st, { spec, busy, inv, glyphs, minus })`, `glyphHtml` et `drawSkillLinks(root)` sortis de
+  `setupSkills` (onglet Skills identique ; flèches des liens : id préfixés par le conteneur). src/ui/sets.js : `list()`, `saved(id)` ;
+  src/ui/spells.js : `state()`. Stats : `statsHTML` / `minerStats` de l'onglet Stuff, effets `skillEffects(sanitizeSkills({ ...set, glyphs du compte }))`.
+  CSS dans src/ui/style.css (appli : `body.app #spvGrid` / `#spvTrees` recopient les règles de src/app/app.css pour #stuffGrid /
+  #skillTrees ; barre Enregistrer collante au-dessus du dock, `bottom:var(--dock-h)`). Rien dans src/app/.
+- **Tests** ✅ sets (25 : brouillon, edit, serveur edit / enregistrer et équiper / session, affichage), skills*, stuff*, spells*,
+  app-*, i18n*, guide, help, controls, dev-presets ; `npm run test:anticheat` ✅ 160/160 (nouveau : edit trafiqué, pièce d'un autre
+  compte, enregistrer et équiper en parallèle sans duplication).
+- **Vérifié à l'écran** ✅ (Playwright, Test_Barbare des presets) : bureau 1400×900 et `?app` 412×915 ; retirer un rang change les
+  stats (DPS) ; Enregistrer écrit le set (20 rangs) et le mineur garde les siens (22) ; confirmation en quittant.
+- ⚠️ Fragile / pas fait : quitter l'onglet Stuff par la barre de navigation ne demande pas confirmation (on ne peut pas l'annuler) : le
+  brouillon reste en mémoire et se retrouve au retour ; seuls le changement de sous-onglet, de set, « + Nouveau » et la fermeture de la
+  page confirment. Un set enregistré avec un sort dans un emplacement pas encore ouvert (ou d'une autre spé) s'ouvre « modifié » :
+  l'enregistrer retire ce sort. Les règles CSS appli du mannequin et des arbres sont recopiées : un changement de src/app/app.css
+  (#stuffGrid, #skillTrees) est à reporter sur #spvGrid / #spvTrees. Pas vu sur un vrai téléphone.
+
 ### 06/11/2026 — Bot Discord : ❌ supprime, 💎 des admins = diamants (Geoffrey)
 - `bot/todo.js` : `REACTIONS` (1, 2, ❌, 💎) ; sujet avec `authorId`, `channelId`, `rewarded` ; `reward(reportId)` (1 diamant à l'auteur, une fois par sujet, rien pour un ancien sujet sans auteur) / `unreward(id)` / `diamondsOf(id)` ; `state().diamonds` (base JSON, valeurs invalides ignorées au chargement). Texte du report : « ❌ : supprimer », ligne 💎.
 - `bot/main.js` : ❌ → `todo.ignore` puis `removeReport` (message effacé) ; 💎 → `onDiamond` : membre du rôle admin (`members.fetch`), `reward`, réaction 💎 du bot sur le message d'origine (`channelId`/`sourceId`) ; échec → `unreward`, rien n'est sauvé. Les réactions du bot sont ignorées (`user.bot`).
