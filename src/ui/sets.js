@@ -138,7 +138,9 @@ export function setupSets({ onOp, onLoadout = () => {}, inSession = () => false,
   render();
   /* setsOf(uid) : noms des sets qui retiennent cette pièce (elle ne se recycle pas) */
   /* equipped() : le set porté d'après ce que la page connaît (null : aucun) */
-  return { set(s){ if(s){ st = s; render(); } }, refresh: render,
+  /* list() : la liste des sets ({ list, max }) telle que le serveur l'a renvoyée (Aperçu set, 06/11) ; saved(id) : un set
+     enregistré ou équipé ailleurs (Aperçu set) devient le dernier set (bouton « Enregistrer » de l'appli) */
+  return { set(s){ if(s){ st = s; render(); } }, refresh: render, list: () => st, saved: id => { if(id) setLast(id); render(); },
            equipped: () => { const c = current(); return c ? equippedSet(st.list, c.worn, c.skills, c.spells) : null; },
            setsOf: uid => st.list.filter(s => Object.values(s.stuff ?? {}).includes(uid)).map(s => s.name) };
 }

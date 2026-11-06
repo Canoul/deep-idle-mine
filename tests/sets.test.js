@@ -407,3 +407,28 @@ test('appli : « 💾 Enregistrer » à côté du set quand l\'équipement ne co
   assert.match(setsBarHtml(null, null), /nouveau set/);
   assert.match(setsBarHtml(null, { id:2, name:'x' }, true), /quickSave" disabled/);
 });
+
+/* ---------- Aperçu set (06/11/2026) : affichage ---------- */
+
+test('Aperçu set : brouillon d\'un set (pièces disparues retirées, rangs ramenés), nouveau depuis le stuff ou vide, choix d\'une case', async () => {
+  const { draftOf, draftKey, slotChoices, poolOf, previewListHtml, previewSpellsHtml } = await import('../src/ui/set-preview.js');
+  const k = kit(), [p1, p2] = k.uid(PICK), [h] = k.uid(HELM);
+  wear(k, 'pioche', p1, 'w1');
+  k.skills.tree = 'barbare'; k.skills.ranks = { damage:2 };
+  const c = { inv:k.inv, worn:k.stuff.worn, skills:{ tree:'barbare', ranks:{ damage:2 }, points:2 }, spells:{ learned:[], slots:['dash', null, null, null] }, specLevels:{ barbare:5 }, level:1 };
+  const set = { id:3, name:'Farm', stuff:{ pioche:p2, casque:777 }, skills:{ tree:'barbare', ranks:{ damage:3 } }, spells:['dash', null, null, null] };
+  const d = draftOf(set, c);
+  assert.deepEqual([d.id, d.name, d.stuff, d.skills.ranks, d.spells, d.missing], [3, 'Farm', { pioche:p2 }, { damage:2 }, ['dash', null, null, null], 1]);
+  assert.deepEqual(draftOf(null, c).stuff, { pioche:p1 }, 'nouveau : le stuff porté');
+  assert.deepEqual([draftOf(null, c, 'empty').stuff, draftOf(null, c, 'empty').skills], [{}, { tree:'barbare', ranks:{} }], 'vide : la spé reste');
+  assert.notEqual(draftKey(d), draftKey({ ...d, stuff:{} }));
+  assert.equal(draftKey(d), draftKey({ ...d, name:' Farm ' }));
+  const pool = poolOf(k.inv, k.stuff.worn);
+  assert.deepEqual(slotChoices('pioche', d, pool).map(e => [e.piece.uid, e.worn]).sort(), [[p1, 'pioche'], [p2, null]].sort(), 'sac + portée');
+  assert.deepEqual(slotChoices('casque', d, pool).map(e => e.piece.uid), [h]);
+  const html = previewListHtml([{ id:3, name:'<b>x' }], d, { max:1 });
+  assert.match(html, /data-pick="3"/); assert.doesNotMatch(html, /<b>x/); assert.doesNotMatch(html, /data-new/, 'garde-fou atteint : pas de nouveau set');
+  const sp = previewSpellsHtml(['dash', null, null, null], 2);
+  assert.equal((sp.match(/data-sslot/g) || []).length, 2, 'deux emplacements ouverts au niveau 1');
+  assert.match(sp, /Niveau 15/);
+});

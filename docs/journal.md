@@ -16,6 +16,19 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 06/11/2026 — Geoffrey — Stuff : sous-onglet « Aperçu set »
+- **Pour le joueur** : dans l'onglet Stuff (site et appli), un sous-onglet **Aperçu set** pour refaire un set entier
+  d'un coup : on choisit le set (ou un nouveau, depuis son stuff ou vide), on change chaque case du mannequin avec
+  n'importe laquelle de ses pièces (sac ou portées), on répartit les points dans les arbres, on choisit les sorts, et
+  les stats + gear score du set se mettent à jour en direct. **Enregistrer** écrit le set sans rien changer au mineur ;
+  **Enregistrer et équiper** l'équipe aussi. Quitter avec des changements non enregistrés demande confirmation.
+- **Décisions** (Geoffrey) : brouillon (le mineur ne change pas avant « Enregistrer et équiper ») ; toutes ses pièces
+  (sac + portées), une pièce dans plusieurs sets ; contenu : pièces, skills, sorts, stats ; site et appli (appli : une
+  colonne, mannequin, arbres, sorts, stats). Choix de Claude : « + Nouveau » en deux boutons (stuff actuel / vide, la spé
+  reste) ; « − » sur chaque skill appris pour retirer un rang ; les glyphes ne sont pas dans le set.
+- **À suivre** : essayer sur un vrai téléphone (police pixel plus large que l'aperçu `?app`).
+- **État** : 🧪 sur la branche `geoffrey/apercu-set` (pas en ligne)
+
 ## 06/11/2026 — Geoffrey — Appli : chantiers de guilde lisibles
 - **Pour le joueur** : dans l'appli, les matériaux d'un chantier de guilde ne se chevauchent plus : nom et barre à
   gauche, boutons Donner / De la banque à droite, puis « 363 999 / 500 000 » à gauche et « Tu en as … · banque … » à droite.
