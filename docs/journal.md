@@ -1705,7 +1705,7 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
   Skills / Sorts…) étaient en haut de l'écran et les familles en bas. Ils sont maintenant juste au-dessus de la barre des
   familles : tout ce qu'on touche pour naviguer reste dans la moitié basse, à portée du pouce. Le haut de l'écran revient au
   contenu. Le site PC ne change pas.
-- **État** : 🧪 sur la branche `geoffrey/appli-sous-onglets-bas` (pas en ligne)
+- **État** : ✅ en ligne le 06/11
 
 ## 05/11/2026 — Geoffrey — Guilde : spécialisation principale de chaque membre
 - **Pour le joueur** : dans l'onglet Guilde, liste des membres de sa guilde, chaque membre affiche sa spécialisation principale
