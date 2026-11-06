@@ -7886,3 +7886,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   l'enregistrer retire ce sort. Les règles CSS appli du mannequin et des arbres sont recopiées : un changement de src/app/app.css
   (#stuffGrid, #skillTrees) est à reporter sur #spvGrid / #spvTrees. Pas vu sur un vrai téléphone.
 
+### 06/11/2026 — Bot Discord : ❌ supprime, 💎 des admins = diamants (Geoffrey)
+- `bot/todo.js` : `REACTIONS` (1, 2, ❌, 💎) ; sujet avec `authorId`, `channelId`, `rewarded` ; `reward(reportId)` (1 diamant à l'auteur, une fois par sujet, rien pour un ancien sujet sans auteur) / `unreward(id)` / `diamondsOf(id)` ; `state().diamonds` (base JSON, valeurs invalides ignorées au chargement). Texte du report : « ❌ : supprimer », ligne 💎.
+- `bot/main.js` : ❌ → `todo.ignore` puis `removeReport` (message effacé) ; 💎 → `onDiamond` : membre du rôle admin (`members.fetch`), `reward`, réaction 💎 du bot sur le message d'origine (`channelId`/`sourceId`) ; échec → `unreward`, rien n'est sauvé. Les réactions du bot sont ignorées (`user.bot`).
+- Tests : `tests/bot-todo.test.js` (+1 diamants, croix mise à jour) ✅. ⚠️ Non essayé sur le vrai Discord (pas de jeton ici) ; le bot doit pouvoir réagir dans les salons des joueurs.
