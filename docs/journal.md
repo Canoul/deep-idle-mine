@@ -16,6 +16,15 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 06/11/2026 — Jules — Stats du mineur plus lisibles sur téléphone
+- **Pour le joueur** : sur téléphone (site et appli), chaque stat tient sur une ligne nette : le nom à gauche, le total à
+  droite en gros, et le détail (base, +stuff en bleu clair, ×skills, +anneaux) sur la ligne du dessous, à droite. Un filet
+  sépare deux stats ; les chiffres ne « bavent » plus (fin du faux gras). Sur ordinateur, rien ne change. Les boutons « ? »
+  avaient déjà disparu le 05/11 (Geoffrey) : la bulle s'ouvre en posant la souris sur le nom, ou en gardant le doigt dessus.
+- **À suivre** : la liste est plus longue sur téléphone (le détail prend une ligne). « Vitesse de minage » et « Dégâts »
+  apparaissent deux fois (valeur fixe puis bonus en %) : à renommer si ça gêne (ex. « Dégâts (bonus %) »).
+- **État** : 🧪 sur la branche `jules/stats-sans-points-interrogation` (pas en ligne)
+
 ## 05/11/2026 — Geoffrey — Craft : Clé d'instance II de base
 - **Pour le joueur** : la Clé d'instance II se fabrique au Craft, sans blueprint : 2 Barres d'argent et 1 Orbe supérieur.
 - **État** : ✅ en ligne le 05/11

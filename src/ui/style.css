@@ -1267,6 +1267,19 @@ button.danger{color:var(--bad)}
 .craftQty{max-width:calc(120*var(--u));margin-top:calc(4*var(--u))}   /* quantité d'un craft en série (04/11/2026) */
 /* nom d'une stat avec sa bulle d'aide (05/11/2026) : souligné en pointillés ; au doigt, l'appui long ne sélectionne pas le texte */
 .statName{cursor:help;border-bottom:1px dotted var(--mut, #8a7a6a);-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+/* stats du mineur sur téléphone (06/11/2026, Jules : « plus lisible sur tel ») : nom à gauche et total à droite sur une ligne,
+   le détail (base +stuff ×skills +anneaux) sur la ligne du dessous, à droite ; plus gros, un filet entre deux stats, et les
+   chiffres en Jersey 15 (le gras de VT323 est un faux gras qui bave) ; ancien : tout sur une ligne, qui se coupait n'importe où */
+:is(body.phone,body.app) .statRow{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;column-gap:12px;
+  margin:0;padding:4px 0;border-bottom:1px solid var(--sep);font-size:19px;line-height:1.15}
+:is(body.phone,body.app) .statRow:last-child{border-bottom:0}
+:is(body.phone,body.app) .statRow .statV{display:contents}
+:is(body.phone,body.app) .statRow .statV>b{font:400 22px/1 var(--f-title);letter-spacing:.03em;color:#ffe6c4;white-space:nowrap}
+:is(body.phone,body.app) .statRow .statL b{font:400 21px/1 var(--f-title);letter-spacing:.03em;color:var(--acc-lt)}
+:is(body.phone,body.app) .statRow .statL small{font-size:16px}
+:is(body.phone,body.app) .statRow .statD{grid-column:1/-1;justify-self:end;text-align:right;font-size:18px;line-height:1}
+:is(body.phone,body.app) .statRow .statD small{font-size:inherit}
+:is(body.phone,body.app) .statRow .statD .mut{color:#cbb9a1}
 
 /* appli (05/11/2026) : « Set : x ▾ » et le bouton « 💾 Enregistrer » sur une ligne (src/ui/sets.js setsBarHtml) */
 body.app .setBarRow{display:flex;gap:6px;align-items:stretch}
