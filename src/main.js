@@ -65,7 +65,7 @@ import { setupResearch } from './ui/research.js';
 import { setupSkills } from './ui/skills.js';
 import { pointsByTree } from './meta/skills.js';
 import { setupSpells } from './ui/spells.js';
-import { setupSets } from './ui/sets.js';
+import { setupSets, autoSetText } from './ui/sets.js';
 import { setupHistory } from './ui/history.js';
 import { setupCraft } from './ui/craft.js';
 import { setupStuff } from './ui/stuff.js';
@@ -424,9 +424,10 @@ const lobby = setupLobby({
     const q = launchPrisonText({ mine: prisonActive(prison), party: team, meId: acct.account?.id });
     if(q && !await ask(q, { ok:'Lancer quand même' })) return;
     try {
+      const was = setsUI.equipped();
       enterSession((await gameApi.start(opts)).session); nav.show('session'); instantLobby.refresh();
-      /* clé d'instance consommée, énergie débitée, prison terminée : relus au serveur */
-      gameApi.state().then(st => { setInventory(st.inventory); setEnergy(st.energy); setGeante(st); setPrison(st.prison, { sync:false }); }).catch(() => {});
+      /* clé d'instance consommée, énergie débitée, prison terminée, set de l'activité équipé : relus au serveur */
+      gameApi.state().then(st => { setInventory(st.inventory); setEnergy(st.energy); setGeante(st); setPrison(st.prison, { sync:false }); syncLoadout(was, st); }).catch(() => {});
     }   // lancer désinscrit du MI
     catch(e){
       if(e instanceof ApiError && e.code === 'session_running') return refresh();
@@ -452,8 +453,8 @@ const instantLobby = setupInstantLobby({
 function startInstant(){ if(acct.account && !acct.offline) instantLobby.start(); else instantLobby.stop(); giantUI?.refresh(); hcUI?.refresh(); }
 
 /* Bloc géant : carte du lobby (« Où miner »), visite dans l'onglet Session, écran de fin (src/ui/giant.js) */
-giantUI = setupGiant({ api: giantApi, nav, onInventory: (inv, bag) => setInventory(inv, bag), session: () => !!rec, me: () => acct.account?.id, onReady: on => lobby.update({ giantReady: on }) });
-hcUI = setupGiant({ api: hesComingApi, nav, onInventory: (inv, bag) => setInventory(inv, bag), session: () => !!rec, me: () => acct.account?.id, onReady: on => lobby.update({ hcReady: on }),
+giantUI = setupGiant({ api: giantApi, nav, onInventory: (inv, bag) => setInventory(inv, bag), onEnter: was => syncLoadout(was), equipped: () => setsUI.equipped(), session: () => !!rec, me: () => acct.account?.id, onReady: on => lobby.update({ giantReady: on }) });
+hcUI = setupGiant({ api: hesComingApi, nav, onInventory: (inv, bag) => setInventory(inv, bag), onEnter: was => syncLoadout(was), equipped: () => setsUI.equipped(), session: () => !!rec, me: () => acct.account?.id, onReady: on => lobby.update({ hcReady: on }),
                     prefix: 'hc', config: HES_COMING, renderer: createLuciferRenderer,
                     words: { place: HES_COMING.bossName, front: HES_COMING.bossName, title: 'He\'s coming', rate: 'DPS',
                              rules: `Ton mineur frappe ${HES_COMING.bossName} : 1 dégât = 1 point.\nToutes les ${HES_COMING.roar.every} s, il rugit : à ${HES_COMING.roar.radius} cases ou moins, Fear ${HES_COMING.roar.fear} s (ton mineur erre et ne frappe plus).\nToutes les ${HES_COMING.swing.every} s, il projette ceux à son contact.\nLa ténacité résiste aux deux.` } });
@@ -511,7 +512,8 @@ async function pollLobby(){
     if(pendingJoin && !rec){ const code = pendingJoin; pendingJoin = null; nav.show('lobby'); await lobby.join(code); }
     const st = await partyApi.state();
     if(st.session && st.session !== rec?.id){          // lancée par le chef (ou relancée pendant le bilan : il est lu)
-      endAck?.(); await refresh(); return nav.show('session');
+      const was = setsUI.equipped();
+      endAck?.(); await refresh(); tellAutoSet(was); return nav.show('session');
     }
     lobby.update({ party:st.party, invites:st.invites, lfg:st.lfg, shrines:st.shrines ?? [], alwaysReady:st.alwaysReady });
     if(st.inPrison && !prisonActive(prison)) syncAccount();   // envoyé en prison par l'administration
@@ -600,8 +602,9 @@ boardTab = setupLeaderboard({ root: document.querySelector('.view[data-view="cla
 guildTab = setupGuild({ root: document.querySelector('.view[data-view="guilde"]'), onChange: () => { pollSocial(); pollLobby(); },
   /* lobby de raid (04/11/2026) : le chef lance → la session ; un membre voit le raid lancé → la session est relue */
   onRaid: async session => {
+    const was = setsUI.equipped();
     enterSession(session); nav.show('session');
-    gameApi.state().then(st => { setInventory(st.inventory); setEnergy(st.energy); setGeante(st); setPrison(st.prison, { sync:false }); }).catch(() => {});
+    gameApi.state().then(st => { setInventory(st.inventory); setEnergy(st.energy); setGeante(st); setPrison(st.prison, { sync:false }); syncLoadout(was, st); }).catch(() => {});
   },
   onRaidWatch: async () => { if(!rec) await refresh().catch(console.warn); nav.show('session'); },
   onState: st => { const run = st.mine?.raid?.running; if(run?.mine && !rec && !waiting) refresh().then(() => nav.show('session')).catch(console.warn); },
@@ -845,6 +848,18 @@ async function syncAccount(){
     setPrison(st.prison, { sync:false });
   } catch(e){ console.warn(e); }
 }
+/* set défini pour une activité (03/11) : le serveur l'équipe tout seul au lancement ou à l'entrée. La page relit alors le
+   stuff, les skills, les sorts et les sets, et dit quel set est passé (06/11/2026 ; avant : rien n'était relu, la page
+   montrait encore l'ancien set, et un « Équiper » d'après semblait ne pas marcher). was : le set porté avant
+   (setsUI.equipped()) ; st : l'état du serveur s'il vient d'être relu, sinon relu ici */
+async function syncLoadout(was, st = null){
+  try {
+    st ??= await gameApi.state();
+    stuff.set(st.stuff); skills.set(st.skills); spells.set(st.spells); setsUI.set(st.sets);
+    tellAutoSet(was);
+  } catch(e){ console.warn(e); }
+}
+function tellAutoSet(was){ const text = autoSetText(was, setsUI.equipped()); if(text) notify.flash(text); }
 let prisonTimer = null, prisonBusy = false, prisonErrors = 0;
 function kickPrison(delay = 0){ clearTimeout(prisonTimer); prisonTimer = setTimeout(pollPrison, delay); }
 async function pollPrison(){
@@ -881,7 +896,8 @@ async function pollPrison(){
 async function startPrison(opts = {}){
   lobby.error('');
   /* mode dev : la prison part à la vitesse choisie dans la barre de la mine (29/10) */
-  try { setPrison((await gameApi.prisonStart({ ...opts, ...(info.dev && ui.speed ? { speed: ui.speed } : {}) })).prison); nav.show('session'); }
+  const was = setsUI.equipped();
+  try { setPrison((await gameApi.prisonStart({ ...opts, ...(info.dev && ui.speed ? { speed: ui.speed } : {}) })).prison); nav.show('session'); syncLoadout(was); }
   catch(e){ lobby.error(e.message); }
 }
 async function stopPrison(){

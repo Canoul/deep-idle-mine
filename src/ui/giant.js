@@ -116,7 +116,7 @@ export function setupGiant(h){
 
   $('giantBody').onclick = e => {
     const b = e.target.closest('button'); if(!b || b.disabled) return;
-    if(b.id === 'giantEnter') act(async () => { const r = await h.api.enter(); view = r.view; renderer.update(view); showRun(); h.nav.show('session'); });
+    if(b.id === 'giantEnter') act(async () => { const was = h.equipped?.(), r = await h.api.enter(); view = r.view; renderer.update(view); showRun(); h.nav.show('session'); h.onEnter?.(was); });   // onEnter : set de l'activité (06/11)
     else if(b.id === 'giantSee') h.nav.show('session');
     else if(b.id === 'giantClaim') act(async () => {
       const r = await h.api.claim();

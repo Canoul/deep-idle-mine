@@ -20,6 +20,17 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 06/11/2026 — Jules — Sets : « j'équipe mon set et ça ne l'équipe pas »
+- **Pour le joueur** : report de Nbrick. Quand une activité a un « Set défini pour … » (Prison, Mine…), le jeu
+  équipe ce set tout seul au lancement. La page ne le montrait pas : elle affichait encore l'ancien set, et après un F5 le
+  joueur découvrait un autre set et croyait que son « Équiper » n'avait pas marché. Maintenant, après un lancement (mine,
+  prison, raid, Bloc géant, He's coming, mine lancée par le chef), la page montre le bon stuff, les bons skills et sorts, et
+  un message le dit : « Set « Prison » équipé : c'est le set défini pour cette activité ».
+- **Décisions** : aucune, la règle (le set de l'activité est équipé au lancement) ne change pas.
+- **À suivre** : demander à Nbrick s'il avait bien un set défini pour la Prison ou la Mine (c'est la cause trouvée en
+  reproduisant ; si ce n'est pas son cas, il reste autre chose).
+- **État** : ✅ en ligne le 06/11
+
 ## 06/11/2026 — Geoffrey — Échelle : le plus rapide la pose, dans tous les modes
 - **Pour le joueur** : quand plusieurs mineurs doivent poser une échelle sur la même case, c'est le plus rapide à monter
   qui la pose (le logisticien avec Échelle de 2), même s'il arrive après : celui qui avait commencé s'arrête et
