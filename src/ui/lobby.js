@@ -427,9 +427,10 @@ export function setupLobby(h){
     renderLfg();
     $('lfgBtn').disabled = !!party?.locked;
     /* l'activité ouverte par le chef, pour « Groupes en formation » : donnée au serveur quand elle change */
-    if(party && party.leader === account?.id && !locked){
+    /* aussi seul (06/11) : le serveur la garde pour le groupe qui se formera (Mine géante : 5 places dès le premier qui rejoint) */
+    if(account && !offline && (!party || party.leader === account.id) && !locked){
       const open = def && !jv && !def.solo && !def.giant && !def.scheduled ? { mode: st.mode, level: def.tower || def.instance ? st.towerLevel : 1 } : null;
-      const key = party.code + JSON.stringify(open);
+      const key = (party?.code ?? '-') + JSON.stringify(open);
       if(key !== st.activitySent){ st.activitySent = key; h.party.activity(open).catch(() => { st.activitySent = null; }); }
     }
 

@@ -1743,6 +1743,12 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
 
 ---
 
+## 06/11/2026 — Geoffrey — Correctif : on ne pouvait pas rejoindre une Mine géante à 4 ou 5
+- **Pour le joueur** : le chef seul qui ouvrait la Mine géante n'avait pas encore de groupe ; le groupe naissait au premier qui
+  rejoignait, avec 3 places, le temps que le navigateur du chef dise « Mine géante ». Le 4e joueur était refusé (« groupe complet »).
+  Maintenant le serveur retient l'activité du chef même seul : le groupe a 5 places dès sa création.
+- **État** : ✅ en ligne le 06/11
+
 ## 06/11/2026 — Geoffrey — Areas 7 à 10 et trois nouveaux minerais
 - **Pour le joueur** : les areas 7 et 8 changent (plus de mithril, moins de cobalt et de thorium en area 7 ; area 8 plus tendre :
   25 % de pierre, 50 % de pierre dure). **Deux nouvelles areas, 9 et 10** (la 10 se répète au-delà), avec trois nouveaux minerais :

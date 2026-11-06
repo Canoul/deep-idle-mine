@@ -105,3 +105,22 @@ test('areas 7 à 10 (06/11/2026) : le tableau de Geoffrey ; débris fossilisé s
   }
   assert.equal(classic, 0); assert.ok(giant > 0, `débris en Mine géante : ${giant}`);
 });
+
+test('lobby de Mine géante (06/11/2026, bug) : le chef seul ouvre l\'activité, 4 joueurs rejoignent tout de suite', async () => {
+  const { createPartyService } = await import('../server/party/service.js');
+  const ACC = Object.fromEntries(P.map(a => [a.id, { ...a, guest: false }]));
+  let k = 0;
+  const { game } = setup();
+  const party = createPartyService({ game, clock: () => 5e6, getAccount: async id => ACC[id] ?? null, newCode: () => 'K7Q4P' + (k++) });
+  /* seul : pas encore de groupe ; l'activité est gardée pour le groupe qui se formera */
+  assert.deepEqual(await party.activity(P[0], { mode: 'geante' }), { ok: true });
+  const { party: p } = await party.create(P[0]);
+  for(const m of P.slice(1, 5)) await party.join(m, p.code);
+  const st = await party.state(P[0]);
+  assert.equal(st.party.members.length, 5); assert.equal(st.party.max, 5);
+  await assert.rejects(party.join(P[5], p.code), { code: 'party_full' });
+  const party2 = createPartyService({ game, clock: () => 5e6, getAccount: async id => ACC[id] ?? null, newCode: () => 'H3XM9' + (k++) });
+  /* revenu au menu (activité null) : un nouveau groupe repart à 3 */
+  await party2.activity(P[5], { mode: 'geante' }); await party2.activity(P[5], {});
+  assert.equal((await party2.create(P[5])).party.max, GAME.maxPlayers);
+});
