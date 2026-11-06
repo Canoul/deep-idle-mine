@@ -326,7 +326,7 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .actBtn.sealed .actIcon .pi{width:calc(14*var(--u));height:calc(14*var(--u))}
 .actBtn.sealed small{color:#e0c060}
 .actIcon{flex:none;width:calc(16*var(--u));text-align:center;font-size:var(--fs-xl)}
-.actText{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.1}
+.actText{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.1;white-space:normal}   /* le bouton est en nowrap : une description longue (Mine géante) revient à la ligne (06/11) */
 .actText b{font:400 var(--fs-xl)/1.1 var(--f-title);color:#ffe6c4}
 .actText small{color:var(--mut);font-size:var(--fs)}
 .actHead{display:flex;align-items:center;gap:calc(6*var(--u));margin-bottom:calc(9*var(--u))}

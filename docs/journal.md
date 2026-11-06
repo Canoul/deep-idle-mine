@@ -16,6 +16,11 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 06/11/2026 — Jules — Lobby : description de la Mine géante sur plusieurs lignes
+- **Pour le joueur** : dans le menu des activités, le texte de la Mine géante (« À 5, 1 h (2 h de jeu)… ») revient à la
+  ligne au lieu d'être coupé au bord du bouton.
+- **État** : ✅ en ligne le 06/11
+
 ## 06/11/2026 — Geoffrey — Bot Discord : croix qui supprime, diamants pour les joueurs
 - **#report** : le bot met maintenant 4 réactions : 1, 2, ❌ et 💎. La croix (avant qu'on attribue le sujet) **supprime** le sujet et efface son message ; un sujet `/todo done` était déjà effacé de #report.
 - **Diamants** : si un admin met 💎 sur un sujet, le bot met 💎 sur le message du joueur, et le joueur gagne **1 diamant** (une fois par sujet). Le compteur de chaque membre est gardé dans la base du bot. Pas encore de commande pour voir les diamants.

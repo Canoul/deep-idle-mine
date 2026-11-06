@@ -7862,3 +7862,9 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - `bot/todo.js` : `REACTIONS` (1, 2, ❌, 💎) ; sujet avec `authorId`, `channelId`, `rewarded` ; `reward(reportId)` (1 diamant à l'auteur, une fois par sujet, rien pour un ancien sujet sans auteur) / `unreward(id)` / `diamondsOf(id)` ; `state().diamonds` (base JSON, valeurs invalides ignorées au chargement). Texte du report : « ❌ : supprimer », ligne 💎.
 - `bot/main.js` : ❌ → `todo.ignore` puis `removeReport` (message effacé) ; 💎 → `onDiamond` : membre du rôle admin (`members.fetch`), `reward`, réaction 💎 du bot sur le message d'origine (`channelId`/`sourceId`) ; échec → `unreward`, rien n'est sauvé. Les réactions du bot sont ignorées (`user.bot`).
 - Tests : `tests/bot-todo.test.js` (+1 diamants, croix mise à jour) ✅. ⚠️ Non essayé sur le vrai Discord (pas de jeton ici) ; le bot doit pouvoir réagir dans les salons des joueurs.
+
+## 06/11/2026 — Lobby : description d'activité coupée (Mine géante) (Jules)
+- **Cause** : les lignes du menu des activités sont des `<button class="actBtn">` ; la règle de base `button{white-space:nowrap}` (src/ui/style.css) empêchait la description (`.actText small`) de revenir à la ligne, la longue phrase de la Mine géante sortait du bouton.
+- **Correction** : `.actText{…;white-space:normal}` (src/ui/style.css). Le titre et la description passent à la ligne si besoin.
+- Tests : `tests/lobby-activity-css.test.js` ✅. ⚠️ Pas vu à l'écran (navigateur ni appli).
+
