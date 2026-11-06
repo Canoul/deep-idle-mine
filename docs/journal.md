@@ -16,6 +16,12 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 06/11/2026 — Jules — Le point orange du Lobby s'éteint quand on l'ouvre
+- **Pour le joueur** : le point sur l'onglet Lobby (« une tour du Jugement est ouverte et tu ne l'as pas gagnée ») restait
+  allumé toute l'ouverture (4 h), quoi qu'on fasse. Maintenant il s'allume à chaque nouvelle ouverture et s'éteint dès qu'on
+  ouvre le Lobby. Le repère sur le bouton « Jugement » dans le Lobby, lui, ne change pas.
+- **État** : ✅ en ligne le 06/11
+
 ## 06/11/2026 — Geoffrey — Guide « Premiers pas » déplaçable
 - **Pour le joueur** : le guide se déplace en faisant glisser son en-tête (poignée ⠿), sur le site et dans l'appli ; un
   simple toucher le replie / déplie toujours. La position est retenue (par compte, dans ce navigateur) et ramenée dans
