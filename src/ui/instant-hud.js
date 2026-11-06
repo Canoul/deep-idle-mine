@@ -16,8 +16,9 @@ export const instantRanking = list => [...list].sort((a, b) => (b.stats?.mined ?
 
 /* G : copie d'affichage ; me : ID du compte du joueur ; left : secondes réelles avant la fin (ou null) */
 export function updateInstantHUD(G, me, left, focus = null){
-  $('miTimer').textContent = fmt(G.t) + ' / ' + fmt(MI.duration);
-  $('miTimeBar').style.width = Math.min(100, G.t / MI.duration * 100) + '%';
+  const len = G.duration ?? MI.duration;   // MI abondante (05/11) : plus longue
+  $('miTimer').textContent = fmt(G.t) + ' / ' + fmt(len);
+  $('miTimeBar').style.width = Math.min(100, G.t / len * 100) + '%';
   $('miLeft').textContent = left == null ? '' : `fin dans ${fmt(left)}`;
   const m = G.miners.find(x => x.account === me);
   setHtml($('miMine'), m

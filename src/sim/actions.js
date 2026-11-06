@@ -1,15 +1,17 @@
 /* Effets des actions du mineur sur le monde, et choix de l'action pour un pas dans une direction. */
-import { W, STATS, CFG, BLOCKS, BRIDGE, MOBS, TREASURE, ITEMS, XP, SKILLS, SHINY, DUNGEON, DUCK, COMBAT, GLYPHS, MOB_DROPS, PRISON, GOLBUTE } from '../config.js';
+import { critMul, backstabMul, restedMul } from './skillfx.js';
+import { W, STATS, CFG, BLOCKS, BRIDGE, MOBS, TREASURE, ITEMS, XP, SKILLS, SHINY, DUNGEON, DUCK, COMBAT, GLYPHS, MOB_DROPS, PRISON, GOLBUTE, RAID, IDS } from '../config.js';
 import { mulberry32 } from '../core/rng.js';
 import { areaOf, contentAt, isOre, typeOf, treasureItem, isAir, tileAt, supported, tryUnlock, oreRemoved, oreKey, fallInfo, isWinch } from './world.js';
 import { updateLight } from './light.js';
 import { startAction, collect, placedTorch, mineT, moveT, climbT, winchT, ladderTime, rushTime, warcryOf } from './mineur.js';
-import { provoke, revealMimic, mobCanEnter } from './mobs.js';
+import { provoke, revealMimic, mobCanEnter, tackler } from './mobs.js';
 import { inReach, push, reachOf, knockbackOf } from './knock.js';
 import { log } from './log.js';
 import { aoeOf } from '../meta/skills.js';
 import { glyphsOfTree } from '../meta/glyphs.js';
 import { noEntry } from './dungeon.js';
+import { cleaveHit } from './spells.js';
 import { depositToMule, pickMule, placeMule, emptyMule, isCarrier } from './mule.js';
 import { finishDash, finishDynamite, learnOnMine } from './spells.js';
 import { fleshAt } from './flesh.js';
@@ -80,7 +82,8 @@ const gearChance = (G,pct) => pct>0 && G.gearRng()*100 < pct;
 /* dégâts d'un coup (Glyphe Pillage : + m.pillage %, gagné en tuant des mobs) */
 /* flat : dégâts fixes de ce coup seul (Ivresse Minérale) ; m.hitCrit : ce coup était-il critique (Saccager) */
 export const hitDamage = (G,m,flat=0) => { m.hitCrit=gearChance(G,m.carac.crit||0);
-  return (m.carac.damage+flat)*(1+((m.carac.damagePct||0)+(m.pillage||0))/100)*(1+(warcryOf(G,m)?.dmg||0))*(m.hitCrit ? 2 : 1); };   // Cri de guerre : × (1 + 10 %)
+  return (m.carac.damage+flat)*(1+((m.carac.damagePct||0)+(m.pillage||0))/100)*(1+(warcryOf(G,m)?.dmg||0))*(m.hitCrit ? critMul(m) : 1)
+    *backstabMul(m, !!(G.mobs && tackler(G,m)))*restedMul(m); };   // arbres v2 (04/11) : Crushing, Dans le dos (personne ne le tacle), Reposé   // Cri de guerre : × (1 + 10 %)
 /* coup unique : chance de casser le bloc instantanément (durée de minage minimale) */
 export const mineDuration = (G,m,t) => gearChance(G,m.carac.oneTap||0) ? 0 : mineT(G,m,t);
 
@@ -141,10 +144,24 @@ export function breakBlock(G,m,x,y){
   }
   if(isOre(t)){ m.stats.ore++; oreMinedIn(G,y,t); gainXp(G,m,XP.ore[oreKey(t)]); oreSkills(G,m); }
   if(typeOf(t)==='treasure') openTreasure(G,m,x,y);
+  if(typeOf(t)==='clue') findClue(G,m,x,y);
 }
 
 /* treasure : un objet Treasure TX (tier selon l'area du treasure) va dans l'inventaire du mineur.
    Aucun minerai : rien ne compte pour le déblocage de l'area. */
+/* Raid 1 (04/11/2026) : un Indice miné va dans le sac (lourd) ; il compte pour le raid une fois déposé au coffre
+   (G.chest.Indice, lu par src/sim/raid/session.js) ; G.raid.found : Indices minés */
+/* … et il mène au suivant : l'Indice encore caché le plus proche devient visible (RAID.mine.lead), pour qu'on ne cherche
+   pas le dernier au hasard dans tout le noir */
+function findClue(G,m,x,y){
+  if(!G.raid) return;
+  G.raid.found = (G.raid.found || 0) + 1; m.stats.clues = (m.stats.clues || 0) + 1;
+  let next = null, best = Infinity;
+  if(RAID.mine.lead) for(let yy = 0; yy < G.tiles.length; yy++) for(let xx = 0; xx < W; xx++)
+    if(G.tiles[yy][xx] === IDS.clue && !G.seen[yy][xx]){ const d = Math.abs(xx - x) + Math.abs(yy - y); if(d < best){ best = d; next = { x: xx, y: yy }; } }
+  if(next) G.seen[next.y][next.x] = 1;
+  log(G, `🔎 ${m.name} trouve un Indice${next ? ' : il mène au suivant' : ''} ! (${G.chest.Indice || 0} / ${RAID.mine.clues} rapportés)`);
+}
 function openTreasure(G,m,x,y){
   const tr=G.treasures.get(y*W+x), item=tr ? tr.item : treasureItem(contentAt(G,y));
   if(tr) tr.opened=true;
@@ -277,6 +294,7 @@ export function landHit(G,m,o){
   o.hp-=dmg; m.foeHit=G.t;
   if(o.grab===m.id) o.grabHit=G.t;   // tacle : il se bat, la soupape repart (COMBAT.tackleGiveUp)
   splash(G,m,o,dmg);
+  cleaveHit(G,m,o);   // Cleave (03/11) : ce coup touche aussi jusqu'à 3 autres mobs
   if(o.hp<=0){ killMob(G,m,o); return; }
   /* double attaque (stat doubleAttack, %) : un second coup, avec son propre critique ; un seul recul */
   if(gearChance(G,m.carac.doubleAttack||0) || ravaged){

@@ -33,16 +33,16 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 
 /* toutes les sortes de données du jeu (chargées au démarrage) */
-export const GAME_NS = ['inventory', 'furnace', 'crusher', 'stuff', 'prefs', 'progress', 'skills', 'spells', 'sets', 'game_session', 'party', 'always_ready', 'mi_signup', 'social', 'judgment', 'giant_day', 'giant_player', 'hc_day', 'hc_player', 'discovered', 'session_stat', 'tower_record', 'instance_record', 'shrine', 'energy', 'prison', 'prison_compo', 'chat_global', 'chat_prefs', 'moderation', 'report', 'mod_log', 'raffle', 'guilds', 'guild_log'];
+export const GAME_NS = ['inventory', 'furnace', 'crusher', 'stuff', 'prefs', 'progress', 'skills', 'spells', 'sets', 'game_session', 'party', 'always_ready', 'mi_signup', 'social', 'judgment', 'giant_day', 'giant_player', 'hc_day', 'hc_player', 'discovered', 'session_stat', 'tower_record', 'instance_record', 'shrine', 'energy', 'prison', 'prison_compo', 'chat_global', 'chat_prefs', 'moderation', 'report', 'mod_log', 'raffle', 'guilds', 'guild_log', 'app_latest', 'daily', 'guild_bank', 'referral'];
 /* Suppression d'un compte (01/11/2026, server/accounts/erase.js) : toute nouvelle sorte de données doit dire ici ce qu'elle devient
    (tests/account-delete.test.js échoue sinon).
    ACCOUNT_NS : une ligne par compte, effacée (clé = compte, ou « compte#niveau » pour les records). SHARED_NS : données communes,
    nettoyées (identifiant et pseudo retirés). KEPT_NS : gardées exprès (signalements, journal). FREE_NS : aucun compte dedans. */
 export const ACCOUNT_NS = ['inventory', 'furnace', 'crusher', 'stuff', 'prefs', 'progress', 'skills', 'spells', 'sets', 'shrine', 'always_ready', 'mi_signup',
-                           'giant_player', 'hc_player', 'tower_record', 'instance_record', 'energy', 'prison', 'prison_compo', 'chat_prefs'];
+                           'giant_player', 'hc_player', 'tower_record', 'instance_record', 'energy', 'prison', 'prison_compo', 'chat_prefs', 'referral'];
 export const SHARED_NS = ['social', 'moderation', 'game_session', 'party', 'giant_day', 'hc_day', 'session_stat', 'judgment', 'guilds', 'guild_log', 'chat_global', 'raffle'];
 export const KEPT_NS = ['report', 'mod_log'];
-export const FREE_NS = ['discovered'];
+export const FREE_NS = ['discovered', 'app_latest', 'daily', 'guild_bank'];   // daily : événement du jour (05/11)
 export const DELETED_NAME = 'Joueur supprimé';
 
 /* copie de v où ce compte n'apparaît plus : son identifiant devient anon (valeurs et clés, y compris « compte#2 » et « session:compte »),
@@ -71,7 +71,8 @@ export function createMemoryGameStore(initial = {}){
   const parties = new Map(Object.entries(initial.parties ?? {}));     // groupes (server/party/service.js), par code
   const signups = new Map(Object.entries(initial.signups ?? {}));     // inscrits à la mine instantanée, par compte
   const socials = new Map(Object.entries(initial.socials ?? {}));     // amis et demandes (server/social/service.js)
-  const discovered = new Map(Object.entries(initial.discovered ?? {}));   // wiki : objets secrets déjà trouvés (WIKI.secret)
+  const discovered = new Map(Object.entries(initial.discovered ?? {}));
+  const appLatest = new Map(Object.entries(initial.appLatest ?? {}));   // dernière appli sur les stores, clé 'state' (04/11, server/app-update/latest.js)   // wiki : objets secrets déjà trouvés (WIKI.secret)
   const judgments = new Map(Object.entries(initial.judgments ?? {}));  // jauges de l'onglet Jugement (src/meta/judgment.js), clé 'state'
   const sessionStats = new Map(Object.entries(initial.sessionStats ?? {}));   // tableau de bord : 'session:compte' → ligne
   const giantDays = new Map(Object.entries(initial.giantDays ?? {}));       // Bloc géant : scores du jour, par jour
@@ -85,8 +86,11 @@ export function createMemoryGameStore(initial = {}){
   const prisonCompos = new Map(Object.entries(initial.prisonCompos ?? {}));   // compos de prison du compte : { cur, prev, saved } (30/10)     // prison du compte (src/shared/prison.js)
   const chats = new Map(Object.entries(initial.chats ?? {}));
   const raffles = new Map(Object.entries(initial.raffles ?? {}));
+  const dailies = new Map(Object.entries(initial.dailies ?? {}));   // événement du jour (05/11/2026), clé 'state'
   const guilds = new Map(Object.entries(initial.guilds ?? {}));
   const guildLogs = new Map(Object.entries(initial.guildLogs ?? {}));   // journal des bâtiments, jamais effacé : 'guilde:page' → lignes
+  const guildBanks = new Map(Object.entries(initial.guildBanks ?? {}));   // banque de guilde (05/11/2026) : id de guilde → { slots, ops }
+  const referrals = new Map(Object.entries(initial.referrals ?? {}));   // parrainage (05/11/2026) : compte → { by, at, legacy?, done?, doneAt?, paid? }
   const alwaysReady = new Map(Object.entries(initial.alwaysReady ?? {}));   // comptes qui ont coché « Prêt tout le temps »
   const chatPrefs = new Map(Object.entries(initial.chatPrefs ?? {}));   // réglages du chat par compte (31/10/2026)
   const reports = new Map(Object.entries(initial.reports ?? {}));
@@ -96,7 +100,7 @@ export function createMemoryGameStore(initial = {}){
   const allMaps = () => ({ inventory: inventories, furnace: furnaces, crusher: crushers, stuff, prefs, progress, skills, spells, sets, game_session: sessions, party: parties,
                            always_ready: alwaysReady, mi_signup: signups, social: socials, judgment: judgments, giant_day: giantDays, giant_player: giantPlayers, hc_day: hcDays, hc_player: hcPlayers,
                            discovered, session_stat: sessionStats, tower_record: towerRecords, instance_record: instanceRecords, shrine: shrines, energy: energies, prison: prisons, prison_compo: prisonCompos,
-                           chat_global: chats, chat_prefs: chatPrefs, moderation: moderations, report: reports, mod_log: modLogs, raffle: raffles, guilds, guild_log: guildLogs });
+                           chat_global: chats, chat_prefs: chatPrefs, moderation: moderations, report: reports, mod_log: modLogs, raffle: raffles, guilds, guild_log: guildLogs, app_latest: appLatest, daily: dailies, guild_bank: guildBanks, referral: referrals });
 
   const store = {
     async getInventory(accountId){ return copy(inventories.get(accountId)) ?? null; },
@@ -175,10 +179,18 @@ export function createMemoryGameStore(initial = {}){
       await store.changed([{ ns: 'game_session', key: rec.id, value: rec }, ...entries.map(([id, inv]) => ({ ns: 'inventory', key: id, value: inv }))]);
     },
     async putGameSession(rec){ sessions.set(rec.id, copy(rec)); await store.changed([{ ns: 'game_session', key: rec.id, value: rec }]); },
-    /* sessions où ce compte joue, les plus récentes d'abord */
-    async sessionsOf(accountId){
-      return [...sessions.values()].filter(s => s.players.some(p => p.account === accountId))
+    /* sessions où ce compte joue, les plus récentes d'abord ; keep : tri fait avant la copie (04/11/2026 : copier tout
+       l'historique de chaque ami à chaque vue du Social saturait le serveur) */
+    async sessionsOf(accountId, keep = null){
+      return [...sessions.values()].filter(s => s.players.some(p => p.account === accountId) && (!keep || keep(s)))
         .sort((a, b) => b.startedAt - a.startedAt).map(copy);
+    },
+    /* heure de fin la plus récente de ses sessions retenues par keep (0 si aucune), sans rien copier */
+    async lastEndOf(accountId, keep = () => true){
+      let end = 0;
+      for(const s of sessions.values())
+        if(s.players.some(p => p.account === accountId) && keep(s) && Number.isFinite(s.endedAt)) end = Math.max(end, s.endedAt);
+      return end;
     },
     async sessionsWithStatus(status){ return [...sessions.values()].filter(s => s.status === status).map(copy); },
     async deleteGameSession(id){ if(sessions.delete(id)) await store.changed([{ ns: 'game_session', key: id, value: null }]); },
@@ -214,11 +226,21 @@ export function createMemoryGameStore(initial = {}){
     /* Raffle (31/10/2026, server/social/raffle.js) : le raffle en cours et l'heure du prochain */
     async getRaffle(){ return copy(raffles.get('state')) ?? null; },
     async putRaffle(r){ raffles.set('state', copy(r)); await store.changed([{ ns: 'raffle', key: 'state', value: r }]); },
+    /* événement du jour (05/11/2026, src/shared/daily.js) */
+    async getDaily(){ return copy(dailies.get('state')) ?? null; },
+    async putDaily(d){ dailies.set('state', copy(d)); await store.changed([{ ns: 'daily', key: 'state', value: d }]); },
     /* Guildes (31/10/2026, server/guild/service.js) : une seule fiche pour toutes */
     async getGuilds(){ return copy(guilds.get('state')) ?? null; },
     async putGuilds(g){ guilds.set('state', copy(g)); await store.changed([{ ns: 'guilds', key: 'state', value: g }]); },
     async getGuildLog(guildId, page){ return copy(guildLogs.get(`${guildId}:${page}`)) ?? []; },
     async putGuildLog(guildId, page, rows){ const key = `${guildId}:${page}`; guildLogs.set(key, copy(rows)); await store.changed([{ ns: 'guild_log', key, value: rows }]); },
+    /* banque de guilde (05/11/2026, src/meta/guild-bank.js) ; avec les guildes en une seule écriture (don d'un bâtiment) */
+    async getGuildBank(guildId){ return copy(guildBanks.get(guildId)) ?? null; },
+    async putGuildBank(guildId, b){ guildBanks.set(guildId, copy(b)); await store.changed([{ ns: 'guild_bank', key: guildId, value: b }]); },
+    async putGuildsAndBank(g, guildId, b){
+      guilds.set('state', copy(g)); guildBanks.set(guildId, copy(b));
+      await store.changed([{ ns: 'guilds', key: 'state', value: g }, { ns: 'guild_bank', key: guildId, value: b }]);
+    },
     async getGlobalChat(){ return copy(chats.get('state')) ?? null; },
     async putGlobalChat(c){ chats.set('state', copy(c)); await store.changed([{ ns: 'chat_global', key: 'state', value: c }]); },
 
@@ -292,6 +314,16 @@ export function createMemoryGameStore(initial = {}){
     /* énergie du compte (29/10) : { value, keys } */
     async getEnergy(accountId){ return copy(energies.get(accountId)) ?? null; },
     async putEnergy(accountId, e){ energies.set(accountId, copy(e)); await store.changed([{ ns: 'energy', key: accountId, value: e }]); },
+    /* parrainage (05/11/2026) : fiche d'un compte ; filleuls enregistrés d'un parrain ; récompense écrite en une fois avec les
+       inventaires qu'elle touche (invs : [[compte, inventaire], …]) */
+    async getReferral(accountId){ return copy(referrals.get(accountId)) ?? null; },
+    async putReferral(accountId, r){ referrals.set(accountId, copy(r)); await store.changed([{ ns: 'referral', key: accountId, value: r }]); },
+    async referralsBy(accountId){ return [...referrals].filter(([, r]) => r?.by === accountId).map(([k, r]) => ({ account: k, ...copy(r) })); },
+    async putReferralAndInventories(accountId, r, invs){
+      referrals.set(accountId, copy(r));
+      for(const [id, inv] of invs) inventories.set(id, copy(inv));
+      await store.changed([{ ns: 'referral', key: accountId, value: r }, ...invs.map(([id, inv]) => ({ ns: 'inventory', key: id, value: inv }))]);
+    },
 
     /* prison du compte (29/10) */
     async getPrison(accountId){ return copy(prisons.get(accountId)) ?? null; },
@@ -301,6 +333,8 @@ export function createMemoryGameStore(initial = {}){
     async listPrisons(){ return [...prisons.entries()].map(([account, p]) => ({ account, value: copy(p) })); },
 
     /* wiki : objets secrets trouvés en jeu (WIKI.secret) ; clé = nom de l'objet, valeur = { at } (premier trouvé) */
+    async getAppLatest(){ return copy(appLatest.get('state')) ?? null; },
+    async putAppLatest(v){ appLatest.set('state', copy(v)); await store.changed([{ ns: 'app_latest', key: 'state', value: v }]); },
     async listDiscovered(){ return [...discovered.keys()]; },
     /* renvoie true si c'est la première fois (annonce Discord d'un BP, 27/10), false si l'objet était déjà trouvé */
     async putDiscovered(item, v){ if(discovered.has(item)) return false; discovered.set(item, copy(v)); await store.changed([{ ns: 'discovered', key: item, value: v }]); return true; },
@@ -334,7 +368,7 @@ export function createMemoryGameStore(initial = {}){
       /* ses lignes */
       const mine = { inventory: inventories, furnace: furnaces, crusher: crushers, stuff, prefs, progress, skills, spells, sets, shrine: shrines, always_ready: alwaysReady,
                      mi_signup: signups, giant_player: giantPlayers, hc_player: hcPlayers, tower_record: towerRecords, instance_record: instanceRecords, energy: energies,
-                     prison: prisons, prison_compo: prisonCompos, chat_prefs: chatPrefs, social: socials, moderation: moderations };
+                     prison: prisons, prison_compo: prisonCompos, chat_prefs: chatPrefs, social: socials, moderation: moderations, referral: referrals };
       for(const [ns, map] of Object.entries(mine)) for(const k of [...map.keys()]) if(owned(k)) drop(map, ns, k);
       /* amis, demandes et blocages des autres : il en sort */
       for(const [k, s] of socials){
@@ -392,9 +426,9 @@ export function createMemoryGameStore(initial = {}){
                          prefs: Object.fromEntries(prefs),
                          sessions: Object.fromEntries(sessions), parties: Object.fromEntries(parties),
                          signups: Object.fromEntries(signups), socials: Object.fromEntries(socials),
-                         judgments: Object.fromEntries(judgments), discovered: Object.fromEntries(discovered),
+                         judgments: Object.fromEntries(judgments), discovered: Object.fromEntries(discovered), appLatest: Object.fromEntries(appLatest),
                          giantDays: Object.fromEntries(giantDays), giantPlayers: Object.fromEntries(giantPlayers), hcDays: Object.fromEntries(hcDays), hcPlayers: Object.fromEntries(hcPlayers), sessionStats: Object.fromEntries(sessionStats),
-                         towerRecords: Object.fromEntries(towerRecords), instanceRecords: Object.fromEntries(instanceRecords), energies: Object.fromEntries(energies), alwaysReady: Object.fromEntries(alwaysReady), chatPrefs: Object.fromEntries(chatPrefs), prisons: Object.fromEntries(prisons), prisonCompos: Object.fromEntries(prisonCompos), chats: Object.fromEntries(chats), raffles: Object.fromEntries(raffles), guilds: Object.fromEntries(guilds), guildLogs: Object.fromEntries(guildLogs), moderations: Object.fromEntries(moderations), reports: Object.fromEntries(reports), modLogs: Object.fromEntries(modLogs) }; },
+                         towerRecords: Object.fromEntries(towerRecords), instanceRecords: Object.fromEntries(instanceRecords), energies: Object.fromEntries(energies), alwaysReady: Object.fromEntries(alwaysReady), chatPrefs: Object.fromEntries(chatPrefs), prisons: Object.fromEntries(prisons), prisonCompos: Object.fromEntries(prisonCompos), chats: Object.fromEntries(chats), raffles: Object.fromEntries(raffles), dailies: Object.fromEntries(dailies), guilds: Object.fromEntries(guilds), guildLogs: Object.fromEntries(guildLogs), guildBanks: Object.fromEntries(guildBanks), referrals: Object.fromEntries(referrals), moderations: Object.fromEntries(moderations), reports: Object.fromEntries(reports), modLogs: Object.fromEntries(modLogs) }; },
   };
   return store;
 }
@@ -425,11 +459,11 @@ export async function createFileGameStore(dir){
 /* PostgreSQL (en ligne) : db ouverte par server/db/postgres.js, partagée avec les comptes */
 export async function createPgGameStore(db){
   const rows = await db.load(GAME_NS);
-  const store = createMemoryGameStore({ guildLogs: rows.guild_log, inventories: rows.inventory, furnaces: rows.furnace, crushers: rows.crusher, stuff: rows.stuff, prefs: rows.prefs,
+  const store = createMemoryGameStore({ guildLogs: rows.guild_log, guildBanks: rows.guild_bank, referrals: rows.referral, inventories: rows.inventory, furnaces: rows.furnace, crushers: rows.crusher, stuff: rows.stuff, prefs: rows.prefs,
                                         progress: rows.progress, skills: rows.skills, spells: rows.spells, sets: rows.sets,
                                         sessions: rows.game_session, parties: rows.party, signups: rows.mi_signup, socials: rows.social,
-                                        judgments: rows.judgment, giantDays: rows.giant_day, giantPlayers: rows.giant_player, hcDays: rows.hc_day, hcPlayers: rows.hc_player, discovered: rows.discovered, sessionStats: rows.session_stat,
-                                        towerRecords: rows.tower_record, instanceRecords: rows.instance_record, shrines: rows.shrine, energies: rows.energy, alwaysReady: rows.always_ready, chatPrefs: rows.chat_prefs, prisons: rows.prison, prisonCompos: rows.prison_compo, chats: rows.chat_global, raffles: rows.raffle, guilds: rows.guilds, moderations: rows.moderation, reports: rows.report, modLogs: rows.mod_log });
+                                        judgments: rows.judgment, giantDays: rows.giant_day, giantPlayers: rows.giant_player, hcDays: rows.hc_day, hcPlayers: rows.hc_player, discovered: rows.discovered, appLatest: rows.app_latest, sessionStats: rows.session_stat,
+                                        towerRecords: rows.tower_record, instanceRecords: rows.instance_record, shrines: rows.shrine, energies: rows.energy, alwaysReady: rows.always_ready, chatPrefs: rows.chat_prefs, prisons: rows.prison, prisonCompos: rows.prison_compo, chats: rows.chat_global, raffles: rows.raffle, dailies: rows.daily, guilds: rows.guilds, moderations: rows.moderation, reports: rows.report, modLogs: rows.mod_log });
   store.changed = changes => db.write(changes);
   store.close = () => db.flush();
   store.file = 'PostgreSQL';

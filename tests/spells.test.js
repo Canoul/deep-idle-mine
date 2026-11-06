@@ -1,9 +1,10 @@
 /* Sorts : déblocage, équipement, parchemins (règles du compte) et effets en session (Dash, Illumination, Inspiration,
-   Ulti shen, Fast learner, Dynamite). GAME_DESIGN §3 « Sorts ». */
+   Ralliement, Fast learner, Dynamite). GAME_DESIGN §3 « Sorts ». */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { SPELLS, STATS, IDS, BRIDGE } from '../src/config.js';
-import { createSpells, spellOp, learnScroll, sanitizeSpells, equippedSpells, sessionSpells, isUnlocked, publicSpells, unlockText } from '../src/meta/spells.js';
+import { SPELLS, STATS, IDS, BRIDGE, COMBAT } from '../src/config.js';
+const COMBAT_KNOCK = COMBAT.knock;
+import { createSpells, spellOp, learnScroll, sanitizeSpells, equippedSpells, sessionSpells, isUnlocked, publicSpells, unlockText, openSlotsFor } from '../src/meta/spells.js';
 import { createInventory, addItem, countOf } from '../src/meta/inventory.js';
 import { worldFrom } from './helpers.js';
 import { startAction, moveT, mineT } from '../src/sim/mineur.js';
@@ -13,7 +14,7 @@ import { finishAction, mineBlock } from '../src/sim/actions.js';
 import { afterDecide, updateSpells } from '../src/sim/spells.js';
 import { newSession, tick } from '../src/sim/session.js';
 
-const SCROLL = 'Parchemin « Ulti shen »';
+const SCROLL = 'Parchemin « Ralliement »';
 const BARB5 = { tree:'barbare', spec:{ barbare:5 } };
 
 /* ---------- compte ---------- */
@@ -47,13 +48,13 @@ test('équiper : débloqué, bonne spécialisation, slot ouvert ; un sort une se
   assert.deepEqual(spellOp(st, { action:'equip', spell:'dash', slot:0, opId:'op1' }, BARB5), { ok:true, repeated:false });
   st.learned.push('ulti_shen');
   spellOp(st, { action:'equip', spell:'ulti_shen', slot:1, opId:'op2' }, BARB5);
-  assert.deepEqual(st.slots, ['dash', 'ulti_shen']);
+  assert.deepEqual(st.slots, ['dash', 'ulti_shen', null, null]);
   spellOp(st, { action:'equip', spell:'dash', slot:1, opId:'op3' }, BARB5);
-  assert.deepEqual(st.slots, ['ulti_shen', 'dash'], 'déjà équipé ailleurs : échange');
+  assert.deepEqual(st.slots, ['ulti_shen', 'dash', null, null], 'déjà équipé ailleurs : échange');
   assert.deepEqual(spellOp(st, { action:'equip', spell:'dash', slot:0, opId:'op3' }, BARB5), { ok:true, repeated:true });
-  assert.deepEqual(st.slots, ['ulti_shen', 'dash']);
+  assert.deepEqual(st.slots, ['ulti_shen', 'dash', null, null]);
   spellOp(st, { action:'unequip', slot:0, opId:'op4' }, BARB5);
-  assert.deepEqual(st.slots, [null, 'dash']);
+  assert.deepEqual(st.slots, [null, 'dash', null, null]);
   assert.deepEqual(spellOp(st, { action:'bidule', slot:0, opId:'op5' }, BARB5), { error:'bad_request' });
 });
 
@@ -71,15 +72,16 @@ test('parchemin : consommé à l\'apprentissage, une seule fois ; refusé sans p
   assert.deepEqual(st.learned, ['ulti_shen']);
 });
 
-test('relecture : sorts inconnus, doublons et slots verrouillés retirés ; au lancement, seulement ce qui est encore valide', () => {
+test('relecture : sorts inconnus et doublons retirés ; au lancement, seulement ce qui est encore valide', () => {
   const st = sanitizeSpells({ learned:['ulti_shen', 'ulti_shen', 'dash', 'x'], slots:['dash', 'dash', 'illumination', 'ulti_shen'], ops:[1, 'a'] });
-  assert.deepEqual(st, { learned:['ulti_shen'], slots:['dash', null], ops:['a'] });
+  assert.deepEqual(st, { learned:['ulti_shen'], slots:['dash', null, 'illumination', 'ulti_shen'], ops:['a'] }, '4 emplacements gardés (ouverts selon le niveau, 05/11)');
+  st.slots[2] = st.slots[3] = null;
   assert.deepEqual(sanitizeSpells(null), createSpells());
   st.slots[1] = 'ulti_shen';
   assert.deepEqual(equippedSpells(st, BARB5), ['dash', 'ulti_shen']);
   assert.deepEqual(equippedSpells(st, { tree:null, spec:{ barbare:5 } }), ['ulti_shen'], 'reset des skills : Dash n\'agit plus');
   assert.deepEqual(equippedSpells(st, { tree:'barbare', spec:{ barbare:2 } }), ['ulti_shen']);
-  assert.deepEqual(sessionSpells(['dash', 'dash', 'illumination', 'ulti_shen', 'fast_learner'], 'barbare'), ['dash', 'ulti_shen']);
+  assert.deepEqual(sessionSpells(['dash', 'dash', 'illumination', 'ulti_shen', 'fast_learner', 'cleave'], 'barbare'), ['dash', 'ulti_shen', 'fast_learner', 'cleave'], 'au plus 4 (le serveur a vérifié le niveau au lancement)');
   assert.deepEqual(sessionSpells('dash', 'barbare'), []);
   const pub = publicSpells(st, BARB5);
   assert.deepEqual([pub.openSlots, pub.slotCount], [2, 4]);
@@ -105,14 +107,25 @@ test('Dash : un pas de marche devient une course de 6 cases à 600 % ; recharge 
   assert.equal(m.action.type, 'move', 'en recharge : un pas normal');
 });
 
-test('Dash : s\'arrête devant un mob et le frappe (500 % des dégâts, recharge ÷ 2) ; devant un trou ; pas pour 1 case', () => {
+/* 03/11/2026 (Geoffrey) : sur un boss (minotaure du donjon, Gallianix), la recharge reste entière */
+test('Dash sur un boss (03/11) : 300 % des dégâts, recharge entière', () => {
+  const G = corridor(), m = G.miners[0];
+  m.spells = ['dash'];
+  G.mobs.push({ id:98, type:'minotaure', dungeon:0, x:5, y:1, hp:1000, maxhp:1000, cd:1 });
+  startAction(m, 'move', moveT(G, m), { x:2, y:1, fx:1, fy:1 });
+  afterDecide(G, m);
+  if(m.action?.type === 'dash'){ finishAction(G, m, m.action); assert.equal(m.spellCd.dash, G.t + 30, 'recharge entière'); }
+  else assert.ok(!m.spellCd.dash, 'pas de dash sur un boss hors combat');
+});
+
+test('Dash : s\'arrête devant un mob et le frappe (300 % des dégâts depuis le 03/11, recharge ÷ 2) ; devant un trou ; pas pour 1 case', () => {
   let G = corridor(), m = G.miners[0];
   m.spells = ['dash'];
   G.mobs.push({ id:99, type:'bestiole', x:5, y:1, hp:1000, maxhp:1000, cd:1 });
   startAction(m, 'move', moveT(G, m), { x:2, y:1, fx:1, fy:1 });
   afterDecide(G, m); finishAction(G, m, m.action);
   assert.equal(m.x, 4);
-  assert.equal(G.mobs[0].hp, 1000 - STATS.damage * 5);
+  assert.equal(G.mobs[0].hp, 1000 - STATS.damage * 3);
   assert.equal(m.spellCd.dash, G.t + 15);
   G = worldFrom(['', '#@          ####', '#'.repeat(50), '#'.repeat(50), '#'.repeat(50)]); m = G.miners[0]; m.spells = ['dash'];
   G.tiles[2][5] = 0; G.tiles[3][5] = 0;                // trou de 2 en x = 5 (25/10 : un trou de 1 se descend)
@@ -205,7 +218,7 @@ test('Inspiration : +10 % de minage pour tous pendant 60 s, recharge à la fin d
   assert.ok(Math.abs(mineT(G, b, IDS.stone) - before / 1.1) < 1e-9);
 });
 
-test('Ulti shen : un allié se bat → téléporté sur sa case, 20 % des PV max du mob (5 % sur un boss)', () => {
+test('Ralliement : un allié se bat → téléporté sur sa case, 20 % des PV max du mob (5 % sur un boss)', () => {
   const G = worldFrom(['', '#@          #', '#'.repeat(50)], { miners:2 }), [a, b] = G.miners;
   a.spells = ['ulti_shen'];
   b.x = 10;
@@ -308,7 +321,7 @@ test('27/10 : déblocage (Logisticien et Barbare niveau 10, parchemins pour Clea
   assert.deepEqual(sessionSpells(['cleave', 'hand_of_justice'], null), ['cleave', 'hand_of_justice'], 'pas de spécialisation requise');
 });
 
-test('Bonbonne de zipette : l\'allié le plus proche du manque, à 3 cases, regagne 20 % des pods du logisticien ; pas lui-même', () => {
+test('Bonbonne d\'oxygène : l\'allié le plus proche du manque, à 3 cases, regagne 20 % des pods du logisticien ; pas lui-même', () => {
   const G = worldFrom(['', '#'.repeat(50), '#@                  #', '#'.repeat(50)], { miners:3 }), [l, a, b] = G.miners;
   l.spells = ['zipette']; l.x = 5; l.y = 2; l.carac.pods = 100; l.ox = 1;
   a.x = 7; a.y = 2; a.mode = 'work'; a.ox = a.carac.oxygenMax - 5;     // il ne manque que 5
@@ -363,24 +376,29 @@ test('Cri de guerre : la vitesse d\'attaque +5 % raccourcit l\'intervalle entre 
   assert.ok(b > a, `plus de coups avec le cri : ${a} → ${b}`);
 });
 
-test('Cleave : en combat, 50 % de ses dégâts à chaque mob à 2 cases (critique possible) ; recharge 10 s', () => {
+/* Cleave (03/11/2026, Geoffrey) : sa prochaine attaque normale ; la cible prend le coup, jusqu'à 3 autres mobs DEVANT lui à
+   2 cases prennent 50 % ; rien derrière ; pas de cast sans autre mob */
+test('Cleave (03/11) : le coup touche la cible et jusqu\'à 3 autres mobs devant lui (50 %) ; rien derrière ; recharge 10 s', async () => {
+  const { landHit } = await import('../src/sim/actions.js');
   const G = worldFrom(['', '#'.repeat(50), '#@          #', '#'.repeat(50)]), m = G.miners[0];
-  m.spells = ['cleave']; m.x = 5; m.y = 2; m.carac.crit = 0;
-  const near1 = { id:1, type:'gobelin', x:6, y:2, hp:1000, maxhp:1000, cd:1 };
-  const near2 = { id:2, type:'bestiole', x:3, y:2, hp:1000, maxhp:1000, cd:1 };
-  const far = { id:3, type:'bestiole', x:8, y:2, hp:1000, maxhp:1000, cd:1 };
-  const boss = { id:4, type:'minotaure', dungeon:0, x:4, y:2, hp:1000, maxhp:1000, cd:1 };
-  G.mobs.push(near1, near2, far, boss);
-  updateSpells(G);
-  assert.equal(near1.hp, 1000, 'pas en combat : rien');
-  startAction(m, 'attack', 1, { mob:near1 });
-  updateSpells(G);
-  const d = hitDamage(G, m) * 0.5;
-  assert.deepEqual([near1.hp, near2.hp, far.hp, boss.hp], [1000 - d, 1000 - d, 1000, 1000], 'le boss qu\'il ne combat pas est épargné');
+  m.spells = ['cleave']; m.x = 5; m.y = 2; m.face = 1; m.carac.crit = 0; m.carac.doubleAttack = 0; m.carac.knockback = -COMBAT_KNOCK;
+  const mob = (id, x, y = 2, extra = {}) => ({ id, type:'bestiole', x, y, hp:1000, maxhp:1000, cd:1, ...extra });
+  const target = mob(1, 6), a = mob(2, 7), b = mob(3, 6, 1), c = mob(4, 7, 1), d = mob(5, 6, 3), behind = mob(6, 4), far = mob(7, 9);
+  G.tiles[1][6] = 0; G.tiles[1][7] = 0; G.tiles[3][6] = 0;
+  G.mobs.push(target, a, b, c, d, behind, far);
+  const solo = worldFrom(['', '#'.repeat(50), '#@          #', '#'.repeat(50)]), s = solo.miners[0];
+  s.spells = ['cleave']; s.x = 5; s.y = 2; s.face = 1;
+  const alone = mob(9, 6); solo.mobs.push(alone, mob(10, 4));
+  landHit(solo, s, alone);
+  assert.ok(!s.spellCd.cleave, 'personne d\'autre devant : il reste prêt');
+  landHit(G, m, target);
+  const dmg = hitDamage(G, m), half = dmg * 0.5;
+  assert.ok(Math.abs((1000 - target.hp) - dmg) < 1e-6, 'la cible : le coup normal (100 %)');
+  const hit = [a, b, c, d].filter(o => o.hp < 1000);
+  assert.equal(hit.length, 3, '3 autres au plus');
+  for(const o of hit) assert.ok(Math.abs((1000 - o.hp) - half) < 1e-6, '50 %');
+  assert.equal(behind.hp, 1000, 'derrière lui : rien'); assert.equal(far.hp, 1000, 'trop loin : rien');
   assert.equal(m.spellCd.cleave, G.t + 10);
-  m.carac.crit = 100; m.spellCd.cleave = 0; near1.hp = 1000;
-  updateSpells(G);
-  assert.equal(near1.hp, 1000 - d * 2, 'critique : double');
 });
 
 test('Hand of Justice : étourdit 3 s un mob qui tacle un allié d\'abord (3 cases au plus), coupe son sort ; recharge 30 s', () => {
@@ -478,4 +496,18 @@ test('grimoire : débloqués devant, puis parchemin en poche, autre spé, pas d�
   const st = { a:'locked', b:'other', c:'ready', d:'learn', e:'equipped', f:'locked', g:'ready' };
   const order = grimoireOrder(Object.keys(st).map(id => ({ id })), id => ({ status: st[id] })).map(s => s.id);
   assert.deepEqual(order, ['c', 'e', 'g', 'd', 'b', 'a', 'f']);
+});
+
+test('emplacements de sorts : 2 au départ, 3e au niveau 15, 4e au niveau 20 du mineur (05/11/2026)', () => {
+  assert.deepEqual(SPELLS.slotLevels, [1, 1, 15, 20]);
+  assert.deepEqual([1, 14, 15, 19, 20, 72].map(openSlotsFor), [2, 2, 3, 3, 4, 4]);
+  assert.equal(openSlotsFor(undefined), 2, 'niveau inconnu : les deux premiers');
+  const st = createSpells(); st.learned.push('ulti_shen', 'cleave', 'fast_learner');
+  assert.deepEqual(spellOp(st, { action:'equip', spell:'cleave', slot:2, opId:'l1' }, { ...BARB5, level:14 }), { error:'slot_locked' });
+  assert.ok(spellOp(st, { action:'equip', spell:'cleave', slot:2, opId:'l2' }, { ...BARB5, level:15 }).ok);
+  assert.deepEqual(spellOp(st, { action:'equip', spell:'fast_learner', slot:3, opId:'l3' }, { ...BARB5, level:19 }), { error:'slot_locked' });
+  assert.ok(spellOp(st, { action:'equip', spell:'fast_learner', slot:3, opId:'l4' }, { ...BARB5, level:20 }).ok);
+  assert.deepEqual(equippedSpells(st, { ...BARB5, level:20 }), ['cleave', 'fast_learner']);
+  assert.deepEqual(equippedSpells(st, { ...BARB5, level:15 }), ['cleave'], 'niveau trop bas : l\'emplacement fermé n\'agit pas');
+  assert.equal(publicSpells(st, { ...BARB5, level:20 }).openSlots, 4);
 });

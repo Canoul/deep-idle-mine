@@ -1,6 +1,8 @@
 /* Le mineur : création, caractéristiques dérivées (lumière, vitesses), actions à durée, inventaire.
    Nommé mineur.js et pas miner.js : les bloqueurs anti-minage de cryptomonnaie (liste NoCoin, active par défaut
    dans Opera GX) bloquent tout fichier « /miner.js », et le jeu entier ne démarre plus. Ne pas le renommer. */
+import { restedMul } from './skillfx.js';
+import { inspirePct } from './groups.js';
 import { bleedSlow } from './bleed.js';
 import { STATS, CFG, BLOCKS, PREFS, SPAWN_X, SKILLS, WINCH, GLYPHS, SESSION_LEN } from '../config.js';
 import { lumAt } from './light.js';
@@ -26,6 +28,7 @@ export function createMiner(id, opts={}){
   for(const k of ['torches', 'bridges']) if(Number.isFinite(carac[k])) carac[k] = Math.floor(carac[k]);
   return {
     skill: { ...NO_SKILLS, ...(opts.skills||{}) },
+    group: opts.group ?? null,      // groupe du raid (1, 2…), null ailleurs (src/sim/groups.js)
     skillTree: opts.skillTree ?? null, // arbre de skills choisi (mineur, logisticien, barbare) ou null
     yieldSince: null,               // attend qu'un logisticien pose l'échelle (depuis ce temps)
     winchJob: null,                 // chantier du treuil (logisticien) : { bottom : ligne à atteindre }
@@ -73,21 +76,21 @@ export const travelling = m => m.mode==='return' || m.mode==='surface' || m.mode
 /* bonus du Barbare (braum) quand il va aider un allié : marche et montée (échelle, seau) */
 export const helpBoost = m => m.helping ? m.skill.braum : 0;
 export const walkBoost = (G,m) => 1 + (G.t < m.rushUntil ? m.skill.ore_rush : 0) + (travelling(m) ? m.skill.travel_rush : 0) + helpBoost(m);
-export const moveT  = (G,m) => 1/(m.carac.speed*dk(G,m)*walkBoost(G,m)*bleedSlow(m));
-export const climbT = (G,m) => 1/(m.carac.climbSpeed*dk(G,m)*(1+helpBoost(m))*bleedSlow(m));
+export const moveT  = (G,m) => 1/(m.carac.speed*dk(G,m)*walkBoost(G,m)*bleedSlow(m)*restedMul(m));   // Reposé (04/11)
+export const climbT = (G,m) => 1/(m.carac.climbSpeed*dk(G,m)*(1+helpBoost(m))*bleedSlow(m)*restedMul(m));
 /* dans le puits du treuil : le seau, à WINCH.speedFactor × la vitesse de montée (dans les deux sens), × l'Escalateur
    du groupe (winchMult) */
 export const winchMult = G => (1 + (G.winchBoost || 0))*(G.winch?.lift ? GLYPHS.liftSpeed : 1);   // ascenseur (Glyphe Treuil) : × liftSpeed
-export const winchT = (G,m) => 1/(m.carac.climbSpeed*WINCH.speedFactor*winchMult(G)*dk(G,m)*(1+helpBoost(m))*bleedSlow(m));
+export const winchT = (G,m) => 1/(m.carac.climbSpeed*WINCH.speedFactor*winchMult(G)*dk(G,m)*(1+helpBoost(m))*bleedSlow(m)*restedMul(m));
 /* vitesse de minage : (base + bonus fixes) × (1 + bonus en %) (stats d'amélioration, src/meta/piece.js) */
 export const mineRate = m => m.carac.mineSpeed*(1+(m.carac.mineSpeedPct||0)/100)*bleedSlow(m);
 /* sort Cri de guerre (src/sim/spells.js) : bonus de dégâts et de vitesse d'attaque en cours sur ce mineur, ou null */
 export const warcryOf = (G,m) => m.warcry && G.t < m.warcry.until ? m.warcry : null;
 /* sorts : Inspiration (G.inspire, pour tout le groupe) et Fast learner (m.learned, par type de bloc) */
-const spellMine = (G,m,t) => (1+(G.inspire && G.t<G.inspire.until ? G.inspire.pct : 0))*(1+(m.learned?.[t]||0));
+const spellMine = (G,m,t) => (1+inspirePct(G,m))*(1+(m.learned?.[t]||0));
 /* Némésis du Golbute (30/10/2026) : + blockMinePct % de vitesse de minage sur les blocs de terrain (pas les minerais) */
 const blockMul = (m,t) => BLOCKS[t].type==='terrain' && m.carac.blockMinePct ? 1+m.carac.blockMinePct/100 : 1;
-export const mineT  = (G,m,t) => BLOCKS[t].hard/(mineRate(m)*blockMul(m,t)*dk(G,m)*spellMine(G,m,t));
+export const mineT  = (G,m,t) => BLOCKS[t].hard/(mineRate(m)*blockMul(m,t)*dk(G,m)*spellMine(G,m,t)*restedMul(m));
 export const lightR = (G,m) => 2.2+(m.carac.light-2.2)*curLum(G,m);
 export const compassR = (G,m) => Math.floor(m.carac.compass*(lit(G,m) ? 1 : 0.5));
 

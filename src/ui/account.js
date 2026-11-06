@@ -2,12 +2,13 @@
    fenêtre « Mon compte » (sécuriser un invité, changer de mot de passe, se déconnecter).
    Les règles (pseudo, mot de passe) viennent de src/shared/account.js ; le serveur refait toujours les vérifications. */
 import { renderAppTrace } from './app-trace.js';
-import { ADMIN_VIEW } from '../config.js';
+import { ADMIN_VIEW, SITE } from '../config.js';
 import { renderPrisonDashboard } from '../meta/prison-dashboard.js';
 const isTeam = a => !!a && !a.guest && ADMIN_VIEW.names.some(n => n.toLowerCase() === String(a.name ?? a.displayName ?? '').toLowerCase());
 import { ACCOUNT, RULES, ACCOUNT_DELETE_WORD } from '../config.js';
 import { checkName, checkPassword, parseRecoveryCode } from '../shared/account.js';
-import { accountApi, request, ApiError, OfflineError } from '../net/api.js';
+import { accountApi, gameApi, request, ApiError, OfflineError } from '../net/api.js';
+import { referralLink } from '../shared/referral.js';
 import { inLocalApp } from '../net/base.js';
 import { ask, askFields, tell } from './dialog.js';
 import { t } from '../i18n/index.js';
@@ -127,6 +128,7 @@ const VIEWS = {
          il est perdu. Sécurise-le avec un pseudo et un mot de passe pour le garder (ton ID ne change pas).</p>
       <div class="acts"><button class="main" data-go="claim">Sécuriser mon compte</button></div>` : `
       <div class="acts"><button data-go="password">Changer de mot de passe</button></div>`}
+    <div class="acts"><button data-act="referral" title="Ton code et ton lien de parrainage, ou le code de ton parrain">🎁 Parrainer un ami</button></div>
     ${isTeam(account) && !inLocalApp ? `<div class="acts"><button data-act="prisonDash" title="Rendement de la prison de chaque joueur contre ses 10 dernières mines (compte de l'équipe)">📊 Rendement de la prison</button><button data-act="appTrace" title="Demandes de mise à jour des applis mobiles reçues par le serveur (compte de l'équipe)">📱 Mises à jour de l'appli</button></div>` : ''}
     ${optionsHtml(options)}
     <div class="acts end"><button data-act="logout">Se déconnecter</button><button data-act="close">Fermer</button></div>
@@ -153,9 +155,29 @@ const VIEWS = {
       <p class="err" hidden></p>
       <button type="submit">Changer de pseudo</button></form>
     <button data-act="logout">Se déconnecter</button>`,
+  referral: ({ ref }) => referralHtml(ref, inLocalApp || !/^https?:/.test(location.origin) ? SITE.url : location.origin),   // appli : le lien du site
   done: ({ text }) => `<h3>C'est fait</h3><p>${esc(text)}</p>
     <div class="acts"><button class="main" data-go="profile">OK</button></div>`,
 };
+
+/* Parrainage (05/11/2026, Geoffrey ; REFERRAL) : fenêtre « Parrainer un ami » (ref = réponse de GET /api/game/referral) :
+   son code et son lien à copier, ses filleuls, son parrain ou la case pour entrer le code d'un ami */
+export function referralHtml(ref, origin = ''){
+  const link = referralLink(origin, ref.id);
+  const reward = `<b>${ref.qty} ${esc(ref.item)}</b>`;
+  return `<h3>🎁 Parrainer un ami</h3>
+    <p>Donne ton code ou ton lien à un ami. Quand il atteint le <b>niveau ${ref.need}</b>, vous recevez chacun ${reward}.</p>
+    <div class="row"><span class="mut">Ton code</span><span class="code sm" data-copy="${esc(ref.code)}" title="Cliquer pour copier">${esc(ref.code)}</span></div>
+    <div class="row"><span class="mut">Ton lien</span><span class="code sm refLink" data-copy="${esc(link)}" title="Cliquer pour copier">${esc(link)}</span></div>
+    <div class="row"><span class="mut">Tes filleuls</span><span>${ref.referees}${ref.rewarded ? ` (${ref.rewarded} récompense${ref.rewarded > 1 ? 's' : ''} reçue${ref.rewarded > 1 ? 's' : ''})` : ''}</span></div>
+    <h4>Ton parrain</h4>
+    ${ref.by ? `<div class="row"><span class="mut">Parrain</span><b>${esc(ref.by.name)}</b></div>
+      <p class="mut small">${ref.done ? `Récompense reçue : ${reward}.` : `Au niveau ${ref.need} (tu es niveau ${ref.level}), tu recevras ${reward}.`}</p>`
+    : ref.canSet ? `<form data-mode="referral">${field('code', 'Code de ton parrain', 'text', 'autocomplete="off" maxlength="12" placeholder="ABCD-1234"')}
+        <p class="err" hidden></p><button class="main" type="submit">Valider le code</button></form>`
+    : `<p class="mut small">Pas de parrain : le code d'un parrain s'entre avant le niveau ${ref.need}.</p>`}
+    <p class="links"><a href="#" data-go="profile">← Retour</a></p>`;
+}
 
 /* ---------- fenêtre ---------- */
 
@@ -218,6 +240,7 @@ export function createAccountUI(root, state, handlers = {}){
       if(mode === 'recover')  signedIn(await accountApi.recover(v.name, v.code, v.password), 'Mot de passe changé.');
       if(mode === 'claim')    signedIn(await accountApi.claim(v.name, v.password), 'Ton compte est sécurisé.');
       if(mode === 'password'){ await accountApi.changePassword(v.old, v.password); finish('Mot de passe changé.'); }
+      if(mode === 'referral'){ await gameApi.setReferral(v.code); show('referral', { ref: await gameApi.referral() }); }
     } catch(e){
       say(e instanceof ApiError ? e.message : e instanceof OfflineError ? 'Serveur injoignable. Réessaie dans un instant.' : 'Erreur inattendue.');
       btn.disabled = false;
@@ -226,6 +249,11 @@ export function createAccountUI(root, state, handlers = {}){
 
   async function act(name, el){
     if(name === 'close') return hide();
+    if(name === 'referral'){   // parrainage (05/11) : la fiche vient du serveur
+      el.disabled = true;
+      try { return show('referral', { ref: await gameApi.referral() }); }
+      catch(e){ el.disabled = false; return tell(e instanceof ApiError ? e.message : 'Serveur injoignable. Réessaie dans un instant.'); }
+    }
     if(name === 'done') return afterRecovery?.();
     if(name === 'guest'){
       el.disabled = true;

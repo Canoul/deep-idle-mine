@@ -208,14 +208,14 @@ test('voir le stuff d\'un ami : pièces portées, niveau, spécialisation, même
   await store.putInventory(C.id, { slots:[{ item:'Casque en chitine', qty:1, uid:1 }, { item:'Fer', qty:40 }], nextUid:2, credited:[] });
   await game.stuff(C, { action:'equip', slot:'casque', uid:1, opId:'op-ami-casque' });
   await store.putProgress(C.id, { xp:1200, credited:[] });                       // niveau 2 : 1 point de skill
-  await store.putSkills(C.id, { tree:'mineur', ranks:{ mine_speed:1 }, ops:[] });
+  await store.putSkills(C.id, { v:3, tree:'mineur', ranks:{ mine_speed:1 }, ops:[] });
   advance(SOCIAL_SERVER.onlineFor + 60_000);                                      // Max est hors ligne
   const p = await social.profile(A, C.id);
   assert.equal(p.name, 'Max');
   assert.deepEqual(p.stuff.casque, { item:'Casque en chitine', uid:1 });
   assert.equal(p.stuff.pioche, null);
   assert.equal(p.progress.level, 2);
-  assert.deepEqual(p.skills, { tree:'mineur', ranks:{ mine_speed:1 } });
+  assert.deepEqual(p.skills, { v:3, tree:'mineur', ranks:{ mine_speed:1 } });
   assert.equal(JSON.stringify(p).includes('Fer'), false, 'rien de son inventaire');
   assert.deepEqual(Object.keys(p).sort(), ['displayId', 'id', 'name', 'progress', 'skills', 'stuff']);
   await assert.rejects(social.profile(D, C.id), { code:'not_friend' });            // pas ami

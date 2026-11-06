@@ -60,7 +60,7 @@ test('ordre : contrôles, puis debuffs, puis buffs', () => {
   assert.deepEqual(kinds, ['control', 'debuff', 'debuff', 'buff']);
 });
 
-test('Navette, Braum, Pillage et Fast learner (mine : par bloc ; tours : un nombre)', () => {
+test('Navette, Garde du corps, Pillage et Fast learner (mine : par bloc ; tours : un nombre)', () => {
   const G = { t: 0 };
   const m = miner({ skill: { travel_rush: 0.09, braum: 0.2 }, helping: true, pillage: 7, learned: { 3: 0.1, 5: 0.2 } });
   const l = minerEffects(G, m, { travelling: true });
@@ -86,6 +86,17 @@ test('bonus de session : anneaux, shrines, Escalateur (la couronne n\'y est plus
   assert.deepEqual(sessionBonuses(G, m), [
     { id: 'ring', src: 'Anneau du rat', value: 3 }, { id: 'shrine', src: 'abundance' }, { id: 'escalator', value: 0.25 }]);
   assert.deepEqual(ids(sessionBonuses({}, m)), ['ring']);
+});
+
+test('bonus de session : auras des skills du groupe (partis compris), chacun les siennes en MI ; texte de la bulle', async () => {
+  const { bonusLine } = await import('../src/ui/effects.js');
+  const logi = miner({ id: 0, skill: { aura_reassure: 1 } }), barb = miner({ id: 1, skill: { aura_berserk: 1 } }), me = miner({ id: 2 });
+  const G = { miners: [me, logi], roster: [me, logi, barb] };   // le barbare est parti : son aura compte encore (figée au lancement)
+  assert.deepEqual(sessionBonuses(G, me).filter(b => b.id === 'aura').map(b => b.src), ['aura_reassure', 'aura_berserk']);
+  assert.deepEqual(sessionBonuses({ mode: 'mi', miners: [me, logi] }, me).filter(b => b.id === 'aura'), [], 'MI : pas celles des autres');
+  assert.deepEqual(sessionBonuses({ mode: 'mi', miners: [logi] }, logi).map(b => b.src), ['aura_reassure']);
+  assert.equal(bonusLine({ id: 'aura', src: 'aura_berserk' }), 'Aura berserk : Critique +2 % pour tout le groupe');
+  assert.equal(EFFECTS.list.aura.kind, 'session');
 });
 
 test('couronne : buff du porteur seul, pas des mineurs à côté', () => {

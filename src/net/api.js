@@ -76,13 +76,16 @@ export const gameApi = {
   furnace: op          => request('POST', '/api/game/furnace', op),
   crusher: op          => request('POST', '/api/game/crusher', op),   // { action:'load'|'unload'|'collect', slot, item, qty, opId }
   crusherState: ()     => request('GET', '/api/game/crusher'),
-  craft:  (item, opId) => request('POST', '/api/game/craft', { item, opId }),
+  craft:  (item, opId, count = 1) => request('POST', '/api/game/craft', { item, opId, count }),
+  shop:   (id, opId, count = 1) => request('POST', '/api/game/shop', { id, opId, count }),   // Boutique (05/11)
   inventory: op        => request('POST', '/api/game/inventory', op),         // { action:'sort' } | { action:'move', from, to, item, uid? }
   recycle: uid         => request('POST', '/api/game/recycle', { uid }),      // recycler une pièce de stuff fabriquée
   learn:  (item, opId) => request('POST', '/api/game/learn', { item, opId }),   // utiliser un blueprint
   research: op         => request('POST', '/api/game/research', op),
   sets: op             => request('POST', '/api/game/sets', op),              // { action:'create' | 'save' | 'rename' | 'delete' | 'equip', id?, name? }
-  spells: op           => request('POST', '/api/game/spells', op),            // { action:'equip', spell, slot } | { action:'unequip', slot } | { action:'learn', item }
+  spells: op           => request('POST', '/api/game/spells', op),
+  referral: ()         => request('GET', '/api/game/referral'),                 // parrainage (05/11) : son code, son parrain, ses filleuls
+  setReferral: code    => request('POST', '/api/game/referral', { code }),     // entrer le code d'un parrain            // { action:'equip', spell, slot } | { action:'unequip', slot } | { action:'learn', item }
   skills: op           => request('POST', '/api/game/skills', op),            // { action:'learn', node } | { action:'reset' }          // { action:'research', tier } | { action:'recycle', item }
   stuff:  op           => request('POST', '/api/game/stuff', op),
   upgrade: op          => request('POST', '/api/game/upgrade', op),           // { action:'identify', uid, sacrifice, opId } | { action:'upgrade', uid, opId }
@@ -142,7 +145,20 @@ export const guildApi = {
   peek:  id => request('POST', '/api/guild/peek', { id }),
   log:   (id, before) => request('POST', '/api/guild/log', { id, before }),
   give:  (building, item, qty, opId) => request('POST', '/api/guild/give', { building, item, qty, opId }),
+  /* banque de guilde (05/11/2026) */
+  bank:        ()                          => request('GET', '/api/guild/bank'),
+  bankDeposit: (item, qty, opId)           => request('POST', '/api/guild/bank/deposit', { item, qty, opId }),
+  bankGive:    (building, item, qty, opId) => request('POST', '/api/guild/bank/give', { building, item, qty, opId }),
+  bankCraft:   (item, count, opId)         => request('POST', '/api/guild/bank/craft', { item, count, opId }),
   build: id => request('POST', '/api/guild/build', { id }),
+  /* lobby de raid de la guilde (04/11/2026) : chaque action renvoie la vue de la guilde ; lancer : + session (201) */
+  raidJoin:   group => request('POST', '/api/guild/raid/join', group ? { group } : {}),
+  raidMove:   (group, id = null) => request('POST', '/api/guild/raid/group', id ? { group, id } : { group }),
+  raidLeave:  () => request('POST', '/api/guild/raid/leave', {}),
+  raidReady:  ready => request('POST', '/api/guild/raid/ready', { ready }),
+  raidKick:   id => request('POST', '/api/guild/raid/kick', { id }),
+  raidInvite: name => request('POST', '/api/guild/raid/invite', { name }),   // bêta, temporaire (04/11)
+  raidLaunch: seed => request('POST', '/api/guild/raid/launch', Number.isSafeInteger(seed) ? { seed } : {}),
 };
 
 /* Amis (onglet Social) : liste, demandes, présence ; inviter / rejoindre un ami */
@@ -154,7 +170,8 @@ export const townApi = {
 
 /* modération du chat (30/10) : { warnings, max, bannedUntil, motif } */
 export const moderationApi = { me: () => request('GET', '/api/moderation/me'),
-  report: body => request('POST', '/api/moderation/report', body) };   // { source, message | target, reason, comment? }
+  report: body => request('POST', '/api/moderation/report', body),    // { source, message | target, reason, comment? }
+  noticeSeen: id => request('POST', '/api/moderation/notice-seen', { id }) };   // message de l'équipe fermé (scripts/warn.js)
 
 export const socialApi = {
   state:   ()   => request('GET', '/api/social'),

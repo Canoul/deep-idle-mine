@@ -28,6 +28,7 @@ import { createReportService } from './moderation/reports.js';
 import { createAccountEraser } from './accounts/erase.js';
 import { migrateItemNames } from './game/rename-items.js';
 import { createAppUpdate } from './app-update/routes.js';
+import { createAppLatest } from './app-update/latest.js';
 
 const port = +(process.argv[2] || SERVER.port);
 /* stockage : PostgreSQL si DATABASE_URL est défini (en ligne), sinon fichiers dans data/ (en local) */
@@ -42,7 +43,9 @@ if(renamed.rows) console.log(`Objets renommés : ${renamed.rows} ligne(s)`, rena
 /* mode dev : copies de vrais joueurs pour les mineurs de test (data/presets/*.json, server/game/dev-copies.js) */
 /* modération du chat (30/10) : un joueur banni voit sa prison arrêtée */
 const moderation = createModerationService({ store: gameStore, onBan: id => game.prisonStop({ id }).catch(() => {}) });
-const game = createGameService({ store: gameStore, announce: createDiscordAnnouncer({ url: SERVER.discordWebhook }), moderation, blockedOf: id => social.blockedOf(id),
+const game = createGameService({ store: gameStore, accountOf: id => store.getAccount(id), accountByName: key => store.findAccountByName(key),   // parrainage (05/11)
+                                 announce: createDiscordAnnouncer({ url: SERVER.discordWebhook }), moderation, blockedOf: id => social.blockedOf(id),
+                                 dailyEvents: true,   // événement du jour (05/11/2026)
                                  onXp: (id, xp) => guild.addXp(id, xp), guildNameOf: id => guild.nameOf(id), guildBonusOf: id => guild.bonusOf(id),
                                  devCopies: () => readDevCopies(path.join(SERVER.dataDir, 'presets')),
                                  devLiveCopies: GAME_SERVER.dev && process.env.DIM_DEV_COPY_URL
@@ -57,7 +60,7 @@ const social = createSocialService({ store: gameStore, accounts: store, party, g
 /* signalements (01/11) : en base, et sur le salon Discord privé de modération si DIM_DISCORD_MOD_WEBHOOK est défini */
 const reports = createReportService({ store: gameStore, accounts: store, social, game, announce: createDiscordAnnouncer({ url: SERVER.discordModWebhook }) });
 /* guildes : créées après les amis (présence des membres) ; game et social ne les appellent qu'une fois le serveur lancé */
-const guild = createGuildService({ store: gameStore, accounts: store, statusOf: id => social.statusOf(id), inviteCheck: me => social.inviteCheck(me), spend: game.guildSpend, counts: game.itemCounts });
+const guild = createGuildService({ store: gameStore, accounts: store, statusOf: id => social.statusOf(id), inviteCheck: me => social.inviteCheck(me), spend: game.guildSpend, counts: game.itemCounts, itemsOf: id => game.stackItems(id), game });
 /* Bloc géant : salle commune, visites, scores du jour, récompenses */
 const giant = createGiantService({ store: gameStore, game, dev: GAME_SERVER.dev });
 /* He's coming : le même service, sa partie et ses fiches */
@@ -71,6 +74,7 @@ const eraser = createAccountEraser({ accounts: store, gameStore, game, party, in
 let appUpdate = null;
 try {
   appUpdate = createAppUpdate({ api: process.env.DIM_APP_API || undefined });
+  appUpdate.latest = createAppLatest({ store: gameStore });   // dernière appli sur les stores, réglable sur le VPS (04/11)
   console.log(`Paquet de l'appli : version ${appUpdate.manifest.version} (${Object.keys(appUpdate.manifest.files).length} fichiers)`);
 } catch(e){ console.error('Paquet de l\'appli indisponible :', e); }
 const server = http.createServer(createApp({ store, service, game, party, instant, social, guild, giant, hescoming, town, moderation, reports, eraser, appUpdate, root: ROOT }));

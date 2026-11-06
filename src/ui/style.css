@@ -60,7 +60,7 @@ body.townWalk .topbar,body.townWalk .views,body.townWalk .guide{visibility:hidde
 .townLfgMsg{color:var(--bad)}
 .townLfgMsg:empty{display:none}
 body.townWalk .app{pointer-events:none}   /* les clics passent à la ville… */
-body.townWalk .dock,body.townWalk .chatDock,body.townWalk #notifs{pointer-events:auto}   /* … sauf la barre d'action et les pop-ups */
+body.townWalk .dock,body.townWalk #notifs{pointer-events:auto}   /* … sauf la barre d'action, le chat (.chatDock>*) et les pop-ups */
 /* transition avec l'onglet Session (backdrop.js) : les panneaux glissent depuis les bords (.bgEnter) ou y repartent
    (.bgLeave, l'onglet reste affiché par-dessus le nouveau le temps de la sortie), linéaire comme le zoom de la mine */
 @keyframes bgFromL{from{transform:translateX(-110%);opacity:0}}
@@ -130,8 +130,9 @@ select option{background:var(--panel)}
 .slot .noicon{color:var(--mut);text-transform:uppercase}
 .slot .q{position:absolute;right:var(--u);bottom:0;font-size:var(--fs-s);font-variant-numeric:tabular-nums;pointer-events:none;
   text-shadow:var(--u) 0 0 #000,calc(-1*var(--u)) 0 0 #000,0 var(--u) 0 #000,0 calc(-1*var(--u)) 0 #000}
-/* pièce runée (src/ui/rarity.js runeMark) : la texture de sa rune, en petit dans le coin */
-.runeMark{position:absolute;left:calc(-1*var(--u));bottom:calc(-1*var(--u));width:calc(11*var(--u));height:calc(11*var(--u));background:center/100% 100% no-repeat;
+/* pièce runée (src/ui/rarity.js runeMark) : la texture de sa rune, en petit dans le coin. Taille en % de la case
+   (04/11/2026, Geoffrey : 22 px fixes cachaient la pièce sur les petites cases de l'appli) : un tiers de la case */
+.runeMark{position:absolute;left:0;bottom:0;width:34%;height:34%;max-width:calc(11*var(--u));max-height:calc(11*var(--u));background:center/100% 100% no-repeat;
   image-rendering:pixelated;pointer-events:none;
   filter:drop-shadow(var(--u) 0 0 #000) drop-shadow(calc(-1*var(--u)) 0 0 #000) drop-shadow(0 var(--u) 0 #000) drop-shadow(0 calc(-1*var(--u)) 0 #000)}
 .runeIco{position:relative;display:block}
@@ -309,9 +310,21 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .inSession{display:flex;align-items:center;justify-content:space-between;gap:calc(4*var(--u));flex-wrap:wrap;margin-bottom:calc(15*var(--u));
   padding:calc(3*var(--u)) calc(6*var(--u));background:var(--sel);box-shadow:0 0 0 var(--u) var(--acc),calc(2*var(--u)) calc(2*var(--u)) 0 #000}
 .inSession .pi{color:var(--acc);margin-right:calc(2*var(--u))}
+/* événement du jour (05/11/2026, src/ui/daily.js) */
+.dailyBanner{display:flex;align-items:center;gap:calc(5*var(--u));margin-bottom:calc(12*var(--u));padding:calc(3*var(--u)) calc(6*var(--u));
+  background:var(--sel);box-shadow:0 0 0 var(--u) var(--acc),calc(2*var(--u)) calc(2*var(--u)) 0 #000}
+.dailyBanner .dIcon{font-size:1.6em}
+.dailyBanner .dText{flex:1;min-width:0}
+.dailyBanner .dLeft{white-space:nowrap}
 .actList{display:flex;flex-direction:column;gap:calc(3*var(--u))}
 .actBtn{width:100%;justify-content:flex-start;gap:calc(6*var(--u));min-height:calc(30*var(--u));padding:calc(3*var(--u)) calc(8*var(--u));text-align:left}
 .actBtn.ready{outline:calc(2*var(--u)) solid var(--gold, #ffd23f);outline-offset:calc(-2*var(--u))}   /* entrée disponible (Bloc géant, He's coming) */
+/* activité scellée (03/11/2026, Geoffrey) : niveau requis pas atteint ; chaînes en travers, cadenas doré à la place de l'icône */
+.actBtn.sealed{opacity:1;filter:grayscale(.85) brightness(.75);
+  background-image:repeating-linear-gradient(135deg,rgba(0,0,0,0) 0 calc(10*var(--u)),rgba(201,162,39,.22) calc(10*var(--u)) calc(12*var(--u)))}
+.actBtn.sealed .actIcon{filter:none;color:#ffd23f}
+.actBtn.sealed .actIcon .pi{width:calc(14*var(--u));height:calc(14*var(--u))}
+.actBtn.sealed small{color:#e0c060}
 .actIcon{flex:none;width:calc(16*var(--u));text-align:center;font-size:var(--fs-xl)}
 .actText{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.1}
 .actText b{font:400 var(--fs-xl)/1.1 var(--f-title);color:#ffe6c4}
@@ -410,6 +423,12 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .prisonBanner{display:flex;align-items:center;justify-content:center;gap:calc(3*var(--u));padding:calc(2*var(--u)) calc(6*var(--u));
   background:var(--sel);box-shadow:inset 0 calc(-1*var(--u)) 0 var(--acc-dk);font-size:var(--fs-l);font-variant-numeric:tabular-nums;text-align:center}
 .prisonBanner>span:first-child{color:var(--acc)}
+/* raid Cerbère (04/11/2026) : bandeau du minage (barre : blocs minés) ; devant la porte, il rougeoie */
+.raidBanner{flex-wrap:wrap;background:#2a120c;box-shadow:inset 0 calc(-1*var(--u)) 0 #7a2a12}
+.raidBanner>span:first-child{color:#ff8a2a}
+.raidBanner .raidBar{flex:0 1 calc(120*var(--u))}
+.raidBanner .raidBar>i{background:#ff8a2a}
+.raidBanner.door{background:#4a160c;color:#ffd08a}
 .prisonOn #focusCard,.prisonOn #focusAreaCard,.prisonOn:not(.prisonDev) #speedBtns,.prisonOn #pauseBtn,.prisonOn #seedLbl{display:none!important}   /* vitesses : en mode dev seulement (29/10) */
 .lobbyActions .launchCost{align-self:center;color:var(--mut)}
 .lobbyActions .launchCost.err{color:var(--bad)}
@@ -450,6 +469,8 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 /* chat de session et chat global du lobby (src/ui/chat.js) */
 .chatDock{position:fixed;left:0;bottom:0;z-index:35;width:var(--chat-w);height:var(--chat-h,60dvh);display:flex;flex-direction:column}
 .chatDock.folded{height:auto}
+.chatDock{pointer-events:none}   /* sa marge du bas (overNav) laisse passer les clics ; son contenu les prend */
+.chatDock>*{pointer-events:auto}
 /* bordures à tirer, invisibles, à cheval sur le bord de la boîte (src/ui/chat-dock.js) */
 .chatEdge{position:absolute;z-index:2;touch-action:none}
 .chatEdge.top{left:0;right:0;top:-6px;height:12px;cursor:ns-resize}
@@ -476,9 +497,9 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .chatFold{flex:none;min-height:0;min-width:calc(12*var(--u));height:calc(10*var(--u));padding:0}
 #gchatLog{flex:1;min-height:0;max-height:none}
 body{--chat-w:calc(287.5*var(--u))}
-/* le chat flotte par-dessus : sa taille ne décale rien (31/10). overNav : plus large que le début de la barre d'action, son
-   champ reste au-dessus d'elle */
-.chatDock.overNav .card{padding-bottom:calc(var(--dock-h) + 6*var(--u))}
+/* le chat flotte par-dessus : sa taille ne décale rien (31/10). overNav : plus large que le début de la barre d'action, il s'arrête
+   juste au-dessus de ce qu'il recouvre (--chat-lift, src/ui/chat-dock.js) ; la marge est transparente, la mine reste visible (04/11) */
+.chatDock.overNav{padding-bottom:calc(var(--chat-lift,0px) + 2*var(--u))}
 @media (min-width:1171px){ body.chatOn #run .runL{margin-bottom:var(--chat-h,60dvh)!important} }   /* la colonne de gauche s'arrête au-dessus du chat */
 @media (max-width:1170px){
   /* bandeau du haut et barre d'action (31/10/2026) : ils tiennent dans l'écran, y compris en paysage (le pseudo se raccourcit,
@@ -494,7 +515,7 @@ body{--chat-w:calc(287.5*var(--u))}
   .dock ul{overflow-x:auto;max-width:100%}
   .dock ul button{flex:none}
   .chatDock{width:100%;bottom:calc(var(--dock-h) + 2*var(--u))}
-  .chatDock.overNav .card{padding-bottom:0}
+  .chatDock.overNav{padding-bottom:0}
   .chatEdge.right,.chatEdge.corner{display:none}   /* toute la largeur de l'écran */
   .chatDock.folded{width:max-content;max-width:100%}
   .chatDock.folded .chatTabs{flex-wrap:nowrap}
@@ -507,6 +528,7 @@ body.phone .phoneOnly{display:block}
 body.phone .chatDock.folded{display:none}
 body.phone .chatDock{top:var(--top-h);bottom:calc(var(--dock-h) + 2*var(--u));left:0;width:100%;height:auto}
 body.phone .chatEdge,body.phone .chatFold{display:none}
+body.phone .chatDock.overNav{padding-bottom:0}
 body.phone .chatDock .card{background:#0b0806}
 .chatLog{max-height:calc(90*var(--u));overflow:auto;overflow-wrap:anywhere}
 .chatLog div{padding:var(--u) 0}
@@ -737,7 +759,17 @@ body.phone .chatMore{opacity:1;padding:0 calc(5*var(--u))}
 
 /* ---------- onglet Skills ---------- */
 .skHead{display:flex;align-items:center;gap:calc(4*var(--u));flex-wrap:wrap;margin-bottom:calc(15*var(--u))}
-.skTrees{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:calc(9*var(--u))}
+.skTreeRow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:calc(9*var(--u))}
+/* arbres v2 (04/11/2026) : boutons de spé, points par étage, arbres secondaires, skills de classe */
+.skSpecs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:calc(4*var(--u));margin:0 0 calc(8*var(--u))}
+.skSpecs button{display:flex;flex-direction:column;align-items:center;gap:calc(var(--u));padding:calc(3*var(--u))}
+.skSpecs button .pi{width:calc(10*var(--u));height:calc(10*var(--u))}
+.skSpecs button small{font-size:var(--fs-s);color:var(--mut)}
+.skSpecs button.on small{color:#4a1e08}
+.skTier{position:absolute;left:0;min-width:calc(12*var(--u));font-size:var(--fs-s);color:var(--mut);opacity:.75}
+.skTier.on{color:var(--acc);opacity:.6}
+.skTree.side h3 .small{color:var(--mut)}
+.skNode.cls .skName::after{content:" ★";color:var(--acc)}
 .skTree h3{margin:0 0 calc(4*var(--u));font-size:var(--fs-l);text-align:center}
 .specLvl{margin:0 auto calc(6*var(--u));max-width:calc(120*var(--u))}
 .specLvl .row{display:flex;justify-content:space-between;gap:calc(4*var(--u));margin-bottom:calc(2*var(--u))}
@@ -745,12 +777,18 @@ body.phone .chatMore{opacity:1;padding:0 calc(5*var(--u))}
 .skTree.locked{opacity:.45}
 .skGraph{position:relative;margin:var(--u) 0 0}
 .skLinks{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
-.skLinks line{stroke:#3a302a;stroke-width:6}
-.skLinks line.on{stroke:#ff7a2e}
+.skLinks{pointer-events:none}
+.skLinks .lnk{fill:none;stroke:#a88458;stroke-width:4;stroke-linejoin:miter;stroke-dasharray:7 4}   /* lien « | » : skill exigé → skill qui l'exige (04/11) */
+.skLinks .lnk.on{stroke:#ff7a2e;stroke-dasharray:none}
+.skLinks .ar{fill:#a88458} .skLinks .ar.on{fill:#ff7a2e}
+.skNeed{margin:6px 0 0;color:#d9a86a} .skNeed.ok{color:var(--acc)}
 .skNode{position:absolute;transform:translate(-50%,-29px);width:calc(60*var(--u));display:flex;flex-direction:column;align-items:center;gap:var(--u);text-align:center;user-select:none}
+.skTree.c3 .skNode{width:calc(46*var(--u))}   /* arbre à 3 colonnes (v3, 04/11) : cases plus étroites */
 .skOrb{width:58px;height:58px;display:grid;place-items:center;color:var(--mut);
   border:calc(3*var(--u)) solid transparent;border-image:url(../../textures/ui/slot_n.png) 3 fill / calc(3*var(--u)) stretch}
 .skOrb .pi{width:calc(16*var(--u));height:calc(16*var(--u))}
+.skTxt{display:none}   /* effet du skill : appli seulement (src/app/app.css) */
+.upStat{display:none}   /* stats de la pièce posée (Amélioration) : appli seulement (src/app/app.css) */
 .skName{font-size:var(--fs-s);line-height:1.1;color:var(--mut);background:var(--panel);padding:0 calc(2*var(--u));position:relative}
 .skRank{position:absolute;top:40px;left:50%;transform:translateX(4px);font-size:var(--fs-s);font-weight:400;background:var(--void);box-shadow:0 0 0 var(--u) var(--line);padding:0 calc(2*var(--u))}
 .skPlus{position:absolute;top:-4px;left:50%;transform:translateX(14px);width:calc(10*var(--u));height:calc(10*var(--u));display:grid;place-items:center;font-style:normal;
@@ -804,7 +842,7 @@ body.phone .chatMore{opacity:1;padding:0 calc(5*var(--u))}
   #cvWrap,#cvMiWrap,#cvTwWrap,#cvGtWrap,#cvHcWrap,#cvInWrap,.rail,.runL,.runR,.runGrid.mi>aside{margin-bottom:0!important}   /* la page défile : la marge du bas suffit */
   .runGrid{min-height:calc(100dvh - var(--top-h) - var(--dock-h) - 30*var(--u))}
   #cvWrap{min-height:calc(260*var(--u))}
-  .skTrees{grid-template-columns:1fr}
+  .skTreeRow{grid-template-columns:1fr}
   .lobbyCols{grid-template-columns:minmax(0,1fr)}
   #lobby:not(.atMenu) .lobbyCols>.lobbyCol:last-child{order:-1}   /* l'équipe et Lancer d'abord ; au menu, les activités d'abord */
   .invWrap,.stuffMain{grid-template-columns:1fr}
@@ -848,6 +886,17 @@ body.phone .chatMore{opacity:1;padding:0 calc(5*var(--u))}
 #socialBody .invHead,#boardBody .invHead{margin-bottom:0}
 .gcols{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:calc(4*var(--u))}
 .gcols>div{display:flex;flex-direction:column;gap:calc(4*var(--u))}
+/* onglet Raid de la guilde (04/11/2026) : couronne du chef du raid, image de Cerbère */
+.raidMem .raidCrown{flex:0 0 calc(6*var(--u));color:var(--acc);display:inline-flex}
+.raidMem.me .fname b{color:var(--acc)}
+.raidGroup{margin-bottom:calc(3*var(--u))}
+.raidMem .raidAv{flex:none;width:calc(28*var(--u));height:calc(28*var(--u));display:grid;place-items:center}
+.raidMem .raidAv canvas{width:calc(24*var(--u));height:calc(24*var(--u));image-rendering:pixelated}
+.raidMem .fname{display:flex;flex-direction:column}
+.raidGroup h3{display:flex;align-items:center;gap:calc(2*var(--u));margin:calc(2*var(--u)) 0}
+.raidGroup h3 button{margin-left:auto}
+.raidBoss{display:block;width:100%;max-width:calc(128*2*var(--u));margin:0 auto calc(2*var(--u));image-rendering:pixelated}
+.raidRunning{box-shadow:inset 0 0 0 var(--u) #7a2a12}
 .gxp{font-size:var(--fs-s);white-space:nowrap}
 /* bâtiments de guilde (01/11/2026) */
 .gbList{display:flex;flex-direction:column;gap:calc(4*var(--u))}
@@ -857,6 +906,13 @@ body.phone .chatMore{opacity:1;padding:0 calc(5*var(--u))}
 .gbHead img{width:calc(32*var(--u));height:calc(32*var(--u));flex:none}
 .gmat{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:var(--u) calc(3*var(--u));margin-top:calc(2*var(--u))}
 .gmat .bar{grid-column:1/-1}
+/* banque de guilde (05/11/2026, src/ui/guild.js bankHTML) */
+.gbGrid{margin-top:calc(2*var(--u))}
+.gbGrid .slot{cursor:pointer}
+.gbCraft{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:var(--u) calc(3*var(--u));margin-top:calc(3*var(--u))}
+.gbCraft .gbCost{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:var(--u) calc(4*var(--u))}
+.gbCraft .gbCost img,.gbCraft .gmatName img{width:calc(8*var(--u));height:calc(8*var(--u));image-rendering:pixelated;vertical-align:middle}
+.gmatBtns{display:flex;gap:var(--u);justify-self:end}
 .gmatName{display:flex;align-items:center;gap:calc(2*var(--u));min-width:0;overflow-wrap:anywhere}
 .gmatName img{width:calc(12*var(--u));height:calc(12*var(--u));flex:none}
 .glog{max-height:calc(120*var(--u));overflow-y:auto;font-size:var(--fs-s)}
@@ -936,6 +992,7 @@ button.gopen:active:not(:disabled){transform:none}
 #dialog[hidden]{display:none}
 #dialog .box{box-sizing:border-box;max-width:min(calc(190*var(--u)),100%);width:100%;max-height:100%;overflow:auto;border:calc(6*var(--u)) solid transparent;
   padding:calc(4*var(--u)) calc(6*var(--u));border-image:url(../../textures/ui/panel_hi.png) 6 fill / calc(6*var(--u)) stretch;animation:obin .2s steps(3)}
+.dlgTitle{margin:0 0 calc(3*var(--u));font:var(--fs-l)/1.1 var(--f-title);color:var(--acc-lt)}
 .dlgText{margin:0 0 calc(4*var(--u));line-height:1.35}
 .dlgInput{width:100%;box-sizing:border-box;margin-bottom:calc(4*var(--u))}
 textarea.dlgInput{resize:vertical}
@@ -1180,6 +1237,13 @@ button.danger{color:var(--bad)}
 
 /* sets : ligne « Set équipé » et set équipé marqué (29/10/2026) */
 .setCur{margin:0 0 calc(2*var(--u))}
+/* set par activité (03/11/2026) : « Set défini pour … : [▾] » en haut de la carte des sets du Lobby */
+.setFor{display:flex;flex-wrap:wrap;align-items:center;gap:var(--u) calc(2*var(--u));margin:0 0 calc(3*var(--u));padding:calc(2*var(--u));background:var(--chip);color:var(--acc-lt)}
+.setFor .setPick{position:relative;flex:1 1 calc(60*var(--u));min-width:0;display:flex}
+/* un vrai menu déroulant (03/11) : on voit la flèche, ça ne ressemble plus à un champ où l'on tape */
+.setFor select{flex:1;min-width:0;font-size:16px;cursor:pointer;-webkit-appearance:none;appearance:none;padding-right:calc(14*var(--u));
+  border-image-source:url(../../textures/ui/slot_sel.png);color:var(--acc-lt)}
+.setFor .setPick::after{content:'▾';position:absolute;right:calc(4*var(--u));top:50%;transform:translateY(-50%);pointer-events:none;color:var(--acc-lt)}
 .setRow.on b{color:var(--ok)}
 /* onglet Stuff (31/10/2026, Geoffrey) : les sets en bandeau au-dessus, la largeur va aux noms des pièces */
 @media (min-width:701px){
@@ -1201,3 +1265,23 @@ button.danger{color:var(--bad)}
 /* modération du chat (30/10) : bandeau du joueur banni, au-dessus de tout */
 .banBar{position:fixed;top:0;left:0;right:0;z-index:9999;padding:calc(3*var(--u)) calc(6*var(--u));background:#5a0f0f;color:#ffd9d9;
   text-align:center;font-size:calc(9*var(--u));box-shadow:0 calc(var(--u)) 0 #2a0505}
+.craftQty{max-width:calc(120*var(--u));margin-top:calc(4*var(--u))}   /* quantité d'un craft en série (04/11/2026) */
+/* nom d'une stat avec sa bulle d'aide (05/11/2026) : souligné en pointillés ; au doigt, l'appui long ne sélectionne pas le texte */
+.statName{cursor:help;border-bottom:1px dotted var(--mut, #8a7a6a);-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+
+/* appli (05/11/2026) : « Set : x ▾ » et le bouton « 💾 Enregistrer » sur une ligne (src/ui/sets.js setsBarHtml) */
+body.app .setBarRow{display:flex;gap:6px;align-items:stretch}
+body.app .setBarRow .setBar{flex:1 1 auto;min-width:0;width:auto}
+body.app .setQuick{flex:none;white-space:nowrap;font-size:var(--fs)}
+/* Boutique (05/11/2026, src/ui/shop.js) */
+.shopWallet{display:flex;align-items:center;gap:calc(3*var(--u));margin:0 0 calc(6*var(--u))}
+.shopWallet img,.shopPrice img,.shopList img,.shopIco img{width:calc(16*var(--u));height:calc(16*var(--u));image-rendering:pixelated;vertical-align:middle}
+.shopGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(calc(150*var(--u)),1fr));gap:calc(6*var(--u))}
+.shopHead{display:flex;align-items:center;gap:calc(5*var(--u))}
+.shopIco img{width:calc(32*var(--u));height:calc(32*var(--u))}
+.shopPrice{display:flex;align-items:center;gap:calc(2*var(--u));margin-top:calc(2*var(--u))}
+.shopList{list-style:none;margin:calc(5*var(--u)) 0;padding:0}
+.shopList li{display:flex;align-items:center;gap:calc(3*var(--u));padding:calc(1*var(--u)) 0}
+.shopBuy{width:100%}
+/* guilde : spécialisation principale d'un membre (05/11/2026), couleur de l'arbre (.tr-*) */
+.gspec{font-size:var(--fs-s);white-space:nowrap;color:var(--c,var(--mut))}

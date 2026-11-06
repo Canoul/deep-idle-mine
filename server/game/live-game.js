@@ -3,7 +3,7 @@
    ils arrivent. Chaque choix est noté avec ce tick dans l'enregistrement de la session : rejouer la seed et les
    choix enregistrés reconstruit exactement la même partie (seulement après un redémarrage du serveur).
    Mine instantanée (record.mode === 'mi', src/sim/instant/) et tours (record.mode 'tower_angel' / 'tower_demon',
-   src/sim/tower/) et instances (record.mode 'instance_1'…, src/sim/instance/) : même interface ; seuls les départs
+   src/sim/tower/) et instances (record.mode 'instance_1'…, src/sim/instance/) et raid (record.mode 'raid', src/sim/raid/) : même interface ; seuls les départs
    comptent (pas de focus).
 
    Les réglages dev (valeurs globales STATS/CFG) ne sont appliqués que pendant les calculs de cette partie. */
@@ -20,6 +20,8 @@ import { buildInstanceGame, applyDueInstanceLeaves, isInstanceMode, tickAnyInsta
 import { createInstanceViewer } from '../../src/shared/instances-view.js';
 import { buildPrisonRun, runInfo } from '../../src/shared/prison.js';
 import { tickPrison, endPrisonRun } from '../../src/sim/prison.js';
+import { buildRaid, tickRaid, endRaidNow, applyDueRaidLeaves, isRaidMode } from '../../src/shared/raid.js';
+import { createRaidViewer } from '../../src/shared/raid-view.js';
 
 /* ce qui change entre une session et une mine instantanée */
 const KINDS = {
@@ -29,12 +31,14 @@ const KINDS = {
   instance: { build: buildInstanceGame, tick: tickAnyInstance, end: G => endAnyInstance(G, false), events: applyDueInstanceLeaves, viewer: createInstanceViewer },
   /* run de prison (record.mode 'prison', src/shared/prison.js) : aucun choix en cours de partie ; une fin immédiate
      (arrêt de la prison) arrête le run au tick atteint, sans jouer la suite (endNow) */
+  /* raid Cerbère (record.mode 'raid', 04/11/2026, src/shared/raid.js) : minage, porte, arène ; seuls les départs comptent */
+  raid: { build: buildRaid, tick: tickRaid, end: endRaidNow, events: applyDueRaidLeaves, viewer: createRaidViewer },
   prison: { build: buildPrisonRun, tick: tickPrison, end: endPrisonRun, events: () => {}, viewer: createViewer, endNow: true, info: runInfo },
 };
 
 export function createLiveGame(record){
   const rec = { ...record, leaves: [...(record.leaves || [])], focus: [...(record.focus || [])], kholes: [...(record.kholes || [])] };
-  const K = KINDS[rec.mode === 'prison' ? 'prison' : rec.mode === 'mi' ? 'instant' : isTowerMode(rec.mode) ? 'tower' : isInstanceMode(rec.mode) ? 'instance' : 'session'];
+  const K = KINDS[rec.mode === 'prison' ? 'prison' : rec.mode === 'mi' ? 'instant' : isRaidMode(rec.mode) ? 'raid' : isTowerMode(rec.mode) ? 'tower' : isInstanceMode(rec.mode) ? 'instance' : 'session'];
   const withOverrides = fn => { applyOverrides(rec.overrides); try { return fn(); } finally { applyOverrides(null); } };
   const G = withOverrides(() => K.build(rec));
   const step = target => { while(!G.over && G.ticks < target){ K.events(G, rec); K.tick(G); } };

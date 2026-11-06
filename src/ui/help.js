@@ -59,6 +59,9 @@ Quitter la session avant la fin = tu ne reçois rien.`,
   mi_loot: `Ton butin
 Versé dans ton inventaire à la fin de la mine.
 Quitter avant la fin = tu ne reçois rien.`,
+  shop: `Boutique
+Des objets exclusifs, payés en émeraudes (gagnées par le parrainage).
+Un achat arrive tout de suite dans ton inventaire.`,
   inventory: `Inventaire
 Tout ce que tu as rapporté des sessions.
 Sélectionne un objet pour voir ce qu'on peut en faire : ouvrir un treasure, utiliser un blueprint, équiper ou recycler une pièce.

@@ -28,9 +28,18 @@ export const identifyChoices = (list, t) => t
   ? list.filter(p => p.uid !== t.uid && p.item === t.item)
   : list.filter(p => !isIdentified(p));
 
-/* une case d'objet (vide : son libellé) */
+/* dans l'appli mobile (classe app, src/app/boot.js) : les pièces en grille d'icônes */
+const inApp = () => !!globalThis.document?.body?.classList.contains('app');
+
+/* une case d'objet (vide : son libellé) ; ses stats sous le nom (.upStat : appli seulement, cachées sur le site) */
 const box = (p, label, cls) => `<button class="slot upBox ${cls}${p ? rcls(p.item) : ' empty'}"${rframe(p)}${p ? tipAttr(p.item, p.item, p) : ''}>`+
-  `${p ? icon(p.item) + runeMark(p) : ''}</button><div class="upLbl">${p ? pname(p) : `<span class="mut">${esc(label)}</span>`}</div>`;
+  `${p ? icon(p.item) + runeMark(p) : ''}</button><div class="upLbl">${p ? pname(p) + `<small class="upStat">${esc(statLines(p).join(' · '))}</small>` : `<span class="mut">${esc(label)}</span>`}</div>`;
+
+/* appli (04/11/2026, Jules, spec 2026-11-04-appli-ecrans-fin-design.md) : une pièce de la liste en tuile ; worn = petit carré
+   « équipée », tag = marque courte (MAX, ✨, ?, R5), sel = posée, dim = pas utilisable ici (rune trop rare) */
+export const pieceTileHtml = (p, { worn = false, tag = '', sel = false, dim = false } = {}) =>
+  `<button class="slot upPick upTile${rcls(p.item)}${sel ? ' sel' : ''}${dim ? ' dim' : ''}" data-uid="${p.uid}"${rframe(p)}${tipAttr(p.item, p.item, p)}>`+
+  `${icon(p.item)}${runeMark(p)}${worn ? '<i class="upEq"></i>' : ''}${tag ? `<span class="upTag">${esc(tag)}</span>` : ''}</button>`;
 /* onOp({ action:'identify', uid, sacrifice } | { action:'upgrade', uid } | { action:'enchant', uid, rune }) → promesse { piece, success } (rejetée avec un message lisible) ;
    worn() : pièces portées { case: pièce } (onglet Stuff) */
 export function setupUpgrade({ onOp, worn = () => ({}) }){
@@ -48,6 +57,9 @@ export function setupUpgrade({ onOp, worn = () => ({}) }){
   /* une ligne de la liste des pièces : icône, nom (« équipée » si portée), effets */
   const row = (p, extra = '') => `<button class="fopt upPick" data-uid="${p.uid}"><span class="runeIco">${icon(p.item)}${runeMark(p)}</span>`+
     `<span>${pname(p)}${isWorn(p) ? ' <small class="okmsg">équipée</small>' : ''}<br><small class="stuffStats">${esc(statLines(p).join(' · ') || 'Aucun effet')}</small></span>${extra}</button>`;
+  /* la liste : lignes sur le site, tuiles dans l'appli (tile : marques de pieceTileHtml) */
+  const item = (p, extra, tile = {}) => inApp() ? pieceTileHtml(p, { worn:isWorn(p), ...tile }) : row(p, extra);
+  const listCls = () => inApp() ? 'upTiles' : 'fopts';
   /* prévenir avant de détruire une pièce portée : sa case se videra */
   const wornWarn = p => isWorn(p) ? ' Elle est équipée : sa case du stuff se videra.' : '';
 
@@ -81,7 +93,7 @@ export function setupUpgrade({ onOp, worn = () => ({}) }){
       (why ? `<p class="err">${why}</p>` : '')+
       message()+
       `<h3>${t ? 'Choisis le sacrifice' : 'Choisis la pièce à identifier'}</h3>`+
-      (list.length ? `<div class="fopts">${list.map(p => row(p, p.uid === t?.uid || p.uid === s?.uid ? '<b>posée</b>' : '')).join('')}</div>`
+      (list.length ? `<div class="${listCls()}">${list.map(p => { const on = p.uid === t?.uid || p.uid === s?.uid; return item(p, on ? '<b>posée</b>' : '', { sel:on }); }).join('')}</div>`
         : `<p class="mut">${t ? 'Aucun autre exemplaire de cet objet à sacrifier.' : 'Aucune pièce à identifier.'}</p>`)+
       qualityTable();
     $('upBody').querySelectorAll('.upPick').forEach(b => b.onclick = () => {
@@ -118,7 +130,7 @@ export function setupUpgrade({ onOp, worn = () => ({}) }){
       `<button class="on" id="upGo"${can ? '' : ' disabled'}>⬆ Améliorer</button></div>`+
       message()+
       `<h3>Choisis la pièce</h3>`+
-      (list.length ? `<div class="fopts">${list.map(p => row(p, nextLevel(p) ? '' : '<b>max</b>')).join('')}</div>`
+      (list.length ? `<div class="${listCls()}">${list.map(p => item(p, nextLevel(p) ? '' : '<b>max</b>', { tag: nextLevel(p) ? '' : 'MAX', sel: p.uid === t?.uid })).join('')}</div>`
         : '<p class="mut">Aucune pièce de stuff.</p>')+
       levelTable();
     $('upBody').querySelectorAll('.upPick').forEach(b => b.onclick = () => { target = +b.dataset.uid; msg = ''; render(); });
@@ -163,8 +175,10 @@ export function setupUpgrade({ onOp, worn = () => ({}) }){
       (why ? `<p class="err">${why}</p>` : '')+
       message()+
       `<h3>${pick === 'target' ? 'Choisis la pièce à enchanter' : 'Choisis la rune'}</h3>`+
-      (list.length ? `<div class="fopts">${list.map(p => pick === 'target'
-          ? row(p, p.rune ? (p.rune.frag ? '<b>fragment posé</b>' : '<b>déjà enchantée</b>') : p.uid === t?.uid ? '<b>posée</b>' : !isIdentified(p) ? '<b>à identifier</b>' : `<b>jusqu'à R${p.q}</b>`)
+      (list.length ? `<div class="${listCls()}">${list.map(p => pick === 'target'
+          ? item(p, p.rune ? (p.rune.frag ? '<b>fragment posé</b>' : '<b>déjà enchantée</b>') : p.uid === t?.uid ? '<b>posée</b>' : !isIdentified(p) ? '<b>à identifier</b>' : `<b>jusqu'à R${p.q}</b>`,
+              { tag: p.rune ? '✨' : !isIdentified(p) ? '?' : `R${p.q}`, sel: p.uid === t?.uid })
+          : inApp() ? pieceTileHtml(p, { tag:`R${p.q}`, sel: p.uid === r?.uid, dim: !!(t && isIdentified(t) && p.q > t.q) })
           : `<button class="fopt upPick" data-uid="${p.uid}">${icon(p.item)}<span>${pname(p)}<br><small class="stuffStats">${esc(runeLines(p).join(' · '))}</small></span>${p.uid === r?.uid ? '<b>posée</b>' : t && isIdentified(t) && p.q > t.q ? `<b>trop rare pour cette pièce</b>` : ''}</button>`).join('')}</div>`
         : `<p class="mut">${pick === 'target' ? 'Aucune pièce de stuff.' : 'Aucune rune : ouvre un trésor de tour (Inventaire).'}</p>`);
     $('upBody').querySelectorAll('.upPick').forEach(b => b.onclick = () => {

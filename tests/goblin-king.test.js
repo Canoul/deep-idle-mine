@@ -21,16 +21,17 @@ let n = 0; const id = () => 'op' + (n++);
 const seq = (...v) => { let i = 0; return () => v[i++ % v.length]; };
 
 test('objets : cases, stats et raretés du créateur ; pas craftables (sauf le Four en or, par son plan)', () => {
-  assert.deepEqual(STUFF.items[CROWN], { slot:'casque', tex:'crown_goblin_king', stats:{ fortune:10 }, set:{ goblinThrall:10 } });
-  assert.deepEqual(STUFF.items[MACE], { slot:'epee', tex:'mace_goblin_king', set:{ damage:14 }, stats:{ crit:15 } });
-  assert.deepEqual(STUFF.items[CAPE], { slot:'cape', tex:'cape_goblin_royal', stats:{ damagePct:5, mineSpeedPct:5 } });
+  const noRecycle = ({ recycle, ...d }) => d;   // recyclage en quantités fixes (05/11) : tests/recycle.test.js
+  assert.deepEqual(noRecycle(STUFF.items[CROWN]), { slot:'casque', tex:'crown_goblin_king', stats:{ fortune:10 }, set:{ goblinThrall:10 } });
+  assert.deepEqual(noRecycle(STUFF.items[MACE]), { slot:'epee', tex:'mace_goblin_king', set:{ damage:14 }, stats:{ crit:15 } });
+  assert.deepEqual(noRecycle(STUFF.items[CAPE]), { slot:'cape', tex:'cape_goblin_royal', stats:{ damagePct:1.9, mineSpeedPct:5 } });   // dégâts % 1,9 depuis le 04/11 (avant 5)
   assert.deepEqual([CROWN, MACE, CAPE, RECIPE, 'Four en or', BP].map(rarityOf), ['legendaire', 'rare', 'rare', 'inhabituel', 'rare', 'rare']);
   for(const p of [CROWN, MACE, CAPE]) assert.equal(RECIPES[p], undefined, p);
   assert.equal(tierOf(MACE), 3); assert.equal(tierOf(CAPE), 3); assert.equal(tierOf(CROWN), 4, 'couronne : tier 4, 600 x (27/10)');
   assert.deepEqual(RECIPES['Four en or'], { cost:{ 'Shiny gold':50, 'Tainted gold':50, 'Diamant':50 }, qty:1, unlock:BP });
   const s = equippedStats([{ item:CROWN }, { item:MACE }, { item:CAPE }]);
   assert.equal(s.fortune, 10); assert.equal(s.goblinThrall, 10); assert.equal(s.damage, 14); assert.equal(s.crit, 15);
-  assert.equal(s.damagePct, 5); assert.equal(s.mineSpeedPct, 5);
+  assert.equal(s.damagePct, 1.9); assert.equal(s.mineSpeedPct, 5);
   assert.equal(equippedStats([]).goblinThrall, 0, 'sans couronne : aucun gobelin asservi');
 });
 
@@ -142,15 +143,15 @@ test('la recette apprise survit à l\'enregistrement (serveur) ; un nom inventé
   assert.equal(accepts('ore', 'Peau de gobelin', 'smelt', back), true);
 });
 
-test('coffre : 2e tirage, un parchemin au plus (Ulti shen 1 %, Fast learner 0,5 %, Cleave 1 %, Hand of Justice 1 %) ; un sort déjà appris ne sort pas', () => {
-  const US = 'Parchemin « Ulti shen »', FL = 'Parchemin « Fast learner »', CL = 'Parchemin « Cleave »', HJ = 'Parchemin « Hand of Justice »';
+test('coffre : 2e tirage, un parchemin au plus (Ralliement 1 %, Fast learner 0,5 %, Cleave 1 %, Hand of Justice 1 %) ; un sort déjà appris ne sort pas', () => {
+  const US = 'Parchemin « Ralliement »', FL = 'Parchemin « Fast learner »', CL = 'Parchemin « Cleave »', HJ = 'Parchemin « Hand of Justice »';
   const scroll = (r, spells) => { const inv = createInventory(); addItem(inv, CHEST(3), 1);
     return Object.keys(openTreasure(inv, CHEST(3), id(), seq(0.5, 0.5, 0.5, 0.99, 0.99, r, 0.99), { spells }).loot).filter(k => k.startsWith('Parchemin')); };
   assert.deepEqual(scroll(0), [US]); assert.deepEqual(scroll(0.0099), [US]);
   assert.deepEqual(scroll(0.01), [FL]); assert.deepEqual(scroll(0.0149), [FL]);
   assert.deepEqual(scroll(0.015), [CL]); assert.deepEqual(scroll(0.025), [HJ]); assert.deepEqual(scroll(0.0349), [HJ]);
   assert.deepEqual(scroll(0.035), []);
-  assert.deepEqual(scroll(0, ['ulti_shen']), [], 'Ulti shen appris : rien');
+  assert.deepEqual(scroll(0, ['ulti_shen']), [], 'Ralliement appris : rien');
   assert.deepEqual(scroll(0.02, ['ulti_shen']), [CL], 'les autres restent');
   /* avec l'état des sorts du joueur : appris par learnScroll */
   const inv = createInventory(), st = createSpells(); addAll(inv, { [HJ]:1 });

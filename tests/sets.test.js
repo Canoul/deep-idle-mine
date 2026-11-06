@@ -74,10 +74,10 @@ test('équiper : skills remis (revérifiés avec les points) et sorts encore éq
   k.skills.tree = null; k.skills.ranks = {}; k.spells.slots = [null, null];
   applySet(sets, { id:1, opId:'e1' }, { ...k, points:4, spec:{ barbare:5 } });
   assert.deepEqual([k.skills.tree, k.skills.ranks], ['barbare', { damage:3, taunt:1 }]);
-  assert.deepEqual(k.spells.slots, ['dash', 'ulti_shen']);
+  assert.deepEqual(k.spells.slots, ['dash', 'ulti_shen', null, null]);
   applySet(sets, { id:1, opId:'e2' }, { ...k, points:2, spec:{ barbare:4 } });
   assert.deepEqual(k.skills.ranks, { damage:2 }, 'pas assez de points : les rangs en trop sont rendus');
-  assert.deepEqual(k.spells.slots, [null, 'ulti_shen'], 'Dash pas débloqué : retiré');
+  assert.deepEqual(k.spells.slots, [null, 'ulti_shen', null, null], 'Dash pas débloqué : retiré');
 });
 
 test('relecture : sets invalides, doublons et cases inconnues retirés ; nom par défaut', () => {
@@ -86,8 +86,8 @@ test('relecture : sets invalides, doublons et cases inconnues retirés ; nom par
     { id:1, name:'doublon' }, { id:'7' }, null, { id:4, name:'' } ] });
   assert.deepEqual(s.list.map(x => [x.id, x.name]), [[1, 'A'], [4, 'Set 4']]);
   assert.deepEqual(s.list[0].stuff, { pioche:5 });
-  assert.deepEqual(s.list[0].skills, { tree:'barbare', ranks:{ damage:3 } });
-  assert.deepEqual(s.list[0].spells, ['dash', null]);
+  assert.deepEqual(s.list[0].skills, { v:3, tree:'barbare', ranks:{ damage:3 } });
+  assert.deepEqual(s.list[0].spells, ['dash', null, 'ulti_shen', null]);   // 4 emplacements (05/11)
   assert.equal(s.nextId, 5); assert.deepEqual(s.ops, ['a']);
   assert.deepEqual(sanitizeSets('n\'importe quoi'), createSets());
 });
@@ -110,15 +110,16 @@ const ME = { id:'AAAA1111', name:'Zoe' };
 test('serveur : un set enregistre et remet stuff, skills et sorts ; créer / enregistrer permis pendant une session', async () => {
   const { game, uid } = await server(), [p1] = uid(PICK);
   await game.stuff(ME, { action:'equip', slot:'pioche', uid:p1, opId:'op-set-w1' });
+  await game.skills(ME, { action:'spec', tree:'barbare', opId:'op-set-k0' });
   await game.skills(ME, { action:'learn', node:'damage', opId:'op-set-k1' });
   await game.spells(ME, { action:'equip', spell:'dash', slot:0, opId:'op-set-p1' });
   let r = await game.sets(ME, { action:'create', opId:'op-set-c1' });
-  assert.deepEqual(r.sets.list[0].skills, { tree:'barbare', ranks:{ damage:1 } });
+  assert.deepEqual(r.sets.list[0].skills, { v:3, tree:'barbare', ranks:{ damage:1 } });
   await game.stuff(ME, { action:'unequip', slot:'pioche', opId:'op-set-w2' });
   await game.skills(ME, { action:'reset', opId:'op-set-k2' });
   r = await game.sets(ME, { action:'equip', id:1, opId:'op-set-e1' });
   assert.equal(r.stuff.pioche.uid, p1);
-  assert.deepEqual([r.skills.tree, r.skills.ranks, r.spells.slots], ['barbare', { damage:1 }, ['dash', null]]);
+  assert.deepEqual([r.skills.tree, r.skills.ranks, r.spells.slots], ['barbare', { damage:1 }, ['dash', null, null, null]]);
   assert.equal(r.missing, 0);
   assert.deepEqual((await game.state(ME)).sets.list.map(s => s.name), ['Set 1']);
   /* 28/10/2026 (Geoffrey) : enregistrer et créer sont permis pendant une session (rien ne bouge : le set note l'équipement) */
@@ -140,6 +141,7 @@ test('serveur : un set enregistre et remet stuff, skills et sorts ; créer / enr
    l'équipement figé à son lancement */
 test('serveur : équiper un set pendant une session ; la session en cours ne change pas, la suivante prend le set', async () => {
   const { game, store, uid } = await server(), [p1] = uid(PICK);
+  await game.skills(ME, { action:'spec', tree:'barbare', opId:'op-ses-k0' });
   await game.skills(ME, { action:'learn', node:'damage', opId:'op-ses-k1' });
   await game.sets(ME, { action:'create', opId:'op-ses-c1' });                       // set 1 : sans pioche, damage 1
   await game.stuff(ME, { action:'equip', slot:'pioche', uid:p1, opId:'op-ses-w1' });
@@ -239,4 +241,75 @@ test('appli : le menu des sets — Équiper (grisé pour le set porté), ⋯ qui
   const empty = setsSheetHtml({ list:[], max:20 });
   assert.match(empty, /Aucun set/); assert.match(empty, /\+ Nouveau set/);
   assert.match(setsSheetHtml({ list:[{ id:3, name:'<i>' }], max:20 }), /&lt;i&gt;/);
+});
+
+/* ---------- set par activité (03/11/2026, Geoffrey) ---------- */
+import { setActivity, setForMode } from '../src/meta/sets.js';
+import { activityLineHtml } from '../src/ui/sets.js';
+
+test('set par activité : activité d\'un mode (instances et tours groupées), associer, dissocier, set supprimé = dissocié', () => {
+  assert.equal(setActivity('mine'), 'mine'); assert.equal(setActivity('prison'), 'prison'); assert.equal(setActivity('mi'), 'mi');
+  assert.equal(setActivity('giant'), 'giant'); assert.equal(setActivity('hescoming'), 'hescoming');
+  assert.equal(setActivity('instance_2'), 'instances'); assert.equal(setActivity('tower_demon'), 'towers');
+  for(const m of ['bidule', null, 3, '__proto__']) assert.equal(setActivity(m), null, String(m));
+  const sets = createSets(), cur = { stuff:{}, skills:{ tree:null, ranks:{} }, spells:[null, null] };
+  setOp(sets, { action:'create', opId:'op-a-c1' }, cur); setOp(sets, { action:'create', opId:'op-a-c2' }, cur);
+  assert.ok(setOp(sets, { action:'assign', activity:'giant', id:2, opId:'op-a-1' }).ok);
+  assert.equal(setForMode(sets, 'giant').id, 2); assert.equal(setForMode(sets, 'mine'), null);
+  assert.ok(setOp(sets, { action:'assign', activity:'instances', id:1, opId:'op-a-2' }).ok);
+  assert.equal(setForMode(sets, 'instance_1').id, 1);
+  assert.equal(setOp(sets, { action:'assign', activity:'giant', id:9, opId:'op-a-3' }).error, 'unknown');
+  assert.equal(setOp(sets, { action:'assign', activity:'volcan', id:1, opId:'op-a-4' }).error, 'bad_request');
+  assert.ok(setOp(sets, { action:'assign', activity:'instances', id:null, opId:'op-a-5' }).ok);
+  assert.equal(setForMode(sets, 'instance_1'), null, 'dissocié');
+  setOp(sets, { action:'delete', id:2, opId:'op-a-6' });
+  assert.deepEqual(sets.byActivity, {}, 'set supprimé : plus associé');
+  /* relecture : activités connues et sets existants seulement */
+  const back = sanitizeSets({ list:[{ id:1, name:'A', stuff:{}, skills:{}, spells:[] }], byActivity:{ mine:1, giant:7, volcan:1, __proto__:1 } });
+  assert.deepEqual(back.byActivity, { mine:1 });
+});
+
+test('ligne du Lobby : « Set défini pour … » avec aucun et chaque set, celui associé choisi ; rien hors activité', () => {
+  const html = activityLineHtml({ list:[{ id:1, name:'Mine' }, { id:2, name:'Bloc <b>' }], byActivity:{ giant:2 } }, 'giant');
+  assert.match(html, /Set défini pour le Bloc géant :/);
+  assert.match(html, /<option value="2" selected>Bloc &lt;b&gt;<\/option>/);
+  assert.match(html, /data-activity="giant"/);
+  assert.match(activityLineHtml({ list:[{ id:1, name:'A' }] }, 'tower_angel'), /les tours du Jugement/);
+  assert.match(activityLineHtml({ list:[{ id:1, name:'A' }] }, 'mine'), /<option value="" selected>aucun/);
+  assert.equal(activityLineHtml({ list:[] }, null), '');
+});
+
+test('serveur : le set de l\'activité est équipé au lancement (mine, prison) et à l\'entrée du Bloc géant ; rien en session', async () => {
+  const { game, store, uid } = await server(), [p1] = uid(PICK);
+  await game.stuff(ME, { action:'equip', slot:'pioche', uid:p1, opId:'op-act-w1' });
+  await game.sets(ME, { action:'create', opId:'op-act-c1' });                     // Set 1 : avec la pioche
+  await game.stuff(ME, { action:'unequip', slot:'pioche', opId:'op-act-w2' });
+  await game.sets(ME, { action:'create', opId:'op-act-c2' });                     // Set 2 : sans
+  let r = await game.sets(ME, { action:'assign', activity:'mine', id:1, opId:'op-act-a1' });
+  assert.deepEqual(r.sets.byActivity, { mine:1 });
+  await game.sets(ME, { action:'assign', activity:'prison', id:2, opId:'op-act-a2' });
+  await assert.rejects(game.sets(ME, { action:'assign', activity:'mine', id:5, opId:'op-act-a3' }), { code:'unknown' });
+  const { session } = await game.start(ME, { mode:'mine' });
+  assert.equal((await game.state(ME)).stuff.pioche?.uid, p1, 'lancement de la mine : Set 1 équipé');
+  assert.equal((await store.getGameSession(session.id)).gear[ME.id].pioche?.uid, p1, 'la session part avec le set');
+  /* en session : l'entrée du Bloc géant ne touche pas à l'équipement */
+  await game.sets(ME, { action:'assign', activity:'giant', id:2, opId:'op-act-a4' });
+  assert.equal(await game.autoEquip(ME.id, 'giant'), null);
+  assert.equal((await game.state(ME)).stuff.pioche?.uid, p1);
+  await game.leave(ME);
+  /* hors session : Bloc géant → Set 2 (sans pioche) */
+  r = await game.autoEquip(ME.id, 'giant');
+  assert.equal(r.set, 'Set 2');
+  assert.equal((await game.state(ME)).stuff.pioche ?? null, null);
+  assert.equal(await game.autoEquip(ME.id, 'giant'), null, 'déjà équipé : rien');
+  assert.equal(await game.autoEquip(ME.id, 'instance_1'), null, 'aucun set associé : rien');
+});
+
+test('appli : « 💾 Enregistrer » à côté du set quand l\'équipement ne correspond plus à aucun set (05/11)', async () => {
+  const { setsBarHtml } = await import('../src/ui/sets.js');
+  assert.doesNotMatch(setsBarHtml({ id:1, name:'barb' }), /quickSave/, 'équipement = un set : pas de bouton');
+  const mod = setsBarHtml(null, { id:2, name:'mineur' });
+  assert.match(mod, /data-act="quickSave"/); assert.match(mod, /mineur<\/b> <small class="mut">\(modifié\)/);
+  assert.match(setsBarHtml(null, null), /nouveau set/);
+  assert.match(setsBarHtml(null, { id:2, name:'x' }, true), /quickSave" disabled/);
 });

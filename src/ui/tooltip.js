@@ -24,9 +24,11 @@ export function tipPlace({ r, h, view, top = 0, bottom = view, touch = false, ga
 
 /* attribut à mettre sur l'icône d'un objet : bulle pour le stuff, title natif sinon. piece : la pièce elle-même
    (qualité, lignes, niveau), sinon les effets de l'objet de base ; titre dans la couleur de la qualité si identifiée.
-   Un objet qui s'ouvre (treasure, coffre de tour ou d'instance) : bulle avec son tableau de butin (src/ui/loot-tip.js) */
+   Un objet qui s'ouvre (treasure, coffre de tour ou d'instance) : son nom seulement (04/11/2026, Geoffrey : sur l'appli,
+   le tableau de butin s'ouvrait en touchant l'objet et cachait le bouton « Ouvrir ») ; le tableau est derrière un
+   bouton « ? Butin » (lootHelp, src/ui/loot-tip.js) dans le détail de l'objet. */
 export function tipAttr(item, title = item, piece = null){
-  if(lootTableOf(item)) return ` data-tip="${esc(title)}" data-loot="item:${esc(item)}"`;
+  if(lootTableOf(item)) return ` title="${esc(title)}"`;
   const t = stuffTip(piece ?? item), c = pieceColor(piece);
   return t ? ` data-tip="${esc(t)}" data-rarity="${rarityOf(item)}"${c ? ` data-color="${c}"` : ''}` : ` title="${esc(title)}"`;
 }
@@ -75,13 +77,23 @@ export function setupTooltips(){
   document.addEventListener('pointerover', e => { if(e.pointerType === 'touch') return; const el = at(e); el ? show(el) : hide(); });
   /* toucher : ouvre la bulle de l'élément (ou la ferme) ; clic souris : la ferme (le clic ouvre souvent autre chose),
      sauf sur un « ? » d'aide, qui ne fait rien d'autre qu'expliquer */
+  /* data-tiphold (05/11/2026, Geoffrey : noms des stats) : au doigt, la bulle ne s'ouvre qu'après HOLD ms d'appui sans bouger
+     (un appui bref ou un défilement ne l'ouvre pas) */
+  const HOLD = 450, SLOP = 10;
+  let hold = null;
+  const dropHold = () => { if(hold){ clearTimeout(hold.timer); hold = null; } };
   document.addEventListener('pointerdown', e => {
+    dropHold();
     downInTip = inTip(e);
     if(downInTip) return;                                  // on fait défiler la bulle : elle reste
     touch = e.pointerType === 'touch';
     const el = at(e), keep = el && (touch || el.dataset.tipkind === 'help');
+    if(keep && touch && el.dataset.tiphold){ hide(); hold = { x: e.clientX, y: e.clientY, timer: setTimeout(() => { hold = null; show(el); }, HOLD) }; return; }
     keep ? show(el) : hide();
   });
+  document.addEventListener('pointermove', e => { if(hold && Math.hypot(e.clientX - hold.x, e.clientY - hold.y) > SLOP) dropHold(); });
+  document.addEventListener('pointerup', dropHold);
+  document.addEventListener('pointercancel', dropHold);
   /* clavier (Tab) : la bulle suit l'élément qui a le focus */
   document.addEventListener('focusin', e => { const el = at(e); if(el){ touch = false; show(el); } });
   document.addEventListener('focusout', e => { if(at(e) === cur) hide(); });

@@ -1,25 +1,28 @@
 /* Couche appli : chargée seulement dans l'appli ou avec ?app (src/app/boot.js). Chaque règle commence par body.app.
-   --top-h et --dock-h du jeu sont agrandis : mine, chat et panneaux laissent ainsi la place aux barres de l'appli. */
+   --top-h et --dock-h du jeu sont agrandis : mine, chat et panneaux laissent ainsi la place aux barres de l'appli.
+   Sous-onglets (06/11/2026, retour d'un joueur) : juste au-dessus de la barre des familles, en bas (avant : sous le bandeau du
+   haut) : tout ce qu'on touche reste dans la moitié basse. --bar-b = la barre des familles ; --dock-h = elle + les sous-onglets. */
 body.app{--bar-h:calc(30*var(--u));--sub-h:0px;--safe-t:var(--safe-area-inset-top,env(safe-area-inset-top));--safe-b:var(--safe-area-inset-bottom,env(safe-area-inset-bottom));
-  --top-h:calc(var(--bar-h) + var(--safe-t) + var(--sub-h));--dock-h:calc(56px + var(--safe-b))}
+  --bar-b:calc(56px + var(--safe-b));--top-h:calc(var(--bar-h) + var(--safe-t));--dock-h:calc(var(--bar-b) + var(--sub-h))}
 body.app.appSubOn{--sub-h:44px}
 body.app #nav,body.app #bgTown{display:none}
+/* Accueil (04/11/2026) : pas de session en fond derrière le Carreau et ses cartes (la prison en fond coupait l'écran en deux) */
+body.app.appHomeOn #bgSession{display:none}
 body.app .topbar{height:calc(var(--bar-h) + var(--safe-t));padding-top:var(--safe-t)}
-body.app.appSubOn .views{padding-top:var(--sub-h)}
 
 body.app #appBar{position:fixed;left:0;right:0;bottom:0;z-index:40;display:grid;grid-template-columns:repeat(5,1fr);
-  height:var(--dock-h);padding-bottom:var(--safe-b);background:var(--panel);border-top:var(--u) solid var(--sep)}
+  height:var(--bar-b);padding-bottom:var(--safe-b);background:var(--panel);border-top:var(--u) solid var(--sep)}
 body.app #appBar button{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
   min-width:0;min-height:44px;height:100%;padding:0;border:0;background:none;color:var(--mut);text-shadow:none;font:400 var(--fs-s)/1 var(--f-body)}
 body.app #appBar button.on{color:var(--acc-lt);background:var(--chip)}
 body.app #appBar .pi{width:24px;height:24px}
 
-body.app #appSub{position:fixed;left:0;right:0;top:calc(var(--bar-h) + var(--safe-t));z-index:29;display:none;height:var(--sub-h);
-  overflow-x:auto;background:var(--panel);border-bottom:var(--u) solid var(--sep)}
+body.app #appSub{position:fixed;left:0;right:0;bottom:var(--bar-b);z-index:39;display:none;height:var(--sub-h);
+  overflow-x:auto;background:var(--panel);border-top:var(--u) solid var(--sep)}
 body.app.appSubOn #appSub{display:flex}
 body.app #appSub button{position:relative;flex:1 0 auto;min-height:0;height:100%;padding:0 12px;border:0;background:none;color:var(--mut);
   text-shadow:none;font:400 var(--fs-s)/1 var(--f-body);white-space:nowrap}
-body.app #appSub button.on{color:var(--acc-lt);box-shadow:inset 0 -3px 0 var(--acc)}
+body.app #appSub button.on{color:var(--acc-lt);box-shadow:inset 0 3px 0 var(--acc)}   /* trait du côté du contenu (au-dessus) */
 body.app #appBar .dot,body.app #appSub .dot{position:absolute;right:6px;top:6px;width:8px;height:8px;background:var(--acc);box-shadow:0 0 0 2px #000}
 /* téléphone : pas de rebond ni de zoom au pincement, pas de surbrillance au toucher (01/11/2026) */
 html:has(body.app),body.app{overscroll-behavior:none}
@@ -170,3 +173,234 @@ body.app #spick{align-items:flex-end;justify-content:stretch;padding:0}
 body.app #spick .box{width:100%;max-width:none;max-height:85%}
 /* un panneau ouvert (choix d'une pièce, menu des sets, butin…) : la pastille du guide ne passe pas par-dessus ses boutons */
 body.app:has(#spick:not([hidden]),#setsSheet:not([hidden]),#loot:not([hidden]),#fpick:not([hidden]),#cpick:not([hidden]),#fview:not([hidden])) .guide{display:none}
+
+/* ---------- Skills (03/11/2026, Jules ; spec 2026-11-03-appli-skills-design.md) : une classe à la fois (onglets), chaque skill
+   avec son effet, un maillon entre deux étages (jamais un trait sur une case), fiche qui monte du bas (ancien : 3 arbres
+   empilés ≈ 4,2 écrans, un toucher apprenait un rang) ---------- */
+body.app .skHead{flex-wrap:nowrap;margin:0 0 6px}
+body.app .skHead>*{white-space:nowrap}
+body.app .skHead>.mut{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+body.app .skHead #skillReset{margin-left:auto}
+body.app section[data-view="skills"] .setLay{gap:8px}
+body.app section[data-view="skills"] .furnWrap{padding:6px 8px 8px}
+body.app .skTrees{display:block}
+body.app .skTabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin:0 0 8px}
+body.app .skTabs button{display:grid;grid-template-columns:auto auto;justify-content:center;align-items:center;gap:1px 4px;min-height:48px;padding:3px 2px;white-space:normal;font-size:14px}
+body.app .skTabs button small{grid-column:1/3;text-align:center}
+body.app .skTabs button .pi{width:18px;height:18px}
+body.app .skTabs button b{font:400 17px/1 var(--f-title)}
+body.app .skTabs button small{font-size:12px;line-height:1.1;color:var(--mut)}
+body.app .skTabs button.on small{color:#4a1e08}
+body.app #skillTrees .skTree{border:0;border-image:none;padding:0;background:none}
+body.app #skillTrees .skTree>h3,body.app #skillTrees .skTree .specLvl{display:none}
+body.app #skillTrees .skGraph{height:auto!important;display:grid;grid-template-columns:repeat(var(--cols,2),minmax(0,1fr));gap:14px 16px;margin:0;padding:2px 0 2px 12px}   /* 12 px à gauche : les liens « | » (04/11) */
+body.app #skillTrees .skNode{position:relative;left:auto!important;top:auto!important;transform:none;width:auto;grid-column:1/3;
+  display:grid;grid-template-columns:50px minmax(0,1fr) auto;grid-template-rows:auto auto;column-gap:10px;align-items:center;text-align:left}
+body.app #skillTrees .skNode{grid-column:var(--c);grid-row:var(--r)}   /* arbres v2 (04/11) : deux colonnes (trois en v3, --cols), chaque skill dans la sienne */
+body.app #skillTrees .skTier{display:none}
+body.app .skPickSpec{display:block;width:100%;min-height:44px;margin:0 0 8px;font-size:15px}
+body.app #skillTrees .skOrb{position:relative;z-index:1;grid-row:1/3;width:50px;height:50px}
+body.app #skillTrees .skOrb .pi{width:26px;height:26px}
+body.app #skillTrees .skRank{top:auto;bottom:-6px;left:28px;transform:none;z-index:2}
+body.app #skillTrees .skPlus{top:-4px;left:38px;transform:none;z-index:2}
+body.app #skillTrees .skName{grid-column:2;align-self:end;padding:0;background:none;font:400 18px/1.05 var(--f-title);color:#ffe6c4}
+body.app #skillTrees .skNode.off .skName{color:var(--mut);opacity:1}
+body.app #skillTrees .skTxt{grid-column:2;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;align-self:start;font-size:14px;line-height:1.15;color:var(--mut)}
+body.app #skillTrees .skGlyph{grid-column:3;grid-row:1/3}   /* glyphe à droite du skill, pas sur sa case */
+body.app #skillTrees .skNode{cursor:pointer}
+/* maillon vers l'étage du dessus : entre les cases, sous elles */
+/* fiche d'un skill */
+body.app #skSheet{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;background:rgba(5,3,2,.62)}
+body.app #skSheet[hidden]{display:none}
+body.app #skSheet .box{width:100%;max-height:calc(100dvh - var(--top-h) - var(--dock-h));margin-bottom:var(--dock-h);overflow:auto;padding:2px 6px 10px;
+  border:12px solid transparent;border-image:url(../../textures/ui/panel.png) 6 fill / 12px stretch}
+body.app #skSheet .skShHead{display:flex;align-items:center;gap:12px}
+body.app #skSheet .skShHead>div{flex:1;min-width:0}
+body.app #skSheet .skShHead .skOrb{width:50px;height:50px}
+body.app #skSheet h3{margin:0;font:400 26px/1 var(--f-title);color:#ffe6c4}
+body.app #skSheet .skLines{margin:10px 0;font-size:16px;line-height:1.25}
+body.app #skSheet .skLines>div{display:flex;gap:8px;padding:4px 0;border-top:2px solid var(--sep)}
+body.app #skSheet .skLines>div:first-child{border-top:0}
+body.app #skSheet .skLines i{flex:none;width:86px;font-style:normal;color:var(--mut)}
+body.app #skSheet .skLines .ok{color:var(--ok)}
+body.app #skSheet .skGl{display:flex;align-items:center;gap:8px;margin:0 0 10px}
+body.app #skSheet .skGl>span:nth-child(2){flex:1}
+body.app #skSheet .skLearn{width:100%;min-height:56px;font:400 26px/1 var(--f-title)}
+body.app #skSheet .skWhy{margin:4px 0;text-align:center;color:var(--mut)}
+body.app:has(#skSheet:not([hidden])) .guide{display:none}
+
+/* ---------- Sorts (03/11/2026, Jules ; spec 2026-11-03-appli-sorts-design.md) : barre compacte, grimoire en grille, fiche qui
+   monte du bas ; toucher un sort de la barre ouvre sa fiche (ancien : fiche deux écrans plus bas, sort retiré d'un toucher) ---------- */
+body.app section[data-view="sorts"] .furnWrap{padding:6px 8px 8px}
+body.app .spGrid{gap:8px;grid-template-columns:minmax(0,1fr)}   /* minmax(0,…) : la rangée de filtres qui défile ne doit pas élargir la page */
+body.app :is(.spMain,.spGrim){min-width:0}
+body.app .spMain{gap:8px}
+body.app #spellInfo{display:none}
+body.app .spBarCard{padding:6px 8px}
+body.app .spBarCard>h2{display:none}
+body.app .spBarRow{flex-direction:column;align-items:stretch;gap:4px}
+body.app .spSlots{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
+body.app .spSock{width:auto;min-width:0}
+body.app .spSockBtn{width:54px;height:54px}
+body.app .spSockBtn .pi{width:30px;height:30px}
+body.app .spSockName{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
+body.app .spCd{font-size:13px}
+body.app .spBarNote{font-size:13px;line-height:1.2;text-align:center;color:var(--mut)}
+body.app .spBarNote p{margin:0} body.app .spBarNote p:not(:first-child){display:none}
+body.app .spGrim{padding:6px 6px}
+body.app .spGrim>h2{display:none}
+body.app .spTabs{display:flex;flex-wrap:nowrap;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 0 6px}
+body.app .spTabs::-webkit-scrollbar{display:none} body.app .spTabs>button{flex:none}
+body.app .spList{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+body.app .spTile{min-width:0;width:auto;min-height:0;aspect-ratio:auto;padding:4px 2px;gap:1px}
+body.app .spTIco{width:40px;height:40px}
+body.app .spTIco .pi{width:28px;height:28px}
+body.app .spTName{max-width:100%;font-size:13px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}   /* nom complet dans la fiche */
+body.app .spTSub{min-height:0;max-width:100%;font-size:11px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.app .spLegend,body.app .spNum{display:none}
+body.app .spBarRow>*{min-width:0} body.app .spBarNote{min-width:0;max-width:100%}
+body.app .spBarNote p:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.app #spSheet{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;background:rgba(5,3,2,.62)}
+body.app #spSheet[hidden]{display:none}
+body.app #spSheet .box{position:relative;width:100%;max-height:calc(100dvh - var(--top-h) - var(--dock-h));margin-bottom:var(--dock-h);overflow:auto;padding:4px 8px 10px;
+  border:12px solid transparent;border-image:url(../../textures/ui/panel.png) 6 fill / 12px stretch}
+body.app #spSheet .spClose{position:absolute;right:4px;top:4px;z-index:1}
+body.app #spSheet .spAct .big{width:100%}
+body.app:has(#spSheet:not([hidden])) .guide{display:none}
+
+/* ---------- Historique (03/11/2026, Jules ; spec 2026-11-03-appli-historique-design.md) : une ligne par session, par jour,
+   le bilan en panneau du bas (ancien : une carte dépliée par session, ≈ 1 écran chacune) ---------- */
+body.app #histBody{display:flex;flex-direction:column;gap:6px}
+body.app .hiDay{margin:6px 0 0;font:400 15px/1 var(--f-title);color:var(--mut);letter-spacing:.05em}
+body.app .hiRow{display:grid;grid-template-columns:32px minmax(0,1fr) auto;align-items:center;gap:8px;width:100%;min-height:56px;padding:4px 6px;
+  text-align:left;white-space:normal;text-shadow:none;border:0;border-image:none;background:var(--chip);box-shadow:0 0 0 2px #000}
+body.app .hiM{font-size:22px;text-align:center}
+body.app .hiT{min-width:0;display:flex;flex-direction:column}
+body.app .hiT b{font:400 17px/1.05 var(--f-title);color:#ffe6c4;font-weight:400}
+body.app .hiT small{font-size:13px;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body.app .hiR{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+body.app .hiLoot{display:flex;gap:6px}
+body.app .hiL,body.app .hiIt{position:relative;display:grid;place-items:center}
+body.app .hiL img{width:26px;height:26px} body.app .hiIt img{width:28px;height:28px}
+body.app :is(.hiL,.hiIt) i{position:absolute;right:-4px;bottom:-4px;font:400 12px/1 var(--f-title);font-style:normal;color:#ffe6c4;text-shadow:1px 1px 0 #000}
+body.app .hiXp{font:400 14px/1 var(--f-title);color:var(--o2)}
+body.app .hiGo{align-self:flex-start;margin-top:8px}
+body.app #hiSheet{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;background:rgba(5,3,2,.62)}
+body.app #hiSheet[hidden]{display:none}
+body.app #hiSheet .box{position:relative;width:100%;max-height:calc(100dvh - var(--top-h) - var(--dock-h));margin-bottom:var(--dock-h);overflow:auto;padding:4px 8px 10px;
+  border:12px solid transparent;border-image:url(../../textures/ui/panel.png) 6 fill / 12px stretch}
+body.app #hiSheet h3{margin:0 48px 4px 0;font:400 22px/1.05 var(--f-title);color:#ffe6c4}
+body.app #hiSheet .hiClose{position:absolute;right:4px;top:4px}
+body.app #hiSheet .hiFacts{margin:0 0 6px;font-size:15px;color:var(--mut)}
+body.app #hiSheet .hiGrid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px}
+body.app #hiSheet .hiIt{height:44px;background:#100b08;box-shadow:inset 0 0 0 2px var(--line)}
+body.app #hiSheet .hiIt i{right:2px;bottom:1px}
+body.app #hiSheet .hiSeed{margin:8px 0 0;text-align:right}
+body.app:has(#hiSheet:not([hidden])) .guide{display:none}
+
+/* ---------- Guilde (04/11/2026, Jules ; spec 2026-11-04-appli-guilde-design.md) : sa guilde en 4 onglets, un bâtiment à la fois,
+   une ligne par matière, « Quitter » tout en bas des Membres (ancien : ≈ 5 écrans, Quitter au milieu) ---------- */
+body.app #guildMine{display:flex;flex-direction:column;gap:8px}
+body.app .gSub{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
+body.app .gSub button{padding:0 2px;font-size:15px}
+body.app .gbChips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+body.app .gbChips button{gap:4px;padding:0 4px;font-size:14px;white-space:nowrap;overflow:hidden}
+body.app .gbChips img{width:20px;height:20px;image-rendering:pixelated}
+body.app .gbuilding .gmat{display:grid;grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"name name btn" "bar bar btn" "nums own btn";
+  align-items:center;gap:2px 8px;padding:4px 0;border-top:2px solid var(--sep)}
+body.app .gbuilding .gmat>.gmatName{grid-area:name;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body.app .gbuilding .gmat>.gxp:nth-child(2){grid-area:nums}
+body.app .gbuilding .gmat>.bar{grid-area:bar;height:14px}
+body.app .gbuilding .gmat>.gxp.mut{grid-area:own;justify-self:end}
+body.app .gbuilding .gmat>button,body.app .gbuilding .gmat>.gxp:last-child:not(:nth-child(2)):not(.mut){grid-area:btn}
+body.app .gLeave{margin-top:16px;padding-top:12px;border-top:2px solid var(--sep);display:flex;justify-content:flex-end}
+body.app #guildMine .ghouse{max-width:300px;margin:0 auto}   /* la scène moins haute : la Maison tient presque sur un écran */
+body.app #guildMine .ghouse~.bar+p.mut{display:none}           /* « chaque don fait avancer le chantier… » : connu */
+body.app #guildMine .card{padding-top:4px;padding-bottom:4px}
+
+/* ---------- Classement (04/11/2026, Jules ; spec 2026-11-04-appli-classement-design.md) : podium du top 3, sa place collée
+   au-dessus de la barre de l'appli (ancien : sa place seulement après les 50 premiers) ---------- */
+body.app .lPodium{display:grid;grid-template-columns:1fr 1.15fr 1fr;align-items:end;gap:6px;margin:4px 0 8px}
+body.app .lp{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0;font-size:13px;color:var(--mut)}
+body.app .lp canvas{width:40px;height:40px;image-rendering:pixelated} body.app .lp1 canvas{width:56px;height:56px}
+body.app .lpName{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:400 16px/1 var(--f-title);color:#ffe6c4}
+body.app .lp small{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
+body.app .lpStep{width:100%;display:grid;place-items:center;font:400 26px/1 var(--f-title);color:#2a1206;box-shadow:0 0 0 2px #000}
+body.app .lp1 .lpStep{height:62px;background:#ffd23f} body.app .lp2 .lpStep{height:44px;background:#c9c3ba} body.app .lp3 .lpStep{height:32px;background:#d08a4a}
+body.app .lp.empty .lpStep{background:var(--chip)}
+body.app .lMe{position:sticky;bottom:calc(var(--dock-h) + 4px);z-index:3;margin:6px -4px 0;padding:0 4px;background:#2a1408;box-shadow:0 0 0 2px #000,0 -2px 0 4px var(--acc-dk)}
+body.app .lMe .lrow{box-shadow:none}
+
+/* ---------- Écrans qui restaient (04/11/2026, Jules ; spec 2026-11-04-appli-ecrans-fin-design.md) ---------- */
+/* Inventaire : « Déplacer » puis la case d'arrivée (ancien : glisser-déposer, impossible au doigt) */
+body.app .invMoveBar{display:flex;align-items:center;gap:8px;margin:0 0 6px;padding:4px 8px;font-size:16px;color:#ffe6c4;background:#2a1408;box-shadow:0 0 0 2px var(--acc)}
+body.app .invMoveBar img{width:26px;height:26px;image-rendering:pixelated}
+body.app .invMoveBar button{margin-left:auto}
+body.app .invGrid.moving .slot:not(.sel){outline:1px dashed #7a6656;outline-offset:-6px}
+/* Four : un onglet par four (🔥 il chauffe, 🔒 fermé), le four choisi en grand (ancien : les fours empilés) */
+body.app .fTabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;margin:0 0 8px}
+body.app .fTabs button{min-width:0;padding:0 4px}
+body.app .fTabs button.locked:not(.on){color:var(--mut);opacity:.75}
+body.app section[data-view="four"] #furnEmptyAll{display:none}   /* un four à la fois : son « Tout retirer » suffit */
+body.app #furnList .furn:not(.locked){display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;
+  grid-template-areas:"h mode" "g g" "st st" "rec emp"}
+body.app #furnList .furn:not(.locked) .fhead{display:contents}
+body.app #furnList .fhead h3{grid-area:h;align-self:center}
+body.app #furnList .fhead h3 .mut{display:block;font:400 14px/1.1 var(--f-body)}
+body.app #furnList .fmode{grid-area:mode}
+body.app #furnList .fgrid{grid-area:g}
+body.app #furnList .fstat{grid-area:st;margin:0}
+body.app #furnList .fhelp{grid-area:rec} body.app #furnList .fempty{grid-area:emp}
+body.app #furnList .fgrid{grid-template-columns:auto minmax(0,1fr) auto;gap:8px;max-width:none}
+body.app #furnList .fin{display:grid;grid-template-columns:64px;gap:6px}
+body.app #furnList .fin:has(> :nth-child(3)){grid-template-columns:64px 64px}
+body.app #furnList .fslot{width:64px;height:64px}
+/* Concasseur : cases de 52 px ; les dernières trouvailles dans le panneau « Butin » */
+body.app #crushBody .cgrid{grid-template-columns:repeat(var(--cols),52px);justify-content:center;gap:4px}
+body.app #crushBody .cslot{width:52px;height:52px}
+body.app #cpick .cfindsBox{margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid var(--sep)}
+/* Recherche : les tiers en 4 boutons, une phrase pour un tier fermé, gros bouton */
+body.app .rsTiers{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
+body.app .rsTiers button{min-width:0;padding:0 2px}
+body.app .rsTiers button.locked:not(.on){color:var(--mut)}
+body.app .rsCount{margin:6px 0 0}
+body.app #rsBody .rsBench{justify-content:center}
+body.app #rsBody .rsSlot{width:76px;height:76px}
+body.app #rsGo{width:100%;min-height:56px;font:400 24px/1 var(--f-title)}
+/* Amélioration : les pièces en grille d'icônes (petit carré = équipée, marque courte en bas à droite) */
+body.app .upTiles{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px}
+body.app .upTile{position:relative;width:auto;height:auto;aspect-ratio:1;min-height:0;padding:0;display:grid;place-items:center}
+body.app .upTile img{width:62%;height:62%}
+body.app .upTile.sel{outline:3px solid var(--acc);outline-offset:-3px}
+body.app .upTile.dim{opacity:.4}
+body.app .upEq{position:absolute;left:4px;top:4px;width:7px;height:7px;background:var(--acc);box-shadow:0 0 0 1px #000}
+body.app .upTag{position:absolute;right:3px;bottom:2px;font:400 12px/1 var(--f-title);color:#ffe6c4;text-shadow:1px 1px 0 #000,-1px -1px 0 #000}
+body.app .upStat{display:block;font-size:13px;color:var(--o2)}
+body.app #upBody h3{margin:8px 0 4px;font-size:15px;color:var(--mut);letter-spacing:.05em}
+body.app #upBody .upInfo{display:block;flex:1 1 100%;min-width:0;text-align:left}
+body.app #upBody #upGo{flex:1 1 100%;min-height:52px;font:400 22px/1 var(--f-title)}
+/* Amis : une ligne par ami (le bouton utile et « ⋮ »), sa fiche monte du bas (ancien : 5 boutons sur 2-3 lignes) */
+body.app #socialBody .frow{flex-wrap:nowrap}
+body.app #socialBody .fbtns{width:auto;flex-wrap:nowrap}
+/* activité de l'ami : sur plusieurs lignes au besoin (05/11/2026, Geoffrey ; ancien : une ligne coupée « Dans le l… ») */
+body.app #socialBody .fname small{white-space:normal;overflow-wrap:anywhere;line-height:1.15}
+body.app #frSheet{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;background:rgba(5,3,2,.62)}
+body.app #frSheet[hidden]{display:none}
+body.app #frSheet .box{position:relative;width:100%;margin-bottom:var(--dock-h);padding:4px 8px 10px;
+  border:12px solid transparent;border-image:url(../../textures/ui/panel.png) 6 fill / 12px stretch}
+body.app #frSheet h3{display:flex;align-items:center;gap:8px;margin:0 48px 2px 0;font:400 24px/1.05 var(--f-title);color:#ffe6c4}
+body.app #frSheet .frClose{position:absolute;right:4px;top:4px}
+body.app #frSheet .frStat{margin:0 0 8px}
+body.app .frActs{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+body.app .frActs .w{grid-column:1/3}
+body.app .frActs .frDel{color:#ff9a8a}
+body.app:has(#frSheet:not([hidden])) .guide{display:none}
+
+/* ---------- Retours de Jules sur son téléphone (04/11/2026) ---------- */
+/* Session hors session : « Pas de session en cours · Lancer ▸ » en tête de l'Historique (caché quand une session tourne) */
+body.app .hiNow{display:grid;grid-template-columns:32px minmax(0,1fr) auto;align-items:center;gap:8px;padding:2px 2px}
+body.app .hiNow b{font:400 19px/1.05 var(--f-title);color:#ffe6c4;font-weight:400}
+body.app.appLive .hiNow{display:none}
+body.app .hiPast{text-transform:uppercase}
+/* Four, fenêtre « Recettes » (05/11/2026, Geoffrey) : sans le paragraphe d'explication, la liste des recettes prend la place */
+body.app #fpick .frecAbout{display:none}

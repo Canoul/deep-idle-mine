@@ -49,7 +49,7 @@ test('un glyphe posé sur son skill est retiré de la case quand l\'inventaire n
   /* skill Échelle de 2 au rang max avec son glyphe posé, plus un exemplaire dans l'inventaire */
   await post('/api/admin/give', { name: 'crousti', item: 'Glyphe Échelle de 2', qty: 2 });
   const st = (await gameStore.getSkills('C1')) ?? {};
-  await gameStore.putSkills('C1', { ...st, glyphs: { tall_ladder: 'Glyphe Échelle de 2' } });
+  await gameStore.putSkills('C1', { ...st, v:2, glyphs: { tall_ladder: 'Glyphe Échelle de 2' } });
   await take({ name: 'crousti', item: 'Glyphe Échelle de 2' });   // l'exemplaire en trop de l'inventaire
   assert.equal(await count('Glyphe Échelle de 2'), 1);
   assert.deepEqual(await posed(), { tall_ladder: 'Glyphe Échelle de 2' }, 'l\'inventaire passe avant la case');

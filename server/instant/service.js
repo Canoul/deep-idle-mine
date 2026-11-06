@@ -14,6 +14,7 @@
      pas créée deux fois.
    Testable seul : on lui passe le service de jeu, celui des groupes, le stockage et une horloge. */
 import { INSTANT_MINE as MI } from '../../src/config.js';
+import { sealedBelow, levelLockText } from '../../src/shared/level-gate.js';
 import { displayName } from '../../src/shared/account.js';
 import { nextSlot, lastSlot, splitMines, signupOpen, signupOpensAt } from '../../src/shared/instant.js';
 
@@ -74,6 +75,9 @@ export function createInstantService({ game, party = null, store, clock = Date.n
        Idempotent (déjà inscrit = rien ne change). */
     async join(me){
       if(!dev && !signupOpen(clock())) fail('signup_closed', 409, `Les inscriptions ouvrent ${MI.signupBefore / 60} min avant la mine instantanée.`);
+      /* niveau requis (03/11/2026, Geoffrey ; MINE_MODES[].minLevel) */
+      const level = await game.levelFor?.(me.id);
+      if(sealedBelow('mi', level)) fail('level_locked', 403, levelLockText('mi', level));
       if(!signups.has(me.id)){
         const s = { account: me.id, name: displayName(me), at: clock() };
         signups.set(me.id, s);

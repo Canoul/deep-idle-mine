@@ -10,6 +10,7 @@
    Pods (26/10/2026, Geoffrey) : chaque stonebrick minée va dans le sac du mineur (m.inv, m.load) ; plein, il redescend au
    coffre commun (TOWER.chest, au milieu de l'étage 0) le vider dans G.chest. Victoire : summary.loot = coffre + sacs des
    présents ; le serveur le partage en parts égales et ajoute les trésors (server/game/service.js). */
+import { critMul, backstabMul } from '../skillfx.js';
 import { tenacityTry } from '../tenacity.js';
 import { TOWER, DT, STATS, BLOCKS, CFG, COMBAT, WINCH, SHRINES } from '../../config.js';
 import { mulberry32 } from '../../core/rng.js';
@@ -173,7 +174,9 @@ export const warcryOf = (G, m) => { const w = G.warcry, c = w && G.t < w.until ?
   return c && manh(c, m) <= SPELL.war_cry.radius ? w : null; };
 const hitT = (G, m) => CFG.attackInterval / Math.max(0.1, (m.carac.attackSpeed ?? 100) / 100 * (1 + (warcryOf(G, m)?.speed || 0)));
 const chance = (G, pct) => pct > 0 && G.fightRng() < pct / 100;
-const hitDmg = (G, m) => m.carac.damage * (1 + (m.carac.damagePct || 0) / 100) * (1 + (warcryOf(G, m)?.dmg || 0)) * (chance(G, m.carac.crit || 0) ? 2 : 1);
+/* arbres v2 (04/11) : Crushing ; Dans le dos : visé si un mob le tacle ou si le boss l'a pour cible */
+const hitDmg = (G, m) => m.carac.damage * (1 + (m.carac.damagePct || 0) / 100) * (1 + (warcryOf(G, m)?.dmg || 0)) * (chance(G, m.carac.crit || 0) ? critMul(m) : 1)
+  * backstabMul(m, !!tackler(G, m) || (!!G.boss && (G.boss.target === m.id || G.boss.focus === m.id)));
 
 /* ---------- mobs ---------- */
 /* distance (Manhattan) d'un mineur à un mob (2 cases de haut : (x, y) et (x, y - 1)) */
@@ -452,14 +455,14 @@ function strike(G, m, o, status){
   m.face = Math.sign(o.x - m.x) || m.face;
   combatSpells(G, m, o);
   const now = nowOf(G, m);   // heure exacte dans le tick (28/10/2026 : sinon paliers de 0,1 s)
-  if(now + 1e-9 >= (m.atkReady || 0)){ hitMob(G, m, o); m.atkReady = now + hitT(G, m) / dk(G, m); }
+  if(now + 1e-9 >= (m.atkReady || 0)){ hitMob(G, m, o); cleaveHit(G, m, o); m.atkReady = now + hitT(G, m) / dk(G, m); }
   return act(m, 'attack', m.atkReady - now, { mob: o.id, done: true, aim: { x: o.x, y: o.y } }, status);
 }
 const torchByOther = (G, m) => G.miners.some(o => o !== m && o.action?.type === 'torch' && Math.abs(o.x - m.x) + Math.abs(o.y - m.y) <= 2);
 
 export function decide(G, m){
   if(!towerSupported(G, m.x, m.y)) return act(m, 'move', fallT(), { x: m.x, y: m.y + 1, fall: true }, 'Tombe');
-  if(m.spells.length && supportSpells(G, m)) return act(m, 'wait', DT, {}, m.status);   // Ulti shen : il vient d'arriver
+  if(m.spells.length && supportSpells(G, m)) return act(m, 'wait', DT, {}, m.status);   // Ralliement : il vient d'arriver
   /* treuil à installer (logisticien tombé au pied de la tour) : contre le mur, de son côté, puis TOWER.winch.setup s */
   if(m.winchJob){
     const tx = m.winchJob === 'L' ? G.x0 - 1 : G.x1 + 1;
@@ -702,6 +705,7 @@ function hitBoss(G, m){
   if(m.skill.taunt) G.boss.taunt = m.id;   // provocation du barbare : il le focus (25/10)
   m.stats.hits++;
   damageBoss(G, m, strikeDmg(G, m), true);
+  cleaveHit(G, m, G.boss);
 }
 /* dégâts au boss (coup, ou sort : 28/10) ; push : un coup de son focus le repousse */
 function damageBoss(G, m, dmg, push = false){
@@ -716,6 +720,19 @@ function damageBoss(G, m, dmg, push = false){
     endTower(G, true);
   }
 }
+/* Cleave (03/11/2026, Geoffrey) : après un coup normal sur target, si le sort est prêt : jusqu'à maxTargets − 1 autres
+   (mobs à radius cases, et le boss s'il est à son contact), les plus proches, à dmg × ses dégâts. Sinon il reste prêt. */
+function cleaveHit(G, m, target){
+  if(!ready(G, m, 'cleave') || G.over) return;
+  const S = SPELL.cleave, d2 = o => Math.min((o.x - m.x) ** 2 + (o.y - m.y) ** 2, (o.x - m.x) ** 2 + (o.y - 1 - m.y) ** 2);
+  const ahead = x => (x - m.x) * (m.face || 1) > 0;   // seulement devant lui (03/11)
+  const foes = liveMobs(G).filter(o => o !== target && ahead(o.x) && mobNear(o, m.x, m.y, S.radius)).sort((a, b) => d2(a) - d2(b));
+  const boss = target !== G.boss && contactSide(G, m) && ahead(bossMid(G) - 0.5) && !G.boss.air && G.boss.hp > 0;
+  const list = [...(boss ? [G.boss] : []), ...foes].slice(0, S.maxTargets - 1);
+  if(!list.length) return;
+  cast(G, m, 'cleave');
+  for(const o of list) o === G.boss ? damageBoss(G, m, hitDmg(G, m) * S.dmg) : damageMob(G, m, o, hitDmg(G, m) * S.dmg);
+}
 /* dégâts d'un sort à un mob (sans recul) */
 function damageMob(G, m, o, dmg){
   if(o.hp <= 0) return;
@@ -726,7 +743,7 @@ function damageMob(G, m, o, dmg){
 
 /* ---------- sorts (28/10/2026, Geoffrey : joués dans les tours du Jugement) ----------
    Comme dans la mine et l'instance : chaque sort équipé (figé au lancement) part tout seul dès que sa recharge est finie
-   et qu'il sert. Bonbonne de zipette : pas d'oxygène dans la tour, elle ne part jamais. */
+   et qu'il sert. Bonbonne d\'oxygène : pas d'oxygène dans la tour, elle ne part jamais. */
 const ready = (G, m, id) => m.spells.includes(id) && G.t + 1e-9 >= (m.spellCd[id] || 0);
 const cast = (G, m, id, cdFrom = G.t, mul = 1) => { m.spellCd[id] = cdFrom + SPELL[id].cd * mul; m.stats.spells++; };
 /* mob vivant réveillé dont une des 2 cases est à R cases ou moins de (x, y), en cercle */
@@ -777,22 +794,14 @@ function combatSpells(G, m, target){
     cast(G, m, 'war_cry', G.warcry.until);
     log(G, `📯 ${m.name} : Cri de guerre`);
   }
-  if(ready(G, m, 'cleave')){
-    const S = SPELL.cleave, foes = liveMobs(G).filter(o => o !== target && mobNear(o, m.x, m.y, S.radius));
-    const boss = target === G.boss || (contactSide(G, m) && !G.boss.air && G.boss.hp > 0);
-    if(foes.length || (boss && target !== G.boss)){
-      cast(G, m, 'cleave');
-      for(const o of foes) damageMob(G, m, o, hitDmg(G, m) * S.dmg);
-      if(boss && target !== G.boss) damageBoss(G, m, hitDmg(G, m) * S.dmg);
-    }
-  }
+
   if(target === G.boss && ready(G, m, 'dynamite') && bossInBlast(G, m.x + m.face, m.y)) blast(G, m, m.x + m.face, m.y);
   /* sur un mob (29/10/2026, Geoffrey) : s'il y en a au moins fightFoes dans le rayon autour de lui (lui compris) */
   else if(target !== G.boss && ready(G, m, 'dynamite') && blastFoes(G, target.x, target.y).length >= SPELL.dynamite.fightFoes) blast(G, m, target.x, target.y);
 }
 /* à chaque décision : Illumination (cases inconnues de la tour à son rayon), Hand of Justice (un mob qui tacle un allié,
-   puis lui, à sa portée : étourdi), Ulti shen (un allié taclé, ou au contact du boss : il se téléporte à lui et frappe).
-   Renvoie true si Ulti shen l'a déplacé. */
+   puis lui, à sa portée : étourdi), Ralliement (un allié taclé, ou au contact du boss : il se téléporte à lui et frappe).
+   Renvoie true si Ralliement l'a déplacé. */
 function supportSpells(G, m){
   if(ready(G, m, 'illumination')){
     const R = SPELL.illumination.radius, cells = [];
@@ -813,7 +822,7 @@ function supportSpells(G, m){
       cast(G, m, 'ulti_shen'); stopAction(m); m.action = null; m.x = to.x; m.y = to.y; m.kx = 0; m.ky = 0;
       if(ally) damageMob(G, m, tackler(G, ally), tackler(G, ally).maxhp * S.hpPct);
       else damageBoss(G, m, G.boss.maxhp * S.bossPct);
-      log(G, `🌀 ${m.name} : Ulti shen auprès de ${to.name}`);
+      log(G, `🌀 ${m.name} : Ralliement auprès de ${to.name}`);
       return true;
     }
   }
@@ -846,7 +855,7 @@ function dashBoss(G, m, goals){
   const S = SPELL.dash, dir = Math.sign(tx - m.x), n = Math.abs(tx - m.x);
   if(n < S.minCells || n > S.range) return false;
   for(let x = m.x + dir; x !== tx + dir; x += dir) if(!towerAir(G, x, m.y) || !towerSupported(G, x, m.y)) return false;
-  cast(G, m, 'dash', G.t, S.hitCd);
+  cast(G, m, 'dash', G.t);   // boss : recharge entière (03/11 ; avant × hitCd)
   m.x = tx; m.kx = 0; m.face = dir;
   log(G, `💨 ${m.name} : Dash sur ${b.name}`);
   if(m.skill.taunt) b.taunt = m.id;

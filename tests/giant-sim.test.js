@@ -92,7 +92,7 @@ test('sorts : Dynamite = +1 point par lancer (2 par visite), Inspiration pour to
   const fl = runGiant(1, [spec('A', big, { spells: ['fast_learner'] })]).done[0];
   assert.ok(Math.abs(fl.points - base * 1.1) < 0.2, `Fast learner : ${fl.points}`);
   const dash = runGiant(1, [spec('A', big, { spells: ['dash', 'illumination', 'ulti_shen'] })]).done[0];
-  assert.ok(Math.abs(dash.points - base) < 1e-6, 'Dash, Illumination, Ulti shen : sans effet');
+  assert.ok(Math.abs(dash.points - base) < 1e-6, 'Dash, Illumination, Ralliement : sans effet');
 });
 
 test('arrivées et départs en cours de partie : visites indépendantes, départ anticipé noté', () => {

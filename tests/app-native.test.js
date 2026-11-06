@@ -1,7 +1,7 @@
 /* Couche appli : programmation sur le téléphone, avec un faux plugin. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { notifPlugin, askPermission, clearPending, syncNotifs, onNotifTap, startNotifs } from '../src/app/native.js';
+import { notifPlugin, askPermission, clearPending, syncNotifs, onNotifTap, startNotifs, exactAllowed } from '../src/app/native.js';
 
 const FUTURE = Date.now() + 3600e3;
 const note = (id, at = FUTURE) => ({ id, kind:'four', at, title:'T', body:'B', tab:'four' });
@@ -60,7 +60,7 @@ test('plugin en erreur pendant la demande : faux, pas de crash', async () => {
   assert.equal(await askPermission(p, store()), false);
 });
 
-test('nouvelle notification programmée avec allowWhileIdle, sans alarme exacte', async () => {
+test('nouvelle notification programmée avec allowWhileIdle, sans alarme exacte si Android ne l\'autorise pas', async () => {
   const p = fakePlugin(), prev = await syncNotifs(p, [note(2)], new Map());
   const [n] = p.named('schedule')[0][1].notifications;
   assert.equal(n.id, 2);
@@ -171,7 +171,7 @@ test('compte changé ou déconnecté : les notifications du compte précédent d
 test('réglages : un interrupteur général et un par type ; tout couper annule', async () => {
   const p = fakePlugin(), { app } = run(p);
   await app.refresh();
-  assert.deepEqual(app.options().map(o => o.key), ['notif_all', 'notif_session', 'notif_mi', 'notif_giant', 'notif_four']);
+  assert.deepEqual(app.options().map(o => o.key), ['notif_all', 'notif_session', 'notif_mi', 'notif_giant', 'notif_hescoming', 'notif_four']);
   assert.ok(app.options().every(o => o.on));
   p.calls.length = 0;
   app.set('all', false); await settle();
@@ -207,4 +207,55 @@ test('session lancée puis synchro à la minute : même programmation, aucun app
   await app.refresh(); p.calls.length = 0;
   await win.tick(); await settle();
   assert.equal(p.named('schedule').length + p.named('cancel').length, 0);
+});
+
+/* ---------- alarmes exactes (03/11/2026 : la notification de la MI arrivait ≈ 15 min en retard) ---------- */
+
+test('alarmes exactes autorisées : la notification est à l\'heure exacte', async () => {
+  const p = fakePlugin();
+  await syncNotifs(p, [note(3)], new Map(), true);
+  assert.equal(p.named('schedule')[0][1].notifications[0].isExactNotification, true);
+  p.checkExactNotificationSetting = async () => ({ exact_alarm:'granted' });
+  assert.equal(await exactAllowed(p), true);
+  p.checkExactNotificationSetting = async () => ({ exact_alarm:'denied' });
+  assert.equal(await exactAllowed(p), false);
+  delete p.checkExactNotificationSetting;
+  assert.equal(await exactAllowed(p), false, 'ancien plugin : non');
+});
+
+function runAndroid(p, version = '1.1.5'){
+  const d = { now:NOW, offset:0, sessionEnd:NOW + 600e3, furnaces:[], giantNext:null, account:'a1' };
+  const win = { Capacitor:{ getPlatform:() => 'android', Plugins:{ LocalNotifications:p, App:{ getInfo:async () => ({ version }) } } },
+                localStorage:store(), setInterval(fn){ win.tick = fn; }, addEventListener(){} };
+  const doc = { addEventListener(n, fn){ win.visible = fn; } };
+  return { d, win, app:startNotifs({ win, doc, data:() => d, open:() => {} }) };
+}
+
+test('Android 1.1.5 : case « à l\'heure exacte » qui ouvre le réglage ; au retour, tout est reprogrammé à l\'heure', async () => {
+  const p = fakePlugin();
+  let mode = 'denied', opened = 0;
+  p.checkExactNotificationSetting = async () => ({ exact_alarm:mode });
+  p.changeExactNotificationSetting = async () => { opened++; mode = 'granted'; return { exact_alarm:mode }; };
+  const { app } = runAndroid(p);
+  await app.refresh();
+  assert.equal(p.named('schedule')[0][1].notifications[0].isExactNotification, false);
+  const opt = app.options().find(o => o.key === 'notif_exact');
+  assert.ok(opt && opt.on === false);
+  p.calls.length = 0;
+  await app.set('exact', true);
+  assert.equal(opened, 1);
+  assert.ok(p.named('cancel').length >= 1, 'les anciennes, approximatives, sont retirées');
+  assert.ok(p.named('schedule')[0][1].notifications.every(n => n.isExactNotification === true));
+  assert.equal(app.options().find(o => o.key === 'notif_exact').on, true);
+});
+
+test('coque 1.1.4 (sans la permission) ou iPhone : pas de case « à l\'heure exacte »', async () => {
+  const p = fakePlugin();
+  p.checkExactNotificationSetting = async () => ({ exact_alarm:'denied' });
+  p.changeExactNotificationSetting = async () => ({ exact_alarm:'denied' });
+  const { app } = runAndroid(p, '1.1.4'); await app.refresh();
+  assert.ok(!app.options().some(o => o.key === 'notif_exact'));
+  const q = fakePlugin(); q.changeExactNotificationSetting = async () => ({});
+  const { app:ios } = run(q); await ios.refresh();
+  assert.ok(!ios.options().some(o => o.key === 'notif_exact'));
 });

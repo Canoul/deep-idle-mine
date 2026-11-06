@@ -282,3 +282,17 @@ test('message de guilde : les mots interdits sont masqués', async () => {
   const text = (await guild.view(ZOE)).mine.message.text;
   assert.ok(text.startsWith('salut bande de ') && !text.includes('connard'), text);
 });
+
+test('membres de sa guilde : spécialisation principale (l\'arbre au plus d\'XP de spé) et son niveau (05/11/2026)', async () => {
+  const s = await trio(), { guild, store } = s;
+  const { mainSpec, specLevelOf } = await import('../src/meta/level.js');
+  await store.putProgress(MAX.id, { xp:5000, spec:{ mineur:100, barbare:3000, logisticien:2999 }, credited:[], areaMax:0 });
+  await store.putProgress(LEA.id, { xp:10, spec:{}, credited:[], areaMax:0 });
+  const st = await guild.view(ZOE);
+  const by = Object.fromEntries(st.mine.members.map(m => [m.name, m.spec]));
+  assert.deepEqual(by.Max, { tree:'barbare', level:specLevelOf(3000).level });
+  assert.equal(by.Lea, null); assert.equal(by.Zoe, null);             // pas d'XP de spé (ou pas de progression)
+  assert.deepEqual(mainSpec({ spec:{ mineur:50, logisticien:50 } }), { tree:'mineur', level:specLevelOf(50).level });   // égalité : le premier arbre
+  const { specChip } = await import('../src/ui/guild.js');
+  assert.match(specChip(by.Max), /class="gspec tr-barbare"[^]*Barbare \d+/); assert.equal(specChip(null), '');
+});

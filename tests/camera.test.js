@@ -97,3 +97,26 @@ test('prison (30/10/2026) : caméra bornée aux colonnes entre les barreaux, zoo
   c.zoomBy(2); assert.equal(c.zoom, 4); c.pan(0, 100, 50); assert.ok(c.x <= 38 - 50 / 4 + 1e-9, 'jamais au-delà des barreaux');
   c.setBox(null); assert.equal(c.zoom, 1); assert.equal(c.x, 0);
 });
+
+/* appli mobile (04/11/2026, Jules) : la mine démarre zoomée (×1 = 50 colonnes sur la largeur du téléphone, trop loin) */
+test('zoom de départ (appli) : appliqué tout de suite, centré sur le mineur, repris au double appui et en sortant de prison', () => {
+  const cam = createCamera(ROWS);
+  cam.setBaseZoom(CAMERA.appZoom);
+  assert.equal(cam.zoom, CAMERA.appZoom);
+  for(let i = 0; i < 300; i++) cam.update(100, LAST, 25);
+  const vc = 50 / CAMERA.appZoom;
+  assert.ok(Math.abs(cam.x - (25.5 - vc / 2)) < 0.01, `mineur au milieu de l'écran (x ${cam.x})`);
+  cam.zoomBy(0.1); assert.equal(cam.zoom, 1, 'on peut toujours dézoomer jusqu\'à ×1 en pinçant');
+  cam.zoomBy(0); assert.equal(cam.zoom, CAMERA.appZoom, 'double appui : retour au zoom de départ, pas au ×1');
+  cam.setBox({ x0: 13, x1: 37 }); assert.equal(cam.zoom, Math.max(2, CAMERA.appZoom), 'prison : au moins sa largeur');
+  cam.setBox(null); assert.equal(cam.zoom, CAMERA.appZoom, 'sortie de prison : zoom de départ');
+  cam.setBaseZoom(NaN); cam.setBaseZoom(-2); cam.setBaseZoom(0);
+  assert.equal(cam.zoom, CAMERA.appZoom, 'valeurs invalides ignorées');
+  cam.setBaseZoom(100); assert.equal(cam.zoom, CAMERA.maxZoom, 'jamais au-delà du zoom maximal');
+});
+
+test('zoom de départ : sur le site (sans setBaseZoom), rien ne change (×1, double clic → ×1)', () => {
+  const cam = createCamera(ROWS);
+  assert.equal(cam.zoom, 1);
+  cam.zoomBy(3); cam.zoomBy(0); assert.equal(cam.zoom, 1); assert.equal(cam.x, 0);
+});

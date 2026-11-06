@@ -3,6 +3,7 @@
    Une table = { title, sub?, groups: [{ label, rows: [{ item, min?, max?, chance?, note? }] }], notes: [] } :
    min / max = quantité sûre ; chance = probabilité (0 à 1) ; un groupe « un objet au plus » est un seul tirage.
    Les mobs ont leur propre forme (mobLootTable). Affichage : src/ui/loot-tip.js. */
+import { itemName } from './piece.js';   // nom affiché (« Excellent Trésor angélique », 03/11)
 import { LOOT, ITEMS, RUNE, RINGS, GOLBUTE, INSTANCE, UPGRADE, MOBS, MOB_INFO, MOB_DROPS, DUNGEON, TOWER, treasureItem,
          goblinChestItem, golbuteChestItem } from '../config.js';
 import { goblinChestTable } from './loot.js';
@@ -39,17 +40,17 @@ function towerGroups(side, luck = null){
 
 /* table d'un objet qui s'ouvre (inventaire) ; null si l'objet ne s'ouvre pas */
 export function lootTableOf(item){
-  if(Object.hasOwn(LOOT, item)) return { title:item, groups:fromConfig(LOOT[item]),
+  if(Object.hasOwn(LOOT, item)) return { title:itemName(item), groups:fromConfig(LOOT[item]),
     notes: LOOT[item].oneOf.some(f => f.family === 'blueprint') ? ['Un blueprint dont tu connais déjà la recette ne sort pas.'] : [] };
   const chest = ITEMS[item]?.chest;
   if(!chest) return null;
-  if(chest.side === 'goblin') return { title:item, groups:fromConfig(goblinChestTable(chest.level ?? 1)),
+  if(chest.side === 'goblin') return { title:itemName(item), groups:fromConfig(goblinChestTable(chest.level ?? 1)),
     notes:['Une pièce de stuff arrive identifiée à la qualité du coffre.'] };
-  if(chest.side === 'golbute') return { title:item, groups:fromConfig(GOLBUTE.loot),
+  if(chest.side === 'golbute') return { title:itemName(item), groups:fromConfig(GOLBUTE.loot),
     notes:['Une pièce de stuff arrive identifiée à la qualité du coffre.'] };
-  if(ITEMS[item].treasure) return { title:item, groups:towerGroups(chest.side, chest.luck),
+  if(ITEMS[item].treasure) return { title:itemName(item), groups:towerGroups(chest.side, chest.luck),
     notes: chest.luck ? [`Trésor ${RUNE.luck[chest.luck].label} : chances des anneaux × ${RUNE.luck[chest.luck].rings}.`] : [] };
-  return { title:item, groups:[{ label:'Toujours', rows:[ { item:RUNE.item, min:1, max:1, note:'de la qualité du coffre' } ] }], notes:[] };
+  return { title:itemName(item), groups:[{ label:'Toujours', rows:[ { item:RUNE.item, min:1, max:1, note:'de la qualité du coffre' } ] }], notes:[] };
 }
 
 /* butin d'une instance (carte du Lobby) : le coffre que chaque joueur reçoit à la victoire, et ses qualités */
@@ -59,7 +60,7 @@ export function instanceLootTable(id, level = 1){
   const lv = inst.chest === 'goblin' && INSTANCE.levels[level] ? level : 1;
   const chest = inst.chest === 'goblin' ? goblinChestItem(1, lv).replace(/ R1$/, '') : golbuteChestItem(1).replace(/ R1$/, '');
   const t = lootTableOf(inst.chest === 'goblin' ? goblinChestItem(1, lv) : golbuteChestItem(1));
-  return { title:`${inst.label} : ${chest}`, sub:'Un coffre pour chaque joueur encore là à la victoire.',
+  return { title:`${inst.label} : ${chest}`, sub:`Un coffre pour chaque joueur encore là à la victoire${INSTANCE.seal ? `, et ${INSTANCE.seal.qty} ${INSTANCE.seal.item}` : ''}.`,
            groups:[qualityGroup('du coffre'), ...t.groups], notes:t.notes };
 }
 

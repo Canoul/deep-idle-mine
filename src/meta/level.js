@@ -27,6 +27,17 @@ export const specLevels = progress => Object.fromEntries(SKILLS.trees.map(t => {
   return [t.id, { xp, ...specLevelOf(xp) }];
 }));
 
+/* spécialisation principale (05/11/2026, onglet Guilde) : l'arbre où il a le plus d'XP de spé, et son niveau ; null sans XP de
+   spé. Égalité : le premier arbre de SKILLS.trees */
+export function mainSpec(progress){
+  let best = null;
+  for(const t of SKILLS.trees){
+    const xp = progress?.spec?.[t.id];
+    if(Number.isSafeInteger(xp) && xp > 0 && (!best || xp > best.xp)) best = { tree:t.id, xp };
+  }
+  return best && { tree:best.tree, level:specLevelOf(best.xp).level };
+}
+
 /* guilde : rawXp = XP brute des membres ; GUILD.xpPct % sur le total, pour ne pas perdre les petits gains (un run de prison) */
 export const guildXpOf = rawXp => Number.isSafeInteger(rawXp) && rawXp > 0 ? Math.floor(rawXp * GUILD.xpPct / 100) : 0;
 export const guildLevelOf = rawXp => curveLevel(guildXpOf(rawXp), XP.curve);

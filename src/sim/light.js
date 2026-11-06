@@ -4,8 +4,10 @@
 import { W, STATS } from '../config.js';
 import { DIRS, isAir } from './world.js';
 
+/* clé d'une case : y × largeur + x, avec la largeur de la partie (Mine géante : 70 ; 06/11/2026), aussi dans le navigateur */
+const wOf = G => G.w || W;
 export function updateLight(G){
-  const map=new Map();
+  const map=new Map(), W=wOf(G);
   for(const T of G.torches){
     const R=T.r ?? STATS.torchRadius;
     const dist=new Map([[T.y*W+T.x,0]]), q=[[T.x,T.y]];
@@ -24,10 +26,11 @@ export function updateLight(G){
 }
 
 /* luminosité 0..1 d'une case : 1 en surface (le jour), sinon donnée par les torches posées */
-export const lumAt = (G,x,y) => y===0 ? 1 : (G.light.get(y*W+x)||0);
+export const lumAt = (G,x,y) => y===0 ? 1 : (G.light.get(y*wOf(G)+x)||0);
 
 /* lumière affichée : max de la case et de ses voisines (un mur éclairé par la galerie voisine) */
 export function lightShown(G,x,y){
+  const W=wOf(G);
   let l=G.light.get(y*W+x)||0;
   for(const [dx,dy] of DIRS){ const v=G.light.get((y+dy)*W+x+dx)||0; if(v>l) l=v; }
   return l;

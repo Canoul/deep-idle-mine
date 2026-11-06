@@ -12,6 +12,10 @@ import { pxi } from './pxicons.js';
 import { drawPortrait, lookOf } from '../render/portrait.js';
 import { aurasOf } from '../meta/aura.js';
 import { pieceGS, gearScore } from '../meta/gearscore.js';
+import { STAT_HELP } from '../meta/stat-help.js';
+/* nom d'une stat qui porte sa bulle d'aide (05/11/2026, Geoffrey ; ancien : un bouton « ? » par ligne) : souris posée dessus,
+   ou doigt maintenu dessus (data-tiphold, src/ui/tooltip.js) */
+const holdTip = (html, tip) => tip ? `<span class="statName" data-tip="${esc(tip)}" data-tipkind="help" data-tiphold="1" tabindex="0">${html}</span>` : html;
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -42,7 +46,7 @@ export function statsHTML(worn, effects){
   const fr = v => String(v).replace('.', ',');
   const list = minerStats(worn, effects);
   const rows = list.map(s => { const u = STUFF.statUnits?.[s.key] ?? '', n = v => statNum(s.key, v); return (
-    `<div class="row"><span>${esc(s.label)}</span><span><b>${n(s.total)}${u}</b>`+
+    `<div class="row"><span>${holdTip(esc(s.label), STAT_HELP[s.key] ? `${s.label}\n${STAT_HELP[s.key]}` : '')}</span><span><b>${n(s.total)}${u}</b>`+
     (s.bonus || s.mult !== 1 || s.skill ? ` <small class="mut">(`+
       (s.bonus ? `${n(s.base)} <span class="stuffStats" title="stuff">+${n(s.bonus)}${u}</span>` : n(s.base))+
       (s.mult === 1 && s.skill ? ` <span class="skillStats" title="skills">+${n(s.skill)}${u}</span>` : '')+
@@ -51,10 +55,10 @@ export function statsHTML(worn, effects){
     (s.ring ? ` <small class="ringStats" title="anneaux (pour tout le groupe)">+${n(s.ring)}${u}</small>` : '')+
     (s.key === 'tenacity' && s.total > 0 ? ` <small class="mut" title="Chance réelle d'ignorer une mécanique de mob : la ténacité a un rendement décroissant (02/11)">→ ${fr(Math.round(effectiveTenacity(s.total) * 10) / 10)} % effectifs</small>` : '')+
     `</span></div>`); }).join('');
-  const gs = `<div class="row" title="Gear score : ce que ton stuff porté ajoute aux stats de base, en x (stats, identification, rune, amélioration ; sans skills ni anneaux)"><span><b>Gear score</b></span><span><b>${gearScore(worn).toLocaleString('fr-FR')} GS</b></span></div>`;
+  const gs = `<div class="row"><span>${holdTip('<b>Gear score</b>', 'Gear score\nCe que ton stuff porté ajoute aux stats de base, en x (1 x = 1 s de travail) : stats, identification, rune, amélioration ; sans skills ni anneaux.')}</span><span><b>${gearScore(worn).toLocaleString('fr-FR')} GS</b></span></div>`;
   /* DPS brut (28/10) : stuff, skills et anneaux compris (les totaux affichés) ; sur cible immobile, sans recul */
   const dps = rawDps(Object.fromEntries(list.map(s => [s.key, s.total])));
-  const dpsRow = `<div class="row" title="Dégâts par seconde en moyenne sur une cible immobile, sans recul ni obscurité : dégâts × critique × double attaque × vitesse d'attaque (stuff, skills et anneaux compris ; sans Cri de guerre ni Pillage)"><span><b>DPS</b> <small class="mut">(cible immobile)</small></span><span><b>${fr(dps.toFixed(1))}</b></span></div>`;
+  const dpsRow = `<div class="row"><span>${holdTip('<b>DPS</b> <small class="mut">(cible immobile)</small>', 'DPS\nDégâts par seconde en moyenne sur une cible immobile, sans recul ni obscurité : dégâts × critique × double attaque × vitesse d\'attaque (stuff, skills et anneaux compris ; sans Cri de guerre ni Pillage).')}</span><span><b>${fr(dps.toFixed(1))}</b></span></div>`;
   /* les skills de comportement (Navette, Treuil…) ne sont plus listés ici (28/10/2026, Geoffrey) : voir l'onglet Skills */
   return gs + dpsRow + rows;
 }

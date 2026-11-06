@@ -2,7 +2,8 @@
    sync(items) reçoit la liste complète de ce qui doit être affiché (items = [{ key, icon, text, actions:[{ label,
    primary, run }] }]) : une notification déjà là reste en place, une nouvelle apparaît, une disparue (acceptée ailleurs,
    expirée) s'en va. Un bouton lance son action (une promesse) ; la notification part dès qu'elle a réussi.
-   Sans clic, elle se ferme seule au bout de ttl ms (NOTIFY.popupMs) et ne revient pas tant que le serveur l'envoie.
+   Sans clic, elle se ferme seule au bout de ttl ms (NOTIFY.popupMs, ou it.ttl pour celle-ci) et ne revient pas tant que le
+   serveur l'envoie.
    flash(text) : petite confirmation sans bouton, à part de cette liste, fermée au bout de NOTIFY.flashMs. */
 import { NOTIFY } from '../config.js';
 
@@ -15,7 +16,7 @@ export function setupNotify(root, ttl = NOTIFY.popupMs){
   /* fermeture automatique ; une action en cours (bouton cliqué) la repousse */
   function expire(key){
     const el = shown.get(key); if(!el) return;
-    if(el.classList.contains('busy')){ el._t = setTimeout(() => expire(key), ttl); return; }
+    if(el.classList.contains('busy')){ el._t = setTimeout(() => expire(key), el._ttl ?? ttl); return; }
     done.add(key); remove(key);
   }
   function make(it){
@@ -51,7 +52,8 @@ export function setupNotify(root, ttl = NOTIFY.popupMs){
       for(const it of items){
         if(shown.has(it.key) || done.has(it.key)) continue;
         const el = make(it); shown.set(it.key, el); root.appendChild(el);
-        el._t = setTimeout(() => expire(it.key), ttl);
+        el._ttl = it.ttl ?? ttl;
+        el._t = setTimeout(() => expire(it.key), el._ttl);
       }
     },
   };

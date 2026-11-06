@@ -7,13 +7,13 @@
    niveau, pour les caractéristiques ; focus : changements faits pendant la session)
    À partir de lui, buildSession construit la partie que le serveur fait tourner (server/game/live-game.js) ; la même
    seed et les mêmes choix redonnent exactement la même partie (reconstruction après un redémarrage). */
-import { TEAM, PREFS, PREF_OPTIONS, MOBS, DEV_TUNABLES, DEV_SPEC, SKILLS, GAME, SESSION_LEN, DT, MINE_MODES, DEV_TARGETS, RINGS } from '../config.js';
+import { TEAM, PREFS, PREF_OPTIONS, MOBS, DEV_TUNABLES, DEV_SPEC, SKILLS, GAME, SESSION_LEN, DT, MINE_MODES, DEV_TARGETS, RINGS, W, GEANTE } from '../config.js';
 import { newSession, tick, leaveSession, endSession, SESSION_TICKS } from '../sim/session.js';
 import { setFocus } from '../sim/focus.js';
 import { forceKhole } from '../sim/khole.js';
 import { aurasOf } from '../meta/aura.js';
 import { sanitizeLook, sanitizeGear, equippedStats, ringsOf, withRings, ringXpPct } from '../meta/stuff.js';
-import { sanitizeSkills, skillEffects, withSkillStats, slotMastery } from '../meta/skills.js';
+import { sanitizeSkills, skillEffects, withSkillStats, slotMastery, groupAuras } from '../meta/skills.js';
 import { withGlyphStats, nodeOfGlyph } from '../meta/glyphs.js';
 import { sessionSpells } from '../meta/spells.js';
 import { presetMiner, sanitizeBotPresets, isCopyPresetId, copyMiner, COPY_PREFIX } from './dev-presets.js';
@@ -120,7 +120,11 @@ export function minerSpecs(record){
   const rings = record.rings ?? groupRings(record, selfTree || placeTrees[0] ? presetOf(0)?.gear : null);   // Bloc géant : anneaux de tous les présents, passés à part (src/shared/giant-room.js)
   const modeDef = MINE_MODES.find(m => m.id === record.mode);
   const mine = !modeDef?.tower && !modeDef?.giant;   // tour, Bloc géant : pas de Glyphe Mule (son skill n'y agit pas)
-  const caracOf = i => withGlyphStats(withRings(withSkillStats(equippedStats(gearOf(i), slotMastery(skillsOf(i))), skillsOf(i)), rings), skillsOf(i), mine);   // glyphes en dernier ; maîtrises (28/10) : stats de la pièce
+  /* arbres v2 (04/11/2026) : Mineur tout terrain (raid : instances, tours, Bloc géant, He's coming) et auras du groupe
+     (record.skillAuras : Bloc géant, la salle commune les passe à part ; sinon les skills de tous les mineurs) */
+  const raid = !!(modeDef?.instance || modeDef?.tower || modeDef?.giant || record.raidMode);   // raidMode : raid Cerbère (src/shared/raid.js)
+  const auras = record.skillAuras ?? groupAuras(Array.from({ length: Math.max(1, n) }, (_, i) => skillsOf(i)));
+  const caracOf = i => withGlyphStats(withRings(withSkillStats(equippedStats(gearOf(i), slotMastery(skillsOf(i))), skillsOf(i), { raid, auras }), rings), skillsOf(i), mine);   // glyphes en dernier ; maîtrises (28/10) : stats de la pièce
   const treeOf = i => sanitizeSkills(rawSkills(i)).tree;
   /* Anneau du nerd : % d'XP pour son porteur seul, sur sa part du pot (src/sim/session.js shareBySegments) */
   /* sorts figés au lancement (record.spells[compte], revérifiés : connus, bonne spécialisation, slots ouverts) */
@@ -133,7 +137,12 @@ export function minerSpecs(record){
                        xpPct: ringXpPct(ringsOf(gearOf(i))), spells: spellsOf(i),
                        rings: rings.filter(r => !RINGS.items[r.item].xp || ringsOf(gearOf(i)).some(o => o.item === r.item)) });   // anneaux qui agissent sur lui (affichage, src/sim/effects.js) : le nerd seulement pour son porteur
   if(n <= 1) return [{ ...spec(0), name: players.length ? nameOf(0) : undefined }];
-  return TEAM.slice(0, n).map((t, i) => ({ x: t.x, home: t.home, ...spec(i) }));
+  /* au-delà des 3 places de TEAM (raid, 10 joueurs, 04/11/2026) : tous répartis sur la largeur (avant le 04/11 soir, les 3
+     premiers gardaient les places de TEAM et les autres se mettaient par-dessus : deux mineurs à 1 colonne l'un de l'autre,
+     dans le même puits, seed 262283490) */
+  const spread = i => ({ x: Math.round((i + 0.5) * W / n), home: Math.round((i + 0.5) * W / n) });
+  return Array.from({ length: n }, (_, i) => { const t = n > TEAM.length ? spread(i) : TEAM[i];
+    return { x: t.x, home: t.home, ...spec(i) }; });
 }
 
 /* anneaux portés par les joueurs de la session au lancement (RINGS), chacun une fois ; selfGear : le stuff du preset du
@@ -148,7 +157,9 @@ export function buildSession(record){
     accounts: (record.players || []).map(p => p.account),
     id: record.id,
     noResidues: record.residues === false,          // une tour du Jugement était ouverte au lancement (23/10)
+    geante: record.mode === GEANTE.mode,           // Mine géante (06/11) : minerais et mobs (G.geante)
     shrines: record.shrines,                        // shrines actifs du chef au lancement (28/10)
+    daily: record.daily,                            // événement du jour, figé au lancement (05/11)
   });
 }
 
@@ -211,8 +222,10 @@ export function resultChoice(ended, waitingFor){
 }
 
 export const TOTAL_TICKS = SESSION_TICKS;   // la session se termine exactement à ce tick (src/sim/session.js)
-export function tickAt(elapsedMs, speed = GAME.speed){
-  return Math.max(0, Math.min(TOTAL_TICKS, Math.floor(elapsedMs / 1000 * speed / DT + 1e-9)));
+/* dernier tick d'une session de ce type (Mine géante : 2 h, 06/11/2026) */
+export const totalTicksOf = mode => mode === GEANTE.mode ? Math.round(GEANTE.len / DT) : TOTAL_TICKS;
+export function tickAt(elapsedMs, speed = GAME.speed, total = TOTAL_TICKS){
+  return Math.max(0, Math.min(total, Math.floor(elapsedMs / 1000 * speed / DT + 1e-9)));
 }
 /* durée réelle d'une session à la vitesse normale (ms) */
-export const realDurationMs = (speed = GAME.speed) => SESSION_LEN / speed * 1000;
+export const realDurationMs = (speed = GAME.speed, mode = null) => (mode === GEANTE.mode ? GEANTE.len : SESSION_LEN) / speed * 1000;   // Mine géante : 2 h de jeu (06/11)

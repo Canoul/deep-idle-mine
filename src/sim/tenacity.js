@@ -1,6 +1,7 @@
 /* Ténacité effective (02/11/2026, Geoffrey ; TENACITY en config) : rendement décroissant, k × ln(1 + brute / k),
    plafonnée à TENACITY.max. Toutes les mécaniques de mob qui lisent la ténacité passent par ici (mine, tours, Bloc géant,
    instances). Logique pure, partagée avec l'affichage (onglet Stuff, wiki). */
+import { tenacityBonus } from './skillfx.js';
 import { TENACITY } from '../config.js';
 
 export function effectiveTenacity(raw){
@@ -12,7 +13,8 @@ export function effectiveTenacity(raw){
    pénétration de la source (02/11), puis la courbe */
 export const penOf = src => (src && TENACITY.pen?.[src]) || 0;
 /* extra : points de ténacité brute retirés en plus (malus de la Division du Golbute, 03/11) */
-export const tenacityOf = (m, src = null, extra = 0) => effectiveTenacity((Number(m?.carac?.tenacity) || 0) - penOf(src) - extra);
+/* + Reposé et Solide sur les appuis (arbres v2, 04/11 : src/sim/skillfx.js tenacityBonus) */
+export const tenacityOf = (m, src = null, extra = 0) => effectiveTenacity((Number(m?.carac?.tenacity) || 0) + tenacityBonus(m, src) - penOf(src) - extra);
 
 /* Fatigue (03/11/2026, Geoffrey ; TENACITY.tired) : après une esquive (m.tenTired), la chance de la mécanique suivante est
    × (1 − tired × (1 − résilience)) ; résilience = m.carac.tenacityResilience (%, 0 de base) */
@@ -31,4 +33,10 @@ export function tenacityTry(m, src, draw, extra = 0){
   if(!(t > 0) || !(draw() * 100 < t)) return false;
   m.tenTired = true;
   return true;
+}
+/* une mécanique qui ne fatigue pas (coup qui repousse de Cerbère, Geoffrey 04/11) : tirée sur la chance sans fatigue, elle ne
+   touche pas à m.tenTired (la Morsure qui suit garde toute sa chance) */
+export function tenacityTryFresh(m, src, draw, extra = 0){
+  const t = tenacityOf(m, src, extra);
+  return t > 0 && draw() * 100 < t;
 }

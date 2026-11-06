@@ -85,7 +85,12 @@ function sessionCard(snap, { now, sessionTimes }){
 /* expanded : « + N rendez-vous » déplié, tous les rendez-vous sont montrés */
 export function homeView(snap, data, expanded = false){
   const offline = snap.offline || !snap.account;
-  const rdv = offline ? [] : rendezVous(snap, data), shown = expanded ? rdv.length : APP_HOME.rdvShown;
-  return { team:sceneTeam(snap), activity:activityLine(snap), session:sessionCard(snap, data),
+  /* l'activité choisie a déjà sa ligne et le gros bouton : pas de rendez-vous en double, son horaire passe sur sa ligne
+     (retour de Jules sur son téléphone, 04/11 : « MI, four et MI encore ») */
+  const all = offline ? [] : rendezVous(snap, data), same = r => r.act?.kind === 'mode' && r.act.mode === snap.mode;
+  const rdv = all.filter(r => !same(r)), shown = expanded ? rdv.length : APP_HOME.rdvShown, activity = activityLine(snap);
+  const dup = all.find(same);
+  if(dup) activity.sub = dup.state;
+  return { team:sceneTeam(snap), activity, session:sessionCard(snap, data),
            rdv:rdv.slice(0, shown), more:Math.max(0, rdv.length - shown), main:mainButton(snap), error:snap.error || '' };
 }

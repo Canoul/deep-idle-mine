@@ -184,7 +184,7 @@ test('Inspiration : tout le monde frappe plus vite', () => {
 
 const withSpells = (spells, carac = {}) => { const G = newLucifer(1), m = joinLucifer(G, { ...spec(carac), spells }); return { G, m }; };
 
-test('Dash : à portée de sa place de frappe, il y fonce et frappe ; recharge réduite ; trop loin, il le garde', () => {
+test('Dash : à portée de sa place de frappe, il y fonce et frappe ; recharge entière (Lucifer est un boss, 03/11) ; trop loin, il le garde', () => {
   const { G, m } = withSpells(['dash']), S = SPELL.dash;
   m.x = G.contact - S.range - 1;
   tickLucifer(G);
@@ -193,7 +193,7 @@ test('Dash : à portée de sa place de frappe, il y fonce et frappe ; recharge r
   while(!m.spellCd.dash) tickLucifer(G);
   assert.equal(m.x, G.contact);
   assert.ok(m.points >= 20 * S.dmg);
-  assert.equal(m.spellCd.dash, G.t + S.cd * S.hitCd);
+  assert.equal(m.spellCd.dash, G.t + S.cd);
 });
 
 test('Dash : pas de Dash à une case, ni pendant le Fear', () => {
@@ -207,21 +207,23 @@ test('Dash : pas de Dash à une case, ni pendant le Fear', () => {
   assert.ok(!b.m.spellCd.dash);
 });
 
-test('Cleave et Dynamite : marquent des points à portée, pas de loin', () => {
-  for(const id of ['cleave', 'dynamite']){
-    const { G, m } = withSpells([id]);
-    m.x = G.contact;
-    tickLucifer(G);
-    assert.ok(m.points >= 20 * SPELL[id].dmg, id);
-    assert.equal(m.spellCd[id], G.t + SPELL[id].cd);
-    const far = withSpells([id], { reach:9 });
-    far.m.x = standX(far.G, far.m);
-    tickLucifer(far.G);
-    assert.ok(!far.m.spellCd[id], id + ' : hors de portée');
-  }
+test('Dynamite : marque des points à portée, pas de loin ; Cleave : sans effet (Lucifer est seul, 03/11)', () => {
+  const { G, m } = withSpells(['dynamite']);
+  m.x = G.contact;
+  tickLucifer(G);
+  assert.ok(m.points >= 20 * SPELL.dynamite.dmg);
+  assert.equal(m.spellCd.dynamite, G.t + SPELL.dynamite.cd);
+  const far = withSpells(['dynamite'], { reach:9 });
+  far.m.x = standX(far.G, far.m);
+  tickLucifer(far.G);
+  assert.ok(!far.m.spellCd.dynamite, 'hors de portée');
+  const c = withSpells(['cleave']);
+  c.m.x = c.G.contact;
+  for(let i = 0; i < 50; i++) tickLucifer(c.G);
+  assert.ok(!c.m.spellCd.cleave, 'Cleave jamais lancé');
 });
 
-test('Bonbonne de zipette : l\'allié proche qui manque d\'oxygène, jamais lui-même', () => {
+test('Bonbonne d\'oxygène : l\'allié proche qui manque d\'oxygène, jamais lui-même', () => {
   const G = newLucifer(1), a = joinLucifer(G, { ...spec({ oxygenMax:1000, pods:200 }), spells:['zipette'] }), b = joinLucifer(G, { ...spec({ oxygenMax:1000 }), account:'B' });
   a.x = b.x = G.contact; a.ox = 100; b.ox = 500;
   tickLucifer(G);
@@ -230,7 +232,7 @@ test('Bonbonne de zipette : l\'allié proche qui manque d\'oxygène, jamais lui-
   assert.ok(a.spellCd.zipette);
 });
 
-test('Ulti shen : rejoint un allié qui frappe, sans dégâts ; seul, il marche', () => {
+test('Ralliement : rejoint un allié qui frappe, sans dégâts ; seul, il marche', () => {
   const G = newLucifer(1), a = joinLucifer(G, { ...spec(), spells:['ulti_shen'] }), b = joinLucifer(G, { ...spec(), account:'B' });
   b.x = G.contact; a.x = 1; b.status = `Frappe ${HC.bossName}`;
   tickLucifer(G);

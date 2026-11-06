@@ -1,6 +1,6 @@
 /* Concasseur (onglet Concasseur) : logique pure, partagée par le jeu (affichage) et le serveur (qui fait foi).
 
-   8 cases d'entrée (CRUSHER.inSlots, 2 rangées de 4) pour les objets qui ont une table dans CRUSHER.loot (Terre, Pierre,
+   16 cases d'entrée (CRUSHER.inSlots, 4 rangées de 4) pour les objets qui ont une table dans CRUSHER.loot (Terre, Pierre,
    Pierre dure ; minerai de fer depuis le 28/10/2026), 8 cases de sortie pour le butin. Chaque case contient null ou { item, qty }.
 
    Toutes les CRUSHER.time secondes, il concasse CRUSHER.batch blocs d'UNE case d'entrée : la première qui en a assez,
@@ -166,7 +166,7 @@ export function dropOdds(block){
   const t = CRUSHER.loot[block];
   if(!t) return [];
   /* butin garanti (always, minerai de fer) : une « famille » par objet, à 100 %, avec sa fourchette (min, max) */
-  return [...(t.always || []).map(a => ({ family: 'fixed', chance: 1, min: a.min, max: a.max, items: [{ item: a.item, chance: 1 }] })),
+  return [...(t.always || []).map(a => ({ family: 'fixed', chance: a.chance ?? 1, min: a.min, max: a.max, items: [{ item: a.item, chance: a.chance ?? 1 }] })),
           ...t.oneOf.map(f => ({ family: f.family, chance: f.items.reduce((s, i) => s + i.chance, 0),
                                  items: f.items.map(i => ({ item: i.item, chance: i.chance })) }))];
 }

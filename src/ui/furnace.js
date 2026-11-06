@@ -19,10 +19,21 @@ const MODE_LABEL = { smelt:'Fondre', alloy:'Alliage' };
 const modeOf = f => f.mode === 'alloy' ? 'alloy' : 'smelt';
 const FURN_SLOTS = ['ore', 'a', 'b', 'c', 'fuel', 'out'];   // toutes les cases d'un four (« Tout retirer »)
 const x = (item, n) => `${icon(item)}${rname(item, `${item} ×${num(n)}`)}`;
+/* dans l'appli mobile (classe app, src/app/boot.js) : un four à la fois, choisi par onglet */
+const inApp = () => !!globalThis.document?.body?.classList.contains('app');
+
+/* onglets des fours dans l'appli (04/11/2026, Jules, spec 2026-11-04-appli-ecrans-fin-design.md) : list = fours possédés
+   (état avancé), max = nombre de fours, sel = four affiché ; 🔥 s'il chauffe, 🔒 s'il n'est pas encore débloqué */
+export function furnTabsHtml(list, max, sel){
+  return `<div class="seg fTabs">${Array.from({ length:max }, (_, i) => {
+    const f = list[i], cls = [i === sel && 'on', !f && 'locked'].filter(Boolean).join(' ');
+    return `<button${cls ? ` class="${cls}"` : ''} data-ftab="${i}">${f ? `Four ${i + 1}${f.since !== null ? ' 🔥' : ''}` : `🔒 Four ${i + 1}`}</button>`;
+  }).join('')}</div>`;
+}
 
 /* onOp({ action, furnace, slot, item, qty }) → promesse (rejetée avec un message lisible) */
 export function setupFurnace({ onOp }){
-  let state = { list:[], max:FURNACE.max }, offset = 0, inv = { slots:[] }, shown = '', busy = false;
+  let state = { list:[], max:FURNACE.max }, offset = 0, inv = { slots:[] }, shown = '', busy = false, sel = 0;   // sel : four de l'onglet (appli)
   const now = () => Date.now() + offset;
   /* état affiché : celui du serveur, avancé jusqu'à maintenant (copie : on ne touche pas à l'original) */
   const view = () => state.list.map(f => advance(structuredClone(f), now()));
@@ -61,9 +72,11 @@ export function setupFurnace({ onOp }){
   }
 
   function render(){
-    const list = view();
-    let h = '';
+    const list = view(), app = inApp();
+    if(sel >= state.max) sel = 0;
+    let h = app ? furnTabsHtml(list, state.max, sel) : '';
     for(let i = 0; i < state.max; i++){
+      if(app && i !== sel) continue;              // appli : seulement le four de l'onglet
       const f = list[i];
       if(!f){
         const key = Object.keys(FURNACE.unlockItems).find(k => FURNACE.unlockItems[k].slot === i);
@@ -183,7 +196,7 @@ export function setupFurnace({ onOp }){
       `<div class="fqty"><input id="fpickQty" type="number" min="1" step="1" inputmode="numeric" placeholder="Fournées">`+
       `<button id="fpickHalf" title="La moitié du maximum">Moitié</button><button id="fpickMax">Max</button><button class="on" id="fpickOk"${pick ? '' : ' disabled'}>Lancer</button></div>`+
       `<p class="mut small" id="fpickInfo"></p><p class="err" id="fpickErr" hidden></p>`+
-      `<p class="mut small">Le four pose lui-même les ingrédients et le charbon pour le nombre de fournées choisi, en plus de ce qu'il contient déjà. Ils ne sont consommés qu'à la fin de chaque produit. Changer de recette rend à l'inventaire ce qui ne sert plus (le produit en cours est annulé, rien n'est perdu).</p>`+
+      `<p class="mut small frecAbout">Le four pose lui-même les ingrédients et le charbon pour le nombre de fournées choisi, en plus de ce qu'il contient déjà. Ils ne sont consommés qu'à la fin de chaque produit. Changer de recette rend à l'inventaire ce qui ne sert plus (le produit en cours est annulé, rien n'est perdu).</p>`+   // caché dans l'appli (05/11) : plus de place pour la liste
       `<p style="text-align:right"><button id="fpickClose">Fermer</button></p>`;
     $('fpick').hidden = false;
     const qty = $('fpickQty'), maxOf = () => rows.find(r => r.rec.out === pick)?.max ?? 0;
@@ -216,6 +229,7 @@ export function setupFurnace({ onOp }){
   }
 
   $('furnList').onclick = e => {
+    const t = e.target.closest('[data-ftab]'); if(t){ sel = +t.dataset.ftab; return render(); }
     const m = e.target.closest('[data-mode]');
     if(m){ const i = +m.dataset.f; if(modeOf(view()[i]) !== m.dataset.mode) send({ action:'mode', furnace:i, mode:m.dataset.mode }); return; }
     const h = e.target.closest('[data-help]'); if(h) return openRecipes(+h.dataset.f);

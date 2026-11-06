@@ -6,18 +6,23 @@
    Bâtiments (01/11/2026) : spend(compte, objet, quantité, opId) retire les objets de l'inventaire (service de jeu), une seule
    fois par opId ; counts(compte, objets) : ce qu'il possède. Un don se fait HORS de la file : le versement d'une session attend
    addXp en tenant le verrou de l'inventaire, attendre ce verrou dans la file bloquerait les deux. pending réserve la part en cours :
-   deux dons en même temps ne dépassent jamais le coût, et rien n'est compté à la guilde avant d'avoir quitté l'inventaire. */
+   deux dons en même temps ne dépassent jamais le coût, et rien n'est compté à la guilde avant d'avoir quitté l'inventaire.
+   Raid (04/11/2026) : game (service de jeu, facultatif) sert au lobby de raid de la guilde (server/guild/raid.js, champ
+   mine.raid de la vue) ; son lancement aussi se fait hors de la file (même raison que les dons). */
 import crypto from 'node:crypto';
 import { GUILD } from '../../src/config.js';
 import { RANK, canRecruit, canKick, canPromote, canDemote, canTransfer, nextChief, sortMembers, activityOf,
          cleanGuildName, cleanGuildMessage, guildNameKey, guildNameError, sanitizeGuilds, buildingDef, buildingLevel, nextLevel, missing, buildingReady,
          canBuild, guildBonus } from '../../src/shared/guild.js';
-import { guildXpOf, guildLevelOf } from '../../src/meta/level.js';
+import { guildXpOf, guildLevelOf, mainSpec } from '../../src/meta/level.js';
 import { houseState } from '../../src/shared/guild-house.js';
 import { displayName, formatAccountId, nameKey, parseAccountId } from '../../src/shared/account.js';
 import { nameBanned } from '../moderation/filter.js';
 import { SocialError } from '../social/service.js';
 import { moderate } from '../moderation/filter.js';
+import { createRaidLobby } from './raid.js';
+import { sanitizeBank, bankable, bankCount, seen, remember, deposit as bankDeposit, take as bankTake, bankRecipes, bankMaxCrafts, bankCraft } from '../../src/meta/guild-bank.js';
+import { RECIPES } from '../../src/recipes.js';
 
 const fail = (code, status, message) => { throw new SocialError(code, status, message); };
 const isId = v => typeof v === 'string' && parseAccountId(v) === v;
@@ -25,7 +30,8 @@ const needId = v => { if(!isId(v)) fail('bad_request', 400, 'Joueur inconnu.'); 
 const needGuildId = v => { if(typeof v !== 'string' || !v || v.length > 64) fail('bad_request', 400, 'Guilde inconnue.'); };
 const needName = me => { if(me.guest || !me.name) fail('guest', 403, 'Choisis un pseudo pour rejoindre une guilde.'); };
 
-export function createGuildService({ store, accounts, statusOf, inviteCheck = async () => () => false, spend = async () => false, counts = async () => ({}), clock = Date.now, makeId = () => crypto.randomUUID() }){
+/* itemsOf(compte) : objets de son inventaire qu'on peut déposer à la banque [{ item, qty }] (05/11/2026) */
+export function createGuildService({ store, accounts, statusOf, inviteCheck = async () => () => false, spend = async () => false, counts = async () => ({}), itemsOf = async () => [], clock = Date.now, makeId = () => crypto.randomUUID(), game = null }){
   let state = null, byAccount = new Map(), chain = Promise.resolve();
   const pending = new Map();       // 'guilde:bâtiment:objet' → quantité en cours de don
   const giving = new Set();        // opId des dons en cours : la même demande renvoyée pendant ce temps ne compte pas
@@ -38,10 +44,16 @@ export function createGuildService({ store, accounts, statusOf, inviteCheck = as
     byAccount = new Map(Object.values(state.guilds).flatMap(g => g.members.map(m => [m.id, g.id])));
   }
   const save = () => store.putGuilds(state);
+  /* banque de guilde (05/11/2026, GUILD.bank) : en mémoire après la première lecture ; écrite seule (dépôt, craft) ou avec les
+     guildes (don d'un bâtiment depuis la banque, une seule écriture) */
+  const banks = new Map();
+  const bankOf = async gid => { if(!banks.has(gid)){ const b = sanitizeBank(await store.getGuildBank?.(gid)); if(!banks.has(gid)) banks.set(gid, b); } return banks.get(gid); };
+  const saveBank = gid => store.putGuildBank?.(gid, banks.get(gid));
   const all = () => Object.values(state.guilds);
   const guildOf = id => state.guilds[byAccount.get(id)] ?? null;
   const nameOf = async id => displayName(await accounts.getAccount(id)) || formatAccountId(id);
   const chiefOf = g => g.members.find(m => m.rank === RANK.chief);
+  const raid = createRaidLobby({ game, guildOf: async id => { await load(); return guildOf(id); }, nameOf, findByName: text => accounts.findAccountByName(nameKey(text)) });
   const summary = async g => ({ id:g.id, name:g.name, ...guildLevelOf(g.rawXp), xp:guildXpOf(g.rawXp), members:g.members.length, max:GUILD.maxMembers, chief:await nameOf(chiefOf(g).id) });
 
   /* bâtiments vus par le navigateur : niveau, matériaux du prochain niveau, prêt à construire */
@@ -73,14 +85,18 @@ export function createGuildService({ store, accounts, statusOf, inviteCheck = as
       const st = await statusOf(m.id) ?? { status:'offline' };
       return { ...st, id:m.id, name:await nameOf(m.id), rank:m.rank, xp:guildXpOf(m.rawXp), activity:activityOf(st.status),
         me:m.id === me.id, canInvite:m.id !== me.id && invitable(m.id, st),
+        spec:mainSpec(await store.getProgress?.(m.id)),   // spécialisation principale (05/11)
         actions:m.id === me.id ? { kick:false, promote:false, demote:false, transfer:false }
           : { kick:canKick(rank, m.rank), promote:canPromote(rank, m.rank), demote:canDemote(rank, m.rank), transfer:canTransfer(rank, m.rank) } };
     }));
     const requests = canRecruit(rank) ? await Promise.all(g.requests.map(async r => ({ id:r.id, name:await nameOf(r.id) }))) : [];
     const items = [...new Set(GUILD.buildings.flatMap(b => Object.keys(nextLevel(g, b)?.cost ?? {})))];
+    const bank = await bankOf(g.id);
     return { id:g.id, name:g.name, ...guildLevelOf(g.rawXp), xp:guildXpOf(g.rawXp), rank, max:GUILD.maxMembers, members:sortMembers(rows), requests,
              message:g.message ? { text:g.message.text, at:g.message.at, name:g.message.by ? await nameOf(g.message.by) : '' } : null, canMessage:canRecruit(rank),
-             buildings:buildingsView(g), canBuild:canBuild(rank), owned:await counts(me.id, items).catch(() => ({})), log:await logRows(g) };
+             buildings:buildingsView(g), canBuild:canBuild(rank), owned:await counts(me.id, items).catch(() => ({})), log:await logRows(g),
+             bank:Object.fromEntries(items.map(i => [i, bankCount(bank, i)])),   // banque de guilde (05/11) : bouton « De la banque » des bâtiments
+             raid:await raid.view(me) };
   }
   const invitesFor = id => all().filter(g => g.invites.some(i => i.id === id));
   async function view(me){
@@ -127,7 +143,7 @@ export function createGuildService({ store, accounts, statusOf, inviteCheck = as
     return m ?? null;
   }
 
-  return {
+  const api = {
     view,
     async list(me, query){
       await load();
@@ -212,6 +228,88 @@ export function createGuildService({ store, accounts, statusOf, inviteCheck = as
       });
       return view(me);
     },
+    /* ---------- banque de guilde (05/11/2026, Geoffrey ; src/meta/guild-bank.js) ----------
+       vue : la banque, ses recettes, et ce que le joueur peut y déposer ; canUse : chef ou officier (craft, bâtiments) */
+    async bank(me){
+      await load();
+      const { g, rank } = actor(me);
+      const b = await bankOf(g.id), use = canBuild(rank);
+      return { bank:{ slots:b.slots.filter(Boolean).map(s => ({ item:s.item, qty:s.qty })) }, canUse:use,
+               recipes:bankRecipes().map(item => ({ item, qty:RECIPES[item].qty, max:bankMaxCrafts(b, item),
+                 cost:Object.entries(RECIPES[item].cost).map(([k, need]) => ({ item:k, need, have:bankCount(b, k) })) })),
+               mine:(await itemsOf(me.id).catch(() => [])).filter(s => bankable(s.item)) };
+    },
+    /* dépôt d'un membre : les objets quittent son inventaire (une fois par opId, hors de la file : même raison que give), puis
+       entrent dans la banque (une fois par opId). Définitif : pas de retrait. */
+    async bankDeposit(me, { item, qty, opId } = {}){
+      if(!bankable(item)) fail('bad_item', 400, 'Cet objet ne va pas dans la banque (ni stuff, ni rune).');
+      if(!Number.isSafeInteger(qty) || qty <= 0 || qty > GUILD.maxGift) fail('bad_qty', 400, 'Quantité invalide.');
+      if(typeof opId !== 'string' || !/^[\w-]{8,64}$/.test(opId)) fail('bad_request', 400, 'Demande invalide.');
+      const g = await serial(async () => {
+        await load();
+        const { g } = actor(me), b = await bankOf(g.id);
+        if(seen(b, opId) || giving.has(opId)) return null;
+        giving.add(opId);
+        return g;
+      });
+      if(!g) return api.bank(me);
+      let taken = false;
+      try { taken = await spend(me.id, item, qty, opId); }
+      finally { if(!taken) await serial(async () => giving.delete(opId)); }
+      if(!taken) fail('not_enough', 409, 'Tu n\'as pas assez de cet objet.');
+      await serial(async () => {
+        giving.delete(opId);
+        const b = await bankOf(g.id);
+        if(seen(b, opId)) return;
+        bankDeposit(b, item, qty); remember(b, opId);
+        await saveBank(g.id);
+        if(state.guilds[g.id] === g) await addLog(g, { at:clock(), by:me.id, name:displayName(me) || formatAccountId(me.id), kind:'deposit', item, qty });
+        if(state.guilds[g.id] === g) await save();
+      });
+      return api.bank(me);
+    },
+    /* don d'un bâtiment depuis la banque : chef ou officier ; ramené à ce qu'il manque et à ce que la banque a */
+    async bankGive(me, { building, item, qty, opId } = {}){
+      const b = typeof building === 'string' ? buildingDef(building) : null;
+      if(!b) fail('bad_request', 400, 'Bâtiment inconnu.');
+      if(typeof item !== 'string' || !Number.isSafeInteger(qty) || qty <= 0 || qty > GUILD.maxGift) fail('bad_qty', 400, 'Quantité invalide.');
+      if(typeof opId !== 'string' || !/^[\w-]{8,64}$/.test(opId)) fail('bad_request', 400, 'Demande invalide.');
+      await serial(async () => {
+        await load();
+        const { g, rank } = actor(me);
+        if(!canBuild(rank)) forbidden();
+        const bank = await bankOf(g.id);
+        if(seen(bank, opId)) return;
+        if(!Object.hasOwn(nextLevel(g, b)?.cost ?? {}, item)) fail('bad_item', 400, 'Ce bâtiment ne demande pas cet objet.');
+        const amount = Math.min(qty, bankCount(bank, item), missing(g, b, item, pending.get(`${g.id}:${b.id}:${item}`) ?? 0));
+        if(amount <= 0) fail(bankCount(bank, item) ? 'complete' : 'not_enough', 409, bankCount(bank, item) ? 'Ce matériau est déjà complet.' : 'La banque n\'en a pas.');
+        bankTake(bank, item, amount); remember(bank, opId);
+        const r = g.buildings[b.id] ??= { level:0, given:{} };
+        r.given[item] = (r.given[item] ?? 0) + amount;
+        await addLog(g, { at:clock(), by:me.id, name:displayName(me) || formatAccountId(me.id), kind:'give', building:b.id, item, qty:amount, fromBank:true });
+        await (store.putGuildsAndBank ? store.putGuildsAndBank(state, g.id, bank) : Promise.all([save(), saveBank(g.id)]));
+      });
+      return view(me);
+    },
+    /* craft de guilde : chef ou officier, avec les objets de la banque ; le résultat reste dans la banque */
+    async bankCraft(me, { item, count = 1, opId } = {}){
+      if(typeof opId !== 'string' || !/^[\w-]{8,64}$/.test(opId)) fail('bad_request', 400, 'Demande invalide.');
+      await serial(async () => {
+        await load();
+        const { g, rank } = actor(me);
+        if(!canBuild(rank)) forbidden();
+        const bank = await bankOf(g.id);
+        if(seen(bank, opId)) return;
+        const r = bankCraft(bank, item, count);
+        if(r.error) fail(r.error, r.error === 'not_enough' ? 409 : 400, { unknown:'Cette recette n\'est pas dans la banque.', bad_count:'Quantité invalide.', not_enough:'La banque n\'a pas assez de matériaux.' }[r.error]);
+        remember(bank, opId);
+        await saveBank(g.id);
+        await addLog(g, { at:clock(), by:me.id, name:displayName(me) || formatAccountId(me.id), kind:'craft', item, qty:r.made });
+        await save();
+      });
+      return api.bank(me);
+    },
+
     /* construire : chef ou officier, tous les matériaux réunis ; déjà construit (double clic, deux officiers) : rien */
     build: act(async (me, id) => {
       const b = buildingDef(id);
@@ -228,6 +326,7 @@ export function createGuildService({ store, accounts, statusOf, inviteCheck = as
     /* comptes de la guilde d'un joueur, [] sans guilde (canal Guilde du chat, server/social/service.js) */
     /* compte supprimé : il sort de sa guilde (le suivant devient chef, guilde vide : dissoute), de ses invitations et demandes */
     eraseAccount: id => serial(async () => {
+      await raid.eraseAccount(id);
       await load();
       dropPending(id);
       for(const g of all()) g.invites = g.invites.filter(i => i.by !== id);
@@ -353,6 +452,19 @@ export function createGuildService({ store, accounts, statusOf, inviteCheck = as
       exit(g, me.id);
     }),
 
+    /* lobby de raid de la guilde (04/11/2026, server/guild/raid.js) : chaque action renvoie la vue, comme les autres */
+    raidJoin: async (me, group = null) => { await raid.join(me, group); return view(me); },
+    raidLeave: async me => { await raid.leave(me); return view(me); },
+    raidKick: async (me, id) => { needId(id); await raid.kick(me, id); return view(me); },
+    raidReady: async (me, on) => { await raid.ready(me, on); return view(me); },
+    raidInvite: async (me, name) => { const invited = await raid.invite(me, name); return { ...await view(me), invited }; },
+    raidMove: async (me, group, id = null) => { await raid.move(me, group, id); return view(me); },
+    /* administration : met acc dans le lobby de raid de host (server/admin/routes.js) */
+    raidAdminMove: (acc, host) => raid.adminMove(acc, host),
+    raidAdminReady: (acc, ready) => raid.adminReady(acc, ready),
+    /* lancement : la session du raid (comme POST /api/game/start) et la vue de la guilde */
+    raidLaunch: async (me, body) => { const r = await raid.launch(me, body); return { ...await view(me), session: r.session }; },
+
     /* XP d'un membre, versée une seule fois par le service de jeu (creditXp) ; sans guilde, rien */
     addXp: (id, xp) => serial(async () => {
       await load();
@@ -363,4 +475,5 @@ export function createGuildService({ store, accounts, statusOf, inviteCheck = as
       await save();
     }),
   };
+  return api;
 }

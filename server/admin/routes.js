@@ -8,7 +8,9 @@
    POST /api/admin/reports {"name":"crousti","open":true} : signalements ; {"action":"close","id":12} : traité (scripts/reports.js).
    POST /api/admin/chat-recent {"name":"crousti"} : derniers messages du chat global ; POST /api/admin/chat-delete {"id":42} : le supprime (scripts/delete-message.js).
    POST /api/admin/mute {"name":"crousti","hours":24} : plus de chat ; {"off":true} : levé (scripts/mute.js).
-   POST /api/admin/ban {"name":"crousti","days":7,"reason":"…"} : compte suspendu, sans days = définitif ; {"off":true} : levé (scripts/ban.js).
+   POST /api/admin/ban {"name":"crousti","days":7,"reason":"…"} : compte suspendu, « minutes » au lieu de days, sans durée = définitif ;
+     {"off":true} : levé (scripts/ban.js).
+   POST /api/admin/notice {"name":"crousti","title":"…","text":"…"} : pop-up « message de l'équipe » chez le joueur (scripts/warn.js).
    POST /api/admin/rename {"name":"crousti","to":"Nouveau"} : force un pseudo (scripts/rename.js).
    POST /api/admin/mod-log {"limit":50} : journal de ces actions (scripts/reports.js --log).
    POST /api/admin/delete-account {"name":"crousti"} : dit quel compte serait supprimé ; avec "confirm":true, le supprime (scripts/delete-account.js).
@@ -18,6 +20,8 @@
    POST /api/admin/prison-stats {} : rendement de la prison par joueur (scripts/dashboard-prison.js).
    POST /api/admin/khole {"name":"crousti","map":2} : ouvre un k hole dans sa session en cours (scripts/force-khole.js).
    POST /api/admin/party-move {"name":"crousti","to":"canoul"} : met crousti dans le lobby de canoul (scripts/move-to-lobby.js).
+   POST /api/admin/raid-move {"name":"crousti","to":"canoul"} : met crousti dans le lobby de raid où est canoul (scripts/move-to-raid.js).
+   POST /api/admin/raid-ready {"name":"crousti","ready":true} : prêt / pas prêt dans son lobby de raid (scripts/set-raid-ready.js).
    POST /api/admin/end-session {"name":"crousti"} : le sort de sa session en cours, sans butin (scripts/end-session.js).
    POST /api/admin/prison {"name":"crousti"} : l'envoie en prison, hors de son groupe (scripts/send-to-prison.js).
    POST /api/admin/session-speed {"name":"crousti","speed":300} : vitesse de sa session, donc de son lobby (scripts/session-speed.js).
@@ -25,6 +29,7 @@
    POST /api/admin/party-lead {"name":"crousti"} : crousti devient chef de son lobby (scripts/set-leader.js).
    POST /api/admin/party-ready {"name":"crousti","ready":true,"always":true} : prêt / prêt tout le temps (scripts/set-ready.js).
    POST /api/admin/raffle {} : lance un raffle tout de suite, à toute heure (scripts/force-raffle.js).
+   POST /api/admin/app-latest {"platform":"android","version":"1.1.6"} : dernière appli sur le store, « "" » = celle de la config (scripts/set-app-latest.js).
 
    Une requête n'est acceptée que si les TROIS conditions sont réunies, sinon la route répond « Route inconnue » (404),
    comme si elle n'existait pas :
@@ -59,7 +64,7 @@ export function adminAllowed(req, token){
 
 /* accounts : le stockage des comptes (findAccountByName) ; game : le service de jeu (adminGive, adminTake, adminJudgment) ;
    party : le service des groupes (adminMove, adminReady), facultatif ; social : raffle, facultatif */
-export function adminRoutes({ accounts, service = null, game, party = null, moderation = null, social = null, reports = null, eraser = null, token }){
+export function adminRoutes({ accounts, service = null, game, party = null, guild = null, moderation = null, social = null, reports = null, eraser = null, appLatest = null, token }){
   const guard = ctx => { if(!adminAllowed(ctx.req, token)) throw hidden(); };
   /* compte désigné par son pseudo (champ `field` du corps) */
   const byName = async (ctx, field = 'name') => {
@@ -130,11 +135,29 @@ export function adminRoutes({ accounts, service = null, game, party = null, mode
       guard(ctx); noMod();
       const acc = await byNameOrId(ctx);
       if(ctx.body?.off === true){ await moderation.suspend(acc.id, { lift: true }); await journal(ctx, 'unban', label(acc)); return { account: label(acc), suspended: null }; }
-      const days = ctx.body?.days === undefined || ctx.body?.days === null ? null : count(ctx.body.days, MODERATION.banDaysMax, 'days');
+      const given = v => v !== undefined && v !== null;
+      if(given(ctx.body?.days) && given(ctx.body?.minutes)) throw new HttpError(400, 'bad_request', 'days ou minutes, pas les deux.');
+      const days = given(ctx.body?.days) ? count(ctx.body.days, MODERATION.banDaysMax, 'days') : null;
+      const minutes = given(ctx.body?.minutes) ? count(ctx.body.minutes, MODERATION.banMinutesMax, 'minutes') : null;
       const reason = typeof ctx.body?.reason === 'string' ? ctx.body.reason.trim().slice(0, 200) : '';
-      const r = await moderation.suspend(acc.id, { ms: days === null ? null : days * 24 * 3600e3, reason });
+      const ms = days !== null ? days * 24 * 3600e3 : minutes !== null ? minutes * 60e3 : null;
+      const r = await moderation.suspend(acc.id, { ms, reason });
       await game.adminLeave?.(acc.id).catch(() => {});       // sa session en cours : comme son bouton « Quitter » ; pas de session : rien
-      await journal(ctx, 'ban', label(acc), `${days === null ? 'définitif' : `${days} j`}${reason ? ` : ${reason}` : ''}`);
+      await journal(ctx, 'ban', label(acc), `${days !== null ? `${days} j` : minutes !== null ? `${minutes} min` : 'définitif'}${reason ? ` : ${reason}` : ''}`);
+      return { account: label(acc), ...r };
+    },
+    /* message de l'équipe (04/11/2026, Geoffrey) : pop-up chez le joueur, tout de suite s'il est en ligne, sinon à sa prochaine visite */
+    'POST /api/admin/notice': async ctx => {
+      guard(ctx); noMod();
+      const acc = await byNameOrId(ctx);
+      const field = (k, max) => {
+        const v = typeof ctx.body?.[k] === 'string' ? ctx.body[k].trim() : '';
+        if(!v || v.length > max) throw new HttpError(400, 'bad_request', `${k} : un texte de 1 à ${max} caractères.`);
+        return v;
+      };
+      const title = field('title', MODERATION.noticeTitleMax), text = field('text', MODERATION.noticeTextMax);
+      const r = await moderation.notice(acc.id, { title, text, by: adminName(ctx) });
+      await journal(ctx, 'notice', label(acc), `${title} : ${text}`);
       return { account: label(acc), ...r };
     },
     'POST /api/admin/rename': async ctx => {
@@ -167,6 +190,23 @@ export function adminRoutes({ accounts, service = null, game, party = null, mode
       const r = await party.adminMove(acc, host);
       console.log(`Admin : ${acc.name} (${acc.id}) ${r.moved ? 'mis' : 'déjà'} dans le lobby de ${host.name} (${r.party.code}) : ${members(r)}`);
       return { account: acc.name, host: host.name, ...r };
+    },
+    /* lobby de raid (04/11/2026, Geoffrey) : comme party-move, pour le lobby de raid d'une guilde (server/guild/raid.js) */
+    'POST /api/admin/raid-move': async ctx => {
+      guard(ctx);
+      if(!guild) throw new HttpError(503, 'no_guild_service', 'Guildes indisponibles sur ce serveur.');
+      const acc = await byName(ctx), host = await byName(ctx, 'to');
+      const r = await guild.raidAdminMove(acc, host);
+      console.log(`Admin : ${acc.name} (${acc.id}) ${r.moved ? 'mis' : 'déjà'} dans le lobby de raid de ${host.name} (guilde ${r.guild}) : ${r.members.map(m => m.name + (m.leader ? ' (chef)' : '')).join(', ')}`);
+      return { account: acc.name, host: host.name, ...r };
+    },
+    'POST /api/admin/raid-ready': async ctx => {
+      guard(ctx);
+      if(!guild) throw new HttpError(503, 'no_guild_service', 'Guildes indisponibles sur ce serveur.');
+      const acc = await byName(ctx);
+      const r = await guild.raidAdminReady(acc, ctx.body?.ready ?? true);
+      console.log(`Admin : ${acc.name} (${acc.id}) ${r.members.find(m => m.name === acc.name)?.ready ? 'prêt' : 'pas prêt'} dans le lobby de raid (guilde ${r.guild})`);
+      return { account: acc.name, ...r };
     },
     /* fin de session forcée (29/10/2026, Geoffrey) : comme son bouton « Quitter » */
     'POST /api/admin/end-session': async ctx => {
@@ -298,6 +338,13 @@ export function adminRoutes({ accounts, service = null, game, party = null, mode
     'POST /api/admin/prison-stats': async ctx => {
       guard(ctx);
       return { rows: await game.adminPrisonStats() };
+    },
+    'POST /api/admin/app-latest': async ctx => {
+      guard(ctx);
+      if(!appLatest) throw new HttpError(503, 'unavailable', 'Mises à jour de l\'appli non branchées sur ce serveur.');
+      const r = await appLatest.set(ctx.body?.platform, typeof ctx.body?.version === 'string' ? ctx.body.version.trim() : null);
+      console.log(`Admin : dernière appli ${r.platform} ${r.before || '—'} → ${r.after || '—'}`);
+      return r;
     },
     'POST /api/admin/judgment': async ctx => {
       guard(ctx);

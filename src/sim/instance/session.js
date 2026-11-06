@@ -12,8 +12,9 @@
 
    Combat (portée, recul, tacle) : comme dans les tours (src/sim/knock.js). Sorts : Inspiration, Fast learner et
    Dynamite sur les spawners et les cages (Dynamite = INSTANCE.spawner.dynamite coups sur un spawner, casse les blocs de
-   cage à son rayon) ; Cri de guerre, Cleave, Hand of Justice, Dash et Ulti shen contre les gobelins (Ulti shen et Cleave
-   aussi sur le roi) ; Illumination et Bonbonne de zipette : sans effet (tout est éclairé, pas d'oxygène). */
+   cage à son rayon) ; Cri de guerre, Cleave, Hand of Justice, Dash et Ralliement contre les gobelins (Ralliement et Cleave
+   aussi sur le roi) ; Illumination et Bonbonne d'oxygène : sans effet (tout est éclairé, pas d'oxygène). */
+import { critMul, backstabMul } from '../skillfx.js';
 import { INSTANCE, DT, STATS, CFG, COMBAT } from '../../config.js';
 import { mulberry32 } from '../../core/rng.js';
 import { SPELL } from '../../meta/spells.js';
@@ -90,7 +91,9 @@ const manh = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 export const warcryOf = (G, m) => { const w = G.warcry, c = w && G.t < w.until ? byId(G, w.by) : null;
   return c && manh(c, m) <= SPELL.war_cry.radius ? w : null; };
 const hitT = (G, m) => CFG.attackInterval / Math.max(0.1, (m.carac.attackSpeed ?? 100) / 100 * (1 + (warcryOf(G, m)?.speed || 0)));
-const hitDmg = (G, m) => m.carac.damage * (1 + (m.carac.damagePct || 0) / 100) * (1 + (warcryOf(G, m)?.dmg || 0)) * (chance(G, m.carac.crit || 0) ? 2 : 1);
+/* arbres v2 (04/11) : Crushing ; Dans le dos : visé si un gobelin le tacle ou si le boss l'a pour cible */
+const hitDmg = (G, m) => m.carac.damage * (1 + (m.carac.damagePct || 0) / 100) * (1 + (warcryOf(G, m)?.dmg || 0)) * (chance(G, m.carac.crit || 0) ? critMul(m) : 1)
+  * backstabMul(m, !!tackler(G, m) || G.boss?.focus === m.id);
 const strikeDmg = (G, m) => { let d = hitDmg(G, m); if(chance(G, m.carac.doubleAttack || 0)) d += hitDmg(G, m); return d; };
 const ready = (G, m, id) => m.spells.includes(id) && G.t + 1e-9 >= (m.spellCd[id] || 0);
 const cast = (G, m, id, cdFrom = G.t, mul = 1) => { m.spellCd[id] = cdFrom + SPELL[id].cd * mul; m.stats.spells++; };
@@ -417,6 +420,7 @@ function strike(G, m, target, status){
   if(now + 1e-9 >= (m.atkReady || 0)){
     combatSpells(G, m, target);
     if(boss) hitBoss(G, m); else hitGoblin(G, m, target);
+    cleaveHit(G, m, target);
     m.atkReady = now + hitT(G, m);
   }
   return act(m, 'attack', (m.atkReady || 0) - now, { done: true, boss, aim: boss ? undefined : { x: target.x, y: target.y } }, status);
@@ -542,17 +546,25 @@ function mineSpells(G, m, x, y){
 }
 /* en combat : Cri de guerre (lui et les mineurs à son rayon), Cleave (les gobelins à son rayon, le roi s'il est au
    contact) */
+/* Cleave (03/11/2026, Geoffrey) : après un coup normal sur target, si le sort est prêt : jusqu'à maxTargets − 1 autres
+   (gobelins à radius cases, le roi s'il est à son contact), les plus proches, à dmg × ses dégâts. Sinon il reste prêt. */
+function cleaveHit(G, m, target){
+  if(!ready(G, m, 'cleave') || G.over) return;
+  const S = SPELL.cleave;
+  const ahead = x => (x - m.x) * (m.face || 1) > 0;   // seulement devant lui (03/11)
+  const foes = liveGobs(G).filter(o => o !== target && ahead(o.x) && manh(o, m) <= S.radius).sort((a, b) => manh(a, m) - manh(b, m));
+  const list = [...(target !== G.boss && inContact(G, m) && ahead(bossMid(G) - 0.5) ? [G.boss] : []), ...foes].slice(0, S.maxTargets - 1);
+  if(!list.length) return;
+  cast(G, m, 'cleave');
+  for(const o of list) o === G.boss ? damageBoss(G, m, hitDmg(G, m) * S.dmg) : hitGoblin(G, m, o, hitDmg(G, m) * S.dmg);
+}
 function combatSpells(G, m, target){
   if(ready(G, m, 'war_cry') && !(G.warcry && G.t < G.warcry.until)){
     const S = SPELL.war_cry; G.warcry = { until: G.t + S.duration, by: m.id, dmg: S.dmgPct, speed: S.atkSpeed };
     cast(G, m, 'war_cry', G.warcry.until);
     log(G, `📯 ${m.name} : Cri de guerre`);
   }
-  if(ready(G, m, 'cleave')){
-    const S = SPELL.cleave; cast(G, m, 'cleave');
-    for(const o of liveGobs(G)) if(o !== target && manh(o, m) <= S.radius) hitGoblin(G, m, o, hitDmg(G, m) * S.dmg);
-    if(target !== G.boss && inContact(G, m)) damageBoss(G, m, hitDmg(G, m) * S.dmg);
-  }
+
   /* Dynamite en combat (29/10/2026, Geoffrey) : sur le roi (au contact, devant lui), ou sur un gobelin qui en a au moins
      fightFoes dans le rayon (lui compris) ; 50 % de ses dégâts à tout le rayon, rien de cassé */
   if(ready(G, m, 'dynamite')){
@@ -565,7 +577,7 @@ function combatSpells(G, m, target){
     }
   }
 }
-/* à chaque décision : Hand of Justice (un gobelin qui tacle un allié, puis lui, à sa portée : étourdi), Ulti shen (un
+/* à chaque décision : Hand of Justice (un gobelin qui tacle un allié, puis lui, à sa portée : étourdi), Ralliement (un
    allié taclé, ou qui se bat contre le roi : il se téléporte à lui et frappe) */
 function supportSpells(G, m){
   if(ready(G, m, 'hand_of_justice')){
@@ -581,7 +593,7 @@ function supportSpells(G, m){
       cast(G, m, 'ulti_shen'); stopAction(m); m.action = null; m.x = to.x; m.y = to.y; m.kx = 0; m.hop = G.ticks;
       if(ally){ const o = tackler(G, ally); hitGoblin(G, m, o, o.maxhp * S.hpPct); }
       else damageBoss(G, m, G.boss.maxhp * S.bossPct);
-      log(G, `🌀 ${m.name} : Ulti shen auprès de ${to.name}`);
+      log(G, `🌀 ${m.name} : Ralliement auprès de ${to.name}`);
     }
   }
 }
@@ -610,7 +622,7 @@ function dashBoss(G, m){
   const S = SPELL.dash, dir = Math.sign(tx - m.x), n = Math.abs(tx - m.x);
   if(n < S.minCells || n > S.range) return false;
   for(let x = m.x + dir; x !== tx + dir; x += dir) if(!open(G, x, m.y) || !instSupported(G, x, m.y)) return false;
-  cast(G, m, 'dash', G.t, S.hitCd);
+  cast(G, m, 'dash', G.t);   // boss : recharge entière (03/11 ; avant × hitCd)
   m.x = tx; m.kx = 0; m.face = dir;
   log(G, `💨 ${m.name} : Dash sur le ${b.name}`);
   hitBoss(G, m, strikeDmg(G, m) * S.dmg);

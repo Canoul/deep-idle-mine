@@ -47,7 +47,7 @@ test('équiper : sort verrouillé, autre spécialisation, slot verrouillé ou in
   const { game } = await setup();
   for(const [spell, slot] of [['dash', 0], ['dynamite', 1], ['ulti_shen', 0], ['dash', 2], ['dash', -1], ['dash', 1e9], ['dash', '0'], ['__proto__', 0]])
     await assert.rejects(game.spells(ME, { action:'equip', spell, slot, opId:'op-equip-bad' }));
-  assert.deepEqual((await game.state(ME)).spells.slots, [null, null]);
+  assert.deepEqual((await game.state(ME)).spells.slots, [null, null, null, null]);
 });
 
 test('sauvegarde trafiquée (sort verrouillé dans un slot) : il n\'est pas figé au lancement', async () => {

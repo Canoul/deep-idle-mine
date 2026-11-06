@@ -13,9 +13,29 @@ import { SETS, SPELLS } from '../config.js';
 import { SLOT_IDS, fits } from './stuff.js';
 import { takePiece, putPiece } from './inventory.js';
 import { sanitizeSkills, skillRanks } from './skills.js';
-import { spellOf, equipBlocked } from './spells.js';
+import { spellOf, equipBlocked, openSlotsOf } from './spells.js';
 
-export const createSets = () => ({ list:[], nextId:1, ops:[] });
+export const createSets = () => ({ list:[], nextId:1, ops:[], byActivity:{} });
+
+/* Set par activité (03/11/2026) : l'activité d'un mode de lancement (MINE_MODES), ou null. Les instances partagent un
+   set, les deux tours aussi. */
+const ACTIVITY_IDS = SETS.activities.map(a => a.id);
+export function setActivity(mode){
+  if(typeof mode !== 'string') return null;
+  if(mode.startsWith('instance_')) return 'instances';
+  if(mode.startsWith('tower_')) return 'towers';
+  return ACTIVITY_IDS.includes(mode) ? mode : null;
+}
+/* associer (id) ou dissocier (null) un set d'une activité ; op = { action:'assign', activity, id, opId } */
+function assign(sets, op){
+  if(!ACTIVITY_IDS.includes(op.activity)) return { error:'bad_request' };
+  if(op.id === null){ delete sets.byActivity[op.activity]; return { ok:true }; }
+  if(!setOf(sets, op.id)) return { error:'unknown' };
+  sets.byActivity[op.activity] = op.id;
+  return { ok:true };
+}
+/* le set associé à l'activité de ce mode, ou null */
+export const setForMode = (sets, mode) => { const a = setActivity(mode), id = a ? sets.byActivity?.[a] : null; return id ? setOf(sets, id) : null; };
 /* cette pièce (uid) est-elle enregistrée dans un set ? (elle ne se recycle pas) */
 export const inSomeSet = (sets, uid) => sets.list.some(s => Object.values(s.stuff ?? {}).includes(uid));
 const setOf = (sets, id) => Number.isSafeInteger(id) ? sets.list.find(s => s.id === id) ?? null : null;
@@ -44,7 +64,7 @@ export function equippedSet(list, worn, skills, spellSlots){
   return (list ?? []).find(s =>
     SLOT_IDS.every(k => (s.stuff?.[k] ?? null) === (worn?.[k]?.uid ?? null)) &&
     (s.skills?.tree ?? null) === (skills.tree ?? null) && ranks(s.skills?.ranks) === mine &&
-    Array.from({ length:SPELLS.openSlots }, (_, i) => (s.spells?.[i] ?? null) === (spellSlots[i] ?? null)).every(Boolean)
+    Array.from({ length:SPELLS.slots }, (_, i) => (s.spells?.[i] ?? null) === (spellSlots[i] ?? null)).every(Boolean)
   ) ?? null;
 }
 
@@ -53,7 +73,8 @@ export function equippedSet(list, worn, skills, spellSlots){
 export function setOp(sets, op, current){
   if(sets.ops.includes(op.opId)) return { ok:true, repeated:true };
   let id = op.id;
-  if(op.action === 'create'){
+  if(op.action === 'assign'){ const r = assign(sets, op); if(r.error) return r; }
+  else if(op.action === 'create'){
     if(sets.list.length >= SETS.max) return { error:'too_many' };
     id = sets.nextId++;
     sets.list.push({ id, name:freeName(sets), ...structuredClone(current) });
@@ -62,7 +83,10 @@ export function setOp(sets, op, current){
     if(!s) return { error: ['save', 'rename', 'delete'].includes(op.action) ? 'unknown' : 'bad_request' };
     if(op.action === 'save') Object.assign(s, structuredClone(current));
     else if(op.action === 'rename'){ const n = cleanName(op.name); if(!n) return { error:'bad_name' }; s.name = n; }
-    else if(op.action === 'delete') sets.list = sets.list.filter(x => x !== s);
+    else if(op.action === 'delete'){
+      sets.list = sets.list.filter(x => x !== s);
+      for(const [a, sid] of Object.entries(sets.byActivity)) if(sid === s.id) delete sets.byActivity[a];   // plus associé
+    }
   }
   remember(sets, op.opId);
   return { ok:true, repeated:false, id };
@@ -71,7 +95,7 @@ export function setOp(sets, op, current){
 /* Équipe le set id : modifie inv, stuff, skills et spells sur place. points : points de skill du niveau ; spec : niveaux
    de spécialisation { arbre: niveau } (déblocage des sorts). Idempotent par opId (sets.ops).
    Renvoie { ok, repeated, missing } (missing : pièces du set introuvables) ou { error }. */
-export function applySet(sets, op, { inv, stuff, skills, spells, points, spec }){
+export function applySet(sets, op, { inv, stuff, skills, spells, points, spec, level }){
   if(sets.ops.includes(op.opId)) return { ok:true, repeated:true, missing:0 };
   const set = setOf(sets, op.id);
   if(!set) return { error:'unknown' };
@@ -90,10 +114,10 @@ export function applySet(sets, op, { inv, stuff, skills, spells, points, spec })
   const sk = sanitizeSkills(set.skills, points);
   skills.tree = sk.tree; skills.ranks = sk.ranks;
   /* sorts : ceux du set encore équipables (débloqués, spécialisation du set), chacun une fois */
-  const ctx = { tree:sk.tree, spec };
-  spells.slots = Array.from({ length:SPELLS.openSlots }, (_, i) => {
+  const ctx = { tree:sk.tree, spec, level }, open = openSlotsOf(ctx);   // emplacements ouverts au niveau du mineur (05/11)
+  spells.slots = Array.from({ length:SPELLS.slots }, (_, i) => {
     const id = set.spells[i];
-    return id && !equipBlocked(spells, id, ctx) && set.spells.indexOf(id) === i ? id : null;
+    return i < open && id && !equipBlocked(spells, id, ctx) && set.spells.indexOf(id) === i ? id : null;
   });
   remember(sets, op.opId);
   return { ok:true, repeated:false, missing };
@@ -114,13 +138,15 @@ export function sanitizeSets(raw){
     ids.add(s.id);
     const stuff = {};
     for(const k of SLOT_IDS){ const u = s.stuff?.[k]; if(Number.isSafeInteger(u) && u >= 0) stuff[k] = u; }
-    const spells = Array.from({ length:SPELLS.openSlots }, (_, i) => spellOf(s.spells?.[i]) ? s.spells[i] : null);
+    const spells = Array.from({ length:SPELLS.slots }, (_, i) => spellOf(s.spells?.[i]) ? s.spells[i] : null);
     out.list.push({ id:s.id, name:cleanName(s.name) ?? 'Set ' + s.id, stuff, skills:skillRanks(sanitizeSkills(s.skills)), spells });
   }
   out.nextId = Math.max(Number.isSafeInteger(raw?.nextId) ? raw.nextId : 1, ...out.list.map(s => s.id + 1), 1);
   out.ops = Array.isArray(raw?.ops) ? raw.ops.filter(o => typeof o === 'string').slice(-SETS.opMemory) : [];
+  /* set par activité : activités connues, sets qui existent */
+  for(const a of ACTIVITY_IDS){ const id = raw?.byActivity?.[a]; if(ids.has(id)) out.byActivity[a] = id; }
   return out;
 }
 
 /* ce que le navigateur voit : la liste (sans les ops) */
-export const publicSets = sets => ({ list: sets.list.map(s => structuredClone(s)), max: SETS.max });
+export const publicSets = sets => ({ list: sets.list.map(s => structuredClone(s)), max: SETS.max, byActivity: { ...sets.byActivity } });

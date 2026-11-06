@@ -11,8 +11,11 @@
    sessionBonuses(G, m) → [{ id, src, value? }] : bonus permanents de la session (une seule icône à l'écran).
    Couronne du Roi Gobelin : buff du porteur seul (crownOf, 29/10).
    mobEffects(G, o) → ['stun', 'channel', 'taunt'] : états d'un mob. */
+import { inspireOn, inspireAt } from './groups.js';
 import { EFFECTS, INSTANCE, RINGS } from '../config.js';
 import { SPELL } from '../meta/spells.js';
+import { NODES } from '../meta/skills.js';
+const AURA_NODES = Object.values(NODES).filter(n => n.aura);   // Aura rassurante, berserk, d'efficacité (04/11)
 
 const r1 = v => Math.round(v * 10) / 10;
 const left = (G, until) => Math.max(0, r1(until - G.t));
@@ -30,6 +33,8 @@ export function minerEffects(G, m, ctx = {}){
   if(m.fearUntil > G.t) push({ id:'fear', left:left(G, m.fearUntil) });   // He's coming (01/11)
   const cage = G.cages?.some(c => c.id === m.id) && G.boss?.state === 'wait';
   if(cage) push({ id:'caged', left:Math.max(0, r1(INSTANCE.boss.cageMaxWait - (G.boss.t || 0))) });
+  /* Raid 1, Cerbère (04/11/2026) : en pierre (value : solidité qui reste) jusqu'à ce qu'un allié le libère */
+  if(m.stone && !m.dead) push({ id:'stone', value:Math.ceil(m.stone.hp) });
   /* debuffs */
   if(m.fearMark) push({ id:'fear_mark' });   // He's coming (03/11) : prochain Fear plus probable
   if(m.scaredUntil > G.t) push({ id:'scared', left:left(G, m.scaredUntil) });
@@ -40,14 +45,16 @@ export function minerEffects(G, m, ctx = {}){
   if(G.boss && G.boss.hp > 0 && G.boss.focus != null && G.boss.focus === m.id && G.boss.engaged !== false) push({ id:'boss_focus' });
   if(ctx.dark) push({ id:'dark' });
   /* Instance II, le Golbute (30/10/2026) : Sonné (stacks de l'avalanche) et Mort */
-  if(m.dead) push({ id:'dead' });
+  if(m.bitUntil > G.t + 1e-9 && !m.dead) push({ id:'bitten', left:left(G, m.bitUntil) });   // Raid 1 : Morsure (affichage)
+  if(m.dead) push(G.mode === 'raid' ? { id:'dead', src:'raid' } : { id:'dead' });
   else if(m.dazed > 0 && G.t <= (m.dazedUntil ?? 0) + 1e-9) push({ id:'dazed', stacks:m.dazed, left:left(G, m.dazedUntil) });
   /* buffs */
   if(ctx.warcry && G.t < ctx.warcry.until) push({ id:'war_cry', left:left(G, ctx.warcry.until) });
-  if(G.inspire && G.t < G.inspire.until) push({ id:'inspiration', left:left(G, G.inspire.until) });
+  if(inspireOn(G, m)) push({ id:'inspiration', left:left(G, inspireAt(G, m).until) });
   if(m.skill?.ore_rush && G.t < (m.rushUntil ?? -1)) push({ id:'ore_rush', left:left(G, m.rushUntil), value:m.skill.ore_rush });
   if(m.skill?.travel_rush && ctx.travelling) push({ id:'travel_rush', value:m.skill.travel_rush });
   if(m.skill?.braum && m.helping) push({ id:'braum', value:m.skill.braum });
+  if(m.restedNow) push({ id:'rested', left:left(G, m.restedUntil), value:m.skill.rested });   // Reposé (04/11)
   if(m.pillage > 0) push({ id:'pillage', stacks:Math.round(m.pillage), value:m.pillage });
   const learned = learnedOf(m);
   if(learned.total > 0) push({ id:'fast_learner', stacks:learned.count, value:r1(learned.total * 100) / 100 });
@@ -84,6 +91,10 @@ export function sessionBonuses(G, m){
   for(const r of m.rings || []) out.push({ id:'ring', src:r.item, value:r.plus || 0 });
   for(const id of G.shrines || []) out.push({ id:'shrine', src:id });
   if(G.winchBoost > 0) out.push({ id:'escalator', value:G.winchBoost });
+  /* auras des skills (05/11/2026) : bonus de groupe figés au lancement (src/meta/skills.js groupAuras) ; tous les joueurs
+     lancés comptent (roster, partis compris). Mine instantanée : chacun pour soi, ses propres auras */
+  const team = G.mode === 'mi' ? [m] : G.roster?.length ? G.roster : G.miners?.length ? G.miners : [m];
+  for(const n of AURA_NODES) if(team.some(x => x?.skill?.[n.id] > 0)) out.push({ id:'aura', src:n.id });
   return out;
 }
 

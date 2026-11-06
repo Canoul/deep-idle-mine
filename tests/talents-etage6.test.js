@@ -10,8 +10,9 @@ const mob = m => ({ id:1, type:'golem', hp:1e6, x:m.x, y:m.y, kx:0, ky:0 });
 const setup = (n = 1) => { const G = worldFrom(['', '#####'], { miners:n }); G.mobs = []; return { G, m:G.miners[0] }; };
 const nodes = () => SKILLS.trees.map(t => t.nodes.find(n => n.row === 6));
 
-test('un talent par arbre à l\'étage 6, un point chacun', () => {
-  assert.deepEqual(nodes().map(n => [n.id, n.max]), [['ore_drunk', 1], ['recon', 1], ['ravage', 1]]);
+test("Ivresse Minérale (étage 4 du Mineur), Reconnaissance (étage 5 du Logisticien), un point chacun ; Saccager à l'étage 4 du Barbare (arbres v3, 04/11)", () => {
+  const at = id => SKILLS.trees.flatMap(t => t.nodes).find(n => n.id === id);
+  assert.deepEqual(['ore_drunk', 'recon', 'ravage'].map(id => [at(id).row, at(id).max]), [[4, 1], [5, 1], [4, 1]]);
 });
 
 test('Ivresse Minérale : les minerais s\'additionnent sans limite, tout part dans la prochaine attaque', () => {

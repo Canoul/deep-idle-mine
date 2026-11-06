@@ -12,6 +12,8 @@ import { pieceName } from '../meta/piece.js';
 import { rcls, rname, rlabel, pname, runeMark, rframe } from './rarity.js';
 import { glyphInfo } from '../meta/glyphs.js';
 import { pxi } from './pxicons.js';
+import { lootHelp } from './loot-tip.js';
+import { lootTableOf } from '../meta/loot-table.js';
 
 const $ = id => document.getElementById(id);
 /* dans l'appli mobile (classe app, src/app/boot.js) : slots plus petits, pas de survol */
@@ -50,10 +52,33 @@ export function fmtQty(n, { short = false } = {}){
 }
 const fullQty = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 
-function slotHtml(s, i, fresh){
+/* Pièces simples empilées à l'affichage (04/11/2026, Geoffrey) : une pièce de stuff non identifiée, sans amélioration ni
+   rune (isPlainPiece) ne se distingue pas d'une autre du même objet ; toutes celles d'un même objet tiennent dans UNE case
+   (× n), à la place de la première. Chacune garde son uid dans l'inventaire du serveur (rien ne change pour l'équiper, la
+   recycler, un set ou un craft) : c'est l'affichage qui les regroupe. Logique pure, testée (tests/inventory-stack.test.js). */
+export const isPlainPiece = s => !!s && s.uid != null && !isStackable(s.item) && !s.q && !(s.plus > 0) && !s.rune && !(s.lines?.length);
+/* cases à dessiner pour ces slots (shown : indices) : [{ i, uids? }] ; uids : les pièces simples regroupées sur la case i.
+   Les cases libérées par le regroupement sont rendues en fin de grille (extra : indices libres au-delà de l'inventaire) */
+export function inventoryCells(inv, shown){
+  const cells = [], groups = new Map();
+  for(const i of shown){
+    const s = inv.slots[i];
+    if(isPlainPiece(s)){
+      const g = groups.get(s.item);
+      if(g){ g.uids.push(s.uid); continue; }
+      const c = { i, uids:[s.uid] }; groups.set(s.item, c); cells.push(c); continue;
+    }
+    cells.push({ i });
+  }
+  const hidden = shown.length - cells.length, all = shown.length && shown.every((v, k) => v === k);
+  if(all) for(let k = 0; k < hidden; k++) cells.push({ i: Math.max(inv.slots.length, shown.length) + k });   // « Tout » : la grille garde sa taille
+  return cells;
+}
+
+export function slotHtml(s, i, fresh, n = 1){   // exportée : banque de guilde (05/11)
   if(!s) return `<div class="slot empty" data-i="${i}"></div>`;
-  const q = isStackable(s.item) ? `<span class="q">${fmtQty(s.qty, { short:inApp() })}</span>` : s.plus > 0 ? `<span class="q">+${s.plus}</span>` : '';
-  return `<div class="slot${rcls(s.item)}${fresh.has(i)?' fresh':''}"${rframe(s)} data-i="${i}" draggable="true"${tipAttr(s.item, `${pieceName(s)} × ${fullQty(s.qty)}`, s.uid != null ? s : null)}>${iconHtml(s.item)}${runeMark(s)}${q}</div>`;
+  const q = isStackable(s.item) ? `<span class="q">${fmtQty(s.qty, { short:inApp() })}</span>` : n > 1 ? `<span class="q">${fmtQty(n, { short:inApp() })}</span>` : s.plus > 0 ? `<span class="q">+${s.plus}</span>` : '';
+  return `<div class="slot${rcls(s.item)}${fresh.has(i)?' fresh':''}"${rframe(s)} data-i="${i}" draggable="true"${tipAttr(s.item, `${pieceName(s)} × ${fullQty(n > 1 ? n : s.qty)}`, s.uid != null ? s : null)}>${iconHtml(s.item)}${runeMark(s)}${q}</div>`;
 }
 
 /* blueprint : bouton « Utiliser » (débloque sa recette), ou pourquoi on ne peut pas */
@@ -87,19 +112,31 @@ function unlockHtml(s, furn){
 }
 
 /* pièce de stuff fabriquée (ou butin de mob à recyclage fixe), rune : bouton « Recycler » (une fenêtre demande de confirmer) */
-const recycleHtml = s => s.uid != null && recyclable(s.item)
-  ? ` <button class="invRecycle" data-uid="${s.uid}" title="${recycleRange(s.item) ? 'Détruit la rune et rend de la Poudre de rêve' : 'Détruit la pièce et rend une partie de ses matériaux'}">♻ Recycler</button>` : '';
+const recycleHtml = (s, group = null) => s.uid != null && recyclable(s.item)
+  ? ` <button class="invRecycle" data-uid="${s.uid}" title="${recycleRange(s.item) ? 'Détruit la rune et rend de la Poudre de rêve' : 'Détruit la pièce et rend une partie de ses matériaux'}">♻ Recycler</button>`+
+    (group?.length > 1 ? ` <button class="invRecycle" data-uid="${s.uid}" data-all="1" title="Détruit les ${group.length} pièces (sauf celles d'un set) et rend une partie de leurs matériaux">♻ Recycler tout (${group.length})</button>` : '')   // pièces simples empilées (04/11)
+  : '';
 
-function infoHtml(s, pinned=false, inv=null, worn=null, furn=null){
+/* déplacer un objet (glisser-déposer du PC, bouton « Déplacer » de l'appli) : la demande envoyée au serveur, ou null s'il n'y a
+   rien à faire (même case, case de départ vide). L'objet de la case d'arrivée, s'il y en a un, prend la place de from. */
+export function moveOp(inv, from, to){
+  const s = inv.slots[from];
+  if(!s || from === to) return null;
+  return { from, to, item:s.item, ...(s.uid != null ? { uid:s.uid } : {}) };
+}
+
+/* moveFrom (appli, 04/11/2026) : case de l'objet choisi, pour le bouton « Déplacer » (au doigt, pas de glisser-déposer) */
+/* group : uids des pièces simples empilées dans cette case (04/11/2026) ; leur nombre remplace la quantité */
+export function infoHtml(s, pinned=false, inv=null, worn=null, furn=null, moveFrom=null, group=null){
   if(!s) return inApp()
     ? '<span class="mut">Touche un objet pour voir son détail.</span>'
     : '<span class="mut">Survole ou clique un objet pour voir son détail.</span>';
   const d = itemDef(s.item);
   const piece = s.uid != null ? s : null;
-  const bits = [ piece ? pname(piece, 'b') : rname(s.item, undefined, 'b'), `× ${fullQty(s.qty)}` ];
+  const bits = [ piece ? pname(piece, 'b') : rname(s.item, undefined, 'b'), `× ${fullQty(group?.length > 1 ? group.length : s.qty)}` ];
   if(d) bits.push(CAT_LABEL[d.cat] || d.cat);
   bits.push(rlabel(s.item));
-  if(!isStackable(s.item)) bits.push('ne s\'empile pas');
+  if(!isStackable(s.item)) bits.push(isPlainPiece(s) ? 's\'empile tant qu\'elle n\'est pas identifiée' : 'ne s\'empile pas');
   if(piece && !piece.q) bits.push('<span class="mut">non identifiée</span>');
   const stats = statLines(piece ?? s.item);
   const n = inv ? countOf(inv, s.item) : 0;
@@ -108,8 +145,10 @@ function infoHtml(s, pinned=false, inv=null, worn=null, furn=null){
   const learn = pinned && inv ? blueprintHtml(inv, s) : '';
   const equip = pinned && worn ? equipHtml(s, worn) : '';
   const unlock = pinned ? unlockHtml(s, furn) : '';
-  const recycle = pinned ? recycleHtml(s) : '';
-  const acts = open + learn + equip + unlock + recycle;
+  const recycle = pinned ? recycleHtml(s, group) : '';
+  const move = pinned && Number.isInteger(moveFrom) ? ` <button class="invMove" data-i="${moveFrom}" title="Puis touche la case où le poser">↔ Déplacer</button>` : '';
+  const loot = lootTableOf(s.item) ? ' ' + lootHelp(`item:${s.item}`, 'Butin') : '';   // tableau de butin à la demande (04/11)
+  const acts = open + loot + learn + equip + unlock + recycle + move;
   /* trois blocs (28/10/2026, Geoffrey) : description, puis les stats (une par ligne), puis les boutons */
   return `<div class="iiDesc">${bits.join(' <span class="mut">·</span> ')}</div>`+
     (stats.length ? `<ul class="iiStats stuffStats">${stats.map(l => `<li>${esc(l)}</li>`).join('')}</ul>` : '')+
@@ -146,11 +185,13 @@ export function tabsHtml(active, items, unit, all = items.length, hideEmpty = fa
    est remplacé) */
 export function renderInventory(inv, fresh=new Set(), actions={}){
   const grid = $('invGrid'), n = gridSize(inv, INVENTORY.cols, INVENTORY.minSlots);
+  let cells = [], groupAt = new Map();   // pièces simples empilées (04/11) : case → uids
   grid.style.setProperty('--cols', INVENTORY.cols);
   const draw = () => {
     $('invTabs').innerHTML = tabsHtml(tab, inv.slots.filter(Boolean).map(s => s.item), 'slot', usedSlots(inv));
     const shown = tabSlots(inv, tab, n);
-    grid.innerHTML = shown.map(i => slotHtml(inv.slots[i] || null, i, fresh)).join('') ||
+    cells = inventoryCells(inv, shown); groupAt = new Map(cells.filter(c => c.uids).map(c => [c.i, c.uids]));
+    grid.innerHTML = cells.map(c => slotHtml(inv.slots[c.i] || null, c.i, fresh, c.uids?.length ?? 1)).join('') ||
       `<p class="mut invNone">Rien dans « ${esc(INVENTORY.tabs.find(t => t.id === tab)?.name ?? '')} ».</p>`;
   };
   draw();
@@ -159,20 +200,28 @@ export function renderInventory(inv, fresh=new Set(), actions={}){
   $('invCount').textContent = used ? `${used} slot${used>1?'s':''} utilisé${used>1?'s':''}` : 'Vide : termine une session pour remplir ton inventaire.';
   $('invInfo').innerHTML = infoHtml(null);
 
-  let pinned = null;
+  let pinned = null, moving = null;   // moving (appli) : case de l'objet à déplacer, en attente de la case d'arrivée
+  $('invMoveBar')?.remove(); grid.classList.remove('moving');
+  const stopMove = () => { moving = null; $('invMoveBar')?.remove(); grid.classList.remove('moving'); };
   const at = e => { const c = e.target.closest('.slot'); return c ? inv.slots[+c.dataset.i] || null : undefined; };
   /* survol : souris seulement. Sur un écran tactile, le survol simulé au premier appui changeait la fiche et l'iPhone
      avalait le clic : la pièce n'était jamais choisie, donc pas de bouton « Équiper » (30/10, Geoffrey) */
   const hover = !matchMedia('(hover: none)').matches;
-  grid.onmouseover = e => { if(pinned || !hover) return; const s = at(e); if(s !== undefined) $('invInfo').innerHTML = infoHtml(s); };
+  grid.onmouseover = e => { if(pinned || !hover) return; const s = at(e), c = e.target.closest('.slot'); if(s !== undefined) $('invInfo').innerHTML = infoHtml(s, false, null, null, null, null, c ? groupAt.get(+c.dataset.i) : null); };
   grid.onmouseleave = () => { if(!pinned && hover) $('invInfo').innerHTML = infoHtml(null); };
   grid.onclick = e => {
     const c = e.target.closest('.slot'); if(!c) return;
+    if(moving !== null){                            // appli : la case d'arrivée (la case de départ annule)
+      const op = moveOp(inv, moving, +c.dataset.i);
+      stopMove();
+      if(op) actions.onMove?.(op);
+      return;
+    }
     grid.querySelectorAll('.slot.sel').forEach(x => x.classList.remove('sel'));
     const s = inv.slots[+c.dataset.i] || null;
     pinned = (s && pinned !== s) ? s : null;
     if(pinned) c.classList.add('sel');
-    $('invInfo').innerHTML = infoHtml(pinned || s, !!pinned, inv, actions.worn?.(), actions.furnaces?.());
+    $('invInfo').innerHTML = infoHtml(pinned || s, !!pinned, inv, actions.worn?.(), actions.furnaces?.(), inApp() && pinned ? +c.dataset.i : null, groupAt.get(+c.dataset.i) ?? null);
     /* petit écran : la fiche (et ses boutons Équiper, Ouvrir…) est sous la grille, on la fait venir à l'écran */
     if(pinned && matchMedia('(max-width: 1100px)').matches) $('invInfo').scrollIntoView({ behavior:'smooth', block:'nearest' });
   };
@@ -191,16 +240,34 @@ export function renderInventory(inv, fresh=new Set(), actions={}){
     e.preventDefault();
     const c = e.target.closest('.slot'), from = drag; drag = null;
     grid.querySelectorAll('.dropTo').forEach(x => over(x, false));
-    if(!c || from === null || +c.dataset.i === from) return;
-    const s = inv.slots[from];
-    actions.onMove?.({ from, to: +c.dataset.i, item: s.item, ...(s.uid != null ? { uid: s.uid } : {}) });
+    const op = c && from !== null ? moveOp(inv, from, +c.dataset.i) : null;
+    if(op) actions.onMove?.(op);
   };
   $('invInfo').onclick = e => {
-    const b = e.target.closest('.invOpen, .invLearn, .invEquip, .invUnlock, .invRecycle');
+    const b = e.target.closest('.invOpen, .invLearn, .invEquip, .invUnlock, .invRecycle, .invMove');
     if(!b) return;
+    if(b.classList.contains('invMove')){             // appli : on attend la case d'arrivée (rien n'est envoyé avant)
+      moving = +b.dataset.i;
+      const s = inv.slots[moving], bar = document.createElement('div');
+      bar.id = 'invMoveBar'; bar.className = 'invMoveBar';
+      bar.innerHTML = `${s ? iconHtml(s.item) : ''}<span>Touche la case où le poser</span><button>Annuler</button>`;
+      bar.querySelector('button').onclick = stopMove;
+      $('invTabs').before(bar); grid.classList.add('moving');
+      return;
+    }
     if(b.classList.contains('invRecycle')){         // rien n'est envoyé avant la confirmation
       const s = inv.slots.find(x => x?.uid === +b.dataset.uid);
-      if(s) showRecycle(s, actions.setsOf?.(s.uid) ?? [], () => actions.onRecycle?.(s.uid));
+      if(!s) return;
+      /* pile de pièces simples (04/11) : une pièce hors set (ou toutes avec « Recycler tout ») */
+      const group = [...groupAt.values()].find(g => g.includes(s.uid));
+      if(group){
+        const free = group.filter(u => !(actions.setsOf?.(u) ?? []).length);
+        if(!free.length){ showRecycle(s, actions.setsOf?.(s.uid) ?? [], () => {}); return; }
+        const uids = b.dataset.all ? free : [free[0]], one = inv.slots.find(x => x?.uid === uids[0]);
+        showRecycle(one, [], () => uids.length > 1 ? actions.onRecycleAll?.(uids) : actions.onRecycle?.(uids[0]), uids.length);
+        return;
+      }
+      showRecycle(s, actions.setsOf?.(s.uid) ?? [], () => actions.onRecycle?.(s.uid));
       return;
     }
     b.disabled = true;               // un clic = une demande
@@ -213,9 +280,10 @@ export function renderInventory(inv, fresh=new Set(), actions={}){
 
 /* fenêtre de recyclage : ce que la pièce rend (60 % de sa recette, arrondi vers le bas) et ce qui est perdu ; si elle
    est dans un set, on prévient seulement (le serveur refuserait de toute façon) */
-export function showRecycle(piece, sets, onOk){
+/* count : nombre de pièces simples recyclées d'un coup (« Recycler tout », 04/11/2026) */
+export function showRecycle(piece, sets, onOk, count = 1){
   const box = $('loot'), close = () => { box.hidden = true; };
-  const title = `<h3>${iconHtml(piece.item)} ${pname(piece)}</h3>`;
+  const title = `<h3>${iconHtml(piece.item)} ${count > 1 ? `${fullQty(count)} × ` : ''}${pname(piece)}</h3>`;
   if(sets.length){
     box.querySelector('.box').innerHTML = title +
       `<p>Impossible de recycler cette pièce : elle est enregistrée dans ${sets.length > 1 ? 'les sets' : 'le set'} ${sets.map(n => `« ${esc(n)} »`).join(', ')}.</p>`+
@@ -237,8 +305,9 @@ export function showRecycle(piece, sets, onOk){
   }
   const refund = recycleRefund(piece.item), names = Object.keys(refund);
   const lost = [piece.plus > 0 && `son amélioration +${piece.plus}`, piece.rune && 'sa rune', piece.q && 'sa qualité'].filter(Boolean);
-  box.querySelector('.box').innerHTML = title + '<p>Recycler cette pièce ? Elle sera <b>détruite</b>. Tu récupères :</p>'+
-    (names.length ? `<div class="lootList">${names.map(n => `<div class="lootRow">${iconHtml(n)}${rname(n)}<b>× ${fullQty(refund[n])}</b></div>`).join('')}</div>`
+  box.querySelector('.box').innerHTML = title + (count > 1 ? `<p>Recycler ces <b>${fullQty(count)}</b> pièces ? Elles seront <b>détruites</b> (pas celles d'un set). Tu récupères :</p>`
+                                                 : '<p>Recycler cette pièce ? Elle sera <b>détruite</b>. Tu récupères :</p>')+
+    (names.length ? `<div class="lootList">${names.map(n => `<div class="lootRow">${iconHtml(n)}${rname(n)}<b>× ${fullQty(refund[n] * count)}</b></div>`).join('')}</div>`
                   : '<p class="mut">rien (chaque ingrédient de sa recette ne rend que 60 %, arrondi vers le bas)</p>')+
     (lost.length ? `<p class="err small">Perdu avec elle : ${lost.join(', ')}.</p>` : '')+
     `<p style="text-align:right"><button id="recNo">Annuler</button> <button class="on" id="recYes">♻ Recycler</button></p>`;

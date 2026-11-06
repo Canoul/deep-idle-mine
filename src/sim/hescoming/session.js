@@ -3,6 +3,7 @@
 
    Lucifer est à la place du bloc, il ne meurt pas et ne bouge pas. Le mineur frappe depuis standX, d'autant plus loin qu'il a de la
    portée. 1 dégât infligé = 1 point. Lucifer rugit (Fear) et frappe (recul) à son rythme, sur l'horloge de la salle. */
+import { critMul } from '../skillfx.js';
 import { HES_COMING as HC, COMBAT, CFG, DT } from '../../config.js';
 import { mulberry32 } from '../../core/rng.js';
 import { SPELL } from '../../meta/spells.js';
@@ -30,7 +31,7 @@ const speedOf = (G, m) => m.carac.attackSpeed * (1 + (warcryOf(G, m)?.speed || 0
 const interval = (G, m) => CFG.attackInterval * 100 / speedOf(G, m);
 /* dégâts par seconde affichés, critiques et double attaque en moyenne */
 export const luciferDps = (G, m) => m.carac.damage * (1 + (m.carac.damagePct || 0) / 100) * (1 + (warcryOf(G, m)?.dmg || 0))
-  * (1 + (m.carac.crit || 0) / 100) * (1 + (m.carac.doubleAttack || 0) / 100) / interval(G, m);
+  * (1 + (m.carac.crit || 0) / 100 * (critMul(m) - 1)) * (1 + (m.carac.doubleAttack || 0) / 100) / interval(G, m);   // Crushing (04/11) ; Lucifer vise tout le monde : pas de Dans le dos
 
 export function tickLucifer(G){
   G.t = Math.round((G.t + DT) * 1e6) / 1e6;
@@ -140,35 +141,32 @@ const ready = (m, id, G) => m.spells.includes(id) && G.t >= (m.spellCd[id] || 0)
 const bossDist = (G, m) => gapOf(G, m) + 1;
 
 /* Dash : comme sur le boss d'une tour, il fonce à sa place de frappe s'il en est à portée, et frappe (dmg × ses dégâts,
-   recharge × hitCd). Lucifer n'est pas étourdi. */
+   recharge entière depuis le 03/11 : c'est un boss). Lucifer n'est pas étourdi. */
 function dash(G, m, x){
   const S = SPELL.dash, n = Math.abs(x - m.x);
   if(!ready(m, 'dash', G) || n < S.minCells || n > S.range) return false;
   m.x = x; m.face = 1; m.status = 'Dash';
-  m.spellCd.dash = G.t + S.cd * S.hitCd;
+  m.spellCd.dash = G.t + S.cd;   // Lucifer est un boss : recharge entière (03/11 ; avant × hitCd)
   score(G, m, hitDamage(G, m) * S.dmg);
   log(G, `💨 ${m.name} : Dash sur ${HC.bossName}`);
   return true;
 }
-/* Ulti shen : il rejoint d'un coup un allié qui frappe Lucifer, plus près que lui. Pas de dégâts : Lucifer n'a pas de PV max. */
+/* Ralliement : il rejoint d'un coup un allié qui frappe Lucifer, plus près que lui. Pas de dégâts : Lucifer n'a pas de PV max. */
 function ulti(G, m, x){
   if(!ready(m, 'ulti_shen', G)) return false;
   const o = G.miners.find(o => o !== m && o.status === `Frappe ${HC.bossName}` && Math.abs(o.x - x) + SPELL.dash.minCells <= Math.abs(m.x - x));
   if(!o) return false;
-  m.x = o.x; m.status = 'Ulti shen';
+  m.x = o.x; m.status = 'Ralliement';
   m.spellCd.ulti_shen = G.t + SPELL.ulti_shen.cd;
-  log(G, `🌀 ${m.name} : Ulti shen, rejoint ${o.name}`);
+  log(G, `🌀 ${m.name} : Ralliement, rejoint ${o.name}`);
   return true;
 }
 
 /* sorts lancés en frappant : Inspiration et Cri de guerre (tous les présents), Cleave et Dynamite (dmg × ses dégâts si Lucifer
-   est à leur portée), Bonbonne de zipette (l'allié proche à qui il manque le plus d'oxygène). Sans effet ici : Illumination et
+   est à leur portée), Bonbonne d'oxygène (l'allié proche à qui il manque le plus d'oxygène). Sans effet ici : Cleave (une seule cible, 03/11), Illumination et
    Fast learner (pas de bloc), Hand of Justice (Lucifer n'est pas étourdi et ne tacle pas). */
 function castSpells(G, m){
-  if(ready(m, 'cleave', G) && bossDist(G, m) <= SPELL.cleave.radius){
-    m.spellCd.cleave = G.t + SPELL.cleave.cd;
-    score(G, m, hitDamage(G, m) * SPELL.cleave.dmg);
-  }
+  /* Cleave : sans effet depuis le 03/11 (il ne touche que d'AUTRES cibles que la sienne ; Lucifer est seul). Ancien : 50 % de ses dégâts. */
   if(ready(m, 'dynamite', G) && bossDist(G, m) <= SPELL.dynamite.reach + SPELL.dynamite.radius){
     m.spellCd.dynamite = G.t + SPELL.dynamite.cd;
     score(G, m, hitDamage(G, m) * SPELL.dynamite.dmg);
@@ -180,7 +178,7 @@ function castSpells(G, m){
     if(o){
       o.ox = Math.min(o.carac.oxygenMax, o.ox + m.carac.pods * S.podsPct);
       m.spellCd.zipette = G.t + S.cd;
-      log(G, `🫧 ${m.name} : Bonbonne de zipette pour ${o.name}`);
+      log(G, `🫧 ${m.name} : Bonbonne d'oxygène pour ${o.name}`);
     }
   }
   if(ready(m, 'inspiration', G) && !inspireOn(G)){

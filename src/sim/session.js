@@ -1,10 +1,12 @@
 /* Session : création de la partie et boucle de simulation à pas fixe (DT).
    Ne touche ni au DOM ni au canvas : tourne aussi bien dans le navigateur que dans Node (tests, simulate). */
+import { trackRested } from './skillfx.js';
 import { shrineOf, shrineEffects } from '../meta/shrines.js';
-import { W, DT, SESSION_LEN, TOP_DIRT_ROWS, STATS, CFG, IDS, CHEST_X, CHEST_BASE, MOBS, SPAWN_X, TEAM, SHINY, FORTUNE, GEAR_RNG, GLYPHS, PRISON, SKILLS } from '../config.js';
+import { dailyDef, dailyFx } from '../shared/daily.js';   // événement du jour (05/11)
+import { W, DT, SESSION_LEN, TOP_DIRT_ROWS, STATS, CFG, IDS, CHEST_X, CHEST_BASE, MOBS, SPAWN_X, TEAM, SHINY, FORTUNE, GEAR_RNG, GLYPHS, PRISON, SKILLS, RAID } from '../config.js';
 import { inReach, reachOf, stopAction } from './knock.js';
 import { mulberry32 } from '../core/rng.js';
-import { genArea, maxRow, prisonBox } from './world.js';
+import { genArea, maxRow, prisonBox, assignWinch } from './world.js';
 import { createMiner, curLum } from './mineur.js';
 import { finishAction } from './actions.js';
 import { decide } from './ai.js';
@@ -38,12 +40,20 @@ export function newSession(seed, opts={}){
     summary:null,
     /* résidus du Jugement : aucun si une tour était ouverte au lancement (23/10, enregistré dans la session) */
     noResidues: !!opts.noResidues,
+    /* Mine géante (06/11/2026, GEANTE) : minerais × oreMul, mobs × mobMul ; largeur et durée de la carte (W, SESSION_LEN du fil de
+       la partie) gardées dans G pour l'affichage */
+    geante: !!opts.geante, w: W, len: SESSION_LEN,
     /* shrines actifs au lancement (28/10/2026, SHRINES ; enregistrés dans la session) : décor près du coffre, et leurs
        effets sur la génération (oreBonus : points de terrain changés en minerais, src/meta/shrines.js) */
     shrines: Array.isArray(opts.shrines) && !opts.prison ? opts.shrines.filter(id => shrineOf(id)) : [],
   };
+  if(opts.raid){ G.raid = { left: null }; G.endAt = Infinity; }   // raid Cerbère (04/11) : src/sim/raid/session.js
   if(opts.prison){ G.prison = { areaMax: Math.max(0, opts.prison.areaMax | 0), profile: sanitizeProfile(opts.prison.profile), goblinMul: opts.prison.goblinMul ?? 1 }; G.endAt = Infinity; }
-  G.oreBonus = shrineEffects(G.shrines).orePoints;
+  /* événement du jour (05/11/2026, DAILY, src/shared/daily.js ; figé au lancement, prison : à chaque run) : minerais (avec la
+     Shrine d'abondance), k hole, mobs, XP */
+  G.daily = dailyDef(opts.daily) ? opts.daily : null;
+  G.dailyFx = dailyFx(G.daily);
+  G.oreBonus = shrineEffects(G.shrines).orePoints + G.dailyFx.orePoints;
   /* Escalateur (skill Logisticien) : le seau du treuil va plus vite pour tout le groupe ; le meilleur rang des mineurs
      présents au lancement compte, sans cumul (figé, comme le stuff) */
   G.winchBoost = Math.max(0, ...G.miners.map(m => m.skill.winch_speed || 0));
@@ -61,7 +71,9 @@ export function newSession(seed, opts={}){
   const box = prisonBox(G);   // prison : barreaux aussi dans les couches de terre (la surface reste libre)
   if(box) for(let y=1;y<=TOP_DIRT_ROWS;y++) for(let x=0;x<W;x++) if(x<box.x0 || x>=box.x0+box.w) G.tiles[y][x] = PRISON.bars;
   genArea(G,0); G.unlockedAreas = 1;
-  G.duckBase = G.prison ? Infinity : G.unlockedAreas; G.ducks = 0;   // Gallianix : un canard par area débloquée ensuite (src/sim/duck.js) ; jamais en prison
+  if(G.raid) for(let k=1;k<RAID.mine.areas;k++){ genArea(G,k); G.unlockedAreas++; }   // raid : toutes les areas ouvertes d'emblée
+  if(G.raid && RAID.mine.areas > 1) assignWinch(G, RAID.mine.areas - 2);   // … et le treuil part tout de suite jusqu'en haut de la dernière (04/11)
+  G.duckBase = G.prison || G.raid ? Infinity : G.unlockedAreas; G.ducks = 0;   // Gallianix : un canard par area débloquée ensuite (src/sim/duck.js) ; jamais en prison
   log(G, `Session démarrée (seed ${seed}, ${G.miners.length} mineur${G.miners.length>1?'s':''})`);
   return G;
 }
@@ -77,6 +89,7 @@ function revealAround(G,m){
 
 /* fait avancer un mineur de DT secondes : enchaîne ses actions dans le budget de temps disponible */
 function stepMiner(G,m){
+  trackRested(G,m);   // Reposé (arbres v2, 04/11) : bonus après être redescendu au front
   if(m.y===0){
     m.ox=Math.min(m.carac.oxygenMax, m.ox+CFG.refillRate*DT);
     m.torches=m.carac.torches; m.bridges=m.carac.bridges;
@@ -97,7 +110,7 @@ function stepMiner(G,m){
    (36 000 additions de 0,1 donnent 3599,9999999978 : la session ne se terminait jamais au dernier tick) */
 export const SESSION_TICKS = Math.round(SESSION_LEN/DT);
 
-/* Glyphe Braum : à chaque entrée (dehors → dedans) dans la salle d'un piège ou un donjon (seuil compris), il regagne
+/* Glyphe Garde du corps : à chaque entrée (dehors → dedans) dans la salle d'un piège ou un donjon (seuil compris), il regagne
    GLYPHS.braumOxygen de son oxygène max (plafonné). m.braumIn : où il était au tick d'avant (rester dedans : rien). */
 function braumGlyph(G){
   for(const m of G.miners){
@@ -140,9 +153,9 @@ export function tick(G){
     { const k=timeClass(m.action), tt=(m.stats.time??={}); tt[k]=(tt[k]||0)+DT; }   // temps par action (30/10, tableau de la prison)
     stepMiner(G,m);
   }
-  braumGlyph(G);   // Glyphe Braum : oxygène en entrant dans un piège ou un donjon
+  braumGlyph(G);   // Glyphe Garde du corps : oxygène en entrant dans un piège ou un donjon
   reconnaissance(G);
-  updateSpells(G);  // sorts : Illumination, Inspiration, Ulti shen
+  updateSpells(G);  // sorts : Illumination, Inspiration, Ralliement
   updateTraps(G);   // un bloc de paroi de piège a disparu : le piège s'ouvre
   updateMobs(G);
   updateThralls(G);   // gobelins asservis (Couronne du Roi Gobelin) : ils minent pour le coffre commun
@@ -171,7 +184,7 @@ export function tick(G){
   }
   updateDungeons(G);   // découverte d'un donjon, barbare entré, effroi, boss vaincu
   updateKhole(G);      // k hole découvert : le groupe part dans la dimension ; au bout du temps, il revient
-  if(!G.prison && G.ticks>=SESSION_TICKS) endSession(G);   // prison : la fin du run est jugée par tickPrison
+  if(!G.prison && !G.raid && G.ticks>=SESSION_TICKS) endSession(G);   // raid : la fin est jugée par src/sim/raid/session.js   // prison : la fin du run est jugée par tickPrison
 }
 
 /* Un joueur quitte la session : son mineur disparaît de la mine, ce qu'il portait est perdu, et il ne recevra
@@ -248,7 +261,7 @@ function shareBySegments(G, present){
     prevChest = mk.chest; prevXp = Math.floor(mk.xp);
   });
   /* bonus d'XP personnel (Anneau du nerd, m.xpPct) : sur SA part, après le partage ; seul le bonus n'est pas partagé */
-  for(const [m, v] of xp) xp.set(m, Math.floor(v * (1 + (m.xpPct || 0) / 100)));
+  for(const [m, v] of xp) xp.set(m, Math.floor(v * (1 + (m.xpPct || 0) / 100) * (G.dailyFx?.xpMul ?? 1)));   // × Héritage (05/11)
   return { bags, xp, segments };
 }
 

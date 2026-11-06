@@ -52,6 +52,9 @@ export const RECIPES = {
   'Bottes en acier':     { cost: { 'Steel ingot': 8,  'Tainted gold': 4, 'Shiny iron': 10, 'Tissu sombre': 10 }, qty: 1, unlock: 'Bottes en acier BP' },
   'Pioche en acier':     { cost: { 'Steel ingot': 20, 'Shiny gold': 10, 'Diamant': 10 },      qty: 1, unlock: 'Pioche en acier BP' },
   'Épée en acier':       { cost: { 'Steel ingot': 10, 'Shiny gold': 10, 'Diamant': 10 },      qty: 1, unlock: 'Épée en acier BP' },
+  /* armes en mithril (05/11/2026, Geoffrey) */
+  'Épée en mithril':     { cost: { 'Mithril ingot': 30, 'Orbe': 10, 'Steel ingot': 30 },       qty: 1, unlock: 'Épée en mithril BP' },
+  'Pioche en mithril':   { cost: { 'Mithril ingot': 40, 'Pierre glissante': 100, 'Steel ingot': 30 }, qty: 1, unlock: 'Pioche en mithril BP' },
   'Plastron de l\'équilibre': { cost: { 'Steel ingot': 50, 'Shiny gold': 20, 'Rubis inférieur': 1, 'Saphir inférieur': 1,
                          'Jade inférieur': 1, 'Résidu angélique': 50, 'Résidu démoniaque': 50 }, qty: 1, unlock: 'Plastron de l\'équilibre BP' },
 
@@ -75,7 +78,7 @@ export const RECIPES = {
   'Ceinture golémique':  { cost: { 'Pierre glissante': 50, 'Thorium ingot': 5, 'Vésicule de gaz': 100 },         qty: 1, unlock: 'Ceinture golémique BP' },
   'Gants de boucher':    { cost: { 'Rotten flesh': 50, 'Mithril ingot': 15, 'Peau de gobelin': 500 },          qty: 1, unlock: 'Gants de boucher BP' },
   'Cape inclusive':      { cost: { 'Tainted iron': 20, 'Tainted gold': 20, 'Diamant': 20, 'Graphite ingot': 20, 'Steel ingot': 20, 'Mithril ingot': 20,
-                           'Thorium ingot': 20, 'Cobalt ingot': 20, 'Orbe supérieur': 5 }, qty: 1, unlock: 'Cape inclusive BP' },   // 31/10 (Geoffrey)
+                           'Thorium ingot': 20, 'Cobalt ingot': 20, 'Orbe supérieur': 5, 'Cuir de minotaure': 50 }, qty: 1, unlock: 'Cape inclusive BP' },   // 31/10 (Geoffrey) ; cuir 05/11
   'Jambières titanesques': { cost: { 'Cobalt ingot': 25, 'Thorium ingot': 25, 'Topaze': 1, 'Jade': 1, 'Saphir': 1, 'Rubis': 1,
                            'Shiny gold': 50 }, qty: 1, unlock: 'Jambières titanesques BP' },
   'Saphir':              { cost: { 'Diamant': 50, 'Saphir inférieur': 3 }, qty: 1, unlock: 'Saphir BP' },
@@ -84,4 +87,5 @@ export const RECIPES = {
   'Orbe supérieur':      { cost: { 'Rotten flesh': 20, 'Chair de vers': 20, 'Peau de chien de magma': 20 }, qty: 1, unlock: null },   // 31/10 (Geoffrey) : de base
   'Orbe':                { cost: { 'Tissu sombre': 30, 'Vésicule de gaz': 30, 'Pierre glissante': 10 }, qty: 1, unlock: null },   // 30/10 (Geoffrey) : de base
   'Clé d\'instance I':   { cost: { 'Barre d\'argent': 1, 'Orbe': 5 }, qty: 1, unlock: null },   // 31/10 (Geoffrey) ; ancien : 250 Peau de gobelin, 20 Pierre glissante, 50 Tissu sombre, 1 Barre d'argent ; 28/10 : de base (avant : Clé d'instance I BP, Treasure T4)
+  'Clé d\'instance II':  { cost: { 'Barre d\'argent': 2, 'Orbe supérieur': 1 }, qty: 1, unlock: null },   // 05/11 (Geoffrey) : de base
 };

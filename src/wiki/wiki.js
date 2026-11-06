@@ -197,18 +197,18 @@ function craft(){
     const key = Object.keys(FURNACE.unlockItems).find(k => FURNACE.unlockItems[k].tier === i);
     return tr([`<b>${esc(t.name)}</b>`, num(`×${f(t.speed)}`), key ? `Four n° ${FURNACE.unlockItems[key].slot + 1} : fabriquer un ${item(key)} et l'« Utiliser » dans l'inventaire` : 'Le four de départ']);
   }).concat(tr(['<span class="mut">Four n° 3</span>', num(none), '<span class="mut">Fermé pour l\'instant</span>'])));
-  $('w-crusher-rule').textContent = `${CRUSHER.inSlots} cases d'entrée pour tes blocs (terre, pierre, pierre dure) : toutes les ${CRUSHER.time} secondes, il concasse ${CRUSHER.batch} blocs de la première case qui en a assez (de haut en bas, de gauche à droite), même page fermée.`;
+  $('w-crusher-rule').textContent = `${CRUSHER.inSlots} cases d'entrée pour tes blocs (terre, pierre, pierre dure) et tes minerais de fer et d'or : toutes les ${CRUSHER.time} secondes, il concasse ${CRUSHER.batch} blocs de la première case qui en a assez (de haut en bas, de gauche à droite), même page fermée.`;
   const cpct = c => `${String(Math.round(c * 1e6) / 1e4).replace('.', ',')} %`;
   const FAMILY = { gem:'Une gemme (au hasard parmi les 3)', treasure:'Un treasure' };
   $('w-crusher').innerHTML = table(['Lot', 'Butin', '#Chance par lot'], D.crusherRows().flatMap(r =>
     r.families.map((fam, k) => tr([k ? '' : item(r.block, CRUSHER.batch),
-      fam.min != null ? `${item(fam.items[0].item)} <b>${fam.min === fam.max ? fam.min : `${fam.min} à ${fam.max}`}</b>` : fam.items.length === 1 ? item(fam.items[0].item) : `<b>${esc(FAMILY[fam.family] ?? fam.family)}</b><div class="small mut">${fam.items.map(i => `${esc(i.item)} ${cpct(i.chance)}`).join(' · ')}</div>`,
+      fam.min != null ? `${item(fam.items[0].item)} <b>${fam.min === fam.max ? fam.min : `${fam.min} à ${fam.max}`}</b>${fam.chance < 1 ? ' <span class="small mut">(pas à chaque lot)</span>' : ''}` : fam.items.length === 1 ? item(fam.items[0].item) : `<b>${esc(FAMILY[fam.family] ?? fam.family)}</b><div class="small mut">${fam.items.map(i => `${esc(i.item)} ${cpct(i.chance)}`).join(' · ')}</div>`,
       num(`<b>${cpct(fam.chance)}</b>`)]))));
   $('w-recipes').innerHTML = table(['Objet', 'Ingrédients', 'Effet', 'Recette'], D.recipeRows().map(r =>
     tr([item(r.name), ings(r.cost), r.stats.length ? pills(r.stats, 'stat') : r.uses.map(esc).join('<br>') || none,
         r.unlock ? `Débloquée par ${item(r.unlock)}` : '<b>De base</b>'])));
   $('w-research').innerHTML = table(['Tier', '#Prix', 'Blueprints possibles', '#Recycler un BP du tier rend'], D.researchRows().map(r =>
-    tr([`<b>Tier ${r.tier}</b>`, num(item('Blueprint parts', r.cost)), `<div class="ings">${r.blueprints.map(b => item(b)).join('')}</div>` + r.rarer.map(x => `<div class="small mut">${esc(x.item)} : ${f(x.times)} fois moins de chance que les autres</div>`).join(''),
+    tr([`<b>Tier ${r.tier}</b>` + (r.area ? `<div class="small mut">dès l'area ${r.area} atteinte</div>` : ''), num(item('Blueprint parts', r.cost)), `<div class="ings">${r.blueprints.map(b => item(b)).join('')}</div>` + r.rarer.map(x => `<div class="small mut">${esc(x.item)} : ${f(x.times)} fois moins de chance que les autres</div>`).join(''),
         num(`${r.recycle.min} à ${r.recycle.max} parts`)])));
 }
 
@@ -255,8 +255,8 @@ function level(){
     <li>Ton niveau de spé (« SP lvl ») s'affiche dans l'onglet Skills, dans le lobby et au bilan. Il <b>débloque des <a href="#sorts">sorts</a></b>.</li>
     <li>Le bonus de l'<b>Anneau du nerd</b> (XP +3 %) s'ajoute à ta part avant ce calcul, et ne profite qu'à toi.</li></ul>`;
   $('w-skills').innerHTML = `<div class="trees">${D.skillTrees().map(t => `<div class="tree"><h3>${t.icon} ${esc(t.label)}</h3>` +
-    t.nodes.map(n => `<div class="node"><span class="i">${n.icon}</span><span><b>${esc(n.name)}</b> <span class="mut small">· étage ${n.row} · ${n.max} rang${n.max > 1 ? 's' : ''}${n.needsAll ? ' · exige toutes les cases de l\'étage d\'avant' : ''}</span></span>` +
-      `<small>${esc(n.desc.replace('{v}', n.perText ? `${f(Math.round(n.per * 1000) / 10)} %` : '').replace(/\s+/g, ' '))}${n.perText && n.max > 1 ? ` par rang (max : ${esc(n.maxText.match(/[+−-]?\d+(,\d+)? %/)?.[0] ?? '')})` : ''}</small></div>`).join('') +
+    t.nodes.map(n => `<div class="node"><span class="i">${n.icon}</span><span><b>${esc(n.name)}</b> <span class="mut small">· étage ${n.row} (${n.tier} pts) · ${n.max} rang${n.max > 1 ? 's' : ''}${n.specOnly ? ' · ★ skill de classe' : ''}${n.needsName ? ` · exige ${esc(n.needsName)} au max` : ''}</span></span>` +
+      `<small>${esc(n.max > 1 ? `${n.text} par rang (max : ${n.maxText})` : n.text)}</small></div>`).join('') +
     '</div>').join('')}</div>`;
   /* glyphes (GLYPHS, 25/10) : un par skill visé */
   $('w-glyphs').innerHTML = table(['Glyphe', 'Skill', 'Arbre', 'Effet'],
@@ -266,7 +266,8 @@ function level(){
 /* ---------- sorts ---------- */
 function spells(){
   const s = D.spellInfo();
-  $('w-spells-rule').innerHTML = `<b>${s.slots} emplacements</b>, dont <b>${s.open} ouverts</b> pour l'instant (les autres ont un cadenas).`;
+  $('w-spells-rule').innerHTML = `<b>${s.slots} emplacements</b> : <b>${s.open} ouverts</b> dès le départ, ` +
+    s.levels.slice(s.open).map((l, i) => `le ${s.open + i + 1}e au <b>niveau ${l}</b>`).join(', ') + ` du mineur (cadenas avant).`;
   $('w-spells').innerHTML = table(['Sort', 'Comment le débloquer', 'Réservé à', 'Effet', '#Recharge'], D.spellRows().map(r => tr([
     `<b>${r.icon} ${esc(r.name)}</b>`,
     r.unlock.scroll ? `Apprendre le ${item(r.unlock.scroll)}` : `${r.unlock.tree.icon} ${esc(r.unlock.tree.label)} : niveau de spé <b>${r.unlock.level}</b>`,

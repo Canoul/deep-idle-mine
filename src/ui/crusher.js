@@ -16,6 +16,8 @@ const mmss = ms => { const s = Math.max(0, Math.ceil(ms / 1000)); return `${Math
 /* chance en % lisible : 0,1 % · 0,015 % */
 const pct = p => (Math.round(p * 1e6) / 1e4).toString().replace('.', ',') + ' %';
 const BATCH = CRUSHER.batch;
+/* dans l'appli mobile (classe app, src/app/boot.js) : les dernières trouvailles passent dans le panneau « Butin » (04/11/2026) */
+const inApp = () => !!globalThis.document?.body?.classList.contains('app');
 
 /* onOp({ action, slot, item, qty }) et onSync() → promesses (rejetées avec un message lisible) */
 export function setupCrusher({ onOp, onSync }){
@@ -50,6 +52,7 @@ export function setupCrusher({ onOp, onSync }){
     }).join('') + '</ul>';
   }
 
+  const findsTitle = () => `<h3>Dernières trouvailles <span class="mut small">· ${num(st.crushed)} lot${st.crushed > 1 ? 's' : ''} concassé${st.crushed > 1 ? 's' : ''} en tout</span></h3>`;
   function render(){
     if(!st) return;
     $('crushBody').innerHTML =
@@ -60,7 +63,7 @@ export function setupCrusher({ onOp, onSync }){
       `<p class="fstat small" id="crushStat">${statusText()}</p>`+
       `<div class="fhead"><h3>Sortie</h3><button id="crushAll"${st.out.some(Boolean) ? '' : ' disabled'}>Tout récupérer</button></div>`+
       `<div class="cgrid" style="--cols:${CRUSHER.cols}">${st.out.map((s, i) => slotHtml('out', i, s)).join('')}</div></div>`+
-      `<div class="crush"><h3>Dernières trouvailles <span class="mut small">· ${num(st.crushed)} lot${st.crushed > 1 ? 's' : ''} concassé${st.crushed > 1 ? 's' : ''} en tout</span></h3>${findsHtml()}</div>`;
+      (inApp() ? '' : `<div class="crush">${findsTitle()}${findsHtml()}</div>`);
     shown = sig();
   }
   const sig = () => JSON.stringify([st.in, st.out, st.since, st.crushed]);
@@ -136,12 +139,13 @@ export function setupCrusher({ onOp, onSync }){
     const box = $('cpick').querySelector('.box');
     const FAMILY = { gem:'Une gemme', treasure:'Un treasure' };
     const family = f => f.min != null   // butin garanti (minerai de fer) : sa fourchette
-      ? `<div class="fodds">${icon(f.items[0].item)}${rname(f.items[0].item, f.items[0].item, 'b')} <b>${f.min === f.max ? f.min : `${f.min} à ${f.max}`}</b></div>`
+      ? `<div class="fodds">${icon(f.items[0].item)}${rname(f.items[0].item, f.items[0].item, 'b')} <b>${f.min === f.max ? f.min : `${f.min} à ${f.max}`}</b>${f.chance < 1 ? ` <span class="mut">(${pct(f.chance)})</span>` : ''}</div>`
       : f.items.length === 1
       ? `<div class="fodds">${icon(f.items[0].item)}${rname(f.items[0].item, f.items[0].item, 'b')} <b>${pct(f.chance)}</b></div>`
       : `<div class="fodds"><b>${FAMILY[f.family] ?? esc(f.family)} : ${pct(f.chance)}</b></div>`+
         `<div class="fparts">${f.items.map(i => `${icon(i.item)}${rname(i.item)} <span class="mut">${pct(i.chance)}</span>`).join('<span class="mut">·</span>')}</div>`;
-    box.innerHTML = `<h3>Butin par lot de ${BATCH}</h3><div class="frecipes">`+
+    box.innerHTML = (inApp() && st ? `<div class="cfindsBox">${findsTitle()}${findsHtml()}</div>` : '')+
+      `<h3>Butin par lot de ${BATCH}</h3><div class="frecipes">`+
       Object.keys(CRUSHER.loot).map(b => `<div class="frec"><div class="fout">${icon(b)}<b>${BATCH} ${esc(b)}</b></div>`+
         dropOdds(b).map(family).join('') + `</div>`).join('')+
       `</div><p class="mut small">Un lot par ${CRUSHER.time} s, même page fermée. À chaque lot, un seul tirage pour les gemmes ` +

@@ -22,6 +22,439 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 06/11/2026 — Geoffrey — Noms plus corrects pour les stores : Bonbonne d'oxygène, Ralliement, Garde du corps, Golem gluant
+- **Pour le joueur** : quatre noms changent, rien d'autre. **Bonbonne de zipette** → **Bonbonne d'oxygène** (sort du Logisticien), **Ulti shen** → **Ralliement** (sort à parchemin, « Parchemin « Ralliement » »), **Braum** → **Garde du corps** (skill du Barbare et « Glyphe Garde du corps »), **Golem de sperme** → **Golem gluant** (mob). Pseudo du Gallianix « Cuiseuse de sperme » → **« Ex d'Infernatiwar »**. Sorts appris, skills, parchemins et glyphes déjà dans les sacs : tout est gardé, renommé au démarrage du serveur. « K hole » garde son nom (choix de Geoffrey).
+- **D'où ça vient** : les trois premiers sont le travail de Jules du 02/11 (branche `jules/nom-bonbonne-oxygene`, jamais fusionnée, 328 commits de retard) : refait à l'identique sur le jeu actuel plutôt que fusionné (11 fichiers en conflit). Le Golem gluant est ajouté par Geoffrey.
+- **À suivre** : Cleave et Hand of Justice viennent aussi de League of Legends.
+- **État** : ✅ en ligne le 06/11
+
+## 05/11/2026 — Geoffrey — Craft : Clé d'instance II de base
+- **Pour le joueur** : la Clé d'instance II se fabrique au Craft, sans blueprint : 2 Barres d'argent et 1 Orbe supérieur.
+- **État** : ✅ en ligne le 05/11
+
+## 05/11/2026 — Geoffrey — Parrainage : Canoul reçoit aussi ses Émeraudes pour les comptes d'avant
+- **Pour le joueur** : rien ne change pour les filleuls ; Canoul reçoit 10 Émeraudes par compte d'avant arrivé au niveau 5 (ceux déjà récompensés lui versent sa part à leur prochaine connexion).
+- **État** : ✅ en ligne le 05/11
+
+## 05/11/2026 — Geoffrey — Appli : bouton « 💾 Enregistrer » à côté du set
+- **Pour le joueur** : dans l'appli (Skills, Stuff, Sorts, Lobby), quand tu modifies ton équipement, la ligne du set
+  affiche « Set : x (modifié) » et un bouton **💾 Enregistrer** : un toucher enregistre tout (stuff, skills, sorts) dans le
+  dernier set équipé ou enregistré, sans passer par le menu des sets ; sans set, il en crée un. La pop-up confirme.
+- **État** : ✅ en ligne le 05/11
+
+## 05/11/2026 — Geoffrey — Recherche : areas à atteindre et tier 5
+- **Pour le joueur** : à la Table de recherche, il faut maintenant avoir **déjà atteint une area** pour ouvrir un tier :
+  area 5 pour le tier 3, area 7 pour le tier 4, area 9 pour le tier 5 (en plus des recettes, comme avant). Le tier fermé
+  dit ce qui manque.
+- **Tier 5** : 1000 Blueprint parts, donne le **Casque en arkonite BP** (épique), qui ne débloque pas encore de recette.
+- **État** : ✅ en ligne le 05/11
+
+## 05/11/2026 — Geoffrey — Parrainage : 10 Émeraudes au niveau 5
+- **Pour le joueur** : dans Mon compte, bouton **🎁 Parrainer un ami** : ton code et ton lien à donner. Un nouveau joueur entre
+  le code d'un ami (ou arrive par son lien) ; à son niveau 5, lui et son parrain reçoivent **10 Émeraudes** (nouvel objet
+  légendaire). Tous les comptes créés avant aujourd'hui 12 h 11 ont Canoul pour parrain et reçoivent leurs 10 Émeraudes
+  dès le niveau 5 (tout de suite s'ils l'ont).
+- **Décisions** : le code = l'ID de compte ; un code s'entre avant le niveau 5, sans parrain, jamais le sien ni celui d'un
+  filleul ; Canoul ne reçoit rien pour les comptes d'avant (à confirmer).
+- **À suivre** : à quoi servent les Émeraudes.
+- **État** : ✅ en ligne le 05/11
+
+## 05/11/2026 — Geoffrey — Stats du mineur : la bulle sur le nom de la stat
+- **Pour le joueur** : plus de bouton « ? » à chaque ligne. L'explication d'une stat s'affiche en **posant la souris sur son
+  nom** (souligné en pointillés), ou en **maintenant le doigt dessus** sur téléphone (un appui bref ou un défilement ne
+  l'ouvre pas). Pareil pour le Gear score et le DPS.
+- **État** : ✅ en ligne le 05/11
+
+## 05/11/2026 — Geoffrey — Sceau démoniaque
+- **Pour le joueur** : nouvel objet rare, le **Sceau démoniaque**. Chaque boss d'instance vaincu (roi gobelin, niveaux 1 et 2,
+  et Golbute) en donne **1 à chaque joueur encore là**, en plus de son coffre. Rien en cas d'échec ni pour un joueur parti.
+  Visible dans la bulle « ? Butin » des instances. Pas encore d'usage.
+- **État** : ✅ en ligne le 05/11
+
+## 05/11/2026 — Geoffrey — He's coming : 1 pépite d'argent par 1 000 points (avant 800)
+- **État** : ✅ en ligne le 05/11
+
+## 05/11/2026 — Geoffrey — Cerbère plus dynamique : bond du Magma, pénétration seulement sur les tanks
+- **Pour le joueur** : pour son Magma, Cerbère bondit de 4 cases en arrière (on le voit sauter), ses gueules rougeoient,
+  il crache un cône de feu, puis il revient d'un bond au contact des tanks (même s'ils ont été repoussés). Les mineurs
+  au corps à corps doivent le suivre. Sa pénétration de ténacité ne vaut plus que contre les tanks : les autres joueurs
+  esquivent Morsure, Balayage et Magma avec toute leur ténacité.
+- **Décisions** : timing (choix de Claude) : souffle 1,2 s après le bond, retour 2,5 s après. Équilibrage inchangé :
+  280 000 PV, 3/40 victoires de l'équipe de référence (avant 2/40), combat ≈ 9 min.
+- **État** : ✅ en ligne le 05/11
+
+## 05/11/2026 — Geoffrey — Appli : activité des amis en entier
+- **Pour le joueur** : dans l'appli (Social, Mes amis), l'activité d'un ami n'est plus coupée (« Dans le l… ») : elle passe
+  sur deux ou trois lignes (« En session · Tour de l'Ange (3/3) · reste 7 min »). Rien ne change sur le site.
+- **État** : ✅ en ligne le 05/11
+
+## 05/11/2026 — Geoffrey — Sorts : 3e emplacement au niveau 15, 4e au niveau 20
+- **Pour le joueur** : les deux emplacements de sorts verrouillés s'ouvrent avec le niveau du mineur : le 3e au niveau 15,
+  le 4e au niveau 20 (cadenas « Niveau 15 / 20 » avant).
+
+## 05/11/2026 — Geoffrey — Appli : plus de place pour les recettes du four
+- **Pour le joueur** : dans l'appli, la fenêtre « Recettes » du four n'affiche plus le paragraphe qui explique ce que fait
+  le four : la liste des recettes prend toute la place et se fait défiler plus facilement. Rien ne change sur le site.
+- **État** : ✅ en ligne le 05/11
+
+## 05/11/2026 — Geoffrey — Épée et Pioche en mithril
+- **Pour le joueur** : deux nouvelles armes. **Épée en mithril** : 21 dégâts (+16 sur les mains nues ; acier 18,5), avec
+  30 Mithril ingot, 10 Orbe et 30 Steel ingot. **Pioche en mithril** : +0,7 de vitesse de minage (acier +0,58), avec 40
+  Mithril ingot, 100 Pierre glissante et 30 Steel ingot. Plans : dans les Treasure T4 (1 % chacun) et à la Table de
+  recherche (tier 4, première étape, avec l'armure en mithril).
+- **Décisions** : valeurs de Geoffrey. Choix de Claude, à valider : où trouver les plans (comme l'armure en mithril).
+- **État** : ✅ en ligne le 05/11
+
+## 05/11/2026 — Geoffrey — Stats du mineur : une bulle « ? » par stat
+- **Pour le joueur** : dans l'onglet Stuff (site et appli), chaque ligne de « Stats du mineur » a une bulle « ? » qui
+  explique ce que fait la stat (aussi le Gear score et le DPS). Les textes sont ceux du wiki ; ceux de la ténacité et de
+  la résistance au recul sont mis à jour (boss, Fear de Lucifer, pièces qui en donnent).
+- **État** : ✅ en ligne le 05/11
+
+## 04/11/2026 — Jules — Concasseur : 16 cases d'entrée et 16 de sortie
+- **Pour le joueur** : le concasseur a deux fois plus de place : 16 cases d'entrée (4 rangées de 4) et 16 cases de
+  sortie (avant : 8 et 8). Ce qui était déjà posé reste à sa place.
+- **Décisions** : 16 / 16 ; même vitesse (un lot de 100 par minute, première case qui en a assez, de la case 1 à 16).
+- **À suivre** : la page est plus haute (4 rangées au lieu de 2) ; passer à 2 rangées de 8 sur PC si c'est gênant.
+- **État** : ✅ en ligne le 04/11
+
+## 04/11/2026 — Jules — Jauge de profondeur : les initiales ne s'échangent plus
+- **Pour le joueur** : dans la barre à droite de la mine, chaque pastille porte bien l'initiale (et la couleur) de son
+  mineur. Avant, d'une session à la suivante avec la même équipe dans un autre ordre, les lettres restaient celles de la
+  session d'avant (Fantom suivi voyait un « L » sur lui, LeTaz un « F »).
+- **État** : ✅ en ligne le 04/11
+
+## 04/11/2026 — Geoffrey — Raid : les mineurs explorent le noir, treuil dès le début
+- **Pour le joueur** : au minage du raid, quand aucun Indice n'est en vue, chaque mineur part explorer un coin encore dans
+  le noir où personne d'autre ne cherche (avant : ils creusaient tout droit jusqu'au fond puis remontaient). Les mineurs
+  partent répartis sur toute la largeur (avant, certains partaient presque de la même colonne et creusaient le même
+  puits). Le logisticien qui a le Treuil le pose dès le début jusqu'à la 2e area (l'ascenseur avec le glyphe). Contre
+  Cerbère, esquiver le coup qui repousse ne fatigue plus la ténacité : elle reste entière pour la Morsure.
+- **Décisions** : treuil jusqu'en haut de la 2e area (pas jusqu'au fond) ; le coup qui repousse s'esquive toujours, mais sans
+  fatigue.
+- **Chiffres** (simulation, équipe de référence) : 150 Indices rapportés en ≈ 11 min (avant 18,5 ; sur la seed 262283490 :
+  14,9 → 10,4 min). Cerbère toujours ≈ 1 victoire sur 10 : les combats finissent par les morts, pas par le temps.
+- **À suivre** : regarder une vraie partie de raid (rien n'a été vu dans un navigateur).
+- **État** : ✅ en ligne le 04/11
+
+## 04/11/2026 — Geoffrey — Skills : nouveaux arbres (5 étages, Ambidextre)
+- **Pour le joueur** : les arbres de skills passent à 5 étages ; plusieurs skills changent de place (les auras, Ivresse
+  Minérale et Reconnaissance remontent ; Treuil, Escalateur et Mule arrivent plus tôt ; Dématérialisation descend d'un
+  étage). Nouveau skill du Logisticien : **Ambidextre** (double attaque +2 % par rang, 3 rangs). Tout le monde récupère
+  ses points (reset gratuit), la spé et les glyphes restent.
+- **Décisions** : Escalateur reste au max 3 (le tableau disait 5). Reset de tous les joueurs.
+- **À suivre** : regarder l'onglet Skills au bureau et dans l'appli (3 colonnes dans certains arbres).
+
+## 04/11/2026 — Geoffrey — Mobs : méphite, occultiste, golem et mur de chair arrivent une area plus tôt
+- **Pour le joueur** : les areas 2 à 6 changent de composition. Méphite dès l'area 2, occultiste dès l'area 3 (3 %), golem dès l'area 4 (2 %), mur de chair dès l'area 5 (2 %). Moins de bestioles et de gobelins dans ces areas ; mimics à 17 % en areas 5 et 6.
+- **Décisions** : les PV gardent leur courbe : là où un mob existait déjà, rien ne change ; dans sa nouvelle première area, il arrive 15 % plus faible (golem 261 PV en area 4, occultiste 130 en area 3). Area 3 : le 1 % qui manquait au tableau va à l'occultiste (3 %).
+- **À suivre** : voir en jeu si l'area 4 (golem) et l'area 5 (mur de chair) ne deviennent pas trop dures pour un stuff fer.
+- **État** : ✅ en ligne le 04/11
+
+## 04/11/2026 — Geoffrey — Administration : mettre un joueur dans un lobby de raid, et prêt
+- **Pour le joueur** : rien de visible ; l'équipe peut placer un joueur dans un lobby de raid depuis le VPS :
+  `sudo node /opt/deep-idle-mine/scripts/move-to-raid.js --name crousti --to canoul` (canoul doit être dans un lobby de
+  raid ; hors de la guilde, crousti entre comme un invité, déjà prêt), et le mettre prêt :
+  `sudo node /opt/deep-idle-mine/scripts/set-raid-ready.js --name crousti` (`--ready off` : plus prêt).
+- **État** : ✅ en ligne le 04/11
+
+## 04/11/2026 — Geoffrey — Craft : plusieurs orbes d'un coup
+- **Pour le joueur** : dans l'onglet Craft, les orbes, orbes supérieurs, clés d'instance et autres matériaux qui
+  s'empilent ont un champ **Quantité** et un bouton **Max** : on en fabrique autant qu'on veut en un clic (jusqu'à 1 000).
+  L'équipement et les runes restent un par un.
+- **État** : ✅ en ligne le 04/11
+
+## 04/11/2026 — Geoffrey — Administration : avertissement en pop-up, ban en minutes
+- **Pour le joueur** : l'équipe peut lui envoyer un message en pop-up (un titre et un texte) : il s'ouvre dans les
+  secondes s'il est en ligne, sinon à sa prochaine visite, et ne revient plus une fois fermé.
+- **Décisions** : ce message ne compte pas comme un avertissement du chat (pas de ban automatique au bout de 3). Un ban
+  peut maintenant durer un nombre de minutes (`--minutes`). Retirer un objet existait déjà (`take-item.js`).
+- **À suivre** : rien.
+- **État** : ✅ en ligne le 04/11
+
+## 04/11/2026 — Geoffrey — Lag du jeu en ligne : corrigé
+- **Pour le joueur** : le jeu ne rame plus. Le serveur mettait plus d'1,5 s à répondre à chaque demande (mineur qui avance
+  par à-coups, onglets lents), parce que pour savoir si un ami était en session, il recopiait tout l'historique de ses
+  sessions, et ça pour chaque ami et membre de guilde, toutes les quelques secondes. Il ne regarde plus que les sessions en cours.
+- **À suivre** : vérifier en ligne avec `?perf` dans l'adresse (« réponse » doit retomber sous ~100 ms).
+- **État** : ✅ en ligne le 04/11
+
+## 04/11/2026 — Geoffrey — Stuff : les dégâts % beaucoup moins forts
+- **Pour le joueur** : les pièces qui donnent des dégâts % en donnent nettement moins : Jambes en thorium 11,8 % (avant
+  31,3 %), Jambières du Golbute 12,5 % de dégâts, 7 % de double attaque et 25 % de butin (avant 33,3 / 21,9 / 20 %), Cape
+  royale du Gobelin 1,9 % (avant 5 %), Plastron de l'équilibre 1,1 % (avant 3 %), ligne Dégâts % de la Cape inclusive. Les
+  pièces déjà possédées suivent. Les runes ne changent pas.
+- **Décisions** : un % de dégâts était compté comme s'il ne valait presque rien (mesuré sur un mineur à 5 dégâts) ; il coûte
+  maintenant autant qu'un % de double attaque. Les Jambières du Golbute pèsent comme les Jambes en thorium.
+- **À suivre** : les runes de dégâts % (même défaut) ; peut-être les PV des boss, si les combats deviennent trop durs.
+- **État** : ✅ en ligne le 04/11
+
+## 04/11/2026 — Geoffrey — Skills : reset pendant une session, Ajout rapide
+- **Pour le joueur** : le reset, le changement de spé et les glyphes marchent aussi pendant une session (la session en
+  cours ne change pas, ça compte pour la suivante). Dans l'appli, la case **Ajout rapide** ajoute un point d'un toucher,
+  sans ouvrir la fiche du skill.
+- **État** : ✅ en ligne le 04/11
+
+## 04/11/2026 — Geoffrey — Skills : liens de dépendance bien visibles
+- **Pour le joueur** : dans l'onglet Skills, un skill qui en exige un autre y est relié par un trait épais avec une
+  flèche, sur le côté des cases : pointillé tant que le skill exigé n'est pas au max, orange quand il l'est. Sa bulle
+  et sa fiche (appli) disent « Exige … au rang max ».
+- **État** : ✅ en ligne le 04/11
+
+## 04/11/2026 — Geoffrey — Raid : les Indices remplacent « tout miner »
+- **Pour le joueur** : la première phase du raid n'est plus de miner les 2 areas à 100 %. Elles sont dans le noir, et
+  **150 Indices** y sont cachés (pas tout en haut). Un Indice miné montre le plus proche encore caché ; il pèse 150 pods
+  et son mineur remonte le déposer au coffre. Tous rapportés, la grande porte s'ouvre. Bandeau : « Indices rapportés
+  x / 150 ».
+- **Décisions** : choix de Claude (Geoffrey : « je te laisse choisir », ~20 min de minage) : 150 Indices, dureté 30,
+  150 pods, sous la ligne 40 ; l'équipe de référence met ≈ 18,5 min. Cerbère reste à 280 000 PV (2/40 victoires avec le
+  temps qui reste).
+- **État** : ✅ en ligne le 04/11
+
+## 04/11/2026 — Jules — Cerbère redessiné et animé : le « Molosse des Enfers »
+- **Pour le joueur** : dans l'arène du raid, Cerbère est un énorme molosse noir à trois têtes : une tête basse qui gronde
+  vers les mineurs, une qui rugit vers le haut, une qui se retourne. Gueules béantes en feu, longs crocs, yeux de braise,
+  colliers de fer à pointes, chaîne brisée, crinière de flammes. Il est **animé** : la crinière et la queue en feu
+  ondulent, des braises montent, la bave de lave coule et tombe en gouttes, les gorges et les yeux pulsent. Enragé, son
+  pelage vire au rouge braise et son feu devient plus haut et plus blanc. Même taille et mêmes règles qu'avant.
+- **Décisions** : piste « Molosse des Enfers » choisie par Jules parmi trois (Molosse, Gardien antique, Bête d'os), puis
+  raffinée. La version générée par Gemini a été écartée. Taille gardée à 8 × 6 cases (passer à 12 × 9 donnerait plus de
+  détails mais change la zone du boss : à voir avec Geoffrey).
+- **État** : ✅ en ligne le 04/11
+
+## 04/11/2026 — Geoffrey — Skills : Escalateur 3 rangs max (avant 5)
+- **État** : ✅ en ligne le 04/11
+
+## 04/11/2026 — Jules — Chat : plus de zone vide en bas (retour joueur)
+- **Pour le joueur** : quand le chat est assez large pour passer au-dessus de la bulle de gauche de la barre d'action
+  (Oxygène, Session…), il gardait en bas une grande zone sombre et vide qui cachait la mine. Maintenant il s'arrête juste
+  au-dessus de la bulle (ou des boutons s'il les recouvre) ; dessous, on voit le jeu et on peut cliquer à travers.
+- **État** : ✅ en ligne le 04/11
+
+## 04/11/2026 — Jules (demande de Geoffrey) — Golbute plus dur : PV × 1,5, ténacité moins efficace contre lui
+- **Pour le joueur** : le Golbute a 16 050 PV (avant 10 700) et retire 30 points de ténacité au lieu de 20 avant le calcul d'esquive (à 50 de ténacité : 16 % d'esquive au lieu de 22 %). Les autres mobs ne changent pas.
+- **État** : ✅ en ligne le 04/11
+
+## 04/11/2026 — Geoffrey — Raid : portrait et spé des joueurs dans le lobby
+- **Pour le joueur** : dans les groupes du lobby du raid, chaque joueur montre son pseudo, l'image de son perso (son stuff)
+  et sa spécialisation avec son niveau (ex. « 🪓 Barbare (SP lvl : 12) »).
+- **État** : ✅ en ligne le 04/11
+
+## 04/11/2026 — Geoffrey — Raid : inviter un joueur par son pseudo (bêta, temporaire)
+- **Pour le joueur** : dans le lobby du raid, un champ « Pseudo du joueur » et un bouton **Inviter dans le raid** :
+  n'importe quel joueur, même d'une autre guilde ou sans guilde, entre directement dans le lobby, prêt, dans le premier
+  groupe qui a de la place. Une fenêtre confirme l'invitation. Il part dans la session au lancement (il peut la quitter) ;
+  le chef du raid peut le sortir.
+- **Décisions** : temporaire, le temps de la bêta (pas assez de monde par guilde).
+- **État** : ✅ en ligne le 04/11
+
+## 04/11/2026 — Geoffrey — Raid 1 : Cerbère
+- **Pour le joueur** : nouvel onglet **Raid** dans sa guilde, avec un lobby de 1 à 10 joueurs de la guilde (gratuit,
+  pas de récompense pour l'instant). 30 min au total : il faut d'abord miner **en entier** deux areas de terrain (terre,
+  pierre, pierre dure, puis la nouvelle **Pierre des enfers**, deux fois plus dure), avec les pods et l'oxygène comme
+  dans la mine. Le lobby se joue en **2 groupes de 5** (chacun choisit le sien, le chef du raid peut déplacer) : les
+  buffs de groupe (Inspiration, Cri de guerre, Bonbonne de zipette, anneaux) ne vont qu'à son groupe. Tout miné, la grande porte s'ouvre sur l'arène de **Cerbère**, un chien de lave à trois têtes (8 × 6).
+  - **Morsure** (toutes les 30 s, 21 s enragé) : sur 3 cibles, d'abord ceux qui le provoquent. Si aucune ne résiste
+    (ténacité), une des trois meurt, au hasard ; sinon elle se dissipe.
+  - **Balayage** (toutes les 5 s) : repousse ceux qui sont à 2 cases.
+  - **Magma** (toutes les 30 s) : 50 % de chances pour chacun de devenir **Durci** (en pierre, intouchable), libéré
+    quand les autres le minent. Jamais sur les tanks ; la ténacité ne joue que pour la spé Mineur.
+  - **Enragé** sous 33 %. Morts définitives ; défaite si tout le monde est mort ou au bout des 30 min.
+- **Décisions** : Cerbère 280 000 PV : environ 1 victoire sur 10 et un combat de 10 min pour l'équipe de référence
+  (4 barbares, 4 mineurs, 2 logisticiens, stuff T4.5 +5 et runes R4, tanks à 40 % de ténacité). Valeurs provisoires.
+- **À suivre** : un essai à plusieurs vrais comptes et sur téléphone ; la récompense ; le lobby se vide quand le
+  serveur redémarre.
+- **État** : ✅ en ligne le 04/11
+
+## 04/11/2026 — Geoffrey — Arbres de skills v2 : spé choisie, deux colonnes, 13 nouveaux skills
+- **Pour le joueur** :
+  - en haut de l'onglet Skills, trois boutons pour **choisir sa spécialisation** (en changer rend tous les points) ;
+  - chaque arbre a **deux colonnes et six étages**, et un étage s'ouvre avec 3 points dépensés dans l'arbre ;
+  - on peut mettre des points dans les deux autres arbres, **jamais aussi profond** que dans sa spé, et sans les
+    skills de classe (★, ceux à 1 point) ;
+  - **13 nouveaux skills** : Pioche ensorcelée, Filou, Mineur tout terrain, Reposé, Aura d'efficacité, Organisé,
+    Dématérialisation, Cloué au sol, Aura rassurante, Dans le dos, Solide sur les appuis, Crushing, Aura berserk ;
+  - lobby : « 🪜 Logisticien (2/12/1) · SP lvl 3 » (points dans chaque arbre) ;
+  - **à la mise en ligne, tout le monde est remis à zéro** (reset gratuit) ; la spé et les glyphes posés restent.
+- **Décisions** : Treuil → Escalateur → Mule → Aura rassurante (l'Escalateur descend à l'étage 4, la Mule au 5e) ;
+  changer de spé = reset ; Solide sur les appuis agit contre le Golbute et les boss qui frappent ou taclent ; Reposé :
+  mine classique (3 min) et prison (1 min) ; auras pour tout le groupe, sans cumul ; Ruée et Pillage passent à 3 rangs.
+- **À suivre** : équilibrage des nouveaux skills (valeurs provisoires) ; regarder comment les joueurs répartissent
+  leurs points hors spé.
+- **État** : ✅ en ligne le 04/11
+
+## 04/11/2026 — Geoffrey — Guilde : l'Armurerie demande 20 Orbes supérieurs (avant 100)
+- **État** : ✅ en ligne le 04/11
+
+## 04/11/2026 — Geoffrey — Inventaire : le stuff non identifié s'empile
+- **Pour le joueur** : les pièces de stuff non identifiées, sans amélioration ni rune, d'un même objet tiennent dans une
+  seule case (× n) au lieu d'une case chacune. Leur fiche a un bouton **Recycler tout** (sauf les pièces d'un set).
+- **État** : ✅ en ligne le 04/11
+
+## 04/11/2026 — Geoffrey — Correctif : galeries à l'aveugle en fin de session
+- **Pour le joueur** : dans les dernières minutes d'une session, un mineur pouvait faire des allers-retours en
+  « creusant une galerie » alors qu'il voyait des minerais juste au-dessus de lui (à la torche ou à la boussole). Il
+  les mine maintenant. Rejoué sur la vraie partie signalée (seed 177078764) : plus aucune galerie à côté d'un minerai
+  connu, 37 blocs minés en plus.
+- **État** : ✅ en ligne le 04/11
+
+## 04/11/2026 — Geoffrey — Appli : clavier de la connexion (Galaxy S22) et fond de l'Accueil
+- **Pour le joueur** : sur certains téléphones (Galaxy S22), ouvrir le clavier pour taper son pseudo écrasait la fenêtre de connexion (seul le champ restait visible) : le clavier était compté deux fois. Corrigé. L'Accueil n'affiche plus la session en cours (la prison) en fond derrière le Carreau, qui coupait l'écran en deux.
+- **État** : ✅ en ligne le 04/11
+
+## 04/11/2026 — Jules — Appli mobile : la mine zoomée sur le mineur
+- **Pour le joueur** : rien sur le site. Dans l'appli, la mine de la session démarre **zoomée ×3** sur son mineur
+  (avant : toute la largeur de la mine, 50 cases, le mineur minuscule). On peut toujours pincer pour dézoomer (jusqu'à
+  voir toute la largeur) ou zoomer encore ; un double appui revient au zoom de départ. Le fond derrière les autres
+  onglets suit le même zoom.
+- **Décisions** (Jules) : zoom de départ ×3 dans l'appli seulement (réglage `CAMERA.appZoom`, provisoire).
+- **À suivre** : essai sur un vrai téléphone ; si la fenêtre de la mine paraît trop basse (≈ 11 lignes visibles), on peut
+  la rendre plus haute.
+- **État** : ✅ en ligne le 04/11
+
+## 04/11/2026 — Jules — Appli mobile : retours après l'essai sur iPhone
+- **Pour le joueur** : rien sur le site. Dans l'appli :
+  - **Accueil** : l'activité choisie n'apparaît plus aussi dans les rendez-vous (avant : « Mine instantanée » trois fois,
+    dont deux boutons « S'inscrire ») ; son horaire (« Dans 6 min ») est sur sa ligne. Les rendez-vous sont en haut, l'activité
+    juste au-dessus du gros bouton ;
+  - **Session** hors session : un bandeau « Pas de session en cours » avec **Lancer ▸** (vers l'Accueil), puis « Tes dernières
+    sessions » ;
+  - **Classement** : les mineurs du podium portent leur vrai stuff.
+- **Décisions** (Jules) : bandeau + Lancer pour l'écran Session hors session (écartés : renommer le bouton « Historique », les
+  deux).
+- **À suivre** : la suite des essais sur téléphone.
+- **État** : ✅ en ligne le 04/11
+
+## 04/11/2026 — Jules — Appli mobile : les derniers écrans (Sac, Amélioration, Amis)
+- **Pour le joueur** : rien sur le site. Dans l'appli :
+  - **Inventaire** : un bouton **Déplacer** dans le détail d'un objet, puis on touche la case où le poser (le glisser-déposer
+    du PC ne marche pas au doigt) ;
+  - **Four** : un onglet par four (🔥 s'il chauffe, 🔒 s'il est fermé), le four choisi en grand ;
+  - **Concasseur** : tient sur un écran ; les dernières trouvailles sont dans le panneau « Butin » ;
+  - **Recherche** : les tiers en 4 boutons ; toucher un tier fermé dit ce qu'il manque ;
+  - **Amélioration** : les pièces en grille d'icônes (petit carré orange = équipée), le nom et les stats de la pièce
+    choisie en haut, gros bouton ;
+  - **Amis** : une ligne par ami avec le bouton utile du moment (Rejoindre ou Inviter) et « ⋮ » qui ouvre sa fiche (Voir son
+    stuff, Signaler, Retirer en rouge).
+- **Décisions** (Jules) : Inventaire A, Four B (onglets), Amélioration B (grille), Amis A. Craft et Chat ne changent pas.
+  Conception : `docs/superpowers/specs/2026-11-04-appli-ecrans-fin-design.md`.
+- **À suivre** : l'étape 2 de l'appli est finie ; essai de Jules sur iPhone (TestFlight). Reste l'écran de session
+  (Geoffrey) et la version PC.
+- **État** : ✅ en ligne le 04/11
+
+## 04/11/2026 — Jules — Appli mobile : le Classement, podium et sa place en bas
+- **Pour le joueur** : rien sur le site. Dans l'appli, le Classement montre les **trois premiers sur un podium** (marches
+  or, argent, bronze ; le 2ᵉ à gauche, le 1ᵉʳ au centre, le 3ᵉ à droite, un petit mineur sur chaque marche), puis la suite
+  en lignes, et **ta place reste collée en bas de l'écran** quand tu fais défiler, même si tu es loin du top 50.
+- **Décisions** (Jules) : maquette A (podium) ; écartée : la liste simple. Les mineurs du podium ont l'apparence de base :
+  le serveur n'envoie pas le stuff des joueurs classés (choix de Claude, à enrichir plus tard). Conception :
+  `docs/superpowers/specs/2026-11-04-appli-classement-design.md`.
+- **À suivre** : essai sur un vrai téléphone ; les écrans pas encore refaits (Social, Amélioration, Four, Concasseur,
+  Recherche) ; les gestes au doigt.
+- **État** : ✅ en ligne le 04/11
+
+## 04/11/2026 — Jules — Appli mobile : la Guilde en onglets
+- **Pour le joueur** : rien sur le site. Dans l'appli, la page de ta guilde a quatre onglets : **Maison** (la maison, le
+  niveau, le message, les bonus), **Membres** (une ligne par joueur, « Inviter un joueur », et « Quitter la guilde » tout en
+  bas, à part), **Bâtiments** (trois boutons Armurerie / Trésorerie / Forge, un bâtiment à la fois, chaque matière sur une
+  ligne avec « Donner » à droite) et **Journal**. Avant : environ 5 écrans à faire défiler.
+- **Décisions** (Jules) : maquette A (onglets) ; écartée : le tableau de bord à tuiles. Conception :
+  `docs/superpowers/specs/2026-11-04-appli-guilde-design.md`.
+- **À suivre** : le Classement (podium, sa place en bas) ; Maison et Bâtiments défilent encore un peu.
+- **État** : ✅ en ligne le 04/11
+
+## 04/11/2026 — Jules — Appli mobile : l'Historique, une ligne par session
+- **Pour le joueur** : rien sur le site. Dans l'appli, le bouton **Session** hors session (l'Historique) montre **une ligne
+  par session**, regroupées par jour (« AUJOURD'HUI », « HIER », puis la date) : le type (Mine, Prison, Instance…) et
+  l'heure, la durée et avec qui, l'XP et les 3 plus gros butins (les trésors et minerais précieux d'abord, pas les
+  2 000 pierres). **Toucher une ligne ouvre le bilan complet** en bas de l'écran (tout le butin en icônes, areas,
+  profondeur, la seed en petit). Sans aucune session : un bouton « Lancer une session ▸ » vers l'Accueil.
+- **Décisions** (Jules) : maquette A (une ligne par session) ; écartée : la dernière session en grand. Conception :
+  `docs/superpowers/specs/2026-11-03-appli-historique-design.md`.
+- **À suivre** : Guilde et Classement.
+- **État** : ✅ en ligne le 04/11
+
+## 03/11/2026 — Geoffrey — Un set par activité
+- **Pour le joueur** : dans le Lobby, quand une activité est ouverte, la carte des sets propose « Set défini pour … ».
+  Le set choisi est équipé tout seul à chaque lancement de cette activité (ou à l'entrée au Bloc géant, à He's coming,
+  à l'ouverture de la Mine instantanée). Les instances partagent un set, les deux tours aussi ; en groupe, chacun le sien.
+  Le choix se fait dans un menu déroulant avec les noms de ses sets.
+
+## 03/11/2026 — Geoffrey — Cleave : 4 cibles devant lui, en arc de cercle
+- **Pour le joueur** : le Cleave n'est plus un coup sur tous les mobs autour : **sa prochaine attaque** est un coup en arc
+  de cercle **devant lui**. La cible prend 100 % de ses dégâts, et **jusqu'à 3 autres mobs devant lui** (à 2 cases ou
+  moins) prennent 50 % ; rien derrière. Seul face à une cible, il attend d'avoir un autre mob devant. Une lame balaie le
+  demi-cercle devant le mineur quand il part. À He's coming, il ne sert plus à rien (Lucifer est seul).
+- **État** : ✅ en ligne le 03/11
+
+## 03/11/2026 — Geoffrey — Niveau requis : Mine instantanée 3, Bloc géant et He's coming 10
+- **Pour le joueur** : en dessous du niveau, l'activité est **scellée** dans le Lobby (cadenas, grisée, « niveau 10
+  requis ») et le serveur refuse l'entrée ou l'inscription. Tout le reste est ouvert dès le niveau 1.
+
+## 03/11/2026 — Geoffrey — Tableaux de butin : noms des raretés
+- **Pour le joueur** : dans la bulle de butin d'un coffre (inventaire), les qualités s'affichent par leur nom (Utile, Bon, Haute qualité, Excellent, Antique, Mystérieux, Légendaire) au lieu de « R1 » à « R7 », et le titre de la bulle donne le nom du coffre (« Excellent Trésor angélique », plus « Trésor angélique R4 »). Le Coffre du Roi Gobelin II garde son « II ».
+- **État** : ✅ en ligne le 03/11
+
+## 03/11/2026 — Geoffrey — Appli : notifications à l'heure (MI en retard)
+- **Pour le joueur** : sur Android, la notification de la mine instantanée arrivait ≈ 15 min en retard : l'appli
+  demandait à Android une alarme « approximative » qu'il regroupe pour économiser la batterie. Avec l'appli **1.1.5**, les
+  notifications sont à l'heure exacte quand Android l'autorise ; une case **« Notifications à l'heure exacte »** dans Mon
+  compte ouvre le réglage « Alarmes et rappels » d'Android s'il est coupé. iPhone : rien à changer.
+  Ça vaut pour **toutes** les notifications de l'appli (session, MI, Bloc géant, four), et une nouvelle arrive : **He's
+  coming accessible** (quand on peut y retourner, réglable à part dans Mon compte).
+- **À suivre** : publier l'appli Android 1.1.5 sur le Play Store (le correctif ne marche qu'avec elle). Test « même version
+  iOS qu'Android » déjà rouge avant (iOS 1.1.0, Android 1.1.4).
+- **État** : ✅ en ligne le 03/11 (serveur) ; heure exacte avec l'appli Android 1.1.5, à publier
+
+## 03/11/2026 — Geoffrey — Appli Android 1.1.4 : les mises à jour à chaud marchent enfin (Samsung)
+- **Pour le joueur** : sur certains téléphones (vu sur les Samsung), l'appli ne se mettait jamais à jour toute seule : il fallait attendre une nouvelle version sur Google Play. Trouvé grâce au relevé : l'appli écrivait plusieurs fichiers en même temps dans un dossier pas encore créé, et Android refusait. Les dossiers sont maintenant créés d'abord, un par un. **Il faut installer la 1.1.4 depuis Google Play** (une mise à jour à chaud ne peut pas réparer le code qui fait les mises à jour à chaud).
+- **État** : ✅ en ligne le 03/11 (serveur) ; appli 1.1.4 (code de version 6) à envoyer sur Google Play
+
+## 03/11/2026 — Geoffrey — Appli Android 1.1.3 : le bandeau « Deep Mine Idle MMO » pour de bon
+- **Pour le joueur** : la 1.1.2 avait encore le bandeau noir au nom de l'appli en haut de l'écran (vu sur Samsung). La 1.1.1 avait corrigé le mauvais thème : la fenêtre est créée avec celui de l'écran de lancement, qui gardait sa barre de titre. Corrigé dans la 1.1.3 (nouvelle appli à installer, pas une mise à jour à chaud).
+- **État** : ✅ dans main le 03/11 (AAB 1.1.3, code de version 5, à envoyer sur Google Play) ; bandeau pas encore vérifié sur un téléphone
+
+## 03/11/2026 — Geoffrey — Appli : « Nouvelle version de l'appli » au démarrage
+- **Pour le joueur** : quand une nouvelle appli est sortie sur Google Play, l'appli le dit à l'ouverture : « Nouvelle version de l'appli : 1.1.2 (tu as la 1.1.0) », avec **Mettre à jour** (ouvre la fiche Google Play) ou **Plus tard** (reproposé le lendemain). Rien sur le site. Le jeu lui-même continue de se mettre à jour tout seul : ceci ne concerne que les nouvelles versions de l'appli.
+- **Pour nous** : à chaque nouvelle appli **en ligne** sur Google Play, monter `APP_UPDATE.latest.android` (aujourd'hui 1.1.2). iPhone : rien tant qu'il n'a pas de fiche App Store.
+- **État** : ✅ en ligne le 03/11
+
+## 03/11/2026 — Jules — Appli mobile : les Sorts, fiche qui monte du bas
+- **Pour le joueur** : rien sur le site. Dans l'appli, l'onglet Sorts montre la barre de sorts en haut (compacte) et le
+  grimoire en grille de 4 colonnes dessous. **Toucher un sort ouvre sa fiche en bas de l'écran** (effet, chiffres, et
+  « Mettre dans la barre », « Retirer de la barre », « Apprendre le parchemin » ou ce qui bloque) : elle n'est plus tout en
+  bas de la page. **Toucher un sort de la barre ouvre sa fiche au lieu de le retirer** d'un coup.
+- **Décisions** (Jules) : maquette A (fiche qui monte du bas, comme les Skills et le Stuff). Conception :
+  `docs/superpowers/specs/2026-11-03-appli-sorts-design.md`.
+- **À suivre** : avec 10 sorts, les 2 derniers sont juste sous l'écran (on défile un peu). Perso est fini ; restent
+  l'Historique, la Guilde et le Classement.
+- **État** : ✅ en ligne le 03/11
+
+## 03/11/2026 — Geoffrey — Force brute ne donne plus de ténacité
+- **Pour le joueur** : le 1er skill du Barbare (Force brute) donne toujours +5 % de dégâts et 2 % de dégâts de zone par
+  rang, mais **plus les +5 % de ténacité** par rang (15 % à 3/3). La ténacité ne vient plus que du stuff.
+- **État** : ✅ en ligne le 03/11
+
+## 03/11/2026 — Geoffrey — Dash : 300 %, recharge entière sur les boss
+- **Pour le joueur** : le Dash frappe à **300 %** des dégâts (avant 500 %). Sa recharge n'est plus divisée par deux quand
+  il touche un **boss** (Lucifer, boss des tours, roi gobelin, Golbute, minotaure, Gallianix) ; sur un mob normal, elle
+  l'est toujours. À He's coming, le Dash rapporte environ **+32 %** de points à un barbare au lieu de +63 %.
+- **Pourquoi** : enquête sur les points d'Infernatiwar à He's coming : le recul de Lucifer (4 cases) le remettait à
+  chaque fois à portée de Dash, environ 12 Dash à 500 % par visite.
+- **État** : ✅ en ligne le 03/11
+
+## 03/11/2026 — Jules — Appli mobile : les Skills, une classe à la fois
+- **Pour le joueur** : rien sur le site. Dans l'appli, l'onglet Skills montre **un seul arbre** : trois onglets en haut
+  (Mineur, Logisticien, Barbare, avec « ★ ta classe » et le niveau de spécialisation), et chaque skill avec **son nom et
+  son effet écrits à côté**. Entre deux étages, un petit maillon (orange quand le chemin est ouvert) au lieu d'un trait qui
+  traversait les cases. **Toucher un skill ouvre sa fiche** en bas de l'écran (ce qu'il fait maintenant et au rang
+  suivant, son glyphe) avec un gros bouton « APPRENDRE · 1 POINT » : on ne dépense plus un point par erreur. Tout l'arbre
+  tient sur un écran (avant : environ 4 écrans).
+- **Décisions** (Jules) : maquette A (onglets de classe) + la fiche ; les liens entre skills, jamais par-dessus une case.
+  Conception : `docs/superpowers/specs/2026-11-03-appli-skills-design.md`.
+- **À suivre** : Sorts (fiche du sort en bas) ; en session, la note du haut fait défiler un peu.
+- **État** : ✅ en ligne le 03/11
+
 ## 03/11/2026 — Jules — Appli mobile : les Sets en une ligne, le Stuff en mannequin
 - **Pour le joueur** : rien sur le site. Dans l'appli, en haut de Stuff, Skills et Sorts, le gros bloc des sets devient une
   seule ligne **« Set : barb ▾ »** ; la toucher ouvre un menu qui monte du bas : « Équiper » pour chaque set, « ⋯ » pour
@@ -1278,6 +1711,118 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
 - **État** : ✅ en ligne le 29/10
 
 ---
+
+## 06/11/2026 — Geoffrey — Mine géante : sans énergie, et sa carte dit ce qu'elle est
+- **Pour le joueur** : la Mine géante ne coûte plus d'énergie. Sa carte du Lobby affiche à côté de « Lancer » : « 1 h (2 h de jeu) ·
+  sans énergie · 1/2 aujourd'hui » (avant : le coût en énergie de la mine classique). Plus de session aujourd'hui : « Lancer » est
+  grisé (« Plus de Mine géante aujourd'hui (2/2) »). La ligne du menu des activités le dit aussi.
+- **État** : ✅ en ligne le 06/11
+
+## 06/11/2026 — Geoffrey — Mine géante (5 joueurs)
+- **Pour le joueur** : nouvelle activité au Lobby, **Mine géante (5 joueurs)**. Le chef l'ouvre, son lobby passe à 5 places, il
+  lance à 5. La session dure 2 h de jeu (1 h réelle), 2 fois par jour et par joueur. Mêmes règles que la mine (oxygène, pods,
+  treuil, donjon, pièges, k hole, treasures), mais une mine de 70 colonnes, 2,7 fois plus de minerais et 1,5 fois plus de mobs :
+  chacun rapporte environ 1,5 fois les minerais par heure d'une mine normale, et descend au moins aussi profond.
+- **Chiffres** (simulés, stuff acier) : sans réglage, à 5 on rapporte 63 % par joueur et par heure ; 70 colonnes et minerais
+  × 2,6 donnent 148 % et l'area 7 (contre l'area 6 à 3).
+- **Décision de Claude** : énergie comme la mine classique (un lancement = un coût).
+- **État** : ✅ en ligne le 06/11
+
+## 06/11/2026 — Geoffrey — Appli : sous-onglets en bas, juste au-dessus de la barre des familles
+- **Pour le joueur** (retour d'un joueur) : dans l'appli, les sous-onglets (Inventaire / Craft / Four…, Stuff / Amélioration /
+  Skills / Sorts…) étaient en haut de l'écran et les familles en bas. Ils sont maintenant juste au-dessus de la barre des
+  familles : tout ce qu'on touche pour naviguer reste dans la moitié basse, à portée du pouce. Le haut de l'écran revient au
+  contenu. Le site PC ne change pas.
+- **État** : ✅ en ligne le 06/11
+
+## 05/11/2026 — Geoffrey — Guilde : spécialisation principale de chaque membre
+- **Pour le joueur** : dans l'onglet Guilde, liste des membres de sa guilde, chaque membre affiche sa spécialisation principale
+  (l'arbre où il a le plus d'XP de spé) et son niveau, dans la couleur de l'arbre : « ⛏ Mineur 12 ». Rien s'il n'a pas encore
+  d'XP de spé.
+- **État** : ✅ en ligne le 05/11
+
+## 05/11/2026 — Geoffrey — Onglet Boutique : le Coffre affilié contre 20 émeraudes
+- **Pour le joueur** : nouvel onglet **Boutique** (touche B ; dans l'appli : famille Sac) pour acheter des objets exclusifs
+  avec ses émeraudes. Pour l'instant un seul article, le **Coffre affilié** (20 émeraudes) : il arrive dans l'inventaire et
+  s'ouvre comme un treasure : 50 plumes d'ange, 50 cristaux de pleine lune, 200 poudres de rêve, 10 000 charbons, 5 barres
+  d'argent.
+- **Décisions** : « silver ingot » = la Barre d'argent ; le coffre est un objet à ouvrir (pas un contenu versé directement) ;
+  pas de bâtiment au Carreau (choix de Claude).
+- **État** : ✅ en ligne le 05/11
+
+## 05/11/2026 — Geoffrey — Banque de guilde
+- **Pour le joueur** : nouvel onglet **Banque** dans sa guilde. En haut l'inventaire de la guilde (mêmes onglets, rangé), en
+  bas le sien : toucher un objet propose de le donner à la banque avec la quantité voulue (définitif, ni stuff ni rune).
+  Le chef et les officiers s'en servent : bouton **« De la banque »** à côté de « Donner » sur les bâtiments, et sous-onglet
+  **Craft** (toutes les recettes sauf le stuff : fours, gemmes, orbes, Clé d'instance I ; sans plan ; le résultat reste dans
+  la banque). Tout passe au journal de la guilde.
+- **Décisions** : Geoffrey. Choix de Claude : pas de retrait vers un inventaire (non demandé, évite qu'un officier vide la
+  banque), seulement des objets empilables, la banque se range toute seule.
+- **État** : ✅ en ligne le 05/11
+
+## 05/11/2026 — Geoffrey — Correctif : les auras des skills dans les bonus de session
+- **Pour le joueur** : l'Aura rassurante, l'Aura berserk et l'Aura d'efficacité s'appliquaient bien, mais ne se voyaient
+  nulle part en session. Elles apparaissent maintenant dans l'icône dorée « Bonus de session » (avec les anneaux, les
+  shrines et l'Escalateur), chez tous les joueurs du groupe : « Aura berserk : Critique +2 % pour tout le groupe ».
+- **État** : ✅ en ligne le 05/11
+
+## 05/11/2026 — Geoffrey — Cape inclusive : + 50 Cuirs de minotaure à la recette
+- **Pour le joueur** : la Cape inclusive demande maintenant aussi 50 Cuirs de minotaure, en plus du reste de sa recette.
+- **État** : ✅ en ligne le 05/11
+
+## 05/11/2026 — Geoffrey — Événement du jour
+- **Pour le joueur** : chaque jour (minuit à minuit, heure de Paris), un événement tiré au hasard, jamais le même deux
+  fois en 3 jours, affiché en bandeau en haut du Lobby : Mine abondante (+2 % de minerais, mine et prison), Jour férié
+  (énergie des mines −33 %, 6-12 → 4-8), Invasion (+25 % de mobs dès l'area 5), Cataclysme (les deux tours ensemble,
+  jauges pleines à 150), MI abondante (71 × 71, 10 min), Multivers (k hole × 5), Pouvoir au peuple (3 gagnants au
+  raffle), Héritage (+5 % d'XP).
+- **Décisions** : Geoffrey : la liste, figé au lancement, bandeau dans le Lobby (pas sur le Carreau pour l'instant), MI
+  71 × 71 ; « Grâce divine » retirée. Valeurs de détail proposées par Claude (voir GAME_DESIGN, Événement du jour).
+- **À suivre** : l'indicateur d'énergie basse (barre du haut) reste à 6 un jour férié ; Invasion et Mine abondante trop
+  petites pour être mesurées en simulation (vérifiées par les tests).
+- **État** : ✅ en ligne le 05/11
+
+## 05/11/2026 — Geoffrey — Raffle : bulle de 30 s pour les joueurs en ligne
+- **Pour le joueur** : quand un raffle commence, une bulle apparaît en haut à gauche (comme une invitation) pendant
+  **30 secondes** : « Raffle : <lot> à gagner ! Tirage dans 2 min », avec un bouton **Participer** (= `!join`). Seulement
+  pour qui a le jeu ouvert, pas sur l'écran de verrouillage du téléphone. Elle ne revient pas une fois fermée, et part
+  dès qu'on participe.
+- **État** : ✅ en ligne le 05/11
+
+## 05/11/2026 — Geoffrey — Recyclage des pièces uniques du Golbute et du Roi Gobelin
+- **Pour le joueur** : 7 pièces qui ne se recyclaient pas rendent maintenant des matériaux fixes : Némésis du Golbute
+  (10 Thorium ingot, 10 Cobalt ingot), Torse de Gollex (20 Mithril ingot), Jambières du Golbute (18 Mithril ingot), Âme du
+  Golbute (2 Orbes supérieurs), Couronne du Roi Gobelin (1 Rubis, 1 Jade et 1 Saphir inférieurs, 10 Steel ingot), Masse du
+  Roi Gobelin (10 Steel ingot, 3 Orbes), Cape royale du Gobelin (20 Shiny gold, 25 Cuir de minotaure). L'Arc de l'Admin et
+  les 9 anneaux restent non recyclables.
+- **Décisions** : quantités de Geoffrey.
+- **État** : ✅ en ligne le 05/11
+
+## 04/11/2026 — Geoffrey — Énergie de départ : 100
+- **Pour le joueur** : un nouveau compte commence avec 100 d'énergie (avant 0), comme tout compte qui n'a encore jamais eu
+  d'énergie enregistrée (pas encore lancé de mine classique ni de prison). Les comptes qui ont déjà une énergie la gardent.
+- **État** : ✅ en ligne le 04/11
+
+## 04/11/2026 — Geoffrey — Concasseur : nouvelle table du minerai d'or
+- **Pour le joueur** : 100 Or concassés donnent maintenant toujours 1 à 50 charbons et 1 à 15 graphites ; une fois sur deux, 1 à
+  10 mithrils ; une fois sur quatre, 1 à 2 cobalts (et à part, une fois sur quatre, 1 à 2 thoriums) ; plus 1 % de chaque gemme
+  inférieure et un treasure possible (T1 2 %, T2 1 %, T3 0,5 %, T4 0,25 %). Avant : 1 Terre par lot.
+- **État** : ✅ en ligne le 04/11
+
+## 04/11/2026 — Geoffrey — Appli : « Nouvelle version » réglable depuis le VPS, réglée sur 1.1.5
+- **Pour le joueur** : la fenêtre « Nouvelle version de l'appli » (Mettre à jour → Google Play) existait depuis le 03/11, mais
+  elle comparait à la 1.1.2 alors que la 1.1.5 est sur Google Play : personne ne la voyait. Elle compare maintenant à la 1.1.5.
+- **Pour nous** : à chaque nouvelle appli **en ligne** sur Google Play (pas en revue), une commande sur le VPS suffit, sans mise
+  en ligne du jeu : `sudo node /opt/deep-idle-mine/scripts/set-app-latest.js --platform android --version 1.1.6`. La version
+  est gardée en base ; l'appli la demande au serveur à chaque démarrage. « Plus tard » la reporte d'un jour.
+- **État** : ✅ en ligne le 04/11
+
+## 04/11/2026 — Geoffrey — Inventaire : butin d'un coffre à la demande, marque de rune plus petite
+- **Pour le joueur** : toucher un coffre ou un treasure ne déroule plus son tableau de butin (sur l'appli, il cachait le
+  bouton « Ouvrir » : il fallait le fermer avant d'ouvrir). Le tableau est derrière un bouton **« ? Butin »**, à côté de
+  « Ouvrir ». La petite rune qui marque une pièce runée fait maintenant un tiers de la case : sur l'appli, elle cachait la
+  pièce.
+- **État** : ✅ en ligne le 04/11
 
 ## 29/10/2026 — Jules — Correctif : le Carreau sur téléphone
 - **Pour le joueur** : sur téléphone, toucher l'écran pour marcher ouvrait l'onglet du premier bâtiment touché : on ne

@@ -85,19 +85,31 @@ const API = 'https://deepmineidle.fr';
 const files = obj => new Map(Object.entries(obj).map(([p, s]) => [p, Buffer.from(s)]));
 const manifest = (m, v) => ({ version: v, minNative: '1.1.0', files: Object.fromEntries([...m].map(([p, b]) => [p, H(b)])) });
 
-function phone({ local, localV = V1, remote, remoteV = V2, native = '1.1.0', state, serverFiles, slow = 0, down = false }){
-  const disk = new Map(), calls = [], listeners = {}, posted = [];
+/* racy (03/11/2026) : comme le plugin Android (ion-android-filesystem, checkParentDirectory : exists() || mkdirs()), une
+   écriture dans un dossier pas encore créé échoue dès que plusieurs écritures s'y croisent ; on le simule toujours : seule une
+   écriture dans un dossier déjà créé par mkdir (un appel à la fois) passe. mkdir d'un dossier existant : « already exists ». */
+function phone({ local, localV = V1, remote, remoteV = V2, native = '1.1.0', state, serverFiles, slow = 0, down = false, racy = false }){
+  const disk = new Map(), calls = [], listeners = {}, posted = [], dirs = new Set(['NoCloud']);
+  const parent = p => p.slice(0, p.lastIndexOf('/'));
   const resp = (status, body) => ({ ok: status === 200, status, json: async () => JSON.parse(body), arrayBuffer: async () => { const b = Buffer.from(body); return b.buffer.slice(b.byteOffset, b.byteOffset + b.length); } });
   const under = p => [...disk.keys()].filter(k => k === p || k.startsWith(p + '/'));
   const fs = {
     getUri: async ({ path }) => ({ uri: 'file:///data/lib/' + encodeURI(path) }),
     rmdir: async ({ path }) => { for(const k of under(path)) disk.delete(k); },
-    mkdir: async () => {},
+    mkdir: async ({ path, recursive }) => {
+      if(!racy) return;
+      if(dirs.has(path)) throw new Error(`Directory at '${path}' already exists, cannot be overwritten.`);
+      if(!recursive && !dirs.has(parent(path))) throw new Error('Missing parent directory');
+      for(let d = path; d && !dirs.has(d); d = parent(d)) dirs.add(d);
+    },
     readdir: async ({ path }) => ({ files: [...new Set(under(path).filter(k => k !== path).map(k => k.slice(path.length + 1).split('/')[0]))].map(name => ({ name })) }),
     copy: async ({ from, to }) => { for(const k of under(from)) disk.set(to + k.slice(from.length), disk.get(k)); },
     deleteFile: async ({ path }) => { if(!disk.delete(path)) throw new Error('absent'); },
     stat: async ({ path }) => { if(!disk.has(path)) throw new Error('absent'); return {}; },
-    writeFile: async ({ path, data, encoding }) => { disk.set(path, encoding ? Buffer.from(data) : Buffer.from(data, 'base64')); },
+    writeFile: async ({ path, data, encoding }) => {
+      if(racy && !dirs.has(parent(path))) throw new Error('Missing parent directory – possibly recursive=false was passed or parent directory creation failed.');
+      disk.set(path, encoding ? Buffer.from(data) : Buffer.from(data, 'base64'));
+    },
   };
   const io = {
     fs, store: memStore(state ? { [STATE_KEY]: JSON.stringify(state) } : {}), platform: 'android', api: API, now: () => Date.now(),
@@ -127,6 +139,17 @@ const ui = () => { const seen = []; return { seen, updating: () => seen.push('up
 const fast = { ...APP_UPDATE, checkTimeout: 1, applyWithin: 1 };
 const L = files({ 'index.html': '<p>1</p>', 'src/main.js': 'un', 'textures/a b.png': '\x00\x01' });
 const R = files({ 'index.html': '<p>1</p>', 'src/main.js': 'deux', 'textures/a b.png': '\x00\x01', 'src/new.js': 'nouveau' });
+
+/* 03/11/2026 : relevé des Samsung en coque 1.1.2, « Missing parent directory » à chaque essai, aucun fichier téléchargé */
+test('mise à jour : les dossiers sont créés un par un avant les écritures en parallèle (plugin Android et ses mkdirs concurrents)', async () => {
+  const deep = files({ 'index.html': '<p>2</p>', 'src/a/b/c.js': 'c', 'src/a/d.js': 'd', 'src/main.js': 'deux', 'textures/ui/x.png': '\x00',
+                       'textures/a b.png': '\x00\x01' });
+  const t = phone({ local: L, remote: deep, racy: true }), u = ui();
+  assert.equal(await check(t.io, u, { limits: fast }), 'applying');
+  const dir = `NoCloud/ionic_built_snapshots/${V2}`;
+  for(const [p, b] of deep) assert.deepEqual(t.disk.get(`${dir}/${p}`), b, p);
+  assert.deepEqual(t.posted, [], 'aucun échec signalé');
+});
 
 test('mise à jour depuis la copie embarquée : dossier complet et vérifié, bascule en essai', async () => {
   const t = phone({ local: L, remote: R }), u = ui();
@@ -284,4 +307,20 @@ test('relu sur le téléphone, un fichier sans son empreinte (Capacitor modifie 
   t.io.fetch = (url, o) => url.includes('/app-bundle/') ? f(url, o) : Promise.resolve(new Response('modifié par le téléphone'));
   assert.equal(await build(t.io, manifest(L, V1), manifest(R, V2)), true);
   for(const [p, b] of R) assert.deepEqual(t.disk.get(`NoCloud/ionic_built_snapshots/${V2}/${p}`), b, p);
+});
+
+/* nouvelle appli sur le store (03/11/2026, APP_UPDATE.latest) : fenêtre non bloquante au démarrage */
+test('storeNudge : coque plus ancienne que la dernière version du store → proposée, au plus une fois par nudgeEvery', async () => {
+  const { storeNudge } = await import('../src/app/update.js');
+  const now = 1_800_000_000_000, latest = { android: '1.1.3', ios: '1.1.3' }, url = 'https://play.google.com/x', every = 86400;
+  const n = o => storeNudge({ platform: 'android', now, latest, every, url, ...o });
+  assert.equal(n({ native: '1.1.2' }), '1.1.3');
+  assert.equal(n({ native: '1.1.3' }), null, 'à jour');
+  assert.equal(n({ native: '1.2.0' }), null, 'plus récente que le store (test interne)');
+  assert.equal(n({ native: '1.1.2', seen: { v: '1.1.3', at: now - 3600_000 } }), null, 'déjà proposée il y a 1 h');
+  assert.equal(n({ native: '1.1.2', seen: { v: '1.1.3', at: now - 25 * 3600_000 } }), '1.1.3', 'reproposée le lendemain');
+  assert.equal(n({ native: '1.1.2', seen: { v: '1.1.2', at: now } }), '1.1.3', 'une version plus récente est proposée tout de suite');
+  assert.equal(n({ native: '' }), null, 'version de la coque inconnue');
+  assert.equal(n({ native: '1.1.2', url: '' }), null, 'pas de fiche du store (iPhone pour l\'instant)');
+  assert.equal(n({ native: '1.1.2', platform: 'web' }), null);
 });

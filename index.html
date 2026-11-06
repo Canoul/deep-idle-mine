@@ -52,6 +52,7 @@
     <button class="on" id="lobbyToSession">Voir la session</button>
   </div>
   <p class="err" id="lobbyErr" hidden></p>
+  <div class="dailyBanner" id="dailyBanner" hidden></div>
   <div class="card invitesCard" id="invitesCard" hidden>
     <h2>Invitations</h2>
     <div id="invitesList"></div>
@@ -167,6 +168,8 @@
 <!-- session en cours (ou prison : même affichage, avec son bandeau, 29/10) -->
 <div id="run" hidden>
 <div class="prisonBanner" id="prisonBanner" hidden><span>⛓</span><span id="prisonBannerTxt"></span></div>
+<!-- raid Cerbère (04/11/2026), minage et porte : phase, blocs restants, temps (src/ui/raid-hud.js raidBannerText) -->
+<div class="prisonBanner raidBanner" id="raidBanner" hidden><span>🔥</span><span id="raidBannerTxt"></span><div class="bar raidBar"><i id="raidBar"></i></div></div>
 <header>
   <div class="timer" id="timer">00:00 / 60:00</div>
   <div class="grow"><div class="bar"><i id="timeBar"></i></div></div>
@@ -409,6 +412,13 @@
     <p id="spellMsg" class="err" hidden></p>
   </div>
 </section>
+<!-- Boutique (05/11/2026, src/ui/shop.js, SHOP) : objets exclusifs contre des émeraudes -->
+<section class="view" data-view="boutique" hidden>
+  <div class="furnWrap">
+    <div class="invHead"><h1><i data-pxi="coin"></i>Boutique<i data-qhelp="shop"></i></h1></div>
+    <div id="shopBody"></div>
+  </div>
+</section>
 <section class="view" data-view="classement" hidden>
   <div class="furnWrap" id="boardBody">
     <div class="invHead"><h1><i data-pxi="trophy"></i>Classement</h1></div>
@@ -444,6 +454,8 @@
     <div class="seg rsTabs" id="guildTabs"></div>
     <p id="guildMsg" class="err small" hidden></p>
     <div id="guildMineTab" hidden><div id="guildMine"></div></div>
+    <div id="guildRaidTab" hidden><div id="guildRaid"></div></div>
+    <div id="guildBankTab" hidden><div id="guildBank"></div></div>
     <div id="guildSearchTab" hidden>
       <div class="card" id="guildInvitesCard" hidden><h2>Invitations reçues</h2><div id="guildInvites"></div></div>
       <form class="card sadd" id="guildCreate" hidden><span>Créer ma guilde</span><input id="guildName" placeholder="Nom de la guilde" autocomplete="off" spellcheck="false" maxlength="24">

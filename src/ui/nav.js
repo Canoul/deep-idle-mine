@@ -22,6 +22,7 @@ export const TABS = [
   { id:'classement', label:'Classement', icon:'trophy',    ready:true, noBuilding:true },   // classements des joueurs ; pas de bâtiment dans le Carreau pour l'instant
   { id:'guilde',     label:'Guilde',     icon:'shield',    ready:true  },   // sa guilde, recherche, classement ; la maison de guilde dans le Carreau (02/11)
   { id:'social',     label:'Social',     icon:'group',     ready:true  },   // amis : présence, inviter, rejoindre
+  { id:'boutique',   label:'Boutique',   icon:'coin',      ready:true, noBuilding:true },   // objets exclusifs contre des émeraudes (SHOP, 05/11/2026) ; pas de bâtiment pour l'instant
 ];
 
 /* onglet Chat (31/10/2026, Geoffrey) : téléphone seulement (CHAT.dock.phone), le chat y recouvrait les autres onglets ;
@@ -34,7 +35,7 @@ export const tabFor = (id, phone) => id === CHAT_TAB.id && !phone ? TABS[0].id :
 export const phoneMode = (media, body) => media.matches || body.classList.contains('app');
 
 /* touche du clavier de chaque onglet, dans l'ordre de la barre (les onglets en attente n'en ont pas) */
-export const TAB_KEYS = ['1','2','3','4','5','6','7','8','9','0','-','=','c','g','s'];
+export const TAB_KEYS = ['1','2','3','4','5','6','7','8','9','0','-','=','c','g','s','b'];   // b : Boutique (05/11)
 
 /* icônes pixel posées dans la page : <i data-pxi="nom"></i> */
 export function fillIcons(root = document){

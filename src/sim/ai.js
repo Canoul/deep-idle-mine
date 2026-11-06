@@ -1,7 +1,7 @@
 /* IA du mineur : chaque appel à decide() choisit UNE action. Elle lit m.prefs (préférences) et la config ;
    ajouter un comportement = ajouter une préférence et la lire ici, pas réécrire l'IA. */
-import { W, AREA_H, STATS, CFG, BLOCKS, BARRIER, MOBS, CHEST_X, SKILLS, WINCH, HELP, MULE, DUCK, DT } from '../config.js';
-import { DIRS, isOre, isTarget, isResidue, typeOf, areaOf, areaTop, maxRow, tileAt, isAir, supported, rowDone, fallInfo, landing, ontoLadder } from './world.js';
+import { W, AREA_H, STATS, CFG, BLOCKS, BARRIER, MOBS, CHEST_X, SKILLS, WINCH, HELP, MULE, DUCK, DT, RAID } from '../config.js';
+import { DIRS, isOre, isTarget, aimable, isResidue, typeOf, areaOf, areaTop, maxRow, tileAt, isAir, supported, rowDone, fallInfo, landing, ontoLadder } from './world.js';
 import { search, firstStep, planReturn, planDown } from './path.js';
 import { stepDir, deepFall } from './actions.js';
 import { startAction, nowOf, idle, curLum, dk, moveT, climbT, mineT, lightR, compassR, baseMoveT, baseWinchT, warcryOf, timeLeft, workLeft } from './mineur.js';
@@ -15,6 +15,7 @@ import { landHit } from './actions.js';
 export { tackler } from './mobs.js';
 import { targetVal, dropDepleted, focusGoal, workArea, activeOres, areaGood, oreFocus } from './focus.js';
 import { active, mayEnter, isIn, inRoom, bossOf, hasBarbarian, isBarbarian, front } from './dungeon.js';
+import { zoneOf, zoneOpen, atCore, markScouted, pickZone } from './raid/scout.js';
 
 /* boussole : minerais sur la ligne du mineur, et sur carac.compassRows lignes au-dessus et en dessous (Boussole en or) */
 export function compassScan(G,m,R){
@@ -326,6 +327,7 @@ function decideWork(G,m){
     if(G.khole);                    // dimension du k hole : pas de surface, aucune remontée (il attend la fin du compteur)
     else if(m.ox<=0) reason='oxygène';   // à 0 d'oxygène il remonte ; la remontée n'en consomme pas (pas de ralentissement)
     else if(m.load>=m.carac.pods-2) reason='pods pleins';
+    else if(G.raid && m.inv?.Indice > 0) reason='rapporte un Indice';   // raid (04/11) : un Indice compte une fois au coffre
     else if(workLeft(G)<=tRet+12) reason='fin de session';
     else if(m.torches<=0) reason='plus de torches';
     /* donjon (25/10/2026, Geoffrey) : aller au donjon, attendre le barbare, le rejoindre et combattre le boss passent
@@ -333,7 +335,7 @@ function decideWork(G,m){
     if(reason && reason!=='fin de session' && workLeft(G)>tRet+12 && dungeonGoal(G,m,true)) return;
     /* Mule : pods pleins et un sac pas plein, plus près que la surface : il va y déposer */
     if(reason==='pods pleins' && muleWorth(G,m,rp)){ m.mode='mule'; log(G, `🎒 ${m.name} va déposer dans le sac`); return decideMule(G,m); }
-    if(reason){ m.mode='return'; m.reason=reason; m.returnStart=G.t; log(G, `↑ ${m.name} remonte : ${reason}`); return decideReturn(G,m,rp); }
+    if(reason){ m.mode='return'; m.reason=reason; m.returnStart=G.t; m.scout=null; log(G, `↑ ${m.name} remonte : ${reason}`); return decideReturn(G,m,rp); }
     if(curLum(G,m)<CFG.torchThreshold && m.torches>0 && !torchByOther(G,m)){ m.status='Pose une torche'; startAction(m,'torch',m.carac.torchTime,{}); return; }
   }
   if(trapGoal(G,m)) return;
@@ -359,7 +361,7 @@ function decideWork(G,m){
   const known=new Map(ores.map(o=>[o.y*W+o.x,o]));
   for(let y=1;y<=maxRow(G);y++) for(let x=0;x<W;x++){
     const t=G.tiles[y][x];
-    if(isTarget(t) && G.seen[y][x] && !known.has(y*W+x) && !G.mimicCells.has(y*W+x) && !fleshAt(G,x,y)) known.set(y*W+x,{x,y,t});
+    if(aimable(G,t) && G.seen[y][x] && !known.has(y*W+x) && !G.mimicCells.has(y*W+x) && !fleshAt(G,x,y)) known.set(y*W+x,{x,y,t});
   }
   /* coût réel (au temps) pour atteindre chaque minerai : une seule recherche d'itinéraire qui réutilise échelles,
      galeries et passerelles, et compte les échelles à poser. « Voyage futur » = trajet retour ajouté. */
@@ -385,11 +387,11 @@ function decideWork(G,m){
   const inFocus = (y,t) => y<=cap && (!isOre(t) || (A!==null ? areaOf(y)===A : !act.length || areaGood(G,areaOf(y),act)));
   const tg=m.target;
   if(tg?.far){ const t=G.tiles[tg.y][tg.x], rival=oreTakenBy(G,m,tg.x,tg.y);
-    const f = isTarget(t) && tg.y<=cap && !(rival && rival.id<m.id) ? farGoal(G,m,[{...tg,t}]) : null;
+    const f = aimable(G,t) && tg.y<=cap && !(rival && rival.id<m.id) ? farGoal(G,m,[{...tg,t}]) : null;
     if(f){ m.status=targetStatus(t); return goOre(G,m,tg,f.r,f.r.n); }
     m.target=null; }
   else if(tg){ const t=G.tiles[tg.y][tg.x], nb=nbrBest(tg), rival=oreTakenBy(G,m,tg.x,tg.y);
-    if(isTarget(t) && targetVal(G,m,t)!==null && inFocus(tg.y,t) && nb.bn>=0 && !(rival && rival.id<m.id)){ m.status=targetStatus(t); return goOre(G,m,tg,r,nb.bn); }
+    if(aimable(G,t) && targetVal(G,m,t)!==null && inFocus(tg.y,t) && nb.bn>=0 && !(rival && rival.id<m.id)){ m.status=targetStatus(t); return goOre(G,m,tg,r,nb.bn); }
     m.target=null; }
   for(const o of known.values()){
     if(!inFocus(o.y,o.t) || (away && isOre(o.t))) continue;
@@ -411,7 +413,9 @@ function decideWork(G,m){
   // descend tant que la case du dessous n'est pas une barrière, sauf en phase d'exploration (fond de l'area verrouillé)
   // … et ne passe pas dans une area épuisée pour son focus : il explore la sienne en galeries
   const stopK=focusStop(G,m);
-  const down = !m.exploring && stopK===null && tileAt(G,m.x,m.y+1) !== BARRIER && m.y<cap;
+  /* raid : il ne creuse pas tout droit vers le fond, il explore le noir (scout, plus bas) */
+  const scouting = !!G.raid && !!RAID.mine.scout;
+  const down = !scouting && !m.exploring && stopK===null && tileAt(G,m.x,m.y+1) !== BARRIER && m.y<cap;
   const range = (m.prefs.priority==='minerais'||!down) ? R : 3;
   if(best && Math.abs(best.x-m.x)<=range){ m.target={x:best.x,y:best.y}; m.status=targetStatus(best.t); return goOre(G,m,best,r,bestN); }
   if(away) return changeArea(G,m,goal);
@@ -419,8 +423,33 @@ function decideWork(G,m){
   /* cibles de valeur découvertes hors de portée : il va les chercher avant de creuser à l'aveugle (seed 1832289715) */
   const f = G.khole ? null : farGoal(G,m,[...known.values()].filter(o=>o.y<=cap && (targetVal(G,m,o.t)??0)>=CFG.farVal && !oreTakenBy(G,m,o.x,o.y) && !veinTaken(G,m,o.x,o.y)));
   if(f){ m.target={x:f.o.x,y:f.o.y,far:true}; m.status=targetStatus(f.o.t); return goOre(G,m,f.o,f.r,f.r.n); }
+  if(scouting && scout(G,m)) return;
   const k = stopK ?? (m.exploring && m.exploreArea!=null ? m.exploreArea : G.unlockedAreas-1);
-  explore(G,m, Math.min(k, Math.max(0,areaOf(cap))), cap);   // fin de session : galeries au-dessus de la profondeur max
+  /* fin de session : galeries au-dessus de la profondeur max, dans l'area de travail (« Plus profond » peut viser l'area
+     du dessus quand la profondeur max n'entre que de quelques couches dans la plus profonde, 04/11/2026) */
+  explore(G,m, Math.min(k, A ?? Infinity, Math.max(0,areaOf(cap))), cap);
+}
+
+/* raid : aucun Indice connu, il va au centre d'une zone encore dans le noir que personne d'autre n'explore
+   (src/sim/raid/scout.js). Engagement : il garde sa zone tant qu'elle vaut le trajet (sinon va-et-vient entre deux zones
+   à égalité). false : plus aucune zone (il creuse alors des galeries, comme dans la mine). */
+function scout(G,m){
+  for(let tries=0; tries<2; tries++){
+    if(m.scout==null || !zoneOpen(G,m.scout)){
+      m.scout=null;
+      const id=pickZone(G,m,search(G,m,m.x,m.y,true,null).dist);
+      if(id==null) return false;
+      m.scout=id;
+    }
+    const z=zoneOf(m.scout);
+    if(atCore(z,m.x,m.y)){ markScouted(G,m.scout); m.scout=null; continue; }   // arrivé : zone faite, il en prend une autre
+    const r=search(G,m,m.x,m.y,true,(x,y)=>atCore(z,x,y)), s=r && firstStep(r,r.n);
+    if(!s || !(s.dx||s.dy)){ markScouted(G,m.scout); m.scout=null; continue; }   // inatteignable : personne n'y retourne
+    m.target=null; m.exploring=false; m.status='Explore le noir';
+    if(stepDir(G,m,s.dx,s.dy,{noBridge:!s.bridge})) return true;
+    idle(m,0.3); return true;
+  }
+  idle(m,0.3); return true;
 }
 
 function digDown(G,m){
@@ -548,6 +577,7 @@ function decideWinch(G,m){
     if(reason){ /* déjà décidé */ }
     else if(m.ox<=0) reason='oxygène';
     else if(m.load>=m.carac.pods-2) reason='pods pleins';
+    else if(G.raid && m.inv?.Indice > 0) reason='rapporte un Indice';
     else if(left<=m.y/m.carac.climbSpeed*1.25+12) reason='fin de session';
     else if(m.torches<=0) reason='plus de torches';
     if(reason){ m.mode='return'; m.reason=reason; m.returnStart=G.t; return decideReturn(G,m); }

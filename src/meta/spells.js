@@ -1,7 +1,8 @@
 /* Sorts (onglet Sorts) : logique pure, partagée par le jeu (affichage), le serveur (qui fait foi) et la partie.
    Règles dans SPELLS (src/config.js) et GAME_DESIGN §3 « Sorts ».
 
-   État d'un joueur : { learned:[id de sort appris par parchemin], slots:[id | null] (SPELLS.openSlots cases), ops:[opId…] }.
+   État d'un joueur : { learned:[id de sort appris par parchemin], slots:[id | null] (SPELLS.slots cases), ops:[opId…] }.
+   - emplacements ouverts : selon le niveau du mineur (SPELLS.slotLevels, 05/11 : 3e au niveau 15, 4e au 20) ;
    - un sort est débloqué par un niveau de spécialisation (unlock.tree / unlock.level) ou par son parchemin appris ;
    - il s'équipe s'il est débloqué et, s'il a un needTree, si l'arbre de skills choisi est le bon ;
    - un sort n'est qu'une fois dans les slots ; l'équiper dans un autre slot l'y déplace (échange avec ce qui y était) ;
@@ -15,9 +16,12 @@ export const spellOf = id => typeof id === 'string' && Object.hasOwn(SPELL, id) 
 /* sort appris par ce parchemin (null si l'objet n'est pas un parchemin de sort) */
 export const spellOfScroll = item => SPELLS.list.find(s => s.unlock.scroll && s.unlock.scroll === item) ?? null;
 
-export const createSpells = () => ({ learned:[], slots:Array(SPELLS.openSlots).fill(null), ops:[] });
+export const createSpells = () => ({ learned:[], slots:Array(SPELLS.slots).fill(null), ops:[] });
+/* emplacements ouverts au niveau du mineur (ctx.level) ; sans niveau connu : SPELLS.openSlots */
+export const openSlotsFor = level => Number.isSafeInteger(level) ? SPELLS.slotLevels.filter(l => level >= l).length : SPELLS.openSlots;
+export const openSlotsOf = ctx => openSlotsFor(ctx?.level);
 
-/* ctx = { tree : arbre de skills choisi (ou null), spec : { arbre: niveau de spécialisation } } */
+/* ctx = { tree : arbre de skills choisi (ou null), spec : { arbre: niveau de spécialisation }, level : niveau du mineur } */
 export function isUnlocked(st, id, ctx){
   const s = spellOf(id);
   if(!s) return false;
@@ -39,7 +43,7 @@ export function spellOp(st, op, ctx){
   if(st.ops.includes(op.opId)) return { ok:true, repeated:true };
   const slot = op.slot;
   if(!Number.isSafeInteger(slot) || slot < 0 || slot >= SPELLS.slots) return { error:'bad_request' };
-  if(slot >= SPELLS.openSlots) return { error:'slot_locked' };
+  if(slot >= openSlotsOf(ctx)) return { error:'slot_locked' };
   if(op.action === 'equip'){
     const why = equipBlocked(st, op.spell, ctx);
     if(why) return { error:why };
@@ -78,7 +82,7 @@ export function sanitizeSpells(raw){
   if(Array.isArray(raw?.learned))
     st.learned = [...new Set(raw.learned.filter(id => spellOf(id)?.unlock.scroll))];
   if(Array.isArray(raw?.slots))
-    for(let i = 0; i < SPELLS.openSlots; i++){
+    for(let i = 0; i < SPELLS.slots; i++){
       const id = raw.slots[i];
       if(spellOf(id) && !st.slots.includes(id)) st.slots[i] = id;
     }
@@ -87,10 +91,10 @@ export function sanitizeSpells(raw){
 }
 
 /* sorts figés au lancement d'une session : ceux des slots encore équipables (spécialisation et niveau d'aujourd'hui) */
-export const equippedSpells = (st, ctx) => st.slots.filter(id => id && !equipBlocked(st, id, ctx));
+export const equippedSpells = (st, ctx) => st.slots.slice(0, openSlotsOf(ctx)).filter(id => id && !equipBlocked(st, id, ctx));   // emplacements ouverts au niveau du mineur (05/11)
 
 /* Relecture d'une liste de sorts figée dans une session (record.spells) pour la partie : ids connus, sans doublon,
-   au plus SPELLS.openSlots, et seulement ceux de la bonne spécialisation (tree : arbre figé au lancement). Le
+   au plus SPELLS.slots, et seulement ceux de la bonne spécialisation (tree : arbre figé au lancement). Le
    déblocage (niveau, parchemin) a été vérifié par le serveur au lancement. */
 export function sessionSpells(list, tree){
   if(!Array.isArray(list)) return [];
@@ -99,14 +103,14 @@ export function sessionSpells(list, tree){
     const s = spellOf(id);
     if(!s || out.includes(id) || (s.needTree && s.needTree !== tree)) continue;
     out.push(id);
-    if(out.length >= SPELLS.openSlots) break;
+    if(out.length >= SPELLS.slots) break;
   }
   return out;
 }
 
 /* ce que le navigateur voit : l'état + pour chaque sort, débloqué ou pas et pourquoi on ne peut pas l'équiper */
 export function publicSpells(st, ctx){
-  return { learned:[...st.learned], slots:[...st.slots], openSlots:SPELLS.openSlots, slotCount:SPELLS.slots,
+  return { learned:[...st.learned], slots:[...st.slots], openSlots:openSlotsOf(ctx), slotLevels:[...SPELLS.slotLevels], slotCount:SPELLS.slots,
            list: SPELLS.list.map(s => ({ id:s.id, unlocked:isUnlocked(st, s.id, ctx), blocked:equipBlocked(st, s.id, ctx) })) };
 }
 

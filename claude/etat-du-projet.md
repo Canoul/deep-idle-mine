@@ -25,7 +25,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   Une seule page (`index.html`) avec des onglets (`#lobby`, `#session`, `#jugement`, `#inventaire`…) : la session
   continue de tourner quand on change d'onglet. Chaque onglet a son module dans `src/ui/`.
 - **Bulles « Butin »** (01/11, Jules ; `src/meta/loot-table.js`, `src/ui/loot-tip.js`) : tableau de loot dans la bulle
-  commune, lu dans la config : survol d'un treasure / trésor / coffre dans l'inventaire, « ? Butin » des instances et des
+  commune, lu dans la config : bouton « ? Butin » dans le détail d'un treasure / trésor / coffre de l'inventaire (04/11,
+  Geoffrey ; ancien : au survol ou au toucher de la case, qui cachait « Ouvrir » sur l'appli), « ? Butin » des instances et des
   tours dans le Lobby, « ? Butin des mobs » à côté de « Face aux mobs ».
 - **Aide « ? »** (28/10, Jules) : les explications de l'interface sont des bulles « ? » (survol, toucher), pas des
   paragraphes dans les pages. Tous les textes des pages fixes sont dans `src/ui/help.js` (`HELP`) ; un écran construit
@@ -50,11 +51,18 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   et mode dev exclus) ; **dès 6** le lancement passe, le coût débité est plafonné à l'énergie restante (jamais négative) ; sous 6,
   refus nommant les joueurs à court, un refus n'arrête pas la prison. Recharge **seulement en prison** : 8 par heure de jeu,
   plafonnée à 100, gardée au dixième. Aucun autre mode ne coûte.
+- **Mine géante (5 joueurs)** (06/11, Geoffrey ; `GEANTE`, `src/shared/geante.js`, GAME_DESIGN §6) : 5 joueurs exactement, 2 h de jeu,
+  2 par jour et par joueur, **sans énergie** (06/11 ; ancien, quelques minutes : comme la mine), règles de la mine classique ; 70 colonnes, minerais × 2,7, mobs × 1,5 (simulé : ≈ 150 %
+  des minerais par heure d'une mine à 3, area 7). Sa partie tourne dans son propre fil avec `DIM_MINE=geante` (W 70, SESSION_LEN 7200) ;
+  le navigateur lit `G.w` / `G.len`. Lobby à 5 places quand le chef l'ouvre (`maxOf(p)`, server/party/service.js).
 - **Lobby par activités** (31/10, Geoffrey) : menu des 6 activités, puis sets à gauche et carte de l'activité à droite (ancien : carte « Où miner »). Niveau et XP dans le bandeau du haut. Chat global permanent en bas à gauche, hauteur réglable (`CHAT.dock`, src/ui/chat-dock.js) ; ancien : carte du Lobby.
 - **Guildes** (31/10, Geoffrey ; `GUILD`, server/guild/, src/shared/guild.js, src/ui/guild.js) : message de guilde (01/11, champ `message`), onglet Guilde, grades Chef / Officier / Membre, invitations et demandes, 30 membres, 1 % de l'XP des membres, même courbe que le mineur, classement. Bonus et bâtiments à venir.
 - **Bâtiments de guilde** (01/11, Geoffrey ; `GUILD.buildings`, server/guild/service.js) : Armurerie, Trésorerie, Forge, niveau 1 ; dons définitifs, construction par chef ou officier ; bonus figé avec les skills (`skills.guild`), dans tous les modes ; journal public sans limite (ns `guild_log`).
+- **Banque de guilde** (05/11, Geoffrey ; `GUILD.bank`, `src/meta/guild-bank.js`, ns `guild_bank`) : onglet Banque, inventaire commun ; tout membre dépose (empilables, ni stuff ni rune, définitif, pas de retrait) ; chef et officiers : « De la banque » sur les bâtiments et craft de guilde (recettes sans stuff, sans plan, résultat dans la banque).
 - **Maison de guilde** (02/11, Jules ; **bâtiment du Carreau** depuis le 02/11 soir, onglet Guilde, `kind:'guild'`, chacun voit celle de sa guilde, la même pour tous les membres : `houseOf` (server/guild) → `house` du ping du Carreau ; sans guilde : terrain vide `guild_lot` ; `GUILD.house`, src/shared/guild-house.js, `houseHTML` dans src/ui/guild.js, sprites `guild_hall_1..4`, `guild_site`, `guild_wing_*` de scripts/gen_town.py) : scène purement visuelle dans l'onglet Guilde et la fiche « Voir », DA « Cathédrale noire » (choix de Jules le 02/11 : pierre noire, lumière rouge, bannières de guerre aux pioches croisées ; ancien : petite maison à colombages ; écartés : camp de guerre façon Horde, bastion minier, manoir occulte) : maison en 4 étapes selon les points (niveaux construits + part donnée du prochain niveau, chaque matériau compte autant ; seuils absolus 0 / 0,75 / 1,75 / 3), annexes Armurerie, Trésorerie, Forge : vide → chantier (premier don) → construite.
-- **Raffle** (31/10, Geoffrey ; `RAFFLE`, server/social/raffle.js, src/shared/raffle.js) : tirage au sort dans le chat global, `!join` jamais publié, réservé aux comptes avec pseudo, état en ns `raffle` (reprend après un redémarrage), lot versé une fois par id de raffle. Forcer : `sudo node scripts/force-raffle.js` (route `/api/admin/raffle`).
+- **Raid 1 : Cerbère** (04/11, Geoffrey ; en ligne le 04/11 ; 2 groupes de 5, buffs de groupe par groupe ; spec `docs/superpowers/specs/2026-11-04-raid-cerbere-design.md`, GAME_DESIGN, `RAID`) : onglet Raid de la guilde, lobby de 1 à 10 en mémoire (server/guild/raid.js, src/shared/raid.js) ; partie en direct `mode:'raid'` (src/sim/raid/session.js : minage : 150 Indices cachés dans 2 areas dans le noir, à rapporter au coffre (bloc 26, `findClue`, chacun montre le suivant ; ancien : tout miner à 100 %) ; sans Indice en vue, exploration du noir par zones, une par mineur (src/sim/raid/scout.js, `RAID.mine.scout`, 04/11 soir ; ancien : puits jusqu'au fond) ; treuil posé au lancement jusqu'à l'area 2 (`assignWinch`) ; départ réparti sur la largeur → porte → arène ; src/sim/raid/cerbere.js) ; vue src/shared/raid-view.js ; rendu src/render/raid.js, src/ui/raid-hud.js ; sprite `scripts/gen_cerbere.py` (« Molosse des Enfers », Jules 04/11 : animé en boucle, planches `cerbere_anim` / `cerbere_rage_anim`, `RAID.cerbere.anim` ; moteur `scripts/gen_sculpt.py` ; ancien : chien de lave, DA Golbute/Lucifer) ; bloc Pierre des enfers (25) ; effets Morsure / Durci. Pas de récompense. Équilibrage `scripts/simulate-raid.js --tank-ten 40` : 280 000 PV, ~1 victoire sur 10, combat ~10 min, minage ~11 min (04/11 soir). Balayage : ténacité sans fatigue (`tenacityTryFresh`).
+- **Événement du jour** (05/11, Geoffrey ; `DAILY`, `src/shared/daily.js`, ns `daily`) : un par jour (minuit à minuit, Paris), tiré par le serveur, jamais le même 2 fois en 3 jours, bandeau du Lobby ; figé au lancement (prison : par run), Jugement en direct. Mine abondante, Jour férié, Invasion, Cataclysme, MI abondante, Multivers, Pouvoir au peuple, Héritage (détail GAME_DESIGN). Coupé dans les tests (`dailyEvents`).
+- **Raffle** (31/10, Geoffrey ; `RAFFLE`, server/social/raffle.js, src/shared/raffle.js) : tirage au sort dans le chat global, **bulle de 30 s** (05/11, `RAFFLE.popupMs`) chez les joueurs qui ont le jeu ouvert, bouton Participer = `!join`, pas de notification du téléphone ; `!join` jamais publié, réservé aux comptes avec pseudo, état en ns `raffle` (reprend après un redémarrage), lot versé une fois par id de raffle. Forcer : `sudo node scripts/force-raffle.js` (route `/api/admin/raffle`).
 - **Arc de l'Admin** (01/11, Geoffrey) : légendaire, case épée, portée +8, dégâts +15, recul +2, T4.5 pour les runes, aucune obtention (`give-item.js`), secret au wiki. Première arme à distance : flèche seulement affichée (`src/render/bow.js`, `SKIN.bow`).
 - **Canaux du chat global** (31/10, Geoffrey ; Commerce retiré, Guilde `/g` ajoutée le 01/11, lecteurs figés à l'envoi) : Général, MP, Groupe, Guilde, LFG, onglets par compte (ns `chat_prefs`, src/ui/chat-tabs.js).
 - **Moins de gobelins en prison** (01/11, Geoffrey ; provisoire) : `PRISON.lowGs`, part des gobelins × GS ÷ 2 500 sous 2 500 GS, surplus redonné aux autres mobs ; objectif 50-60 % de rendement.
@@ -161,6 +169,9 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   - Lobbies (29/10) : `sudo node scripts/move-to-lobby.js --name X --to Y` (met X dans le lobby de Y, route
     `/api/admin/party-move`) et `sudo node scripts/set-ready.js --name X [--always on|off] [--ready on|off]` (route
     `/api/admin/party-ready`), sans redémarrage.
+  - Lobby de raid (04/11) : `sudo node scripts/move-to-raid.js --name X --to Y` (met X dans le lobby de raid où est Y,
+    route `/api/admin/raid-move` ; hors de la guilde : invité prêt) et `sudo node scripts/set-raid-ready.js --name X
+    [--ready on|off]` (route `/api/admin/raid-ready`), sans redémarrage.
   - Fin de session forcée (29/10) : `sudo node scripts/end-session.js --name X` (route `/api/admin/end-session`, comme « Quitter » :
     sans butin, les autres continuent).
   - Lancement forcé (29/10) : `sudo node scripts/launch-lobby.js --name X` (route `/api/admin/party-launch` : le lobby de X
@@ -203,7 +214,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   consommé, `plainestFirst` dans `src/meta/craft.js`) ; Lunettes de luxe, Bottes de chantier, Ceinture golémique, Gants de
   boucher, Jambières titanesques ; gemmes Topaze / Saphir / Rubis / Jade ; BP Clé d'instance I ; Cuir de minotaure (1 à 3
   par minotaure, `DUNGEON.leather`) ; Rotten flesh (sans source). T4 des runes : 650 x (Couronne comprise, ancien : 600 x).
-  Pas d'épée, lance ni pioche de ces métaux (pas de recette) ; pas de tier 4 à la Table de recherche.
+  **Épée et Pioche en mithril** (05/11, Geoffrey : dégâts 21, soit +16 ; minage +0,7 ; plans dans le Treasure T4 et à l'étape 1 de la
+  recherche tier 4) ; pas de lance, ni d'arme en thorium / cobalt (**ancien** : aucune arme de ces métaux) ; pas de tier 4 à la Table de recherche.
 - **Ajustements de prix de Geoffrey** (27/10, `UPGRADE.priceAdjust`, `statPrice` dans `src/meta/gearscore.js`) : ses choix, pas
   des mesures. Points d'une stat pour 1 x divisés : offensives ÷ 2, dégâts % ÷ 3, perçage ÷ 4, minage (fixe et %) ÷ 3,
   ténacité ÷ 2, résistance au recul ÷ 3 (base 5 x). Remplacent la demi-valeur des stats de combat (`STUFF.combatOnStuff`
@@ -214,6 +226,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   sont resimulés** (`npm run weights`, `stat-values`). Les stats du T4 sont la première version divisée (pas recalculées).
 - **Wiki : plans secrets** (27/10, `WIKI.secret`) : pièces thorium / cobalt et pièces spéciales cachées jusqu'au premier
   BP trouvé ; première découverte (BP, ou stuff du Roi Gobelin) annoncée sur Discord avec les stats.
+- **Niveau requis des activités** (03/11, Geoffrey ; `MINE_MODES[].minLevel`, `src/shared/level-gate.js`) : Mine instantanée niveau 3, Bloc géant et He's coming niveau 10 ; en dessous, scellées dans le lobby (cadenas) et refusées par le serveur (`level_locked`).
 - **He's coming** (01/11, Geoffrey ; spec `docs/superpowers/specs/2026-11-01-hes-coming-design.md`, GAME_DESIGN §6, `HES_COMING`) : Bloc géant version combat, contre Lucifer. Paliers : Cristaux de pleine lune à la place des Plumes d'ange, mêmes quantités (5 + 10 + 15). `src/sim/hescoming/session.js` ; service, routes et interface du Bloc réutilisés par paramètres (`createGiantService` : sim, key, mode, place ; `setupGiant` : prefix, config, renderer, words) ; fiches `hc_day`, `hc_player` ; `/api/hescoming/…`. Indépendant du Bloc : on peut avoir une session, une visite au Bloc et une à Lucifer en même temps (`updatePanes`). **Sprite** (02/11, Jules, validé avec Geoffrey : boss final du raid, « charisme de malade ») : « Roi déchu » dans la DA du Golbute (trait d'encre, volumes nets, lumière de la lave d'en bas), `scripts/gen_lucifer.py` ; animé : il lève la main juste avant chaque rugissement, une flamme violette y brûle (`lucifer_roar1..6`, `luciferFrame` dans src/render/hescoming.js, `HES_COMING.anim`) ; ancien : premier sprite de Geoffrey (dégradés bruités, figé). Écartés : obsidienne façon Golbute, silhouette noire ailée, version Darkest Dungeon en clair-obscur.
 - **Bloc géant** (26/10, Geoffrey ; spec `docs/superpowers/specs/2026-10-26-bloc-geant-design.md`, GAME_DESIGN §6,
   config `GIANT`, `src/sim/giant/`, `src/shared/giant.js` + `giant-room.js`, `server/giant/`, `src/ui/giant.js`,
@@ -255,7 +268,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   seulement, en mémoire du serveur (`server/game/chat.js`, jamais en base), effacé à la fin ; réglages `CHAT`.
 - **Stores, marques et pages légales** (01/11, Geoffrey ; en ligne le 01/11) : Lunettes de luxe et Bottes de chantier (**ancien** : Lunettes Gucci, Doc Martins), migration au démarrage (`server/game/rename-items.js`, à garder tant que des données anciennes peuvent exister ; contrôle : `scripts/migrate-item-names.js`). Pages : `legal/*.md` → `npm run legal` → `/confidentialite`, `/mentions-legales`, `/conditions` ; liens `legalLinks()`. Textes dans `legal/`.
 - **Suppression de compte** (01/11, Geoffrey ; en ligne le 01/11) : bouton dans Mon compte, page `/suppression-compte` (`suppression-compte.html`), `scripts/delete-account.js --name X --yes` ; une seule fonction `deleteAccount` (`server/accounts/erase.js`), une écriture, transaction sur PostgreSQL. Toute nouvelle sorte de données doit être classée dans `server/game/store.js` (`ACCOUNT_NS`, `SHARED_NS`, `KEPT_NS`, `FREE_NS`). Pseudo remplacé par `DELETED_NAME` (« Joueur supprimé »). Gardés : signalements qui le visent, ligne de journal, statistiques anonymes. Détail : `docs/comptes.md`.
-- **Modération pour les stores** (01/11, Geoffrey ; en ligne le 01/11 ; `MODERATION`, `RULES`) : **Signaler** (⋮ sur un message ou un joueur, ns `report`, 10 / h, un par message, salon Discord privé `DIM_DISCORD_MOD_WEBHOOK`, `server/moderation/reports.js`) ; **Bloquer** (champ `blocked` du ns `social`, filtré par le serveur, liste dans Social, l'autre n'est pas prévenu) ; **outils** `scripts/reports.js` (`--open`, `--name`, `--close`, `--log`), `delete-message.js`, `mute.js`, `ban.js` (suspension, distincte du ban auto de 24 h), `rename.js`, journal ns `mod_log` ; **règles** acceptées à la création du compte et au premier message des anciens comptes (`rulesVersion`, `rulesAt`). Le chat de session n'ayant plus de panneau, seuls ses côtés serveur sont couverts.
+- **Modération pour les stores** (01/11, Geoffrey ; en ligne le 01/11 ; `MODERATION`, `RULES`) : **Signaler** (⋮ sur un message ou un joueur, ns `report`, 10 / h, un par message, salon Discord privé `DIM_DISCORD_MOD_WEBHOOK`, `server/moderation/reports.js`) ; **Bloquer** (champ `blocked` du ns `social`, filtré par le serveur, liste dans Social, l'autre n'est pas prévenu) ; **outils** `scripts/reports.js` (`--open`, `--name`, `--close`, `--log`), `delete-message.js`, `mute.js`, `ban.js` (suspension, distincte du ban auto de 24 h ; `--days` ou `--minutes`, 04/11), `warn.js` (04/11 : pop-up titre + texte, champ `notices` de la fiche ns `moderation`, lu par l'état social, `POST /api/moderation/notice-seen` ; ne compte pas pour le ban auto), `rename.js`, journal ns `mod_log` ; **règles** acceptées à la création du compte et au premier message des anciens comptes (`rulesVersion`, `rulesAt`). Le chat de session n'ayant plus de panneau, seuls ses côtés serveur sont couverts.
 - **Modération du chat** (30/10, Geoffrey, en ligne) : mots interdits masqués (global et session,
   même déguisés ou coupés sur plusieurs messages / joueurs), avertissement avec motif, 3 → ban 24 h (plus aucune action
   de jeu, prison arrêtée). Liste : `server/moderation/words.js`. Outil : `scripts/moderation.js` (fiche, recent, unban, forgive).
@@ -290,6 +303,9 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   Colosse de pierre voûté en facettes, gros contour noir, yeux de braise, cœur et éclats de cristal, fers brisés aux
   poignets ; forme cristallisée = même silhouette en cristal taillé. 80 × 80 (ancien : rectangles plats). Le **golem**
   (mob des mines, golems de la Division) suit le même style (32 × 32, bête voûtée, éclats de cristal ; ancien : blocs gris).
+- **Boutique** (05/11, Geoffrey ; `SHOP`, `src/meta/shop.js`, `src/ui/shop.js`, `POST /api/game/shop`) : onglet d'objets exclusifs
+  payés en Émeraudes (parrainage). Article : Coffre affilié, 20 émeraudes (50 plumes, 50 cristaux, 200 poudres de rêve, 10 000
+  charbons, 5 barres d'argent). Pas de bâtiment au Carreau ; famille Sac dans l'appli.
 - **Fenêtres de validation** (28/10, Geoffrey) : plus aucun `confirm` / `alert` / `prompt` du navigateur ; tout passe
   par `src/ui/dialog.js` (`ask`, `tell`, `askText`, promesses ; `#dialog` au-dessus de tout). Nouveau code : les utiliser.
 
@@ -316,7 +332,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - **Roi Gobelin : coffre et objets** (27/10, Geoffrey ; `GOBLIN_KING`, `src/meta/loot.js` openGoblinChest,
   `src/sim/thrall.js`, GAME_DESIGN « Roi Gobelin ») : le boss est celui de l'Instance I ; son « Coffre du Roi
   Gobelin R1-R7 » (Unique, un par joueur présent à la victoire) : lingots de graphite 5-15 + Tainted iron 10-20 + peaux toujours (29/10 ; ancien : Graphite ore 20-40), un objet rare au plus (Couronne 1 %,
-  Four en or BP 2 %, Masse 2 %, Cape royale 2 %), Recette : Chitine 5 % (si pas apprise), un parchemin de sort au plus (Ulti shen 1 %, Fast learner 0,5 %, Cleave 1 %,
+  Four en or BP 2 %, Masse 2 %, Cape royale 2 %), Recette : Chitine 5 % (si pas apprise), un parchemin de sort au plus (Ralliement 1 %, Fast learner 0,5 %, Cleave 1 %,
   Hand of Justice 1 %, jamais un sort appris), gemmes 1 % ; le stuff sort
   identifié à la qualité du coffre. **Couronne** (casque, légendaire) : fortune +10, **gobelins asservis** (nés à 10 cases
   du porteur : 30 s à miner pour le coffre commun, ligne « Gobelins asservis » du coffre). **Four en or** = 3e four ×1,5.
@@ -347,6 +363,9 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - **Nerf des pioches** (25/10, Geoffrey) : fer +0,4 (520 x ; ancien +0,5), acier +0,5 (650 x ; ancien +0,6).
   Table de recherche **tier 3** (en ligne le 23/10) : **200 parts** (26/10 ; ancien : 150), plans du T3, plan
   épique 4 fois moins probable (poids 0,25), recyclage **45 à 60** (28/10 ; ancien 40 à 70). (Ancien : pas de tier 3.)
+  **Areas requises** (05/11, Geoffrey) : T3 area 5, T4 area 7, T5 area 9 déjà atteinte (`RESEARCH.tiers[].area`, `areaMax` du
+  compte ; serveur : `area_locked` ; l'état envoie `progress.areaMax`). **Tier 5** (05/11) : 1000 parts, `items:['Casque en arkonite BP']`
+  (épique, pas encore de recette ; pas de Treasure T5, les Treasure T4 donnent toujours leurs plans).
   **Tier 4** (28/10, Geoffrey) : **250 parts**, plans du 1er jet du Treasure T4, ouvert quand toutes les recettes des
   tiers 1 à 3 sont apprises, **en 3 étapes** (mithril + pièces spéciales → thorium et cobalt → Jambières titanesques et Cape inclusive,
   chaque étape ouverte quand les recettes de la précédente sont apprises), recyclage **60 à 75** ; tier 2 : recyclage **30 à 45** (28/10 ; ancien 40 à 70).
@@ -354,14 +373,14 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   area débloquée en session, pseudo pris dans une liste en boucle (`DUCK.names`), 50 PV, ne tacle pas, ne tombe jamais
   dans la mine ; les mineurs (« combat » sur Combattre) le chassent à chaque passage au coffre, sac vidé (24/10 ;
   ancien : en fin de session seulement) ; 25 % de **Fragment de cœur** (coffre commun, sans usage pour l'instant). `src/sim/duck.js`.
-- **Mobs** (refonte du 21/10, GAME_DESIGN §5) : bestiole, gobelin (dès l'area 1), mimic, **occultiste** (area 4+,
+- **Mobs** (refonte du 21/10, GAME_DESIGN §5) : bestiole, gobelin (dès l'area 1), mimic, **occultiste** (area 4+, area 3+ depuis le 04/11,
   téléportation + canalisation qui étourdit 5 s, laisse le Tissu sombre ; 150 PV de base depuis le 23/10, ancien 100 ;
-  la Provocation casse la canalisation sans l'empêcher), **méphite** (24/10 : area 3+, 70 PV, **vole** sans gravité ni
+  la Provocation casse la canalisation sans l'empêcher), **méphite** (24/10 : area 3+, area 2+ depuis le 04/11, 70 PV, **vole** sans gravité ni
   échelle, asphyxie −5 d'oxygène / 2 s tant qu'il tacle, non cumulable, Vésicule de gaz ; 5 / 15 / 20 % en areas 3 / 4 / 5+,
-  pris sur le gobelin), **golem de sperme** (26/10 : area 5+, 10 % pris sur le gobelin, **2 × 2 cases**, 300 PV, deux fois
+  pris sur le gobelin), **golem gluant** (26/10 : area 5+, 10 % pris sur le gobelin ; area 4+ depuis le 04/11, **2 × 2 cases**, 300 PV, deux fois
   plus lent, **creuse** jusqu'au mineur un bloc toutes les 2 s (blocs perdus), escalier puis cheminée, s'agrippe à la roche,
   repousse 0,5 / 1,5 s, ébranle à 33 / 66 / 99 % de PV perdus (étourdi 3 s à 3 cases), Pierre glissante, 30 XP ;
-  `src/sim/golem.js` ; portée depuis sa case la plus proche : `nearCell`, `src/sim/knock.js`), **mur de chair** (28/10 :
+  `src/sim/golem.js` ; portée depuis sa case la plus proche : `nearCell`, `src/sim/knock.js`), **mur de chair** (28/10 ; area 5+ depuis le 04/11, PV des quatre avancés gardés sur leur ancienne courbe :
   area 6+, 2 / 5 / 8 % en areas 6 / 7 / 8+ pris sur le gobelin, **1 × 6 cases**, 200 PV, naît dans la roche à 8-12
   colonnes, avance seulement à l'horizontale sans rien casser ; ses cases sont un **mur** (ni entrée ni minage, `G.flesh`,
   `world.isAir`) ; −10 % de vitesse d'attaque par stack toutes les 2 s à 1,5 case, 9 au plus, 10 s, perdus hors du rayon ;
@@ -391,7 +410,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   `minoHp`) = **Minotaure brun** (Charge seule) et **Minotaure noir** (Rage dès 50 %, un coup / 0,4 s, recul 0,75 ;
   texture `minotaur_black`). L'IA des mineurs n'esquive pas la charge.
 - **Ténacité** (21/10) : stat en %, chance d'ignorer un sort de mob (vol du gobelin, canalisation de l'occultiste, asphyxie du méphite),
-  un tirage par sort ; vient de Force brute (Barbare, +5 % par rang). Force brute donne aussi **2 % de dégâts de zone
+  un tirage par sort ; vient du stuff (**ancien** : aussi Force brute, Barbare, +5 % par rang, retiré le 03/11, Geoffrey). Force brute donne aussi **2 % de dégâts de zone
   par rang** depuis le 23/10 (mobs à 1 case de la cible).
 - **Piège** (mine classique, 22/10, `src/sim/trap.js`, `TRAP` en config) : à partir de l'area 1, 2 tirages de 25 % par
   area ; salle 5 × 3 cachée dans des blocs normaux, 5 mobs (PV et vitesse × 1,5, hors quota) qui chassent le mineur dès
@@ -416,25 +435,41 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   **Navette exige maintenant Échelle de 2 ET Treuil**. Repère (10 parties à 3, avant les corrections du treuil du
   23/10) : 0 blocage, 0 perdu, le sac coûte ≈ 6 s par partie au logisticien (il le reprend en remontant par le
   treuil), effet sur le coffre non mesurable (hasard ±15 %).
-- **Spécialisation** : arbres de skills Mineur (4e étage **Légende de la flemme** depuis le 23/10 : 5 % de se téléporter au coffre à chaque remontée, sauf en fin de session), Logisticien (refait le 23/10 au soir : Navette 3, Échelle de 2 + Treuil, **Escalateur** 5 =
+- **Arbres de skills v3** (04/11/2026 après-midi, Geoffrey ; GAME_DESIGN §3 « Skills ») : **cinq étages**, une 3e colonne
+  (Mineur tout terrain, **Ambidextre** nouveau : double attaque +2 %/rang, Dématérialisation) ; skills déplacés (auras et
+  Reconnaissance à l'étage 5, Ivresse au 4 ; Treuil au 2, Escalateur 3 au 3, Mule au 4…) ; `SKILLS_VERSION` 3 = reset de
+  tous. Logisticien 26 points. Le reste comme v2 ci-dessous.
+- **Parrainage** (05/11/2026, Geoffrey ; `REFERRAL`, src/shared/referral.js, ns `referral`) : Mon compte → « Parrainer un ami »
+  (code = ID de compte, lien `?ref=`) ; code d'un parrain entré avant le niveau 5 ; au niveau 5, filleul et parrain reçoivent
+  10 Émeraudes (objet légendaire, sans usage pour l'instant), une fois. Comptes créés avant le 05/11 12 h 11 : affiliés à
+  Canoul (10 pour eux et 10 pour Canoul, depuis le 05/11 13 h).
+- **Arbres de skills v2** *(ancien depuis l'après-midi du 04/11 pour la place des skills : remplacé par les v3 ci-dessus)*
+  (04/11/2026, Geoffrey ; en ligne le 04/11 ; GAME_DESIGN §3
+  « Skills ») : spé choisie par 3 boutons (en changer = reset) ; deux colonnes, six étages ; étage r ouvert avec 3 × (r − 1)
+  points dans l'arbre ; « | » (`needs`) : Treuil → Escalateur → Mule → Aura rassurante, Provocation → Solide sur les appuis,
+  Crushing → Saccager → Aura berserk, Reposé → Aura d'efficacité ; autres arbres jamais aussi profonds que la spé (profondeur
+  − 1), skills de classe (1 point) réservés à leur spé ; 13 nouveaux skills (stats, Mineur tout terrain en raid, Reposé,
+  Dans le dos, Solide sur les appuis, Crushing, trois auras de groupe). Lobby « Logisticien (2/12/1) · SP lvl 3 ». Reset de
+  tous les joueurs à la mise en ligne (`migrateSkills`, spé et glyphes gardés). Mineur 25 points, Logisticien 25, Barbare 22.
+- **Spécialisation** *(ancien jusqu'au 04/11 : remplacé par les arbres v2 ci-dessus)* : arbres de skills Mineur (4e étage **Légende de la flemme** depuis le 23/10 : 5 % de se téléporter au coffre à chaque remontée, sauf en fin de session), Logisticien (refait le 23/10 au soir : Navette 3, Échelle de 2 + Treuil, **Escalateur** 5 =
   seau +5 %/rang pour tout le groupe, Mule ; ancien : Bâtisseur 3 en étage 1, Navette 5 en étage 3 ; treuil : seau à 0,85 × la vitesse de montée ;
   ×2 essayé le 22/10 puis retiré, décision Geoffrey et Jules), Barbare (provocation : interrompt la canalisation de l'occultiste sans l'empêcher de relancer, depuis le 21/10 ;
-  4e étage **Braum** depuis le 22/10 : marche et montée +10 %/rang quand il va aider) ;
+  4e étage **Garde du corps** depuis le 22/10 : marche et montée +10 %/rang quand il va aider) ;
   spécialisation choisie dans le lobby. Dans le périmètre du jeu.
 - **Maîtrises, 5e étage des skills** (28/10, Geoffrey ; GAME_DESIGN §3) : 0/3, après l'étage 4 au max. Maîtrise de la
   pioche (Mineur) et de l'épée (Barbare) : stats de la pièce +5 %/rang ; Maîtrise du bench (Logisticien) : torse +3 %/rang.
   Calcul de l'amélioration (`pieceBonus(…, extra)`, `slotMastery`), partout où agissent les skills ; pas dans le GS.
 - **XP de spécialisation** (24/10, Geoffrey ; `XP.specPct` / `XP.specCurve`, `src/meta/level.js`) : 50 % de sa part (24/10 ; ancien 10 %)
   d'XP de session (après partage et bonus perso) va à l'arbre de skills figé au lancement ; une XP par arbre (gardée si
-  on change), **même courbe que le niveau du mineur** (1000 ×1,5 ; 24/10, ancienne courbe 100 ×1,5). Affichée onglet Skills (SP lvl + barre), lobby (« Logisticien (SP lvl : 3) ») et bilan.
+  on change), **même courbe que le niveau du mineur** (1000 ×1,5 ; 24/10, ancienne courbe 100 ×1,5). Affichée onglet Skills (SP lvl + barre), lobby (« Logisticien (2/12/1) · SP lvl 3 » depuis les arbres v2 ; ancien « Logisticien (SP lvl : 3) ») et bilan.
   Sert à débloquer des sorts.
 - **Sorts** (24/10, Geoffrey ; `SPELLS` en config, `src/meta/spells.js` règles du compte, `src/sim/spells.js` effets,
   `src/ui/spells.js` onglet, GAME_DESIGN §3 « Sorts ») : onglet Sorts, 4 emplacements dont 2 ouverts (les 2 autres
-  verrouillés, règle à décider). Dash (Barbare spé 5), Illumination (Mineur spé 5), Inspiration (Logisticien spé 5),
-  Dynamite (Mineur spé 10), Ulti shen et Fast learner (parchemins à apprendre, **pas encore de source** : à décider).
-  **27/10 (Geoffrey)** : **Bonbonne de zipette** (Logisticien spé 10 : allié à 3 cases qui travaille, +20 % des pods du
+  verrouillés, règle à décider). Dash (Barbare spé 5 ; 300 % des dégâts, recharge entière sur les boss depuis le 03/11, ancien 500 % et recharge ÷ 2 partout), Illumination (Mineur spé 5), Inspiration (Logisticien spé 5),
+  Dynamite (Mineur spé 10), Ralliement et Fast learner (parchemins à apprendre, **pas encore de source** : à décider).
+  **27/10 (Geoffrey)** : **Bonbonne d'oxygène** (Logisticien spé 10 : allié à 3 cases qui travaille, +20 % des pods du
   logisticien en oxygène, 180 s), **Cri de guerre** (Barbare spé 10 : en combat, lui et les mineurs à 10 cases +10 % dégâts,
-  +5 % vitesse d'attaque, 30 s, recharge après l'effet, 180 s), **Cleave** et **Hand of Justice** (parchemins, sans source :
+  +5 % vitesse d'attaque, 30 s, recharge après l'effet, 180 s), **Cleave** (depuis le 03/11 : sa prochaine attaque touche la cible à 100 % et jusqu'à 3 mobs devant lui à 50 %, 4 cibles au plus, arc de cercle animé ; ancien : 50 % à tous les mobs à 2 cases) et **Hand of Justice** (parchemins, sans source :
   50 % des dégâts à 2 cases, 10 s ; étourdit 3 s un mob qui se bat à 3 cases, 30 s). Mine classique (et k hole) seulement.
   Figés au lancement, déclenchés tout seuls dès que la recharge est finie et qu'ils servent ; barre des sorts en
   session (29/10 : aussi dans les tours, l'instance et le Bloc géant ; ancien : mine classique seulement).
@@ -445,6 +480,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   (description, chiffres tirés de la config, action ou raison du blocage, barre de progression de spé). Icônes pixel
   (`px` dans `SPELLS`, aussi dans la barre en session) et une couleur par famille ; `short` = la ligne sous le nom.
   Ancien affichage (3 colonnes grises, emojis, détails en infobulle) remplacé.
+- **Set par activité** (03/11, Geoffrey ; `SETS.activities`, `sets.byActivity`, `setActivity` / `setForMode` dans `src/meta/sets.js`, `autoEquip` dans `server/game/service.js`, ligne `activityLineHtml` de `src/ui/sets.js`) : un set associé par activité (mine, prison, mi, giant, hescoming, instances, towers), équipé par le serveur au lancement (`start`, avant les verrous ; chaque joueur du groupe), à l'entrée en prison, à l'ouverture de la MI (`openInstant`) et à l'entrée du Bloc géant / He's coming (`giantEnter`) ; rien en session.
 - **Sets** (24/10, Geoffrey ; `SETS` en config, `src/meta/sets.js`, `src/ui/sets.js`, GAME_DESIGN §6 « Sets ») : une
   liste de sets (stuff porté, skills, sorts) à gauche des onglets Stuff, Skills et Sorts, et dans le Lobby sous l'équipe (28/10) ; Équiper remet tout d'un coup
   (pièce introuvable = case vide) ; **Équiper possible pendant une session, pour la suivante** (28/10, Geoffrey ; ancien :
@@ -469,12 +505,13 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   lignes). Stats : minage % et dégâts % (multiplicatifs), critique, coup unique, perçage, butin des mobs. Une pièce
   porte `q`, `lines` (anciennes seulement), `plus`, `rune`. Plumes d'ange : mine instantanée ; Cristaux de pleine
   lune : minotaure du donjon (`scripts/give-admin.js` pour tester).
-- **Concasseur** (21/10, GAME_DESIGN §6) : 8 cases de blocs (famille **bloc** : terre, pierre, pierre dure), 100
+- **Concasseur** (21/10, GAME_DESIGN §6) : 16 cases de blocs (8 avant le 04/11) (famille **bloc** : terre, pierre, pierre dure), 100
   blocs par minute (première case pleine, haut→bas, gauche→droite), butin tiré par le serveur (gemmes inférieures,
   treasure). Chances par lot depuis le 22/10 : gemme 0,6 / 0,9 / 1,2 %, treasure 0,5 / 0,3 / 0,5 % (terre / pierre /
   pierre dure), soit ≈ 1 gemme / 30 sessions et 1 treasure / 60 par joueur (ancien : 1 gemme / 60, treasure / 2 000) ;
   l'aide « ? » et le wiki ne montrent plus de moyenne ni de temps estimé. **Minerai de fer** (28/10, Geoffrey) : 100 fers →
-  toujours charbon 1-50, or 1-20, 1 diamant, graphite 1-10 ; gemme inférieure 1 % chacune, treasure T1 2 % / T2 1 % / T3 0,5 %.
+  toujours charbon 1-50, or 1-20, 1 diamant, graphite 1-10 ; gemme inférieure 1 % chacune, treasure T1 2 % / T2 1 % / T3 0,5 %. **Minerai d'or** (04/11, Geoffrey ; ancien : 1 Terre) : 100 ors → charbon 1-50, graphite 1-15 ; mithril
+  1-10 à 50 %, cobalt et thorium 1-2 à 25 % chacun ; gemme inférieure 1 % chacune, treasure T1 2 % / T2 1 % / T3 0,5 % / T4 0,25 %.
 - **MI, galeries (en ligne le 22/10)** : cap par mineur (galeries dans tous les sens) et tas de plumes découvert ≤ 8 cases prioritaire, même dans la roche.
 - **Mine instantanée (MI)** (en ligne le 21/10, GAME_DESIGN §6, `INSTANT_MINE` en config ; **depuis le 23/10 après-midi :
   ne touche plus aux groupes** (inscription seule, on reste dans son lobby ; ancien : on quittait son groupe) ; **depuis le 22/10 : cachée
@@ -521,7 +558,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   `docs/superpowers/specs/2026-10-28-buffs-debuffs-design.md`, `EFFECTS`, `src/sim/effects.js`, `src/ui/effects.js`,
   `src/render/effects.js`) : en haut à droite de la mine (et tours, instance, MI), les états de **son propre mineur** avec
   le temps restant ou les stacks (rouge : étourdi, taclé, enfermé, effroi, asphyxie, vol, mur de chair, ciblé par le boss,
-  dans le noir ; vert : Cri de guerre, Inspiration, Ruée, Navette, Braum, Glyphe Pillage, Fast learner, **Couronne du Roi
+  dans le noir ; vert : Cri de guerre, Inspiration, Ruée, Navette, Garde du corps, Glyphe Pillage, Fast learner, **Couronne du Roi
   Gobelin** chez son porteur seul, depuis le 29/10) et **une seule icône « Bonus de
   session »** (anneaux du groupe, shrines, Escalateur ; ancien, 28/10 : la Couronne y était, chez son porteur seul). Animations sur le perso (étoiles,
   botte barrée, bulles…, onde quand un sort part) ; icônes des mobs et boss au-dessus de leur barre de vie. Affichage
@@ -559,8 +596,13 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - **Appli iPhone pour TestFlight** (01/11, Geoffrey, repris de `jules/appli-ios` ; en ligne le 01/11 ; **TestFlight vérifié le 02/11** : installée et essayée sur l'iPhone de Jules ; guide `docs/app-ios.md`) : mêmes choix qu'Android (jeu copié dans l'appli, jeton, `capacitor://localhost`). iPhone seul, portrait. Workflow `ios.yml` : `controle` (sans clé, simulateur), `ipa`, `testflight` ; signature par clé d'API Admin seule (archive non signée, Apple signe à l'export), secrets `ASC_KEY_ID`, `ASC_ISSUER_ID`, `ASC_KEY_P8`, `IOS_TEAM_ID`. Numéro de build : exécution × 100 + essai. Notifications locales, pas d'entitlement push. Manifeste `PrivacyInfo.xcprivacy`. Plugin clavier `@capacitor/keyboard` (`resize: native`).
 - **Appli Android pour Google Play** (01/11, Geoffrey ; en ligne le 01/11 côté serveur, pas encore sur Google Play ; guide `docs/app-android.md`) : nom « Deep Mine Idle MMO », `fr.deepmineidle.app`. **Fichiers du jeu dans l'appli** (`mobile/scripts/copy-web.js`, ancien : `server.url` vers le site). Ancien (1.0.0) : client figé jusqu'à la mise à jour Play ; depuis la 1.1.0, mises à jour à chaud (ci-dessous). Connexion de l'appli par jeton `Authorization` et CORS limité à `SERVER.appOrigins` ; le site garde son cookie. `src/app/device.js` : bouton retour, liens externes, « Pas de connexion ». Portrait, permission INTERNET seule. Workflow `android-apk.yml` : APK de test, AAB signé par les secrets `ANDROID_UPLOAD_*`.
 - **Mises à jour à chaud de l'appli** (02/11, Jules ; conception de Geoffrey le 01/11, `docs/superpowers/specs/2026-11-01-mises-a-jour-a-chaud-design.md` ; **serveur en ligne le 02/11**, appli 1.1.0 pas encore sur les stores ni essayée sur un téléphone) : l'appli récupère la dernière version du jeu publiée par deepmineidle.fr, sans les stores. Décisions de Jules (02/11) : **chaque mise en ligne qui change le jeu part dans l'appli** ; **au démarrage, avant l'écran de connexion** (3 s pour demander, 10 s pour télécharger, sinon à la prochaine occasion), et au retour après 5 min en arrière-plan, jamais pendant le jeu ; **testeurs sur le même canal que les joueurs**. Plugin maison (pas de Capgo ni Capawesome), sans code natif : `WebView.setServerBasePath` du cœur de Capacitor + `@capacitor/filesystem`. Version = empreinte du contenu (`server/app-update/bundle.js`, la même recette que la copie embarquée) ; serveur : `GET /api/app/update`, `GET /app-bundle/<version>/<chemin>`, `POST /api/app/rollback` ; appli : `src/app/update.js` (logique), `updater.js` (téléchargement, SHA-256 de chaque fichier, bascule), `guard.js` (une version n'est gardée qu'après avoir démarré, sinon retour à la précédente ou à la copie embarquée, version refusée pour toujours). Coque 1.1.0 = `APP_UPDATE.minNative` ; en dessous ou si on monte ce minimum, écran « Mets à jour l'appli ». **Ajouter un plugin = nouvelle version des stores** et monter `APP_UPDATE.minNative` (test `mobile-config`). Pas de signature du manifeste (la clé serait sur le serveur ; HTTPS + adresse codée suffisent pour l'instant).
-- **Notifications de l'appli** (01/11, Geoffrey) : locales, calculées sur le téléphone (`src/app/notifs.js`, `native.js`,
-  `APP_NOTIFS`) : session finie, mine instantanée 5 min avant (pas de 23 h à 8 h), Bloc géant, four. Interrupteur général et
+- **« Nouvelle version de l'appli »** (03/11, Geoffrey ; réglable depuis le VPS le 04/11) : au démarrage, une coque plus ancienne
+  que la dernière version des stores propose Mettre à jour (fiche Google Play) / Plus tard (reproposé le lendemain). Version
+  demandée au serveur (`GET /api/app/latest`, ns `app_latest`), réglée par `scripts/set-app-latest.js --platform android
+  --version x.y.z` **quand la version est en ligne sur le store** ; repli : `APP_UPDATE.latest` (1.1.5 le 04/11 ; ancien : 1.1.2,
+  à monter dans la config à chaque publication).
+- **Notifications de l'appli** (01/11, Geoffrey) : locales, **à l'heure exacte depuis l'appli Android 1.1.5** (03/11 : permission `SCHEDULE_EXACT_ALARM`, case « Notifications à l'heure exacte » ; ancien : alarme approximative, MI ≈ 15 min en retard), calculées sur le téléphone (`src/app/notifs.js`, `native.js`,
+  `APP_NOTIFS`) : session finie, mine instantanée 5 min avant (pas de 23 h à 8 h), Bloc géant, He's coming (03/11), four. Interrupteur général et
   un par type dans Mon compte, par compte. Push serveur : plus tard.
 - **Appli mobile** (28/10, Jules ; repris le 01/11 par Geoffrey, **étape 1 en ligne le 01/11**, Android d'abord, iOS plus
   tard : interface téléphone confirmée, Guilde et Chat dans la famille Social ; spec
@@ -576,6 +618,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   notifications programmées → 4 push, iOS, stores (comptes Apple / Google : plus tard, avec un business plan, Geoffrey).
   **Étape 1 faite le 28/10** : `mobile/`, `src/app/` (classe `app`, badge provisoire « APPLI ✓ / ⚠ pont bloqué »),
   icône (`npm run app:icon`), `.github/workflows/android-apk.yml` ; **APPLI ✓ confirmé sur un vrai Android le 01/11** (Geoffrey). **Étape 2 en 5 morceaux** : navigation (**en ligne le 01/11**, plan `2026-11-01-appli-mobile-etape2a-navigation.md`, `src/app/families.js`, `bar.js`, `main.js`, `app.css` : 5 familles, Guilde et Chat dans Social, Historique hors session, pas de Carreau, Geoffrey) → session → Accueil → Stuff et Skills → gestes au doigt.
+  **Sous-onglets en bas** (06/11, Geoffrey, retour d'un joueur) : juste au-dessus de la barre des familles (ancien : sous le
+  bandeau du haut) ; règle : rien à toucher pour naviguer dans la moitié haute de l'écran.
   **Interface téléphone** (03/11, Jules ; étape 1 et Accueil en ligne le 03/11) : **l'appli d'abord, le site PC plus tard** (décision
   de Jules). Audit écran par écran et ordre des chantiers : `docs/superpowers/specs/2026-11-03-appli-ux-audit.md`.
   Étape 1 faite (tout derrière `body.app`) : pas de titre de page, filtres sur une rangée qui défile, une ligne par joueur
@@ -583,11 +627,29 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   quantités courtes « 2,2k » (`fmtQty(n, { short })`), Sac = Inventaire, Craft, Four, Concasseur, Recherche
   (ancien : Inventaire, Four, Concasseur, Craft, Recherche). **Accueil** (03/11, fait ; spec
   `2026-11-03-appli-accueil-design.md`, `src/app/home.js` + `home-ui.js`, `APP_HOME`) : premier écran de l'appli à la place du
-  Lobby (ancien : le Lobby du site) : bande du Carreau (Taverne, Chevalement, Fonderie) avec l'équipe, activité + Changer ▸
-  (le Lobby complet, retour « ← Accueil »), rendez-vous (Bloc géant, He's coming, tour, MI, four, invitation), gros bouton
-  = `lobby.launch()` (même fonction que `#launchBtn`). **Sets et Stuff** (03/11, en ligne le 03/11 ; spec
+  Lobby (ancien : le Lobby du site) : bande du Carreau (Taverne, Chevalement, Fonderie) avec l'équipe, rendez-vous (Bloc
+  géant, He's coming, tour, MI, four, invitation ; jamais l'activité déjà choisie, dont l'horaire passe sur sa ligne,
+  retour de Jules du 04/11), puis activité + Changer ▸ (le Lobby complet, retour « ← Accueil ») collée au gros bouton
+  = `lobby.launch()` (même fonction que `#launchBtn`) ; ancien (jusqu'au 04/11) : activité au-dessus des rendez-vous. **Sets et Stuff** (03/11, en ligne le 03/11 ; spec
   `2026-11-03-appli-perso-sets-stuff-design.md`) : sets = une ligne « Set : x ▾ » + menu du bas (`setsBarHtml`, `setsSheetHtml`,
-  `#setsSheet`) ; Stuff = mannequin + onglets Équipement | Stats (`src/app/perso.js`). Étape 2 sur maquettes : Accueil (fait) → Perso (sets en menu,
+  `#setsSheet`) ; Stuff = mannequin + onglets Équipement | Stats (`src/app/perso.js`). **Skills** (03/11, en ligne le
+  03/11 ; spec `2026-11-03-appli-skills-design.md`) : onglets de classe (`skillTabsHtml`), un arbre à la fois
+  avec l'effet de chaque skill, maillons entre les cases, fiche `#skSheet` (`skillSheetHtml`) : dans l'appli un toucher
+  n'apprend plus directement (ancien : un clic = un rang). **Sorts** (03/11, en ligne le 03/11 ; spec
+  `2026-11-03-appli-sorts-design.md`) : fiche `#spSheet` (`spellInfoHtml`) qui monte du bas ; toucher la barre ouvre la fiche
+  (ancien : retirait le sort). **Historique** (04/11, en ligne le 04/11 ; spec
+  `2026-11-03-appli-historique-design.md`) : une ligne par session par jour, bilan `#hiSheet` (ancien : une carte dépliée par
+  session, 17 écrans) ; hors session, bandeau « Pas de session en cours · Lancer ▸ » en tête (vers l'Accueil, caché en session :
+  classe `appLive`), choix de Jules du 04/11 (écartés : renommer le bouton « Historique », les deux). **Guilde** (04/11, en ligne le 04/11 ; spec `2026-11-04-appli-guilde-design.md`) :
+  sa guilde en onglets Maison / Membres / Bâtiments / Journal (`mineAppHTML`), un bâtiment à la fois. **Classement** (04/11,
+  en ligne le 04/11 ; spec `2026-11-04-appli-classement-design.md`) : podium du top 3 (`podiumHtml`, chaque mineur
+  avec son stuff : `look` et `auras` des `LEADERBOARD.podium` premières lignes, lus par le serveur ; ancien : apparence de base), sa ligne collée en bas (`boardAppHtml`, `.lMe` sticky) ; ancien : liste seule. **Écrans qui restaient**
+  (04/11, en ligne le 04/11 ; spec `2026-11-04-appli-ecrans-fin-design.md`) : Inventaire « Déplacer » (ancien :
+  glisser-déposer seulement), Four en onglets (ancien : fours empilés), Concasseur resserré, Recherche en 4 boutons de tier,
+  Amélioration en grille d'icônes (ancien : une carte par pièce), Amis en une ligne + fiche `#frSheet` (ancien : 5 boutons
+  par ami) ; Craft et Chat inchangés. **Étape 2 de l'interface téléphone finie.** **Zoom de la mine** (04/11, Jules) :
+  dans l'appli, la mine démarre zoomée ×3 (`CAMERA.appZoom`, ≈ 17 colonnes sur 50 ; ancien : ×1, toute la largeur,
+  mineur minuscule) ; pincer pour dézoomer jusqu'à ×1, double appui = retour au ×3 ; le site ne change pas. Étape 2 sur maquettes : Accueil (fait) → Perso (sets en menu,
   stuff en mannequin, un seul arbre de skills, fiche de sort en panneau du bas) → Historique compact → Guilde en
   onglets → Classement.
   **Visuels des stores** (01/11, Jules, branche `jules/visuels-stores`) : **icône = lampe de mine** (source unique
@@ -625,8 +687,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   `docs/traduction-anglais.md`. Langue retenue sur le compte, choix « Français / English » dans « Mon compte », **caché aux
   joueurs** (`I18N.open: false`) jusqu'à la fin. Le français reste la langue d'écriture et des identifiants (`t()`, `tn()`,
   `src/i18n/`). Étape 1 (socle) faite ; glossaire des 413 noms en relecture par Geoffrey avant l'étape 2.
-- **Prison et énergie EN LIGNE (30/10/2026, Geoffrey)** : ancien chantier `geoffrey/prison`, fusionné. Énergie : départ **0**
-  pour tous (`ENERGY.start`), mine classique 6 à 12, refus sous 6 ; recharge **seulement en prison, 4 par heure de jeu** (8 par
+- **Prison et énergie EN LIGNE (30/10/2026, Geoffrey)** : ancien chantier `geoffrey/prison`, fusionné. Énergie : départ **100**
+  (`ENERGY.start`, 04/11 ; ancien : 0), mine classique 6 à 12, refus sous 6 ; recharge **seulement en prison, 4 par heure de jeu** (8 par
   heure réelle à ×2 ; ancien 8). Prison : contenu d'après les 10 dernières mines, `oreMul` **0,24** (51 % des minerais de
   canoul, `scripts/simulate-prison-profile.js`), treasures ≈ 28 % (validé par Geoffrey) ; vue zoomée bornée aux colonnes
   entre les barreaux (`camera.setBox`), fond et transitions d'onglet comme la mine, panneau « Butin de la prison (total) ».

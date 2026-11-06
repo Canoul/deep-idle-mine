@@ -504,28 +504,32 @@ test('ouvrir un Treasure T1 avec le vrai hasard du serveur (pas de hasard fourni
 
 test('skills par le serveur : points = niveau, rangs vérifiés, reset refusé en session, skills figés au lancement', async () => {
   const { game, store } = setup();
+  await assert.rejects(game.skills(ME, { action:'learn', node:'damage', opId:'op-skill-00' }), { code:'no_spec' });   // arbres v2 (04/11) : la spé d'abord
+  await game.skills(ME, { action:'spec', tree:'barbare', opId:'op-skill-01' });
   await assert.rejects(game.skills(ME, { action:'learn', node:'damage', opId:'op-skill-0' }), { code:'no_points' });
   await store.putProgress(ME.id, { xp:2600, credited:[] });                 // niveau 3 : 2 points
   let r = await game.skills(ME, { action:'learn', node:'damage', opId:'op-skill-1' });
   r = await game.skills(ME, { action:'learn', node:'damage', opId:'op-skill-1' });       // double clic
   assert.deepEqual([r.skills.ranks.damage, r.skills.spent, r.skills.points], [1, 1, 2]);
-  await assert.rejects(game.skills(ME, { action:'learn', node:'mine_speed', opId:'op-skill-2' }), { code:'other_tree' });
+  await assert.rejects(game.skills(ME, { action:'learn', node:'mine_speed', opId:'op-skill-2' }), { code:'too_deep' });   // hors spé : pas aussi profond que la spé (étage 1)
   r = await game.skills(ME, { action:'learn', node:'damage', opId:'op-skill-3' });
   await assert.rejects(game.skills(ME, { action:'learn', node:'damage', opId:'op-skill-4' }), { code:'no_points' });
-  assert.deepEqual((await game.state(ME)).skills, { tree:'barbare', ranks:{ damage:2 }, points:2, spent:2, glyphs:{} });
+  assert.deepEqual((await game.state(ME)).skills, { v:3, tree:'barbare', ranks:{ damage:2 }, points:2, spent:2, glyphs:{} });
   const { session } = await game.start(ME, {});
-  assert.deepEqual((await store.getGameSession(session.id)).skills[ME.id], { tree:'barbare', ranks:{ damage:2 }, glyphs:{}, owned:[] });
-  await assert.rejects(game.skills(ME, { action:'reset', opId:'op-skill-5' }), { code:'session_running' });
-  await game.leave(ME);
+  assert.deepEqual((await store.getGameSession(session.id)).skills[ME.id], { v:3, tree:'barbare', ranks:{ damage:2 }, glyphs:{}, owned:[] });
+  /* reset et changement de spé permis pendant la session (04/11) : la session en cours garde ses skills figés */
   r = await game.skills(ME, { action:'reset', opId:'op-skill-6' });
-  assert.deepEqual([r.skills.tree, r.skills.spent], [null, 0]);
+  assert.deepEqual([r.skills.tree, r.skills.spent], ['barbare', 0], 'reset : la spé reste');
+  r = await game.skills(ME, { action:'spec', tree:'mineur', opId:'op-skill-7' });
+  assert.equal(r.skills.tree, 'mineur');
+  assert.deepEqual((await store.getGameSession(session.id)).skills[ME.id], { v:3, tree:'barbare', ranks:{ damage:2 }, glyphs:{}, owned:[] }, 'session en cours : inchangée');
 });
 
-test('glyphes par le serveur : pose et retrait (inventaire et skills ensemble), demande rejouée, refusés en session, figés au lancement', async () => {
+test('glyphes par le serveur : pose et retrait (inventaire et skills ensemble), demande rejouée, permis en session, figés au lancement', async () => {
   const { game, store } = setup();
   const G = 'Glyphe Force brute', count = r => r.inventory.slots.find(s => s?.item === G)?.qty ?? 0;
   await store.putProgress(ME.id, { xp:100000, credited:[] });
-  await store.putSkills(ME.id, { tree:'barbare', ranks:{ damage:3 } });
+  await store.putSkills(ME.id, { v:3, tree:'barbare', ranks:{ damage:3 } });
   await store.putInventory(ME.id, { slots:[{ item:G, qty:1 }], nextUid:1, credited:[] });
   const o = { action:'glyph_pose', node:'damage', opId:'op-glyph-srv-1' };
   let r = await game.skills(ME, o);
@@ -535,10 +539,9 @@ test('glyphes par le serveur : pose et retrait (inventaire et skills ensemble), 
   await assert.rejects(game.skills(ME, { action:'glyph_pose', node:'taunt', opId:'op-glyph-srv-2' }), { code:'unknown', status:400 });
   const { session } = await game.start(ME, {});
   assert.deepEqual((await store.getGameSession(session.id)).skills[ME.id].glyphs, { damage:G });
-  await assert.rejects(game.skills(ME, { action:'glyph_remove', node:'damage', opId:'op-glyph-srv-3' }), { code:'session_running' });
-  await game.leave(ME);
-  r = await game.skills(ME, { action:'glyph_remove', node:'damage', opId:'op-glyph-srv-4' });
+  r = await game.skills(ME, { action:'glyph_remove', node:'damage', opId:'op-glyph-srv-4' });   // permis en session (04/11)
   assert.deepEqual(r.skills.glyphs, {}); assert.equal(count(r), 1);
+  assert.deepEqual((await store.getGameSession(session.id)).skills[ME.id].glyphs, { damage:G }, 'session en cours : son glyphe reste figé');
   await assert.rejects(game.skills(ME, { action:'glyph_remove', node:'damage', opId:'op-glyph-srv-5' }), { code:'empty' });
 });
 
@@ -667,6 +670,7 @@ test('XP de spécialisation : 50 % de sa part, à l\'arbre figé au lancement, u
   await game.start(A, {}); now += realDurationMs() + 1000; await game.pump();
   assert.deepEqual((await store.getProgress(A.id)).spec ?? {}, {}, 'sans arbre : pas d\'XP de spé');
   await store.putProgress(A.id, { ...(await store.getProgress(A.id)), xp:2600 });
+  await game.skills(A, { action:'spec', tree:'barbare', opId:'op-spec-xp-1' });
   await game.skills(A, { action:'learn', node:'damage', opId:'op-spec-xp-2' });
   const { session } = await game.start(A, {});
   now += realDurationMs() + 1000; await game.pump(); await game.pump();
@@ -687,7 +691,7 @@ test('sorts par le serveur : parchemin appris (consommé, une fois), équiper v�
   const { createInventory, addItem, serialize } = await import('../src/meta/inventory.js');
   const store = createMemoryGameStore();
   const game = createGameService({ store, liveRunner:fakeLive(rec => ({ id:rec.id, shares:[] })), clock:() => 1_000_000, randomSeed:() => 4242 });
-  const A = { id:'AAAA1111', name:'Zoe' }, SCROLL = 'Parchemin « Ulti shen »';
+  const A = { id:'AAAA1111', name:'Zoe' }, SCROLL = 'Parchemin « Ralliement »';
   await assert.rejects(game.spells(A, { action:'equip', spell:'dash', slot:0, opId:'short' }), { code:'bad_request' });
   await assert.rejects(game.spells(A, { action:'learn', item:SCROLL, opId:'op-spell-01' }), { code:'not_owned' });
   const inv = createInventory(); addItem(inv, SCROLL, 1);
@@ -700,12 +704,13 @@ test('sorts par le serveur : parchemin appris (consommé, une fois), équiper v�
   await assert.rejects(game.spells(A, { action:'equip', spell:'ulti_shen', slot:2, opId:'op-spell-04' }), { code:'slot_locked' });
   /* Dash : barbare niveau de spé 5 (XP de spé 1000+1500+2250+3375 = 8125) */
   await store.putProgress(A.id, { xp:2600, spec:{ barbare:8125 }, credited:[] });
+  await game.skills(A, { action:'spec', tree:'barbare', opId:'op-spell-05b' });
   await game.skills(A, { action:'learn', node:'damage', opId:'op-spell-05' });
   await game.spells(A, { action:'equip', spell:'dash', slot:0, opId:'op-spell-06' });
   r = await game.spells(A, { action:'equip', spell:'ulti_shen', slot:1, opId:'op-spell-07' });
-  assert.deepEqual(r.spells.slots, ['dash', 'ulti_shen']);
-  assert.deepEqual((await game.state(A)).spells.slots, ['dash', 'ulti_shen']);
-  await game.skills(A, { action:'reset', opId:'op-spell-08' });                              // plus barbare : Dash ne part pas
+  assert.deepEqual(r.spells.slots, ['dash', 'ulti_shen', null, null]);
+  assert.deepEqual((await game.state(A)).spells.slots, ['dash', 'ulti_shen', null, null]);
+  await game.skills(A, { action:'spec', tree:'mineur', opId:'op-spell-08' });                 // plus barbare : Dash ne part pas (le reset garde la spé, 04/11)
   const { session } = await game.start(A, {});
   assert.deepEqual((await store.getGameSession(session.id)).spells[A.id], ['ulti_shen']);
 });
@@ -713,7 +718,7 @@ test('sorts par le serveur : parchemin appris (consommé, une fois), équiper v�
 test('drop des glyphes : au lancement, les glyphes possédés (inventaire + posés) sont figés dans l\'enregistrement', async () => {
   const { game, store } = setup();
   await store.putProgress(ME.id, { xp:100000, credited:[] });
-  await store.putSkills(ME.id, { tree:'barbare', ranks:{ damage:3 }, glyphs:{ damage:'Glyphe Force brute' } });
+  await store.putSkills(ME.id, { v:3, tree:'barbare', ranks:{ damage:3 }, glyphs:{ damage:'Glyphe Force brute' } });
   await store.putInventory(ME.id, { slots:[{ item:'Glyphe Pillage', qty:1 }, { item:'Charbon', qty:5 }], nextUid:1, credited:[] });
   const { session } = await game.start(ME, {});
   assert.deepEqual((await store.getGameSession(session.id)).skills[ME.id].owned.sort(), ['Glyphe Force brute', 'Glyphe Pillage']);

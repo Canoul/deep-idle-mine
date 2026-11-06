@@ -1,12 +1,13 @@
 /* États du mineur en haut à droite de la mine (28/10/2026, Geoffrey ; EFFECTS en config, src/sim/effects.js).
    Une rangée d'icônes : contrôles et debuffs (bordure rouge), buffs (verte), puis UNE icône « Bonus de session »
-   (dorée) dont la bulle liste anneaux, shrines, Escalateur et couronne. Sous chaque icône : secondes restantes ou
+   (dorée) dont la bulle liste anneaux, shrines, Escalateur et auras des skills. Sous chaque icône : secondes restantes ou
    nombre de stacks. Bulle au survol / toucher (data-tip, src/ui/tooltip.js).
    Les icônes sont des nœuds gardés d'une image à l'autre (une par état) : la bulle ouverte ne saute pas quand le
    temps restant change. effectTip / bonusTip sont purs (testés). */
-import { EFFECTS, SHRINES, CFG, MOBS, COMBAT, INSTANCE, GLYPHS, GOBLIN_KING, HES_COMING } from '../config.js';
+import { EFFECTS, SHRINES, CFG, MOBS, COMBAT, INSTANCE, GLYPHS, GOBLIN_KING, HES_COMING, RAID } from '../config.js';
 import { SPELL } from '../meta/spells.js';
 import { ringLines } from '../meta/stuff.js';
+import { NODES, nodeText } from '../meta/skills.js';   // auras des skills (05/11)
 import { pxi } from './pxicons.js';
 
 const pct = v => `${Math.round(v * 1000) / 10} %`.replace('.', ',');
@@ -47,7 +48,8 @@ export function effectTip(e){
     case 'inspiration': L.push(`Vitesse de minage +${pct(SPELL.inspiration.mineSpeed)} pour tout le groupe`, 'Sort du logisticien'); break;
     case 'ore_rush': L.push(`Vitesse de marche +${pct(e.value || 0)} après un minerai`, 'Skill Ruée'); break;
     case 'travel_rush': L.push(`Vitesse de marche +${pct(e.value || 0)} quand il remonte ou redescend au front`, 'Skill Navette'); break;
-    case 'braum': L.push(`Marche et montée +${pct(e.value || 0)} quand il va aider un allié`, 'Skill Braum'); break;
+    case 'braum': L.push(`Marche et montée +${pct(e.value || 0)} quand il va aider un allié`, 'Skill Garde du corps'); break;
+    case 'rested': L.push(`Minage, marche, montée et dégâts +${pct(e.value || 0)}, ténacité +${Math.round((e.value || 0) * 100)} %`, 'Skill Reposé'); break;
     case 'pillage': L.push(`Dégâts +${num(e.value || 0)} % (${GLYPHS.killDamagePct} % par mob tué, ${GLYPHS.killDamageMax} % au plus)`, 'Glyphe Pillage, jusqu\'à la fin de la session'); break;
     case 'fast_learner': L.push(`${e.stacks} type${e.stacks > 1 ? 's' : ''} de bloc appris : +${pct(SPELL.fast_learner.bonus)} de minage chacun`, 'Jusqu\'à la fin de la session'); break;
     case 'crown': L.push(`Un gobelin qui naît à ${e.value} cases ou moins de lui devient asservi : il mine ${GOBLIN_KING.thrall.life} s pour le coffre au lieu d'attaquer`,
@@ -56,7 +58,13 @@ export function effectTip(e){
     /* Instance II, le Golbute (30/10/2026) */
     case 'dazed': L.push(`${e.stacks || 1} stack${(e.stacks || 1) > 1 ? 's' : ''} sur ${INSTANCE.golbute.avalanche.deathStacks} : à ${INSTANCE.golbute.avalanche.deathStacks}, il meurt`,
                          `Chaque avalanche touchée en ajoute un et relance ${INSTANCE.golbute.avalanche.dazed} s ; la ténacité l'esquive`); break;
-    case 'dead': L.push(`Sonné ${INSTANCE.golbute.avalanche.deathStacks} fois : il reste au sol jusqu'à la fin`, 'Pas de réanimation ; il reçoit quand même le coffre si le groupe gagne'); break;
+    case 'dead': if(e.src === 'raid'){ L.push('Tué par Cerbère : il reste au sol jusqu\'à la fin du raid', 'Pas de réanimation'); break; }
+                 L.push(`Sonné ${INSTANCE.golbute.avalanche.deathStacks} fois : il reste au sol jusqu'à la fin`, 'Pas de réanimation ; il reçoit quand même le coffre si le groupe gagne'); break;
+    /* Raid 1, Cerbère (04/11/2026) */
+    case 'bitten': L.push(`Cerbère mord ${RAID.cerbere.bite.targets} mineurs à la fois : si aucun ne résiste (ténacité), les ${RAID.cerbere.bite.targets} meurent`,
+                          'Si un seul résiste, la Morsure se dissipe pour tous ; rien ne reste pour la suivante'); break;
+    case 'stone': L.push(`Changé en pierre par le Magma gazeux (dureté ${RAID.cerbere.stone.hard}) : intouchable, il ne fait plus rien`,
+                         `Les autres le libèrent en le minant${e.value ? ` (encore ${e.value})` : ''} ; la ténacité ne l'évite que pour la spé Mineur`); break;
   }
   if(e.left != null) L.push(`Encore ${Math.ceil(e.left)} s`);
   return [d.name, ...L].join('\n');
@@ -68,6 +76,7 @@ export function bonusLine(b){
     case 'ring': return `${b.src}${b.value ? ` +${b.value}` : ''} : ${ringLines(b.src, b.value).map(l => l.replace(/^Groupe · /, '')).join(', ')}`;
     case 'shrine': { const s = SHRINES.list[b.src]; return s ? `${s.name} : ${s.desc}` : ''; }
     case 'escalator': return `Escalateur : seau du treuil +${pct(b.value)}`;
+    case 'aura': { const n = NODES[b.src]; return n ? `${n.name} : ${nodeText(b.src, 1)}` : ''; }   // auras des skills (05/11)
   }
   return '';
 }

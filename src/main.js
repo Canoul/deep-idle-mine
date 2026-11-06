@@ -13,8 +13,9 @@
      (src/ui/instant-lobby.js) ; à l'heure, le serveur l'ouvre et le navigateur bascule sur Session, où elle a son
      propre affichage (src/render/instant.js, src/ui/instant-hud.js). */
 import { storedLang, storeLang } from './i18n/boot.js';   // EN PREMIER : la langue avant les écrans (03/11)
+import { parseReferralCode } from './shared/referral.js';
 import { applyRarityColors } from './ui/rarity.js';
-import { I18N, GAME, HES_COMING, PARTY, SESSION_LEN, INSTANT_MINE, STATS, SOCIAL, CAMERA, JUDGMENT, TOWER, MINE_MODES, INSTANCE, GUIDE, PRISON, ENERGY, DT } from './config.js';
+import { I18N, GAME, HES_COMING, PARTY, SESSION_LEN, INSTANT_MINE, STATS, SOCIAL, CAMERA, JUDGMENT, TOWER, MINE_MODES, INSTANCE, GUIDE, PRISON, ENERGY, DT, RAID, RAFFLE, SHOP } from './config.js';
 import { emptyView, applyView, shownPos } from './shared/view.js';
 import { applyInstantView } from './shared/instant-view.js';
 import { createInstantRenderer, MI_TILE } from './render/instant.js';
@@ -26,6 +27,9 @@ import { updateTowerHUD, showTowerEnd } from './ui/tower-hud.js';
 import { setTeamEnergies } from './ui/energy-tag.js';
 import { updateInstanceHUD, showInstanceEnd } from './ui/instance-hud.js';
 import { createInstanceRenderer } from './render/instance.js';
+import { createRaidRenderer } from './render/raid.js';
+import { applyRaidView } from './shared/raid-view.js';
+import { updateRaidHUD, showRaidEnd, raidBannerText, raidMinedPct } from './ui/raid-hud.js';
 import { applyInstanceView } from './shared/instances-view.js';
 import { isInstanceMode } from './shared/instances.js';
 import { createTowerRenderer } from './render/tower.js';
@@ -60,6 +64,7 @@ import { setupFurnace } from './ui/furnace.js';
 import { setupCrusher } from './ui/crusher.js';
 import { setupResearch } from './ui/research.js';
 import { setupSkills } from './ui/skills.js';
+import { pointsByTree } from './meta/skills.js';
 import { setupSpells } from './ui/spells.js';
 import { setupSets } from './ui/sets.js';
 import { setupHistory } from './ui/history.js';
@@ -76,8 +81,10 @@ import { setupGuide } from './ui/guide.js';
 import { setupSocial } from './ui/social.js';
 import { setupGuild } from './ui/guild.js';
 import { setupLeaderboard } from './ui/leaderboard.js';
+import { setupShop } from './ui/shop.js';
 import { setupJudgment } from './ui/judgment.js';
 import { setupNotify } from './ui/notify.js';
+import { renderDaily } from './ui/daily.js';   // bandeau « Événement du jour » du Lobby (05/11)
 import { setupObtained } from './ui/obtained.js';
 import { recipeOf } from './meta/craft.js';
 import { createAccountUI, bootAccount, renderNavAccount } from './ui/account.js';
@@ -112,12 +119,16 @@ const serverNow = () => Date.now() + clockOffset;
    Pas « setClock » : c'est déjà la vitesse / pause du mode dev (plus bas). */
 const syncClock = t => { if(!rec && Number.isFinite(t)) clockOffset = t - Date.now(); };
 const renderer = createRenderer($('cv'));
+const mineZoom = appBoot.app ? CAMERA.appZoom : 1;   // appli (04/11/2026) : la mine démarre zoomée sur le mineur
+renderer.setBaseZoom(mineZoom);
 const miRenderer = createInstantRenderer($('cvMi'));
 const isMi = () => rec?.mode === 'mi';
 const twRenderer = createTowerRenderer($('cvTw'));
 const inRenderer = createInstanceRenderer($('cvIn'));
-const SESSION_CV = { mine:'cv', mi:'cvMi', tower:'cvTw', instance:'cvIn' };
-const backdrop = createBackdrop($('bgSession'), { sessionCanvas: mode => $(SESSION_CV[mode]) });   // fond : la session en cours, hors onglet Session
+/* Raid Cerbère (04/11/2026) : minage et porte = la mine (cv) ; l'arène = les panneaux et le canvas de l'instance (cvIn) */
+const rdRenderer = createRaidRenderer($('cvIn'));
+const SESSION_CV = { mine:'cv', mi:'cvMi', tower:'cvTw', instance:'cvIn', raid:'cvIn' };
+const backdrop = createBackdrop($('bgSession'), { sessionCanvas: mode => $(SESSION_CV[mode]), mineZoom });   // fond : la session en cours, hors onglet Session
 /* fond hors session : le Carreau, la ville du spawn (29/10) ; onglet Session sans session : on s'y promène */
 const town = setupTown($('bgTown'), {
   ping: body => townApi.ping(body),
@@ -136,13 +147,21 @@ const town = setupTown($('bgTown'), {
 });
 window.TOWN_UI = town;                               // débogage depuis la console (F12) : TOWN_UI.state()
 const isIn = () => isInstanceMode(rec?.mode);   // instance (27/10) : même principe d'affichage que les tours
-const isTw = () => isTowerMode(rec?.mode);   // tour de l'Ange ou du Démon : même principe d'affichage que la MI
+const isTw = () => isTowerMode(rec?.mode);
+const isRd = () => rec?.mode === 'raid';                          // raid Cerbère (04/11)
+const raidBoss = G => G?.mode === 'raid' && G.phase === 'boss';    // … dans l'arène (sinon : la mine)
+/* raid : la mine (#run) pendant le minage et la porte, les panneaux de l'instance (#inRun) dans l'arène */
+function raidPanes(){
+  if(!isRd() || !$('end').hidden) return;
+  const boss = raidBoss(G);
+  $('run').hidden = boss; $('inRun').hidden = !boss;
+}   // tour de l'Ange ou du Démon : même principe d'affichage que la MI
 
 /* ancienne sauvegarde d'inventaire dans le navigateur : l'inventaire est maintenant sur le serveur */
 try { for(const k of Object.keys(localStorage)) if(k.startsWith('deepIdleMine.inventory') || k === 'deepIdleMine.global') localStorage.removeItem(k); } catch {}
 
 /* ---------- inventaire ---------- */
-const renderInventory = (inv, fresh) => drawInventory(inv, fresh, { onOpen:openTreasure, onLearn:useBlueprint, onEquip:equipFromInventory, onUnlock:unlockFurnace, onSort:() => arrangeInventory({ action:'sort' }), onMove:op => arrangeInventory({ action:'move', ...op }), onRecycle:recyclePiece, setsOf:uid => setsUI.setsOf(uid), worn:() => stuff.worn(), furnaces:() => furnace.state() });
+const renderInventory = (inv, fresh) => drawInventory(inv, fresh, { onOpen:openTreasure, onLearn:useBlueprint, onEquip:equipFromInventory, onUnlock:unlockFurnace, onSort:() => arrangeInventory({ action:'sort' }), onMove:op => arrangeInventory({ action:'move', ...op }), onRecycle:recyclePiece, onRecycleAll:recyclePieces, setsOf:uid => setsUI.setsOf(uid), worn:() => stuff.worn(), furnaces:() => furnace.state() });
 
 /* identifiant de demande (getRandomValues : randomUUID n'existe pas hors HTTPS / localhost) */
 const newOpId = () => Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, '0')).join('');
@@ -174,6 +193,20 @@ async function recyclePiece(uid){
     const got = Object.entries(r.refund).map(([k, n]) => `${n} ${k}`).join(', ').replace(/[&<>]/g, '');
     $('invInfo').innerHTML = `<span class="okmsg">♻ ${r.item.replace(/[&<>]/g, '')} recyclé${got ? ` : ${got}` : ' (rien à récupérer)'}.</span>`;
   } catch(e){ lootError(e.message); }
+}
+
+/* « Recycler tout » (04/11/2026) : les pièces simples empilées, une demande par pièce (le serveur vérifie chacune) */
+async function recyclePieces(uids){
+  const got = {}; let n = 0, last = null;
+  for(const uid of uids){
+    try { const r = await gameApi.recycle(uid); last = r; n++; for(const [k, v] of Object.entries(r.refund)) got[k] = (got[k] || 0) + v; }
+    catch(e){ lootError(e.message); break; }
+  }
+  if(!last) return;
+  ui.fresh.clear();
+  setInventory(last.inventory, got);
+  const txt = Object.entries(got).map(([k, v]) => `${v} ${k}`).join(', ').replace(/[&<>]/g, '');
+  $('invInfo').innerHTML = `<span class="okmsg">♻ ${n} × ${last.item.replace(/[&<>]/g, '')} recyclé${n > 1 ? 's' : ''}${txt ? ` : ${txt}` : ' (rien à récupérer)'}.</span>`;
 }
 
 /* utiliser un blueprint : le serveur le consomme et débloque sa recette (onglet Craft) */
@@ -222,11 +255,19 @@ const upgradeUI = setupUpgrade({
 });
 
 /* craft et stuff : même principe, le serveur fait l'action et renvoie l'inventaire (et le stuff) à jour */
+/* Boutique (05/11) : le serveur retire les émeraudes et donne l'objet */
+const shop = setupShop({
+  onBuy: async id => {
+    const r = await gameApi.shop(id, newOpId());
+    setInventory(r.inventory, { [SHOP.items.find(o => o.id === id)?.item]: 1 });
+    obtained.show({ title:'Tu as obtenu', entry: SHOP.items.find(o => o.id === id)?.item, qty: r.count ?? 1 });
+  },
+});
 const craft = setupCraft({
-  onCraft: async item => {
-    const r = await gameApi.craft(item, newOpId());
+  onCraft: async (item, count = 1) => {
+    const r = await gameApi.craft(item, newOpId(), count);
     setInventory(r.inventory);
-    obtained.show({ title:'Tu as obtenu', entry: r.piece ?? item, qty: recipeOf(item)?.qty ?? 1 });   // Rune : sa qualité
+    obtained.show({ title:'Tu as obtenu', entry: r.piece ?? item, qty: (recipeOf(item)?.qty ?? 1) * count });   // Rune : sa qualité
   },
 });
 let setsUI = null;   // sets (créés plus bas) : les onglets Stuff, Skills et Sorts rafraîchissent la ligne « Set équipé »
@@ -265,7 +306,7 @@ const skills = setupSkills({
   onOp: op => gameApi.skills({ ...op, opId: newOpId() }),
   inSession: () => !!G && !G.over,
   inventory: () => ui.inv,                                   // glyphes possédés (case de glyphe)
-  onChange: (s, r) => { ui.skills = s; if(r?.inventory) setInventory(r.inventory); stuff.setSkills(s); lobby.update({ myTree: s?.tree ?? null }); spells.setContext({ tree: s?.tree ?? null }); setsUI?.refresh(); },   // Stuff : bonus des skills ; lobby et Sorts : sa spécialisation
+  onChange: (s, r) => { ui.skills = s; if(r?.inventory) setInventory(r.inventory); stuff.setSkills(s); lobby.update({ myTree: s?.tree ?? null, myPts: s?.ranks ? pointsByTree(s) : null }); spells.setContext({ tree: s?.tree ?? null }); setsUI?.refresh(); },   // Stuff : bonus des skills ; lobby et Sorts : sa spécialisation
 });
 
 /* sorts : le serveur vérifie et enregistre ; un parchemin appris quitte l'inventaire */
@@ -276,12 +317,14 @@ const spells = setupSpells({
 });
 
 /* sets (Stuff, Skills, Sorts) : équiper change l'inventaire, le stuff, les skills et les sorts d'un coup */
+let lobbyActivity = () => null;   // remplacé quand le lobby existe (plus bas)
 setsUI = setupSets({
   onOp: op => gameApi.sets({ ...op, opId: newOpId() }),
   onLoadout: r => { setInventory(r.inventory); stuff.set(r.stuff); skills.set(r.skills); spells.set(r.spells); },
   inSession: () => !!rec,
   current: () => ui.skills ? { worn: stuff.worn(), skills: ui.skills, spells: spells.slots() } : null,
   onDone: text => notify.flash(text),
+  activity: () => lobbyActivity(),   // set par activité (03/11) : l'activité ouverte dans le Lobby
 });
 
 applyRarityColors();   // couleurs des raretés (config)
@@ -289,7 +332,7 @@ setupTooltips();   // bulles d'info (effets du stuff) : survol, ou toucher sur m
 fillHelp();        // « ? » d'aide des pages (src/ui/help.js)
 
 /* ---------- navigation ---------- */
-const historyTab = setupHistory({ load: () => gameApi.history() });
+const historyTab = setupHistory({ load: () => gameApi.history(), me: () => acct.account?.displayName ?? null });
 let guildTab = null, boardTab = null;   // créés plus bas ; un onglet peut s'ouvrir dès setupNav
 let nav;   // l'onglet de départ est ouvert pendant setupNav, avant que nav soit assigné
 let giantUI = null, hcUI = null;   // Bloc géant, He's coming (créés plus bas) : leur visite occupe l'onglet Session
@@ -319,13 +362,13 @@ nav = setupNav($('nav'), $('views'), id => {
 /* appli mobile : barre des familles ; shown : l'onglet Session a-t-il quelque chose à montrer (partie, prison, bilan) ? */
 if(appBoot.app) import('./app/main.js').then(async m => { appLayer = m.startApp({ doc:document, win:window, nav,
   shown: () => !!rec || inRoom() || prisonShown() || !$('end').hidden,
-  notifData: () => ({ now:serverNow(), offset:clockOffset, sessionEnd:rec?.finishAt ?? null, furnaces:furnace.state().list, giantNext:giantUI?.nextEntry() ?? null, account:acct.account?.id ?? null }),
+  notifData: () => ({ now:serverNow(), offset:clockOffset, sessionEnd:rec?.finishAt ?? null, furnaces:furnace.state().list, giantNext:giantUI?.nextEntry() ?? null, hcNext:hcUI?.nextEntry() ?? null, account:acct.account?.id ?? null }),
   /* Accueil de l'appli (src/app/home-ui.js, 03/11/2026) : le Lobby (lu à chaque fois : il est créé plus bas) et l'heure du serveur */
   home: { lobby: () => lobby, data: () => ({ now:serverNow(), sessionTimes: rec?.finishAt ? { startedAt:rec.startedAt, finishAt:rec.finishAt } : null, furnaces:furnace.state().list }) } });  (await appBoot.native)?.attach(appLayer); }).catch(e => { console.warn(e); dropApp(document); });
 
 /* orbes de la barre d'action : temps de session et XP ; pendant une session, oxygène et pods du mineur suivi */
 const orbs = setupOrbs($('orbL'), $('orbR'));
-function updateOrbs(shown, mi, len = mi ? INSTANT_MINE.duration : SESSION_LEN){
+function updateOrbs(shown, mi, len = mi ? INSTANT_MINE.duration : (shown?.len || SESSION_LEN)){   // Mine géante : shown.len (06/11)
   const m = shown && !mi && !shown.over ? followedMiner(shown.miners, ui.follow) : null;
   if(m){
     const oxMax = m.carac?.oxygenMax ?? STATS.oxygenMax, pods = m.carac?.pods ?? STATS.pods;
@@ -367,6 +410,7 @@ const accountUI = createAccountUI($('account'), acct, {
 
 /* ---------- lobby ---------- */
 const lobby = setupLobby({
+  onActivity: () => setsUI?.refresh(),   // set par activité : la ligne du Lobby suit l'activité ouverte (03/11)
   party: partyApi,
   /* don à un shrine (28/10) : l'inventaire revient du serveur */
   shrineGive: async (shrine, item, qty) => { const r = await partyApi.shrine({ shrine, item, qty, opId: newOpId() }); if(r.inventory) setInventory(r.inventory); return r; },
@@ -397,7 +441,7 @@ const lobby = setupLobby({
     try {
       enterSession((await gameApi.start(opts)).session); nav.show('session'); instantLobby.refresh();
       /* clé d'instance consommée, énergie débitée, prison terminée : relus au serveur */
-      gameApi.state().then(st => { setInventory(st.inventory); setEnergy(st.energy); setPrison(st.prison, { sync:false }); }).catch(() => {});
+      gameApi.state().then(st => { setInventory(st.inventory); setEnergy(st.energy); setGeante(st); setPrison(st.prison, { sync:false }); }).catch(() => {});
     }   // lancer désinscrit du MI
     catch(e){
       if(e instanceof ApiError && e.code === 'session_running') return refresh();
@@ -457,7 +501,7 @@ window.MI = instantLobby;                            // pour le débogage depuis
 function showNoSession(){
   rec = null; G = null; waiting = false; clearTimeout(viewTimer);
   setsUI.refresh(); sessionFlag();   // sets de nouveau disponibles
-  $('run').hidden = true; $('miRun').hidden = true; $('twRun').hidden = true; $('inRun').hidden = true; $('noSession').hidden = inRoom();   // une visite au Bloc géant garde l'onglet
+  $('run').hidden = true; $('miRun').hidden = true; $('twRun').hidden = true; $('inRun').hidden = true; $('raidBanner').hidden = true; $('noSession').hidden = inRoom();   // une visite au Bloc géant garde l'onglet
   lobby.update({ account:acct.account, offline:acct.offline, info, session:null });
   updatePrisonUI();   // la prison reprend l'onglet Session
   pollLobby();
@@ -510,7 +554,20 @@ function setSocial(st){
   nav.badge('guilde', st.guildInvites?.length > 0);
   lastSocial = st;
   syncNotifs();
+  showNotices(st.notices);
   return st;
+}
+/* messages de l'équipe (04/11/2026, scripts/warn.js) : une pop-up chacun ; fermé = lu sur le serveur. shown : pas deux fois
+   pendant que la fenêtre est ouverte (l'état social est relu toutes les quelques secondes) ; sur la fonction, pas dans un const :
+   l'état social peut arriver avant la fin du chargement du module */
+function showNotices(list = []){
+  const shown = showNotices.shown ??= new Set();
+  for(const n of list){
+    const key = `${acct.account?.id}:${n.id}`;
+    if(shown.has(key)) continue;
+    shown.add(key);
+    tell(n.text, { title: n.title }).then(() => moderationApi.noticeSeen(n.id)).catch(console.warn);
+  }
 }
 function syncNotifs(){
   const st = lastSocial ?? { partyInvites: [], incoming: [], guildInvites: [] };
@@ -518,6 +575,15 @@ function syncNotifs(){
     ...(lfgFound && !lfgFound.error && !G ? [{ key: 'lfg:' + lfgFound.at, icon: pxi('group'),
       text: `Groupe trouvé : <b>${esc(lfgFound.names.join(', '))}</b>`,
       actions: [{ label: 'Voir le lobby', primary: true, run: async () => nav.show('lobby') }] }] : []),
+    /* raffle en cours (05/11, Geoffrey) : bulle de RAFFLE.popupMs, seulement pour qui a le jeu ouvert ; jamais de
+       notification du téléphone. Participer = !join, la réponse arrive dans le chat et en petite confirmation */
+    ...(st.raffle && !st.raffle.joined ? [{ key: 'r:' + st.raffle.id, icon: '🎟', ttl: RAFFLE.popupMs,
+      text: `<b>${esc(RAFFLE.name)}</b> : ${esc(st.raffle.lot)} à gagner ! Tirage dans ${Math.max(1, Math.ceil((st.raffle.endsAt - serverNow()) / 60e3))} min`,
+      actions: [{ label: 'Participer', primary: true, run: async () => {
+        const r = await socialApi.say({ text: RAFFLE.command });
+        if(r?.message?.text) notify.flash(r.message.text);
+        pollSocial();
+      } }] }] : []),
     ...st.partyInvites.map(i => ({ key: 'p:' + i.code + ':' + i.at, icon: pxi('group'), text: `<b>${esc(i.from)}</b> vous a invité dans son lobby${i.full ? ' <span class="mut">(complet)</span>' : ''}`,
       actions: [{ label: 'Rejoindre', primary: true, run: () => joinParty(() => partyApi.join(i.code)) },
                 { label: 'Décliner', run: async () => { await partyApi.decline(i.code); pollSocial(); } }] })),
@@ -546,7 +612,15 @@ async function joinParty(fn){
   return r;
 }
 boardTab = setupLeaderboard({ root: document.querySelector('.view[data-view="classement"]'), load: board => socialApi.leaderboard(board), moderate: p => moderate.playerMenu(p) });
-guildTab = setupGuild({ root: document.querySelector('.view[data-view="guilde"]'), onChange: () => { pollSocial(); pollLobby(); } });
+guildTab = setupGuild({ root: document.querySelector('.view[data-view="guilde"]'), onChange: () => { pollSocial(); pollLobby(); },
+  /* lobby de raid (04/11/2026) : le chef lance → la session ; un membre voit le raid lancé → la session est relue */
+  onRaid: async session => {
+    enterSession(session); nav.show('session');
+    gameApi.state().then(st => { setInventory(st.inventory); setEnergy(st.energy); setGeante(st); setPrison(st.prison, { sync:false }); }).catch(() => {});
+  },
+  onRaidWatch: async () => { if(!rec) await refresh().catch(console.warn); nav.show('session'); },
+  onState: st => { const run = st.mine?.raid?.running; if(run?.mine && !rec && !waiting) refresh().then(() => nav.show('session')).catch(console.warn); },
+  now: () => serverNow() });
 const social = setupSocial({
   request: async name => setSocial(await socialApi.request(name)),
   accept:  async id => setSocial(await socialApi.accept(id)),
@@ -567,7 +641,7 @@ let judgmentTimer = null;
 async function pollJudgment(){
   clearTimeout(judgmentTimer);
   if(acct.offline || !acct.account) return;
-  try { const j = await gameApi.judgment(); judgment.set(j); town.setJudgment(j?.value?.sides ?? j?.sides); nav.badge('lobby', judgment.pending()); lobby.update({ judgment: judgment.view(), judgmentPending: judgment.pending() }); }
+  try { const j = await gameApi.judgment(); renderDaily($('dailyBanner'), (j?.value ?? j)?.daily, serverNow()); judgment.set(j); town.setJudgment(j?.value?.sides ?? j?.sides); nav.badge('lobby', judgment.pending()); lobby.update({ judgment: judgment.view(), judgmentPending: judgment.pending() }); }
   catch(e){ console.warn(e); }
   judgmentTimer = setTimeout(pollJudgment, document.hidden ? JUDGMENT.poll * 4 : JUDGMENT.poll);
 }
@@ -609,7 +683,7 @@ const gchat = setupChat({ prefix:'gchat', get: after => socialApi.chat(after), p
                           paused: () => document.hidden || gchatDock.folded, time: true,
                           show: gchatTabs.show, line: chatLine, sent: gchatTabs.sent,
                           /* gagnant d'un raffle : son lot est sur le serveur, à relire tout de suite */
-                          fresh: list => { if(list.some(m => m.winner && m.winner === acct.account?.id)) gameApi.state().then(st => { setInventory(st.inventory); setEnergy(st.energy); }).catch(() => {}); },
+                          fresh: list => { if(list.some(m => m.winner && (m.winner === acct.account?.id || m.winners?.includes(acct.account?.id)))) gameApi.state().then(st => { setInventory(st.inventory); setEnergy(st.energy); setGeante(st); }).catch(() => {}); },
                           parse: text => { const msg = parseChatInput(text, gchatTabs.channel(), gchatTabs.target()); return msg.lobby ? { ...msg, lobby: lobby.pubContext() } : msg; } });
 /* signaler, bloquer (01/11/2026) : fiche d'un joueur, menu d'un message */
 const moderate = setupModeration({ report: body => moderationApi.report(body),
@@ -646,8 +720,9 @@ function enterSession(session){
   setsUI.refresh(); sessionFlag();   // sets indisponibles pendant la session
   clockOffset = session.now - Date.now();
   appLayer?.refreshNotifs();
-  const mi = session.mode === 'mi', tw = isTowerMode(session.mode), ins = isInstanceMode(session.mode);
-  G = mi ? { mode:'mi', ready:false, miners:[] } : tw ? { mode:'tower', ready:false, miners:[] } : ins ? { mode:'instance', ready:false, miners:[] } : emptyView();   // MI et tour : remplacées en entier à chaque envoi
+  const mi = session.mode === 'mi', tw = isTowerMode(session.mode), ins = isInstanceMode(session.mode), rd = session.mode === 'raid';
+  G = mi ? { mode:'mi', ready:false, miners:[] } : tw ? { mode:'tower', ready:false, miners:[] } : ins ? { mode:'instance', ready:false, miners:[] }
+    : rd ? Object.assign(emptyView(), { mode:'raid', phase:'mine' }) : emptyView();   // MI et tour : remplacées en entier à chaque envoi ; raid : la mine, puis l'arène
   window.G = G;                             // pour le débogage depuis la console (F12)
   /* la caméra suit son propre mineur ; les mineurs portent le nom de leur joueur */
   ui.names = Object.fromEntries(session.players.map(p => [p.account, p.name]));
@@ -656,6 +731,9 @@ function enterSession(session){
   renderSpeeds(ui, info, s => setClock({ speed:s }));
   $('seedLbl').textContent = info.dev ? `seed ${session.seed}` : '';
   $('end').hidden = true; $('noSession').hidden = true; $('run').hidden = mi || tw || ins; $('miRun').hidden = !mi; $('twRun').hidden = !tw; $('inRun').hidden = !ins;
+  $('inLeaveBtn').innerHTML = pxi('door') + (rd ? 'Quitter le raid' : 'Quitter l\'instance');
+  $('inLeaveBtn').title = rd ? 'Tu ne pourras pas revenir dans ce raid' : 'La clé est perdue';
+  $('raidBanner').hidden = !rd;
   lobby.update({ session:{ id:session.id } });   // lobby en lecture seule
   updatePrisonUI();                              // la session passe devant la prison (mine instantanée)
   pollView();
@@ -685,6 +763,11 @@ async function pollView(){
     Object.assign(rec, { speed:r.speed, startedAt:r.startedAt, finishAt:r.finishAt });   // l'administration peut changer la vitesse en cours de session
     if(r.view?.mode === 'mi'){ G = applyInstantView(r.view, G?.mode === 'mi' ? G : null, performance.now(), viewRate()); G.ready = true; window.G = G; lastView = performance.now(); }
     else if(r.view?.mode === 'instance'){ G = applyInstanceView(r.view, G?.mode === 'instance' ? G : null, performance.now(), viewRate()); G.ready = true; window.G = G; lastView = performance.now(); }
+    else if(r.view?.mode === 'raid'){
+      G = applyRaidView(r.view, G?.mode === 'raid' ? G : null, performance.now(), viewRate()); G.ready = true; G._rate = viewRate(); window.G = G; lastView = performance.now();
+      if(!raidBoss(G) && !ui.followSet && G.miners.length){ ui.follow = (G.miners.find(m => m.account === acct.account?.id) ?? G.miners[0]).id; ui.followSet = true; }
+      raidPanes();
+    }
     else if(r.view?.mode === 'tower'){ G = applyTowerView(r.view, G?.mode === 'tower' ? G : null, performance.now(), viewRate()); G.ready = true; window.G = G; lastView = performance.now(); }
     else if(r.view){
       applyView(G, r.view, performance.now(), viewRate()); lastView = performance.now();
@@ -721,7 +804,7 @@ function smooth(dtr){
 async function leave(){
   if(prisonShown()) return stopPrison();   // même bouton, pendant qu'on regarde la prison (29/10)
   if(!G || G.over) return;
-  if(!await ask(isIn() ? 'Quitter l\'instance ?\nTu ne recevras pas de coffre. Si le groupe gagne sans toi, ta clé est perdue (elle est rendue si le groupe perd).' : isTw() ? 'Quitter la tour ?\nTu ne recevras pas de trésor.' : isMi() ? 'Quitter la mine instantanée ?\nTu ne recevras rien de ce que tu as miné.'
+  if(!await ask(isRd() ? 'Quitter le raid ?\nTu ne pourras pas y revenir : ton mineur quitte le raid pour de bon.' : isIn() ? 'Quitter l\'instance ?\nTu ne recevras pas de coffre. Si le groupe gagne sans toi, ta clé est perdue (elle est rendue si le groupe perd).' : isTw() ? 'Quitter la tour ?\nTu ne recevras pas de trésor.' : isMi() ? 'Quitter la mine instantanée ?\nTu ne recevras rien de ce que tu as miné.'
                      : 'Quitter la session ?\nTu ne recevras rien de cette session : le coffre ira aux joueurs restants.', { ok:'Quitter', danger:true })) return;
   try { await gameApi.leave(); }
   catch(e){ if(!(e instanceof ApiError) || e.code !== 'no_session'){ tell(e.message); return; } }
@@ -737,6 +820,8 @@ const prisonShown = () => !rec && prisonActive(prison);
 /* la prison affichée en fond (et pour les transitions d'onglet), comme une session : sa copie d'affichage si elle est prête.
    Fonction déclarée (pas une const) : l'onglet affiché au chargement l'appelle avant cette ligne */
 function prisonBackdrop(){ return !rec && prisonActive(prison) && PG?.ready ? PG : null; }
+/* Mines géantes restantes aujourd'hui (06/11) : carte du Lobby */
+const setGeante = st => { if(Number.isInteger(st?.geanteLeft)) lobby.update({ geanteLeft: st.geanteLeft }); };
 function setEnergy(e){
   if(!e) return;
   $('navEnergy').hidden = false;
@@ -769,7 +854,7 @@ function setPrison(p, { sync = true } = {}){
 async function syncAccount(){
   try {
     const st = await gameApi.state();
-    setInventory(st.inventory); setEnergy(st.energy);
+    setInventory(st.inventory); setEnergy(st.energy); setGeante(st);
     if(!st.ended || st.session) setProgress(st.progress);   // un bilan à montrer : showResult annonce la montée de niveau
     skills.set(st.skills);
     setPrison(st.prison, { sync:false });
@@ -837,8 +922,8 @@ function updatePrisonUI(){
     if($('prisonLootBody').innerHTML !== html) $('prisonLootBody').innerHTML = html;
   }
   $('prisonBanner').hidden = !on;
-  $('leaveBtn').innerHTML = pxi('door') + (on ? 'Sortir de prison' : 'Quitter la session');
-  $('leaveBtn').title = on ? 'Le coffre du run en cours est versé, pas ce que le mineur porte' : 'Tu ne recevras rien de cette session';
+  $('leaveBtn').innerHTML = pxi('door') + (on ? 'Sortir de prison' : isRd() ? 'Quitter le raid' : 'Quitter la session');
+  $('leaveBtn').title = on ? 'Le coffre du run en cours est versé, pas ce que le mineur porte' : isRd() ? 'Tu ne pourras pas revenir dans ce raid' : 'Tu ne recevras rien de cette session';
   if(rec) return;                               // une session est affichée : on n'y touche pas
   if(on){ $('run').hidden = !$('end').hidden; $('noSession').hidden = true; }   // un bilan affiché reste devant
   /* mode dev (29/10) : les boutons de vitesse de la barre de la mine pilotent la prison (pas de pause en prison) */
@@ -877,7 +962,7 @@ function showResult(st){
   rec = null; G = null; waiting = false;
   setsUI.refresh(); sessionFlag();
   lobby.update({ session:null });            // on peut relancer depuis le lobby pendant qu'on lit le bilan
-  setEnergy(st.energy); setPrison(st.prison, { sync:false });
+  setEnergy(st.energy); setGeante(st); setPrison(st.prison, { sync:false });
   const up = setProgress(st.progress);       // XP versée par le serveur : nouveau niveau ?
   skills.set(st.skills);                     // … et donc peut-être de nouveaux points de skill
   /* bilan vu dès qu'il s'affiche (30/10, Geoffrey) : avant, seuls ses boutons le marquaient « vu » ; le quitter autrement
@@ -889,6 +974,7 @@ function showResult(st){
   if(ended.mode === 'mi') showInstantEnd(ended, acct.account?.id, back, toInv);
   else if(isTowerMode(ended.mode)) showTowerEnd(ended, acct.account?.id, back, toInv);
   else if(isInstanceMode(ended.mode)) showInstanceEnd(ended, acct.account?.id, back, toInv);
+  else if(ended.mode === 'raid') showRaidEnd(ended, acct.account?.id, () => { done(); $('end').hidden = true; showNoSession(); nav.show('guilde'); });
   else showEnd(ended, acct.account?.id, back, toInv, up);
   pollLobby();                               // signe de vie au groupe pendant le bilan
 }
@@ -896,7 +982,7 @@ function showResult(st){
 /* inventaire envoyé par le serveur ; bag : objets qui viennent d'arriver (mis en évidence) */
 function setInventory(inv, bag){
   ui.inv = { slots: inv?.slots ?? [], unlocked: inv?.unlocked ?? [] };
-  furnace.setInventory(ui.inv); crusher.setInventory(ui.inv); craft.setInventory(ui.inv); stuff.setInventory(ui.inv); research.setInventory(ui.inv); upgradeUI.setInventory(ui.inv);
+  furnace.setInventory(ui.inv); crusher.setInventory(ui.inv); craft.setInventory(ui.inv); shop.setInventory(ui.inv); stuff.setInventory(ui.inv); research.setInventory(ui.inv); upgradeUI.setInventory(ui.inv);
   spells.setInventory(ui.inv); skills?.refresh();   // skills : la case de glyphe dépend de l'inventaire
   lobby.update({});                                  // carte des instances : les clés du joueur (27/10)
   if(bag) ui.inv.slots.forEach((s, i) => { if(s && bag[s.item]) ui.fresh.add(i); });
@@ -910,8 +996,9 @@ let progress = null;
 function setProgress(p){
   const up = levelUpText(progress, p); progress = p ?? null;
   renderNavLevel($('navLevel'), progress); renderLevel($('stuffLevelBody'), progress);   // bandeau du haut et onglet Stuff
-  skills.setSpec(progress?.spec); lobby.update({ mySpec: progress?.spec ?? null });    // niveaux de spécialisation
+  skills.setSpec(progress?.spec); lobby.update({ mySpec: progress?.spec ?? null, myLevel: progress?.level ?? null });    // niveaux de spécialisation ; niveau du mineur : activités scellées (03/11)
   spells.setContext({ spec: Object.fromEntries(Object.entries(progress?.spec ?? {}).map(([t, s]) => [t, s.level])) });
+  research.setAreaMax(progress?.areaMax);   // tiers de la recherche à area (05/11)
   return up;
 }
 
@@ -928,13 +1015,20 @@ async function refresh(waited){
   spells.set(st.spells);
   setsUI.set(st.sets);
   lobby.update({ prefs: st.prefs });
-  setEnergy(st.energy); setPrison(st.prison, { sync:false });
+  setEnergy(st.energy); setGeante(st); setPrison(st.prison, { sync:false });
   if(st.session) enterSession(st.session);
   else showNoSession();
   if(st.ended && !st.session) showResult(st);
 }
 
+lobbyActivity = () => lobby.activity();   // set par activité (03/11)
 /* ---------- démarrage ---------- */
+/* parrainage (05/11/2026) : lien ?ref=CODE : le code est gardé dans ce navigateur jusqu'à ce qu'un compte soit connecté, puis
+   envoyé une fois (le serveur refuse s'il y a déjà un parrain, si c'est trop tard ou si c'est son propre code) */
+try {
+  const ref = parseReferralCode(new URLSearchParams(location.search).get('ref') ?? '');
+  if(ref) localStorage.setItem('dim.ref', ref);
+} catch {}
 await appBoot.update;                      // appli : dernière version du jeu d'abord (la page peut se recharger dedans)
 await appBoot.native;
 Object.assign(acct, await bootAccount(accountUI));
@@ -946,6 +1040,10 @@ if(acct.offline) showNoSession();
 else {
   try { info = await gameApi.info(); await refresh(); }
   catch(e){ acct.offline = true; showNoSession(); }
+  let ref = null;
+  try { ref = localStorage.getItem('dim.ref'); } catch {}
+  if(ref && acct.account && !acct.offline) gameApi.setReferral(ref).then(r => notify.flash(`🎁 Parrain : ${r.by.name}`)).catch(() => {})
+    .finally(() => { try { localStorage.removeItem('dim.ref'); } catch {} });
 }
 syncLang();
 startInstant();
@@ -976,7 +1074,7 @@ for(const id of ['twTeam', 'inTeam', 'miRank']) $(id).addEventListener('pointerd
   ui.focus = !m || m.account === acct.account?.id || ui.focus === m.id ? null : m.id;
 });
 function updateEffects(G){
-  const key = !G ? null : G.mode === 'mi' || G.mode === 'tower' || G.mode === 'instance' ? G.mode : 'mine';
+  const key = !G ? null : G.mode === 'mi' || G.mode === 'tower' || G.mode === 'instance' ? G.mode : raidBoss(G) ? 'instance' : 'mine';   // arène du raid : la barre de l'instance
   for(const [k, [update, bar, cv, wrap, below]] of Object.entries(fxBars)){
     if(k !== key){ if(!bar.hidden) update(null); continue; }
     /* 29/10 : mine classique = le mineur suivi (clic dans l'équipe) ; tours, instance, MI = le joueur choisi dans l'équipe
@@ -990,7 +1088,7 @@ function updateEffects(G){
 const spellBars = { tower: [$('spellBarTw'), $('cvTw'), $('cvTwWrap')], instance: [$('spellBarIn'), $('cvIn'), $('cvInWrap')] };
 function updateSpellBars(G){
   for(const [k, [el, cv, wrap]] of Object.entries(spellBars)){
-    showSpellBar(el, G && G.mode === k ? G.miners.find(m => m.account === acct.account?.id) ?? null : null, G?.t ?? 0);
+    showSpellBar(el, G && (G.mode === k || (k === 'instance' && raidBoss(G))) ? G.miners.find(m => m.account === acct.account?.id) ?? null : null, G?.t ?? 0);
     placeSpellBar(el, cv, wrap);
   }
 }
@@ -1007,6 +1105,7 @@ function frame(now){
   }
   const pz = prisonShown() && !!PG?.ready;   // prison : affichée comme la mine classique (29/10)
   const shown = G?.ready ? G : pz ? PG : null, mi = shown?.mode === 'mi', tw = shown?.mode === 'tower', ins = shown?.mode === 'instance';
+  const rb = raidBoss(shown), rm = shown?.mode === 'raid' && !rb;   // raid : l'arène, ou la mine (minage, porte)
   ui.prison = pz && shown === PG;
   ui.prisonArea = prison?.area ?? null;   // area du contenu de la prison (titre du panneau Area)
   /* fond : la session en cours, ou la prison (30/10/2026 : même fond et mêmes transitions que la mine) */
@@ -1014,10 +1113,11 @@ function frame(now){
   backdrop.draw(bgG, ui.tab !== 'session', acct.account?.id, ui.follow);
   /* le Carreau : fond quand il n'y a ni session ni prison en fond ; promenade quand l'onglet Session n'a rien d'autre à montrer */
   town.frame(dtr, { show: !appBoot.app && !rec && !(ui.prison && ui.tab === 'session') && !(bgG && backdrop.on) && !!acct.account && !acct.offline, walk: townWalks(ui.tab, $('noSession').hidden, $('end').hidden), tab: ui.tab }, now);
-  if(shown && ui.tab==='session') ins ? inRenderer.draw(shown, acct.account?.id) : tw ? twRenderer.draw(shown, acct.account?.id) : mi ? miRenderer.draw(shown, acct.account?.id) : renderer.draw(shown, ui.follow);
+  if(shown && ui.tab==='session') rb ? rdRenderer.draw(shown, acct.account?.id) : ins ? inRenderer.draw(shown, acct.account?.id) : tw ? twRenderer.draw(shown, acct.account?.id) : mi ? miRenderer.draw(shown, acct.account?.id) : renderer.draw(shown, ui.follow);
   if(now - lastHud > 120){
     if(perfOn){ const t = perfText(perf.stats()); for(const el of document.querySelectorAll('.perfBox')) el.textContent = t; }
-    if(ins && ui.tab==='session') updateInstanceHUD(shown, acct.account?.id, rec.finishAt ? Math.max(0, (rec.finishAt - serverNow()) / 1000) : null, ui.focus);
+    if(rb && ui.tab==='session') updateRaidHUD(shown, acct.account?.id, !info.dev && rec.finishAt ? Math.max(0, (rec.finishAt - serverNow()) / 1000) : null, ui.focus);
+    else if(ins && ui.tab==='session') updateInstanceHUD(shown, acct.account?.id, rec.finishAt ? Math.max(0, (rec.finishAt - serverNow()) / 1000) : null, ui.focus);
     else if(tw && ui.tab==='session') updateTowerHUD(shown, acct.account?.id, rec.finishAt ? Math.max(0, (rec.finishAt - serverNow()) / 1000) : null, ui.focus);
     else if(mi && ui.tab==='session') updateInstantHUD(shown, acct.account?.id, Math.max(0, (rec.finishAt - serverNow()) / 1000), ui.focus);
     else if(ui.prison && ui.tab==='session'){
@@ -1032,18 +1132,26 @@ function frame(now){
     }
     else if(shown && ui.tab==='session'){
       updateHUD(shown, ui);
-      focusPanel.update(shown, acct.account?.id);
+      if(rm){                                               // raid, minage et porte : bandeau, temps sur RAID.duration, pas de focus
+        $('raidBannerTxt').textContent = raidBannerText(shown.raid);
+        $('raidBanner').classList.toggle('door', shown.phase === 'door');
+        $('raidBar').style.width = raidMinedPct(shown.raid) + '%';
+        $('timer').textContent = fmt(shown.t) + ' / ' + fmt(RAID.duration);
+        $('timeBar').style.width = Math.min(100, shown.t / RAID.duration * 100) + '%';
+        $('focusCard').hidden = true; $('focusAreaCard').hidden = true;
+      } else focusPanel.update(shown, acct.account?.id);
       $('followBtn').hidden = !renderer.free;               // caméra déplacée par le joueur : bouton pour revenir
       const late = !info.dev && rec && G.ticks + 50 < tickAt(serverNow() - rec.startedAt, rec.speed);
       $('realLeft').textContent = late ? 'connexion…' : info.dev ? '' : `fin dans ${fmt(Math.max(0, (rec.finishAt - serverNow()) / 1000))}`;
     }
     updateEffects(ui.tab==='session' ? shown : null);
     updateSpellBars(ui.tab==='session' ? shown : null);
-    updateNavSession(rec ? shown : null, waiting, ins ? INSTANCE.duration : tw ? TOWER.duration : mi ? INSTANT_MINE.duration : SESSION_LEN);
-    updateOrbs(shown, mi || tw || ins, ins ? INSTANCE.duration : tw ? TOWER.duration : undefined);
+    updateNavSession(rec ? shown : null, waiting, isRd() ? RAID.duration : ins ? INSTANCE.duration : tw ? TOWER.duration : mi ? (shown?.duration ?? INSTANT_MINE.duration) : (shown?.len || SESSION_LEN));
+    updateOrbs(shown, mi || tw || ins || rb, rb || rm ? RAID.duration : ins ? INSTANCE.duration : tw ? TOWER.duration : mi ? (shown?.duration ?? INSTANT_MINE.duration) : undefined);
     if(ui.tab==='session'){
-      ins ? fitCanvas($('cvIn'), $('cvInWrap')) : tw ? fitCanvas($('cvTw'), $('cvTwWrap')) : mi ? fitInstant($('cvMi'), $('cvMiWrap'), miRenderer, MI_TILE) : fitMine($('cv'), $('cvWrap'), renderer, CAMERA, TILE);   // la mine remplit la place libre
-      if(shown) backdrop.measure(ins ? 'instance' : tw ? 'tower' : mi ? 'mi' : 'mine', $(SESSION_CV[ins ? 'instance' : tw ? 'tower' : mi ? 'mi' : 'mine']), mi ? miRenderer.rows : renderer.rows);   // le fond reprend cette place et cette échelle
+      ins || rb ? fitCanvas($('cvIn'), $('cvInWrap')) : tw ? fitCanvas($('cvTw'), $('cvTwWrap')) : mi ? fitInstant($('cvMi'), $('cvMiWrap'), miRenderer, MI_TILE) : fitMine($('cv'), $('cvWrap'), renderer, CAMERA, TILE);   // la mine remplit la place libre
+      const bm = rb ? 'raid' : ins ? 'instance' : tw ? 'tower' : mi ? 'mi' : 'mine';
+      if(shown) backdrop.measure(bm, $(SESSION_CV[bm]), mi ? miRenderer.rows : renderer.rows);   // le fond reprend cette place et cette échelle
       document.querySelectorAll('.runL, .runR, .runGrid.mi > aside').forEach(c => clearDock(c, dockEl($)));   // colonnes jusqu'en bas si possible
     }
     const face = $('navAccount').querySelector('canvas');

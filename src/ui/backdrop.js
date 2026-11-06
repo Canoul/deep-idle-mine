@@ -12,6 +12,7 @@ import { createRenderer, TILE } from '../render/canvas.js';
 import { createInstantRenderer, MI_TILE } from '../render/instant.js';
 import { createTowerRenderer } from '../render/tower.js';
 import { createInstanceRenderer } from '../render/instance.js';
+import { createRaidRenderer } from '../render/raid.js';
 
 const KEY = 'dim.bgSession', PLACE_KEY = 'dim.bgPlace';
 export const BACKDROP = { dim: 0.4, transitionMs: 450 };   // luminosité du fond ; durée de la transition (aussi en CSS : --bgAnim)
@@ -25,8 +26,9 @@ const MODES = {
   mi:       { make: createInstantRenderer,  draw: (r, G, me) => r.draw(G, me),            tile: MI_TILE },
   tower:    { make: createTowerRenderer,    draw: (r, G, me) => r.draw(G, me) },
   instance: { make: createInstanceRenderer, draw: (r, G, me) => r.draw(G, me) },
+  raid:     { make: createRaidRenderer,     draw: (r, G, me) => r.draw(G, me) },   // arène de Cerbère (minage et porte : la mine)
 };
-export const modeOf = G => G.mode === 'mi' || G.mode === 'tower' || G.mode === 'instance' ? G.mode : 'mine';
+export const modeOf = G => G.mode === 'mi' || G.mode === 'tower' || G.mode === 'instance' ? G.mode : G.mode === 'raid' && G.phase === 'boss' ? 'raid' : 'mine';
 
 /* plein écran (le canvas couvre la fenêtre, centré, proportions gardées) */
 export function coverRect(cw, ch, vw, vh){
@@ -78,8 +80,10 @@ export function leavePanels(view, box, stillHere = () => false){
   view._bgT = setTimeout(() => { resetPanels(view); view.hidden = !stillHere(); }, BACKDROP.transitionMs);
 }
 
-/* root : boîte du fond ; sessionCanvas(mode) : le canvas de la mine dans l'onglet Session (caché pendant l'entrée) */
-export function createBackdrop(root, { sessionCanvas = () => null, now = () => performance.now() } = {}){
+/* root : boîte du fond ; sessionCanvas(mode) : le canvas de la mine dans l'onglet Session (caché pendant l'entrée) ;
+   mineZoom : zoom de départ de la mine de la session (appli, 04/11/2026 : CAMERA.appZoom), le même ici pour que la
+   transition reste un simple zoom de la même image */
+export function createBackdrop(root, { sessionCanvas = () => null, now = () => performance.now(), mineZoom = 1 } = {}){
   let on = load(KEY, '1') !== '0', shownMode = null, anim = null;   // anim : { to:'session'|'cover', t0, mode, hidden }
   const places = readPlaces();
   const made = {};                                     // mode → { cv, r, rows, key }
@@ -88,7 +92,9 @@ export function createBackdrop(root, { sessionCanvas = () => null, now = () => p
     if(made[mode]) return made[mode];
     const cv = document.createElement('canvas');
     root.appendChild(cv);
-    return made[mode] = { cv, r: MODES[mode].make(cv), rows: 0, key: '' };
+    const r = MODES[mode].make(cv);
+    if(mode === 'mine') r.setBaseZoom(mineZoom);
+    return made[mode] = { cv, r, rows: 0, key: '' };
   }
   function show(mode){
     if(mode === shownMode) return;

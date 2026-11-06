@@ -6892,3 +6892,823 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - Navigateur : `syncLang()` (src/main.js) recopie la langue du compte sur l'appareil et recharge si elle diffère ; option `type:'select'` dans `optionsHtml` (src/ui/account.js), libellé `t('Langue')`.
 - Tests : `tests/i18n.test.js` (6) ✅, `tests/account-*.test.js` ✅. Vu dans Chromium (mode dev) : la liste « Langue » apparaît, le choix est enregistré sur le compte, la page repart en anglais. ⚠️ Le test de complétude ne compte que les `t('littéral')` ; un texte construit (`t(variable)`) n'est pas vérifié.
 
+## 03/11/2026 — Jules — Appli mobile : Skills, une classe à la fois et fiche d'un skill (✅ en ligne le 03/11)
+- **Quoi** : spec `docs/superpowers/specs/2026-11-03-appli-skills-design.md`, plan `docs/superpowers/plans/2026-11-03-appli-skills.md`.
+  - `src/ui/skills.js` : `skillTabsHtml(view, { chosen, spec })` et `skillSheetHtml(st, id, { inv, busy, session })` (purs) ;
+    `treeHtml` : chaque case porte `data-nid`, `lk` / `lk-on` (maillon vers l'étage du dessus, ouvert si tous les parents
+    sont au max), `duo` (étage à deux skills) et `<span class="skTxt">` (effet au rang actuel, rang 1 si non appris ; caché
+    sur le site) ; dans l'appli, `render()` dessine les onglets et l'arbre `view` seul (sa classe au départ), un toucher sur
+    une case ouvre `#skSheet` (jamais d'apprentissage direct), Apprendre / glyphe passent par `send` (même `onOp`), la fiche
+    reste ouverte et se redessine. Textes du glyphe pour le doigt (`GLYPH_SHEET`, « après la session » en session).
+  - `src/app/app.css` : bloc « Skills » (onglets, arbre en liste, maillons `::before`, glyphe à droite, fiche) ;
+    `src/app/device.js` : `skSheet` dans `PANELS` ; `src/ui/style.css` : `.skTxt` caché.
+- **Tests** ✅ app-skills (nouveau, 4 tests), skills, glyphs, app-device : 54/54.
+- **Vérifié** ✅ aperçu `?app` 393 × 760 (Test_Mineur) : 3 onglets, arbre entier hors session et sans guide = 760 / 760 ;
+  fiche de Ruée (5/5 : « Rang max », glyphe posé) ; onglet Logisticien grisé, fiche de Navette « Autre arbre choisi ».
+  Site PC sans `?app` inchangé (3 arbres, lignes SVG, panneau des sets).
+- **Pas vérifié** ⚠️ « Apprendre » à l'écran (le compte de test a son arbre au max et une session en cours empêche le
+  reset ; même `send` que le site, couvert par les tests de la fiche) ; vrai téléphone ; bouton retour Android sur la fiche.
+- **Points fragiles** : en session, la note du haut fait défiler (≈ 40 px) ; `.skNode` du site est en position absolue :
+  l'appli annule `left` / `top` en `!important`.
+- **Applis** : pas de plugin ni de code natif ; `src/app/` change (mise à jour à chaud à la mise en ligne).
+
+### 03/11/2026 — Appli Android 1.1.3 : bandeau « Deep Mine Idle MMO » encore là en 1.1.2 (Geoffrey) 🧪
+- Constat (Geoffrey, Samsung, coque 1.1.2, capture) : grand titre gras « Deep Mine Idle MMO » au-dessus du jeu (style DeviceDefault de Samsung, pas la barre AppCompat). Les mises à jour à chaud passent (contenu du jeu à jour, Concasseur compris).
+- Cause probable : `MainActivity` appelle `EdgeToEdge.enable(this)` **avant** `super.onCreate` → `getDecorView()` crée la fenêtre avec le thème de l'activité du manifeste, `AppTheme.NoActionBarLaunch` (parent `Theme.SplashScreen`), pas `AppTheme` ni `AppTheme.NoActionBar` (posé ensuite par BridgeActivity, vérifié dans @capacitor/android 8.6.0 : `super.onCreate` puis `setTheme(AppTheme_NoActionBar)` puis `setContentView`). La barre de titre du système est figée à la création de la fenêtre ; le correctif 1.1.1 (attributs AppCompat sur `AppTheme`) n'y touchait pas.
+- Correctif : `android:windowActionBar` false et `android:windowNoTitle` true (attributs du système) sur `AppTheme.NoActionBarLaunch` et `AppTheme` ; versionCode 5, versionName 1.1.3 (pas de plugin, `APP_UPDATE.minNative` inchangé). Pas pu compiler ici (pas de SDK Android, dl.google.com bloqué) : le workflow android-apk.yml fabrique l'APK au push. Si le bandeau reste : déplacer `EdgeToEdge.enable(this)` après `super.onCreate(savedInstanceState)`.
+- ⚠️ `tests/mobile-config.test.js` « même version qu'Android » échoue **déjà sur main** : iOS en 1.1.0 (`MARKETING_VERSION`), Android en 1.1.2 depuis la 1.1.1. Pas touché ici (rien ne change pour l'iPhone) : à aligner à la prochaine version iOS.
+
+## 03/11/2026 — Jules — Appli mobile : Sorts, fiche qui monte du bas (✅ en ligne le 03/11)
+- **Quoi** : spec et plan `docs/superpowers/{specs,plans}/2026-11-03-appli-sorts*.md`.
+  - `src/ui/spells.js` : `spellInfoHtml(st, id, { ctx, owned, busy, into, close })` (pur, sorti de `renderInfo`, même contenu ;
+    `close` : ✕ au lieu du titre) ; dans l'appli, `#spSheet` (fond / ✕ = fermer), tuile touchée → fiche ouverte, emplacement
+    rempli touché → sa fiche (plus de retrait direct), actions par `infoClick` (même code que `#spellInfo`) ; la fiche reste
+    ouverte après une action.
+  - `src/app/app.css` : bloc « Sorts » (barre compacte, numéros et légende cachés, phrase sur une ligne, filtres en rangée,
+    grille de 4 colonnes, tuiles basses, nom et sous-titre sur une ligne, `#spellInfo` caché, fiche en panneau du bas) ;
+    `src/app/device.js` : `spSheet` dans `PANELS`.
+- **Piège trouvé** : la rangée de filtres en `nowrap` élargissait la colonne `1fr` de `.spGrid` (page à 625 px, le navigateur
+  zoomait) → `grid-template-columns:minmax(0,1fr)` et `min-width:0`. À garder en tête pour toute rangée qui défile dans une grille.
+- **Tests** ✅ app-spells (nouveau, 4), spells, app-device, app-* : tout vert.
+- **Vérifié** ✅ aperçu `?app` 393 × 760 : largeur 393 ; toucher un sort de la barre ouvre sa fiche (« Retirer de la barre »)
+  et la barre garde ses 2 sorts ; fiche de Dash « Débloqué au niveau 5 de spécialisation Barbare » ; fond = fermer ;
+  8 tuiles sur 10 sans défiler (817 / 760). Site PC inchangé (fiche à côté du grimoire, pas de `#spSheet`).
+- **Pas vérifié** ⚠️ Mettre dans la barre / Apprendre à l'écran (même `infoClick` que le site) ; vrai téléphone.
+- **Applis** : pas de plugin ni de code natif ; `src/app/` change (mise à jour à chaud à la mise en ligne).
+
+## 03/11/2026 — Dash : 300 %, recharge entière sur les boss (Geoffrey)
+- Enquête : Infernatiwar (barbare, Dash + Cri de guerre) très au-dessus des autres à He's coming. Pas de bug de comptage
+  (1 dégât = 1 point). Cause : l'autoattaque projette de 4 cases → le Dash (2 à 6 cases) part après chaque recul, recharge 15 s,
+  ≈ 12 Dash à 500 % par visite. Simulation (40 visites, barbare 3/3 acier) : sans Dash 2 153, avec 3 500 (+63 %).
+  Point fragile repéré, non corrigé : portée en plus > 0,5 = jamais d'autoattaque, > 3 = jamais de Fear (seul l'Arc de l'Admin, +8).
+- Changement : `SPELLS` dash `dmg` 5 → 3. Recharge × `hitCd` retirée sur les boss : `finishDash` (mine, `isBoss`),
+  `dashBoss` de la tour, de l'Instance I et du Golbute, `dash` de He's coming. Les Dash sur des mobs gardent × 0,5.
+- Après : sans Dash 2 153, avec 2 834 (+32 %) ; profil type Infernatiwar (ténacité 44, crit 20) 4 608 → 3 779.
+- Tests : spells (nouveau test boss), hescoming-sim, instance-sim, tower*, golbute*, wiki 210/210 ✅. Pas resimulé : tours et
+  instances (le Dash pèse moins sur leurs boss).
+- Même branche, 03/11 : Force brute (`SKILLS.trees` barbare, nœud `damage`) sans `adds.tenacity` (avant +5 par rang) ni
+  « ténacité » dans `desc`. Test `skills.test.js` mis à jour. Tests skills, minotaur, hescoming*, golbute*, tower*, instance*,
+  stuff*, tenacity*, wiki 229/229 ✅. ⚠️ Repères du Golbute et de la tour à +25 / +50 % de ténacité « en plus » : la base barbare
+  baisse de 15, à resimuler si besoin.
+
+## 04/11/2026 — Jules — Appli mobile : Historique, une ligne par session (✅ en ligne le 04/11)
+- **Quoi** : spec et plan `docs/superpowers/{specs,plans}/2026-11-03-appli-historique*.md`. `src/ui/history.js` : `dayLabel`,
+  `topLoot` (catégorie puis rareté puis `BLOCKS[].val` puis quantité : le terrain en dernier), `sessionRowHtml`,
+  `sessionDetailHtml`, `historyListHtml` (purs) ; `setupHistory({ load, me })` : dans l'appli, la liste et `#hiSheet` (bilan,
+  fond / ✕ = fermer) ; `src/main.js` passe `me` (pseudo) ; `src/app/app.css` (bloc « Historique ») ; `src/app/device.js` :
+  `hiSheet` dans `PANELS`. Le mode vient du serveur (`mode`, déjà envoyé) → `MINE_MODES`.
+- **Trouvé à l'écran** : la première liste peut s'afficher avant que le compte soit chargé (`me` inconnu) → « avec
+  Test_Mineur » ; corrigé : une session à un seul joueur est toujours « solo » (test).
+- **Tests** ✅ app-history (nouveau, 5 tests), app-device, app-* : verts.
+- **Vérifié** ✅ aperçu `?app` (Test_Mineur, une vraie session locale) : ligne « Mine · 14:14 » sous AUJOURD'HUI, 3 butins
+  (Treasure, lingot, tissu) et +887 XP ; bilan avec 13 butins et la seed ; fond = fermer ; largeur 393. Site PC : la carte
+  habituelle.
+- **Pas vérifié** ⚠️ une prison, plusieurs jours, une session à plusieurs, vrai téléphone.
+- **Applis** : pas de plugin ni de code natif ; `src/app/` change (mise à jour à chaud à la mise en ligne).
+
+### 03/11/2026 — Appli : fenêtre « Nouvelle version de l'appli » (Geoffrey) 🧪
+- Constat (Geoffrey) : coque 1.1.0 ouverte normalement alors que la 1.1.2 était sur Google Play (test interne) ; rien ne le disait, il a fallu aller sur la fiche. `minNative` est le seul avertissement existant, et il bloque.
+- `APP_UPDATE.latest` ({ android:'1.1.2', ios:'1.1.0' }) et `nudgeEvery` (86 400 s) ; `storeNudge()` (src/app/update.js, pur : version à proposer ou null ; rien sans fiche du store, version inconnue ou coque déjà à jour) ; `src/app/store-nudge.js` (App.getInfo, `ask` de src/ui/dialog.js 2 s après le démarrage, `AppLauncher.openUrl` vers `storeUrl`, mémo `dim.storeNudge` = { v, at } posé à l'affichage) ; lancé par `startApp` (src/app/main.js). Plugins déjà dans la 1.1.0 : pas de `minNative` à monter.
+- Tests : `tests/app-update.test.js` (storeNudge) ✅ ; vu dans Chromium avec `?app` et un faux pont (coque 1.1.0) : fenêtre affichée, « Mettre à jour » ouvre la fiche Google Play, pas de 2e fenêtre au rechargement. ⚠️ Pas vu sur un téléphone.
+- ⚠️ Limite : une coque ne voit la fenêtre qu'après avoir reçu ce code par mise à jour à chaud. Les Samsung en 1.1.0, qui ne recevaient jamais les mises à jour à chaud (entrée du 03/11, relevé), ne la verront pas ; pour eux, seul `minNative` (écran bloquant, lu dans la réponse du serveur sans rien télécharger) agit.
+- ⚠️ `tests/mobile-config.test.js` « même version qu'Android » : déjà rouge sur main (iOS 1.1.0, Android 1.1.2).
+
+### 03/11/2026 — Mises à jour à chaud : « Missing parent directory » sur Samsung, cause trouvée (Geoffrey) 🧪
+- Relevé (16:33, SM-S901U Android 14, coque 1.1.2, version 6bdff568… → d732a1aa…) : 3 essais, 0 fichier servi, retour `telechargement` avec « Missing parent directory – possibly recursive=false was passed or parent directory creation failed. » (FilesystemErrors.missingParentDirectories, code 11 de @capacitor/filesystem 8.1.5).
+- Cause (lue dans ion-android-filesystem 1.1.1, `IONFILECommon.kt`) : `writeFile(recursive:true)` → `createDirOrFile` → `checkParentDirectory` = `parent.exists() || (create && parent.mkdirs())`. `build()` écrit 6 fichiers à la fois (PARALLEL) dans un dossier neuf : deux écritures du même dossier se croisent, `mkdirs()` de la seconde rend false (le dossier vient d'être créé) → NoParentDirectory, tout le téléchargement abandonne. Pas de fichier servi : les premiers fichiers sont ceux recopiés de la version qui tourne (`reuse`), écrits avant tout appel au serveur. Hasard de timing (le OnePlus 8 Pro passait).
+- Correctif : `dirsOf(paths)` + `makeDirs` (src/app/updater.js) : chaque dossier créé un par un, du moins profond au plus profond, avant les écritures en parallèle ; « already exists » ignoré. Test : `racy` dans le faux téléphone de `tests/app-update.test.js` (écriture refusée si le dossier n'a pas été créé par mkdir) : rouge avant, vert après ✅.
+- ⚠️ Le code qui télécharge est celui de la coque (sa copie embarquée) tant qu'aucune mise à jour à chaud n'a réussi : ce correctif ne vaut que dans une **nouvelle appli, 1.1.4** (versionCode 6 ; 1.1.3 sautée si pas encore envoyée). Puis monter `APP_UPDATE.latest.android` à 1.1.4 une fois en ligne sur Google Play.
+- Corrige l'entrée « bandeau 1.1.3 » plus haut : la capture du Concasseur ne prouvait PAS les mises à jour à chaud (le Concasseur était déjà dans la copie embarquée de la 1.1.2).
+
+## 03/11/2026 — Appli : notification de la MI en retard (Geoffrey)
+- Cause : `src/app/native.js` programmait tout avec `isExactNotification:false` (pour que le plugin n'ouvre pas l'écran des
+  alarmes à chaque appel) et l'appli ne déclarait pas `SCHEDULE_EXACT_ALARM` : alarme inexacte, Android la décale (≈ 15 min
+  constatés). L'heure calculée (`planNotifs`, 5 min avant la MI) est juste.
+- Correctif : permission `SCHEDULE_EXACT_ALARM` dans `AndroidManifest.xml`, appli 1.1.5 (versionCode 7) ; `exactAllowed(plugin)`
+  (`checkExactNotificationSetting`) à chaque passe ; `isExactNotification:true` seulement si autorisé (pas d'écran système
+  ouvert sinon) ; changement d'autorisation → tout annulé et reprogrammé ; case « Notifications à l'heure exacte »
+  (`notif_exact`, Android, coque ≥ 1.1.5, `EXACT_SINCE`) qui appelle `changeExactNotificationSetting`. `USE_EXACT_ALARM` écarté
+  (Google Play la réserve aux applis de réveil / agenda). Android 14+ : l'autorisation est coupée par défaut à l'installation,
+  d'où la case.
+- Tests : app-native (3 nouveaux), app-notifs, mobile-config (permission), account* : 114/115, le rouge (version iOS ≠ Android)
+  l'était déjà sur main. ⚠️ Pas essayé sur un vrai téléphone ; valeur de `exact_alarm` (« granted ») prise de la doc du plugin.
+- Même branche : toutes les notifications passent par `toPlugin` (exactes si autorisé). Ajout du type `hescoming` (id 4, `hcNext` =
+  `hcUI.nextEntry()` dans `notifData`, src/main.js), réglage `notif_hescoming`. Tests app-notifs (+1), app-native ✅.
+
+## 03/11/2026 — Geoffrey — Activités scellées sous un niveau (branche geoffrey/niveau-requis-activites)
+- `MINE_MODES[].minLevel` (src/config.js) : `mi` 3, `giant` 10, `hescoming` 10. `src/shared/level-gate.js` (`minLevelOf`,
+  `sealedBelow`, `levelLockText`). Lobby : `mineModes(…, level)` → `sealed`, `activityMenu` → classe `.actBtn.sealed`
+  (cadenas `pxi('lock')`, « Scellé · niveau N requis », grisée) ; niveau reçu par `lobby.update({ myLevel })` dans
+  `setProgress` (src/main.js) ; niveau inconnu = rien de scellé. Serveur : `giant.enter` (Bloc géant et He's coming, même
+  service, `mode`) et `instant.join` → `level_locked` 403 via `game.levelFor`.
+- Tests : `tests/level-gate.test.js` (4, sans helpers) ✅ ; `tests/helpers.js` retire les `minLevel` (comptes de test
+  niveau 1) ; giant-service, instant-server, hescoming-service, lobby, social, shrines, account-delete, anticheat giant /
+  hescoming / instant ✅ (prison-server : seul « une tour et une instance… » échoue, déjà connu). Navigateur ✅ (compte
+  neuf niveau 1 : 3 lignes scellées, entrées 403).
+- ⚠️ Non traité : la notification de l'appli « He's coming accessible » peut encore partir pour un joueur sous le niveau 10.
+
+### 03/11/2026 — Bulle de butin : noms des qualités
+- `src/ui/loot-tip.js` `rowHtml` : une ligne de qualité affiche `r.label` (Utile… Légendaire) dans sa couleur, « R4 » en bulle (avant : « R4 », nom en bulle). Titre de la bulle (`src/meta/loot-table.js`) : `itemName(item)` (« Excellent Trésor angélique », avant le nom interne « Trésor angélique R4 »). `itemName` : suffixe de niveau « II » du Coffre du Roi Gobelin (il était perdu). ✅ loot-table, goblin-king, rune, inventory, instance (111).
+
+## 03/11/2026 — Geoffrey — Set par activité (branche geoffrey/set-par-activite)
+- Données : `sets.byActivity` ({ activité: id de set }, relu par `sanitizeSets` : activités de `SETS.activities`, sets
+  existants ; vidé quand le set est supprimé), envoyé par `publicSets`. Route `POST /api/game/sets` action `assign`
+  ({ activity, id | null }).
+- Équipement : `autoEquip(compte, mode)` (server/game/service.js), verrous inv / skills / spells / sets, **hors** des
+  verrous du lancement ; ne fait rien en session (`activeOf`), sans set, ou set déjà équipé (`equippedSet`) ; jamais
+  d'erreur (journalisée). Appelé : `start` (tous les modes sauf prison, chaque joueur du groupe), `prisonStart`,
+  `openInstant` (MI), `giantEnter(…, mode)` (Bloc géant, He's coming). Exposé `game.autoEquip` (tests).
+- Lobby : `lobby.activity()` (mode de l'activité ouverte, `tower_angel` pour le Jugement), `h.onActivity` → `setsUI.refresh()` ;
+  ligne `activityLineHtml` en tête de `#setsLobby` (site et appli), choix envoyé tout de suite (`onchange`).
+- Tests ✅ sets (+3), lobby, giant-service, hescoming-service, instant-server, game-service, instance-server, party,
+  level-gate, prison-server (sauf « une tour et une instance… », déjà connu) ; anticheat 152/152. Navigateur ✅ (Bloc
+  géant ouvert, choix « Set 2 » → `byActivity: { giant: 2 }` côté serveur).
+- ⚠️ Prison : le set est équipé à l'entrée ; les runs suivants relisent l'équipement du moment (règle du 30/10).
+
+## 03/11/2026 — Cleave : 4 cibles devant lui (Geoffrey)
+- `SPELLS` cleave : `maxTargets: 4` ; `EFFECTS.cleaveAnim` 260 ms. Déclenché par un coup normal (`cleaveHit`) : mine (`landHit`,
+  src/sim/spells.js export), tour (après `hitMob` dans `strike`, après `hitBoss`), Instance I et Golbute (dans `strike`). Cibles :
+  autres mobs à `radius` avec `(x − m.x) × m.face > 0` (devant), les plus proches, + boss au contact s'il est devant ; ≤ 3.
+  Pas de cast sans autre cible. He's coming : retiré (une seule cible). Ancien : `cleave(G, m)` dans `updateSpells` /
+  `combatSpells`, 50 % à tous les mobs du rayon.
+- Rendu : `drawCleave(ctx, cx, cy, T, t, face)` (src/render/effects.js), branché sur le repérage des sorts (`casts`) : demi-cercle
+  devant, du haut vers le bas, miroir à gauche. Vérifié en image (Chromium, deux sens).
+- Tests : spells (nouveau test Cleave), hescoming-sim, tower*, instance*, golbute*, effects*, wiki 229/229 ✅. Simulation mine 5 × 3
+  avec cleave + war_cry : 0 blocage, profondeur 187.
+
+## 04/11/2026 — Jules — Appli mobile : Guilde en onglets (✅ en ligne le 04/11)
+- **Quoi** : spec et plan `docs/superpowers/{specs,plans}/2026-11-04-appli-guilde*.md`. `src/ui/guild.js` : morceaux communs
+  `requestsHTML`, `membersHTML`, `levelHTML`, `bonusHTML` (le site les assemble comme avant dans `mineHTML`) ;
+  `mineAppHTML(g, older, { sub, building })` (pur) : onglets `data-gsub` (house, members, buildings, log), bâtiments `data-gb`
+  (le premier si inconnu), « Quitter » dans `.gLeave` en bas des Membres ; `setupGuild` : `sub` / `bsel`, rendu appli.
+  `src/app/app.css` : bloc « Guilde » (onglets, boutons de bâtiment, matière en grille nom / barre / donné · tu en as /
+  Donner, scène de la maison réduite à 300 px, phrase d'explication cachée).
+- **Tests** ✅ app-guild (nouveau, 5), guild-ui, guild-buildings, guild-house, app-* : verts.
+- **Vérifié** ✅ aperçu `?app` (Test_Mineur, guilde locale « Les Testeurs » créée pour l'essai, données locales seulement) :
+  Membres et Journal sur un écran, Maison 931 px, Bâtiments 851 px (8 matières), largeur 393 ; site PC inchangé (2 colonnes).
+- **Pas vérifié** ⚠️ Donner / Construire à l'écran (mêmes `data-g` qu'avant) ; une guilde avec beaucoup de membres ; vrai téléphone.
+- **Applis** : pas de plugin ni de code natif.
+
+## 04/11/2026 — Jules — Appli mobile : Classement, podium et sa place en bas (✅ en ligne le 04/11)
+- **Quoi** : spec et plan `docs/superpowers/{specs,plans}/2026-11-04-appli-classement*.md`. `src/ui/leaderboard.js` :
+  `podiumHtml(top, value)` (purs : marches dans l'ordre 2, 1, 3 ; marche vide si moins de 3 classés ; `<canvas>` 16 × 16
+  par marche) et `boardAppHtml(board, { value, row })` (podium, lignes à partir du 4ᵉ avec `boardRow`, « N joueurs
+  classés », sa ligne dans `.lMe` : `b.me` s'il est hors de la liste, sinon sa ligne de la liste). `renderBoard` : dans
+  l'appli (`body.app`), `boardAppHtml` puis `drawPortrait(canvas, {}, {})` sur chaque marche (mineur de base, le serveur
+  n'envoie pas le look des classés). `src/app/app.css` : bloc « Classement » (`.lPodium` en grille 1fr 1.15fr 1fr, marches
+  `.lp1/.lp2/.lp3` or / argent / bronze, `.lMe{position:sticky;bottom:calc(var(--dock-h) + 4px)}`).
+- **Tests** ✅ app-leaderboard (nouveau, 2). ⚠️ `leaderboard.test.js` « roi gobelin : record revérifié » rouge sur `main`
+  avant ce chantier (`instance_2`), pas touché ici, signalé à Geoffrey.
+- **Vérifié** ✅ aperçu `?app` 393 × 760 (Test_Mineur, 6 classés à égalité en local → « 1 » sur les trois marches) : 3
+  marches, 3 mineurs dessinés, sa ligne collée en bas, largeur 393, hauteur 784 (la pastille du guide) ; site PC 1280 × 800
+  inchangé (liste, pas de podium ni de `.lMe`).
+- **Pas vérifié** ⚠️ un vrai classement de 50 lignes avec sa place hors du top 50 (`b.me`) ; les onglets Tour céleste et
+  Roi gobelin (détails dans les lignes) ; vrai téléphone.
+- **Applis** : pas de plugin ni de code natif.
+
+## 04/11/2026 — Jules — Appli mobile : écrans qui restaient (✅ en ligne le 04/11)
+- **Quoi** : spec et plan `docs/superpowers/{specs,plans}/2026-11-04-appli-ecrans-fin*.md`. Tout derrière `body.app` (`inApp()`
+  dans chaque module) :
+  - `src/ui/inventory.js` : `moveOp(inv, from, to)` (aussi utilisé par le glisser-déposer du PC), `infoHtml(…, moveFrom)`
+    exporté (bouton `.invMove`) ; mode déplacement dans `renderInventory` (bandeau `#invMoveBar`, grille `.moving` ; la case
+    de départ ou « Annuler » arrête sans rien envoyer) ;
+  - `src/ui/furnace.js` : `furnTabsHtml(list, max, sel)` ; `render` n'affiche que le four de l'onglet (`sel`, clic `data-ftab`) ;
+    `#furnEmptyAll` caché dans l'appli (le « Tout retirer » du four suffit) ;
+  - `src/ui/crusher.js` : carte « Dernières trouvailles » retirée de la page, mise en tête du panneau « Butin » (`.cfindsBox`) ;
+  - `src/ui/research.js` : `tierChipsHtml(inv, tier)`, `tierWhyHtml(inv, t)` (aussi pour les phrases du site, même texte) ;
+    clic `data-rtier` (tier ouvert = choisi, fermé = phrase `.rsWhy`) ;
+  - `src/ui/upgrade.js` : `pieceTileHtml(p, { worn, tag, sel, dim })` ; listes en `.upTiles` (tags MAX, ✨, ?, R5 ; rune trop
+    rare = `dim`) ; `.upStat` (stats sous le nom de la pièce posée, cachées sur le site par `style.css`) ;
+  - `src/ui/social.js` : `friendRowAppHtml(f)`, `friendSheetHtml(f)` ; `#frSheet` créé à la demande, un bouton le ferme puis
+    passe par `onBtn` (même traitement que la liste ; ex-`socialBody.onclick`) ; fiche remise à jour à chaque `set`, fermée si
+    ce n'est plus un ami ;
+  - `src/app/device.js` : `frSheet` dans `PANELS` ; `src/app/app.css` : bloc « Écrans qui restaient ».
+- **Tests** ✅ app-ecrans (nouveau, 6), inventory, furnace, furnace-trio, iron-furnace-gold-compass, crusher, research,
+  amelioration, social, craft, stuff, app-* : 347 / 347.
+- **Vérifié** ✅ aperçu `?app` 393 × 760 (Test_Mineur ; amis Test_Logisticien et Test_Barbare créés en local) : Four, Concasseur,
+  Recherche, Amis sur un écran ; Amélioration 822 px (la pastille du guide) ; Déplacer aller-retour case 5 ↔ 20 (serveur
+  local) ; fiche d'ami → « Voir son stuff » ouvre `#fview` ; site PC 1280 × 800 inchangé (3 fours, `<select>` des tiers, liste
+  des pièces, lignes d'amis à 5 boutons, carte des trouvailles, pas de Déplacer).
+- **Pas vérifié** ⚠️ mode Alliage du four dans l'appli (4 cases en 2 × 2, CSS seulement) ; Enchantement avec de vraies runes ;
+  Recycle de la Recherche ; vrai téléphone.
+- **Applis** : touche `src/app/` (style et liste des panneaux du bouton retour) : rien de natif, part par mise à jour à chaud.
+
+## 04/11/2026 — Jules — Appli mobile : retours après l'essai sur iPhone (✅ en ligne le 04/11)
+- **Accueil** : `homeView` (src/app/home.js) retire des rendez-vous celui de l'activité choisie (`act.mode === snap.mode`)
+  et met son état dans `activity.sub` ; `homeHtml` : rendez-vous puis activité puis gros bouton (avant : activité en premier).
+- **Session hors session** : `historyListHtml` (src/ui/history.js) commence par `.hiNow` (« Pas de session en cours »,
+  bouton `data-app-home` « Lancer ▸ ») puis « Tes dernières sessions » ; src/app/main.js : classe `appLive` sur le body
+  (= `shown()`, caché en session par app.css) et clic `[data-app-home]` → `nav.show(HOME)` + `home.show()`.
+- **Podium** : `LEADERBOARD.podium` (3) ; `social.leaderboard` (server/social/service.js) ajoute `look` et `auras`
+  (`game.lookFor`, `game.aurasFor`, comme les groupes) aux `podium` premières lignes ; `podiumHtml` : `data-lp` sur chaque
+  canvas, `renderBoard` dessine `b.rows[lp - 1].look`. Coût : 6 lectures stuff + inventaire par demande de classement
+  (le client redemande toutes les 30 s, onglet ouvert).
+- **Tests** ✅ app-home (+2), app-history (bandeau), leaderboard (+1, look du podium), app-leaderboard (+1), app-*, social,
+  party, history : 277 / 278 ; ⚠️ « roi gobelin : record revérifié » rouge sur `main` avant ce chantier (déjà signalé).
+- **Vérifié** ✅ aperçu `?app` : Accueil (rendez-vous puis activité puis LANCER), Historique (bandeau, « Lancer ▸ » ramène à
+  l'Accueil), podium dessiné avec des looks (réponse du serveur simulée dans le navigateur : le serveur local, lancé hors de
+  cette discussion, n'a pas été redémarré). ⚠️ Pas vu : le podium avec la vraie réponse du serveur (test serveur vert) ;
+  l'Accueil avec la MI choisie à l'écran (test vert).
+- **Applis** : touche `src/app/` (main.js, home*.js, app.css) : rien de natif, mise à jour à chaud.
+
+## 04/11/2026 — Jules — Appli mobile : la mine démarre zoomée (✅ en ligne le 04/11)
+- **Quoi** : dans l'appli (`body.app`), la caméra de la mine démarre à `CAMERA.appZoom` (3) au lieu de ×1 (50 colonnes sur
+  ≈ 390 px de large = ≈ 8 px par case). `createCamera` a un zoom de départ `base` (1 par défaut) : `setBaseZoom(z)` l'applique
+  tout de suite (borné à [zmin, maxZoom]) ; `zoomBy(0)` (double appui / double clic) revient à `base` (ancien : ×1) ;
+  `setBox` (entrée / sortie de prison) remet `max(zmin, base)` (ancien : zmin). Sur le site, `base` = 1 : comportement
+  identique à avant.
+- **Fond de page** : `createBackdrop(…, { mineZoom })` donne le même zoom de départ à sa mine (sa propre caméra) : la
+  transition vers l'onglet Session reste un simple zoom de la même image (sinon saut ×1 → ×3 à la fin). Dans l'appli, le fond
+  (derrière Sac, Perso…) montre donc la mine à ×3, recadrée en plein écran.
+- **Fichiers** : src/config.js (`CAMERA.appZoom`), src/render/camera.js, src/render/canvas.js (`renderer.setBaseZoom`),
+  src/main.js (`mineZoom = appBoot.app ? CAMERA.appZoom : 1`, juste après `createRenderer`, passé aussi au fond),
+  src/ui/backdrop.js, src/ui/controls.js (commentaires).
+- **Tests** ✅ tests/camera.test.js 10 / 10 (+2 : zoom de départ appli, site inchangé), tests/backdrop.test.js vert.
+- **Vérifié** ✅ aperçu `?app` iPhone 15 (393 × 659, Playwright), Test_Mineur, serveur dev local port 8031 : mine à ×3, le mineur
+  au milieu (≈ 23 px), échelles, torches et filons lisibles ; après 15 s à ×60, la caméra suit le mineur à 126 de profondeur.
+- **Pas vérifié** ⚠️ vrai téléphone ; double appui sur iOS (dépend de l'événement `dblclick` sur `#cv`, `touch-action:none`) ;
+  prison dans l'appli (test unitaire seulement) ; l'animation de la transition elle-même (capturée seulement avant et
+  après : fond ×3 derrière Sac, session ×3).
+- **Fragile** : le renderer est créé une fois pour toutes les sessions ; le zoom choisi en pinçant est gardé d'une session à
+  l'autre (comme avant), seul le démarrage de la page et le double appui reprennent `appZoom`.
+- **Applis** : touche src/main.js, src/render/, src/ui/, src/config.js ; rien dans `src/app/` ni `mobile/` : mise à jour à chaud.
+
+## 04/11/2026 — Geoffrey — Fin de session : galeries dans 2 couches, minerais du dessus ignorés (branche geoffrey/fix-fin-session-galerie)
+- Signalement : « à partir de 2 min, allers-retours et « Creuse une galerie » alors qu'il a capté des minerais », seed
+  177078764 (Croustiflex, Infernatiwar, Monsta). Rejeu exact de l'enregistrement de la session (`buildSession` +
+  `applyDueEvents`, résultat identique : 4928 blocs, 29 allers-retours). Le défaut n'apparaît qu'aux **2 dernières
+  minutes** (t ≥ 3440) : Monsta en y 352, `tripCap` 353, `deepArea` = 7 (area de la profondeur max), or l'area 7 ne
+  commence qu'en 351 : 3 couches permises. Minerais de l'area 6 (y 348-351, à 1-4 cases) refusés par `inFocus` (pas
+  l'area de travail), ceux de l'area 7 sous 353 refusés par le cap → `explore` dans 3 couches (« Change de galerie »).
+- Correctif : `deepArea` (src/sim/focus.js) : si `tripCap − areaTop(k) + 1 < CFG.capMinRows` (10), l'area du dessus ;
+  `explore` borné aussi par l'area de travail (src/sim/ai.js). Rejeu : 0 s de galerie à côté d'un minerai connu (avant :
+  64 s), 4965 blocs (avant 4928).
+- Tests ✅ focus (test « Plus profond en fin de session » complété : +5 couches → area du dessus, +capMinRows−1 → la
+  plus profonde, +15 → la plus profonde), deep-ores, end-depth, admin-end-session. Simulation 5 × 3 mineurs : 0 blocage,
+  coffre 4169 pods (main : 4141), allers-retours 28,4 (main 28,6).
+
+### 04/11/2026 — Appli : clavier compté deux fois (Galaxy S22), fond de l'Accueil 🧪
+- Clavier : sur le S22 (Android 14), la WebView est raccourcie par le téléphone ET `--kb-h` ajoutait la hauteur du clavier (plugin Keyboard, en dp) → fenêtre de connexion écrasée, seul « Pseudo » visible (reproduit dans Playwright : viewport 360 × 450 + keyboardWillShow 330). `keyboardHeight({ plugin, inner, base })` retire ce que la page a déjà perdu (`base − inner`) ; `base` = plus grande hauteur vue clavier fermé, remise à zéro au `load` et à chaque rotation (les premières valeurs du chargement sont fausses ; le champ Pseudo peut avoir le focus dès le départ). ✅ tests/app-keyboard (+1), app-* 177 ; Playwright : page non raccourcie → 330 px, raccourcie → 0.
+- Fond : sur l'Accueil de l'appli (`body.appHomeOn`), `#bgSession` caché (la prison en fond, sous le Carreau, coupait l'écran). Pas vu sur téléphone.
+
+## 04/11/2026 — Geoffrey — Butin d'un coffre à la demande ; marque de rune en % de la case
+- `src/ui/tooltip.js` `tipAttr` : un objet avec table de butin (`lootTableOf`) n'a plus `data-loot` ni `data-tip`, seulement
+  `title` (au doigt : rien ne s'ouvre en touchant la case). `src/ui/inventory.js` `infoHtml` : `lootHelp('item:<objet>')`
+  (« ? Butin ») après « Ouvrir ». Effet de bord : plus de tableau au survol dans Craft, Historique et Recherche (tipAttr
+  partagé) ; les « ? Butin » du lobby (tours, instances, mobs) ne changent pas.
+- `src/ui/style.css` `.runeMark` : 34 % de la case (max 11 u), dans le coin bas-gauche, au lieu de 11 u fixes.
+- **Tests** ✅ loot-table (nouveau test : tipAttr sans tableau, bouton à côté de « Ouvrir », rien pour un objet qui ne
+  s'ouvre pas), tooltip, inventory, stuff : 39/39. ⚠️ Pas vu à l'écran (pas de navigateur ici) : taille de la rune sur l'appli.
+
+## 04/11/2026 — Geoffrey — Dernière appli des stores en base (ns app_latest) et lue par l'appli
+- **Cause** : `APP_UPDATE.latest.android` resté à 1.1.2 (1.1.5 sur Google Play) : `storeNudge` ne proposait rien aux 1.1.2-1.1.4.
+- `src/config.js` : latest android 1.1.5, `latestTimeout` 3 s. `server/app-update/latest.js` : `createAppLatest({ store })`
+  (`get` : réglé, sinon config ; `set(platform, version)`, "" = retour à la config, version validée `\d+(.\d+){0,3}`).
+  `server/game/store.js` : ns **app_latest** (clé 'state', FREE_NS : aucun compte), `getAppLatest` / `putAppLatest`, PG et
+  fichier. Routes : `GET /api/app/latest` (public) ; `POST /api/admin/app-latest` (clé admin, local) ; `scripts/set-app-latest.js`.
+  `server/main.js` : `appUpdate.latest`. Appli : `src/app/store-nudge.js` `latestOf` (fetch, 3 s, repli config) avant `storeNudge`.
+- **Tests** ✅ app-latest (nouveau : config, admin 404 sans clé ou via relais, 400 valeurs invalides, retour à la config, relu
+  en base, repli de l'appli, fenêtre), app-update, app-update-server, account-delete, admin : verts. ❌ mobile-config « même version
+  iOS qu'Android » : déjà rouge sur main (iOS 1.1.0, Android 1.1.5), sans rapport. ⚠️ Pas essayé sur un téléphone ; les coques
+  avant ce changement (≤ 1.1.3 sur Samsung, mises à jour à chaud cassées) ne reçoivent pas ce code et gardent leur config.
+
+
+## 04/11/2026 — Geoffrey — Stuff non identifié empilé à l'affichage (branche geoffrey/stuff-empile)
+- **Affichage seulement** : `isPlainPiece` et `inventoryCells` (src/ui/inventory.js) regroupent les pièces sans `q`, sans
+  `plus`, sans `rune` ni `lines` d'un même objet sur la case de la première (× n) ; cases libérées rendues en fin de
+  grille dans « Tout ». Le stockage ne change pas (un slot et un uid par pièce) : équiper (premier uid), sets, craft
+  (`plainestFirst`), identification, tri et déplacement inchangés ; aucune règle de serveur touchée, pas d'anticheat.
+- « Recycler tout (n) » : pièces du groupe hors set ; `recyclePieces` (src/main.js) envoie un `recycle` par pièce (le
+  serveur vérifie chacune), fenêtre de confirmation avec le butin × n (`showRecycle(…, count)`).
+- Tests ✅ inventory-stack (2), inventaire, sets. Navigateur ✅ (4 Casques en fer simples : une case « 4 », Recycler tout
+  → 4 recyclés, 12 Tainted iron et 48 Peaux de gobelin).
+- ⚠️ Le message « ♻ n × … recyclés » peut être effacé par le rafraîchissement suivant de l'inventaire (comme pour une seule pièce).
+
+## 04/11/2026 — Geoffrey — Raid Cerbère côté serveur : lobby de raid de la guilde, session 'raid', vue (branche geoffrey/raid-cerbere)
+- **Lobby** `server/guild/raid.js` (`createRaidLobby({ game, guildOf, nameOf })`, en mémoire comme les groupes) : un par
+  guilde `{ leader, members:[{ account, name, ready }], launching }`, membres de la guilde seulement, `RAID.maxPlayers` au
+  plus, chef = premier arrivé (passe au suivant), une arrivée remet les autres « pas prêt », le chef est toujours prêt ;
+  refus si déjà en session (`game.activeSessionId`). Lancement HORS des files (lobby, guilde) : `startRaid` prend
+  acct + prisonLocks (inv, xp…) qu'un versement tient en attendant `guild.addXp` (sinon interblocage). Vidé après le lancement.
+- `server/guild/service.js` : param `game` (server/main.js le passe), `mine.raid` dans la vue (`max, members[{account,
+  name, ready, leader, me, playing}], leader, size, mine, isLeader, launching, waiting[noms], canLaunch, running` = raid
+  en cours de la guilde `{ id, startedAt, finishAt, players[noms], mine }`), `raidJoin/Leave/Kick/Ready/Launch`, eraseAccount.
+  Routes (`server/guild/routes.js`) : POST `/api/guild/raid/join`, `/leave`, `/ready` `{ready:bool}`, `/kick` `{id}`,
+  `/launch` (`{seed}` en dev ; 201, vue + `session`).
+- `server/game/service.js` : `startRaid(me, members, { guild, seed })` (mêmes refus qu'une instance, `freezePlayer`,
+  prison arrêtée, record `mode:'raid'`, `guild`, `finishAt = startedAt + raidDurationMs`, dev : horloge) ; `raidOfGuild(id)` ;
+  fin : aucun versement ni XP pour le raid (boucle sautée dans `settleWith`), statut done + historique (mode 'raid') ;
+  focus et k hole refusés ; `activeSessionInfo.max` = RAID.maxPlayers. `start({mode:'raid'})` refusé (pas dans MINE_MODES).
+- `src/shared/raid.js` (build / départs / durée), `src/shared/raid-view.js` (`createRaidViewer` : mine/porte = vue de mine
+  de `G.mine` + `mode, phase, raid` ; boss = arène complète ; `applyRaidView` navigateur), `server/game/live-game.js` kind `raid`.
+- **Tests** ✅ raid-server (nouveau, 6), raid, guild*, instance-server, game-service, game-http, game-replay, party*, live,
+  account-delete, admin-khole, admin-session-speed, effects : 286/286 ; anticheat 152/152.
+- ⚠️ Reste : états « Morsure » / « Durci » pas ajoutés à EFFECTS (le test des bulles exige un texte dans src/ui/effects.js,
+  côté navigateur) : la vue de l'arène envoie `bitten` (s) et `stone {hp,max}` par mineur. Lobby perdu au redémarrage.
+  Récompense du raid à définir. Pas vu dans un navigateur (interface à faire).
+
+## 04/11/2026 — Geoffrey — Raid Cerbère côté navigateur : onglet Raid de la guilde, session 'raid', arène (branche geoffrey/raid-cerbere)
+- **Onglet Raid** (`src/ui/guild.js` `raidHTML`, `guildTabs` + 'raid', `#guildRaidTab` dans index.html) : explication, lobby
+  (couronne du chef, Prêt / Pas prêt, « Sortir » pour le chef), Rejoindre / Quitter le lobby / Je suis prêt, « Lancer le raid »
+  (chef, grisé sans `canLaunch`, « En attente : … »), carte « Raid en cours » (« Retourner au raid » si `running.mine`).
+  `guildApi.raidJoin/Leave/Ready/Kick/Launch` (src/net/api.js). `setupGuild({ onRaid, onRaidWatch, onState, now })` : le chef
+  entre dans la session renvoyée par `/launch` ; un membre est basculé par `pollLobby` (party state `session`) ou par
+  `onState` (onglet Guilde ouvert, `running.mine` sans session → `refresh()`).
+- **Session 'raid'** (`src/main.js`) : `applyRaidView` (G de départ = `emptyView()` + `mode:'raid'`) ; minage et porte : la mine
+  (`#run`, rendu de la mine) + bandeau `#raidBanner` (`raidBannerText` : blocs restants left/total, %, temps restant ; porte :
+  « La grande porte s'ouvre dans X s »), chrono sur RAID.duration, pas de focus. Arène : **panneaux et canvas de l'instance
+  réutilisés** (`#inRun`, `cvIn`, fxBarIn, spellBarIn ; `raidPanes()` bascule #run / #inRun selon `G.phase`), rendu
+  `src/render/raid.js` (toute l'arène, `cerbere` / `cerbere_rage` 8 × 6 cases, barre de vie, cibles marquées, éclair de
+  Morsure, poussière du Balayage, voile du Magma ; Durci : mineur grisé + bloc de pierre + solidité ; mordu : halo rouge ;
+  mort : pierre tombale), HUD `src/ui/raid-hud.js` (`updateRaidHUD` : PV, repère des 33 %, prochaines attaques, cibles,
+  équipe ; `showRaidEnd` : réussite, durée, blocs, PV restants, parts mined / bossDmg / bitten / stoned / freed / dead ;
+  « Retour » → onglet Guilde). Quitter : « Quitter le raid ? ». Fond (`src/ui/backdrop.js`) : mode 'raid' (arène) → canvas cvIn.
+- **Correctif serveur** `src/shared/raid-view.js` : la vue du minage envoie `over` du RAID (avant : celui de la mine, jamais
+  vrai quand le temps s'écoule pendant le minage → le navigateur restait figé jusqu'à no_session).
+- **États** : `bitten` (Morsure, debuff) et `stone` (Durci, contrôle, value = solidité) dans EFFECTS.list, lus par
+  `minerEffects` (m.bitUntil, m.stone) ; Mort dans un raid : src 'raid' (bulle sans le texte du Golbute). Bulles dans src/ui/effects.js.
+- **Textures** : `cerbere_textures()` branché dans scripts/gen_textures.py ; 'cerbere', 'cerbere_rage' dans TEXTURES
+  (`npm run textures` : cerbere*.png identiques, les autres PNG régénérés remis comme avant).
+- **Tests** ✅ raid-ui (nouveau, 9 : onglet, boutons, bandeau, bilan, états, fin vue pendant le minage), guild-ui (sous-onglet
+  Raid), raid, raid-server, effects, guild*, backdrop, app-mode, prison-ui, view : 175/175. ❌ « fortune : le doublon… » et
+  « recycle : un BP du T2… » rouges aussi sans ces changements (sans rapport).
+- **Navigateur** ✅ (Playwright, `npm run dev`, données dans un dossier à part) : lobby vide / chef, lancement solo, minage
+  avec bandeau, fin à ×300 → bilan en 7 s, Retour → Guilde. ⚠️ Porte et arène vues **avec une vue fabriquée** (route
+  `/api/game/view` remplacée par `createRaidViewer` sur une partie Node : un mineur niveau 1 ne mine pas 5 000 blocs en
+  30 min) : porte, arène, Durci, Morsure, rage, équipe, barre d'états (Mort).
+- ⚠️ Pas vu : téléphone / appli (disposition de l'arène dans #inRun au format portrait, onglet Raid à 360 px), à plusieurs
+  comptes (bascule des membres au lancement), `ctx.filter` (grisé du Durci) ignoré par les vieux Safari (le bloc de pierre
+  reste). Les morts au contact sont souvent cachés derrière un vivant (pierres tombales empilées en x = contact).
+- **Applis** : src/, textures/ copiés en entier par server/app-update/bundle.js (copy-web.js) : rien hors paquet.
+
+## 04/11/2026 — Raid Cerbère : 2 groupes de 5 (Geoffrey)
+- **Quoi** : `RAID.groups = 2`, `RAID.groupSize = 5`. Lobby (server/guild/raid.js) : `group` par membre, `join(me, group)` (plein → premier groupe avec de la place), `move(me, group, id?)` (soi, ou un autre pour le chef du raid ; `group_full` 409) ; route `POST /api/guild/raid/group { group, id? }`, `join { group }`. Vue : `groups`, `groupSize`, `members[].group`. `startRaid` garde `players[].group` (`cleanGroup`, défaut par paquets de 5) et refuse des groupes > 5 (`groupsOk`).
+- **Sim** : `src/sim/groups.js` (`sameGroup`, `inspireAt/On/Pct`, `setInspire`) ; `m.group` (null hors raid = comportement d'avant). Inspiration par groupe (`G.inspireG`), Cri de guerre (mine : filtre `sameGroup` ; arène : `G.warcryG`), Bonbonne de zipette par groupe. Anneaux : `raidSpecs` calcule `groupRings` par groupe (src/shared/raid.js). Un ancien enregistrement sans groupes : un seul groupe.
+- **UI** : src/ui/guild.js `raidHTML` : un bloc par groupe (Rejoindre ce groupe / Passer dans ce groupe / → Groupe X pour le chef), `api.raidMove`.
+- **Tests** : raid (groupes : Inspiration, Cri de guerre, anneaux), raid-server (groupes du lobby, déplacement, plein, lancement), raid-ui (HTML) ✅. Simulation : `simulate-raid.js` met 2 barbares, 2 mineurs, 1 logisticien par groupe.
+- ⚠️ Non vérifié dans un navigateur (seulement le HTML testé) ; Hand of Justice, Ulti shen, Dash visent les ennemis ou rejoignent un allié de n'importe quel groupe (ce ne sont pas des buffs).
+
+## 04/11/2026 — Geoffrey — Concasseur, minerai d'or ; `chance` sur un « always »
+- `CRUSHER.loot['Or']` (config). `rollLoot` (src/meta/loot.js) : une entrée `always` avec `chance` n'est versée que si `rng() <
+  chance` (tirage à part, avant sa quantité) ; sans `chance`, aucun tirage de plus : les autres tables (fer, coffres, Golbute)
+  gardent exactement les mêmes tirages. `dropOdds` porte la chance ; aide « ? » (src/ui/crusher.js) « (50 %) », wiki « (pas à
+  chaque lot) » ; texte du wiki : minerais de fer et d'or.
+- **Tests** ✅ crusher (nouveau test : table, 100 000 lots, fourchettes, chances), wiki, loot, loot-table : 52/52 ;
+  `npm run test:anticheat` 152/152.
+
+
+## 04/11/2026 — Raid : invitation par pseudo dans le lobby (bêta, temporaire, Geoffrey)
+- **Quoi** : `invite(me, name)` dans server/guild/raid.js (dépendance `findByName`, branchée sur `accounts.findAccountByName(nameKey())` dans server/guild/service.js `raidInvite`), route `POST /api/guild/raid/invite { name }` → vue de la guilde + `invited: { name, group }`. Le joueur invité : `invited: true`, `ready: true`, premier groupe avec de la place ; `prune` le garde même s'il n'est pas de la guilde. Refus : `not_in_raid`, `not_found`, `already_in_raid`, `busy` (autre lobby), `raid_full`, `member_in_session`. UI : champ + bouton dans `raidHTML`, `tell` de confirmation.
+- L'invité ne voit pas le lobby (onglet Raid d'une autre guilde) ; au lancement il est emmené par `pollLobby` (`partyApi.state().session`).
+- **Tests** : raid-server (invitation hors guilde, gardée, lancée) ✅ ; guild*, raid-ui ✅.
+- ⚠️ À retirer après la bêta : route, `invite`, champ de `raidHTML`, `invited` dans `prune`.
+
+## 04/11/2026 — Raid : portrait et spé dans le lobby (Geoffrey)
+- server/guild/raid.js `cardOf` (cache 30 s) : `tree`, `specLevel`, `look`, `auras` par membre (game.skillTreeOf / specLevelOf / lookFor / aurasFor, comme les groupes en formation). src/ui/guild.js : canvas `data-raidpic` dans `raidRow`, `drawRaidPortraits` après `put` quand le HTML change, `specLabel`.
+- Tests raid-ui, raid-server ✅ ; vérifié dans le navigateur (mode dev, 2 comptes, invitation) ✅.
+
+## 04/11/2026 — Raid : Indices à rapporter (remplace « tout miner », Geoffrey)
+- **Quoi** : bloc 26 `Indice` (type `clue`, tex `clue`, `RAID_CLUE_*` en tête de BLOCKS : dureté 30, val 1000, 150 pods), `IDS.clue`. `genRaidArea` : `seen` à 0 (dans le noir), `RAID.mine.clues` posés au hasard (moitié par area, pas au-dessus de `clueMinDepth` dans l'area 0). `isTarget` vise `clue` ; `aimable` = `isTarget` (ancien : tout le terrain) ; `targetVal` sans `terrainVal`. `breakBlock` → `findClue` (src/sim/actions.js) : `G.raid.found++`, `m.stats.clues`, montre (`seen`) l'Indice caché le plus proche (`RAID.mine.lead`). IA (src/sim/ai.js, 2 chaînes de raisons) : `G.raid && m.inv.Indice > 0` → remonte ('rapporte un Indice'). Porte : `cluesLeft(M) = clues − G.chest.Indice` (src/sim/raid/session.js). Bilan : `clues: true`, parts `stats.clues` ; ancien bilan (blocs) toujours lisible (raid-hud).
+- **Équilibrage** (simulate-raid.js `--clues --clue-hard --clue-w --clue-depth`, équipe de référence, 2 seeds) : 10 Indices sans rapport : 7-9 trouvés en 30 min (les derniers jamais) ; avec « mène au suivant » mais sans remonter : traîne (le dernier reste dans un sac) ; avec la remontée : 100 → 12 min, 120 → 13, 150 (ligne ≥ 40) → 18,5, 100 dureté 240 → 19. Retenu 150 / 30 / 150 pods / 40.
+- **Tests** : raid (bandes, noir, Indices, sac, suivant montré, coffre), raid-server, raid-ui ✅. Simulation mine normale 5 sessions : voir plus bas.
+- ⚠️ Pas vérifié dans un navigateur (texture `clue`, bandeau).
+
+## 04/11/2026 — Geoffrey — Arbres de skills v2 (branche geoffrey/arbres-skills-v2)
+- **Config** (`SKILLS`) : `tierPoints` 3, nœuds avec `col` (0/1), `needs` (« | »), `specOnly` (tous les skills à 1 point),
+  effets génériques `adds` (points), `mult` (× (1 + effet × poids)), `raid` (instances, tours, Bloc géant / He's coming),
+  `aura` (groupe). `SKILLS.rested` { time 180, prisonTime 60, tenacity 2 }, `SKILLS.steady` { tenacity 5, sources }.
+  `needsAll` supprimé. Ruée et Pillage max 3 (avant 5). EFFECTS.rested (buff affiché).
+- **Règles** (`src/meta/skills.js`) : état `{ v:2, tree, ranks, glyphs, ops }`. `blockedReason` : unknown → no_spec →
+  maxed → spec_only → too_deep (hors spé, étage > profondeur de la spé − 1) → needs_tier (3 × (r − 1) points dans
+  l'arbre) → needs_previous (needs) → no_points. `skillOp` : `spec` (autre arbre = ranks {}), `reset` garde la spé.
+  `sanitizeSkills` rejoue la spé puis les autres arbres, étage par étage. `migrateSkills` (sans v:2 → ranks {}),
+  appelée **seulement** au chargement du compte (server/game/service.js loadSkills) : les enregistrements de session et
+  les sets sont relus avec les nouvelles règles, sans reset. `skillRanks` porte v:2. `groupAuras`, `pointsByTree`,
+  `treePoints`, `treeDepth`, `depthCap`, `tierNeed`. `withSkillStats(carac, effects, { raid, auras })`.
+- **Partie** : Solide ne joue pas sur l'avalanche du Golbute (golbute.js : bonus retiré via `extra`). `src/sim/skillfx.js` : `critMul` (Crushing, × 2 × (1 + 10 %/rang)) dans les 4 hitDmg (mine, instance,
+  Golbute, tours) et le DPS de Lucifer ; `backstabMul` (Dans le dos) : mine = tacle (G.mobs), instance = tacle ou
+  boss.focus, tours = tacle ou boss.target / focus, Golbute = golem qui tacle ou boss au combat à portée de l'autoattack ;
+  `trackRested` (session.js stepMiner : fin du mode 'departure' avec trips > 0) → `m.restedNow`, `restedMul` dans moveT,
+  climbT, winchT, mineT, hitDamage ; `tenacityBonus` dans `tenacityOf` (Reposé, Solide pour les sources de boss).
+  `src/shared/game.js` minerSpecs : `raid` depuis MINE_MODES, auras de tous les mineurs (ou `record.skillAuras` : salle du
+  Bloc géant, src/shared/giant-room.js) ; mine instantanée : auras pour soi seul.
+- **Serveur / lobby** : action `spec` (refusée en session), erreurs no_spec / needs_tier / too_deep / spec_only ;
+  `game.skillPointsOf` → party `treePts` → `specLabel(tree, level, pts)` « Logisticien (2/12/1) · SP lvl 3 ».
+- **UI** : `specBarHtml` (bureau), bouton « Choisir la spé » sous les onglets (appli), deux colonnes (`--c` / `--r` en
+  appli), étiquettes d'étage (🔒 + points), ★ sur les skills de classe. Wiki : texte et tableau des arbres (nodeText).
+- **Tests** ✅ skills (réécrit), skills-v2 (nouveau : stats, tout terrain, auras, Crushing, Dans le dos, Reposé, Solide,
+  serveur + migration), app-skills, glyphs, sets, dev-spec, mule, game-service, social, admin-take, hescoming-*, lobby,
+  anticheat/skills (réécrit, 500 suites avec spé) ; `npm run test:anticheat` vert. ❌ déjà rouges sur main, sans rapport :
+  energy « energyOfTicks », leaderboard « roi gobelin », mobile-config « iOS », perf « boîte de mesures »,
+  prison-server « une tour et une instance », tier2 « fortune : le doublon » et « recycle : un BP du T2 », tier4 « recettes du
+  T4 ». dev-spec : attendu du lobby corrigé (He's coming manquait). talents-etage6 : Saccager est à l'étage 4. `npm test` :
+  2298 verts, ces 8 rouges.
+- **Simulation** (3 mineurs × 5) : sans skills identique à avant (coffre 4169,2) ; `--skills mixed` : areas 3,8, profondeur
+  205, coffre 4543, 0 blocage.
+- ⚠️ Fragile : une session en cours pendant la mise en ligne est rejouée avec les règles v2 (ses rangs peuvent être
+  coupés si l'ancien chemin ne tient plus). Navigateur ✅ bureau et appli (Test_Logisticien). Pas essayé sur téléphone.
+- **Raid Cerbère** (arrivé sur main pendant le chantier) : `raidSpecs` passe `raidMode` (Mineur tout terrain), hitDmg de
+  src/sim/raid/cerbere.js avec Crushing et Dans le dos (visé = cible de la Morsure), `cerbere` dans `SKILLS.steady.sources`.
+  Tests raid, raid-server, raid-ui (libellé de spé à jour) ✅. En ligne le 04/11.
+
+## 04/11/2026 — Chat permanent : zone vide sous le chat quand il recouvre la barre d'action (Jules)
+- **Quoi** : `.chatDock.overNav .card{padding-bottom:dock-h + 6u}` ajoutait une marge opaque (fond du chat) de 64u, alors que
+  la bulle recouverte (#orbL) ne fait que 36u. Désormais src/ui/chat-dock.js `navLift(w, rects, screenH)` (pure, exportée)
+  mesure la hauteur des enfants de `.dock` que la largeur du chat recouvre (largeur 0 = caché, ignoré) → `--chat-lift` sur
+  le dock ; `overNav` = lift > 0. CSS : la marge est sur `.chatDock` (transparente) et non plus sur `.card` ;
+  `.chatDock{pointer-events:none}` + `.chatDock>*{pointer-events:auto}` (les clics traversent la marge) ; la règle
+  `body.townWalk .chatDock` est retirée (les enfants ont déjà `auto`). ≤1170 px et `body.phone` : marge 0 comme avant.
+  `#nav` ajouté au ResizeObserver.
+- **Tests** : chat (nouveau test navLift), chat-ui : 41/41 ✅. Vérifié dans le navigateur (mode dev, 1600×900, Lobby et
+  Inventaire) ✅ : le chat s'arrête au-dessus de la barre, `elementFromPoint` dans la marge ne tombe pas sur le chat.
+- ⚠️ Pas vu en session (orbe Oxygène) ni en ville (townWalk), même mécanique.
+- **Applis** : seulement src/ui (copié en entier) : rien à signaler.
+
+## 04/11/2026 — Cerbère : nouveau sprite « Molosse des Enfers », animé (Jules)
+- **Quoi** : `scripts/gen_cerbere.py` réécrit (l'ancien chien de lave de Geoffrey est remplacé). Moteur générique
+  `scripts/gen_sculpt.py` (parties en ellipse / polygone / tube de l'arrière vers l'avant, volumes bombés, facettes de
+  Voronoï en option, clé froide + lave d'en bas, encre ; `merge` : parties fondues sans encre entre elles ; pixels hors
+  parties `'_fx'` cernés d'encre, `'_fl'` lumières sans encre). `base(rage)` = corps fixe encré ; `frame(b, i)` = corps
+  + ce qui bouge (flammes qui respirent et se balancent, flammèches, 40 braises, gueules dont le feu pulse, filets de lave
+  entre les crocs, bave qui tombe, yeux) ; tout est périodique en t = i / FRAMES, la boucle est sans saut.
+- **Textures** : `cerbere` / `cerbere_rage` (image 0, 128 × 96 : lobby de guilde, et repli) ; `cerbere_anim` /
+  `cerbere_rage_anim` (planches 1536 × 96 = 12 images). `TEXTURES` (config) les charge.
+- **Rendu** : src/render/raid.js `cerbereFrame(now)` (pure, exportée) = image de la planche au temps réel (ms) ;
+  `RAID.cerbere.anim = { frames: 12, ms: 90 }` (frames doit valoir `FRAMES` de gen_cerbere.py). Planche pas chargée →
+  l'image fixe comme avant. Boss, zone, règles : inchangés (8 × 6 cases).
+- **Tests** : raid-ui (taille des planches lue dans l'en-tête PNG = 128 × frames sur 96 ; cerbereFrame boucle), raid,
+  raid-server : 29/29 ✅. Sortie du générateur comparée pixel à pixel au prototype validé par Jules : identique ✅. Vu dans
+  le vrai rendu de l'arène (page d'essai sur src/render/raid.js, normal et enragé) ✅.
+- ⚠️ Pas vu dans une vraie partie de raid (10 joueurs), ni sur téléphone. `npm run textures` régénère les mêmes PNG
+  (~3 s pour Cerbère).
+- **Applis** : nouveaux PNG dans textures/ (copié en entier par server/app-update/bundle.js) et src/render : rien à signaler.
+
+
+## 04/11/2026 — Geoffrey — Skills : liens « | » tracés d'après la mise en page (branche geoffrey/skills-liens)
+- `src/ui/skills.js` `drawLinks` : après chaque rendu (bureau et appli, et au redimensionnement), un SVG par arbre (taille
+  réelle de `.skGraph`) ; pour chaque case `data-needs`, un crochet de la case exigée à celle qui l'exige (gauche des
+  cases ; à droite pour la colonne de droite au bureau), flèche (`marker`), pointillé ou orange (`data-open` : skill exigé
+  au max). Bulle « Exige … au rang max », fiche de l'appli `.skNeed`. Ancien : lignes centre à centre en % (cachées par
+  le nom et la case de glyphe), maillon de 14 px dans l'appli.
+- Tests mis à jour pour l'Escalateur max 3 (skills, mule ; la valeur était partie en ligne sans tests). ✅ skills, mule,
+  glyphs, winch, dps, app-skills, skills-v2. Navigateur ✅ bureau et appli (?app).
+
+## 04/11/2026 — Geoffrey — Skills : reset, spé et glyphes permis en session ; Ajout rapide (branche geoffrey/skills-liens)
+- `server/game/service.js` skills : plus de `session_running` pour reset, spec, glyph_pose / glyph_remove (les skills et
+  glyphes d'une session sont figés au lancement : `frozenSkills`, l'enregistrement ne bouge pas ; XP de spé : arbre figé).
+  `src/ui/skills.js` : boutons plus grisés en session (message « tes changements comptent pour la suivante ») ; appli :
+  case `#skQuick` (localStorage `dim.skQuick`), un toucher sur une case `data-node` envoie `learn` sans fiche.
+- Tests ✅ game-service (reset / spé / retrait de glyphe en session, enregistrement inchangé), app-skills, glyphs, skills ;
+  `npm run test:anticheat` 152/152. Navigateur ✅ (appli : case à côté de Reset).
+- ⚠️ Glyphe retiré pendant la session : il revient dans l'inventaire et reste actif dans la session en cours (figé) ; pas
+  de doublon possible (le drop lit les glyphes possédés figés au lancement).
+
+## 04/11/2026 — Geoffrey — Dégâts % des pièces : prix de dessin 16 x par % (branche geoffrey/nerf-degats-pct)
+- Cause (enquête He's coming : Infernatiwar ≈ 10 400 points par visite contre ≈ 4 500) : son set « DEGATS DEGATS » associé à
+  He's coming ; rejoué avec ce set (salle avec Nbrick et Croustiflex, scratchpad hc.mjs) : 12 259 points ; sans les
+  Jambières du Golbute : −39 %. `UPGRADE.worth.damagePct` = 2 x par % (mesuré avec 5 dégâts) contre 8 pour la double attaque.
+- `UPGRADE.priceAdjust.damagePct` 3 → 8 (prix de dessin 6 → 16) : sert aux lignes tirées de la Cape inclusive (`rolledPrice`).
+  Pièces écrites à la main dans la config : Jambes en thorium 11,8 ; Jambières du Golbute 12,5 / butin 25 / double 7 ;
+  Cape royale du Gobelin 1,9 ; Plastron de l'équilibre 1,1. GS au prix mesuré : baisse un peu (Plastron 1003 → 994).
+  Runes (`runeDiv`, `UPGRADE.prices`) inchangées.
+- Tests ✅ stuff-balance (Plastron 994, tolérance 0,02), gearscore (priceAdjust), cape-inclusive (ligne 7,8), steel-gear,
+  stuff, rune, wiki, golbute, dps.
+
+## 04/11/2026 — Geoffrey — Lag en ligne : fil principal du serveur saturé par structuredClone (branche geoffrey/fix-lag-sessions) — ✅ en ligne le 04/11
+- Symptôme (`?perf`) : réponse 1604 ms, envoi toutes les 395 ms, 33,5 ticks/envoi. `top -H` sur le VPS : MainThread
+  99,9 %, WorkerThread (parties) ~0 %, VPS 2 cœurs (50 % global) : monter en gamme n'aurait rien changé.
+- Mesure : profil CPU de 15 s pris à distance (`kill -USR1 <pid>` sur le VPS, tunnel `ssh -L 9229:127.0.0.1:9229
+  root@82.223.196.89`, script CDP Profiler.start/stop, sans redémarrer). 88 % structuredClone ← `copy` ←
+  `store.sessionsOf` ← `activeOf` ; 57 % depuis `social.view` (statusOf → activeSessionInfo pour chaque ami/membre),
+  22 % `activeSessionId`, 20 % `party.state`, 14 % `GET /api/game/view`, 4 % `restedEnergy`.
+- Cause : `sessionsOf` copiait (structuredClone) **tout l'historique** du joueur (sessions done avec leur résumé) avant que
+  `activeOf` n'en garde une ; coût ∝ historique × amis × fréquence des vues.
+- Correctif : `server/game/store.js` `sessionsOf(accountId, keep)` filtre **avant** la copie ; nouveau `lastEndOf(accountId,
+  keep)` (aucune copie). `server/game/service.js` : `activeOf`, `sessionOf` (prison), stèle, `eraseAccount` passent
+  `isActive` ; `restedEnergy` et `lastEndedAt` utilisent `lastEndOf`. Les autres appels (historique, prisonCompos,
+  tableau prison) gardent la liste complète.
+- Tests ✅ `tests/store-sessions.test.js` (nouveau, 4 : keep avant la copie, copies, lastEndOf), game-service, social,
+  energy-server, team-energy, postgres, anticheat/server, anticheat/party : 119/119 (1 sauté).
+- ⚠️ À vérifier en ligne : `?perf` réponse < ~100 ms, `top -H` MainThread bien en dessous de 100 %. Restes possibles
+  (non mesurés) : `sessionsWithStatus` copie aussi les sessions actives (raidOfGuild, playersInSession), et la mémoire du
+  processus (1,1 Go) vient sans doute de l'historique des sessions gardé en mémoire.
+
+## 04/11/2026 — Geoffrey — Admin : message de l'équipe en pop-up, ban en minutes (branche geoffrey/admin-sanctions) — ✅ en ligne le 04/11
+- `scripts/warn.js` → `POST /api/admin/notice` { name, title (1–`MODERATION.noticeTitleMax` 80), text (1–`noticeTextMax` 1000) },
+  pseudo ou ID d'invité, journal `mod_log` action `notice`. Stockage : champ `notices` [{ id, at, by, title, text, seenAt }]
+  de la fiche ns `moderation` (`server/moderation/service.js` : `notice`, `unseenNotices`, `noticeSeen`, gardés
+  `MODERATION.keep`). L'état social (`GET /api/social`, relu toutes les `SOCIAL.poll` ms) porte `notices` (non lus) ;
+  `src/main.js` `showNotices` ouvre `tell(text, { title })` (titre `.dlgTitle`, `src/ui/dialog.js`), puis
+  `POST /api/moderation/notice-seen` { id } (idempotent ; 404 si pas le sien). Set des messages montrés sur la fonction (pas
+  de const : l'état social peut arriver avant la fin du module), clé compte:id.
+- `scripts/ban.js --minutes N` → `/api/admin/ban` { minutes } (1–`banMinutesMax`, refusé avec `days`) ; journal « N min ».
+- Tests ✅ moderation-admin (minutes : valeurs invalides, heure de fin, journal ; notice : textes invalides, compte inconnu,
+  visible seulement par lui, seen idempotent / 401 / 400 / 404, journal), dialog (titre échappé), moderation, social,
+  admin-moderation, moderation-ui, admin-take, admin. ⚠️ Pas vu dans le navigateur.
+- ⚠️ Joueur banni par le ban auto du chat : le POST « lu » est refusé (403) → la pop-up revient au rechargement de la page,
+  jusqu'à la fin du ban. Compte suspendu : il ne voit rien avant la fin de la suspension.
+
+## 04/11/2026 — Geoffrey — Craft en série (branche geoffrey/craft-quantite) — ✅ en ligne le 04/11
+- `src/meta/craft.js` : `craft(inv, item, opId, rng, count = 1)` (tout ou rien, `bad_count` si count n'est pas un entier
+  1..`CRAFT.maxCount` ou > 1 hors série) ; `inBatch(item)` (produit empilable, pas Rune, pas `rolledSpec`, aucun ingrédient
+  stuff) ; `maxCrafts(inv, item)`. `src/config.js` `CRAFT = { maxCount:1000 }`. Serveur `game.craft` lit `body.count`
+  (défaut 1, renvoie `count`), message `bad_count`. `src/net/api.js`, `src/main.js` (fenêtre « Tu as obtenu » : qty × count),
+  `src/ui/craft.js` (champ `#craftQty` + `#craftMax` dans `.fqty.craftQty`, seulement si `inBatch`).
+- Tests ✅ craft (+3), anticheat/craft (+2 : 300 demandes trafiquées / rejouées, matière conservée ; serveur : count texte /
+  négatif / décimal / 1001 refusés, rafale du même opId créditée une fois), game-service ; `npm run test:anticheat` 154/154.
+- ⚠️ Écran pas vérifié dans un navigateur (champ, Max, libellé « Craft × N »).
+
+## 04/11/2026 — Geoffrey — Raid : exploration du noir, treuil au lancement, départ réparti, Balayage sans fatigue (branche geoffrey/raid-ia)
+- **Constat** (seed 262283490 rejouée, équipe de référence de simulate-raid.js) : ~30 % du temps en remontée, ~30 % « Descend
+  par l'existant », tous les mineurs au fond (couche 101) ; pas de treuil (posé seulement par `tryUnlock`, qui ne joue pas en
+  raid) ; `minerSpecs` à plus de 3 joueurs : les 3 premiers aux places de `TEAM` (8, 25, 42), les autres répartis par-dessus
+  (23/25, 42/43 : même puits). simulate-raid.js réécrivait x / home lui-même : la simulation ne le voyait pas. Indice visé par
+  deux mineurs à la fois : jamais vu (0 échantillon), la réservation (`oreTakenBy`) marche.
+- **Quoi** : `src/sim/raid/scout.js` (zones de `RAID.mine.scout.zone` = 10 sur les lignes à Indices, `zoneOpen` : pas dans
+  `G.raid.scouted` et ≥ `minUnseen` 50 % de cases non vues, `pickZone` : la plus proche par `search(...).dist` au centre ±1,
+  hors zones `o.scout` des autres sauf s'il ne reste qu'elles). src/sim/ai.js : `scouting` (G.raid) → `down` faux ;
+  après `farGoal`, `scout(G,m)` (engagement `m.scout`, arrivé au centre ou inatteignable → `markScouted`), sinon `explore`
+  comme avant ; `m.scout = null` à chaque remontée. src/sim/world.js : `assignWinch(G,k)` sorti de `tryUnlock` (même code),
+  appelé par newSession en raid avec k = areas − 2 (bottom = areaTop(1) = 52). src/shared/game.js : n > TEAM.length → tous
+  répartis. src/sim/tenacity.js `tenacityTryFresh` (chance sans fatigue, ne touche pas `m.tenTired`) pour le Balayage
+  (src/sim/raid/cerbere.js `sweep`). simulate-raid.js `--no-scout`.
+- **Tests** ✅ raid-scout (nouveau : zones, réservation, IA qui explore sans descendre au fond, treuil au lancement + ascenseur,
+  pas en mine normale, départ réparti, Balayage sans fatigue), raid, raid-server, raid-ui, winch, glyphs, mule, tenacity,
+  instances, team, instance-sim, lobby, dev-spec, fall (161 verts).
+- **Simulation** : mine normale 3 × 5 identique à main (coffre 4169,2, 0 blocage). Raid `--mine-only --runs 5` : 13,2 min
+  sans exploration (treuil seul), 11,1 avec ; `--runs 10 --tank-ten 40` : 1/10 victoires, PV restants moyens 26 %, combats
+  7,5-13 min (fin par les morts).
+- ⚠️ Pas vu dans un navigateur. Points fragiles : `scout` refait une recherche complète (sans limite) à chaque choix de zone ;
+  `--tank-ten` met la résilience à 100 % : la simulation ne mesure pas l'effet du Balayage sans fatigue (il aide les tanks sans
+  résilience).
+
+## 04/11/2026 — Geoffrey — Admin : raid-move (branche geoffrey/admin-raid-move) — ✅ en ligne le 04/11
+- `server/guild/raid.js` `adminMove(acc, host)` (dans la file `serial`) : lobby qui contient host (sinon `host_not_in_raid`),
+  refus `same_account`, `raid_launching`, `raid_full`, `member_in_session` ; retire acc de son autre lobby de raid ; hors
+  guilde → `{ invited:true, ready:true }` (gardé par `prune`), de la guilde → ready false, les autres ne repassent pas « pas
+  prêt ». Déjà dedans : `moved:false`. `server/guild/service.js` `raidAdminMove` ; route `POST /api/admin/raid-move`
+  (`server/admin/routes.js`, nouveau paramètre `guild` passé par `server/app.js`) ; script `scripts/move-to-raid.js`.
+- Tests ✅ `tests/admin-raid-move.test.js` (nouveau, 3 : clé, pseudos, hôte sans lobby, invité prêt, rejoué, script et ses
+  erreurs), `tests/raid-server.test.js` (+2 : membre / invité, ancien lobby quitté, en session refusé), admin-party, admin,
+  guild-service, app-guild : 62/62.
+- Ajout : `adminReady(acc, ready)` (`server/guild/raid.js`, lobby qui contient acc sinon `not_in_raid`, ready booléen
+  sinon 400, chef toujours prêt, refus `raid_launching`), `raidAdminReady`, route `POST /api/admin/raid-ready` (ready absent
+  = true), script `scripts/set-raid-ready.js --name X [--ready on|off]`. Tests `tests/admin-raid-move.test.js` +2 (route,
+  script) : 64/64 avec raid-server, admin, admin-party, guild-service, app-guild. Les ID de compte des tests doivent passer
+  `parseAccountId` (sinon `raidKick` répond « Joueur inconnu »).
+
+## 04/11/2026 — Geoffrey — Composition des mobs, areas 2 à 6 (branche geoffrey/compo-mobs)
+- `src/config.js` : `MOBS.spawnTable` lignes 2 à 6 refaites ; `MOBS.minArea` occultiste 4→3, méphite 3→2, golem 5→4, chair 6→5. Nouvelle clé `MOBS.hpFrom` (area où le mob a `hpBase`, absent = `minArea`) = anciennes `minArea`, pour garder la courbe de PV. `mobHp` = hpBase × 1,15^(max(k, minArea) − hpFrom) : exposant négatif possible dans la nouvelle première area (golem 261 en area 4), jamais moins que dans `minArea` (avant : `Math.max(0, k − minArea)`).
+- `minArea` sert aussi aux pièges (`trapTable`), au spawn du mur et du ver (`spawnFlesh` / `spawnWorm`), à la bulle Butin (`loot-table.js` `from`) et au wiki (`MOB_INFO.hp0` = PV dans la première area, donc 261 pour le golem) : tous suivent sans autre modif.
+- Tests ✅ mobs, goblin, mephite, golem, flesh, mobs-a7, khole, golbute, prison-gobelins-gs, wiki*, trap*, occult* : 143/143 (tests qui figeaient l'ancienne table mis à jour). Simulation 3 mineurs × 5 : areas 3,0, profondeur 191, 0 bloquée.
+- ⚠️ Non vérifié : difficulté réelle des areas 4 et 5 (golem / mur de chair) en stuff fer ; la simulation par défaut ne dépasse pas l'area 3.
+
+## 04/11/2026 — Geoffrey — Arbres de skills v3 (branche geoffrey/arbres-skills-v3) — ✅ en ligne le 04/11
+- `src/config.js` SKILLS.trees : 5 étages, `col:2` pour all_terrain (Mineur, étage 2), ambidextrous (nouveau, Logisticien
+  étage 2, `adds:{ doubleAttack:2 }`, max 3) et demat (Logisticien, étage 3) ; places changées (voir GAME_DESIGN).
+  Escalateur max 3 gardé (le tableau de Geoffrey disait 5 ; décidé avec lui). `src/meta/skills.js` SKILLS_VERSION 2 → 3 :
+  toute sauvegarde de compte v2 perd ses rangs (`migrateSkills`) ; les sets sont rejoués par `sanitizeSkills` (rangs
+  devenus impossibles ignorés).
+- Affichage : `src/ui/skills.js` colonnes à 30/70 % (2 colonnes) ou 20/50/80 % (3 colonnes, classe `.c3` : cases de 46u au
+  lieu de 60u) ; `--cols` sur `.skGraph` pour la grille de l'appli (`src/app/app.css`). Icône d'Ambidextre : `grab`.
+- Tests ✅ skills (+ Ambidextre), skills-v2, talents-etage6, mule, sets, game-service, social, glyphs, winch, dps,
+  app-skills, wiki, dev-presets, dev-spec, session, mobs, anticheat skills / glyphs / sets (versions 2 → 3 et étages mis
+  à jour). ⚠️ Pas vu dans le navigateur : 3 colonnes au bureau dans un arbre d'environ 300 px, noms longs sur 2 lignes.
+
+## 04/11/2026 — Jules — Jauge de profondeur : initiales échangées entre mineurs (branche jules/fix-barre-profondeur) — ✅ en ligne le 04/11
+- Signalé par un joueur : pastilles de `#railMarks` avec l'initiale d'un autre mineur (la pastille entourée, au bon
+  endroit, portait la mauvaise lettre). Cause : `updateRail` (`src/ui/hud.js`) ne recréait les pastilles que si la liste
+  des ids changeait ; les ids sont le rang dans l'équipe (`newGame`, `src/sim/session.js` : `createMiner(i, …)`), donc
+  une nouvelle session de même taille, ordre différent, gardait les anciennes lettres et couleurs.
+- Correctif : la clé est le HTML des pastilles (id, couleur, nom). `updateRail` est exporté pour le test.
+- Tests ✅ `tests/hud-rail.test.js` (nouveau, faux DOM : deux sessions de suite, ordre inversé ; échouait avant le
+  correctif), instant-ui, raid-ui, effects, spells : 70/70. ⚠️ Pas revu dans le navigateur.
+
+
+## 04/11/2026 — Jules — Concasseur : 16 cases d'entrée, 16 de sortie
+- Quoi : `CRUSHER.inSlots` / `outSlots` 8 → 16 (`src/config.js`), `cols` reste 4 (4 rangées de 4 ; l'appli garde ses
+  cases de 52 px sur 4 colonnes).
+- Sauvegardes : `sanitizeCrusher` (`src/meta/crusher.js`) refait des tableaux de la taille de la config ; une sauvegarde à
+  8 cases est lue en 16 (cases 1–8 gardées, 9–16 vides). Vérifié à la main ✅.
+- Tests ✅ `tests/crusher.test.js` 16/16 : les 8 écrits en dur sont devenus `CRUSHER.inSlots` / `outSlots`.
+  ⚠️ Pas regardé dans le navigateur (hauteur de l'onglet sur PC).
+
+## 05/11/2026 — Cerbère : bond du Magma, pénétration seulement sur les tanks (Geoffrey)
+- **Quoi** : `RAID.cerbere.magma` { leap 4, leapT 0.35, breath 1.2, stay 2.5, backT 0.35 } ; src/sim/raid/cerbere.js : `leap` (au `next.magma`, b.x += leap, `breathAt`, `returnAt`), `magma` au `breathAt` (souffle : Durci comme avant), `comeBack` au `returnAt` (case = tank actif au sol le plus avancé + 1, sinon `bossX` ; bornée pour laisser la place au prochain bond) ; `moveBoss` (b.move { from, to, at, dur } ; repousse un mineur pris sous lui). `penSrc` : 'cerbere' (pen 20) pour les tanks, 'cerbere_soft' (pen 0, dans `SKILLS.steady.sources`) pour les autres, dans Morsure, Balayage, Magma. Vue : `boss.move { from, to, ago, dur }`, `boss.breathIn`. Rendu (src/render/raid.js) : glissé + arc pendant `move`, lueur des gueules avant le souffle, cône de feu 0,9 s.
+- **Tests** : raid (bond, souffle, retour au tank repoussé ; penSrc ; Magma via `breathe`) ✅, raid-server, raid-ui, skills ✅. Vérifié dans le navigateur (vue fabriquée par la simulation) ✅. Simulation `--boss-only --left 11.5 --tank-ten 40` : 3/40, 9,1 min.
+
+## 05/11/2026 — Bulles d'aide des stats (Geoffrey)
+- `src/meta/stat-help.js` (nouveau, `STAT_HELP`) : textes déplacés de `src/wiki/data.js` (le wiki l'importe ; pas dans src/wiki,
+  que le paquet de l'appli n'embarque pas). `statsHTML` (src/ui/stuff.js) : `qhelp(label + texte)` sur chaque ligne, Gear score et
+  DPS (avant : `title`). Textes revus : ténacité, résistance au recul.
+- Tests : `tests/stat-help.test.js` (3), dps, wiki, stuff*, help* 40/40 ✅. Vérifié en image (Chromium, bulle au survol).
+
+## 05/11/2026 — Recyclage fixe des pièces uniques (Golbute, Roi Gobelin) (Geoffrey)
+- **Quoi** : `recycle:{…}` ajouté dans `STUFF.items` (src/config.js) pour Némésis du Golbute, Torse de Gollex, Jambières du
+  Golbute, Âme du Golbute, Couronne, Masse et Cape royale du Roi Gobelin ; lu par `fixedRefund` (src/meta/craft.js), même
+  chemin que le butin rare des mobs. Restent non recyclables : Arc de l'Admin, anneaux (exclus par `recyclable`).
+- **Tests** ✅ `tests/recycle.test.js` (nouveau : les 7 rendus, recyclage réel dans un inventaire, Arc et anneaux refusés) ;
+  `tests/goblin-king.test.js` : compare les pièces sans `recycle`, et la Cape à dégâts % 1,9 (❌ déjà rouge sur `main`
+  depuis le 04/11 : le test attendait encore 5) ; recycle, mob-drops, wiki, goblin, golbute : 78/78 ; anticheat 154/154.
+
+## 05/11/2026 — Raffle : bulle de 30 s (Geoffrey)
+- **Quoi** : `raffle.current(me)` (server/social/raffle.js) → `{ id, lot, endsAt, joined }` ou null (pas de raffle, fini,
+  invité, sans pseudo) ; ajouté à l'état social (`raffle`, server/social/service.js), donc reçu par le poll social
+  (`SOCIAL.poll` 4 s, 20 s onglet caché). `syncNotifs` (src/main.js) : bulle clé `r:<id>`, `ttl: RAFFLE.popupMs` (30 s,
+  src/config.js) ; Participer = `socialApi.say({ text: RAFFLE.command })`, réponse en `notify.flash`. `src/ui/notify.js` :
+  durée par bulle (`it.ttl`, sinon `NOTIFY.popupMs`). Rien dans src/app/notifs (pas de notification du téléphone).
+- **Tests** ✅ `tests/raffle.test.js` (état social : raffle, joined, invité, fin), `tests/notify.test.js` (ttl par bulle) ;
+  raffle, notify, admin-raffle, social : 52/52. Vérifié dans Chromium (dev, raffle forcé) : bulle affichée, Participer →
+  « Tu participes au raffle », bulle partie.
+
+## 05/11/2026 — Épée et Pioche en mithril (Geoffrey)
+- `STUFF.items` (`set.damage 21`, `stats.mineSpeed 0.7`), `RECIPES`, `UPGRADE.tiers[4]`, rareté inhabituelle (pièce + BP), BP dans le 1er jet
+  du Treasure T4 (0,01 chacun : le jet passe de 13 à 15 %) et `RESEARCH.tiers[4].stages[0]` (10 plans). Textures `sword_mithril`,
+  `pickaxe_mithril`, `skins/sword_mithril`, `skins/pick_mithril` (gen_textures.py) ; `src/skins.js`.
+- ⚠️ `gen_textures.py` réécrit aussi d'autres textures (boss, ville, Lucifer… venues d'autres scripts) : seules les 4 nouvelles
+  sont gardées, les autres remises comme avant.
+- Tests : tier4 (nouveau test), research (étapes 10 / 8 / 2), rarity, stuff*, wiki*, skins, gearscore, craft, loot, rune 133/134 ;
+  le rouge (« recettes du T4 », Clé d'instance I avec 5 Orbe) l'était déjà sur main.
+
+
+## 05/11/2026 — Geoffrey — Emplacements de sorts selon le niveau du mineur (branche geoffrey/sorts-slots-niveau)
+- `SPELLS.slotLevels` [1, 1, 15, 20] ; `openSlotsFor(level)` / `openSlotsOf(ctx)` (src/meta/spells.js ; sans niveau : openSlots 2).
+  État des sorts : 4 cases (avant 2) ; `spellOp` refuse `slot_locked` au-delà des cases ouvertes ; `equippedSpells` ne fige
+  que les cases ouvertes ; `sessionSpells` au plus 4 (le serveur a vérifié au lancement) ; `publicSpells.openSlots` selon le
+  niveau. Serveur : `spellCtx` porte `level` (levelOf(xp)) ; `applySet` reçoit `level` (sets : 4 cases, seules les ouvertes
+  remplies). UI : cadenas « Niveau n », prochain emplacement pris parmi les cases ouvertes. Wiki : texte généré.
+- Tests ✅ spells (+ test des niveaux), sets, game-service, app-spells, dev-presets, tower-spells, giant-service,
+  dev-live-copies, glyphs, hescoming-service, raid-server, wiki ; `npm run test:anticheat` 154/154 (attendus à 4 cases).
+
+## 05/11/2026 — Appli : fenêtre « Recettes » du four (Geoffrey)
+- Paragraphe d'explication marqué `frecAbout` (src/ui/furnace.js), caché par `body.app #fpick .frecAbout` (src/app/app.css) ; la liste
+  (`.frecBox .frecs`, flex 1) récupère la hauteur. Site inchangé. Tests furnace*, app* 223/223 ✅. Pas vu sur un vrai téléphone.
+
+## 05/11/2026 — Appli : activité des amis tronquée (Geoffrey)
+- `body.app #socialBody .fname small` : `white-space:normal` (ancien : `nowrap` + ellipsis). Vérifié en image (Chromium 360 px, 3 amis).
+
+## 05/11/2026 — Événement du jour (Geoffrey)
+- **Config / logique** : `DAILY` (src/config.js), `src/shared/daily.js` (`rollDaily`, `dailyCandidates` : exclut les ids des
+  `noRepeat` jours d'avant d'après les dates, `dailyFx`, `dailyOn(st, t)`, `publicDaily`, `dailyCost`). État ns **daily**
+  (clé 'state', `FREE_NS` ; store `getDaily` / `putDaily`).
+- **Serveur** (server/game/service.js) : `currentDaily()` (verrou 'daily', tirage au premier appel du jour) seulement si
+  `createGameService({ dailyEvents: true })` (server/main.js) : **coupé par défaut, donc dans tous les tests** ;
+  `dailyAt(t)`. Figé : `rec.daily` (start, tous modes ; openInstant : jour de l'ouverture), `p.daily` de la prison (jour de
+  `runStartedAt` à chaque run, `newPrisonRecord`, `runRecord` → `buildPrisonRun` → `newPrisonRun` → `newSession`). Énergie :
+  `canPay(e, dailyCost(min))`, coût `dailyCost(rollCost())`. Jugement en direct : `withJudgment(fn(j, rules))`,
+  `rules = { cap, together }` passé à refresh / addResidues / publicJudgment / paused / `residuesOn` (src/meta/judgment.js).
+  `judgment()` renvoie aussi `daily` (bandeau). API : `dailyId()`, `daily()`.
+- **Partie** : `newSession` : `G.daily`, `G.dailyFx`, `G.oreBonus += orePoints` ; k hole `× kholeMul` (world.js genArea) ;
+  mobs `spawnTimer /= mobSpawnMul` hors prison dès `mobFrom` (mobs.js spawnMobs) ; XP `× xpMul` (session.js shareBySegments).
+  MI : `newInstant(seed, { w, h, duration })`, `G.duration`, `G.endTicks` ; `buildInstant` lit `record.daily` ;
+  `instantDurationMs(speed, daily)` ; vue `duration` ; HUD, orbes et caméra lisent la taille et la durée de la partie.
+- **Raffle** : `createRaffle({ winners })` (social → `game.dailyId()`), `current.count`, `current.winners` (ancien : `winner`,
+  relu par `sanitizeRaffle`), payés une fois chacun (clé = id du raffle) ; message système `winners` (+ `winner` = le premier) ;
+  le navigateur relit l'inventaire si `winners` le contient.
+- **Lobby** : `#dailyBanner` (index.html), `src/ui/daily.js` (`renderDaily`), rempli par `pollJudgment` (src/main.js).
+- **Tests** ✅ `tests/daily.test.js` (14 : tirage 300 jours, candidats, relecture, Jour férié, Mine abondante, Multivers mesuré
+  sur 300 mines, Héritage / Invasion, Cataclysme, MI, raffle à 3 gagnants, serveur figé + lendemain, bandeau) ; energy,
+  judgment, raffle, instant, prison, khole, account-delete, store, game-service, shrine, mi : 315/318, ❌ 3 déjà rouges sur `main`
+  (energy « part de 0 », energyOfTicks, prison « tour et instance terminent la prison ») ; anticheat 154/154 ; simulation 5
+  sessions à 3 : 0 bloquée. Vu dans Chromium : bandeau du Lobby (Cataclysme imposé dans data/game.json), jauges à 150.
+- ⚠️ Pas vu en vrai : MI abondante à l'écran (HUD et caméra), raffle à 3 gagnants dans le chat. `src/ui/energy-tag.js` et
+  `#navEnergy` marquent encore « bas » sous 6 un jour férié (le serveur accepte dès 4).
+
+## 05/11/2026 — Sceau démoniaque (Geoffrey)
+- `ITEMS['Sceau démoniaque']` (material, rare), `INSTANCE.seal { item, qty:1 }`, ajouté au `share.bag` des présents à la victoire
+  (server/game/service.js, toutes instances), ligne dans `instanceLootTable`, texture `seal_demon`. Versement par `creditSession` : une fois.
+- Tests : instance-server (nouveau), rarity, golbute*, loot-table, inventory, wiki* ✅ ; anticheat ✅.
+
+
+## 05/11/2026 — Auras des skills affichées dans les bonus de session (Geoffrey)
+- **Cause** : les auras (nœuds `aura` des arbres v2, `groupAuras`) sont ajoutées aux stats au lancement (src/shared/game.js),
+  mais `sessionBonuses` (src/sim/effects.js) ne listait que anneaux, shrines, Escalateur.
+- **Correctif** : `sessionBonuses` ajoute `{ id:'aura', src:<nœud> }` pour chaque nœud à aura appris par un joueur de
+  `G.roster` (partis compris : figé au lancement) ; MI : le mineur seul (chacun pour soi). `EFFECTS.list.aura` (session),
+  `bonusLine` (src/ui/effects.js) : « nom : nodeText ». Vues mine, tours, instances, MI (déjà `bonus: sessionBonuses`).
+- **Tests** ✅ `tests/effects.test.js` (groupe, parti, MI, texte) ; effects, skills, view, tower : 133/133. Vérifié sur une vraie
+  session construite (`buildSession`, logisticien arbre complet) : l'aura est dans la vue envoyée au navigateur.
+
+## 05/11/2026 — Stats : bulle sur le nom (Geoffrey)
+- `statsHTML` : `holdTip` met `data-tip` + `data-tiphold` sur le nom (`.statName`) ; plus de `qhelp`. `setupTooltips` : au doigt, un élément
+  `data-tiphold` n'ouvre sa bulle qu'après 450 ms sans bouger de plus de 10 px (pointermove / up / cancel annulent). Souris : survol.
+- Tests stat-help, dps, tooltip, stuff* ✅ ; vérifié dans Chromium (appui bref : rien ; appui long : bulle ; survol : bulle).
+
+
+## 05/11/2026 — Banque de guilde (Geoffrey)
+- **Logique** : `src/meta/guild-bank.js` (`sanitizeBank`, `bankable` : empilable, ni stuff ni rune, `deposit`, `take`, `bankRecipes` :
+  `inBatch` et pas de stuff, coûts tous « bankable », `bankCraft`, `seen` / `remember` : opIds, `GUILD.bank.opMemory`). Banque
+  rangée (`sortInventory`) à chaque changement. Stockage : ns **guild_bank**, clé = id de guilde (`FREE_NS`), store
+  `getGuildBank`, `putGuildBank`, `putGuildsAndBank` (une écriture pour un don de bâtiment depuis la banque).
+- **Serveur** (server/guild/service.js) : `bank(me)` (vue + recettes + `itemsOf` : objets empilables de l'inventaire,
+  `game.stackItems`), `bankDeposit` (comme `give` : réservation de l'opId dans la file, `spend` hors de la file, ajout une
+  fois par opId), `bankGive` et `bankCraft` (chef / officier : `canBuild`, dans la file). `mineView.bank` : quantités en
+  banque des matériaux des bâtiments. Routes `GET /api/guild/bank`, `POST /api/guild/bank/{deposit,give,craft}`. L'objet
+  renvoyé par `createGuildService` s'appelle maintenant `api` (les méthodes de la banque se rappellent entre elles).
+- **Navigateur** (src/ui/guild.js) : onglet `bank` (`guildTabs`), `bankHTML` (sous-onglets Coffre / Craft, grilles avec
+  `slotHtml` exporté de src/ui/inventory.js, `data-bgrid`), bouton `bankGive` dans `materialRow` (chef / officier), lignes du
+  journal `deposit`, `craft`, `fromBank`. `#guildBankTab` (index.html), styles `.gbGrid`, `.gbCraft`, `.gmatBtns`.
+- **Tests** ✅ `tests/guild-bank.test.js` (7 : logique, dépôt et opId rejoué, dépôts simultanés, craft réservé, don de bâtiment
+  ramené et rejoué, relu après redémarrage, affichage) ; guild*, app-guild, chat-guild, account-delete, store, inventory, craft :
+  161/161 (guild-ui : onglet Banque ajouté) ; anticheat 154/154. Vu dans Chromium : dépôts, craft de 2 Orbes, « De la banque »
+  sur la Forge (5 000 Diamants), journal.
+- ⚠️ Une guilde dissoute garde sa ligne guild_bank (orpheline, sans effet). Comme `give`, un plantage entre la sortie de
+  l'inventaire et l'entrée en banque perdrait le dépôt.
+
+## 05/11/2026 — Geoffrey — Parrainage (branche geoffrey/parrainage)
+- `REFERRAL` (config) ; objet `Émeraude` (légendaire, texture `emerald` dans gen_textures.py, seule texture régénérée gardée).
+  `src/shared/referral.js` (code = ID de compte, `parseReferralCode`, `referralLink`, `referralRefusal`, messages).
+- Stockage : ns **referral** (GAME_NS, ACCOUNT_NS, effacé avec le compte) : { by, at, legacy?, done, doneAt, paid } ;
+  `putReferralAndInventories` écrit la fiche et les inventaires en une fois ; `referralsBy` (filleuls enregistrés).
+- `server/game/service.js` : `referralOf` (sans fiche, compte créé avant `legacyBefore` → { by: compte de « canoul »,
+  legacy }) ; `settleReferral` (niveau ≥ 5, verrous inv: des deux comptes + ref:, une fois, parrain d'office non payé)
+  appelé par `state` (sondé par le navigateur) et `referral` ; `referral(me)`, `setReferral(me, { code })` (verrou ref:).
+  `createGameService` reçoit `accountOf` / `accountByName` (server/main.js : comptes). Routes GET/POST /api/game/referral.
+- Navigateur : `gameApi.referral` / `setReferral` ; Mon compte → `referralHtml` (code, lien, filleuls, parrain ou formulaire ;
+  appli : lien du site, SITE.url) ; `?ref=CODE` gardé dans localStorage `dim.ref`, envoyé après connexion puis effacé.
+- Tests ✅ referral (5), anticheat/referral (3), rarity, account-delete, game-service, inventory, wiki ; `npm run test:anticheat`
+  157/157. ❌ prison-server « une tour et une instance » déjà rouge sur main. Navigateur ✅ (fenêtre en dev).
+- ⚠️ La récompense d'un compte d'avant arrive à sa première connexion (state) ; Canoul : `legacyPaysReferrer:false`.
+
+## 05/11/2026 — Appli : « 💾 Enregistrer » dans la ligne du set (Geoffrey)
+- **Quoi** : src/ui/sets.js `setsBarHtml(current, last, busy)` : sans set correspondant à l'équipement, bouton `data-act="quickSave"` → `save` dans le dernier set équipé / enregistré (`lastId`, localStorage `dim.lastSet`, mis à jour quand l'équipement correspond à un set, à l'équipement, à l'enregistrement), sinon `create`. Sans confirmation (la pop-up `savedText` confirme). CSS dans src/ui/style.css (`body.app .setBarRow`, `.setQuick`), pas dans src/app/ (rien qui touche les applis natives).
+- **Tests** : sets (setsBarHtml) ✅, app* ✅ ; navigateur `?app` 390 px : bouton, pop-up, set créé ✅.
+
+## 05/11/2026 — Recherche : tiers à area, tier 5 (Geoffrey)
+- `RESEARCH.tiers[].area` (T3 5, T4 7, T5 9) ; T5 `items:['Casque en arkonite BP']` (pas de `from`), cost 1000, recycle 40-60 (provisoire).
+  Item `Casque en arkonite BP` (blueprint, épique, sans recette).
+- `src/meta/research.js` : `tierArea`, `areaReached`, `tierOpen` ; `research(inv, t, opId, rng, now, areaMax = 0)` → `area_locked`
+  (vérifié après `tier_locked`, avant toute dépense) ; `tierBlueprints` lit `items` ; `treasureBlueprintsDone` ne compte le tier
+  suivant que s'il a un Treasure (`from`) : T4 inchangé.
+- Serveur : `research` lit `areaMaxOf` (hors verrou inv) ; `state` envoie `progress.areaMax` ; **mode dev : areaMax = AREAS.length**
+  (tout ouvert, comme la prison). UI : `setupResearch().setAreaMax` (appelé par `setProgress`), `tierWhyHtml/tierChipsHtml(inv, t, areaMax)`.
+- Tests : research 21/21 (tests T3/T4 existants passent areaMax 9), area-max 7/7, app-ecrans, game-service ✅ ; anticheat 157/157 ✅.
+- ⚠️ Déjà rouges sur main, sans lien : loot « fortune : le doublon… », tier2 « recycle : un BP du T2 rend 30 à 45 ».
+
+
+## 05/11/2026 — Geoffrey — Parrainage : part du parrain d'office (branche geoffrey/parrainage-canoul)
+- `REFERRAL.legacyPaysReferrer` true. `settleReferral` : fiche done sans `paid` et parrain payable → `payLater` (verrous inv: du
+  parrain + ref:, une fois, `paidLate`). Tests ✅ referral (6, + rattrapage en rafale), anticheat 157/157.
+
+## 05/11/2026 — Geoffrey — Boutique
+- Config : `SHOP` (currency Émeraude, maxCount 99, items `{ id:'affilie', item:'Coffre affilié', price:20 }`), `ITEMS['Coffre
+  affilié']` (cat treasure, tex `chest_affiliate`, rareté légendaire), `LOOT['Coffre affilié']` (always fixes, en dernier dans
+  LOOT : le wiki lit LOOT dans l'ordre). Texture : `scripts/gen_textures.py` (tower_chest vert, émeraude) ; seule
+  `textures/chest_affiliate.png` gardée (le script régénérait d'autres PNG légèrement différents : remis comme avant).
+- `src/meta/shop.js` `buy(inv, { id, count, opId })` (tout ou rien, opId dans `inv.crafted`), `affordable`. Serveur : `game.shop`
+  (verrou `inv:`), `POST /api/game/shop`. UI : `src/ui/shop.js` (`shopHtml`, `setupShop`, confirmation `ask`), `#shopBody`,
+  onglet `boutique` (nav, `noBuilding`, touche b), famille Sac de l'appli, aide « ? » `shop`.
+- **Tests** ✅ shop (nouveau), anticheat/shop (nouveau : 400 suites trafiquées, serveur), nav, app-families, town, wiki,
+  loot-table, inventory ; `npm run test:anticheat` 159/159. ❌ rarity « liste du créateur » : déjà rouge sur main (Casque en
+  arkonite BP, glyphes…), sans rapport. ⚠️ Pas vu à l'écran.
+
+## 05/11/2026 — Geoffrey — Guilde : spé principale des membres
+- `mainSpec(progress)` (src/meta/level.js) : arbre au plus d'XP de spé (égalité : premier de SKILLS.trees), `{ tree, level }`, null
+  sans XP. `server/guild/service.js` mineView : `spec` par membre (`store.getProgress`). `src/ui/guild.js` `specChip` (classe `tr-*`)
+  dans `memberRow`, avant l'XP de guilde ; style `.gspec`. Seulement sa propre guilde (pas le dépliage d'une autre guilde).
+- **Tests** ✅ guild-service (nouveau test), guild-ui, guild, app-guild, guild-bank : 65/65.
+
+## 06/11/2026 — Geoffrey — Appli : sous-onglets (#appSub) au-dessus de la barre des familles
+- `src/app/app.css` seul : `--bar-b` (barre des familles, 56 px + zone sûre) ; `--dock-h` = `--bar-b` + `--sub-h` (avant : la
+  barre seule) ; `--top-h` sans `--sub-h` (avant : avec) ; `#appSub` en `bottom: var(--bar-b)`, trait du sous-onglet actif en
+  haut ; plus de `padding-top` des vues. Tout ce qui se calait sur `--dock-h` (feuilles du bas, guide, mine, chat) remonte
+  au-dessus des deux barres.
+- **Tests** ✅ les 20 fichiers app-* : 183/183. ✅ Vu dans Chromium 390 × 844 (`?app`, invité) : Sac et Perso, sous-onglets
+  744-788 px, familles 788-844 px, guide au-dessus. ⚠️ Pas vu sur un vrai téléphone ni en session (sous-onglets de Session).
+
+## 06/11/2026 — Geoffrey — Mine géante (5 joueurs)
+- **Principe** : chaque partie tourne dans son propre fil (`server/game/live.js`) ; celui d'une Mine géante reçoit
+  `DIM_MINE=geante`, et `src/config.js` y donne `W` 70, `SESSION_LEN` 7200, `SPAWN_X` 35, `CHEST_X` 32 (`WINCH.x` suit). La
+  simulation (18 fichiers qui lisent W) n'a pas changé. Le serveur principal et la mine classique restent à 50 / 3600.
+  ⚠️ `createInlineRunner` (tests) fait tourner une Mine géante à 50 colonnes : seul le vrai fil a la carte de 70.
+- `GEANTE` (config) ; `MINE_MODES` `geante` (players 5) ; `src/shared/geante.js` (`isGeante`, `maxPlayersOf`, `geanteToday`,
+  `geanteLeft`, jour de Paris de `src/shared/giant.js`). Session : `G.geante` (buildSession), `G.w`, `G.len` ; génération
+  `prisonComp(areaComp, GEANTE.oreMul)` (src/sim/world.js) ; `spawnTimer / GEANTE.mobMul` (src/sim/mobs.js).
+- Serveur : `game.start` (5 exactement hors dev : `geante_players` ; >3 seulement pour elle ; 2 par jour : `geante_daily` ; énergie
+  comme `mine`) ; `realDurationMs(speed, mode)`, `totalTicksOf(mode)` (72 000 ticks) dans `targetTick`. Groupes :
+  `server/party/service.js` `maxOf(p)` = places de l'activité ouverte par le chef (`p.activity.mode`).
+- Navigateur : vue `w`, `len`, `chestX` ; `src/sim/light.js` clé `y × G.w + x` ; `src/render/canvas.js` canvas et caméra à `G.w`
+  (`camera.setCols`) ; coffre à `G.chestX` ; HUD, orbes et nav à `G.len`. Lobby : activité, `slotsMax`, `launchFor` (5/5).
+- **Tests** ✅ geante (nouveau : réglages, 2 par jour, minerais × 2,3-3,1 sur 4 seeds, lobby, serveur), geante-world (nouveau :
+  carte 70 dans un processus DIM_MINE=geante, vue et carte du navigateur à 70, **vrai fil** : Mine géante 70 / mine 50), session,
+  view, camera, light, hud, party, game-service, lobby, nav, app-*, wiki, town, chat. Simulation de la mine classique (5 × 3) :
+  identique avant / après (areas 3,0, profondeur 191,2, coffre 4 092,2). ✅ Vu dans Chromium (mode dev, seed 4242, 4 mineurs de
+  test) : canvas 1 120 px (70 × 16), 5 mineurs répartis, 120:00, charbon 27 % en area 0.
+- ❌ Déjà rouges sur main, sans rapport : energy « energyOfTicks » (attend 4/h, la config dit 8), prison « une tour et une instance
+  lancées terminent la prison ». energy « part de 100 » corrigé ici (mon changement du 04/11 sans test).
+- **À vérifier** : vrai groupe de 5 en ligne ; mithril (mesuré en acier seulement) ; coût serveur d'une partie de 5 × 2 h ; dans
+  l'appli, la mine de 70 colonnes à l'écran.
+
+### 06/11/2026 — Renommages pour les stores, reprise de `jules/nom-bonbonne-oxygene` (Geoffrey) 🧪
+- La branche de Jules (02/11 : zipette → Bonbonne d'oxygène, Ulti shen → Ralliement, Braum → Garde du corps) n'a jamais été fusionnée ; 328 commits de retard, 11 fichiers en conflit au merge. Refaite sur main par remplacement des noms affichés (code, tests, wiki, GAME_DESIGN, état du projet ; pas journal ni debug, historiques), + « Golem de sperme » → « Golem gluant » (`MOB_INFO.golem.name`, textes). Identifiants inchangés (`zipette`, `ulti_shen`, `braum`, `golem`, `glyph:'braum'`, `skill.braum`) : sorts appris, skills, glyphes posés gardés tels quels.
+- Objets renommés dans les sacs : `ITEM_RENAMES` (server/game/rename-items.js) + `'Parchemin « Ulti shen »'`, `'Glyphe Braum'` (migration au démarrage, comme les Lunettes Gucci). Test repris de Jules dans `tests/item-rename.test.js`.
+- Tests : item-rename, effects, game-service, giant-sim, glyph-drop, glyphs, goblin-king, mobs, skills, spells, trap, wiki ✅. ⚠️ `tests/hescoming-sim.test.js` « paliers du Bloc × 24 » rouge **aussi sur main** (sans rapport).
+- La branche `jules/nom-bonbonne-oxygene` reste sur GitHub : à supprimer une fois celle-ci en ligne (son travail est repris ici).
+
+## 06/11/2026 — Geoffrey — Mine géante : sans énergie, carte du Lobby
+- `server/game/service.js` : `energyLocks` seulement pour `mine` (la Mine géante ne coûte plus rien) ; `state()` renvoie `geanteLeft`
+  (`geanteLeft(sessionsOf)`). `src/main.js` `setGeante(st)` à chaque `state` → `lobby.update({ geanteLeft })`. `src/ui/lobby.js` :
+  `geanteText(left)` dans `#launchCost` (classe `err` à 0, bulle), `launchFor` grisé à 0 (hors dev), texte de l'activité. Seul son
+  compteur est connu du navigateur : celui des autres joueurs, c'est le serveur qui le refuse (`geante_daily`, en les nommant).
+- **Tests** ✅ geante (pas d'énergie, `state().geanteLeft`, texte, Lancer grisé à 0), lobby, team-energy, energy-server, wiki.
+

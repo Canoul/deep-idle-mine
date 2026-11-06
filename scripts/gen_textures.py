@@ -16,6 +16,7 @@ from gen_giant import giant_block, giant_fountain, giant_torch   # le Bloc géan
 from gen_king import goblin_king   # le roi gobelin, « roi guerrier balafré » (scripts/gen_king.py, 03/11/2026)
 from gen_worm import worm_textures   # le ver de terre, cuirassé (scripts/gen_worm.py, 03/11/2026)
 from gen_flesh import flesh_wall, flesh_icon   # le mur de chair (scripts/gen_flesh.py, 03/11/2026)
+from gen_cerbere import cerbere_textures   # Cerbère, boss du Raid 1 (scripts/gen_cerbere.py, 04/11/2026)
 from gen_golbute import golbute, golem   # le Golbute de l'Instance II (et sa forme cristallisée) et le golem (scripts/gen_golbute.py, 30/10/2026)
 
 S = 16
@@ -115,6 +116,30 @@ def main():
         rect(hard, x, y, 1, 1, hexc('#2f3238'))
     tex['hardstone'] = hard
 
+    # pierre des enfers (raid Cerbère, 04/11/2026) : roche brun-rouge sombre, veines de lave
+    hell = noisy(hexc('#4a1c16'), 41, 0.12)
+    r = random.Random(41)
+    for _ in range(7):
+        rect(hell, r.randrange(S - 1), r.randrange(S - 1), 2, 2, hexc('#5e241c'))
+    for (x, y) in [(1, 2), (2, 3), (3, 3), (4, 4), (9, 7), (10, 8), (11, 8), (12, 9), (5, 12), (6, 12), (7, 13)]:
+        rect(hell, x, y, 1, 1, hexc('#ff5a1f'))
+    for (x, y) in [(3, 4), (11, 9), (6, 13)]:
+        rect(hell, x, y, 1, 1, hexc('#ffb347'))
+    tex['hellstone'] = hell
+
+    # Indice (raid Cerbère, 04/11/2026) : roche sombre marquée d'une rune ardente (trois crocs dans un cercle)
+    clue = noisy(hexc('#3a1410'), 43, 0.10)
+    ring = [(5, 2), (6, 2), (7, 2), (8, 2), (9, 2), (10, 2), (4, 3), (11, 3), (3, 4), (12, 4), (2, 5), (13, 5), (2, 6), (13, 6),
+            (2, 7), (13, 7), (2, 8), (13, 8), (2, 9), (13, 9), (2, 10), (13, 10), (3, 11), (12, 11), (4, 12), (11, 12),
+            (5, 13), (6, 13), (7, 13), (8, 13), (9, 13), (10, 13)]
+    for (x, y) in ring:
+        rect(clue, x, y, 1, 1, hexc('#c8401a'))
+    for fx in (5, 7, 10):
+        for k in range(4):
+            rect(clue, fx + (1 if k > 1 and fx == 7 else 0), 5 + k, 1, 1, hexc('#ffb02e' if k < 3 else '#fff0a0'))
+    rect(clue, 7, 10, 2, 1, hexc('#ffb02e'))
+    tex['clue'] = clue
+
     # coffre au trésor enfoui : un petit coffre dans la roche
     treasure = noisy(hexc('#7d828c'), 13)
     rect(treasure, 2, 5, 12, 9, hexc('#8a5a2b'))
@@ -201,7 +226,7 @@ def main():
         rect(g, 5, 5, 2, 1, hexc('#ffffff'))
         tex[name] = g
     # gemmes (Treasure T4, 27/10) : plus grandes, deux facettes claires, liseré sombre
-    for name, base in [('gem_ruby_fine', '#e0203f'), ('gem_jade_fine', '#2fc277'), ('gem_sapphire_fine', '#2f63f0'), ('gem_topaz', '#f0a020')]:
+    for name, base in [('gem_ruby_fine', '#e0203f'), ('gem_jade_fine', '#2fc277'), ('gem_sapphire_fine', '#2f63f0'), ('gem_topaz', '#f0a020'), ('emerald', '#17d27a')]:   # emerald : parrainage (05/11)
         g = blank()
         c = hexc(base)
         rect(g, 5, 1, 6, 1, shade(c, 1.35))
@@ -571,6 +596,20 @@ def main():
     rect(orb, 5, 5, 2, 1, oh)                                       # reflet
     tex['orb'] = orb
 
+    # Sceau démoniaque (05/11/2026) : disque de cire rouge sombre, bord ondulé, corne et pentagramme gravés, lueur de braise
+    seal = blank()
+    sd, sm, sl, glow = hexc('#3a0d10'), hexc('#7a1a1f'), hexc('#b8323a'), hexc('#ff9a3c')
+    for yy, (x0, w) in enumerate([(5, 6), (3, 10), (2, 12), (2, 12), (1, 14), (1, 14), (1, 14), (1, 14), (2, 12), (2, 12), (3, 10), (5, 6)], start=2):
+        rect(seal, x0, yy, w, 1, sm)
+        rect(seal, x0, yy, 1, 1, sd); rect(seal, x0 + w - 1, yy, 1, 1, sd)
+    for x, y in [(4, 2), (11, 2), (1, 6), (14, 9), (4, 13), (11, 13)]:
+        rect(seal, x, y, 1, 1, sd)                                  # bord ondulé
+    rect(seal, 3, 4, 3, 1, sl); rect(seal, 3, 5, 1, 2, sl)          # lumière
+    for x, y in [(7, 4), (8, 4), (5, 7), (10, 7), (6, 10), (9, 10), (7, 8), (8, 8), (6, 6), (9, 6)]:
+        rect(seal, x, y, 1, 1, glow)                                # pentagramme gravé
+    rect(seal, 5, 3, 1, 2, sd); rect(seal, 10, 3, 1, 2, sd)         # cornes
+    tex['seal_demon'] = seal
+
     # Orbe supérieur (31/10) : même sphère, rouge sang, cerclée d'or
     orb2 = blank()
     sd, sm, sl, sh, sg = hexc('#4a0d16'), hexc('#a31f2e'), hexc('#e0606a'), hexc('#ffe6e0'), hexc('#e8b84a')
@@ -896,6 +935,28 @@ def main():
     rect(sword, 1, 14, 2, 1, hexc('#4de8f0'))
     tex['sword_steel'] = sword
 
+    # pioche et épée en mithril (05/11/2026) : mêmes formes que l'acier, métal turquoise pâle (lingot de mithril), manche
+    # sombre, pommeau de l'épée en saphir
+    pick = blank()
+    for i in range(10):
+        rect(pick, 3 + i, 13 - i, 2, 2, hexc('#3b2a1e'))
+    for x, y in [(4, 3), (5, 2), (6, 2), (7, 2), (8, 2), (9, 2), (10, 3), (11, 4), (12, 5), (12, 6), (13, 7), (13, 8)]:
+        rect(pick, x, y, 2, 2, hexc('#8fd6d2'))
+    rect(pick, 5, 2, 4, 1, hexc('#e0fffc'))
+    rect(pick, 3, 4, 2, 2, hexc('#4a8f8b'))
+    rect(pick, 13, 9, 2, 2, hexc('#4a8f8b'))
+    tex['pickaxe_mithril'] = pick
+    sword = blank()
+    for i in range(9):
+        rect(sword, 5 + i, 9 - i, 2, 2, hexc('#8fd6d2'))
+    for i in range(8):
+        rect(sword, 6 + i, 9 - i, 1, 1, hexc('#e0fffc'))
+    rect(sword, 3, 9, 5, 2, hexc('#2e4f5c'))
+    rect(sword, 4, 8, 2, 4, hexc('#2e4f5c'))
+    rect(sword, 2, 12, 2, 2, hexc('#3b2a1e'))
+    rect(sword, 1, 14, 2, 1, hexc('#3f6fe0'))
+    tex['sword_mithril'] = sword
+
     # plastron de l'équilibre : forme du plastron, moitié gauche blanc-or (ange), moitié droite rouge sombre (démon)
     chest = blank()
     for x0, base, hi, lo in [(0, '#e8f4ff', '#ffffff', '#ffd23f'), (8, '#7a1f2a', '#ff3b3b', '#3a0f16')]:
@@ -1110,6 +1171,8 @@ def main():
     tex['chest_goblin_king'] = tower_chest(hexc('#6b4a22'), hexc('#3e2a12'), gold, hexc('#4f7d32'), [(6, 9), (9, 9), (7, 11), (8, 11)])
     # coffre du Golbute (30/10) : coffre de pierre grise, ferrures sombres, cristal bleu au centre
     tex['chest_golbute'] = tower_chest(hexc('#80868f'), hexc('#4d5259'), hexc('#2f3238'), hexc('#7fd6ff'), [(7, 9), (8, 9), (7, 10), (8, 10), (7, 11), (8, 11)])
+    # coffre affilié (05/11, Boutique) : bois sombre, ferrures dorées, émeraude au centre
+    tex['chest_affiliate'] = tower_chest(hexc('#3d5a3a'), hexc('#22331f'), hexc('#d9a93c'), hexc('#3ddc84'), [(7, 9), (8, 9), (7, 10), (8, 10)])
 
     # butin rare des mobs (26/10/2026) : icônes d'inventaire
     # lanières en cuir du gobelin : deux sangles de cuir croisées, rivets dorés
@@ -1484,12 +1547,19 @@ def main():
     rect(sk_sword_sl, 3, 10, 5, 2, hexc('#2f3a48'))
     rect(sk_sword_sl, 2, 12, 2, 3, hexc('#5c3a1a'))
     tex['skins/sword_steel'] = sk_sword_sl
+    sk_sword_mi = blank()   # épée en mithril (05/11)
+    for i in range(9):
+        rect(sk_sword_mi, 5 + i, 10 - i, 2, 2, hexc('#8fd6d2'))
+    rect(sk_sword_mi, 3, 10, 5, 2, hexc('#2e4f5c'))
+    rect(sk_sword_mi, 2, 12, 2, 3, hexc('#3b2a1e'))
+    tex['skins/sword_mithril'] = sk_sword_mi
 
     # pioches tenues en main (manche en bas à gauche, tête en haut à droite) : bois = marron, pierre = grise
     for name, head, light, dark in [('skins/pick_wood', '#7a4f2a', '#a0703f', '#4f321a'),
                                     ('skins/pick_stone', '#8d939c', '#c3c8cf', '#5f646c'),
                                     ('skins/pick_iron', '#b8bec7', '#eef0f3', '#6f7680'),
-                                    ('skins/pick_steel', '#6f8197', '#c3d3e4', '#3a4656')]:
+                                    ('skins/pick_steel', '#6f8197', '#c3d3e4', '#3a4656'),
+                                    ('skins/pick_mithril', '#8fd6d2', '#e0fffc', '#4a8f8b')]:   # 05/11
         pk = blank()
         for i in range(9):
             rect(pk, 2 + i, 13 - i, 2, 2, hexc('#8a5a2b'))
@@ -1640,6 +1710,9 @@ def main():
     for name, (w, h, px) in lucifer_textures().items():
         png_wh(os.path.join(OUT, name + '.png'), w, h, px)
     for name, (w, h, px) in golbute().items():
+        png_wh(os.path.join(OUT, name + '.png'), w, h, px)
+    # Cerbère (Raid 1, 04/11/2026) : 128 × 96 pixels = 8 × 6 cases ; enragé : 'cerbere_rage'
+    for name, (w, h, px) in cerbere_textures().items():
         png_wh(os.path.join(OUT, name + '.png'), w, h, px)
     for name, (w, h, px) in town().items():
         png_wh(os.path.join(OUT, name + '.png'), w, h, px)

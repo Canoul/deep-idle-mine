@@ -12,10 +12,11 @@
    - Enrage : après le cristal des 33 %.
    Golbute mort = réussite ; temps écoulé ou tout le monde mort = échec.
 
-   Sorts : Cri de guerre, Cleave, Dash, Hand of Justice et Ulti shen en combat ; Dynamite sur le boss, les golems et le
-   cristal ; Inspiration et Fast learner sur le cristal ; Illumination et Bonbonne de zipette : sans effet. */
+   Sorts : Cri de guerre, Cleave, Dash, Hand of Justice et Ralliement en combat ; Dynamite sur le boss, les golems et le
+   cristal ; Inspiration et Fast learner sur le cristal ; Illumination et Bonbonne d'oxygène : sans effet. */
+import { critMul, backstabMul } from '../skillfx.js';
 import { tenacityChance, tenacityTry } from '../tenacity.js';
-import { INSTANCE, DT, STATS, CFG } from '../../config.js';
+import { INSTANCE, DT, STATS, CFG, SKILLS } from '../../config.js';
 import { mulberry32 } from '../../core/rng.js';
 import { SPELL } from '../../meta/spells.js';
 import { log } from '../log.js';
@@ -87,7 +88,9 @@ const manh = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 export const warcryOf = (G, m) => { const w = G.warcry, c = w && G.t < w.until ? byId(G, w.by) : null;
   return c && manh(c, m) <= SPELL.war_cry.radius ? w : null; };
 const hitT = (G, m) => CFG.attackInterval / Math.max(0.1, (m.carac.attackSpeed ?? 100) / 100 * (1 + (warcryOf(G, m)?.speed || 0)));
-const hitDmg = (G, m) => m.carac.damage * (1 + (m.carac.damagePct || 0) / 100) * (1 + (warcryOf(G, m)?.dmg || 0)) * (chance(G, m.carac.crit || 0) ? 2 : 1);
+/* arbres v2 (04/11) : Crushing ; Dans le dos : visé si un golem le tacle ou si le Golbute (au combat) l'a à portée de son autoattack */
+const golTargeted = (G, m) => G.golems.some(o => o.hp > 0 && o.grab === m.id) || (G.boss.state === 'fight' && grounded(G, m) && gapX(G, m.x) <= C.slam.range);
+const hitDmg = (G, m) => m.carac.damage * (1 + (m.carac.damagePct || 0) / 100) * (1 + (warcryOf(G, m)?.dmg || 0)) * (chance(G, m.carac.crit || 0) ? critMul(m) : 1) * backstabMul(m, golTargeted(G, m));
 const strikeDmg = (G, m) => { let d = hitDmg(G, m); if(chance(G, m.carac.doubleAttack || 0)) d += hitDmg(G, m); return d; };
 const ready = (G, m, id) => m.spells.includes(id) && G.t + 1e-9 >= (m.spellCd[id] || 0);
 const cast = (G, m, id, cdFrom = G.t, mul = 1) => { m.spellCd[id] = cdFrom + SPELL[id].cd * mul; m.stats.spells++; };
@@ -197,7 +200,8 @@ function avalanche(G){
   const hit = [], dodged = [];
   for(const m of alive(G)){
     G.rocks.push({ x: m.x, at: G.ticks });
-    if(tenacityTry(m, 'golbute', G.fightRng, tenDebuffOf(G, m))){ dodged.push(m.name); G.stats.dodges++; continue; }
+    /* Solide sur les appuis (04/11) : contre l'autoattack seulement, pas l'avalanche (elle frappe tout le monde) */
+    if(tenacityTry(m, 'golbute', G.fightRng, tenDebuffOf(G, m) + (m.skill?.steady ? SKILLS.steady.tenacity : 0))){ dodged.push(m.name); G.stats.dodges++; continue; }
     if(G.t > m.dazedUntil + 1e-9) m.dazed = 0;
     m.dazed++; m.dazedUntil = G.t + A.dazed; m.stats.dazed++;
     hit.push(m);
@@ -263,6 +267,7 @@ function strike(G, m, target, status){
   if(now + 1e-9 >= (m.atkReady || 0)){
     combatSpells(G, m, target);
     if(boss) damageBoss(G, m, strikeDmg(G, m)); else hitGolem(G, m, target);
+    cleaveHit(G, m, target);
     m.atkReady = now + hitT(G, m);
   }
   return act(m, 'attack', (m.atkReady || 0) - now, { done: true, boss, aim: boss ? undefined : { x: target.x, y: target.y } }, status);
@@ -319,17 +324,25 @@ function mineSpells(G, m){
   }
 }
 const golemsAround = (G, x, y, r) => liveGolems(G).filter(o => (o.x - x) ** 2 + (o.y - y) ** 2 <= r * r + 1e-9);
+/* Cleave (03/11/2026, Geoffrey) : après un coup normal sur target, si le sort est prêt : jusqu'à maxTargets − 1 autres
+   (golems à radius cases, le Golbute s'il est à son contact), les plus proches, à dmg × ses dégâts. Sinon il reste prêt. */
+function cleaveHit(G, m, target){
+  if(!ready(G, m, 'cleave') || G.over) return;
+  const S = SPELL.cleave;
+  const ahead = x => (x - m.x) * (m.face || 1) > 0;   // seulement devant lui (03/11)
+  const foes = liveGolems(G).filter(o => o !== target && ahead(o.x) && manh(o, m) <= S.radius).sort((a, b) => manh(a, m) - manh(b, m));
+  const list = [...(target !== G.boss && inContact(G, m) && ahead(G.boss.x + G.boss.w / 2 - 0.5) ? [G.boss] : []), ...foes].slice(0, S.maxTargets - 1);
+  if(!list.length) return;
+  cast(G, m, 'cleave');
+  for(const o of list) o === G.boss ? damageBoss(G, m, hitDmg(G, m) * S.dmg) : hitGolem(G, m, o, hitDmg(G, m) * S.dmg);
+}
 function combatSpells(G, m, target){
   if(ready(G, m, 'war_cry') && !(G.warcry && G.t < G.warcry.until)){
     const S = SPELL.war_cry; G.warcry = { until: G.t + S.duration, by: m.id, dmg: S.dmgPct, speed: S.atkSpeed };
     cast(G, m, 'war_cry', G.warcry.until);
     log(G, `📯 ${m.name} : Cri de guerre`);
   }
-  if(ready(G, m, 'cleave')){
-    const S = SPELL.cleave; cast(G, m, 'cleave');
-    for(const o of liveGolems(G)) if(o !== target && manh(o, m) <= S.radius) hitGolem(G, m, o, hitDmg(G, m) * S.dmg);
-    if(target !== G.boss && inContact(G, m)) damageBoss(G, m, hitDmg(G, m) * S.dmg);
-  }
+
   if(ready(G, m, 'dynamite')){
     const S = SPELL.dynamite, boss = target === G.boss;
     const gs = boss ? [] : golemsAround(G, target.x, target.y, S.radius);
@@ -342,7 +355,7 @@ function combatSpells(G, m, target){
     }
   }
 }
-/* Hand of Justice (un golem qui tient un allié, puis lui : étourdi), Ulti shen (un allié retenu par un golem, ou qui
+/* Hand of Justice (un golem qui tient un allié, puis lui : étourdi), Ralliement (un allié retenu par un golem, ou qui
    frappe le Golbute : il le rejoint et frappe) */
 function supportSpells(G, m){
   if(ready(G, m, 'hand_of_justice')){
@@ -358,7 +371,7 @@ function supportSpells(G, m){
       cast(G, m, 'ulti_shen'); m.action = null; m.x = to.x; m.y = to.y; m.kx = 0; m.hop = G.ticks;
       if(ally){ const o = golTackler(G, ally); hitGolem(G, m, o, o.maxhp * S.hpPct); }
       else damageBoss(G, m, G.boss.maxhp * S.bossPct);
-      log(G, `🌀 ${m.name} : Ulti shen auprès de ${to.name}`);
+      log(G, `🌀 ${m.name} : Ralliement auprès de ${to.name}`);
     }
   }
 }
@@ -378,7 +391,7 @@ function dashBoss(G, m){
   if(!ready(G, m, 'dash') || !bossHere(G) || m.y !== G.floorY) return false;
   const tx = contactX(G, m), S = SPELL.dash, dir = Math.sign(tx - m.x), n = Math.abs(tx - m.x);
   if(!dir || n < S.minCells || n > S.range) return false;
-  cast(G, m, 'dash', G.t, S.hitCd);
+  cast(G, m, 'dash', G.t);   // boss : recharge entière (03/11 ; avant × hitCd)
   m.x = tx; m.kx = 0; m.face = dir;
   log(G, `💨 ${m.name} : Dash sur le ${G.boss.name}`);
   damageBoss(G, m, strikeDmg(G, m) * S.dmg);

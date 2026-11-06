@@ -22,30 +22,34 @@
      toutes les PRISON.batchMs quand il est absent (moteur fermé entre deux), arrêtée (waiting) 24 h après sa dernière
      visite ; à son retour, l'attente passe dans pausedMs et le run repart où il s'était arrêté.
    Testable seul : on lui passe un stockage, une horloge et la façon de faire tourner les parties (liveRunner). */
+import { parseReferralCode, referralCode, referralRefusal, REFERRAL_ERRORS } from '../../src/shared/referral.js';
 import crypto from 'node:crypto';
-import { GAME, ENERGY, PRISON, PREFS, RESEARCH, FOCUS, FURNACE, MINE_MODES, CHAT, ITEMS, JUDGMENT, KHOLE, TOWER, WIKI, LEADERBOARD, SKILLS, AREAS, treasureItem, goblinChestItem, golbuteChestItem } from '../../src/config.js';
+import { GAME, INSTANCE, RAID, ENERGY, PRISON, PREFS, RESEARCH, FOCUS, FURNACE, MINE_MODES, CHAT, ITEMS, JUDGMENT, KHOLE, TOWER, WIKI, LEADERBOARD, SKILLS, AREAS, REFERRAL, GEANTE, treasureItem, goblinChestItem, golbuteChestItem } from '../../src/config.js';
 import { sanitizeTowerRecord, betterTower, sanitizeInstanceRecord, betterInstance, recordKey, splitRecordKey } from '../../src/meta/leaderboard.js';
 import { DT } from '../../src/config.js';
-import { sanitizePrefs, sanitizeOverrides, sanitizeDevSpecs, tickAt, realDurationMs, TOTAL_TICKS } from '../../src/shared/game.js';
+import { sanitizePrefs, sanitizeOverrides, sanitizeDevSpecs, tickAt, realDurationMs, TOTAL_TICKS, totalTicksOf } from '../../src/shared/game.js';
 import { sanitizeBotPresets, isCopyPresetId, COPY_PREFIX } from '../../src/shared/dev-presets.js';
 import { prisonCompos, pickCompo } from '../../src/meta/prison-profile.js';
 import { sanitizeFocus } from '../../src/sim/focus.js';
-import { displayName } from '../../src/shared/account.js';
-import { createInventory, deserialize, serialize, creditSession, addItem, removeItem, countOf, sortInventory, moveSlot } from '../../src/meta/inventory.js';
-import { sanitizeJudgment, addResidues, refresh as refreshJudgment, publicJudgment, isOpen as towerOpen, anyOpen as anyTowerOpen, hasWon, markDone,
+import { displayName, nameKey } from '../../src/shared/account.js';
+import { createInventory, deserialize, serialize, creditSession, addItem, removeItem, countOf, sortInventory, moveSlot, isStackable } from '../../src/meta/inventory.js';
+import { sanitizeDaily, rollDaily, publicDaily, dailyFx, dailyCost, dailyOn } from '../../src/shared/daily.js';
+import { sanitizeJudgment, addResidues, refresh as refreshJudgment, publicJudgment, isOpen as towerOpen, anyOpen as anyTowerOpen, residuesOn, hasWon, markDone,
          setCount as setJudgmentCount, SIDES as JUDGMENT_SIDES } from '../../src/meta/judgment.js';
 import { towerSide, isTowerMode, towerDurationMs, splitTowerLoot } from '../../src/shared/tower.js';
 import { instanceDef, instanceDurationMs, isInstanceMode, missingKeys, levelsOf } from '../../src/shared/instances.js';
+import { RAID_MODE, isRaidMode, raidDurationMs, cleanGroup, groupsOk } from '../../src/shared/raid.js';
 import { rollChestQuality, rollRune, rolledSpec, rollStats, isRing, canIdentify, qualityDef } from '../../src/meta/piece.js';
 import { sanitizeProgress, creditXp, raiseAreaMax, levelOf, specXpOf, specLevels } from '../../src/meta/level.js';
-import { sanitizeSkills, skillOp, skillRanks, spentPoints } from '../../src/meta/skills.js';
+import { sanitizeSkills, skillOp, skillRanks, spentPoints, migrateSkills, pointsByTree } from '../../src/meta/skills.js';
 import { glyphOp, sessionSkills, ownedGlyphs, nodeOfGlyph } from '../../src/meta/glyphs.js';
 import { sanitizeSpells, spellOp, learnScroll, publicSpells, equippedSpells } from '../../src/meta/spells.js';
-import { sanitizeSets, setOp, applySet, snapshot, publicSets, inSomeSet } from '../../src/meta/sets.js';
+import { sanitizeSets, setOp, applySet, snapshot, publicSets, inSomeSet, setForMode, equippedSet } from '../../src/meta/sets.js';
 import { canOpen, openTreasure, openAll } from '../../src/meta/loot.js';
 import { sanitizeFurnaces, furnaceOp, advance } from '../../src/meta/furnace.js';
 import { sanitizeCrusher, crusherOp, advance as advanceCrusher, publicCrusher } from '../../src/meta/crusher.js';
 import { craft, learn, recycleStuff, spendFor } from '../../src/meta/craft.js';
+import { buy as shopBuy } from '../../src/meta/shop.js';
 import { research, recycle } from '../../src/meta/research.js';
 import { sanitizeEnergy, canPay, rollCost, spendEnergy, creditEnergy, energyOfTicks, publicEnergy, settleIdle } from '../../src/meta/energy.js';
 import { cleanTime, sanitizePrison, newPrisonRecord, runId, runRecord, prisonTickAt, publicPrison, prisonDueMs, touchPrison, isPresent, batchDue,
@@ -60,6 +64,7 @@ import { GAME_SERVER } from '../config.js';
 import { prisonRow } from '../../src/meta/prison-dashboard.js';
 import { treasureMessage, identifyMessage, towerOpenMessage, blueprintMessage, discoveryMessage } from '../social/discord.js';
 import { RECIPES } from '../../src/recipes.js';
+import { isGeante, maxPlayersOf, geanteLeft } from '../../src/shared/geante.js';
 import { createLiveRunner } from './live.js';
 import { createChat } from './chat.js';
 import { DELETED_NAME } from './store.js';
@@ -73,10 +78,14 @@ const fail = (code, status, message, extra) => { throw new GameError(code, statu
 
 const ACTIVE = ['running', 'settling'];
 const CRAFT_ERRORS = { unknown: 'Recette inconnue.', locked: 'Recette pas encore débloquée.',
-                       not_enough: 'Il te manque des ingrédients.' };
+                       not_enough: 'Il te manque des ingrédients.', bad_count: 'Quantité invalide.' };
+const SHOP_ERRORS = { unknown: 'Article inconnu.', bad_count: 'Quantité invalide.', not_enough: 'Il te manque des émeraudes.' };
 const LEARN_ERRORS = { no_use: 'Ce blueprint ne débloque rien pour l\'instant.', known: 'Tu connais déjà cette recette : ton blueprint est gardé.',
                        not_owned: 'Tu n\'as pas ce blueprint.' };
 const SKILL_ERRORS = { unknown: 'Skill inconnu.', other_tree: 'Tu as choisi un autre arbre : fais un reset pour changer.',
+                       no_spec: 'Choisis d\'abord ta spécialisation (en haut de l\'onglet).', needs_tier: 'Étage pas encore ouvert : dépense plus de points dans cet arbre.',
+                       spec_only: 'Skill spécial de classe : seulement pour cette spécialisation.',
+                       too_deep: 'Hors de ta spécialisation, tu ne peux pas aller aussi profond que dans ton arbre principal.',
                        maxed: 'Ce skill est déjà au rang max.', needs_previous: 'Monte d\'abord l\'étape précédente au rang max.',
                        no_points: 'Plus de points de skill : gagne un niveau.', bad_request: 'Demande invalide.',
                        not_max: 'Le skill doit être au rang max pour recevoir son glyphe.', occupied: 'Un glyphe est déjà posé sur ce skill.',
@@ -90,7 +99,7 @@ const SHRINE_ERRORS = { bad_shrine: 'Shrine inconnu.', bad_item: 'Ce shrine ne d
 const SET_ERRORS = { unknown: 'Set introuvable.', too_many: 'Tu as déjà le nombre maximum de sets.',
                      bad_name: 'Nom vide ou trop long.', session_running: 'Impossible pendant une session : termine-la d\'abord.',
                      bad_request: 'Demande invalide.' };
-const RESEARCH_ERRORS = { bad_tier: 'Tier de recherche inconnu.', tier_locked: 'Apprends d\'abord toutes les recettes des tiers inférieurs.', nothing_left: 'Tu as appris tous les blueprints de ce tier.',
+const RESEARCH_ERRORS = { bad_tier: 'Tier de recherche inconnu.', tier_locked: 'Apprends d\'abord toutes les recettes des tiers inférieurs.', area_locked: 'Tu n\'as pas encore atteint l\'area demandée pour ce tier.', nothing_left: 'Tu as appris tous les blueprints de ce tier.',
                           too_recent: `Les plans restants de ce tier viennent de sortir : apprends-les, ou réessaie dans ${RESEARCH.recentMs / 60_000} min au plus.`,
                           not_enough: 'Il te faut plus de Blueprint parts.', bad_item: 'Seul un blueprint se recycle.',
                           not_owned: 'Tu n\'as pas ce blueprint.', bad_request: 'Demande invalide.' };
@@ -152,10 +161,16 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
                                     /* mode dev : copies de vrais joueurs pour les mineurs de test, { pseudo: copie } (data/presets/) */
                                     devCopies = () => ({}),
                                     devLiveCopies = null,
+                                    /* événement du jour (05/11/2026) : tiré seulement si true (server/main.js) ; false dans les tests, qui
+                                       restent déterministes (un test l'active ou passe dailyPick pour imposer l'événement) */
+                                    dailyEvents = false,
+                                    dailyPick = null,
                                     /* hasard du butin, imprévisible, dans [0, 1[ : 48 bits aléatoires (randomInt refuse 2**48) */
                                     random = () => crypto.randomBytes(6).readUIntBE(0, 6) / 2**48,
                                     /* modération du chat (server/moderation/service.js, 30/10) : avertit l'auteur d'un mot interdit ; absente = rien */
                                     moderation = null,
+                                    /* comptes (parrainage, 05/11/2026) : compte par ID, par clé de pseudo ; absents = pas de parrainage d'office */
+                                    accountOf = async () => null, accountByName = async () => null,
                                     /* comptes bloqués par un joueur (server/social/service.js, 01/11) : leurs messages lui sont masqués */
                                     blockedOf = async () => new Set(),
                                     /* XP d'un joueur tout juste créditée (server/guild/service.js), une seule fois par session */
@@ -242,11 +257,24 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
      Une tour dont la jauge est pleine s'ouvre à la lecture (refresh), et c'est enregistré. */
   /* Une tour qui vient de s'ouvrir (son numéro d'ouverture a avancé, quelle que soit la cause : résidus, réouverture,
      admin) est annoncée sur Discord une fois, après l'enregistrement (sous le verrou : jamais deux fois). */
+  /* événement du jour (05/11/2026, src/shared/daily.js) : tiré au premier besoin après minuit (heure de Paris), enregistré
+     (ns daily) ; renvoie son id. Gardé en mémoire : un seul serveur écrit cet état. */
+  let dailyState = null;
+  const currentDaily = () => !dailyEvents ? Promise.resolve(null) : withLock('daily', async () => {
+    dailyState ??= sanitizeDaily(await store.getDaily?.());
+    if(rollDaily(dailyState, clock(), dailyPick ?? random)) await store.putDaily?.(dailyState);
+    return dailyState.id;
+  });
+  /* événement du jour où tombe l'heure t (un run de prison rejoué hors ligne prend celui du jour de son début) */
+  const dailyAt = async t => { await currentDaily(); return dailyOn(dailyState, t); };
+  /* règles du Jugement du jour (Cataclysme) : en direct, pas figées */
+  const judgmentRules = async () => { const fx = dailyFx(await currentDaily()); return { cap: fx.towerCap ?? undefined, together: fx.towersTogether }; };
   const withJudgment = fn => withLock('judgment', async () => {
+    const rules = await judgmentRules();
     const j = sanitizeJudgment(await store.getJudgment());
     const openings = Object.fromEntries(JUDGMENT_SIDES.map(s => [s, j[s].opening]));
-    const opened = refreshJudgment(j, clock());
-    const r = await fn(j);
+    const opened = refreshJudgment(j, clock(), rules);
+    const r = await fn(j, rules);
     if(opened || r?.save) await store.putJudgment(j);
     for(const s of JUDGMENT_SIDES) if(j[s].opening > openings[s]) shout(towerOpenMessage(s));
     return r?.value ?? r;
@@ -261,7 +289,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     const busy = !!await activeOf(accountId) || prisonRec?.state === 'running' || prisonRec?.state === 'waiting';
     if(e.at == null){ e.at = now; return { e, changed: true }; }   // premier calcul : le repos compte à partir d'ici
     if(busy){ e.at = now; return { e, changed: false }; }
-    const lastEnd = (await store.sessionsOf(accountId)).reduce((m, s) => Math.max(m, Number.isFinite(s?.endedAt) ? s.endedAt : 0), prisonRec?.endedAt ?? 0);
+    const lastEnd = Math.max(await store.lastEndOf(accountId), prisonRec?.endedAt ?? 0);
     return { e, changed: settleIdle(e, Math.max(e.at, lastEnd), now, GAME.speed) > 0 };
   };
   const loadEnergy = async accountId => {
@@ -283,10 +311,11 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     if(pr.areaMax !== before) await store.putProgress(accountId, pr);
     return pr.areaMax;
   });
-  const publicProgress = p => ({ xp: p.xp, ...levelOf(p.xp), spec: specLevels(p) });
+  const publicProgress = p => ({ xp: p.xp, ...levelOf(p.xp), spec: specLevels(p), areaMax: p.areaMax | 0 });   // areaMax : tiers de la recherche (05/11)
   /* skills : revérifiés avec les points du niveau (jamais plus de rangs que de points) */
   const pointsOf = async accountId => levelOf((await loadProgress(accountId)).xp).talentPoints;
-  const loadSkills = async accountId => sanitizeSkills(await store.getSkills(accountId), await pointsOf(accountId));
+  /* arbres v2 (04/11/2026) : une sauvegarde d'avant (sans v:2) repart de zéro, spé et glyphes gardés (migrateSkills) */
+  const loadSkills = async accountId => sanitizeSkills(migrateSkills(await store.getSkills(accountId)), await pointsOf(accountId));
   const publicSkills = (st, points) => ({ ...skillRanks(st), points, spent: spentPoints(st), glyphs: { ...st.glyphs } });   // glyphes posés { nœud: objet }
   /* sorts : relus et revérifiés ; ctx = arbre de skills choisi et niveaux de spécialisation (déblocage, needTree) */
   const loadSpells = async accountId => sanitizeSpells(await store.getSpells(accountId));
@@ -297,8 +326,30 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
              skills: publicSkills(await loadSkills(accountId), await pointsOf(accountId)),
              spells: publicSpells(await loadSpells(accountId), await spellCtx(accountId)) };
   };
-  const spellCtx = async accountId => ({ tree: (await loadSkills(accountId)).tree,
-    spec: Object.fromEntries(Object.entries(specLevels(await loadProgress(accountId))).map(([t, s]) => [t, s.level])) });
+  const spellCtx = async accountId => { const pr = await loadProgress(accountId);
+    return { tree: (await loadSkills(accountId)).tree, level: levelOf(pr.xp).level,   // niveau du mineur : emplacements de sorts (05/11)
+             spec: Object.fromEntries(Object.entries(specLevels(pr)).map(([t, s]) => [t, s.level])) }; };
+  /* Set par activité (03/11/2026, Geoffrey) : avant de lancer ou d'entrer dans une activité (mode), le set que le joueur
+     lui a associé est équipé, comme avec « Équiper » ; rien s'il n'y en a pas, s'il est déjà équipé, ou si le joueur est
+     en session (son équipement figé ne change pas, le prochain lancement s'en chargera). Jamais d'erreur : un set
+     introuvable ne bloque pas le lancement. À appeler HORS des verrous du lancement (il prend inv, skills, spells, sets). */
+  async function autoEquip(accountId, mode){
+    try {
+      if(await activeOf(accountId)) return null;
+      return await withLock.many(['inv:' + accountId, 'skills:' + accountId, 'spells:' + accountId, 'sets:' + accountId], async () => {
+        const sets = sanitizeSets(await store.getSets(accountId)), set = setForMode(sets, mode);
+        if(!set) return null;
+        const inv = await loadInventory(accountId), stuff = await loadStuff(accountId, inv);
+        const skills = await loadSkills(accountId), spells = await loadSpells(accountId);
+        if(equippedSet([set], stuff.worn, skills, spells.slots)) return null;
+        const ctx = await spellCtx(accountId);
+        const r = applySet(sets, { id: set.id, opId: 'auto-' + crypto.randomUUID() }, { inv, stuff, skills, spells, points: await pointsOf(accountId), spec: ctx.spec, level: ctx.level });
+        if(r.error) return null;
+        await store.putLoadout(accountId, { inventory: JSON.parse(serialize(inv)), stuff, skills, spells, sets });
+        return { set: set.name, missing: r.missing };
+      });
+    } catch(e){ console.error(`Set par activité (${accountId}, ${mode}) :`, e.message); return null; }
+  }
   /* le mineur d'un joueur, figé au lancement (session ou prison) : préférences, skills (glyphes actifs ; owned : glyphes
      possédés, pour le drop), sorts équipés encore valides, apparence (src/skins.js) et pièces portées avec leur qualité
      et leur niveau (gear) */
@@ -312,6 +363,59 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     const sk = await loadSkills(accountId), inv = await loadInventory(accountId), st = await loadStuff(accountId, inv);
     return { prefs: await loadPrefs(accountId), skills: { ...await frozenSkills(accountId, sk), owned: ownedGlyphs(sk, inv) },
              spells: equippedSpells(await loadSpells(accountId), await spellCtx(accountId)), look: lookOf(st), gear: gearOf(st) };
+  }
+
+  /* ---------- parrainage (05/11/2026, Geoffrey ; REFERRAL, src/shared/referral.js) ---------- */
+  let legacyId;   // compte de REFERRAL.legacyName (Canoul), cherché une fois
+  const legacyReferrer = async () => legacyId !== undefined ? legacyId
+    : (legacyId = (await accountByName(nameKey(REFERRAL.legacyName)))?.id ?? null);
+  /* fiche de parrainage d'un compte ; un compte créé avant la mise en ligne, sans fiche, est affilié d'office à Canoul */
+  async function referralOf(accountId){
+    const r = await store.getReferral(accountId);
+    if(r) return r;
+    const acc = await accountOf(accountId), leg = await legacyReferrer();
+    return acc && Number.isFinite(acc.createdAt) && acc.createdAt < REFERRAL.legacyBefore && leg && leg !== accountId
+      ? { by: leg, at: null, legacy: true } : null;
+  }
+  /* le parrain d'une fiche a-t-il droit à sa part ? (parrain d'office : seulement si REFERRAL.legacyPaysReferrer) */
+  const payable = r => !r.legacy || REFERRAL.legacyPaysReferrer;
+  /* fiche déjà récompensée sans la part du parrain (avant le réglage du 05/11 13 h) : on la lui verse, une fois */
+  async function payLater(accountId){
+    const r0 = await store.getReferral(accountId);
+    return withLock.many(['inv:' + r0.by, 'ref:' + accountId], async () => {
+      const r = await store.getReferral(accountId);
+      if(!r?.done || r.paid || !payable(r) || r.by === accountId || !(await accountOf(r.by))) return null;
+      const theirs = await loadInventory(r.by);
+      await loadStuff(r.by, theirs);
+      addItem(theirs, REFERRAL.item, REFERRAL.qty);
+      await store.putReferralAndInventories(accountId, { ...r, paid: true, paidLate: clock() }, [[r.by, JSON.parse(serialize(theirs))]]);
+      return { paid: true };
+    });
+  }
+  /* niveau atteint : le filleul et son parrain reçoivent la récompense, une seule fois (fiche done), sous les verrous des deux
+     inventaires et de la fiche ; parrain d'office (legacy) : rien pour lui (REFERRAL.legacyPaysReferrer) ; parrain disparu : rien */
+  async function settleReferral(accountId){
+    const first = await referralOf(accountId);
+    if(!first?.by) return null;
+    if(first.done) return first.paid || !payable(first) ? null : payLater(accountId);   // rattrapage : sa part au parrain (05/11 13 h)
+    if(levelOf((await loadProgress(accountId)).xp).level < REFERRAL.level) return null;
+    return withLock.many(['inv:' + accountId, 'inv:' + first.by, 'ref:' + accountId], async () => {
+      const r = await referralOf(accountId);
+      if(!r?.by || r.done) return null;
+      const pay = (!r.legacy || REFERRAL.legacyPaysReferrer) && r.by !== accountId && !!(await accountOf(r.by));
+      const mine = await loadInventory(accountId);
+      await loadStuff(accountId, mine);
+      addItem(mine, REFERRAL.item, REFERRAL.qty);
+      const invs = [[accountId, JSON.parse(serialize(mine))]];
+      if(pay){
+        const theirs = await loadInventory(r.by);
+        await loadStuff(r.by, theirs);
+        addItem(theirs, REFERRAL.item, REFERRAL.qty);
+        invs.push([r.by, JSON.parse(serialize(theirs))]);
+      }
+      await store.putReferralAndInventories(accountId, { ...r, done: true, doneAt: clock(), paid: pay }, invs);
+      return { given: REFERRAL.qty, paid: pay };
+    });
   }
 
   /* ce que le navigateur voit d'une session */
@@ -331,18 +435,19 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
   const inSession = (rec, accountId) => rec.players.some(p => p.account === accountId);
   const hasLeft = (rec, accountId) => rec.leaves.some(l => l.account === accountId);
 
+  const isActive = s => ACTIVE.includes(s.status);
   async function activeOf(accountId){
-    return (await store.sessionsOf(accountId)).find(s => ACTIVE.includes(s.status) && !hasLeft(s, accountId)) ?? null;
+    return (await store.sessionsOf(accountId, isActive)).find(s => !hasLeft(s, accountId)) ?? null;
   }
 
   /* ---------- parties en direct ---------- */
 
   /* tick que la partie doit avoir atteint maintenant : temps réel (jeu normal), horloge de la session (dev) */
   function targetTick(rec){
-    if(!rec.dev) return tickAt(clock() - rec.startedAt, rec.speed);
+    if(!rec.dev) return tickAt(clock() - rec.startedAt, rec.speed, totalTicksOf(rec.mode));
     const c = rec.clock;
     const t = c.paused ? c.tick : c.tick + Math.floor((clock() - c.at) / 1000 * c.speed / DT + 1e-9);
-    return Math.min(TOTAL_TICKS, t);
+    return Math.min(totalTicksOf(rec.mode), t);
   }
   /* la partie tourne (après un redémarrage du serveur : reconstruite depuis la seed et les choix enregistrés).
      Jamais pour une partie qui vient de se terminer et dont le coffre est en cours de partage : false. */
@@ -538,6 +643,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
          pour toute la prison ; une pièce de Découverte équipée ensuite ne comptait jamais). Le pseudo reste celui de
          l'entrée. Rangés avec la prison : un run rejoué après un redémarrage garde les siens. */
       p.specs = { name: p.specs?.name, ...await freezePlayer(p.account) };
+      p.daily = await dailyAt(p.runStartedAt);   // événement du jour du début du run (05/11)
     }
     runEnded.delete(key); runOwner.delete(key); payoutTries.delete(key); crashes.delete(key); live.close(key);
     await store.putPrison(p.account, p);
@@ -673,8 +779,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     return jobs;
   }
   /* sessions qui empêchent de lancer une prison : mine, tour, instance (pas la mine instantanée) */
-  const sessionOf = async accountId => (await store.sessionsOf(accountId))
-    .find(s => ACTIVE.includes(s.status) && !hasLeft(s, accountId) && s.mode !== 'mi') ?? null;
+  const sessionOf = async accountId => (await store.sessionsOf(accountId, isActive))
+    .find(s => !hasLeft(s, accountId) && s.mode !== 'mi') ?? null;
   /* retard joué à une vue de la prison : au plus un paquet et le rejeu d'un run (au-delà, pump finit le rattrapage) */
   const catchUpBudget = p => prisonTickAt(cfg.batchMs, p.speed) + Math.ceil(cfg.runMax / DT);
   /* Visite du joueur (state, vue de la prison) : notée (touchPrison, lastSeenAt écrit au plus toutes les seenWriteMs ;
@@ -760,9 +866,12 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         share.bag = !(summary.success && here) ? {}
           : inst.chest === 'goblin' ? { [goblinChestItem(rollChestQuality(random), rec.level ?? 1)]: 1 }   // niveau 2 : Coffre du Roi Gobelin II (29/10)
           : inst.chest === 'golbute' ? { [golbuteChestItem(rollChestQuality(random))]: 1 } : {};
+        /* Sceau démoniaque (05/11/2026, Geoffrey) : un pour chaque joueur présent à la victoire, toutes les instances */
+        if(summary.success && here && INSTANCE.seal?.item) share.bag[INSTANCE.seal.item] = INSTANCE.seal.qty;
       }
-      /* versement : seulement aux joueurs de la session encore présents, une seule fois par session */
-      for(const share of summary.shares || []){
+      /* versement : seulement aux joueurs de la session encore présents, une seule fois par session. Raid Cerbère (04/11) :
+         récompense à définir, rien n'est versé (ni objet, ni XP) */
+      for(const share of isRaidMode(rec.mode) ? [] : summary.shares || []){
         if(!share.account || !inSession(rec, share.account) || share.left || hasLeft(rec, share.account)) continue;
         await withLock('inv:' + share.account, async () => {
           const inv = await loadInventory(share.account);
@@ -775,7 +884,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           /* trésor de tour très rare : annoncé sur Discord, une seule fois (comme le versement) */
           for(const item of Object.keys(share.bag || {})) shout(treasureMessage(who, item));
           /* résidus versés : ils remplissent les jauges du Jugement (une seule fois, comme le versement) */
-          await withJudgment(j => ({ save: addResidues(j, share.bag, clock()) }));
+          await withJudgment((j, rules) => ({ save: addResidues(j, share.bag, clock(), rules) }));
           /* tour réussie : « déjà faite » pour l'ouverture où elle a été lancée (pas une ouverture suivante) */
           if(side && summary.success)
             await withJudgment(j => ({ save: j[side].opening === rec.opening && markDone(j, side, share.account, rec.level ?? 1) }));
@@ -927,6 +1036,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
 
     /* état du joueur : inventaire, préférences, session en cours, et résultat d'une session terminée pas encore vu */
     async state(me, waitedId = null){
+      try { await settleReferral(me.id); } catch(e){ console.error('Parrainage :', e.message); }   // récompense du parrainage au niveau voulu (05/11)
       const list = await store.sessionsOf(me.id);
       const active = list.find(s => ACTIVE.includes(s.status) && !hasLeft(s, me.id)) ?? null;
       /* bilan à montrer : seulement celui de sa DERNIÈRE session finie, s'il ne l'a pas vu (30/10/2026, Geoffrey). Avant :
@@ -942,8 +1052,9 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       const crusher = await withCrusher(me.id, (_, c) => publicCrusher(c, clock()));
       return { inventory: publicInventory(inv), furnaces: publicFurnaces(await loadFurnaces(me.id)), crusher,
                stuff: (await loadStuff(me.id, inv)).worn,
-               progress: publicProgress(await loadProgress(me.id)),
+               progress: { ...publicProgress(await loadProgress(me.id)), areaMax: dev ? AREAS.length : await areaMaxOf(me.id) },
                energy: publicEnergy(await loadEnergy(me.id)),
+               geanteLeft: geanteLeft(await store.sessionsOf(me.id), clock()),   // Mines géantes qu'il peut encore lancer aujourd'hui (06/11)
                skills: publicSkills(await loadSkills(me.id), await pointsOf(me.id)),
                spells: publicSpells(await loadSpells(me.id), await spellCtx(me.id)),
                sets: publicSets(sanitizeSets(await store.getSets(me.id))),
@@ -987,22 +1098,26 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       const players = await Promise.all((members?.length ? members : [{ account: me.id, name: displayName(me) }])
         .map(async p => ({ account: String(p.account), name: String(p.name ?? ''), ...await guildField(String(p.account)) })));
       if(players[0].account !== me.id) fail('bad_request', 400, 'Le joueur qui lance doit être le premier.');
-      if(new Set(players.map(p => p.account)).size !== players.length || players.length > GAME.maxPlayers)
-        fail('bad_request', 400, 'Équipe invalide.');
       /* type de mine choisi dans le lobby (Mine par défaut) ; un type annoncé mais pas prêt (MI) est refusé */
       const mode = body.mode ?? MINE_MODES[0].id;
+      if(new Set(players.map(p => p.account)).size !== players.length || players.length > maxPlayersOf(mode))
+        fail('bad_request', 400, 'Équipe invalide.');
+      /* Mine géante (06/11) : exactement 5 joueurs (mode dev : complétée par des mineurs de test) ; plus de 3 : seulement elle */
+      if(isGeante(mode) && !dev && players.length !== GEANTE.players)
+        fail('geante_players', 409, `Mine géante : il faut ${GEANTE.players} joueurs dans le groupe (vous êtes ${players.length}).`);
       const modeDef = MINE_MODES.find(m => m.id === mode);
       if(!modeDef) fail('bad_request', 400, 'Type de mine inconnu.');
       if(!modeDef.ready) fail('mode_not_ready', 400, `${modeDef.label} : bientôt disponible.`);
       if(modeDef.scheduled) fail('mode_scheduled', 400, `${modeDef.label} : elle s'ouvre à heure fixe, inscris-toi dans le lobby.`);
       if(modeDef.giant) fail('mode_giant', 400, `${modeDef.label} : on y entre seul, depuis son panneau dans le lobby.`);
+      if(!modeDef.prison) for(const p of players) await autoEquip(p.account, mode);   // set de l'activité, chacun le sien (03/11)
       if(modeDef.prison) fail('mode_prison', 400, `${modeDef.label} : elle se lance depuis son bouton dans le lobby.`);
       const side = modeDef.tower ?? null;
       /* instance (27/10) : une clé par joueur, vérifiée et consommée au lancement (sous le verrou des inventaires) */
       const inst = modeDef.instance ? instanceDef(mode) : null;
       if(modeDef.instance && !inst?.ready) fail('mode_not_ready', 400, `${modeDef.label} : bientôt disponible.`);
       /* énergie (29/10) : seule la mine classique en coûte, hors mode dev ; verrou par compte, bots exclus (seuls les vrais joueurs) */
-      const energyLocks = mode === 'mine' && !dev ? players.map(p => 'energy:' + p.account) : [];
+      const energyLocks = mode === 'mine' && !dev ? players.map(p => 'energy:' + p.account) : [];   // la Mine géante ne coûte pas d'énergie (06/11, Geoffrey)
       /* verrous : compte, et ceux d'un versement de prison (inventaire, XP, énergie, prison) : le lancement peut arrêter la
          prison d'un joueur (29/10) ; ils couvrent aussi les clés d'instance et l'énergie */
       return withLock.many([...players.map(p => 'acct:' + p.account), ...players.flatMap(p => prisonLocks(p.account))], async () => {
@@ -1023,7 +1138,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
             stele = shrineOf(body.stele)?.tower === side ? body.stele : null;
             heroic = body.heroic === true ? heroicFor(sanitizeShrines({ active: { heroique: 1 } })) : null;
           } else {
-            const sh = sanitizeShrines(await store.getShrines(me.id)), mine = (await store.sessionsOf(me.id)).filter(s => ACTIVE.includes(s.status) && s.steleOwner === me.id);
+            const sh = sanitizeShrines(await store.getShrines(me.id)), mine = await store.sessionsOf(me.id, s => isActive(s) && s.steleOwner === me.id);
             const free = (id, key) => id && !mine.some(s => s[key] === id) ? id : null;
             stele = free(steleFor(sh, side), 'stele'); heroic = free(heroicFor(sh), 'heroic');
           }
@@ -1036,8 +1151,14 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           opening = t.opening;
         }
         /* mine classique : pas de résidus si une tour du Jugement est ouverte au lancement (23/10, figé dans la session) */
-        const residues = side || inst ? null : await withJudgment(j => ({ value: !anyTowerOpen(j, clock()) }));
+        const residues = side || inst ? null : await withJudgment((j, rules) => ({ value: residuesOn(j, clock(), rules) }));
         if(await activeOf(me.id)) fail('session_running', 409, 'Tu as déjà une session en cours.');
+        /* Mine géante (06/11) : GEANTE.perDay lancements par joueur et par jour (Paris), hors mode dev */
+        if(isGeante(mode) && !dev){
+          const now0 = clock(), done = [];
+          for(const p of players) if(geanteLeft(await store.sessionsOf(p.account), now0) <= 0) done.push(p);
+          if(done.length) fail('geante_daily', 409, `Mine géante : ${GEANTE.perDay} par jour. ${done.map(p => p.name || 'Un joueur').join(', ')} ${done.length > 1 ? 'les ont' : 'les a'} déjà faites aujourd'hui.`);
+        }
         for(const p of players.slice(1))
           if(await activeOf(p.account)) fail('member_in_session', 409, `${p.name || 'Un joueur'} est déjà dans une session.`);
         /* places : les sessions à l'heure seulement (une session dépassée se rattrape sur le budget restant) */
@@ -1054,11 +1175,12 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           if(miss.length) fail('no_key', 409, `Il faut une ${inst.key} par joueur : ${miss.map(p => p.name || 'un joueur').join(', ')} n'en ${miss.length > 1 ? 'ont' : 'a'} pas.`);
         }
         /* énergie : chaque joueur doit pouvoir payer (vérifié avant de compter le lancement ; rien n'est débité ici) */
+        const daily = await currentDaily();   // événement du jour, figé au lancement (05/11)
         const energies = {};
         if(energyLocks.length){
           for(const p of players) energies[p.account] = await loadEnergy(p.account);
-          const poor = players.filter(p => !canPay(energies[p.account]));
-          if(poor.length) fail('no_energy', 409, `Pas assez d'énergie (${ENERGY.cost.min} au moins) : ${poor.map(p => p.name || 'Un joueur').join(', ')}. L'énergie se recharge en prison (Lobby, « Où miner », Prison).`);
+          const poor = players.filter(p => !canPay(energies[p.account], dailyCost(ENERGY.cost.min, daily)));
+          if(poor.length) fail('no_energy', 409, `Pas assez d'énergie (${dailyCost(ENERGY.cost.min, daily)} au moins) : ${poor.map(p => p.name || 'Un joueur').join(', ')}. L'énergie se recharge en prison (Lobby, « Où miner », Prison).`);
         }
         const now = clock();
         const prefs = {}, looks = {}, gear = {}, skills = {}, spells = {}, statsAt = {};
@@ -1106,7 +1228,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           mode,
           seed: dev && isInt(body.seed) && body.seed >= 0 && body.seed < 2**31 ? body.seed : randomSeed(),
           players,
-          bots: dev ? Math.max(0, Math.min(GAME.maxPlayers - players.length, botsWanted)) : 0,
+          bots: dev ? Math.max(0, Math.min(maxPlayersOf(mode) - players.length, botsWanted)) : 0,
           prefs, looks, gear, skills, spells,
           overrides: dev ? sanitizeOverrides(body.overrides) : null,
           devSpecs: dev ? sanitizeDevSpecs(body.devSpecs) : null,   // spécialisations imposées (mode dev)
@@ -1115,11 +1237,12 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           ...(placeOfPlayers?.some(Boolean) ? { playerPresets: placeOfPlayers, playerCopies: botCopiesOf(placeOfPlayers).botCopies ?? null } : {}),
           ...(dev ? selfPresetOf(body.selfPreset) : {}),   // preset du joueur qui lance (mode dev, 29/10)
           dev, speed: dev ? null : speed, startedAt: now,
-          finishAt: dev ? null : now + (side ? towerDurationMs(speed) : inst ? instanceDurationMs(speed) : realDurationMs(speed)),
+          finishAt: dev ? null : now + (side ? towerDurationMs(speed) : inst ? instanceDurationMs(speed) : realDurationMs(speed, mode)),
           ...(side ? { opening, level } : inst ? { level } : {}),
           ...(modulation ? { modulation: { gsMax: TOWER.modulation.gsMax } } : {}),
           ...(residues === false ? { residues: false } : {}),
           ...(shrines.length ? { shrines } : {}),
+          ...(daily ? { daily } : {}),   // événement du jour, figé au lancement (05/11)
           ...(stele ? { stele } : {}), ...(heroic ? { heroic } : {}),
           ...((stele || heroic) && !dev ? { steleOwner: me.id } : {}),
           ...(mode === 'mine' && !dev ? { statsAt } : {}),
@@ -1131,13 +1254,61 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           rec.energy = {};
           for(const p of players){
             /* dès 6 d'énergie le lancement réussit toujours : le coût est plafonné à l'énergie restante (jamais négative) */
-            const cost = Math.min(rollCost(random), Math.floor(energies[p.account].value));
+            const cost = Math.min(dailyCost(rollCost(random), daily), Math.floor(energies[p.account].value));   // Jour férié (05/11)
             if(!spendEnergy(energies[p.account], rec.id, cost)) throw new Error('énergie : débit impossible après la vérification (bug)');
             rec.energy[p.account] = cost;
           }
           for(const p of players) await store.putEnergy(p.account, energies[p.account]);
         }
         /* instance : la clé est seulement vérifiée ici (plus haut) ; elle est prise à la victoire (30/10/2026) */
+        await store.putGameSession(rec);
+        ensureLive(rec);
+        for(const fn of startHooks) Promise.resolve().then(() => fn(players.map(p => p.account))).catch(console.error);
+        return { session: publicSession(rec) };
+      });
+    },
+
+    /* Raid Cerbère (04/11/2026, spec docs/superpowers/specs/2026-11-04-raid-cerbere-design.md) : lancé par le lobby de raid
+       de la guilde (server/guild/raid.js), jamais par le lobby normal (pas dans MINE_MODES, start le refuse). members :
+       [{account, name}], le chef de raid en premier ; 1 à RAID.maxPlayers. Gratuit (ni clé, ni énergie), pas d'XP,
+       récompense à définir (settleWith ne verse rien). Mêmes refus qu'une instance : session en cours, serveur plein,
+       trop de lancements. Comme une instance : chaque joueur figé au lancement, sa prison arrêtée. body : { guild (id de la
+       guilde du lobby, gardé dans la session), seed (mode dev) }. */
+    async startRaid(me, members = null, body = {}){
+      const list = members?.length ? members : [{ account: me.id, name: displayName(me) }];
+      const players = await Promise.all(list.map(async (p, i) => ({ account: String(p.account), name: String(p.name ?? ''), group: cleanGroup(p.group) ?? 1 + Math.floor(i / RAID.groupSize), ...await guildField(String(p.account)) })));
+      if(players[0].account !== me.id) fail('bad_request', 400, 'Le joueur qui lance doit être le premier.');
+      if(new Set(players.map(p => p.account)).size !== players.length || players.length > RAID.maxPlayers || !groupsOk(players))
+        fail('bad_request', 400, 'Raid invalide.');
+      for(const p of players) await autoEquip(p.account, RAID_MODE);   // set de l'activité, chacun le sien
+      return withLock.many([...players.map(p => 'acct:' + p.account), ...players.flatMap(p => prisonLocks(p.account))], async () => {
+        if(await activeOf(me.id)) fail('session_running', 409, 'Tu as déjà une session en cours.');
+        for(const p of players.slice(1))
+          if(await activeOf(p.account)) fail('member_in_session', 409, `${p.name || 'Un joueur'} est déjà dans une session.`);
+        if((await store.sessionsWithStatus('running')).filter(r => !overdue(r)).length >= (config.maxLive ?? Infinity))
+          fail('server_busy', 503, 'Le serveur fait déjà tourner le maximum de sessions. Réessaie dans quelques minutes.', { retryAfter: 60 });
+        const lim = startLimit.check(me.id);
+        if(!lim.ok) fail('rate_limited', 429, 'Trop de sessions lancées. Réessaie un peu plus tard.', { retryAfter: lim.retryAfter });
+        startLimit.hit(me.id);
+        const prefs = {}, looks = {}, gear = {}, skills = {}, spells = {};
+        for(const p of players){
+          const f = await freezePlayer(p.account);
+          prefs[p.account] = f.prefs; skills[p.account] = f.skills; spells[p.account] = f.spells;
+          looks[p.account] = f.look; gear[p.account] = f.gear;
+        }
+        /* prison : arrêtée après tous les refus, avant la création de la session (jamais deux parties pour un joueur) */
+        for(const p of players)
+          if((await stopPrisonOf(p.account)).stopped) skills[p.account].owned = ownedGlyphs(await loadSkills(p.account), await loadInventory(p.account));
+        const now = clock();
+        const rec = {
+          id: crypto.randomUUID(), mode: RAID_MODE,
+          seed: dev && isInt(body?.seed) && body.seed >= 0 && body.seed < 2**31 ? body.seed : randomSeed(),
+          players, bots: 0, prefs, looks, gear, skills, spells, overrides: null,
+          guild: typeof body?.guild === 'string' && body.guild && body.guild.length <= 64 ? body.guild : null,   // guilde du lobby de raid
+          dev, speed: dev ? null : speed, startedAt: now, finishAt: dev ? null : now + raidDurationMs(speed),
+          leaves: [], focus: [], status: 'running', result: null, seen: [],
+          clock: dev ? { tick: 0, at: now, speed: GAME.devSpeeds[0], paused: false } : null,
+        };
         await store.putGameSession(rec);
         ensureLive(rec);
         for(const fn of startHooks) Promise.resolve().then(() => fn(players.map(p => p.account))).catch(console.error);
@@ -1165,6 +1336,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     /* body (mode dev seulement) : { speed } (GAME.devSpeeds) */
     async prisonStart(me, members = null, body = {}){
       if(Array.isArray(members) && members.length > 1) fail('not_solo', 409, 'La prison se joue seul : quitte ton groupe pour la lancer.');
+      await autoEquip(me.id, 'prison');   // set de la Prison (03/11)
       if(body?.area !== undefined && body.area !== null && !isInt(body.area)) fail('bad_request', 400, 'Area invalide.');
       if(body?.compo !== undefined && body.compo !== null && !['current', 'previous', 'saved'].includes(body.compo)) fail('bad_request', 400, 'Composition invalide.');
       await withLock.many(['acct:' + me.id, 'prison:' + me.id], async () => {
@@ -1182,7 +1354,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         const specs = { name: displayName(me), ...await guildField(me.id), ...await freezePlayer(me.id) };
         const runSpeed = dev && GAME.devSpeeds.includes(body?.speed) ? body.speed : speed;
         await loadEnergy(me.id);   // repos soldé jusqu'à l'entrée en prison (30/10/2026)
-        const p = newPrisonRecord({ id: crypto.randomUUID(), account: me.id, seed: randomSeed(), specs, areaMax: area, profile, now: clock(), speed: runSpeed });
+        const p = newPrisonRecord({ id: crypto.randomUUID(), account: me.id, seed: randomSeed(), specs, areaMax: area, profile, now: clock(), speed: runSpeed, daily: await currentDaily() });
         await store.putPrison(me.id, p);
         (await indexOfPrisons()).add(me.id);
         openRun(p);
@@ -1205,6 +1377,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     async openInstant(id, slot, list){
       const players = [];
       for(const p of list) if(!players.some(q => q.account === p.account)) players.push({ account: String(p.account), name: String(p.name ?? ''), ...await guildField(String(p.account)) });
+      for(const p of players) await autoEquip(p.account, 'mi');   // set de la Mine instantanée (03/11)
       return withLock.many(players.map(p => 'acct:' + p.account), async () => {
         if(await store.getGameSession(id)) return null;
         const ok = [];
@@ -1217,9 +1390,11 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           looks[p.account] = lookOf(st);
           gear[p.account] = gearOf(st);      // pièces complètes : seulement pour l'aura (src/meta/aura.js)
         }
+        const daily = await dailyAt(slot);   // MI abondante (05/11) : l'événement du jour de l'ouverture
         const rec = {
           id, mode: 'mi', seed: randomSeed(), players: ok, bots: 0, prefs: {}, looks, gear, skills, overrides: null,
-          dev: false, speed: GAME.speed, startedAt: slot, finishAt: slot + instantDurationMs(GAME.speed),
+          ...(daily ? { daily } : {}),
+          dev: false, speed: GAME.speed, startedAt: slot, finishAt: slot + instantDurationMs(GAME.speed, daily),
           leaves: [], focus: [], status: 'running', result: null, seen: [], clock: null,
         };
         await store.putGameSession(rec);
@@ -1247,6 +1422,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           if(rec.mode === 'mi') fail('bad_request', 400, 'Pas de focus dans la mine instantanée.');
           if(isTowerMode(rec.mode)) fail('bad_request', 400, 'Pas de focus dans une tour.');
           if(isInstanceMode(rec.mode)) fail('bad_request', 400, 'Pas de focus dans une instance.');
+          if(isRaidMode(rec.mode)) fail('bad_request', 400, 'Pas de focus dans un raid.');
           rec.focus ??= [];
           if(rec.focus.filter(e => e.account === me.id).length >= FOCUS.maxChanges)
             fail('too_many', 429, 'Trop de changements de focus dans cette session.');
@@ -1417,7 +1593,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
        versements en cours attendus : après ça, plus rien n'écrit pour ce compte. Sans erreur s'il n'a rien en cours. */
     async eraseAccount(accountId, who){
       await api_prisonStop(accountId);
-      for(const s of (await store.sessionsOf(accountId)).filter(x => ACTIVE.includes(x.status))){
+      for(const s of await store.sessionsOf(accountId, isActive)){
         if(!hasLeft(s, accountId)) await leaveSession(accountId).catch(() => {});
         await settle(s.id).catch(() => {});        // l'heure est passée : la fin qui était due, tant qu'il est encore là
         await settling.get(s.id)?.catch(() => {});
@@ -1526,16 +1702,32 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
 
     /* craft : le serveur vérifie la recette et les ingrédients, retire et donne en une fois (opId : une seule fois) */
     async craft(me, body = {}){
-      const { item, opId } = body;
+      const { item, opId, count = 1 } = body;   // count : crafts d'un coup (recette en série), vérifié par craft()
       if(typeof item !== 'string') fail('bad_item', 400, 'Objet inconnu.');
       if(typeof opId !== 'string' || !/^[\w-]{8,64}$/.test(opId)) fail('bad_request', 400, 'Demande invalide.');
       return withLock('inv:' + me.id, async () => {
         const inv = await loadInventory(me.id);
         await loadStuff(me.id, inv);                     // garde les uid uniques (pièces portées comprises)
-        const r = craft(inv, item, opId, random);       // Rune : qualité et lignes tirées par le serveur
+        const r = craft(inv, item, opId, random, count);   // Rune : qualité et lignes tirées par le serveur
         if(r.error) fail(r.error, r.error === 'not_enough' ? 409 : 400, CRAFT_ERRORS[r.error]);
         if(!r.repeated) await store.putInventory(me.id, JSON.parse(serialize(inv)));
-        return { item, ...(r.pieces ? { piece: r.pieces[0] } : {}), inventory: publicInventory(inv) };
+        return { item, count, ...(r.pieces ? { piece: r.pieces[0] } : {}), inventory: publicInventory(inv) };
+      });
+    },
+
+    /* Boutique (05/11/2026, src/meta/shop.js) : { id, count?, opId } ; émeraudes retirées et objet ajouté en une écriture,
+       une seule fois par opId */
+    async shop(me, body = {}){
+      const { id, opId } = body, count = body.count ?? 1;
+      if(typeof id !== 'string') fail('bad_item', 400, SHOP_ERRORS.unknown);
+      if(typeof opId !== 'string' || !/^[\w-]{8,64}$/.test(opId)) fail('bad_request', 400, 'Demande invalide.');
+      return withLock('inv:' + me.id, async () => {
+        const inv = await loadInventory(me.id);
+        await loadStuff(me.id, inv);
+        const r = shopBuy(inv, { id, count, opId });
+        if(r.error) fail(r.error, r.error === 'not_enough' ? 409 : 400, SHOP_ERRORS[r.error]);
+        if(!r.repeated) await store.putInventory(me.id, JSON.parse(serialize(inv)));
+        return { id, count, inventory: publicInventory(inv) };
       });
     },
 
@@ -1549,33 +1741,40 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         return true;
       });
     },
+    /* objets empilables de l'inventaire, dans l'ordre de l'inventaire (dépôt à la banque de guilde, 05/11/2026) */
+    async stackItems(accountId){
+      const inv = await loadInventory(accountId);
+      return inv.slots.filter(s => s && isStackable(s.item) && s.qty > 0).map(s => ({ item: s.item, qty: s.qty }));
+    },
     /* quantités possédées de ces objets (écran des bâtiments) */
     async itemCounts(accountId, items){
       const inv = await loadInventory(accountId);
       return Object.fromEntries(items.map(i => [i, countOf(inv, i)]));
     },
 
-    /* skills : { action:'learn', node } ou { action:'reset' } (gratuit, refusé pendant une session : les skills de la
+    /* skills : { action:'learn', node }, { action:'spec', tree } (choisir sa spé : remet les points à zéro, arbres v2 du
+       04/11/2026) ou { action:'reset' } (gratuit, refusé pendant une session : les skills de la
        session en cours sont figés au lancement). opId : une demande renvoyée n'agit qu'une fois. */
     async skills(me, body = {}){
       const { action, opId } = body;
       if(typeof opId !== 'string' || !/^[\w-]{8,64}$/.test(opId)) fail('bad_request', 400, 'Demande invalide.');
       const skillErr = e => fail(e, e === 'unknown' || e === 'bad_request' ? 400 : 409, SKILL_ERRORS[e] ?? 'Demande invalide.');
-      /* glyphes : { action:'glyph_pose' | 'glyph_remove', node } ; l'objet quitte ou rejoint l'inventaire, refusé en session
-         (les glyphes de la session en cours sont figés au lancement) ; inventaire et skills enregistrés ensemble */
+      /* glyphes : { action:'glyph_pose' | 'glyph_remove', node } ; l'objet quitte ou rejoint l'inventaire ; permis pendant une
+         session (04/11/2026, Geoffrey : comme le reste, ça compte pour la suivante : les glyphes de la session en cours sont
+         figés au lancement) ; inventaire et skills enregistrés ensemble */
       if(action === 'glyph_pose' || action === 'glyph_remove') return withLock('inv:' + me.id, () => withLock('skills:' + me.id, async () => {
         const inv = await loadInventory(me.id), points = await pointsOf(me.id), st = await loadSkills(me.id);
         if(st.ops.includes(opId)) return { skills: publicSkills(st, points), inventory: publicInventory(inv) };
-        if(await activeOf(me.id)) fail('session_running', 409, 'Impossible pendant une session : termine-la d\'abord.');
         const r = glyphOp(st, inv, { action: action === 'glyph_pose' ? 'pose' : 'remove', node: body.node, opId });
         if(r.error) skillErr(r.error);
         if(!r.repeated) await store.putInventoryAndSkills(me.id, JSON.parse(serialize(inv)), st);
         return { skills: publicSkills(st, points), inventory: publicInventory(inv) };
       }));
       return withLock('skills:' + me.id, async () => {
-        if(action === 'reset' && await activeOf(me.id)) fail('session_running', 409, 'Reset impossible pendant une session : termine-la d\'abord.');
+        /* reset et changement de spé : permis pendant une session (04/11/2026, Geoffrey) ; les skills de la session en cours
+           sont figés au lancement, le changement compte pour la suivante */
         const points = await pointsOf(me.id), st = await loadSkills(me.id);
-        const r = skillOp(st, { action, node: body.node, opId }, points);
+        const r = skillOp(st, { action, node: body.node, tree: body.tree, opId }, points);
         if(r.error) fail(r.error, r.error === 'unknown' || r.error === 'bad_request' ? 400 : 409, SKILL_ERRORS[r.error] ?? 'Demande invalide.');
         if(!r.repeated) await store.putSkills(me.id, st);
         return { skills: publicSkills(st, points) };
@@ -1610,10 +1809,11 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
        (28/10/2026, Geoffrey ; avant : refusé) : la session en cours garde le stuff, les skills et les sorts figés à son
        lancement (rec.gear, rec.skills, rec.spells), le set ne compte qu'à partir de la prochaine. Équiper touche l'inventaire, le stuff, les skills et les sorts : tout est écrit en une fois. opId : une demande
        renvoyée n'agit qu'une fois. */
+    autoEquip: (accountId, mode) => autoEquip(accountId, mode),
     async sets(me, body = {}){
       const { action, opId } = body;
       if(typeof opId !== 'string' || !/^[\w-]{8,64}$/.test(opId)) fail('bad_request', 400, 'Demande invalide.');
-      if(!['create', 'save', 'rename', 'delete', 'equip'].includes(action)) fail('bad_request', 400, 'Demande invalide.');
+      if(!['create', 'save', 'rename', 'delete', 'equip', 'assign'].includes(action)) fail('bad_request', 400, 'Demande invalide.');
       const err = e => fail(e, e === 'bad_request' ? 400 : e === 'unknown' ? 404 : 409, SET_ERRORS[e] ?? 'Demande invalide.');
       return withLock.many(['inv:' + me.id, 'skills:' + me.id, 'spells:' + me.id, 'sets:' + me.id], async () => {
         const sets = sanitizeSets(await store.getSets(me.id));
@@ -1622,12 +1822,12 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         const skills = await loadSkills(me.id), spells = await loadSpells(me.id);
         if(action === 'equip'){
           const ctx = await spellCtx(me.id);
-          const r = applySet(sets, { id: body.id, opId }, { inv, stuff, skills, spells, points: await pointsOf(me.id), spec: ctx.spec });
+          const r = applySet(sets, { id: body.id, opId }, { inv, stuff, skills, spells, points: await pointsOf(me.id), spec: ctx.spec, level: ctx.level });
           if(r.error) err(r.error);
           await store.putLoadout(me.id, { inventory: JSON.parse(serialize(inv)), stuff, skills, spells, sets });
           return { ...await setsReply(me.id, sets), missing: r.missing };
         }
-        const r = setOp(sets, { action, id: body.id, name: body.name, opId }, snapshot(stuff, skills, spells));
+        const r = setOp(sets, { action, id: action === 'assign' && body.id === null ? null : body.id, name: body.name, activity: body.activity, opId }, snapshot(stuff, skills, spells));
         if(r.error) err(r.error);
         await store.putSets(me.id, sets);
         return await setsReply(me.id, sets);
@@ -1640,10 +1840,11 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       const { action, opId } = body;
       if(action !== 'research' && action !== 'recycle') fail('bad_request', 400, 'Demande invalide.');
       if(typeof opId !== 'string' || !/^[\w-]{8,64}$/.test(opId)) fail('bad_request', 400, 'Demande invalide.');
+      const areaMax = action !== 'research' ? 0 : dev ? AREAS.length : await areaMaxOf(me.id);   // tiers à area (05/11) ; mode dev : tous ouverts, comme la prison
       return withLock('inv:' + me.id, async () => {
         const inv = await loadInventory(me.id);
-        const r = action === 'research' ? research(inv, body.tier, opId, random, clock()) : recycle(inv, body.item, opId, random);
-        if(r.error) fail(r.error, ['not_enough', 'not_owned', 'nothing_left', 'too_recent', 'tier_locked'].includes(r.error) ? 409 : 400, RESEARCH_ERRORS[r.error]);
+        const r = action === 'research' ? research(inv, body.tier, opId, random, clock(), areaMax) : recycle(inv, body.item, opId, random);
+        if(r.error) fail(r.error, ['not_enough', 'not_owned', 'nothing_left', 'too_recent', 'tier_locked', 'area_locked'].includes(r.error) ? 409 : 400, RESEARCH_ERRORS[r.error]);
         if(!r.repeated){
           await store.putInventory(me.id, JSON.parse(serialize(inv)));
           if(action === 'research') markFound([r.item], displayName(me));   // tier 4 : un plan secret sorti de la recherche le révèle aussi (28/10)
@@ -1740,8 +1941,11 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
 
     /* historique : ses sessions terminées (gardées config.keepEnded), les plus récentes d'abord, avec la seed et SA part */
     /* onglet Jugement : les deux jauges, les tours ouvertes et ce que ce joueur a déjà fait */
+    /* événement du jour (05/11/2026) : son id (raffle), et ce que voit le navigateur */
+    dailyId: () => currentDaily(),
+    async daily(){ await currentDaily(); return publicDaily(dailyState, clock()); },
     async judgment(me){
-      return withJudgment(j => ({ value: publicJudgment(j, clock(), me.id) }));
+      return withJudgment((j, rules) => ({ value: { ...publicJudgment(j, clock(), me.id, rules), daily: publicDaily(dailyState, clock()) } }));   // withJudgment a tiré l'événement   // daily : bandeau du Lobby (05/11)
     },
     /* classements : valeurs de tous les comptes (le service social classe et met les pseudos) */
     leaderboardData,
@@ -1801,7 +2005,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       return withLock('sess:' + rec0.id, async () => {
         const rec = await store.getGameSession(rec0.id);
         if(rec.status !== 'running' || isDue(rec)) fail('session_over', 409, 'La session est terminée.');
-        if(rec.mode === 'mi' || isTowerMode(rec.mode) || isInstanceMode(rec.mode)) fail('bad_request', 400, 'Seulement dans une mine classique (pas la mine instantanée, une tour ni une instance).');
+        if(rec.mode === 'mi' || isTowerMode(rec.mode) || isInstanceMode(rec.mode) || isRaidMode(rec.mode)) fail('bad_request', 400, 'Seulement dans une mine classique (pas la mine instantanée, une tour ni une instance).');
         if(!ensureLive(rec)) fail('session_over', 409, 'La session est terminée.');
         const r = await live.khole(rec.id, map);
         if(!r.ok) fail('khole_refused', 409, 'Impossible maintenant : déjà dans un k hole (ou un k hole s\'ouvre), ou fin de session trop proche.');
@@ -1887,7 +2091,14 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     activeSessionInfo: async accountId => {
       const rec = await activeOf(accountId);
       return rec ? { mode: rec.mode ?? 'mine', leftMs: rec.finishAt ? Math.max(0, rec.finishAt - clock()) : null,
-                     size: rec.players.filter(p => !hasLeft(rec, p.account)).length, max: GAME.maxPlayers } : await inGiant(accountId);
+                     size: rec.players.filter(p => !hasLeft(rec, p.account)).length, max: isRaidMode(rec.mode) ? RAID.maxPlayers : GAME.maxPlayers } : await inGiant(accountId);
+    },
+    /* raid en cours d'une guilde (lobby de raid, server/guild/raid.js) : { id, startedAt, finishAt, players (encore là) } ou null */
+    raidOfGuild: async guildId => {
+      let rec = null;
+      for(const status of ACTIVE) rec ??= (await store.sessionsWithStatus(status)).find(r => isRaidMode(r.mode) && r.guild === guildId) ?? null;
+      return rec ? { id: rec.id, startedAt: rec.startedAt, finishAt: rec.finishAt,
+                     players: rec.players.filter(p => !hasLeft(rec, p.account)).map(p => ({ account: p.account, name: p.name })) } : null;
     },
     /* comptes qui jouent une session en ce moment (pas partis), navigateur ouvert ou non : la liste Online du Social */
     playersInSession: async () => {
@@ -1903,7 +2114,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     /* entrer au Bloc géant : sous le verrou du compte ; fn(fiche) reçoit le stuff, les skills et les sorts figés pour la
        visite et enregistre l'entrée. Possible pendant une session, et une session peut se lancer pendant une visite
        (27/10/2026, Geoffrey ; avant : l'un ou l'autre) : la visite et la session tournent chacune de leur côté. */
-    async giantEnter(accountId, fn){
+    async giantEnter(accountId, fn, mode = 'giant'){
+      await autoEquip(accountId, mode);   // set du Bloc géant ou de He's coming (03/11)
       return withLock('acct:' + accountId, async () => {
         const inv = await loadInventory(accountId), st = await loadStuff(accountId, inv);
         const sk = await loadSkills(accountId);
@@ -1913,6 +2125,29 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     },
     /* donner une récompense du Bloc géant : sous le verrou de l'inventaire ; fn(inv) ajoute les objets et renvoie
        { player, … } (état du joueur à écrire AVEC l'inventaire) ou null (rien à donner, rien n'est écrit) */
+    /* parrainage : ce que voit le joueur (son code, son parrain, ses filleuls, s'il peut encore entrer un code) */
+    async referral(me){
+      await settleReferral(me.id).catch(e => console.error('Parrainage :', e.message));
+      const r = await referralOf(me.id), level = levelOf((await loadProgress(me.id)).xp).level;
+      const by = r?.by ? await accountOf(r.by) : null;
+      const kids = await store.referralsBy(me.id);
+      return { code: referralCode(me.id), id: me.id, level, need: REFERRAL.level, item: REFERRAL.item, qty: REFERRAL.qty,
+               by: r?.by ? { name: by ? displayName(by) : '(compte supprimé)', legacy: !!r.legacy } : null, done: !!r?.done,
+               canSet: !r?.by && level < REFERRAL.level,
+               referees: kids.length, rewarded: kids.filter(k => k.done && k.paid).length };
+    },
+    /* entrer le code d'un parrain : { code } ; refusé si déjà un parrain, trop tard, son propre code, inconnu ou un filleul */
+    async setReferral(me, body = {}){
+      const code = parseReferralCode(body.code);
+      return withLock('ref:' + me.id, async () => {
+        const rec = await referralOf(me.id), level = levelOf((await loadProgress(me.id)).xp).level;
+        const target = code ? await accountOf(code) : null;
+        const why = referralRefusal({ me: me.id, rec, level, code, target, targetRec: target ? await referralOf(code) : null });
+        if(why) fail(why, why === 'bad_code' || why === 'unknown_code' ? 400 : 409, REFERRAL_ERRORS[why]);
+        await store.putReferral(me.id, { by: code, at: clock() });
+        return { ok: true, by: { name: displayName(target), legacy: false } };
+      });
+    },
     async giantGrant(accountId, fn, key = 'Giant'){
       return withLock('inv:' + accountId, async () => {
         const inv = await loadInventory(accountId);
@@ -1924,6 +2159,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     },
     /* arbre de skills choisi (mineur, logisticien, barbare) ou null : la spécialisation affichée dans le lobby */
     skillTreeOf: async accountId => (await loadSkills(accountId)).tree ?? null,
+    skillPointsOf: async accountId => pointsByTree(await loadSkills(accountId)),   // points par arbre (lobby : « Logisticien (2/12/1) », 04/11)
     /* niveau de spécialisation dans cet arbre (null sans arbre) : « Logisticien (SP lvl : 3) » dans le lobby */
     specLevelOf: async (accountId, tree) => tree ? specLevels(await loadProgress(accountId))[tree]?.level ?? null : null,
     /* apparence (noms des pièces portées, { case: objet }) : le skin de chaque membre dans le lobby */
@@ -1935,7 +2171,6 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     levelFor: async accountId => levelOf((await loadProgress(accountId)).xp).level,
     aurasFor: async accountId => aurasOf(gearOf(await loadStuff(accountId, await loadInventory(accountId)))),
     /* heure de fin de sa dernière session terminée (0 si aucune) : le groupe compte son délai d'absence à partir d'elle */
-    lastEndedAt: async accountId => Math.max(0, ...(await store.sessionsOf(accountId))
-      .filter(s => s.status === 'done' && !hasLeft(s, accountId)).map(s => s.endedAt || 0)),
+    lastEndedAt: async accountId => store.lastEndOf(accountId, s => s.status === 'done' && !hasLeft(s, accountId)),
   };
 }

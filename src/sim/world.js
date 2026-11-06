@@ -1,5 +1,5 @@
 /* Le monde : grille de blocs, génération déterministe des areas, gravité, déblocage. */
-import { W, AREA_H, AREA_Y0, CFG, BLOCKS, BARRIER, IDS, AREAS, GEN, TREASURE, TREASURE_BLOCK, WINCH, JUDGMENT, GLYPHS, DUNGEON, TRAP, PRISON, CHEST_X } from '../config.js';
+import { W, AREA_H, AREA_Y0, CFG, BLOCKS, BARRIER, IDS, AREAS, GEN, TREASURE, TREASURE_BLOCK, WINCH, JUDGMENT, GLYPHS, DUNGEON, TRAP, PRISON, CHEST_X, RAID, GEANTE } from '../config.js';
 import { pickShare, capOres } from '../meta/prison-profile.js';
 import { mulberry32, hash, shuffle } from '../core/rng.js';
 import { log } from './log.js';
@@ -15,7 +15,9 @@ export const typeOf = t => t ? BLOCKS[t].type : null;
 export const isOre  = t => typeOf(t)==='ore';
 export const isResidue = t => !!t && BLOCKS[t].family==='residu';
 /* ce que l'IA peut viser une fois découvert : minerais, treasures et résidus (Jugement) */
-export const isTarget = t => isOre(t) || typeOf(t)==='treasure' || isResidue(t);
+export const isTarget = t => isOre(t) || typeOf(t)==='treasure' || isResidue(t) || typeOf(t)==='clue';   // clue : Indice du raid (04/11)
+/* ce que l'IA vise (raid compris : les Indices, comme un minerai ; ancien 04/11 : tout le terrain) */
+export const aimable = (G,t) => isTarget(t);
 /* objet rapporté par un treasure de l'area k (Treasure T1, T2…) ; le dernier tier couvre les areas au-delà */
 export const treasureItem = k => (TREASURE.tiers.find(t => k <= t.maxArea) || TREASURE.tiers.at(-1)).item;
 /* chance d'un treasure dans l'area k (contenu ck) : moitié moins en prison (PRISON.treasureMul) */
@@ -142,11 +144,13 @@ export function fillComp(r, comp, w=W, h=AREA_H, fracRng=null){
 /* Génère l'area k uniquement depuis seed + k (déterministe), comptes exacts (fillComp), puis donjon, pièges, treasure,
    résidus et k hole par-dessus. */
 export function genArea(G,k){
+  if(G.raid) return genRaidArea(G,k);
   const r = mulberry32(hash(G.seed, k+1));
   /* prison : contenu de l'area max (contentOf), part de minerais × PRISON.oreMul ; remplie sur box.w colonnes, les
      autres colonnes sont des barreaux (hors des comptes de l'area) */
   const ck = contentOf(G, k), box = prisonBox(G);
-  const base = G.prison ? profileComp(prisonComp(areaComp(ck), PRISON.oreMul), G.prison.profile?.ores) : areaComp(ck);
+  const base = G.prison ? profileComp(prisonComp(areaComp(ck), PRISON.oreMul), G.prison.profile?.ores)
+             : G.geante ? prisonComp(areaComp(ck), GEANTE.oreMul) : areaComp(ck);   // Mine géante (06/11) : minerais × oreMul, pris sur le terrain
   /* Shrine d'abondance (28/10/2026) : G.oreBonus points de terrain changés en minerais, dans chaque area de la session */
   const comp = G.oreBonus > 0 ? oreBonusComp(base, G.oreBonus) : base;
   const filled = fillComp(r, comp, box ? box.w : W, AREA_H, G.prison ? mulberry32(hash(G.seed, k+1) ^ PRISON.fracSalt) : null), { counts, big } = filled;
@@ -172,7 +176,7 @@ export function genArea(G,k){
   if(!G.noResidues && !G.prison) placeResidues(G.seed, ck, grid, counts, box ? box.w*AREA_H : grid.length);   // pas de résidus si une tour était ouverte au lancement (23/10), ni en prison (30/10/2026)
   /* k hole (KHOLE) : tirage à part, posé en dernier, hors du donjon et des pièges */
   const kh = placeKhole(G.seed, k, grid, counts, [...(dp ? [{ x0:dp.x0, ry0:dp.ry0, w:DUNGEON.size, h:DUNGEON.size }] : []),
-    ...traps.map(p => ({ x0:p.x0, ry0:p.ry0, w:TRAP.w+2, h:TRAP.h+2 }))], G.prison ? PRISON.kholeMul : 1);   // prison : 2 fois moins (29/10)
+    ...traps.map(p => ({ x0:p.x0, ry0:p.ry0, w:TRAP.w+2, h:TRAP.h+2 }))], (G.prison ? PRISON.kholeMul : 1) * (G.dailyFx?.kholeMul ?? 1));   // prison : 2 fois moins (29/10) ; Multivers × 5 (05/11)
   for(let ry=0; ry<AREA_H; ry++){
     G.tiles.push(grid.slice(ry*W,(ry+1)*W));
     G.ladder.push(new Uint8Array(W));
@@ -186,6 +190,30 @@ export function genArea(G,k){
   const ores = {};
   for(const n in counts) if(isOre(IDS[n])) ores[n] = { total:counts[n], left:counts[n] };
   G.areas[k] = {k, comp, counts, oreTotal, oreMined:0, ores, chestChance:chestChanceOf(G, ck), treasure};
+}
+
+/* raid Cerbère (04/11/2026) : area pleine, que du terrain, en bandes de haut en bas (RAID.mine.bands, sur toutes les areas
+   du raid) ; une ligne de mélange à chaque changement de bande ; ni minerai, ni treasure, ni donjon, ni piège */
+function genRaidArea(G,k){
+  const r = mulberry32(hash(G.seed, k+1)), rows = [];
+  for(const [n, h] of RAID.mine.bands) for(let i=0;i<h;i++) rows.push(IDS[n]);
+  const counts = {};
+  for(let ry=0; ry<AREA_H; ry++){
+    const y = k*AREA_H + ry, id = rows[Math.min(y, rows.length-1)], up = rows[Math.max(0, y-1)];
+    const row = new Uint8Array(W);
+    for(let x=0;x<W;x++){ const t = up !== id && r() < 0.5 ? up : id; row[x] = t; const n = oreKey(t); counts[n] = (counts[n]||0)+1; }
+    G.tiles.push(row); G.ladder.push(new Uint8Array(W)); G.seen.push(new Uint8Array(W));   // dans le noir, comme la mine : on explore
+  }
+  /* Indices (Geoffrey, 04/11 14:48) : RAID.mine.clues au total, moitié par area, au hasard (pas dans les clueMinDepth
+     premières lignes de la mine), jamais deux sur la même case */
+  const M = RAID.mine, n = Math.floor(M.clues / M.areas) + (k < M.clues % M.areas ? 1 : 0), y0 = AREA_Y0 + k*AREA_H;
+  const ry0 = k === 0 ? Math.min(AREA_H - 1, M.clueMinDepth) : 0;
+  for(let i=0, tries=0; i<n && tries<1000; tries++){
+    const x = Math.floor(r()*W), y = y0 + ry0 + Math.floor(r()*(AREA_H - ry0));
+    if(G.tiles[y][x] === IDS.clue) continue;
+    counts[oreKey(G.tiles[y][x])]--; G.tiles[y][x] = IDS.clue; counts.clue = (counts.clue||0)+1; i++;
+  }
+  G.areas[k] = { k, comp:{}, counts, oreTotal:0, oreMined:0, ores:{}, chestChance:0, treasure:null };
 }
 
 /* clé de composition d'un bloc (IDS) : 3 → 'coal' */
@@ -243,24 +271,30 @@ export const unlockNeed = a => Math.ceil(CFG.unlockRatio*a.oreTotal);
 
 /* Débloque l'area suivante si le seuil de minerais de la dernière area est atteint. Renvoie true si débloquée. */
 export function tryUnlock(G){
-  if(G.khole || G.prison) return false;   // k hole : ce n'est pas la mine ; prison : une seule area, rien à débloquer
+  if(G.khole || G.prison || G.raid) return false;   // raid : toutes les areas sont ouvertes d'emblée   // k hole : ce n'est pas la mine ; prison : une seule area, rien à débloquer
   const k = G.unlockedAreas-1, a = G.areas[k];
   if(a.oreMined < unlockNeed(a)) return false;
   genArea(G, G.unlockedAreas); G.unlockedAreas++;
   for(const m of G.miners){ m.exploring=false; m.skipRows.clear(); }
   log(G, `🔓 Area ${k+1} débloquée !`);
-  /* treuil (skill Logisticien) : un logisticien qui a le skill (le premier) va le prolonger jusqu'au haut de la nouvelle
-     area ; de préférence le porteur du sac (Mule), sinon le premier qui a Mule, sinon le premier qui a le Treuil */
-  /* Glyphe Treuil : son porteur passe avant tout le monde et pose un ascenseur, un déblocage sur GLYPHS.liftEvery
-     (1er, 3e, 5e… : k = 0, 2, 4…) ; aux autres déblocages, personne ne part creuser */
+  assignWinch(G, k);
+  return true;
+}
+
+/* treuil (skill Logisticien) : un logisticien qui a le skill (le premier) va le prolonger jusqu'au haut de l'area k+1 ;
+   de préférence le porteur du sac (Mule), sinon le premier qui a Mule, sinon le premier qui a le Treuil */
+/* Glyphe Treuil : son porteur passe avant tout le monde et pose un ascenseur, un déblocage sur GLYPHS.liftEvery
+   (1er, 3e, 5e… : k = 0, 2, 4…) ; aux autres déblocages, personne ne part creuser */
+/* raid (04/11/2026, Geoffrey) : ses areas sont ouvertes d'emblée ; appelé au lancement avec k = areas − 2 (haut de la
+   dernière area) */
+export function assignWinch(G, k){
   const lift=G.miners.find(m=>m.skill?.winch && m.skill?.glyph_winch);
   if(lift){
-    if(k % GLYPHS.liftEvery !== 0) return true;
+    if(k % GLYPHS.liftEvery !== 0) return;
     lift.winchJob={ bottom:Math.max(lift.winchJob?.bottom ?? 0, areaTop(k+1)), lift:true };
     log(G, `🛗 ${lift.name} part installer l'ascenseur jusqu'à l'area ${k+1}`);
-    return true;
+    return;
   }
   const lg=G.miners.find(m=>m.skill?.winch && G.mule?.carrier===m.id) ?? G.miners.find(m=>m.skill?.winch && m.skill?.mule) ?? G.miners.find(m=>m.skill?.winch);
   if(lg){ lg.winchJob={ bottom:Math.max(lg.winchJob?.bottom ?? 0, areaTop(k+1)) }; log(G, `🪣 ${lg.name} part installer le treuil jusqu'à l'area ${k+1}`); }
-  return true;
 }
