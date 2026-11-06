@@ -28,13 +28,16 @@ export function createTranslator(ui, names = {}, { onMissing } = {}){
       if(m){ keys.push(m[2]); return m[1] ? '([\\d][\\d\\s.,]*)' : '(.*?)'; }
       return esc(part);
     }).join('') + '$';
-    const p = { re: new RegExp(src, 's'), keys, en };
+    const lit = fr.replace(/\{#?\w+\}/g, '');
+    const p = { re: new RegExp(src, 's'), keys, en, lit: lit.replace(/[^\p{L}]/gu, '').length };   // lit : lettres fixes
     const head = fr.match(/^[^{\s]+/)?.[0];
     if(head){ if(!buckets.has(head)) buckets.set(head, []); buckets.get(head).push(p); } else loose.push(p);
   }
-  for(const list of [...buckets.values(), loose]) list.sort((a, b) => b.re.source.length - a.re.source.length);   // le plus précis d'abord
-  const value = v => exact.get(v.trim()) ?? names[v.trim()] ?? v;
-  const core = s => {
+  for(const list of [...buckets.values(), loose]) list.sort((a, b) => b.lit - a.lit || b.re.source.length - a.re.source.length);   // le plus précis d'abord (le plus de mots fixes)
+  /* une valeur variable est traduite si elle est connue (texte, nom, ou elle-même un modèle : « 10 énergie ») */
+  const known = (v, depth) => { const t = v.trim();
+    return exact.get(t) ?? (Object.hasOwn(names, t) ? names[t] : depth > 0 && /^\d[\d\s.,]*\s\S+$/.test(t) ? core(t, depth - 1) : null); };   // « 10 énergie » seulement
+  const core = (s, depth = 2) => {
     if(exact.has(s)) return exact.get(s);
     if(Object.hasOwn(names, s)) return names[s];
     /* modèles dont le début fixe (« R » de « R{a} {b} », « Encore » de « Encore {n} tours ») ouvre ce texte */
@@ -43,11 +46,19 @@ export function createTranslator(ui, names = {}, { onMissing } = {}){
     for(const p of [...cand, ...loose]){
       const m = s.match(p.re);
       if(!m) continue;
-      /* une valeur variable doit être simple (nombre, nom connu, texte sans français) : sinon un modèle court comme
-         « {a} et {b} » traduirait un mot au milieu d'une phrase française */
-      if(m.slice(1).some(v => FRENCH.test(v) && !exact.has(v.trim()) && !Object.hasOwn(names, v.trim()))) continue;
-      const vals = Object.fromEntries(p.keys.map((k, i) => [k, value(m[i + 1])]));
+      /* une valeur variable doit être simple (nombre, nom connu, texte sans français) ou traduisible : sinon un modèle
+         court comme « {a} et {b} » traduirait un mot au milieu d'une phrase française */
+      const vals = {}; let ok = true;
+      p.keys.forEach((k, i) => { const v = m[i + 1], tr = known(v, depth);
+        if(tr == null && (FRENCH.test(v) || (!p.lit && /\p{L}/u.test(v)))) ok = false;   // modèle sans mot fixe : ses mots doivent être connus
+        vals[k] = tr ?? v; });
+      if(!ok) continue;
       return p.en.replace(/\{(\w+)\}/g, (x, k) => vals[k] ?? x);
+    }
+    /* ligne en morceaux « a · b · c » : chaque morceau traduit à part, si tous le sont (ou n'ont rien de français) */
+    if(depth > 0 && s.includes(' · ')){
+      const parts = s.split(' · '), out = parts.map(x => core(x.trim(), depth - 1));
+      if(out.some(Boolean) && out.every((o, i) => o != null || !FRENCH.test(parts[i]))) return out.map((o, i) => o ?? parts[i]).join(' · ');
     }
     return null;
   };
@@ -60,6 +71,10 @@ export function createTranslator(ui, names = {}, { onMissing } = {}){
   };
   return text => text.includes('\n') ? text.split('\n').map(one).join('\n') : one(text);
 }
+
+/* textes dessinés dans un canvas (noms des bâtiments du Carreau…) : même traduction que la page, rien en français */
+let active = null;
+export const trText = s => active && typeof s === 'string' ? active(s) : s;
 
 /* installe le traducteur sur la page ; ne fait rien en français */
 export function installPageTranslator(doc = document, { dev = false } = {}){
@@ -78,6 +93,7 @@ export function installPageTranslator(doc = document, { dev = false } = {}){
     const it = doc.createTreeWalker(root, 5 /* éléments + textes */);
     for(let n = it.nextNode(); n; n = it.nextNode()) n.nodeType === 3 ? text(n) : attrs(n);
   };
+  active = tr;
   walk(doc.body);
   doc.title = tr(doc.title);
   const obs = new MutationObserver(list => {

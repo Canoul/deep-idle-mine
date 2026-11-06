@@ -33,3 +33,14 @@ test('sans lettre ou inconnu : inchangé ; relevé des manquants', () => {
   assert.equal(t2('Texte jamais vu dans le jeu'), 'Texte jamais vu dans le jeu');
   assert.deepEqual(seen, [['Texte jamais vu dans le jeu', true]]);
 });
+
+test('ligne en morceaux « a · b » et valeur « nombre + mot » traduites ; un modèle sans mot fixe n\'invente rien', () => {
+  assert.equal(tr('0 run · 1 s de jeu · +0 XP · +0 ⚡ · 0 objet'), '0 run · 1 s of play · +0 XP · +0 ⚡ · 0 item');
+  assert.equal(tr(': 10 énergie à gagner ! Tirage dans 2 min'), ': 10 energy to win! Draw in 2 min');
+  assert.equal(tr('3 Truc inconnu'), '3 Truc inconnu');
+});
+
+test('pseudos et messages des joueurs : protégés par pn() (data-noi18n)', async () => {
+  const { pn } = await import('../src/i18n/index.js');
+  assert.equal(pn('Mineur <b>'), '<bdi data-noi18n>Mineur &lt;b&gt;</bdi>');
+});

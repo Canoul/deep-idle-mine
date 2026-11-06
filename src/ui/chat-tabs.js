@@ -41,7 +41,7 @@ export function setupChatTabs({ bar, panel, select, save, onChange }){
   const changed = () => { clearTimeout(timer); timer = setTimeout(() => save(prefs), 500); render(); onChange(); };
 
   function render(){
-    bar.innerHTML = prefs.tabs.map((t, i) => `<button type="button" data-tab="${i}" class="${i === prefs.active ? 'on' : ''}">${pn(t.name)}</button>`+
+    bar.innerHTML = prefs.tabs.map((t, i) => `<button type="button" data-tab="${i}" class="${i === prefs.active ? 'on' : ''}">${(t.name === 'Tous' ? esc(t.name) : pn(t.name))}</button>`+
       (i === prefs.active ? `<button type="button" class="chatGear${open ? ' on' : ''}" data-gear title="Canaux de cet onglet">⚙</button>` : '')).join('')+
       (prefs.tabs.length < CHAT.tabsMax ? `<button type="button" class="chatPlus" data-plus title="Nouvel onglet">+</button>` : '');
     panel.hidden = !open;

@@ -34,14 +34,18 @@ Branche : `geoffrey/traduction-anglais`. Choix de langue dans « Mon compte » :
    remplace à l'affichage chaque texte connu (nœuds de texte, title / placeholder / aria-label / data-tip / alt), y compris les
    textes à valeurs (`'Encore {n} tours'`, `{#n}` = un nombre seulement). Rien n'est installé en français. Garde-fou : une
    valeur variable qui a l'air française et n'est pas un texte connu fait rejeter le modèle (pas de « Tier 1 and … » au milieu
-   d'une phrase). Jamais traduits : chat, champs de saisie, `[data-noi18n]`, canvas. Dictionnaire `src/i18n/en/ui.js`
-   (1 894 textes : interface, bulles « ? », guide, config, **journal et actions de la simulation, messages du serveur**) ;
+   d'une phrase). **Jamais traduits (Geoffrey, 06/11) : pseudos et messages des joueurs**, et tout ce qu'un joueur écrit (noms
+   de guilde, de set, d'onglet de chat, message de guilde) : `pn()` (src/i18n/index.js) les met dans `<bdi data-noi18n>`.
+   Le chat est traduit sauf ces parties (messages du jeu, canaux). Canvas : `trText()` (bâtiments du Carreau). Dictionnaire `src/i18n/en/ui.js`
+   (1 920 textes : interface, bulles « ? », guide, config, **journal et actions de la simulation, messages du serveur**) ;
    relevé `node scripts/i18n-extract.js --missing` ; textes vus en jeu sans traduction : `window.__i18nMissing` (ceux qui ont
    l'air français) et `window.__i18nSeen` (tous), en anglais en mode dev. Vu dans Chromium : Lobby, tous les onglets et une
    session en anglais, 0 texte français relevé hors chat ; 60 img/s en anglais comme en français.
-   **Reste** : textes dessinés dans les canvas (noms des bâtiments du Carreau, pseudos…), messages système du chat (Raffle),
-   écrans pas encore visités en anglais (tours, instances, raid, prison, Bloc géant, bilans, fenêtres de confirmation) à
-   parcourir ; pseudos à marquer `data-noi18n` (un pseudo égal à un mot traduit, ex. « Mineur », serait traduit).
+   Parcours du 06/11 (anglais, mode dev) : 17 onglets, prison, Bloc géant, mine instantanée, He's coming, instance I, Mine
+   géante, une session : **0 texte français relevé**. Lignes « a · b · c » traduites morceau par morceau ; une valeur
+   « nombre + mot » (« 10 énergie ») est traduite à son tour.
+   **Reste** : tours du Jugement et raid (pas lançables dans le parcours), bilans de fin et fenêtres de confirmation, à
+   regarder en jeu ; le choix de langue est dans les options du compte (« Mon compte » → Options), en mode dev jusqu'à l'ouverture.
 4. 🟡 **Messages du serveur et journal** : couverts par le même traducteur (ils s'affichent dans la page). Reste : les
    annonces Discord restent en français (voulu) ; vérifier en jeu les messages d'erreur.
 5. **Wiki** en anglais, puis les **pages légales**.

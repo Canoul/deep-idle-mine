@@ -25,7 +25,8 @@ Modèle d'entrée :
 ## 06/11/2026 — Geoffrey — Le jeu en anglais, étape 3 : l'interface
 - En anglais (mode dev seulement), presque tout le jeu s'affiche maintenant en anglais : menus, onglets, boutons, bulles « ? », guide « Premiers pas », descriptions des skills et des sorts, journal de session, actions des mineurs, messages d'erreur. Environ 1 900 textes traduits.
 - Rien ne change pour les joueurs : l'anglais reste caché, et en français le traducteur n'est même pas chargé.
-- **Reste** : les textes dessinés dans la mine et au Carreau, les messages système du chat, et un passage dans les écrans pas encore vérifiés (tours, instances, raid, prison, Bloc géant).
+- **Pseudos et messages des joueurs jamais traduits** (choix de Geoffrey), ni les noms de guilde, de set ou d'onglet de chat. Le reste du chat (messages du jeu comme le Raffle) et les noms des bâtiments du Carreau passent en anglais.
+- Vérifié en anglais : tous les onglets, la prison, le Bloc géant, la mine instantanée, He's coming, l'instance I, la Mine géante et une session : plus aucun texte en français. **Reste** à regarder en jeu : les tours, le raid, les bilans de fin.
 - **État** : 🧪 branche `geoffrey/traduction-anglais`
 
 ## 06/11/2026 — Geoffrey — Le jeu en anglais, étape 2 : les noms
