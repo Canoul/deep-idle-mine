@@ -27,7 +27,7 @@ Modèle d'entrée :
   colonne, mannequin, arbres, sorts, stats). Choix de Claude : « + Nouveau » en deux boutons (stuff actuel / vide, la spé
   reste) ; « − » sur chaque skill appris pour retirer un rang ; les glyphes ne sont pas dans le set.
 - **À suivre** : essayer sur un vrai téléphone (police pixel plus large que l'aperçu `?app`).
-- **État** : 🧪 sur la branche `geoffrey/apercu-set` (pas en ligne)
+- **État** : ✅ en ligne le 06/11
 
 ## 06/11/2026 — Geoffrey — Bot Discord : croix qui supprime, diamants pour les joueurs
 - **#report** : le bot met maintenant 4 réactions : 1, 2, ❌ et 💎. La croix (avant qu'on attribue le sujet) **supprime** le sujet et efface son message ; un sujet `/todo done` était déjà effacé de #report.
