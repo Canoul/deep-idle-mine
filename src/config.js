@@ -537,7 +537,7 @@ export const MOBS = {
    seulement en fin de session). */
 export const DUCK = {
   type: 'gallianix', name: 'Gallianix', tex: 'duck', hp: 50,
-  names: ['Cuiseuse de sperme', 'Roxanne', 'La brésilienne', 'La thaïlandaise'],
+  names: ['Ex d\'Infernatiwar', 'Roxanne', 'La brésilienne', 'La thaïlandaise'],
   range: 8,               // il reste à range cases au plus du coffre (colonne CHEST_X)
   step: 1.2,              // secondes entre deux pas (il marche lentement)
   pause: 0.35,            // chance de rester sur place à chaque pas
