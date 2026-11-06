@@ -44,7 +44,7 @@ import { sanitizeProgress, creditXp, raiseAreaMax, levelOf, specXpOf, specLevels
 import { sanitizeSkills, skillOp, skillRanks, spentPoints, migrateSkills, pointsByTree } from '../../src/meta/skills.js';
 import { glyphOp, sessionSkills, ownedGlyphs, nodeOfGlyph } from '../../src/meta/glyphs.js';
 import { sanitizeSpells, spellOp, learnScroll, publicSpells, equippedSpells } from '../../src/meta/spells.js';
-import { sanitizeSets, setOp, applySet, snapshot, publicSets, inSomeSet, setForMode, equippedSet } from '../../src/meta/sets.js';
+import { sanitizeSets, setOp, applySet, snapshot, publicSets, inSomeSet, setForMode, equippedSet, checkDraft } from '../../src/meta/sets.js';
 import { canOpen, openTreasure, openAll } from '../../src/meta/loot.js';
 import { sanitizeFurnaces, furnaceOp, advance } from '../../src/meta/furnace.js';
 import { sanitizeCrusher, crusherOp, advance as advanceCrusher, publicCrusher } from '../../src/meta/crusher.js';
@@ -98,7 +98,8 @@ const SHRINE_ERRORS = { bad_shrine: 'Shrine inconnu.', bad_item: 'Ce shrine ne d
   active: 'Ce shrine est déjà actif.', not_charged: 'Cette stèle n\'est pas chargée.', full: 'Cet objet est déjà entièrement donné.', not_owned: 'Tu n\'en as pas assez.' };
 const SET_ERRORS = { unknown: 'Set introuvable.', too_many: 'Tu as déjà le nombre maximum de sets.',
                      bad_name: 'Nom vide ou trop long.', session_running: 'Impossible pendant une session : termine-la d\'abord.',
-                     bad_request: 'Demande invalide.' };
+                     bad_request: 'Demande invalide.', not_owned: 'Une pièce du set n\'est plus à toi.',
+                     wrong_slot: 'Une pièce n\'est pas dans la bonne case.', same_ring: 'Le même objet ne se porte pas deux fois.' };
 const RESEARCH_ERRORS = { bad_tier: 'Tier de recherche inconnu.', tier_locked: 'Apprends d\'abord toutes les recettes des tiers inférieurs.', area_locked: 'Tu n\'as pas encore atteint l\'area demandée pour ce tier.', nothing_left: 'Tu as appris tous les blueprints de ce tier.',
                           too_recent: `Les plans restants de ce tier viennent de sortir : apprends-les, ou réessaie dans ${RESEARCH.recentMs / 60_000} min au plus.`,
                           not_enough: 'Il te faut plus de Blueprint parts.', bad_item: 'Seul un blueprint se recycle.',
@@ -1808,12 +1809,16 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
        { action:'equip', id }. Créer et enregistrer : refusés pendant une session. Équiper est permis pendant une session
        (28/10/2026, Geoffrey ; avant : refusé) : la session en cours garde le stuff, les skills et les sorts figés à son
        lancement (rec.gear, rec.skills, rec.spells), le set ne compte qu'à partir de la prochaine. Équiper touche l'inventaire, le stuff, les skills et les sorts : tout est écrit en une fois. opId : une demande
-       renvoyée n'agit qu'une fois. */
+       renvoyée n'agit qu'une fois.
+       { action:'edit', id | null, name?, stuff:{ case: uid }, skills:{ tree, ranks }, spells:[id | null], equip? }
+       (Aperçu set, 06/11/2026) : écrit un set composé dans l'onglet Stuff sans rien équiper (id null : nouveau set) ;
+       pièces, skills et sorts revérifiés ici (checkDraft). equip:true (« Enregistrer et équiper ») : puis l'équipe, dans la
+       même écriture. Permis pendant une session, comme Enregistrer. */
     autoEquip: (accountId, mode) => autoEquip(accountId, mode),
     async sets(me, body = {}){
       const { action, opId } = body;
       if(typeof opId !== 'string' || !/^[\w-]{8,64}$/.test(opId)) fail('bad_request', 400, 'Demande invalide.');
-      if(!['create', 'save', 'rename', 'delete', 'equip', 'assign'].includes(action)) fail('bad_request', 400, 'Demande invalide.');
+      if(!['create', 'save', 'rename', 'delete', 'equip', 'assign', 'edit'].includes(action)) fail('bad_request', 400, 'Demande invalide.');
       const err = e => fail(e, e === 'bad_request' ? 400 : e === 'unknown' ? 404 : 409, SET_ERRORS[e] ?? 'Demande invalide.');
       return withLock.many(['inv:' + me.id, 'skills:' + me.id, 'spells:' + me.id, 'sets:' + me.id], async () => {
         const sets = sanitizeSets(await store.getSets(me.id));
@@ -1826,6 +1831,18 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           if(r.error) err(r.error);
           await store.putLoadout(me.id, { inventory: JSON.parse(serialize(inv)), stuff, skills, spells, sets });
           return { ...await setsReply(me.id, sets), missing: r.missing };
+        }
+        if(action === 'edit'){
+          const ctx = await spellCtx(me.id), points = await pointsOf(me.id);
+          const draft = checkDraft(body, { inv, worn: stuff.worn, spells, points, spec: ctx.spec, level: ctx.level });
+          if(draft.error) err(draft.error);
+          const r = setOp(sets, { action, id: body.id ?? null, name: body.name, opId }, draft);
+          if(r.error) err(r.error);
+          if(body.equip !== true){ await store.putSets(me.id, sets); return { ...await setsReply(me.id, sets), id: r.id }; }
+          const e = applySet(sets, { id: r.id, opId: opId + '-eq' }, { inv, stuff, skills, spells, points, spec: ctx.spec, level: ctx.level });
+          if(e.error) err(e.error);
+          await store.putLoadout(me.id, { inventory: JSON.parse(serialize(inv)), stuff, skills, spells, sets });
+          return { ...await setsReply(me.id, sets), id: r.id, missing: e.missing };
         }
         const r = setOp(sets, { action, id: action === 'assign' && body.id === null ? null : body.id, name: body.name, activity: body.activity, opId }, snapshot(stuff, skills, spells));
         if(r.error) err(r.error);
@@ -2091,7 +2108,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     activeSessionInfo: async accountId => {
       const rec = await activeOf(accountId);
       return rec ? { mode: rec.mode ?? 'mine', leftMs: rec.finishAt ? Math.max(0, rec.finishAt - clock()) : null,
-                     size: rec.players.filter(p => !hasLeft(rec, p.account)).length, max: isRaidMode(rec.mode) ? RAID.maxPlayers : GAME.maxPlayers } : await inGiant(accountId);
+                     size: rec.players.filter(p => !hasLeft(rec, p.account)).length,
+                     max: rec.mode === 'mi' ? null : isRaidMode(rec.mode) ? RAID.maxPlayers : GAME.maxPlayers } : await inGiant(accountId);   // MI : pas de plafond (06/11)
     },
     /* raid en cours d'une guilde (lobby de raid, server/guild/raid.js) : { id, startedAt, finishAt, players (encore là) } ou null */
     raidOfGuild: async guildId => {

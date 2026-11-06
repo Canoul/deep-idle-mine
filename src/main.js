@@ -67,6 +67,7 @@ import { setupSkills } from './ui/skills.js';
 import { pointsByTree } from './meta/skills.js';
 import { setupSpells } from './ui/spells.js';
 import { setupSets, autoSetText } from './ui/sets.js';
+import { setupSetPreview } from './ui/set-preview.js';
 import { setupHistory } from './ui/history.js';
 import { setupCraft } from './ui/craft.js';
 import { setupStuff } from './ui/stuff.js';
@@ -275,10 +276,11 @@ const craft = setupCraft({
     obtained.show({ title:'Tu as obtenu', entry: r.piece ?? item, qty: (recipeOf(item)?.qty ?? 1) * count });   // Rune : sa qualité
   },
 });
+let setPreview = null;   // Aperçu set (créé plus bas, onglet Stuff)
 let setsUI = null;   // sets (créés plus bas) : les onglets Stuff, Skills et Sorts rafraîchissent la ligne « Set équipé »
 const stuff = setupStuff({
   onOp: async op => { const r = await gameApi.stuff({ ...op, opId: newOpId() }); setInventory(r.inventory); stuff.set(r.stuff); },
-  onWorn: () => { upgradeUI.refresh(); setsUI?.refresh(); },   // sets : la ligne « Set équipé » (29/10)
+  onWorn: () => { upgradeUI.refresh(); setsUI?.refresh(); setPreview?.refresh(); },   // sets : la ligne « Set équipé » (29/10) ; Aperçu set : pièces portées
 });
 
 const furnace = setupFurnace({
@@ -330,6 +332,21 @@ setsUI = setupSets({
   current: () => ui.skills ? { worn: stuff.worn(), skills: ui.skills, spells: spells.slots() } : null,
   onDone: text => notify.flash(text),
   activity: () => lobbyActivity(),   // set par activité (03/11) : l'activité ouverte dans le Lobby
+});
+
+/* Aperçu set (06/11/2026, onglet Stuff) : un set composé sans rien équiper ; « Enregistrer et équiper » change tout d'un coup */
+setPreview = setupSetPreview({
+  ctx: () => ({ inv: ui.inv, worn: stuff.worn(), skills: ui.skills, spells: spells.state(), level: progress?.level ?? null,
+                specLevels: Object.fromEntries(Object.entries(progress?.spec ?? {}).map(([t, s]) => [t, s.level])), spec: progress?.spec ?? {},
+                sets: setsUI.list(), equipped: setsUI.equipped(), inSession: !!rec }),
+  onSave: async op => {
+    const r = await gameApi.sets({ ...op, opId: newOpId() });
+    setsUI.set(r.sets);
+    if(op.equip){ setInventory(r.inventory); stuff.set(r.stuff); skills.set(r.skills); spells.set(r.spells); }
+    setsUI.saved(r.id);
+    return r;
+  },
+  onDone: text => notify.flash(text),
 });
 
 applyRarityColors();   // couleurs des raretés (config)
@@ -1005,6 +1022,7 @@ function setInventory(inv, bag){
   ui.inv = { slots: inv?.slots ?? [], unlocked: inv?.unlocked ?? [] };
   furnace.setInventory(ui.inv); crusher.setInventory(ui.inv); craft.setInventory(ui.inv); shop.setInventory(ui.inv); stuff.setInventory(ui.inv); research.setInventory(ui.inv); upgradeUI.setInventory(ui.inv);
   spells.setInventory(ui.inv); skills?.refresh();   // skills : la case de glyphe dépend de l'inventaire
+  setPreview?.refresh();                             // Aperçu set : les pièces du sac
   lobby.update({});                                  // carte des instances : les clés du joueur (27/10)
   if(bag) ui.inv.slots.forEach((s, i) => { if(s && bag[s.item]) ui.fresh.add(i); });
   if(ui.tab==='inventaire') renderInventory(ui.inv, ui.fresh);
@@ -1020,6 +1038,7 @@ function setProgress(p){
   skills.setSpec(progress?.spec); lobby.update({ mySpec: progress?.spec ?? null, myLevel: progress?.level ?? null });    // niveaux de spécialisation ; niveau du mineur : activités scellées (03/11)
   spells.setContext({ spec: Object.fromEntries(Object.entries(progress?.spec ?? {}).map(([t, s]) => [t, s.level])) });
   research.setAreaMax(progress?.areaMax);   // tiers de la recherche à area (05/11)
+  setPreview?.refresh();                     // Aperçu set : points de skill, emplacements de sorts
   return up;
 }
 

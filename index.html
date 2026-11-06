@@ -349,6 +349,9 @@
   <div class="furnWrap setWrap">
     <div class="invHead"><h1><i data-pxi="helmet"></i>Stuff<i data-qhelp="stuff"></i></h1></div>
     <p class="nextNote">⏳ Session en cours : ce que tu équipes maintenant comptera à la prochaine session.</p>
+    <!-- sous-onglets (06/11/2026) : le stuff porté, ou l'Aperçu set (src/ui/set-preview.js : composer un set sans rien équiper) -->
+    <div class="seg stuffViews" id="stuffViews" role="tablist"><button data-sview="gear" class="on">Stuff porté</button><button data-sview="preview">Aperçu set</button></div>
+    <div id="setPreview" class="setPreview" hidden></div>
     <div class="setLay"><aside class="card setsCard"><h2>Sets</h2><div id="setsStuff" class="setsBody"></div></aside><div class="stuffMain">
     <div id="stuffGrid" class="stuffGrid"></div>
     <div class="card stuffStatsCard"><h2>Stats du mineur</h2>
@@ -358,6 +361,8 @@
   </div>
   <!-- choix de la pièce à équiper dans une case -->
   <div id="spick" hidden><div class="box"></div></div>
+  <!-- Aperçu set : choix de la pièce d'une case, ou du sort d'un emplacement, pour le set (rien n'est équipé) -->
+  <div id="spvPick" hidden><div class="box"></div></div>
 </section>
 <section class="view" data-view="craft" hidden>
   <div class="furnWrap">

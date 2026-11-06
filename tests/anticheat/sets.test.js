@@ -58,3 +58,28 @@ test('set trafiqué : uid inconnu, objet en tas, case inconnue, même anneau deu
   assert.deepEqual(r.spells.slots, [null, null, null, null]);
   assert.equal(r.inventory.slots.find(s => s?.item === 'Charbon').qty, 5);
 });
+
+/* Aperçu set (06/11/2026) : un set écrit à la main (edit) ne peut prendre que ses propres pièces ; « Enregistrer et équiper »
+   en boucle et en parallèle ne crée ni ne perd aucune pièce ; des valeurs trafiquées sont refusées. */
+test('edit : pièce d\'un autre compte, objet en tas, valeurs trafiquées refusés ; enregistrer et équiper en parallèle sans duplication', async () => {
+  const { game, store } = await setup({ [PICK]:2, [RING]:1, Charbon:5 });
+  const other = createInventory(); addItem(other, PICK, 1);
+  await store.putInventory('BBBB2222', JSON.parse(serialize(other)));
+  const theirs = other.slots.find(s => s?.item === PICK).uid;
+  const inv = (await game.state(ME)).inventory;
+  const [p1, p2] = inv.slots.filter(s => s?.item === PICK).map(s => s.uid), ring = inv.slots.find(s => s?.item === RING).uid;
+  const coal = inv.slots.find(s => s?.item === 'Charbon');
+  const before = await pieces(game);
+  for(const [i, stuff] of [{ pioche:theirs + 1000 }, { pioche:coal.uid ?? -1 }, { pioche:'1' }, { anneau1:ring, anneau2:ring }, { __proto__x:p1 }, { pioche:2 ** 60 }].entries())
+    await assert.rejects(game.sets(ME, { action:'edit', id:null, stuff, opId:'op-ac-x' + i }));
+  for(const [i, body] of [{ spells:'dash' }, { spells:Array(50).fill('dash') }, { skills:{ tree:'roi' } }, { name:'x'.repeat(200) }].entries())
+    await assert.rejects(game.sets(ME, { action:'edit', id:null, stuff:{}, ...body, opId:'op-ac-y' + i }));
+  assert.equal((await game.state(ME)).sets.list.length, 0, 'aucun set créé');
+  await game.sets(ME, { action:'edit', id:null, stuff:{ pioche:p1, anneau1:ring }, opId:'op-ac-n1' });
+  await game.sets(ME, { action:'edit', id:null, stuff:{ pioche:p2 }, opId:'op-ac-n2' });
+  await Promise.all(Array.from({ length:10 }, (_, i) => game.sets(ME, { action:'edit', id:1 + (i % 2), stuff:i % 2 ? { pioche:p2 } : { pioche:p1, anneau1:ring }, equip:true, opId:'op-ac-q' + i })));
+  const after = await pieces(game);
+  assert.deepEqual(after, before);
+  assert.equal(new Set(after).size, after.length);
+  assert.equal((await game.state(ME)).inventory.slots.find(s => s?.item === 'Charbon').qty, 5);
+});

@@ -33,7 +33,8 @@ export function statusText(f){
   if(f.status === 'session'){
     const mode = MINE_MODES.find(m => m.id === f.mode);
     const label = !f.mode || f.mode === 'mine' || !mode ? STATUS.session.label : `En session · ${mode.label}`;
-    const size = f.size ? ` (${f.size}/${f.max})` : '';               // 30/10 : solo, duo… (pas pour le Bloc géant)
+    const size = !f.size ? '' : f.max ? ` (${f.size}/${f.max})`         // 30/10 : solo, duo… (pas pour le Bloc géant)
+      : ` (${f.size} joueur${f.size > 1 ? 's' : ''})`;                     // sans plafond (Mine instantanée, 06/11) : pas de « 5/3 »
     return [label + size, leftText(f.leftMs)].filter(Boolean).join(' · ');   // 23/10 : on voit quand il aura fini
   }
   return STATUS[f.status]?.label ?? '';
