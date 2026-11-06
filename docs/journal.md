@@ -26,7 +26,7 @@ Modèle d'entrée :
   attend. À vitesse égale, le premier garde la main. Avant : le premier arrivé la posait (et en mine, les deux la
   posaient en même temps).
 - **Décisions** : une seule règle pour tous les modes (mine, raid, instances, tours, mine instantanée, et les suivants).
-- **État** : 🧪 sur la branche `geoffrey/echelle-logisticien` (pas en ligne)
+- **État** : ✅ en ligne le 06/11
 
 ## 06/11/2026 — Jules — Appli : les sprites des objets ne sont plus écrasés à l'Amélioration
 - **Pour le joueur** : dans l'appli, onglet Perso → Amélioration, les icônes des pièces à choisir sortaient écrasées en largeur
