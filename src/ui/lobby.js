@@ -3,11 +3,12 @@
    de test et réglages. Pendant une session, il reste visible en LECTURE SEULE (bandeau « En session dans la mine ») :
    la session elle-même est dans l'onglet Session.
    Lit l'état et appelle des fonctions : le groupe et la session sont gérés par le serveur. */
+import { isGeante, maxPlayersOf } from '../shared/geante.js';
 import { sealedBelow, levelLockText } from '../shared/level-gate.js';
 import { gearScore } from '../meta/gearscore.js';
 import { leftText, statusText } from './social.js';
 import { canBeInvited } from '../shared/party.js';
-import { GAME, PREF_OPTIONS, MOB_INFO, DEV_TUNABLES, DEV_TARGETS, DEV_SPEC, SESSION_LEN, SKILLS, MINE_MODES, TOWER, INSTANCE, SHRINES } from '../config.js';
+import { GAME, PREF_OPTIONS, MOB_INFO, DEV_TUNABLES, DEV_TARGETS, DEV_SPEC, SESSION_LEN, SKILLS, MINE_MODES, TOWER, INSTANCE, SHRINES, GEANTE } from '../config.js';
 import { joinLink } from '../shared/party.js';
 import { inLocalApp } from '../net/base.js';
 import { SITE } from '../config.js';
@@ -95,11 +96,20 @@ export function prisonLaunchState({ account, party, offline, busy, session, pris
 
 /* bouton principal pour l'activité st.mode (prison, tour, instance, sinon la session) : le Lobby et l'Accueil de l'appli
    (src/app/home.js, 03/11/2026) affichent le même */
+/* places affichées (06/11/2026) : le chef qui a ouvert une activité voit ses places (Mine géante : 5) ; les autres, celles du serveur */
+export const slotsMax = st => st.screen === 'stage' && (!st.party || st.party.leader === st.account?.id) ? maxPlayersOf(st.mode)
+  : (st.party?.max ?? GAME.maxPlayers);
 export function launchFor(st){
   const def = MINE_MODES.find(m => m.id === st.mode);
   const ls = def?.prison ? prisonLaunchState(st) : launchState(st);
   if(def?.tower && ls.can) ls.label = ls.label.replace('la session', 'la tour').replace('Lancer à', 'Lancer la tour à');
   if(def?.instance && ls.can) ls.label = ls.label.replace('la session', 'l\'instance').replace('Lancer à', 'Lancer l\'instance à');
+  /* Mine géante (06/11/2026) : le chef lance seulement à 5 (mode dev : les mineurs de test complètent) */
+  if(isGeante(st.mode) && ls.can && ls.action !== 'ready'){
+    const n = st.party?.members.length ?? 1;
+    if(n !== GEANTE.players && !st.info?.dev) return { can:false, label:`⛰ Il faut ${GEANTE.players} joueurs (${n}/${GEANTE.players})` };
+    ls.label = '▶ Lancer la Mine géante';
+  }
   return ls;
 }
 
@@ -223,6 +233,7 @@ export function mineModes(cur, locked = false, judgment = null, dev = false, siz
 const ACTIVITIES = [
   { id:'prison',    icon:'⛓', title:'Prison',           desc:'Farm solo et énergie' },
   { id:'mine',      icon:'⛏', title:'Mine',             desc:'Va de plus en plus profond avec ta team' },
+  { id:'geante',    icon:'⛰', title:'Mine géante (5 joueurs)', desc:'À 5, 2 h de jeu, 2 fois par jour : 1,5 × le butin par heure' },   // 06/11
   { id:'mi',        icon:'🌀', title:'Mine instantanée', desc:'Mine avec full minerais' },
   { id:'giant',     icon:'🌈', title:'Bloc géant',       desc:'Mine le plus vite possible' },
   { id:'hescoming', icon:'😈', title:'He\'s coming',     desc:'Frappe Lucifer le plus fort possible' },
@@ -329,7 +340,7 @@ export function setupLobby(h){
     const devTowers = jv && !!info?.dev ? modes.filter(m => MINE_MODES.find(d => d.id === m.id)?.tower) : [];
     $('towerModes').hidden = !devTowers.length;
     $('towerModes').innerHTML = devTowers.map(m => `<button data-mode="${m.id}"${m.disabled ? ' disabled' : ''}>${esc(m.label)}</button>`).join('');
-    const slots = lobbySlots(account, party, GAME.maxPlayers, st.myTree);
+    const slots = lobbySlots(account, party, slotsMax(st), st.myTree);
     $('lobbySlots').innerHTML = slots.map((s, i) => {
       if(s.kind === 'free')
         return `<div class="pslot free"><span class="av">${pxi('person')}</span><span><b>Place libre</b><small>Invite un ami</small></span></div>`;
@@ -351,7 +362,7 @@ export function setupLobby(h){
     const ls = launchFor({ ...st, mode: def?.id });   // au menu (def null) : la session, comme avant
     $('launchBtn').disabled = !ls.can; $('launchBtn').innerHTML = pxi('arrow') + esc(ls.label.replace(/^[^\p{L}\d]+/u, ''));   // l'icône pixel remplace le « ▶ » du texte
     /* énergie (29/10) : coût possible à côté de « Lancer », mine classique seulement (pas en mode dev : rien n'est débité) */
-    const cost = def === MINE_MODES[0] && !locked && !jv && !!account && !offline && !info?.dev && !(party && party.members.length > 1 && party.leader !== account.id);
+    const cost = (def === MINE_MODES[0] || isGeante(def?.id)) && !locked && !jv && !!account && !offline && !info?.dev && !(party && party.members.length > 1 && party.leader !== account.id);
     $('launchCost').hidden = !cost;
     $('launchCost').textContent = cost ? launchCostText(st.energy) : '';
     $('launchCost').classList.toggle('err', cost && /pas assez/.test($('launchCost').textContent));
@@ -778,7 +789,7 @@ export function setupLobby(h){
     /* Accueil de l'appli (src/app/home.js, 03/11/2026) : l'état dont il a besoin, rien de recalculé ; places avec leur skin */
     homeSnapshot(){
       const look = h.look?.() ?? {}, auras = h.auras?.() ?? {};
-      const slots = lobbySlots(st.account, st.party, GAME.maxPlayers, st.myTree)
+      const slots = lobbySlots(st.account, st.party, slotsMax(st), st.myTree)
         .map(s => s.kind === 'member' ? { ...s, look: portraitLook(s, look), auras: portraitAuras(s, auras) } : s);
       return { account:st.account, offline:st.offline, busy:st.busy, dev:!!st.info?.dev, party:st.party, slots, mode:st.mode, prefs:st.prefs,
                launch:launchFor(st), session:st.session, prison:st.prison, energy:st.energy, giantReady:!!st.giantReady,

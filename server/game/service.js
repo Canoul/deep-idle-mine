@@ -24,10 +24,10 @@
    Testable seul : on lui passe un stockage, une horloge et la façon de faire tourner les parties (liveRunner). */
 import { parseReferralCode, referralCode, referralRefusal, REFERRAL_ERRORS } from '../../src/shared/referral.js';
 import crypto from 'node:crypto';
-import { GAME, INSTANCE, RAID, ENERGY, PRISON, PREFS, RESEARCH, FOCUS, FURNACE, MINE_MODES, CHAT, ITEMS, JUDGMENT, KHOLE, TOWER, WIKI, LEADERBOARD, SKILLS, AREAS, REFERRAL, treasureItem, goblinChestItem, golbuteChestItem } from '../../src/config.js';
+import { GAME, INSTANCE, RAID, ENERGY, PRISON, PREFS, RESEARCH, FOCUS, FURNACE, MINE_MODES, CHAT, ITEMS, JUDGMENT, KHOLE, TOWER, WIKI, LEADERBOARD, SKILLS, AREAS, REFERRAL, GEANTE, treasureItem, goblinChestItem, golbuteChestItem } from '../../src/config.js';
 import { sanitizeTowerRecord, betterTower, sanitizeInstanceRecord, betterInstance, recordKey, splitRecordKey } from '../../src/meta/leaderboard.js';
 import { DT } from '../../src/config.js';
-import { sanitizePrefs, sanitizeOverrides, sanitizeDevSpecs, tickAt, realDurationMs, TOTAL_TICKS } from '../../src/shared/game.js';
+import { sanitizePrefs, sanitizeOverrides, sanitizeDevSpecs, tickAt, realDurationMs, TOTAL_TICKS, totalTicksOf } from '../../src/shared/game.js';
 import { sanitizeBotPresets, isCopyPresetId, COPY_PREFIX } from '../../src/shared/dev-presets.js';
 import { prisonCompos, pickCompo } from '../../src/meta/prison-profile.js';
 import { sanitizeFocus } from '../../src/sim/focus.js';
@@ -64,6 +64,7 @@ import { GAME_SERVER } from '../config.js';
 import { prisonRow } from '../../src/meta/prison-dashboard.js';
 import { treasureMessage, identifyMessage, towerOpenMessage, blueprintMessage, discoveryMessage } from '../social/discord.js';
 import { RECIPES } from '../../src/recipes.js';
+import { isGeante, maxPlayersOf, geanteLeft } from '../../src/shared/geante.js';
 import { createLiveRunner } from './live.js';
 import { createChat } from './chat.js';
 import { DELETED_NAME } from './store.js';
@@ -443,10 +444,10 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
 
   /* tick que la partie doit avoir atteint maintenant : temps réel (jeu normal), horloge de la session (dev) */
   function targetTick(rec){
-    if(!rec.dev) return tickAt(clock() - rec.startedAt, rec.speed);
+    if(!rec.dev) return tickAt(clock() - rec.startedAt, rec.speed, totalTicksOf(rec.mode));
     const c = rec.clock;
     const t = c.paused ? c.tick : c.tick + Math.floor((clock() - c.at) / 1000 * c.speed / DT + 1e-9);
-    return Math.min(TOTAL_TICKS, t);
+    return Math.min(totalTicksOf(rec.mode), t);
   }
   /* la partie tourne (après un redémarrage du serveur : reconstruite depuis la seed et les choix enregistrés).
      Jamais pour une partie qui vient de se terminer et dont le coffre est en cours de partage : false. */
@@ -1096,10 +1097,13 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       const players = await Promise.all((members?.length ? members : [{ account: me.id, name: displayName(me) }])
         .map(async p => ({ account: String(p.account), name: String(p.name ?? ''), ...await guildField(String(p.account)) })));
       if(players[0].account !== me.id) fail('bad_request', 400, 'Le joueur qui lance doit être le premier.');
-      if(new Set(players.map(p => p.account)).size !== players.length || players.length > GAME.maxPlayers)
-        fail('bad_request', 400, 'Équipe invalide.');
       /* type de mine choisi dans le lobby (Mine par défaut) ; un type annoncé mais pas prêt (MI) est refusé */
       const mode = body.mode ?? MINE_MODES[0].id;
+      if(new Set(players.map(p => p.account)).size !== players.length || players.length > maxPlayersOf(mode))
+        fail('bad_request', 400, 'Équipe invalide.');
+      /* Mine géante (06/11) : exactement 5 joueurs (mode dev : complétée par des mineurs de test) ; plus de 3 : seulement elle */
+      if(isGeante(mode) && !dev && players.length !== GEANTE.players)
+        fail('geante_players', 409, `Mine géante : il faut ${GEANTE.players} joueurs dans le groupe (vous êtes ${players.length}).`);
       const modeDef = MINE_MODES.find(m => m.id === mode);
       if(!modeDef) fail('bad_request', 400, 'Type de mine inconnu.');
       if(!modeDef.ready) fail('mode_not_ready', 400, `${modeDef.label} : bientôt disponible.`);
@@ -1112,7 +1116,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       const inst = modeDef.instance ? instanceDef(mode) : null;
       if(modeDef.instance && !inst?.ready) fail('mode_not_ready', 400, `${modeDef.label} : bientôt disponible.`);
       /* énergie (29/10) : seule la mine classique en coûte, hors mode dev ; verrou par compte, bots exclus (seuls les vrais joueurs) */
-      const energyLocks = mode === 'mine' && !dev ? players.map(p => 'energy:' + p.account) : [];
+      const energyLocks = (mode === 'mine' || isGeante(mode)) && !dev ? players.map(p => 'energy:' + p.account) : [];   // Mine géante : mêmes règles (06/11)
       /* verrous : compte, et ceux d'un versement de prison (inventaire, XP, énergie, prison) : le lancement peut arrêter la
          prison d'un joueur (29/10) ; ils couvrent aussi les clés d'instance et l'énergie */
       return withLock.many([...players.map(p => 'acct:' + p.account), ...players.flatMap(p => prisonLocks(p.account))], async () => {
@@ -1148,6 +1152,12 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         /* mine classique : pas de résidus si une tour du Jugement est ouverte au lancement (23/10, figé dans la session) */
         const residues = side || inst ? null : await withJudgment((j, rules) => ({ value: residuesOn(j, clock(), rules) }));
         if(await activeOf(me.id)) fail('session_running', 409, 'Tu as déjà une session en cours.');
+        /* Mine géante (06/11) : GEANTE.perDay lancements par joueur et par jour (Paris), hors mode dev */
+        if(isGeante(mode) && !dev){
+          const now0 = clock(), done = [];
+          for(const p of players) if(geanteLeft(await store.sessionsOf(p.account), now0) <= 0) done.push(p);
+          if(done.length) fail('geante_daily', 409, `Mine géante : ${GEANTE.perDay} par jour. ${done.map(p => p.name || 'Un joueur').join(', ')} ${done.length > 1 ? 'les ont' : 'les a'} déjà faites aujourd'hui.`);
+        }
         for(const p of players.slice(1))
           if(await activeOf(p.account)) fail('member_in_session', 409, `${p.name || 'Un joueur'} est déjà dans une session.`);
         /* places : les sessions à l'heure seulement (une session dépassée se rattrape sur le budget restant) */
@@ -1217,7 +1227,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           mode,
           seed: dev && isInt(body.seed) && body.seed >= 0 && body.seed < 2**31 ? body.seed : randomSeed(),
           players,
-          bots: dev ? Math.max(0, Math.min(GAME.maxPlayers - players.length, botsWanted)) : 0,
+          bots: dev ? Math.max(0, Math.min(maxPlayersOf(mode) - players.length, botsWanted)) : 0,
           prefs, looks, gear, skills, spells,
           overrides: dev ? sanitizeOverrides(body.overrides) : null,
           devSpecs: dev ? sanitizeDevSpecs(body.devSpecs) : null,   // spécialisations imposées (mode dev)
@@ -1226,7 +1236,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           ...(placeOfPlayers?.some(Boolean) ? { playerPresets: placeOfPlayers, playerCopies: botCopiesOf(placeOfPlayers).botCopies ?? null } : {}),
           ...(dev ? selfPresetOf(body.selfPreset) : {}),   // preset du joueur qui lance (mode dev, 29/10)
           dev, speed: dev ? null : speed, startedAt: now,
-          finishAt: dev ? null : now + (side ? towerDurationMs(speed) : inst ? instanceDurationMs(speed) : realDurationMs(speed)),
+          finishAt: dev ? null : now + (side ? towerDurationMs(speed) : inst ? instanceDurationMs(speed) : realDurationMs(speed, mode)),
           ...(side ? { opening, level } : inst ? { level } : {}),
           ...(modulation ? { modulation: { gsMax: TOWER.modulation.gsMax } } : {}),
           ...(residues === false ? { residues: false } : {}),

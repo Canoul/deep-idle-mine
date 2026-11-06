@@ -7669,3 +7669,26 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** ✅ les 20 fichiers app-* : 183/183. ✅ Vu dans Chromium 390 × 844 (`?app`, invité) : Sac et Perso, sous-onglets
   744-788 px, familles 788-844 px, guide au-dessus. ⚠️ Pas vu sur un vrai téléphone ni en session (sous-onglets de Session).
 
+## 06/11/2026 — Geoffrey — Mine géante (5 joueurs)
+- **Principe** : chaque partie tourne dans son propre fil (`server/game/live.js`) ; celui d'une Mine géante reçoit
+  `DIM_MINE=geante`, et `src/config.js` y donne `W` 70, `SESSION_LEN` 7200, `SPAWN_X` 35, `CHEST_X` 32 (`WINCH.x` suit). La
+  simulation (18 fichiers qui lisent W) n'a pas changé. Le serveur principal et la mine classique restent à 50 / 3600.
+  ⚠️ `createInlineRunner` (tests) fait tourner une Mine géante à 50 colonnes : seul le vrai fil a la carte de 70.
+- `GEANTE` (config) ; `MINE_MODES` `geante` (players 5) ; `src/shared/geante.js` (`isGeante`, `maxPlayersOf`, `geanteToday`,
+  `geanteLeft`, jour de Paris de `src/shared/giant.js`). Session : `G.geante` (buildSession), `G.w`, `G.len` ; génération
+  `prisonComp(areaComp, GEANTE.oreMul)` (src/sim/world.js) ; `spawnTimer / GEANTE.mobMul` (src/sim/mobs.js).
+- Serveur : `game.start` (5 exactement hors dev : `geante_players` ; >3 seulement pour elle ; 2 par jour : `geante_daily` ; énergie
+  comme `mine`) ; `realDurationMs(speed, mode)`, `totalTicksOf(mode)` (72 000 ticks) dans `targetTick`. Groupes :
+  `server/party/service.js` `maxOf(p)` = places de l'activité ouverte par le chef (`p.activity.mode`).
+- Navigateur : vue `w`, `len`, `chestX` ; `src/sim/light.js` clé `y × G.w + x` ; `src/render/canvas.js` canvas et caméra à `G.w`
+  (`camera.setCols`) ; coffre à `G.chestX` ; HUD, orbes et nav à `G.len`. Lobby : activité, `slotsMax`, `launchFor` (5/5).
+- **Tests** ✅ geante (nouveau : réglages, 2 par jour, minerais × 2,3-3,1 sur 4 seeds, lobby, serveur), geante-world (nouveau :
+  carte 70 dans un processus DIM_MINE=geante, vue et carte du navigateur à 70, **vrai fil** : Mine géante 70 / mine 50), session,
+  view, camera, light, hud, party, game-service, lobby, nav, app-*, wiki, town, chat. Simulation de la mine classique (5 × 3) :
+  identique avant / après (areas 3,0, profondeur 191,2, coffre 4 092,2). ✅ Vu dans Chromium (mode dev, seed 4242, 4 mineurs de
+  test) : canvas 1 120 px (70 × 16), 5 mineurs répartis, 120:00, charbon 27 % en area 0.
+- ❌ Déjà rouges sur main, sans rapport : energy « energyOfTicks » (attend 4/h, la config dit 8), prison « une tour et une instance
+  lancées terminent la prison ». energy « part de 100 » corrigé ici (mon changement du 04/11 sans test).
+- **À vérifier** : vrai groupe de 5 en ligne ; mithril (mesuré en acier seulement) ; coût serveur d'une partie de 5 × 2 h ; dans
+  l'appli, la mine de 70 colonnes à l'écran.
+

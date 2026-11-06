@@ -6,7 +6,7 @@
    Ensuite : seulement les cases qui ont changé depuis le tick que le navigateur a déjà (since). Le reste (mineurs,
    mobs, coffre, areas…) est petit et envoyé à chaque fois. La lumière n'est pas envoyée : le navigateur la recalcule
    (même calcul, src/sim/light.js). Le navigateur ne calcule aucun résultat : il affiche. */
-import { W, DT, FLUID } from '../config.js';
+import { W, DT, FLUID, CHEST_X } from '../config.js';
 import { updateLight } from '../sim/light.js';
 import { muleCap } from '../sim/mule.js';
 import { lit, travelling } from '../sim/mineur.js';
@@ -77,7 +77,7 @@ export function createViewer(G){
   return function view(since){
     record();
     const base = {
-      tick: G.ticks, t: G.t, over: G.over, H: G.tiles.length,
+      tick: G.ticks, t: G.t, over: G.over, H: G.tiles.length, w: G.w ?? W, len: G.len, chestX: CHEST_X,   // largeur, durée, coffre (Mine géante, 06/11)
       miners: G.miners.map(m => minerView(G, m)), mobs: G.mobs.map(o => mobView(G, o)),
       worms: (G.worms || []).map(w => ({ id: w.id, x: w.x, y: w.y, trail: w.trail })),   // vers de terre qui naviguent (31/10)
       thralls: (G.thralls || []).map(o => ({ id: o.id, x: o.x, y: o.y, dig: o.dig ? { x: o.dig.x, y: o.dig.y } : null, left: Math.max(0, Math.round(o.until - G.t)) })),   // gobelins asservis (27/10)
@@ -229,7 +229,7 @@ export function applyView(M, v, now = performance.now(), speed = 0){
     glide(M, M.mobs, v.mobs, mobPos, now);
   }
   pace(M, M, now);
-  Object.assign(M, { ticks: v.tick, t: v.t, over: v.over, miners: v.miners, mobs: v.mobs, worms: v.worms ?? [], thralls: v.thralls ?? [], chest: v.chest, chestBy: v.chestBy, goblinChest: v.goblinChest ?? {}, shrines: v.shrines ?? [],
+  Object.assign(M, { w: v.w ?? W, len: v.len ?? M.len, chestX: v.chestX, ticks: v.tick, t: v.t, over: v.over, miners: v.miners, mobs: v.mobs, worms: v.worms ?? [], thralls: v.thralls ?? [], chest: v.chest, chestBy: v.chestBy, goblinChest: v.goblinChest ?? {}, shrines: v.shrines ?? [],
                      stats: v.stats, areas: v.areas, unlockedAreas: v.unlockedAreas, winch: v.winch ?? null, mule: v.mule ?? null, khole: v.khole ?? null, ready: true });
   return M;
 }

@@ -53,6 +53,11 @@ export function createCamera(viewRows, cols = W){
       cam.x = clampX(wx - fx * vc());
       cam.y = clamp(wy - fy * vr(), last);
     },
+    /* largeur de la mine (Mine géante : 70 colonnes, 06/11/2026) : bornes et zoom recalculés au prochain setBox */
+    setCols(n){
+      if(!Number.isSafeInteger(n) || n <= 0 || n === cols) return;
+      cols = n; box.key = '#'; box.hi = n; cam.x = clampX(cam.x);
+    },
     /* colonnes visibles bornées à b = { x0, x1 } (prison), ou toute la mine (null) ; un changement remet le zoom de
        départ (au moins le minimum) */
     setBox(b){

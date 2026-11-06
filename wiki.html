@@ -13,7 +13,7 @@
 <header class="top">
   <a class="brand" href="index.html">⛏ Deep Mine Idle</a>
   <span class="sub">Wiki du joueur</span>
-  <span class="maj" title="Date de la dernière mise à jour des textes du wiki">🗓 Mis à jour le 05/11/2026</span>
+  <span class="maj" title="Date de la dernière mise à jour des textes du wiki">🗓 Mis à jour le 06/11/2026</span>
   <a class="play" href="index.html">▶ Jouer</a>
 </header>
 
@@ -154,7 +154,7 @@
   <p>Le bandeau du haut donne aussi accès à ce wiki et au <a href="https://discord.gg/waGJg9RJDy" target="_blank" rel="noopener">Discord du jeu</a>.</p>
   <p>La <b>barre d'action en bas</b> de l'écran donne accès à tout (touches <b>1 à 9, 0, -, =, C, G et S</b> ; <b>Échap</b> quitte l'onglet ouvert et ramène à l'onglet Session : la mine en cours, ou la promenade dans le Carreau). De chaque côté, deux <b>orbes</b> : le temps de session et ton XP, ou, pendant une session, l'oxygène et les pods de ton mineur. Changer d'onglet ne met pas la session en pause : la mine continue de tourner.</p>
   <div class="tabs">
-    <div class="tabcard"><h3>🏠 Lobby</h3><p>Le Lobby s'ouvre sur le <b>menu des activités</b> : un clic en ouvre une, avec tes sets à gauche et son équipe ou sa carte à droite. L'équipe montre la <b>jauge d'énergie</b> de chaque joueur (rouge s'il n'en a plus assez pour une mine). On y trouve ton groupe, tes invitations, ta spécialisation, les préférences de ton mineur et les <b>activités</b> (la <b>Mine</b>, l'inscription à la <a href="#mi">Mine instantanée</a>, le <a href="#bloc">Bloc géant</a>, les <a href="#instances">instances</a>, la <a href="#prison">Prison</a>, les jauges du <a href="#ange">Jugement</a> et les tours quand elles sont ouvertes) et le bouton <b>Lancer</b>. Pendant une session, il reste visible mais en lecture seule (on peut quand même regarder la Mine instantanée et le Bloc géant).</p></div>
+    <div class="tabcard"><h3>🏠 Lobby</h3><p>Le Lobby s'ouvre sur le <b>menu des activités</b> : un clic en ouvre une, avec tes sets à gauche et son équipe ou sa carte à droite. L'équipe montre la <b>jauge d'énergie</b> de chaque joueur (rouge s'il n'en a plus assez pour une mine). On y trouve ton groupe, tes invitations, ta spécialisation, les préférences de ton mineur et les <b>activités</b> (la <b>Mine</b>, la <a href="#geante">Mine géante</a> à 5, l'inscription à la <a href="#mi">Mine instantanée</a>, le <a href="#bloc">Bloc géant</a>, les <a href="#instances">instances</a>, la <a href="#prison">Prison</a>, les jauges du <a href="#ange">Jugement</a> et les tours quand elles sont ouvertes) et le bouton <b>Lancer</b>. Pendant une session, il reste visible mais en lecture seule (on peut quand même regarder la Mine instantanée et le Bloc géant).</p></div>
     <div class="tabcard"><h3>⛏ Session</h3><p>La mine en direct, en entier au centre, avec une <b>jauge de profondeur</b> (un repère par mineur) ; autour : ton équipe, le coffre, les panneaux Focus et le journal. Puis le bilan à la fin. Au lancement, tout le groupe y arrive automatiquement.</p></div>
     <div class="tabcard"><h3>🎒 Inventaire</h3><p>Tout ce que tu possèdes. Clique un objet pour voir sa fiche : tu peux y <b>ouvrir</b> un treasure (ou <b>tous</b> d'un coup avec « Ouvrir tout »), <b>utiliser</b> un blueprint ou un Four en fer, ou <b>équiper</b> une pièce de stuff, ou <b>recycler</b> une pièce fabriquée (elle est détruite et rend 60 % de sa recette, arrondi vers le bas ; une pièce du <a href="#mobs">butin rare</a>, du Golbute ou du Roi Gobelin rend des matériaux fixes (les anneaux ne se recyclent pas) ; une <b>rune</b> rend 8 à 12 Poudre de rêve, un fragment de rune 1 à 6 ; pas une pièce portée ni enregistrée dans un set). Les nouveaux objets brillent d'un halo blanc. Le bouton <b>Trier</b> range tout par type (blocs, minerais, matériaux, stuff…) puis du plus rare au plus commun, et les runes et fragments de la meilleure qualité à la moins bonne (R7 d'abord) ; tu peux aussi <b>glisser</b> un objet dans un autre slot (dans l'appli : bouton <b>Déplacer</b> de sa fiche, puis touche la case où le poser). Les pièces de stuff <b>non identifiées, sans amélioration ni rune</b> s'<b>empilent</b> : toutes celles d'un même objet tiennent dans une case (× n), avec un bouton <b>Recycler tout</b>.</p></div>
     <div class="tabcard"><h3>🛡 Stuff</h3><p>Les <b>12 cases d'équipement</b> de ton mineur (casque, torse, jambes, pieds, gants, ceinture, pioche, épée, cape, boussole et <b>2 <a href="#anneaux">anneaux</a></b>) et le détail de ses stats. Un changement compte pour la <b>prochaine</b> session. À gauche, tes <a href="#sets">sets</a>.</p></div>
@@ -303,8 +303,15 @@
   <ul>
     <li>Une jauge de <b>0 à <span id="w-energy-max"></span></b> par compte, pleine au départ, affichée dans la barre du haut.</li>
     <li>Lancer une <b>mine classique</b> coûte <b><span id="w-energy-cost"></span> d'énergie</b> (tirée au hasard par le serveur, pour chaque joueur du groupe). Dès qu'il te reste au moins <span id="w-energy-min"></span>, tu peux lancer : si le coût tiré dépasse ce qui reste, tu paies le reste et tu tombes à 0. En dessous, le lancement est refusé (le groupe est prévenu de qui est à court) et rien n'est débité.</li>
+    <li>La <a href="#geante">Mine géante</a> coûte la même chose qu'une mine classique.</li>
     <li>Rien d'autre ne coûte d'énergie (mine instantanée, tours, instances, Bloc géant). Quitter une session avant la fin ne rembourse pas.</li>
     <li>L'énergie <b>se recharge seulement en prison</b> : <b><span id="w-energy-regen"></span> par heure de jeu</b> passée en prison (au maximum, le surplus est perdu).</li>
+  </ul>
+  <h2 id="geante">La Mine géante (5 joueurs)</h2>
+  <ul>
+    <li>Lobby, menu des activités → <b>Mine géante (5 joueurs)</b>. Le chef qui l'ouvre a <b>5 places</b> dans son groupe ; on la lance seulement à <b>5</b>.</li>
+    <li>Elle dure <b>2 h de jeu</b> (1 h réelle) et se joue <b>2 fois par jour</b> par joueur. Coffre et XP partagés comme dans la mine.</li>
+    <li>Mêmes règles que la mine classique (oxygène, pods, treuil, donjon, pièges, k hole, treasures), mais une mine <b>plus large</b> (70 colonnes), <b>beaucoup plus de minerais</b> et <b>plus de mobs</b> : chacun rapporte environ <b>1,5 fois</b> les minerais par heure d'une mine normale.</li>
   </ul>
   <h2>La prison</h2>
   <ul>

@@ -90,8 +90,8 @@ test('pendant une session : Lancer impossible (« Session en cours »), même po
 test('« Où miner » : Mine choisie par défaut, Mine instantanée choisissable ; pendant une session, seuls la MI et le Bloc géant restent choisissables', async () => {
   const { mineModes } = await import('../src/ui/lobby.js');
   const m = mineModes('mine');
-  assert.deepEqual(m.map(x => [x.id, x.on, x.disabled, x.soon]), [['prison', false, false, false], ['mine', true, false, false], ['mi', false, false, false], ['instance_1', false, false, false], ['giant', false, false, false], ['hescoming', false, false, false]]);
-  assert.deepEqual(mineModes('mi').map(x => x.on), [false, false, true, false, false, false]);
+  assert.deepEqual(m.map(x => [x.id, x.on, x.disabled, x.soon]), [['prison', false, false, false], ['mine', true, false, false], ['geante', false, false, false], ['mi', false, false, false], ['instance_1', false, false, false], ['giant', false, false, false], ['hescoming', false, false, false]]);
+  assert.deepEqual(mineModes('mi').map(x => x.on), [false, false, false, true, false, false, false]);
   const ins = mineModes('instance_1').find(x => x.id === 'instance_1');
   assert.equal(ins.label, '🗝 Instances', 'un seul bouton pour toutes les instances (27/10)'); assert.equal(ins.on, true);
   const locked = mineModes('mine', true);
@@ -105,9 +105,9 @@ test('« Où miner » : Mine choisie par défaut, Mine instantanée choisissable
 test('« Où miner » : les tours du Jugement seulement quand elles sont ouvertes ; grisées si déjà faites', async () => {
   const { mineModes } = await import('../src/ui/lobby.js');
   const ids = j => mineModes('mine', false, j).map(m => m.id);
-  assert.deepEqual(ids(null), ['prison', 'mine', 'mi', 'instance_1', 'giant', 'hescoming'], 'fermées : absentes (prison en premier, 30/10)');
+  assert.deepEqual(ids(null), ['prison', 'mine', 'geante', 'mi', 'instance_1', 'giant', 'hescoming'], 'fermées : absentes (prison en premier, 30/10)');
   const j = { sides: { angel: { open: true, done: false }, demon: { open: false, done: false } } };
-  assert.deepEqual(ids(j), ['prison', 'mine', 'mi', 'instance_1', 'giant', 'hescoming', 'tower_angel']);
+  assert.deepEqual(ids(j), ['prison', 'mine', 'geante', 'mi', 'instance_1', 'giant', 'hescoming', 'tower_angel']);
   const done = mineModes('tower_angel', false, { sides: { angel: { open: true, done: true }, demon: { open: true, done: false } } });
   assert.equal(done.find(m => m.id === 'tower_angel').disabled, true);
   assert.equal(done.find(m => m.id === 'tower_demon').disabled, false);
@@ -201,15 +201,15 @@ test("niveau d'instance (29/10) : choisi par celui qui lance (seul ou chef), niv
   assert.equal(two.show, false, 'Instance II (30/10) : un seul niveau, pas de rangée'); assert.equal(two.level, 1);
 });
 
-test('menu du Lobby : les 7 activités et Groupes en formation dans l\'ordre, une description chacune, sans les tours', async () => {
+test('menu du Lobby : les 8 activités et Groupes en formation dans l\'ordre, une description chacune, sans les tours', async () => {
   const { mineModes, activityMenu } = await import('../src/ui/lobby.js');
   const j = { sides: { angel: { open: true }, demon: { open: false } } };
   const menu = activityMenu(mineModes('mine', false, j), { towerOpen: true });
-  assert.deepEqual(menu.map(a => a.title), ['Prison', 'Mine', 'Mine instantanée', 'Bloc géant', 'He\'s coming', 'Jugement', 'Instances', 'Groupes en formation']);
+  assert.deepEqual(menu.map(a => a.title), ['Prison', 'Mine', 'Mine géante (5 joueurs)', 'Mine instantanée', 'Bloc géant', 'He\'s coming', 'Jugement', 'Instances', 'Groupes en formation']);
   assert.ok(menu.every(a => a.desc));
-  assert.equal(menu[5].kind, 'view'); assert.equal(menu[5].note, 'tour ouverte');
-  assert.equal(menu[6].mode, 'instance_1');
-  assert.equal(activityMenu(mineModes('instance_2'))[6].mode, 'instance_2', 'l\'instance choisie reste choisie');
+  assert.equal(menu[6].kind, 'view'); assert.equal(menu[6].note, 'tour ouverte');
+  assert.equal(menu[7].mode, 'instance_1');
+  assert.equal(activityMenu(mineModes('instance_2'))[7].mode, 'instance_2', 'l\'instance choisie reste choisie');
   const gold = activityMenu(mineModes('mine'), { ready: { giant: true, hescoming: false } });
   assert.deepEqual(gold.filter(a => a.ready).map(a => a.id), ['giant'], 'contour doré : seulement l\'activité dont l\'entrée est disponible');
   const off = mineModes('mine').map(m => m.id === 'giant' ? { ...m, disabled: true } : m);

@@ -40,6 +40,9 @@ export function newSession(seed, opts={}){
     summary:null,
     /* résidus du Jugement : aucun si une tour était ouverte au lancement (23/10, enregistré dans la session) */
     noResidues: !!opts.noResidues,
+    /* Mine géante (06/11/2026, GEANTE) : minerais × oreMul, mobs × mobMul ; largeur et durée de la carte (W, SESSION_LEN du fil de
+       la partie) gardées dans G pour l'affichage */
+    geante: !!opts.geante, w: W, len: SESSION_LEN,
     /* shrines actifs au lancement (28/10/2026, SHRINES ; enregistrés dans la session) : décor près du coffre, et leurs
        effets sur la génération (oreBonus : points de terrain changés en minerais, src/meta/shrines.js) */
     shrines: Array.isArray(opts.shrines) && !opts.prison ? opts.shrines.filter(id => shrineOf(id)) : [],
