@@ -1,6 +1,6 @@
 /* Relevé des textes d'interface à traduire (06/11/2026, chantier du jeu en anglais) :
    node scripts/i18n-extract.js [--missing]  → JSON { texte français: fichier } sur la sortie
-   Sources : index.html (textes et attributs title / placeholder / aria-label / data-tip / alt), littéraux et gabarits des
+   Sources : index.html, journal et actions de la simulation (src/sim), messages du serveur (server, sauf admin et db), (textes et attributs title / placeholder / aria-label / data-tip / alt), littéraux et gabarits des
    modules d'interface (src/ui, src/app, src/main.js, src/wiki), textes de la config (desc, short, label, tip, text, note…).
    Un gabarit `Prêt dans ${left} s` donne le modèle « Prêt dans {a} s » ; le HTML est découpé aux balises comme à
    l'affichage. --missing : seulement ceux qui n'ont pas encore leur anglais (src/i18n/en/ui.js et names.js). */
@@ -58,7 +58,8 @@ function fromJs(file){
 const walk = d => fs.readdirSync(d, { withFileTypes: true }).flatMap(f => f.isDirectory() ? walk(path.join(d, f.name)) : f.name.endsWith('.js') ? [path.join(d, f.name)] : []);
 
 fromHtml(fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8'), 'index.html');
-for(const f of [...walk(path.join(ROOT, 'src/ui')), ...walk(path.join(ROOT, 'src/app')), ...walk(path.join(ROOT, 'src/meta')), ...walk(path.join(ROOT, 'src/shared')), path.join(ROOT, 'src/main.js')]) fromJs(f);
+for(const f of [...walk(path.join(ROOT, 'src/ui')), ...walk(path.join(ROOT, 'src/app')), ...walk(path.join(ROOT, 'src/meta')), ...walk(path.join(ROOT, 'src/shared')), ...walk(path.join(ROOT, 'src/sim')),
+  ...walk(path.join(ROOT, 'server')).filter(f => !/[\\/](admin|db)[\\/]/.test(f)), path.join(ROOT, 'src/main.js')]) fromJs(f);   // sim et serveur : journal, actions, erreurs (06/11)
 /* config : textes affichés (pas les noms, déjà dans names.js) */
 const C = await import(path.join(ROOT, 'src/config.js'));
 const TEXT = new Set(['desc', 'short', 'tip', 'text', 'note', 'help', 'hint', 'msg', 'title', 'label', 'tab', 'unit', 'units', 'line', 'lines', 'sub', 'info', 'detail', 'details']);

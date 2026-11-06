@@ -5,7 +5,7 @@
 
    Dictionnaire : src/i18n/en/ui.js. Une clé est un texte tel qu'il s'affiche (sans les espaces du bord) ; une clé avec
    {x} est un modèle : « Encore {n} tours » traduit « Encore 3 tours » (les valeurs sont elles-mêmes traduites si elles sont
-   connues : un nom d'objet, un mot de l'interface). data-tip : ligne par ligne.
+   connues : un nom d'objet, un mot de l'interface) ; {#n} n'accepte qu'un nombre. data-tip : ligne par ligne.
    Jamais traduits : chat, champs de saisie, [data-noi18n] (pseudos, messages de guilde…), canvas.
    Mode dev : window.__i18nMissing = textes français vus sans traduction (pour compléter le dictionnaire). */
 import { getLang, dictOf, I18N_BASE } from './index.js';
@@ -21,9 +21,10 @@ export function createTranslator(ui, names = {}, { onMissing } = {}){
   for(const [fr, en] of Object.entries(ui)){
     if(!fr.includes('{')){ exact.set(fr, en); continue; }
     const keys = [];
-    const src = '^' + fr.split(/(\{\w+\})/).map(part => {
-      const m = part.match(/^\{(\w+)\}$/);
-      if(m){ keys.push(m[1]); return '(.*?)'; }
+    /* {#n} : un nombre seulement (« {#n} {item} » traduit « 5 Pépite d'argent » sans toucher « Mineur test 1 ») */
+    const src = '^' + fr.split(/(\{#?\w+\})/).map(part => {
+      const m = part.match(/^\{(#?)(\w+)\}$/);
+      if(m){ keys.push(m[2]); return m[1] ? '([\\d][\\d\\s.,]*)' : '(.*?)'; }
       return esc(part);
     }).join('') + '$';
     const p = { re: new RegExp(src, 's'), keys, en };

@@ -17,6 +17,7 @@ test('modèles : nombres, valeur vide (pluriel), noms traduits dans la valeur, d
   assert.equal(tr('0 point à dépenser'), '0 point to spend');
   assert.equal(tr('R3 Haute qualité'), 'R3 High Quality');
   assert.equal(tr("5 Pépite d'argent"), '5 Silver Nugget');
+  assert.equal(tr('Mineur test 1'), 'Mineur test 1', '{#n} : un nombre seulement');
 });
 
 test('garde-fou : un modèle court ne traduit jamais un mot au milieu d\'une phrase française', () => {

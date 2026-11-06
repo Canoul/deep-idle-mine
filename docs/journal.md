@@ -22,6 +22,12 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 06/11/2026 — Geoffrey — Le jeu en anglais, étape 3 : l'interface
+- En anglais (mode dev seulement), presque tout le jeu s'affiche maintenant en anglais : menus, onglets, boutons, bulles « ? », guide « Premiers pas », descriptions des skills et des sorts, journal de session, actions des mineurs, messages d'erreur. Environ 1 900 textes traduits.
+- Rien ne change pour les joueurs : l'anglais reste caché, et en français le traducteur n'est même pas chargé.
+- **Reste** : les textes dessinés dans la mine et au Carreau, les messages système du chat, et un passage dans les écrans pas encore vérifiés (tours, instances, raid, prison, Bloc géant).
+- **État** : 🧪 branche `geoffrey/traduction-anglais`
+
 ## 06/11/2026 — Geoffrey — Le jeu en anglais, étape 2 : les noms
 - Les 457 noms du jeu (objets, mobs, skills, sorts, stats, lieux…) ont leur anglais, validé par Geoffrey. En anglais (mode dev seulement), les objets, trésors, stats, sorts, skills et onglets de l'inventaire s'affichent déjà en anglais ; le reste des noms suivra avec la traduction de l'interface (étape 3).
 - Rien ne change pour les joueurs : l'anglais reste caché.

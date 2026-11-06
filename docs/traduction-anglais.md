@@ -30,9 +30,20 @@ Branche : `geoffrey/traduction-anglais`. Choix de langue dans « Mon compte » :
    objets, trésors, qualités et pièces (`itemName`, `pieceName`, donc `rname` et les bulles), stats, sorts, skills, états,
    onglets de l'inventaire. **Reste** : les autres affichages de noms (boss et mobs dans les HUD et le journal, lieux, modes,
    bâtiments du Carreau, wiki…), à faire avec l'étape 3.
-3. **Interface** : `index.html`, les écrans de `src/ui/`, les bulles « ? » (`src/ui/help.js`), le guide « Premiers pas ».
-4. **Messages du serveur** : erreurs (déjà un code par erreur : le navigateur traduit d'après le code) ; journal de
-   session : la simulation enverra des messages « codés » (clé + valeurs) que chaque joueur lit dans sa langue (172 messages).
+3. 🟡 **Interface** (06/11) : **traducteur de la page** (`src/i18n/dom.js`) plutôt que `t()` dans chaque module : il
+   remplace à l'affichage chaque texte connu (nœuds de texte, title / placeholder / aria-label / data-tip / alt), y compris les
+   textes à valeurs (`'Encore {n} tours'`, `{#n}` = un nombre seulement). Rien n'est installé en français. Garde-fou : une
+   valeur variable qui a l'air française et n'est pas un texte connu fait rejeter le modèle (pas de « Tier 1 and … » au milieu
+   d'une phrase). Jamais traduits : chat, champs de saisie, `[data-noi18n]`, canvas. Dictionnaire `src/i18n/en/ui.js`
+   (1 894 textes : interface, bulles « ? », guide, config, **journal et actions de la simulation, messages du serveur**) ;
+   relevé `node scripts/i18n-extract.js --missing` ; textes vus en jeu sans traduction : `window.__i18nMissing` (ceux qui ont
+   l'air français) et `window.__i18nSeen` (tous), en anglais en mode dev. Vu dans Chromium : Lobby, tous les onglets et une
+   session en anglais, 0 texte français relevé hors chat ; 60 img/s en anglais comme en français.
+   **Reste** : textes dessinés dans les canvas (noms des bâtiments du Carreau, pseudos…), messages système du chat (Raffle),
+   écrans pas encore visités en anglais (tours, instances, raid, prison, Bloc géant, bilans, fenêtres de confirmation) à
+   parcourir ; pseudos à marquer `data-noi18n` (un pseudo égal à un mot traduit, ex. « Mineur », serait traduit).
+4. 🟡 **Messages du serveur et journal** : couverts par le même traducteur (ils s'affichent dans la page). Reste : les
+   annonces Discord restent en français (voulu) ; vérifier en jeu les messages d'erreur.
 5. **Wiki** en anglais, puis les **pages légales**.
 
 ## Pour toute l'équipe, une fois le chantier fini
