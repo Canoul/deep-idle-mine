@@ -1306,11 +1306,14 @@ body.app .setQuick{flex:none;white-space:nowrap;font-size:var(--fs)}
 
 /* appli (06/11/2026, Geoffrey : textes qui se chevauchent) : un matériau de chantier sur 3 lignes, les boutons (Donner,
    De la banque) à droite du nom et de la barre, puis « 363 999 / 500 000 » à gauche et « Tu en as … · banque … » à droite.
-   .gmat.gmat : passe devant src/app/app.css (chargé après). */
-body.app .gbuilding .gmat.gmat{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"name btn" "bar btn" "nums own"}
+   .gmat.gmat : passe devant src/app/app.css (chargé après).
+   Gros nombres sur téléphone étroit (06/11/2026, Jules) : la colonne de droite ne dépasse pas 55 % ; si « Tu en as … ·
+   banque … » n'y tient pas, « banque … » passe à la ligne (jamais au milieu d'un nombre). */
+body.app .gbuilding .gmat.gmat{grid-template-columns:minmax(0,1fr) fit-content(55%);grid-template-areas:"name btn" "bar btn" "nums own"}
 body.app .gbuilding .gmat.gmat>.gmatBtns{grid-area:btn;align-self:center}
 body.app .gbuilding .gmat.gmat>.gxp:nth-child(2){grid-area:nums;min-width:0}
-body.app .gbuilding .gmat.gmat>.gxp.mut{grid-area:own;justify-self:end}
+body.app .gbuilding .gmat.gmat>.gxp.mut{grid-area:own;justify-self:end;min-width:0;white-space:normal;text-align:right}
+body.app .gbuilding .gmat.gmat>.gxp.mut>span{white-space:nowrap}
 
 /* ---------- Stuff : sous-onglet « Aperçu set » (06/11/2026, Geoffrey ; src/ui/set-preview.js) ----------
    Bureau : la liste des sets à gauche, le mannequin du set et ses stats à côté, ses sorts dessous, puis les trois arbres.

@@ -527,6 +527,7 @@ export default {
   'Actions sur {b}': 'Actions on {b}',
   'Déjà dans ton groupe, ou tu es en session': 'Already in your party, or you\'re in a session',
   'Tu en as {a}{b}': 'You have {a}{b}',
+  'banque {#a}': 'bank {a}',   // banque de guilde, sous « Tu en as … » d'un matériau de chantier (06/11)
   'Tout est réuni : le chef ou un officier peut lancer la construction.': 'Everything is gathered: the leader or an officer can start the construction.',
   '{a} : en chantier': '{a}: under construction',
   'Étape {a} / {b} : {c}': 'Stage {a} / {b}: {c}',
