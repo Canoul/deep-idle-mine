@@ -12,8 +12,8 @@
 
    Combat (portée, recul, tacle) : comme dans les tours (src/sim/knock.js). Sorts : Inspiration, Fast learner et
    Dynamite sur les spawners et les cages (Dynamite = INSTANCE.spawner.dynamite coups sur un spawner, casse les blocs de
-   cage à son rayon) ; Cri de guerre, Cleave, Hand of Justice, Dash et Ulti shen contre les gobelins (Ulti shen et Cleave
-   aussi sur le roi) ; Illumination et Bonbonne de zipette : sans effet (tout est éclairé, pas d'oxygène). */
+   cage à son rayon) ; Cri de guerre, Cleave, Hand of Justice, Dash et Ralliement contre les gobelins (Ralliement et Cleave
+   aussi sur le roi) ; Illumination et Bonbonne d'oxygène : sans effet (tout est éclairé, pas d'oxygène). */
 import { critMul, backstabMul } from '../skillfx.js';
 import { INSTANCE, DT, STATS, CFG, COMBAT } from '../../config.js';
 import { mulberry32 } from '../../core/rng.js';
@@ -577,7 +577,7 @@ function combatSpells(G, m, target){
     }
   }
 }
-/* à chaque décision : Hand of Justice (un gobelin qui tacle un allié, puis lui, à sa portée : étourdi), Ulti shen (un
+/* à chaque décision : Hand of Justice (un gobelin qui tacle un allié, puis lui, à sa portée : étourdi), Ralliement (un
    allié taclé, ou qui se bat contre le roi : il se téléporte à lui et frappe) */
 function supportSpells(G, m){
   if(ready(G, m, 'hand_of_justice')){
@@ -593,7 +593,7 @@ function supportSpells(G, m){
       cast(G, m, 'ulti_shen'); stopAction(m); m.action = null; m.x = to.x; m.y = to.y; m.kx = 0; m.hop = G.ticks;
       if(ally){ const o = tackler(G, ally); hitGoblin(G, m, o, o.maxhp * S.hpPct); }
       else damageBoss(G, m, G.boss.maxhp * S.bossPct);
-      log(G, `🌀 ${m.name} : Ulti shen auprès de ${to.name}`);
+      log(G, `🌀 ${m.name} : Ralliement auprès de ${to.name}`);
     }
   }
 }

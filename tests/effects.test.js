@@ -60,7 +60,7 @@ test('ordre : contrôles, puis debuffs, puis buffs', () => {
   assert.deepEqual(kinds, ['control', 'debuff', 'debuff', 'buff']);
 });
 
-test('Navette, Braum, Pillage et Fast learner (mine : par bloc ; tours : un nombre)', () => {
+test('Navette, Garde du corps, Pillage et Fast learner (mine : par bloc ; tours : un nombre)', () => {
   const G = { t: 0 };
   const m = miner({ skill: { travel_rush: 0.09, braum: 0.2 }, helping: true, pillage: 7, learned: { 3: 0.1, 5: 0.2 } });
   const l = minerEffects(G, m, { travelling: true });

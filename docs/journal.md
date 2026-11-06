@@ -23,7 +23,13 @@ Modèle d'entrée :
   avaient déjà disparu le 05/11 (Geoffrey) : la bulle s'ouvre en posant la souris sur le nom, ou en gardant le doigt dessus.
 - **À suivre** : la liste est plus longue sur téléphone (le détail prend une ligne). « Vitesse de minage » et « Dégâts »
   apparaissent deux fois (valeur fixe puis bonus en %) : à renommer si ça gêne (ex. « Dégâts (bonus %) »).
-- **État** : 🧪 sur la branche `jules/stats-sans-points-interrogation` (pas en ligne)
+- **État** : ✅ en ligne le 06/11
+
+## 06/11/2026 — Geoffrey — Noms plus corrects pour les stores : Bonbonne d'oxygène, Ralliement, Garde du corps, Golem gluant
+- **Pour le joueur** : quatre noms changent, rien d'autre. **Bonbonne de zipette** → **Bonbonne d'oxygène** (sort du Logisticien), **Ulti shen** → **Ralliement** (sort à parchemin, « Parchemin « Ralliement » »), **Braum** → **Garde du corps** (skill du Barbare et « Glyphe Garde du corps »), **Golem de sperme** → **Golem gluant** (mob). Pseudo du Gallianix « Cuiseuse de sperme » → **« Ex d'Infernatiwar »**. Sorts appris, skills, parchemins et glyphes déjà dans les sacs : tout est gardé, renommé au démarrage du serveur. « K hole » garde son nom (choix de Geoffrey).
+- **D'où ça vient** : les trois premiers sont le travail de Jules du 02/11 (branche `jules/nom-bonbonne-oxygene`, jamais fusionnée, 328 commits de retard) : refait à l'identique sur le jeu actuel plutôt que fusionné (11 fichiers en conflit). Le Golem gluant est ajouté par Geoffrey.
+- **À suivre** : Cleave et Hand of Justice viennent aussi de League of Legends.
+- **État** : ✅ en ligne le 06/11
 
 ## 05/11/2026 — Geoffrey — Craft : Clé d'instance II de base
 - **Pour le joueur** : la Clé d'instance II se fabrique au Craft, sans blueprint : 2 Barres d'argent et 1 Orbe supérieur.

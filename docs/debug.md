@@ -7692,6 +7692,12 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **À vérifier** : vrai groupe de 5 en ligne ; mithril (mesuré en acier seulement) ; coût serveur d'une partie de 5 × 2 h ; dans
   l'appli, la mine de 70 colonnes à l'écran.
 
+### 06/11/2026 — Renommages pour les stores, reprise de `jules/nom-bonbonne-oxygene` (Geoffrey) 🧪
+- La branche de Jules (02/11 : zipette → Bonbonne d'oxygène, Ulti shen → Ralliement, Braum → Garde du corps) n'a jamais été fusionnée ; 328 commits de retard, 11 fichiers en conflit au merge. Refaite sur main par remplacement des noms affichés (code, tests, wiki, GAME_DESIGN, état du projet ; pas journal ni debug, historiques), + « Golem de sperme » → « Golem gluant » (`MOB_INFO.golem.name`, textes). Identifiants inchangés (`zipette`, `ulti_shen`, `braum`, `golem`, `glyph:'braum'`, `skill.braum`) : sorts appris, skills, glyphes posés gardés tels quels.
+- Objets renommés dans les sacs : `ITEM_RENAMES` (server/game/rename-items.js) + `'Parchemin « Ulti shen »'`, `'Glyphe Braum'` (migration au démarrage, comme les Lunettes Gucci). Test repris de Jules dans `tests/item-rename.test.js`.
+- Tests : item-rename, effects, game-service, giant-sim, glyph-drop, glyphs, goblin-king, mobs, skills, spells, trap, wiki ✅. ⚠️ `tests/hescoming-sim.test.js` « paliers du Bloc × 24 » rouge **aussi sur main** (sans rapport).
+- La branche `jules/nom-bonbonne-oxygene` reste sur GitHub : à supprimer une fois celle-ci en ligne (son travail est repris ici).
+
 ## 06/11/2026 — Geoffrey — Mine géante : sans énergie, carte du Lobby
 - `server/game/service.js` : `energyLocks` seulement pour `mine` (la Mine géante ne coûte plus rien) ; `state()` renvoie `geanteLeft`
   (`geanteLeft(sessionsOf)`). `src/main.js` `setGeante(st)` à chaque `state` → `lobby.update({ geanteLeft })`. `src/ui/lobby.js` :
