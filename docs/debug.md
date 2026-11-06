@@ -7709,4 +7709,4 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 ## 06/11/2026 — Échelle : le plus rapide la pose, tous modes (Geoffrey)
 - **Quoi** : `src/sim/ladder.js` : `ladderCellTime(m)` (ladderTime × 0,5 avec tall_ladder), `betterLadder`, `ladderTurn(G, m, x, y)` → 'go' (annule les poses moins rapides sur la case : `o.action = null`) ou 'wait' (un poseur aussi rapide ou plus rapide). Branché : `stepDir` (src/sim/actions.js : mine, raid, donjons ; attente = action 'wait' 0,2 s), instance et tours (`ladderTurn` à la place de `busy(…'ladder'…)`), mine instantanée (src/sim/instant/ai.js). L'ancienne attente du logisticien qui remonte (ai.js `yieldLadder`) reste.
 - **Règle pour les futurs modes** : appeler `ladderTurn` avant de lancer une pose d'échelle.
-- **Tests** : ladder-turn (3) ✅ ; instance*, tower*, instant*, raid*, session, skills, miner ✅ (245). Simulation mine 5 sessions : voir ci-dessous.
+- **Tests** : ladder-turn (3) ✅ ; instance*, tower*, instant*, raid*, session, skills, miner ✅ (245). Simulation mine 3 mineurs × 5 sessions : areas 3,0, profondeur 193 (avant 189), allers-retours 27,8, coffre 4 134 pods, 0 bloquée ✅.
