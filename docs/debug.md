@@ -7661,3 +7661,11 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   dans `memberRow`, avant l'XP de guilde ; style `.gspec`. Seulement sa propre guilde (pas le dépliage d'une autre guilde).
 - **Tests** ✅ guild-service (nouveau test), guild-ui, guild, app-guild, guild-bank : 65/65.
 
+## 06/11/2026 — Geoffrey — Appli : sous-onglets (#appSub) au-dessus de la barre des familles
+- `src/app/app.css` seul : `--bar-b` (barre des familles, 56 px + zone sûre) ; `--dock-h` = `--bar-b` + `--sub-h` (avant : la
+  barre seule) ; `--top-h` sans `--sub-h` (avant : avec) ; `#appSub` en `bottom: var(--bar-b)`, trait du sous-onglet actif en
+  haut ; plus de `padding-top` des vues. Tout ce qui se calait sur `--dock-h` (feuilles du bas, guide, mine, chat) remonte
+  au-dessus des deux barres.
+- **Tests** ✅ les 20 fichiers app-* : 183/183. ✅ Vu dans Chromium 390 × 844 (`?app`, invité) : Sac et Perso, sous-onglets
+  744-788 px, familles 788-844 px, guide au-dessus. ⚠️ Pas vu sur un vrai téléphone ni en session (sous-onglets de Session).
+
