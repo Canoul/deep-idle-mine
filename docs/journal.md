@@ -20,6 +20,9 @@ Modèle d'entrée :
 - **Pour le joueur** : le point sur l'onglet Lobby (« une tour du Jugement est ouverte et tu ne l'as pas gagnée ») restait
   allumé toute l'ouverture (4 h), quoi qu'on fasse. Maintenant il s'allume à chaque nouvelle ouverture et s'éteint dès qu'on
   ouvre le Lobby. Le repère sur le bouton « Jugement » dans le Lobby, lui, ne change pas.
+## 06/11/2026 — Jules — Lobby : description de la Mine géante sur plusieurs lignes
+- **Pour le joueur** : dans le menu des activités, le texte de la Mine géante (« À 5, 1 h (2 h de jeu)… ») revient à la
+  ligne au lieu d'être coupé au bord du bouton.
 - **État** : ✅ en ligne le 06/11
 
 ## 06/11/2026 — Geoffrey — Guide « Premiers pas » déplaçable
