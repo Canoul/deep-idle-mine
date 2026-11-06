@@ -6,9 +6,14 @@ Service à part du jeu (dossier `bot/`). Il ne redémarre pas quand le jeu se me
 
 - Un message qui tague le rôle **@admin**, dans n'importe quel salon sauf #report et #todo, est copié dans **#report**
   avec un ID. L'original reste, le copier ne notifie personne.
-- Le bot met les réactions 1 et 2. **N'importe qui peut réagir, le premier emoji cliqué attribue le sujet** : 1 pour Joe,
-  2 pour Djulo. La croix ❌, si elle est cliquée en premier, ignore le sujet : il quitte la base et le message l'indique.
-  Retirer sa réaction ou en ajouter une autre ne change plus rien.
+- Le bot met les réactions 1, 2, ❌ et 💎. **N'importe qui peut réagir, le premier emoji cliqué attribue le sujet** : 1 pour
+  Joe, 2 pour Djulo. La croix ❌, si elle est cliquée avant 1 ou 2, **supprime le sujet** : il quitte la base et son message
+  de #report est effacé (06/11/2026 ; avant : le message restait avec « Sujet ignoré »). Sur un sujet déjà attribué, la croix
+  ne fait rien (`/todo done` le retire). Retirer sa réaction ou en ajouter une autre ne change plus rien.
+- **Diamants** (06/11/2026) : quand un membre du rôle **@admin** met 💎 sur un sujet de #report, le bot met 💎 sur le
+  message d'origine du joueur, et **seulement alors** le joueur gagne 1 diamant dans la base du bot (une fois par sujet ;
+  le 💎 d'un non-admin ne fait rien). Les sujets créés avant le 06/11 ne connaissent pas leur auteur : pas de diamant.
+  Les compteurs sont dans le fichier de la base (`diamonds` : identifiant Discord du membre → nombre).
 - Dans **#todo** : `/todo joe`, `/todo djulo`, `/todo done 2483`, `/todo done joe all`, `/todo help`.
 - Un sujet terminé quitte la base et son message de #report est effacé (01/11/2026 ; avant : il restait avec ✅, ces anciens
   messages ne sont pas effacés). Un ID n'est jamais réutilisé.
@@ -22,7 +27,8 @@ Service à part du jeu (dossier `bot/`). Il ne redémarre pas quand le jeu se me
    un salon.
 3. Même page, **Privileged Gateway Intents** : activer **Message Content Intent**, puis enregistrer.
 4. Onglet **OAuth2** → **URL Generator** : cocher `bot` et `applications.commands`. Dans les permissions du bot : View
-   Channels, Send Messages, Read Message History, Add Reactions. Ouvrir l'adresse générée et inviter le bot sur le serveur.
+   Channels, Send Messages, Read Message History, Add Reactions (le 💎 se pose dans le salon du joueur : le bot doit pouvoir
+   y réagir). Ouvrir l'adresse générée et inviter le bot sur le serveur.
 
 ### 2. Les salons et leurs numéros
 
