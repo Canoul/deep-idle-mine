@@ -15,7 +15,7 @@ function curveLevel(xp, curve){
 /* niveau du mineur, avec ses points de talent */
 export function levelOf(xp){
   const l = curveLevel(xp, XP.curve);
-  return { ...l, talentPoints: (l.level - 1) * XP.talentPerLevel };
+  return { ...l, talentPoints: (l.level - 1) * XP.talentPerLevel + (XP.bonusEvery ? Math.floor(l.level / XP.bonusEvery) : 0) };   // + 1 tous les bonusEvery niveaux (06/11)
 }
 /* niveau d'une spécialisation (XP.specCurve) */
 export const specLevelOf = xp => curveLevel(xp, XP.specCurve);

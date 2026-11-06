@@ -104,7 +104,7 @@ test('copie d\'un personnage : stuff, skills, sorts et XP repris à l\'identique
   assert.deepEqual(p.spells.slots.slice(0, 2), ['inspiration', 'zipette']);
   assert.equal(p.progress.xp, 288316);
   assert.deepEqual(p.progress.spec, { logisticien:107006 });
-  assert.equal(p.level, 13);
+  assert.equal(p.level, levelOf(288316).level);   // suit XP.curve (13 à ×1,5, 15 à ×1,4)
   const inv = deserialize(JSON.stringify(p.inventory));
   for(const k of [].concat(DEV_PRESETS.key)) assert.equal(inv.slots.filter(Boolean).find(s => s.item === k).qty, DEV_PRESETS.keys);
   assert.ok(inv.nextUid > 64, 'les nouveaux objets ne reprennent pas un uid porté');

@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { GUILD, XP } from '../src/config.js';
 
 /* les chiffres de ces tests sont écrits pour la courbe ×1,5 : on la fixe (06/11/2026 : la config est passée à ×1,4) */
-XP.curve = { first:1000, factor:1.5 };
+XP.curve = { first:1000, factor:1.5 }; XP.specCurve = { first:1000, factor:1.5 }; XP.bonusEvery = 0;   // + point bonus : test à part
 import { createMemoryGameStore } from '../server/game/store.js';
 import { createGuildService } from '../server/guild/service.js';
 import { createSocialService } from '../server/social/service.js';
