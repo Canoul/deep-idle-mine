@@ -2,6 +2,7 @@
    vérifie tout (qui écrit, texte, cadence) ; le texte reçu est toujours échappé à l'affichage, jamais interprété. */
 import { CHAT } from '../config.js';
 import { cleanChatText, freshMessages, mergeMessages } from '../shared/chat.js';
+import { pn } from '../i18n/index.js';   // pseudos et textes des joueurs : jamais traduits (06/11)
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
@@ -30,7 +31,7 @@ export function setupChat(h){
   function render(){
     const me = h.meId();
     const shown = h.show ? msgs.filter(h.show) : msgs;
-    log.innerHTML = shown.length ? shown.map(m => h.line ? h.line(m, me) : `<div${m.account === me ? ' class="mine"' : ''}>${h.time ? `<time>${hhmm(m.at)}</time>` : ''}<b>${esc(m.name)}</b> : ${esc(m.text)}</div>`).join('')
+    log.innerHTML = shown.length ? shown.map(m => h.line ? h.line(m, me) : `<div${m.account === me ? ' class="mine"' : ''}>${h.time ? `<time>${hhmm(m.at)}</time>` : ''}<b>${pn(m.name)}</b> : ${pn(m.text)}</div>`).join('')
       : '<div class="mut small">Aucun message.</div>';
     toEnd();
   }

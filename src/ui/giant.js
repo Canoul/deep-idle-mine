@@ -11,6 +11,7 @@ import { fitCanvas } from './fit.js';
 import { createEffectsBar, placeEffectsBar, focusedMiner } from './effects.js';
 import { showSpellBar, placeSpellBar } from './hud.js';
 import { ask } from './dialog.js';
+import { pn } from '../i18n/index.js';   // pseudos et textes des joueurs : jamais traduits (06/11)
 
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
 const nf = n => Math.floor(n).toLocaleString('fr-FR');
@@ -62,7 +63,7 @@ export function setupGiant(h){
     if(!info){ $('giantBody').innerHTML = lastHtml = '<p class="mut small">Chargement…</p>'; return; }
     const e = entryState(info, now(), W.place);
     const tiers = info.tiers.map(t => `<div class="gtTier${t.reached ? ' ok' : ''}"><span>${t.reached ? '✔' : '○'} ${nf(t.min)}</span><span>${esc(itemsText(t.items))}</span></div>`).join('');
-    const row = r => `<tr class="${r.account === h.me?.() ? 'me' : ''}"><td>${r.rank}</td><td>${esc(r.name)}</td><td>${nf(r.points)}</td></tr>`;
+    const row = r => `<tr class="${r.account === h.me?.() ? 'me' : ''}"><td>${r.rank}</td><td>${pn(r.name)}</td><td>${nf(r.points)}</td></tr>`;
     const rank = info.ranking.list.length
       ? `<table class="gtRank">${info.ranking.list.map(row).join('')}${info.ranking.me ? `<tr><td colspan="3">…</td></tr>${row(info.ranking.me)}` : ''}</table>`
       : `<p class="mut small">Personne n'a encore frappé ${W.front} aujourd'hui.</p>`;
@@ -181,7 +182,7 @@ export function setupGiant(h){
     $('gtMe').innerHTML = `<div class="gtStats"><span>Points</span><b>${nf(m.points)}</b><span>${W.rate}</span><b>${m.rate.toLocaleString('fr-FR')} / s</b></div>`+
       `<p class="small">${esc(m.status)}${view.inspire ? ` · 🎺 Inspiration (${view.inspire} s)` : ''}</p>`+
       `<p class="small mut">Oxygène ${m.ox} / ${m.oxMax}</p><div class="gtOx"><i style="width:${Math.max(0, Math.min(100, m.ox / m.oxMax * 100))}%"></i></div>`;
-    $('gtPresent').innerHTML = view.miners.map(o => `<div class="small pick${o.id === focus && !o.me ? ' focus' : ''}" data-id="${o.id}" title="Voir ses états">${o.me ? '<b>' : ''}${esc(o.name)}${o.me ? '</b>' : ''} <span class="mut">· ${esc(o.status)}</span></div>`).join('');
+    $('gtPresent').innerHTML = view.miners.map(o => `<div class="small pick${o.id === focus && !o.me ? ' focus' : ''}" data-id="${o.id}" title="Voir ses états">${o.me ? '<b>' : ''}${pn(o.name)}${o.me ? '</b>' : ''} <span class="mut">· ${esc(o.status)}</span></div>`).join('');
     $('gtDay').innerHTML = info ? `<p>Score collectif : <b>${nf(info.total)}</b></p><p class="small mut">Mon score du jour : ${nf(info.mine.points)}</p>` : '';
   }
   async function endVisit(){

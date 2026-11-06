@@ -45,3 +45,9 @@ export function tn(id, lang = cur){
 export const dictOf = lang => DICTS[lang] ?? null;
 /* langue de départ, avant la connexion : celle du navigateur si elle est ouverte aux joueurs (ou dev) */
 export const guessLang = (navLang, allowed = I18N.open) => allowed && typeof navLang === 'string' && navLang.toLowerCase().startsWith('en') ? 'en' : I18N.base;
+
+/* texte écrit par un joueur (pseudo, nom de guilde, de set, d'onglet, message) : jamais traduit (06/11/2026, Geoffrey) ;
+   le traducteur de la page (dom.js) saute tout ce qui est dans [data-noi18n]. Rend du HTML échappé. */
+const escHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+export const pn = s => `<bdi data-noi18n>${escHtml(s)}</bdi>`;
+

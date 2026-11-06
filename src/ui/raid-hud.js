@@ -6,6 +6,7 @@
 import { RAID } from '../config.js';
 import { fmt } from './hud.js';
 import { teamEnergyHTML } from './energy-tag.js';
+import { pn } from '../i18n/index.js';   // pseudos et textes des joueurs : jamais traduits (06/11)
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
@@ -45,7 +46,7 @@ export function updateRaidHUD(G, me, left, focus = null){
     `<p class="mut small">🐺 Morsure dans ${n.bite ?? '—'} s · 🐾 Balayage dans ${n.sweep ?? '—'} s · 🌋 Magma dans ${n.magma ?? '—'} s</p>`+
     (names.length ? `<p class="small">🎯 Cibles : ${names.map(esc).join(', ')}</p>` : ''));
   setHtml($('inTeam'), (G.miners.map(m =>
-    `<div class="row pick${m.account === me ? ' me' : ''}${m.id === focus && m.account !== me ? ' focus' : ''}" data-id="${m.id}" title="Voir ses états"><span>${esc(m.name)}${m.account === me ? ' (toi)' : ''} ${teamEnergyHTML(m.account)}${(b.targets || []).includes(m.id) && !m.dead && !m.stone ? ' 🎯' : ''}<br><small class="mut">${minerState(m)}</small></span>`+
+    `<div class="row pick${m.account === me ? ' me' : ''}${m.id === focus && m.account !== me ? ' focus' : ''}" data-id="${m.id}" title="Voir ses états"><span>${pn(m.name)}${m.account === me ? ' (toi)' : ''} ${teamEnergyHTML(m.account)}${(b.targets || []).includes(m.id) && !m.dead && !m.stone ? ' 🎯' : ''}<br><small class="mut">${minerState(m)}</small></span>`+
     `<span>${fr(m.stats?.bossDmg ?? 0)} dégâts<br><small class="mut">${m.stats?.freed ? `${m.stats.freed} libéré${m.stats.freed > 1 ? 's' : ''}` : ''}</small></span></div>`).join('')
     || '<p class="mut">Tout le monde est parti.</p>'));
   setHtml($('inLog'), (G.log || []).map(l => `<div><b>[${fmt(l.t)}]</b> ${esc(l.msg)}</div>`).join(''));

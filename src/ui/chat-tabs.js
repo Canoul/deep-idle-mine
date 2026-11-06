@@ -3,6 +3,7 @@
    h : { bar, panel, select, save(prefs), onChange() : les messages à montrer ont changé } */
 import { CHAT } from '../config.js';
 import { sanitizeChatPrefs, chatChannel, lobbyLabel, LOBBY_TAG } from '../shared/chat.js';
+import { pn } from '../i18n/index.js';   // pseudos et textes des joueurs : jamais traduits (06/11)
 
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
 const hhmm = at => new Date(at).toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
@@ -39,7 +40,7 @@ export function setupChatTabs({ bar, panel, select, save, onChange }){
   const changed = () => { clearTimeout(timer); timer = setTimeout(() => save(prefs), 500); render(); onChange(); };
 
   function render(){
-    bar.innerHTML = prefs.tabs.map((t, i) => `<button type="button" data-tab="${i}" class="${i === prefs.active ? 'on' : ''}">${esc(t.name)}</button>`+
+    bar.innerHTML = prefs.tabs.map((t, i) => `<button type="button" data-tab="${i}" class="${i === prefs.active ? 'on' : ''}">${pn(t.name)}</button>`+
       (i === prefs.active ? `<button type="button" class="chatGear${open ? ' on' : ''}" data-gear title="Canaux de cet onglet">⚙</button>` : '')).join('')+
       (prefs.tabs.length < CHAT.tabsMax ? `<button type="button" class="chatPlus" data-plus title="Nouvel onglet">+</button>` : '');
     panel.hidden = !open;

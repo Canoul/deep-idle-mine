@@ -22,6 +22,7 @@ import { createTownRenderer, TOWN_TILE } from '../render/town.js';
 import { TOWN_WIDTH, restX, clampX, stepToward, buildingNear, townBuildings } from '../shared/town.js';
 import { queueTime } from '../shared/lfg.js';
 import { pxi } from './pxicons.js';
+import { pn } from '../i18n/index.js';   // pseudos et textes des joueurs : jamais traduits (06/11)
 
 const KEY = 'dim.bgTown';
 const load = (k, d) => { try { return localStorage.getItem(k) ?? d; } catch(e){ return d; } };
@@ -84,7 +85,7 @@ export function cardHtml(p, me = false){
   const facts = [Number.isSafeInteger(p.level) ? `Niv. ${p.level}` : null, tree ? `${tree.icon} ${tree.label}` : 'Sans spécialisation',
                  Number.isFinite(p.gs) ? `${Math.round(p.gs)} GS` : null].filter(Boolean).join(' · ');
   const status = p.group ? `Dans un groupe (${p.group.size}/${p.group.max})` : p.lfg ? 'Cherche un groupe' : '';
-  return `<b>${esc(p.name)}</b><span class="mut">${esc(facts)}</span>${status ? `<span class="tcStatus">${esc(status)}</span>` : ''}`+
+  return `<b>${pn(p.name)}</b><span class="mut">${esc(facts)}</span>${status ? `<span class="tcStatus">${esc(status)}</span>` : ''}`+
     (me ? '' : `<div class="tcBtns"><button data-act="friend">Ajouter en ami</button><button data-act="invite" class="on">Inviter dans mon groupe</button><button data-act="report">Signaler</button><button data-act="block">Bloquer</button></div>`)+
     `<div class="tcMsg mut"></div>`;
 }
