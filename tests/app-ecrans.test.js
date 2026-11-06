@@ -2,6 +2,7 @@
 // Fonctions pures du rendu appli : Inventaire (Déplacer), Four (onglets), Recherche (tiers), Amélioration (tuiles), Amis.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import { RESEARCH } from '../src/config.js';
 import { moveOp, infoHtml } from '../src/ui/inventory.js';
 import { furnTabsHtml } from '../src/ui/furnace.js';
@@ -52,6 +53,15 @@ test('amélioration : une tuile par pièce, marques équipée / tag / choisie / 
   const d = pieceTileHtml(p, { dim:true });
   assert.match(d, /\bdim\b/);
   assert.doesNotMatch(d, /upEq|upTag/);
+});
+
+/* 06/11/2026 : en display:grid, l'icône (62 % × 62 %) sortait écrasée en largeur sur téléphone (26×42 px mesurés dans
+   Chrome) ; la tuile garde le centrage flex de .slot */
+test('amélioration : la tuile ne passe pas en grille (sprite écrasé)', () => {
+  const css = fs.readFileSync(new URL('../src/app/app.css', import.meta.url), 'utf8');
+  const rule = css.match(/body\.app \.upTile\{([^}]*)\}/)?.[1];
+  assert.ok(rule, 'règle .upTile introuvable');
+  assert.doesNotMatch(rule, /display:\s*grid/);
 });
 
 test('amis : le bouton utile sur la ligne, tout le reste dans la fiche', () => {

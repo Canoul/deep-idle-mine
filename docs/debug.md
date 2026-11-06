@@ -7710,3 +7710,52 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Quoi** : `src/sim/ladder.js` : `ladderCellTime(m)` (ladderTime × 0,5 avec tall_ladder), `betterLadder`, `ladderTurn(G, m, x, y)` → 'go' (annule les poses moins rapides sur la case : `o.action = null`) ou 'wait' (un poseur aussi rapide ou plus rapide). Branché : `stepDir` (src/sim/actions.js : mine, raid, donjons ; attente = action 'wait' 0,2 s), instance et tours (`ladderTurn` à la place de `busy(…'ladder'…)`), mine instantanée (src/sim/instant/ai.js). L'ancienne attente du logisticien qui remonte (ai.js `yieldLadder`) reste.
 - **Règle pour les futurs modes** : appeler `ladderTurn` avant de lancer une pose d'échelle.
 - **Tests** : ladder-turn (3) ✅ ; instance*, tower*, instant*, raid*, session, skills, miner ✅ (245). Simulation mine 3 mineurs × 5 sessions : areas 3,0, profondeur 193 (avant 189), allers-retours 27,8, coffre 4 134 pods, 0 bloquée ✅.
+
+## 06/11/2026 — Jules — Chat global : le champ débordait sous la boîte
+- **Cause** : `.chatDock` avait `height:var(--chat-h)` et, depuis le 04/11, `.overNav` ajoute `padding-bottom:--chat-lift` (hauteur
+  de la bulle recouverte, ~114 px à 1600 × 900). Le padding était pris **dans** la hauteur : à 15 % d'écran, la `.card` (flex:1,
+  min-height:0) tombait à 36 px, les onglets seuls ; `#gchatForm` débordait en dessous. Même débordement sans remontée sur un écran
+  bas (15 % de 650-700 px < onglets + champ).
+- **Correction** (`src/ui/style.css`) : plus de hauteur sur `.chatDock` (taille = boîte + remontée) ; `.chatDock .card` porte
+  `min-height:min(var(--chat-h), 100dvh − bandeau − remontée − 4u)` en hauteur automatique, et `#gchatLog` a `contain:size` (les
+  messages ne comptent pas dans la taille, flex:1 remplit). Donc boîte ≥ hauteur choisie et ≥ onglets + champ. Replié : `min-height:0` ;
+  téléphone : `flex:1;min-height:0` (le dock est tendu par top/bottom). Note : `min-height:min-content` sur le dock et `height` +
+  min auto sur la card ne marchent pas dans Chromium (essayés). `src/ui/chat-dock.js` : `--chat-lift` posé sur `body` (la marge de
+  `#run .runL` en ≥ 1171 px l'ajoute) ; tirer le bord du haut calcule la part depuis le bas de la boîte (`card.getBoundingClientRect()`),
+  le bord suit le pointeur même remonté ou au-dessus de la barre (≤ 1170 px).
+- **Tests** ✅ chat (39, dont un nouveau sur les règles CSS). ✅ Vu dans Chromium (mode dev, chat affiché à la main) : 1600 × 900 à
+  15 % et 85 %, 1280 × 650 et 1000 × 700 à 15 %, 1920 × 1080 à 60 % : le champ reste dans la boîte ; 60 % = 540 px exacts avec 40
+  messages qui défilent ; replié et téléphone (400 × 800) OK.
+- **À vérifier** : en vrai, connecté, le tirage du bord du haut à la souris ; au minimum (15 %) la liste des messages peut être vide.
+
+
+## 06/11/2026 — Jules — Stats du mineur lisibles sur téléphone
+- Retour joueur (« moche, tous les points d'interrogation, encore plus quand ça fait un retour à la ligne ») : les « ? » étaient
+  déjà partis le 05/11 (`7f601b2e`, bulle sur le nom via `data-tiphold`) ; la capture datait d'avant. Reste la lisibilité.
+- `src/ui/stuff.js` : `statRow(label, total, detail)` ; chaque ligne = `.row.statRow` > `.statL` (nom + bulle) + `.statV` >
+  `<b>` total + `.statD` (détail : `(base +stuff ×skills)`, anneaux, ténacité effective ; absent s'il n'y a rien). Gear score et
+  DPS passent par le même `statRow`. HTML identique à l'œil sur PC (le détail reste après le total).
+- `src/ui/style.css` (sous `.statName`) : `:is(body.phone,body.app) .statRow` en grille `minmax(0,1fr) auto`, `.statV`
+  `display:contents`, `.statD` sur toute la largeur à droite (18 px, gris éclairci `#cbb9a1`) ; totaux et noms Gear score / DPS
+  en Jersey 15 poids 400 (le `<b>` sur VT323 était un gras synthétique) ; nom 19 px ; filet `var(--sep)` entre deux lignes.
+  Vaut aussi pour la fiche d'un ami (`.fstats`, src/ui/social.js), qui utilise `statsHTML`.
+- **Tests** ✅ stat-help (nouveau : nom / total / détail séparés, un `.statD` par stat qui a un bonus), dps, dashboard, wiki,
+  wiki-secret. ✅ Vu dans Chromium (page de test avec `statsHTML` du preset Barbare, `body.phone`) à 360 et 300 px : plus aucun
+  retour à la ligne dans les chiffres ; seul « Lignes boussole (dessus/dessous) » passe sur deux lignes à 300 px.
+- ❌ Déjà rouges sur main, sans rapport : cape-inclusive « fiche : cape épique… », tier2 « fortune : le doublon… », « recycle :
+  un BP du T2… » (mêmes 3 échecs avec et sans ce changement).
+- **À vérifier** : sur un vrai téléphone avec une police système agrandie (cas du joueur) ; dans l'appli iOS / Android.
+
+
+## 06/11/2026 — Jules — Appli : sprites écrasés dans les tuiles de l'Amélioration
+- **Symptôme** : appli (capture Android), Perso → Amélioration, grille « Choisis la pièce » : sprites comprimés en largeur.
+- **Cause** : `body.app .upTile` était en `display:grid; place-items:center` avec `img{width:62%;height:62%}`. En grille, les 62 %
+  de largeur se résolvent sur la colonne implicite (taillée sur le contenu, pas étirée à cause de `justify-items:center`), la
+  hauteur sur la tuile : mesuré dans Chrome headless (vrais `style.css` + `app.css`), tuile 79,5 px → image **25,9 × 41,8**.
+  Les textures d'objets sont bien toutes en 16×16 (vérifié).
+- **Correction** : `src/app/app.css`, on retire `display:grid; place-items:center` de `.upTile` : la tuile garde le centrage flex
+  de `.slot` (src/ui/style.css). Remesuré : **41,8 × 41,8** à 360 et 430 px de large.
+- Vérifié aussi : les cases du Stuff de l'appli (`#stuffGrid .slot`, aussi en grille) ont une icône en px fixes (32×32), pas touchées.
+- **Tests** ✅ app-ecrans (nouveau : la règle `.upTile` ne repasse pas en `display:grid`).
+- **À vérifier** : sur le téléphone après mise en ligne. Point fragile : toute icône en % de hauteur ET de largeur dans un
+  conteneur `display:grid` a le même risque ; préférer le flex de `.slot` ou des px fixes.
