@@ -105,7 +105,7 @@ test('wiki : sorts, XP de spécialisation, anneaux et date de mise à jour (24/1
   assert.deepEqual(sp.map(s => s.id), SPELLS.list.map(s => s.id), 'chaque sort du jeu est listé');
   const dash = sp.find(s => s.id === 'dash');
   assert.deepEqual([dash.unlock.tree.label, dash.unlock.level, dash.needTree.label, dash.cd], ['Barbare', 5, 'Barbare', 30]);
-  assert.equal(sp.find(s => s.id === 'ulti_shen').unlock.scroll, 'Parchemin « Ulti shen »');
+  assert.equal(sp.find(s => s.id === 'ulti_shen').unlock.scroll, 'Parchemin « Ralliement »');
   assert.equal(sp.find(s => s.id === 'ulti_shen').needTree, null);
   const spec = D.specInfo();
   assert.equal(spec.pct, XP.specPct);
@@ -138,7 +138,7 @@ test('wiki : glyphes — tableau généré depuis GLYPHS (10 lignes), usage des 
 
 test('wiki : source des glyphes lue dans GLYPHS.drop (par spécialisation)', () => {
   const g = D.itemGroups().find(x => x.cat === 'glyph');
-  const rush = g.items.find(i => i.name === 'Glyphe Ruée'), braum = g.items.find(i => i.name === 'Glyphe Braum'), lad = g.items.find(i => i.name === 'Glyphe Échelle de 2');
+  const rush = g.items.find(i => i.name === 'Glyphe Ruée'), braum = g.items.find(i => i.name === 'Glyphe Garde du corps'), lad = g.items.find(i => i.name === 'Glyphe Échelle de 2');
   assert.match(rush.sources.join(' '), /0,00126 % de chance par bloc/);
   assert.match(lad.sources.join(' '), /0,011 % de chance par échelle/);
   assert.match(braum.sources.join(' '), /0,0335 % de chance par mob/);

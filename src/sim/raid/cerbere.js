@@ -11,7 +11,7 @@
      provoquent, donc ceux qu'il attaque) n'aident pas, sauf si personne d'autre ne peut.
    - Enragé sous 33 % de ses PV.
    Cerbère mort = réussite ; temps écoulé, tous morts (ou tous morts et en pierre) = échec.
-   Sorts : Cri de guerre, Dynamite, Dash, Ulti shen en combat ; Inspiration et Fast learner pour libérer un allié ;
+   Sorts : Cri de guerre, Dynamite, Dash, Ralliement en combat ; Inspiration et Fast learner pour libérer un allié ;
    les autres : sans effet. */
 import { inspireOn, inspirePct, setInspire } from '../groups.js';
 import { tenacityTry, tenacityTryFresh } from '../tenacity.js';
@@ -302,14 +302,14 @@ function combatSpells(G, m){
     log(G, `🧨 ${m.name} : Dynamite sur ${G.boss.name}`);
   }
 }
-/* Ulti shen : rejoint un allié qui frappe Cerbère (dégâts : une part de ses PV, comme au Golbute) */
+/* Ralliement : rejoint un allié qui frappe Cerbère (dégâts : une part de ses PV, comme au Golbute) */
 function supportSpells(G, m){
   if(!active(m) || !ready(G, m, 'ulti_shen') || inContact(G, m)) return;
   const to = actives(G).find(a => a !== m && inContact(G, a));
   if(!to || helper(G, m)) return;
   cast(G, m, 'ulti_shen'); m.action = null; m.x = to.x; m.y = to.y; m.kx = 0; m.hop = G.ticks;
   damageBoss(G, m, G.boss.maxhp * SPELL.ulti_shen.bossPct);
-  log(G, `🌀 ${m.name} : Ulti shen auprès de ${to.name}`);
+  log(G, `🌀 ${m.name} : Ralliement auprès de ${to.name}`);
 }
 function dashBoss(G, m){
   if(!ready(G, m, 'dash') || !bossHere(G) || m.y !== G.floorY) return false;

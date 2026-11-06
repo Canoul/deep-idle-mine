@@ -1,5 +1,5 @@
 /* Groupes du raid (04/11/2026, Geoffrey) : le raid se joue en 2 groupes de 5 (RAID.groups, RAID.groupSize). Les buffs de
-   groupe apportés par chacun (Inspiration, Cri de guerre, Bonbonne de zipette, anneaux) ne vont qu'à son groupe.
+   groupe apportés par chacun (Inspiration, Cri de guerre, Bonbonne d'oxygène, anneaux) ne vont qu'à son groupe.
    m.group : 1, 2… dans un raid, null partout ailleurs (alors un seul groupe : tout le monde, comme avant). */
 export const sameGroup = (a, b) => a?.group == null || b?.group == null || a.group === b.group;
 
