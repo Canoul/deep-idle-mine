@@ -686,7 +686,10 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - **Chantier : le jeu en anglais (03/11/2026, Geoffrey)**, branche `geoffrey/traduction-anglais`, plan et décisions dans
   `docs/traduction-anglais.md`. Langue retenue sur le compte, choix « Français / English » dans « Mon compte », **caché aux
   joueurs** (`I18N.open: false`) jusqu'à la fin. Le français reste la langue d'écriture et des identifiants (`t()`, `tn()`,
-  `src/i18n/`). Étape 1 (socle) faite ; glossaire des 413 noms en relecture par Geoffrey avant l'étape 2.
+  `src/i18n/`). Étape 1 (socle) faite. Étape 2 (06/11) : glossaire de 457 noms validé par Geoffrey, `src/i18n/en/names.js`.
+  Étape 3 (06/11) : traducteur de la page `src/i18n/dom.js` (textes connus remplacés à l'affichage, modèles `{x}`, rien en
+  français), 1 894 textes dont le journal de session et les messages du serveur (`src/i18n/en/ui.js`, relevé
+  `scripts/i18n-extract.js`). Reste : textes des canvas, messages système du chat, écrans à vérifier, wiki et pages légales.
 - **Prison et énergie EN LIGNE (30/10/2026, Geoffrey)** : ancien chantier `geoffrey/prison`, fusionné. Énergie : départ **100**
   (`ENERGY.start`, 04/11 ; ancien : 0), mine classique 6 à 12, refus sous 6 ; recharge **seulement en prison, 4 par heure de jeu** (8 par
   heure réelle à ×2 ; ancien 8). Prison : contenu d'après les 10 dernières mines, `oreMul` **0,24** (51 % des minerais de
