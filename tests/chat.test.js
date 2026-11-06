@@ -478,9 +478,9 @@ test('lien repris après un redémarrage du chat', async () => {
 
 test('affichage : lien à la place de %lobby, texte échappé ; sans lien, %lobby reste du texte', () => {
   const m = { id:7, at:0, name:'Zoe', channel:'lfg', text:'avant %lobby <i>après', lobby:{ mode:'instance_1', level:1, size:2, max:3 } };
-  assert.match(chatLine(m, 'x'), /avant <button[^>]*data-lobby="7"[^>]*>\[Instance I 2\/3\]<\/button> &lt;i&gt;après/);
+  assert.match(chatLine(m, 'x'), /avant <\/bdi><button[^>]*data-lobby="7"[^>]*>\[Instance I 2\/3\]<\/button><bdi data-noi18n> &lt;i&gt;après/);
   assert.match(chatLine({ ...m, lobby:undefined }, 'x'), /avant %lobby/);
-  assert.match(chatLine({ ...m, text:'perdu' }, 'x'), /<\/button> perdu/);
+  assert.match(chatLine({ ...m, text:'perdu' }, 'x'), /<\/button> <bdi data-noi18n>perdu/);
   assert.equal(peekStatus({ open:true, size:2, max:3, playing:true }), 'En session');
   assert.equal(peekStatus({ open:true, size:2, max:3 }), null);
   const h = peekHTML({ mode:'instance_1', level:1, open:true, size:2, max:3, members:[{ name:'<Zoe>', leader:true }, { name:'Max' }] });
@@ -515,7 +515,7 @@ test('chef du groupe : ses messages /gr portent [Chef de groupe] pour tous, mêm
   const after = createSocialService({ store, game: {}, party: {}, clock: () => raw.msgs.at(-1).at + 1, accounts: { getAccount: async id => ACCOUNTS[id] ?? null } });
   assert.deepEqual((await after.chatGet(OTHER, 0)).messages.map(m => [m.text, !!m.leader]), want, 'après un redémarrage');
   const { chatLine } = await import('../src/ui/chat-tabs.js');
-  assert.match(chatLine({ id:1, at:0, channel:'group', name:'<Zoe>', text:'x', leader:true }, 'y'), /<span class="chLead">\[Chef de groupe\]<\/span> &lt;Zoe&gt; : x/);
+  assert.match(chatLine({ id:1, at:0, channel:'group', name:'<Zoe>', text:'x', leader:true }, 'y'), /<span class="chLead">\[Chef de groupe\]<\/span> <bdi data-noi18n>&lt;Zoe&gt;<\/bdi> : <bdi data-noi18n>x<\/bdi>/);
   assert.doesNotMatch(chatLine({ id:2, at:0, channel:'group', name:'[Chef de groupe]', text:'x' }, 'y'), /chLead/, 'un pseudo ne peut pas imiter le titre');
 });
 

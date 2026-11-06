@@ -6,11 +6,12 @@
    Dictionnaire : src/i18n/en/ui.js. Une clé est un texte tel qu'il s'affiche (sans les espaces du bord) ; une clé avec
    {x} est un modèle : « Encore {n} tours » traduit « Encore 3 tours » (les valeurs sont elles-mêmes traduites si elles sont
    connues : un nom d'objet, un mot de l'interface) ; {#n} n'accepte qu'un nombre. data-tip : ligne par ligne.
-   Jamais traduits : chat, champs de saisie, [data-noi18n] (pseudos, messages de guilde…), canvas.
+   Jamais traduits : [data-noi18n] (pseudos, messages des joueurs, noms de guilde et de set : pn() de index.js), champs
+   de saisie, canvas. Le chat est traduit sauf ces parties : les messages du jeu (Raffle…) passent en anglais.
    Mode dev : window.__i18nMissing = textes français vus sans traduction (pour compléter le dictionnaire). */
 import { getLang, dictOf, I18N_BASE } from './index.js';
 
-const SKIP = 'noscript, .chatLog, .chatPanel, [data-noi18n], input, textarea, select option[data-raw], script, style, [contenteditable="true"], canvas';
+const SKIP = 'noscript, [data-noi18n], input, textarea, select option[data-raw], script, style, [contenteditable="true"], canvas';
 const ATTRS = ['title', 'placeholder', 'aria-label', 'data-tip', 'alt'];
 const FRENCH = /[éèêàùçôîâœ]|\b(le|la|les|des|du|une?|ton|ta|tes|pour|avec|sans|dans|est|pas|plus|de|et|ou|au|aux|en|sur)\b/i;
 const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
