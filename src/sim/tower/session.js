@@ -10,6 +10,7 @@
    Pods (26/10/2026, Geoffrey) : chaque stonebrick minée va dans le sac du mineur (m.inv, m.load) ; plein, il redescend au
    coffre commun (TOWER.chest, au milieu de l'étage 0) le vider dans G.chest. Victoire : summary.loot = coffre + sacs des
    présents ; le serveur le partage en parts égales et ajoute les trésors (server/game/service.js). */
+import { ladderTurn } from '../ladder.js';
 import { critMul, backstabMul } from '../skillfx.js';
 import { tenacityTry } from '../tenacity.js';
 import { TOWER, DT, STATS, BLOCKS, CFG, COMBAT, WINCH, SHRINES } from '../../config.js';
@@ -462,7 +463,7 @@ const torchByOther = (G, m) => G.miners.some(o => o !== m && o.action?.type === 
 
 export function decide(G, m){
   if(!towerSupported(G, m.x, m.y)) return act(m, 'move', fallT(), { x: m.x, y: m.y + 1, fall: true }, 'Tombe');
-  if(m.spells.length && supportSpells(G, m)) return act(m, 'wait', DT, {}, m.status);   // Ulti shen : il vient d'arriver
+  if(m.spells.length && supportSpells(G, m)) return act(m, 'wait', DT, {}, m.status);   // Ralliement : il vient d'arriver
   /* treuil à installer (logisticien tombé au pied de la tour) : contre le mur, de son côté, puis TOWER.winch.setup s */
   if(m.winchJob){
     const tx = m.winchJob === 'L' ? G.x0 - 1 : G.x1 + 1;
@@ -582,7 +583,7 @@ function follow(G, m, path, status){
   if(ny < m.y){
     if(isWinch(G, m.x, m.y) && isWinch(G, m.x, m.y - 1)) return act(m, 'move', winchT(G, m), { x: m.x, y: m.y - 1, winch: true }, 'Monte par le treuil');
     if(!towerAir(G, m.x, m.y - 1)) return startMine(G, m, m.x, m.y - 1, status);
-    if(!G.ladder[m.y][m.x] && busy(G, m, 'ladder', m.x, m.y)) return act(m, 'wait', 0.2, {}, 'Attend l\'échelle');
+    if(!G.ladder[m.y][m.x] && ladderTurn(G, m) === 'wait') return act(m, 'wait', 0.2, {}, 'Attend l\'échelle');   // le plus rapide la pose (src/sim/ladder.js)
     if(!G.ladder[m.y][m.x]) return act(m, 'ladder', ladderTime(m), { x: m.x, y: m.y }, 'Pose une échelle');
     return act(m, 'move', climbT(m) / slow, { x: m.x, y: m.y - 1 }, 'Grimpe');
   }
@@ -743,7 +744,7 @@ function damageMob(G, m, o, dmg){
 
 /* ---------- sorts (28/10/2026, Geoffrey : joués dans les tours du Jugement) ----------
    Comme dans la mine et l'instance : chaque sort équipé (figé au lancement) part tout seul dès que sa recharge est finie
-   et qu'il sert. Bonbonne de zipette : pas d'oxygène dans la tour, elle ne part jamais. */
+   et qu'il sert. Bonbonne d\'oxygène : pas d'oxygène dans la tour, elle ne part jamais. */
 const ready = (G, m, id) => m.spells.includes(id) && G.t + 1e-9 >= (m.spellCd[id] || 0);
 const cast = (G, m, id, cdFrom = G.t, mul = 1) => { m.spellCd[id] = cdFrom + SPELL[id].cd * mul; m.stats.spells++; };
 /* mob vivant réveillé dont une des 2 cases est à R cases ou moins de (x, y), en cercle */
@@ -800,8 +801,8 @@ function combatSpells(G, m, target){
   else if(target !== G.boss && ready(G, m, 'dynamite') && blastFoes(G, target.x, target.y).length >= SPELL.dynamite.fightFoes) blast(G, m, target.x, target.y);
 }
 /* à chaque décision : Illumination (cases inconnues de la tour à son rayon), Hand of Justice (un mob qui tacle un allié,
-   puis lui, à sa portée : étourdi), Ulti shen (un allié taclé, ou au contact du boss : il se téléporte à lui et frappe).
-   Renvoie true si Ulti shen l'a déplacé. */
+   puis lui, à sa portée : étourdi), Ralliement (un allié taclé, ou au contact du boss : il se téléporte à lui et frappe).
+   Renvoie true si Ralliement l'a déplacé. */
 function supportSpells(G, m){
   if(ready(G, m, 'illumination')){
     const R = SPELL.illumination.radius, cells = [];
@@ -822,7 +823,7 @@ function supportSpells(G, m){
       cast(G, m, 'ulti_shen'); stopAction(m); m.action = null; m.x = to.x; m.y = to.y; m.kx = 0; m.ky = 0;
       if(ally) damageMob(G, m, tackler(G, ally), tackler(G, ally).maxhp * S.hpPct);
       else damageBoss(G, m, G.boss.maxhp * S.bossPct);
-      log(G, `🌀 ${m.name} : Ulti shen auprès de ${to.name}`);
+      log(G, `🌀 ${m.name} : Ralliement auprès de ${to.name}`);
       return true;
     }
   }

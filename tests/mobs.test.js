@@ -202,7 +202,7 @@ test('Aider allié : le mob mort, il reprend sur place au lieu de retourner à s
   assert.ok(minX > 20, `elle reste travailler près du combat (x min ${minX})`);
 });
 
-test('Braum : le barbare marche plus vite quand il va aider, puis plus quand il reprend son travail', () => {
+test('Garde du corps : le barbare marche plus vite quand il va aider, puis plus quand il reprend son travail', () => {
   const G = corridor(2), [alice, bob] = G.miners;
   alice.x = 14; bob.x = 30; alice.ox = bob.ox = 300; busy(bob); bob.carac.damage = 0;
   alice.prefs = { ...alice.prefs, helpAllies: true, fightMobs: true }; alice.carac.light = 2; alice.skill.braum = 0.3;

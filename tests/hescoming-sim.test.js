@@ -223,7 +223,7 @@ test('Dynamite : marque des points à portée, pas de loin ; Cleave : sans effet
   assert.ok(!c.m.spellCd.cleave, 'Cleave jamais lancé');
 });
 
-test('Bonbonne de zipette : l\'allié proche qui manque d\'oxygène, jamais lui-même', () => {
+test('Bonbonne d\'oxygène : l\'allié proche qui manque d\'oxygène, jamais lui-même', () => {
   const G = newLucifer(1), a = joinLucifer(G, { ...spec({ oxygenMax:1000, pods:200 }), spells:['zipette'] }), b = joinLucifer(G, { ...spec({ oxygenMax:1000 }), account:'B' });
   a.x = b.x = G.contact; a.ox = 100; b.ox = 500;
   tickLucifer(G);
@@ -232,7 +232,7 @@ test('Bonbonne de zipette : l\'allié proche qui manque d\'oxygène, jamais lui-
   assert.ok(a.spellCd.zipette);
 });
 
-test('Ulti shen : rejoint un allié qui frappe, sans dégâts ; seul, il marche', () => {
+test('Ralliement : rejoint un allié qui frappe, sans dégâts ; seul, il marche', () => {
   const G = newLucifer(1), a = joinLucifer(G, { ...spec(), spells:['ulti_shen'] }), b = joinLucifer(G, { ...spec(), account:'B' });
   b.x = G.contact; a.x = 1; b.status = `Frappe ${HC.bossName}`;
   tickLucifer(G);

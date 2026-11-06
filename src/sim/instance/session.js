@@ -12,8 +12,9 @@
 
    Combat (portée, recul, tacle) : comme dans les tours (src/sim/knock.js). Sorts : Inspiration, Fast learner et
    Dynamite sur les spawners et les cages (Dynamite = INSTANCE.spawner.dynamite coups sur un spawner, casse les blocs de
-   cage à son rayon) ; Cri de guerre, Cleave, Hand of Justice, Dash et Ulti shen contre les gobelins (Ulti shen et Cleave
-   aussi sur le roi) ; Illumination et Bonbonne de zipette : sans effet (tout est éclairé, pas d'oxygène). */
+   cage à son rayon) ; Cri de guerre, Cleave, Hand of Justice, Dash et Ralliement contre les gobelins (Ralliement et Cleave
+   aussi sur le roi) ; Illumination et Bonbonne d'oxygène : sans effet (tout est éclairé, pas d'oxygène). */
+import { ladderTurn } from '../ladder.js';
 import { critMul, backstabMul } from '../skillfx.js';
 import { INSTANCE, DT, STATS, CFG, COMBAT } from '../../config.js';
 import { mulberry32 } from '../../core/rng.js';
@@ -479,7 +480,7 @@ function follow(G, m, path, status){
   }
   if(ny < m.y){
     if(!open(G, m.x, m.y - 1)) return startMine(G, m, m.x, m.y - 1, status);
-    if(!G.ladder[m.y][m.x] && busy(G, m, 'ladder', m.x, m.y)) return act(m, 'wait', 0.2, {}, 'Attend l\'échelle');
+    if(!G.ladder[m.y][m.x] && ladderTurn(G, m) === 'wait') return act(m, 'wait', 0.2, {}, 'Attend l\'échelle');   // le plus rapide la pose (src/sim/ladder.js)
     if(!G.ladder[m.y][m.x]) return act(m, 'ladder', ladderTime(m), { x: m.x, y: m.y }, 'Pose une échelle');
     return act(m, 'move', climbT(m), { x: m.x, y: m.y - 1 }, 'Grimpe');
   }
@@ -577,7 +578,7 @@ function combatSpells(G, m, target){
     }
   }
 }
-/* à chaque décision : Hand of Justice (un gobelin qui tacle un allié, puis lui, à sa portée : étourdi), Ulti shen (un
+/* à chaque décision : Hand of Justice (un gobelin qui tacle un allié, puis lui, à sa portée : étourdi), Ralliement (un
    allié taclé, ou qui se bat contre le roi : il se téléporte à lui et frappe) */
 function supportSpells(G, m){
   if(ready(G, m, 'hand_of_justice')){
@@ -593,7 +594,7 @@ function supportSpells(G, m){
       cast(G, m, 'ulti_shen'); stopAction(m); m.action = null; m.x = to.x; m.y = to.y; m.kx = 0; m.hop = G.ticks;
       if(ally){ const o = tackler(G, ally); hitGoblin(G, m, o, o.maxhp * S.hpPct); }
       else damageBoss(G, m, G.boss.maxhp * S.bossPct);
-      log(G, `🌀 ${m.name} : Ulti shen auprès de ${to.name}`);
+      log(G, `🌀 ${m.name} : Ralliement auprès de ${to.name}`);
     }
   }
 }

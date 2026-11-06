@@ -178,7 +178,7 @@ test('barbare : il vient tuer les mobs du piège, même réglé sur Fuir et sans
   assert.equal(G.mobs.filter(o => o.trap===t.id && o.hp>0).length, 0, 'tous les mobs du piège sont morts');
 });
 
-test('Braum : en route vers le piège, le barbare a son bonus de vitesse', () => {
+test('Garde du corps : en route vers le piège, le barbare a son bonus de vitesse', () => {
   const { G, bob } = rescue('barbare');
   bob.skill.braum = 0.3;
   let seen = false;

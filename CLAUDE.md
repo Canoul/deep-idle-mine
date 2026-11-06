@@ -209,6 +209,9 @@ intégrés (http, crypto, fs) ; seule exception : `pg`, chargée à la demande (
 6. **Le serveur fait foi.** Le navigateur vérifie pour le confort, le serveur refait toujours les vérifications.
    Aucun secret côté navigateur (connexion = cookie HttpOnly). Tout est rattaché à l'**ID de compte**, jamais au
    pseudo.
+7. **Règles communes à tous les modes de jeu** (mine, raid, instances, tours, mine instantanée et les suivants) : un
+   nouveau mode les appelle au lieu de les réécrire. Ex. qui pose une échelle : `ladderTurn` (`src/sim/ladder.js`, le
+   plus rapide la pose).
 
 ## 9. Règles de travail
 

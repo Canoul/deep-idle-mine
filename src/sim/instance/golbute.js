@@ -12,8 +12,8 @@
    - Enrage : après le cristal des 33 %.
    Golbute mort = réussite ; temps écoulé ou tout le monde mort = échec.
 
-   Sorts : Cri de guerre, Cleave, Dash, Hand of Justice et Ulti shen en combat ; Dynamite sur le boss, les golems et le
-   cristal ; Inspiration et Fast learner sur le cristal ; Illumination et Bonbonne de zipette : sans effet. */
+   Sorts : Cri de guerre, Cleave, Dash, Hand of Justice et Ralliement en combat ; Dynamite sur le boss, les golems et le
+   cristal ; Inspiration et Fast learner sur le cristal ; Illumination et Bonbonne d'oxygène : sans effet. */
 import { critMul, backstabMul } from '../skillfx.js';
 import { tenacityChance, tenacityTry } from '../tenacity.js';
 import { INSTANCE, DT, STATS, CFG, SKILLS } from '../../config.js';
@@ -355,7 +355,7 @@ function combatSpells(G, m, target){
     }
   }
 }
-/* Hand of Justice (un golem qui tient un allié, puis lui : étourdi), Ulti shen (un allié retenu par un golem, ou qui
+/* Hand of Justice (un golem qui tient un allié, puis lui : étourdi), Ralliement (un allié retenu par un golem, ou qui
    frappe le Golbute : il le rejoint et frappe) */
 function supportSpells(G, m){
   if(ready(G, m, 'hand_of_justice')){
@@ -371,7 +371,7 @@ function supportSpells(G, m){
       cast(G, m, 'ulti_shen'); m.action = null; m.x = to.x; m.y = to.y; m.kx = 0; m.hop = G.ticks;
       if(ally){ const o = golTackler(G, ally); hitGolem(G, m, o, o.maxhp * S.hpPct); }
       else damageBoss(G, m, G.boss.maxhp * S.bossPct);
-      log(G, `🌀 ${m.name} : Ulti shen auprès de ${to.name}`);
+      log(G, `🌀 ${m.name} : Ralliement auprès de ${to.name}`);
     }
   }
 }

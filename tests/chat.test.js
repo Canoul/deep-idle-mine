@@ -279,6 +279,17 @@ test("chat permanent : il s'arrête juste au-dessus de la partie de la barre d'a
   assert.equal(navLift(800, [hidden], 1000), 0);
 });
 
+test("chat permanent : la remontée s'ajoute à sa hauteur, le champ ne sort jamais de la boîte (06/11)", async () => {
+  const { readFileSync } = await import('node:fs');
+  const css = readFileSync(new URL('../src/ui/style.css', import.meta.url), 'utf8');
+  /* la hauteur choisie est un minimum de la boîte elle-même, pas une hauteur fixe du conteneur dont la remontée (padding) mangeait la place */
+  assert.doesNotMatch(css.match(/\.chatDock\{position:fixed[^}]*\}/)[0], /height/);
+  assert.match(css, /\.chatDock \.card\{[^}]*min-height:min\(var\(--chat-h/);
+  assert.doesNotMatch(css.match(/\.chatDock \.card\{[^}]*\}/)[0], /[^-]height:/);
+  /* les messages ne comptent pas dans la taille : seuls eux rétrécissent */
+  assert.match(css, /#gchatLog\{[^}]*contain:size/);
+});
+
 /* ---------- canaux du chat global (31/10) ---------- */
 function setupChannels(){
   let now = 5_000_000;

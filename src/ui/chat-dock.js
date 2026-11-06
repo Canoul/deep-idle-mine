@@ -46,7 +46,7 @@ export function setupChatDock({ dock, edges, fold, onChange = () => {} }){
   const saved = load();
   let share = dockShare(saved.share), width = dockWidth(saved.width), folded = typeof saved.folded === 'boolean' ? saved.folded : innerWidth <= 1170;
   const remember = () => save({ share, width, folded });
-  const body = document.body.classList;
+  const body = document.body.classList, card = dock.querySelector('.card');
   const shut = () => body.contains('phone') ? !body.contains('chatTab') : folded;   // téléphone : le repli du joueur n'y compte pas
   function fit(){
     const w = dockFit(width, centralLeft());
@@ -54,7 +54,7 @@ export function setupChatDock({ dock, edges, fold, onChange = () => {} }){
     /* chat plus large que le début de la barre d'action : il s'arrête juste au-dessus de ce qu'il recouvre (04/11, retour joueur :
        avant, une zone vide de la couleur du chat, plus haute que la bulle, cachait la mine) */
     const lift = navLift(w, [...document.querySelectorAll('.dock > *')].map(el => el.getBoundingClientRect()), innerHeight);
-    dock.style.setProperty('--chat-lift', `${lift}px`);
+    document.body.style.setProperty('--chat-lift', `${lift}px`);   // sur body : la colonne de gauche de la session s'en sert aussi
     dock.classList.toggle('overNav', lift > 0);
   }
   /* le bord de l'interface centrale bouge avec l'onglet, l'écran du Lobby et la taille de la fenêtre */
@@ -76,7 +76,7 @@ export function setupChatDock({ dock, edges, fold, onChange = () => {} }){
     e.preventDefault();
     edge.setPointerCapture(e.pointerId);
     const move = ev => {
-      if(edge.dataset.edge.includes('h')) share = dockShare((innerHeight - ev.clientY) / innerHeight);
+      if(edge.dataset.edge.includes('h')) share = dockShare((card.getBoundingClientRect().bottom - ev.clientY) / innerHeight);   // depuis le bas de la boîte : le bord suit le pointeur, même remonté
       if(edge.dataset.edge.includes('w')) width = dockWidth(ev.clientX);
       apply();
     };
