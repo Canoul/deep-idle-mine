@@ -131,7 +131,7 @@ function materialRow(b, m, owned, bank = null){
   const inBank = bank?.[m.item] ?? 0;   // banque de guilde (05/11) : chef et officiers seulement (bank = null sinon)
   return `<div class="gmat"><span class="gmatName">${itemIcon(m.item)}${rname(m.item)}</span><span class="gxp">${fr(m.have)} / ${fr(m.need)}</span>`+
     `<div class="bar"><i style="width:${m.have / m.need * 100}%"></i></div>`+
-    (owned ? `<span class="gxp mut">Tu en as ${fr(owned[m.item] ?? 0)}${bank ? ` · banque ${fr(inBank)}` : ''}</span>${left > 0 ? `<span class="gmatBtns"><button class="small" data-g="give" data-b="${b.id}" data-item="${esc(m.item)}"${can ? '' : ' disabled'}>Donner</button>`+
+    (owned ? `<span class="gxp mut"><span>Tu en as ${fr(owned[m.item] ?? 0)}${bank ? ' ·' : ''}</span>${bank ? ` <span>banque ${fr(inBank)}</span>` : ''}</span>${left > 0 ? `<span class="gmatBtns"><button class="small" data-g="give" data-b="${b.id}" data-item="${esc(m.item)}"${can ? '' : ' disabled'}>Donner</button>`+
       (bank ? `<button class="small" data-g="bankGive" data-b="${b.id}" data-item="${esc(m.item)}"${inBank > 0 ? '' : ' disabled'}>De la banque</button>` : '')+'</span>' : '<span class="gxp">Complet</span>'}` : '')+`</div>`;
 }
 export function buildingHTML(b, { owned = null, canBuild = false, bank = null } = {}){

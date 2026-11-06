@@ -16,6 +16,12 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 06/11/2026 — Jules — Appli : chantiers de guilde, les gros nombres ne se chevauchent plus
+- **Pour le joueur** : sur un téléphone étroit, quand on a beaucoup d'un matériau (ex. « Tu en as 12 345 678 · banque
+  1 234 567 »), « banque … » passe à la ligne au lieu de recouvrir « 1 294 399 / 5 000 000 ». Rien ne change avec des
+  nombres courts. En anglais, « banque » s'affiche maintenant « bank ».
+- **État** : ✅ en ligne le 06/11
+
 ## 06/11/2026 — Geoffrey — Appli : chantiers de guilde lisibles
 - **Pour le joueur** : dans l'appli, les matériaux d'un chantier de guilde ne se chevauchent plus : nom et barre à
   gauche, boutons Donner / De la banque à droite, puis « 363 999 / 500 000 » à gauche et « Tu en as … · banque … » à droite.
