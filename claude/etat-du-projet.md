@@ -52,7 +52,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   refus nommant les joueurs à court, un refus n'arrête pas la prison. Recharge **seulement en prison** : 8 par heure de jeu,
   plafonnée à 100, gardée au dixième. Aucun autre mode ne coûte.
 - **Mine géante (5 joueurs)** (06/11, Geoffrey ; `GEANTE`, `src/shared/geante.js`, GAME_DESIGN §6) : 5 joueurs exactement, 2 h de jeu,
-  2 par jour et par joueur, règles de la mine classique (énergie comprise) ; 70 colonnes, minerais × 2,7, mobs × 1,5 (simulé : ≈ 150 %
+  2 par jour et par joueur, **sans énergie** (06/11 ; ancien, quelques minutes : comme la mine), règles de la mine classique ; 70 colonnes, minerais × 2,7, mobs × 1,5 (simulé : ≈ 150 %
   des minerais par heure d'une mine à 3, area 7). Sa partie tourne dans son propre fil avec `DIM_MINE=geante` (W 70, SESSION_LEN 7200) ;
   le navigateur lit `G.w` / `G.len`. Lobby à 5 places quand le chef l'ouvre (`maxOf(p)`, server/party/service.js).
 - **Lobby par activités** (31/10, Geoffrey) : menu des 6 activités, puis sets à gauche et carte de l'activité à droite (ancien : carte « Où miner »). Niveau et XP dans le bandeau du haut. Chat global permanent en bas à gauche, hauteur réglable (`CHAT.dock`, src/ui/chat-dock.js) ; ancien : carte du Lobby.

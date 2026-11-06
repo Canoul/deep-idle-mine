@@ -97,6 +97,11 @@ export function prisonLaunchState({ account, party, offline, busy, session, pris
 /* bouton principal pour l'activité st.mode (prison, tour, instance, sinon la session) : le Lobby et l'Accueil de l'appli
    (src/app/home.js, 03/11/2026) affichent le même */
 /* places affichées (06/11/2026) : le chef qui a ouvert une activité voit ses places (Mine géante : 5) ; les autres, celles du serveur */
+/* ligne de la Mine géante à côté de « Lancer » (06/11) ; left : restantes aujourd'hui (inconnu : sans le compteur) */
+export function geanteText(left){
+  const base = `⛰ 1 h (${GEANTE.len / 3600} h de jeu) · sans énergie`;
+  return Number.isInteger(left) ? `${base} · ${left}/${GEANTE.perDay} aujourd'hui` : `${base} · ${GEANTE.perDay} par jour`;
+}
 export const slotsMax = st => st.screen === 'stage' && (!st.party || st.party.leader === st.account?.id) ? maxPlayersOf(st.mode)
   : (st.party?.max ?? GAME.maxPlayers);
 export function launchFor(st){
@@ -104,9 +109,10 @@ export function launchFor(st){
   const ls = def?.prison ? prisonLaunchState(st) : launchState(st);
   if(def?.tower && ls.can) ls.label = ls.label.replace('la session', 'la tour').replace('Lancer à', 'Lancer la tour à');
   if(def?.instance && ls.can) ls.label = ls.label.replace('la session', 'l\'instance').replace('Lancer à', 'Lancer l\'instance à');
-  /* Mine géante (06/11/2026) : le chef lance seulement à 5 (mode dev : les mineurs de test complètent) */
+  /* Mine géante (06/11/2026) : le chef lance seulement à 5 (mode dev : les mineurs de test complètent), s'il en a encore aujourd'hui */
   if(isGeante(st.mode) && ls.can && ls.action !== 'ready'){
     const n = st.party?.members.length ?? 1;
+    if(st.geanteLeft === 0 && !st.info?.dev) return { can:false, label:`⛰ Plus de Mine géante aujourd'hui (${GEANTE.perDay}/${GEANTE.perDay})` };
     if(n !== GEANTE.players && !st.info?.dev) return { can:false, label:`⛰ Il faut ${GEANTE.players} joueurs (${n}/${GEANTE.players})` };
     ls.label = '▶ Lancer la Mine géante';
   }
@@ -233,7 +239,7 @@ export function mineModes(cur, locked = false, judgment = null, dev = false, siz
 const ACTIVITIES = [
   { id:'prison',    icon:'⛓', title:'Prison',           desc:'Farm solo et énergie' },
   { id:'mine',      icon:'⛏', title:'Mine',             desc:'Va de plus en plus profond avec ta team' },
-  { id:'geante',    icon:'⛰', title:'Mine géante (5 joueurs)', desc:'À 5, 2 h de jeu, 2 fois par jour : 1,5 × le butin par heure' },   // 06/11
+  { id:'geante',    icon:'⛰', title:'Mine géante (5 joueurs)', desc:'À 5, 1 h (2 h de jeu), 2 par jour, sans énergie : 1,5 × le butin par heure' },   // 06/11
   { id:'mi',        icon:'🌀', title:'Mine instantanée', desc:'Mine avec full minerais' },
   { id:'giant',     icon:'🌈', title:'Bloc géant',       desc:'Mine le plus vite possible' },
   { id:'hescoming', icon:'😈', title:'He\'s coming',     desc:'Frappe Lucifer le plus fort possible' },
@@ -362,10 +368,13 @@ export function setupLobby(h){
     const ls = launchFor({ ...st, mode: def?.id });   // au menu (def null) : la session, comme avant
     $('launchBtn').disabled = !ls.can; $('launchBtn').innerHTML = pxi('arrow') + esc(ls.label.replace(/^[^\p{L}\d]+/u, ''));   // l'icône pixel remplace le « ▶ » du texte
     /* énergie (29/10) : coût possible à côté de « Lancer », mine classique seulement (pas en mode dev : rien n'est débité) */
-    const cost = (def === MINE_MODES[0] || isGeante(def?.id)) && !locked && !jv && !!account && !offline && !info?.dev && !(party && party.members.length > 1 && party.leader !== account.id);
-    $('launchCost').hidden = !cost;
-    $('launchCost').textContent = cost ? launchCostText(st.energy) : '';
-    $('launchCost').classList.toggle('err', cost && /pas assez/.test($('launchCost').textContent));
+    const cost = def === MINE_MODES[0] && !locked && !jv && !!account && !offline && !info?.dev && !(party && party.members.length > 1 && party.leader !== account.id);
+    /* Mine géante (06/11) : sa ligne à côté de « Lancer » : durée, pas d'énergie, sessions restantes aujourd'hui */
+    const gtxt = isGeante(def?.id) && !jv && !!account && !offline ? geanteText(st.geanteLeft) : '';
+    $('launchCost').hidden = !cost && !gtxt;
+    $('launchCost').textContent = gtxt || (cost ? launchCostText(st.energy) : '');
+    $('launchCost').title = gtxt ? `Mine géante : ${GEANTE.players} joueurs, ${GEANTE.len / 3600} h de jeu, ${GEANTE.perDay} par jour et par joueur, sans énergie.` : 'Débitée au lancement, pour chaque joueur. Elle se recharge en prison.';
+    $('launchCost').classList.toggle('err', gtxt ? st.geanteLeft === 0 : cost && /pas assez/.test($('launchCost').textContent));
     $('prisonStopLobby').hidden = !def?.prison || jv || !prisonActive(st.prison);
     /* contenu de la prison (29/10) : d'après les 10 dernières mines ; celui de la prison qui tourne, sinon relu au serveur
        en arrivant sur la prison (au plus une fois par minute) */
