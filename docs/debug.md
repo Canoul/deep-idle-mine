@@ -7722,3 +7722,20 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   messages qui défilent ; replié et téléphone (400 × 800) OK.
 - **À vérifier** : en vrai, connecté, le tirage du bord du haut à la souris ; au minimum (15 %) la liste des messages peut être vide.
 
+
+## 06/11/2026 — Jules — Stats du mineur lisibles sur téléphone
+- Retour joueur (« moche, tous les points d'interrogation, encore plus quand ça fait un retour à la ligne ») : les « ? » étaient
+  déjà partis le 05/11 (`7f601b2e`, bulle sur le nom via `data-tiphold`) ; la capture datait d'avant. Reste la lisibilité.
+- `src/ui/stuff.js` : `statRow(label, total, detail)` ; chaque ligne = `.row.statRow` > `.statL` (nom + bulle) + `.statV` >
+  `<b>` total + `.statD` (détail : `(base +stuff ×skills)`, anneaux, ténacité effective ; absent s'il n'y a rien). Gear score et
+  DPS passent par le même `statRow`. HTML identique à l'œil sur PC (le détail reste après le total).
+- `src/ui/style.css` (sous `.statName`) : `:is(body.phone,body.app) .statRow` en grille `minmax(0,1fr) auto`, `.statV`
+  `display:contents`, `.statD` sur toute la largeur à droite (18 px, gris éclairci `#cbb9a1`) ; totaux et noms Gear score / DPS
+  en Jersey 15 poids 400 (le `<b>` sur VT323 était un gras synthétique) ; nom 19 px ; filet `var(--sep)` entre deux lignes.
+  Vaut aussi pour la fiche d'un ami (`.fstats`, src/ui/social.js), qui utilise `statsHTML`.
+- **Tests** ✅ stat-help (nouveau : nom / total / détail séparés, un `.statD` par stat qui a un bonus), dps, dashboard, wiki,
+  wiki-secret. ✅ Vu dans Chromium (page de test avec `statsHTML` du preset Barbare, `body.phone`) à 360 et 300 px : plus aucun
+  retour à la ligne dans les chiffres ; seul « Lignes boussole (dessus/dessous) » passe sur deux lignes à 300 px.
+- ❌ Déjà rouges sur main, sans rapport : cape-inclusive « fiche : cape épique… », tier2 « fortune : le doublon… », « recycle :
+  un BP du T2… » (mêmes 3 échecs avec et sans ce changement).
+- **À vérifier** : sur un vrai téléphone avec une police système agrandie (cas du joueur) ; dans l'appli iOS / Android.
