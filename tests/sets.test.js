@@ -259,7 +259,7 @@ import { activityLineHtml } from '../src/ui/sets.js';
 
 test('set par activité : activité d\'un mode (instances et tours groupées), associer, dissocier, set supprimé = dissocié', () => {
   assert.equal(setActivity('mine'), 'mine'); assert.equal(setActivity('prison'), 'prison'); assert.equal(setActivity('mi'), 'mi');
-  assert.equal(setActivity('giant'), 'giant'); assert.equal(setActivity('hescoming'), 'hescoming');
+  assert.equal(setActivity('giant'), 'giant'); assert.equal(setActivity('geante'), 'geante'); assert.equal(setActivity('hescoming'), 'hescoming');
   assert.equal(setActivity('instance_2'), 'instances'); assert.equal(setActivity('tower_demon'), 'towers');
   for(const m of ['bidule', null, 3, '__proto__']) assert.equal(setActivity(m), null, String(m));
   const sets = createSets(), cur = { stuff:{}, skills:{ tree:null, ranks:{} }, spells:[null, null] };
@@ -285,7 +285,8 @@ test('ligne du Lobby : « Set défini pour … » avec aucun et chaque set, celu
   assert.match(html, /<option value="2" selected>Bloc &lt;b&gt;<\/option>/);
   assert.match(html, /data-activity="giant"/);
   assert.match(activityLineHtml({ list:[{ id:1, name:'A' }] }, 'tower_angel'), /les tours du Jugement/);
-  assert.match(activityLineHtml({ list:[{ id:1, name:'A' }] }, 'mine'), /<option value="" selected>aucun/);
+  assert.match(activityLineHtml({ list:[{ id:1, name:'A' }] }, 'mine'), /<option value="" selected>Aucun<\/option>/);
+  assert.match(activityLineHtml({ list:[{ id:1, name:'A' }] }, 'geante'), /Set défini pour la Mine géante :.*data-activity="geante"/s);   // 06/11
   assert.equal(activityLineHtml({ list:[] }, null), '');
 });
 

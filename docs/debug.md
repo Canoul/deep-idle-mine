@@ -7800,3 +7800,8 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** ✅ geante (nouveau : chef seul, Mine géante ouverte, 4 joueurs rejoignent, 6e refusé ; activité nulle → 3 places ;
   rouge sans le correctif), party, party-forming, lobby : 84/84.
 
+## 06/11/2026 — Set par activité : « Aucun » + activité `geante`
+- Quoi : `SETS.activities` (src/config.js) gagne `{ id:'geante', label:'la Mine géante' }` → `setActivity('geante')` = 'geante', `autoEquip` au lancement (start, `server/game/service.js` ~l.1113) l'équipe pour chacun des 5. Option vide du sélecteur (`activityLineHtml`, src/ui/sets.js) libellée « Aucun » (déjà présente en « aucun » depuis le 03/11 : `id:null` → dissociation) + infobulle.
+- Tests : `node --test tests/sets.test.js` ✅ 17/17 (setActivity('geante'), ligne Mine géante, « Aucun » choisi par défaut).
+- ⚠️ Pas vérifié en vraie partie à 5 (le lancement géante passe par le même `start` que la mine).
+

@@ -768,7 +768,7 @@ export const SKILLS = {
    qu'on entre dans l'activité (src/meta/sets.js setActivity, server/game/service.js autoEquip). */
 export const SETS = { max:20, nameMax:24, opMemory:50,
   activities: [
-    { id:'mine', label:'la Mine' }, { id:'prison', label:'la Prison' }, { id:'mi', label:'la Mine instantanée' },
+    { id:'mine', label:'la Mine' }, { id:'geante', label:'la Mine géante' }, { id:'prison', label:'la Prison' }, { id:'mi', label:'la Mine instantanée' },
     { id:'giant', label:'le Bloc géant' }, { id:'hescoming', label:'He\'s coming' }, { id:'instances', label:'les Instances' },
     { id:'towers', label:'les tours du Jugement' },
   ] };

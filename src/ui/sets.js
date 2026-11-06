@@ -31,8 +31,8 @@ export function activityLineHtml({ list = [], byActivity = {} }, mode, { busy = 
   const a = setActivity(mode), def = SETS.activities.find(x => x.id === a);
   if(!def) return '';
   const cur = byActivity?.[a] ?? null;
-  return `<p class="setFor small"><span>Set défini pour ${esc(def.label)} :</span> <span class="setPick"><select data-act="assign" data-activity="${a}"${busy ? ' disabled' : ''} title="Équipé tout seul quand tu lances (ou entres dans) cette activité">`+
-    `<option value=""${cur == null ? ' selected' : ''}>aucun</option>`+
+  return `<p class="setFor small"><span>Set défini pour ${esc(def.label)} :</span> <span class="setPick"><select data-act="assign" data-activity="${a}"${busy ? ' disabled' : ''} title="Équipé tout seul quand tu lances (ou entres dans) cette activité ; Aucun : ton équipement ne change pas">`+
+    `<option value=""${cur == null ? ' selected' : ''}>Aucun</option>`+
     list.map(s => `<option value="${s.id}"${s.id === cur ? ' selected' : ''}>${esc(s.name)}</option>`).join('')+`</select></span></p>`;
 }
 
