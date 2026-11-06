@@ -3,6 +3,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { XP, IDS } from '../src/config.js';
+
+/* les chiffres de ces tests sont écrits pour la courbe ×1,5 : on la fixe (06/11/2026 : la config est passée à ×1,4) */
+XP.curve = { first:1000, factor:1.5 }; XP.specCurve = { first:1000, factor:1.5 }; XP.bonusEvery = 0;   // + point bonus : test à part
 import { xpToNext, levelOf, xpForLevel, xpShare, createProgress, sanitizeProgress, creditXp, specLevelOf, specXpOf, specLevels } from '../src/meta/level.js';
 import { mineBlock, killMob } from '../src/sim/actions.js';
 import { newSession, endSession, leaveSession } from '../src/sim/session.js';
@@ -144,7 +147,7 @@ const ME = { id:'AAAA1111', name:'Zoe', guest:false };
 
 test('serveur : l\'XP est versée à la fin, une seule fois, et le niveau se lit dans l\'état', async () => {
   const { game, store, advance } = server();
-  const { spec, ...p0 } = (await game.state(ME)).progress;
+  const { spec, areaMax, ...p0 } = (await game.state(ME)).progress;   // areaMax : area la plus profonde atteinte (ajout du 06/11)
   assert.deepEqual(p0, { xp:0, level:1, into:0, need:1000, talentPoints:0 });
   assert.deepEqual(spec.mineur, { xp:0, level:1, into:0, need:1000 }, 'niveau de spécialisation de chaque arbre');
   for(let i = 0; i < 2; i++){
@@ -170,4 +173,15 @@ test('bandeau du haut : niveau, barre, % et XP sur XP requise ; rien sans progre
   assert.match(el.innerHTML, /Niveau max/);
   renderNavLevel(el, null);
   assert.equal(el.hidden, true);
+});
+
+test('point de skill bonus tous les 5 niveaux (06/11/2026) ; courbe ×1,4 en config', async () => {
+  const fs = await import('node:fs');
+  const cfg = fs.readFileSync(new URL('../src/config.js', import.meta.url), 'utf8');
+  assert.match(cfg, /curve: \{ first:1000, factor:1\.4 \}/); assert.match(cfg, /specCurve: \{ first:1000, factor:1\.4 \}/);
+  const was = XP.bonusEvery; XP.bonusEvery = 5;
+  try {
+    const pts = lvl => { let xp = 0; for(let n = 1; n < lvl; n++) xp += xpToNext(n); return levelOf(xp).talentPoints; };
+    assert.equal(pts(4), 3); assert.equal(pts(5), 5, 'niveau 5 : 4 + 1'); assert.equal(pts(10), 11); assert.equal(pts(15), 17);
+  } finally { XP.bonusEvery = was; }
 });

@@ -569,15 +569,16 @@ export const mobHp = (type, k) => Math.round(MOBS.hpBase[type] * MOBS.hpGrowth *
 export const XP = {
   ore: { coal:1, iron:2, gold:4, diamond:7, graphite:4, mithril:5, cobalt:8, thorium:8, arkonite:12, iridium:18, debris:25 },   // mithril, cobalt, thorium : 27/10 ; arkonite, iridium, débris : 06/11 (provisoire)
   mob: { bestiole:5, gobelin:10, mimic:5, occultiste:15, mephite:12, golem:30, chair:40, chien:40, ver:40, minotaure:100, gallianix:5 },
-  curve: { first:1000, factor:1.5 },
+  curve: { first:1000, factor:1.4 },   // 06/11/2026 (Geoffrey) : ancien 1.5
   talentPerLevel: 1,
+  bonusEvery: 5,        // 06/11/2026 (Geoffrey) : +1 point de skill de plus tous les bonusEvery niveaux (niveau 5, 10, 15…)
   maxLevel: 200,
   /* XP de spécialisation (24/10/2026, Geoffrey) : pct % de la part d'XP du joueur (après partage et bonus personnel,
      arrondi vers le bas) va à l'arbre de skills figé au lancement (rien sans arbre). Une XP par arbre, gardée quand
      on change d'arbre. specCurve : la même courbe que le niveau du mineur (1000, 1500, 2250…) ; seul le gain change
      (specPct). Seulement affichée pour l'instant ; elle débloque des sorts (SPELLS). Valeurs provisoires. */
   specPct: 50,          // 24/10/2026 (Geoffrey) : ancien 10
-  specCurve: { first:1000, factor:1.5 },   // 24/10/2026 (Geoffrey) : = curve ; ancien first:100
+  specCurve: { first:1000, factor:1.4 },   // 06/11/2026 (Geoffrey) : ancien 1.5 (24/10 : = curve ; ancien first:100)
 };
 
 /* caméra de la session (affichage) : top = ligne la plus haute affichée (le ciel), margin = lignes affichées sous le

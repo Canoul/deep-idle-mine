@@ -1,7 +1,10 @@
 /* Guilde : droits par grade, successeur, nom, XP, ordre des membres, fiche abîmée (src/shared/guild.js). */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { GUILD } from '../src/config.js';
+import { GUILD, XP } from '../src/config.js';
+
+/* les chiffres de ces tests sont écrits pour la courbe ×1,5 : on la fixe (06/11/2026 : la config est passée à ×1,4) */
+XP.curve = { first:1000, factor:1.5 }; XP.specCurve = { first:1000, factor:1.5 }; XP.bonusEvery = 0;   // + point bonus : test à part
 import { guildXpOf, guildLevelOf } from '../src/meta/level.js';
 import { canRecruit, canKick, canPromote, canDemote, canTransfer, nextChief, sortMembers, activityOf,
          cleanGuildName, guildNameKey, guildNameError, sanitizeGuilds } from '../src/shared/guild.js';
