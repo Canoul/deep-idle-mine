@@ -1164,6 +1164,8 @@ button.danger{color:var(--bad)}
 }
 /* barre des sorts en session (src/ui/hud.js spellBarHtml), en bas de la mine */
 .spellBar{position:absolute;z-index:1;left:50%;bottom:calc(4*var(--u));transform:translateX(-50%);display:flex;gap:calc(3*var(--u));pointer-events:auto}
+/* téléphone (06/11) : sous le jeu, plus par-dessus (src/ui/hud.js spellBarsBelow) */
+.spellBar.below{position:static;transform:none;flex:none;order:-1;align-self:center;justify-content:center;margin:calc(2*var(--u)) 0}
 .spB{position:relative;width:calc(22*var(--u));height:calc(22*var(--u));display:grid;place-items:center;
   border:calc(3*var(--u)) solid transparent;border-image:url(../../textures/ui/slot_sel.png) 3 fill / calc(3*var(--u)) stretch}
 .spB.cd{border-image-source:url(../../textures/ui/slot_n.png)}

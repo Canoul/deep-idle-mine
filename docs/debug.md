@@ -7847,3 +7847,8 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - Tests : `node --test tests/sets.test.js` ✅ 17/17 (setActivity('geante'), ligne Mine géante, « Aucun » choisi par défaut).
 - ⚠️ Pas vérifié en vraie partie à 5 (le lancement géante passe par le même `start` que la mine).
 
+## 06/11/2026 — Téléphone : barres des sorts sous le canvas
+- Quoi : `spellBarsBelow()` (src/ui/hud.js), appelé dans src/main.js **juste après les imports** (avant les `await` : sinon rien tant qu'on n'est pas connecté). Sous `(max-width:700px)` (`SPELLS_BELOW_MQ`), chaque `.spellBar` sort de sa boîte (#cvWrap, #cvTwWrap, #cvInWrap, #cvGtWrap, #cvHcWrap) et se place juste après (classe `below` : static, `order:-1` comme #cvWrap dans la colonne flex du téléphone) ; elle revient dans sa boîte quand l'écran s'élargit (écoute `change`). `placeSpellBar` ne fait rien sur une barre `below`.
+- Tests : `tests/spellbar-below.test.js` ✅ (faux DOM) ; app-spells, spells, tower-spells, fit, hud-rail ✅. Vérifié à l'écran (Playwright, Pixel 7, `?app`) : mine ✅ sorts sous le canvas ; bascule large ↔ étroit ✅.
+- ⚠️ Pas vu à l'écran dans les événements (tours, instance, Bloc géant, He's coming) : la barre se met entre le canvas (60 % de la hauteur) et la colonne d'infos, qui rétrécit d'autant.
+

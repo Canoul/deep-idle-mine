@@ -203,9 +203,27 @@ export function showSpellBar(el, m, t){
 }
 /* place la barre en bas du canvas quand il est plus petit que sa zone (tours, instance, Bloc géant : canvas centré) */
 export function placeSpellBar(el, cv, wrap){
-  if(!el || el.hidden || !cv || !wrap) return;
+  if(!el || el.hidden || !cv || !wrap || el.classList.contains('below')) return;
   const b = `${Math.round(Math.max(0, (wrap.clientHeight - cv.offsetHeight) / 2) + 6)}px`;
   if(el.style.bottom !== b) el.style.bottom = b;
+}
+/* Téléphone (06/11/2026, Geoffrey : « on voit pas notre perso car les boutons cachent ») : les barres des sorts passent
+   sous le jeu au lieu d'être posées dessus. Chaque barre sort de la boîte de son canvas et se met juste après elle (classe
+   below) ; elle y revient quand l'écran s'élargit. Une seule fois, au démarrage. */
+export const SPELLS_BELOW_MQ = '(max-width:700px)';
+export function spellBarsBelow(doc = document, mq = matchMedia(SPELLS_BELOW_MQ)){
+  const bars = [...doc.querySelectorAll('.spellBar')].map(el => ({ el, home: el.parentElement }));
+  const place = () => {
+    for(const { el, home } of bars){
+      const below = mq.matches;
+      el.classList.toggle('below', below);
+      if(below){ if(el.previousElementSibling !== home) home.after(el); el.style.bottom = ''; }
+      else if(el.parentElement !== home) home.append(el);
+    }
+  };
+  place();
+  mq.addEventListener?.('change', place);
+  return place;
 }
 export function spellBarHtml(m, t){
   if(!m?.spells?.length) return '';

@@ -46,7 +46,7 @@ import { displayName, formatAccountId } from './shared/account.js';
 import { setupOrbs } from './ui/orbs.js';
 import { fitCanvas, fitMine, fitInstant, clearDock, dockEl } from './ui/fit.js';
 import { pxi } from './ui/pxicons.js';
-import { updateHUD, showEnd, showSettling, updateNavSession, fmt, showSpellBar, placeSpellBar } from './ui/hud.js';
+import { updateHUD, showEnd, showSettling, updateNavSession, fmt, showSpellBar, placeSpellBar, spellBarsBelow } from './ui/hud.js';
 import { setupRunControls, setupCamera, renderSpeeds } from './ui/controls.js';
 import { setupLobby } from './ui/lobby.js';
 import { gearScore } from './meta/gearscore.js';
@@ -104,6 +104,7 @@ const $ = id => document.getElementById(id);
 const ui = { speed:1, paused:false, follow:null, inv:{ slots:[] }, fresh:new Set(), tab:'lobby' };
 import { getLang, t } from './i18n/index.js';
 import { installPageTranslator } from './i18n/dom.js';
+spellBarsBelow();   // téléphone : les sorts sous le jeu, pas dessus (06/11) ; avant toute attente (connexion…)
 /* traduction de la page (06/11/2026) : rien en français ; en anglais, chaque texte affiché passe par src/i18n/en/ui.js.
    Tant que l'anglais est caché (I18N.open), les textes encore en français sont relevés dans window.__i18nMissing */
 installPageTranslator(document, { dev: !I18N.open });
