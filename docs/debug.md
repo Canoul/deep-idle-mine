@@ -7699,3 +7699,16 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   compteur est connu du navigateur : celui des autres joueurs, c'est le serveur qui le refuse (`geante_daily`, en les nommant).
 - **Tests** ✅ geante (pas d'énergie, `state().geanteLeft`, texte, Lancer grisé à 0), lobby, team-energy, energy-server, wiki.
 
+
+## 06/11/2026 — Jules — Appli : sprites écrasés dans les tuiles de l'Amélioration
+- **Symptôme** : appli (capture Android), Perso → Amélioration, grille « Choisis la pièce » : sprites comprimés en largeur.
+- **Cause** : `body.app .upTile` était en `display:grid; place-items:center` avec `img{width:62%;height:62%}`. En grille, les 62 %
+  de largeur se résolvent sur la colonne implicite (taillée sur le contenu, pas étirée à cause de `justify-items:center`), la
+  hauteur sur la tuile : mesuré dans Chrome headless (vrais `style.css` + `app.css`), tuile 79,5 px → image **25,9 × 41,8**.
+  Les textures d'objets sont bien toutes en 16×16 (vérifié).
+- **Correction** : `src/app/app.css`, on retire `display:grid; place-items:center` de `.upTile` : la tuile garde le centrage flex
+  de `.slot` (src/ui/style.css). Remesuré : **41,8 × 41,8** à 360 et 430 px de large.
+- Vérifié aussi : les cases du Stuff de l'appli (`#stuffGrid .slot`, aussi en grille) ont une icône en px fixes (32×32), pas touchées.
+- **Tests** ✅ app-ecrans (nouveau : la règle `.upTile` ne repasse pas en `display:grid`).
+- **À vérifier** : sur le téléphone après mise en ligne. Point fragile : toute icône en % de hauteur ET de largeur dans un
+  conteneur `display:grid` a le même risque ; préférer le flex de `.slot` ou des px fixes.

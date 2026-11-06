@@ -16,6 +16,11 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 06/11/2026 — Jules — Appli : les sprites des objets ne sont plus écrasés à l'Amélioration
+- **Pour le joueur** : dans l'appli, onglet Perso → Amélioration, les icônes des pièces à choisir sortaient écrasées en largeur
+  (pioches trop fines, ceintures trop courtes). Elles sont de nouveau carrées. Le site n'est pas concerné.
+- **État** : 🧪 sur la branche `jules/fix-images-aplaties` (pas en ligne)
+
 ## 05/11/2026 — Geoffrey — Craft : Clé d'instance II de base
 - **Pour le joueur** : la Clé d'instance II se fabrique au Craft, sans blueprint : 2 Barres d'argent et 1 Orbe supérieur.
 - **État** : ✅ en ligne le 05/11
