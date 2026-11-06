@@ -20,6 +20,12 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 06/11/2026 — Geoffrey — Noms plus corrects pour les stores : Bonbonne d'oxygène, Ralliement, Garde du corps, Golem gluant
+- **Pour le joueur** : quatre noms changent, rien d'autre. **Bonbonne de zipette** → **Bonbonne d'oxygène** (sort du Logisticien), **Ulti shen** → **Ralliement** (sort à parchemin, « Parchemin « Ralliement » »), **Braum** → **Garde du corps** (skill du Barbare et « Glyphe Garde du corps »), **Golem de sperme** → **Golem gluant** (mob). Pseudo du Gallianix « Cuiseuse de sperme » → **« Ex d'Infernatiwar »**. Sorts appris, skills, parchemins et glyphes déjà dans les sacs : tout est gardé, renommé au démarrage du serveur. « K hole » garde son nom (choix de Geoffrey).
+- **D'où ça vient** : les trois premiers sont le travail de Jules du 02/11 (branche `jules/nom-bonbonne-oxygene`, jamais fusionnée, 328 commits de retard) : refait à l'identique sur le jeu actuel plutôt que fusionné (11 fichiers en conflit). Le Golem gluant est ajouté par Geoffrey.
+- **À suivre** : Cleave et Hand of Justice viennent aussi de League of Legends.
+- **État** : ✅ en ligne le 06/11
+
 ## 05/11/2026 — Geoffrey — Craft : Clé d'instance II de base
 - **Pour le joueur** : la Clé d'instance II se fabrique au Craft, sans blueprint : 2 Barres d'argent et 1 Orbe supérieur.
 - **État** : ✅ en ligne le 05/11

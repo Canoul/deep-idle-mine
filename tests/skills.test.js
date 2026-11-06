@@ -94,7 +94,7 @@ test('arbres secondaires : jamais aussi profond que la spé ; les skills de clas
   const g = learnAll(createSkills(), ['travel_rush', 'travel_rush', 'travel_rush', 'organized', 'organized', 'organized', 'winch', 'tall_ladder',
     'winch_speed', 'winch_speed', 'winch_speed', 'mule', 'aura_reassure']);   // 13 points, étage 5
   learnAll(g, ['damage', 'damage', 'damage', 'loot', 'loot', 'loot', 'backstab', 'backstab', 'backstab', 'crushing', 'crushing', 'crushing', 'braum'], 99);
-  assert.equal(g.ranks.braum, 1, 'Braum (étage 4) permis');
+  assert.equal(g.ranks.braum, 1, 'Garde du corps (étage 4) permis');
   assert.equal(blockedReason(g, 'taunt', 99), 'spec_only', 'Provocation : seulement pour un barbare');
   assert.equal(blockedReason(g, 'ravage', 99), 'spec_only');
   learnAll(g, ['braum', 'braum']);
@@ -218,11 +218,11 @@ test('Barbare : butin des mobs +3 %/rang = 3 % de chance par rang pour 1 butin e
   m.skill.loot = 1.5; assert.ok(Math.abs(perMob() - 1.5 - 1.5) < 0.03, '150 % : +1 sûr, et +1 encore une fois sur deux');
 });
 
-test('Barbare : Braum à l\'étage 4 (9 points dans l\'arbre d\'abord), marche et montée +10 %/rang seulement quand il aide', () => {
+test('Barbare : Garde du corps à l\'étage 4 (9 points dans l\'arbre d\'abord), marche et montée +10 %/rang seulement quand il aide', () => {
   const b = SKILLS.trees.find(t => t.id === 'barbare').nodes.find(n => n.id === 'braum');
   assert.deepEqual([b.row, b.max, b.per], [4, 3, 0.1]);
   assert.deepEqual(sanitizeSkills({ tree:'barbare', ranks:{ damage:3, taunt:1, loot:3, backstab:1, braum:3 } }, 99).ranks,
-    { damage:3, taunt:1, loot:3, backstab:1 }, '8 points : pas de Braum');
+    { damage:3, taunt:1, loot:3, backstab:1 }, '8 points : pas de Garde du corps');
   assert.equal(skillEffects(sanitizeSkills({ tree:'barbare', ranks:{ damage:3, taunt:1, loot:3, backstab:2, braum:3 } }, 99)).braum, 0.3);
   const G = worldFrom(['', '@']), m = G.miners[0];
   m.skill.braum = 0.3;
