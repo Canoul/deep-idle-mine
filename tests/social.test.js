@@ -191,6 +191,8 @@ test('joueur en session : on voit combien ils sont dans le groupe (30/10), pour 
   assert.equal(statusText({ status:'session', mode:'mine', size:1, max:3, leftMs: 23 * 60_000 - 1 }), 'En session mine (1/3) · reste 23 min');
   assert.equal(statusText({ status:'session', mode:'tower_angel', size:2, max:3, leftMs:null }), 'En session · Tour de l\'Ange (2/3)');
   assert.equal(statusText({ status:'session', mode:'giant', leftMs: 30_000 }).includes('/'), false, 'sans taille (Bloc géant) : rien');
+  assert.equal(statusText({ status:'session', mode:'mi', size:5, max:null, leftMs: 30_000 }), 'En session · Mine instantanée (5 joueurs) · reste < 1 min', 'MI : pas de « 5/3 » (06/11)');
+  assert.equal(statusText({ status:'session', mode:'mi', size:1, max:null, leftMs:null }), 'En session · Mine instantanée (1 joueur)');
 });
 
 test('limites : nombre d\'amis, demandes en attente', async () => {
