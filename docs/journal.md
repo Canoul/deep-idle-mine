@@ -16,6 +16,11 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 06/11/2026 — Geoffrey — Appli : chantiers de guilde lisibles
+- **Pour le joueur** : dans l'appli, les matériaux d'un chantier de guilde ne se chevauchent plus : nom et barre à
+  gauche, boutons Donner / De la banque à droite, puis « 363 999 / 500 000 » à gauche et « Tu en as … · banque … » à droite.
+- **État** : ✅ en ligne le 06/11
+
 ## 06/11/2026 — Geoffrey — Courbe d'XP à ×1,4 (mineur, spécialisation, guilde) et point bonus tous les 5 niveaux
 - **Pour le joueur** : il faut moins d'XP pour monter : ×1,4 à chaque niveau au lieu de ×1,5 (1000, 1400, 1960…), pour
   le niveau du mineur, le niveau de spécialisation (SP lvl) et le niveau de guilde. **+1 point de skill bonus tous les

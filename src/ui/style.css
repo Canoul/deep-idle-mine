@@ -1301,3 +1301,11 @@ body.app .setQuick{flex:none;white-space:nowrap;font-size:var(--fs)}
 .shopBuy{width:100%}
 /* guilde : spécialisation principale d'un membre (05/11/2026), couleur de l'arbre (.tr-*) */
 .gspec{font-size:var(--fs-s);white-space:nowrap;color:var(--c,var(--mut))}
+
+/* appli (06/11/2026, Geoffrey : textes qui se chevauchent) : un matériau de chantier sur 3 lignes, les boutons (Donner,
+   De la banque) à droite du nom et de la barre, puis « 363 999 / 500 000 » à gauche et « Tu en as … · banque … » à droite.
+   .gmat.gmat : passe devant src/app/app.css (chargé après). */
+body.app .gbuilding .gmat.gmat{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"name btn" "bar btn" "nums own"}
+body.app .gbuilding .gmat.gmat>.gmatBtns{grid-area:btn;align-self:center}
+body.app .gbuilding .gmat.gmat>.gxp:nth-child(2){grid-area:nums;min-width:0}
+body.app .gbuilding .gmat.gmat>.gxp.mut{grid-area:own;justify-self:end}
