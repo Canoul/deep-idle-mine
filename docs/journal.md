@@ -16,6 +16,17 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 06/11/2026 — Jules — Sets : « j'équipe mon set et ça ne l'équipe pas »
+- **Pour le joueur** : report de Nbrick. Quand une activité a un « Set défini pour … » (Prison, Mine…), le jeu
+  équipe ce set tout seul au lancement. La page ne le montrait pas : elle affichait encore l'ancien set, et après un F5 le
+  joueur découvrait un autre set et croyait que son « Équiper » n'avait pas marché. Maintenant, après un lancement (mine,
+  prison, raid, Bloc géant, He's coming, mine lancée par le chef), la page montre le bon stuff, les bons skills et sorts, et
+  un message le dit : « Set « Prison » équipé : c'est le set défini pour cette activité ».
+- **Décisions** : aucune, la règle (le set de l'activité est équipé au lancement) ne change pas.
+- **À suivre** : demander à Nbrick s'il avait bien un set défini pour la Prison ou la Mine (c'est la cause trouvée en
+  reproduisant ; si ce n'est pas son cas, il reste autre chose).
+- **État** : 🧪 sur la branche `jules/fix-changer-set` (pas en ligne)
+
 ## 05/11/2026 — Geoffrey — Craft : Clé d'instance II de base
 - **Pour le joueur** : la Clé d'instance II se fabrique au Craft, sans blueprint : 2 Barres d'argent et 1 Orbe supérieur.
 - **État** : ✅ en ligne le 05/11

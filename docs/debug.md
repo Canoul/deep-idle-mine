@@ -7699,3 +7699,22 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   compteur est connu du navigateur : celui des autres joueurs, c'est le serveur qui le refuse (`geante_daily`, en les nommant).
 - **Tests** ✅ geante (pas d'énergie, `state().geanteLeft`, texte, Lancer grisé à 0), lobby, team-energy, energy-server, wiki.
 
+
+## 06/11/2026 — Jules — Sets : le set de l'activité équipé au lancement n'était pas relu par la page
+- **Report** (Nbrick) : « des fois, équiper le set ça n'équipe pas le set », en prison ou pas, F5 n'y fait rien.
+- **Cause** (reproduite, Chromium, serveur local) : `autoEquip` (server/game/service.js, set par activité du 03/11) équipe le
+  set de l'activité dans `start`, `prisonStart`, raid, `giantEnter` (Bloc géant / He's coming), MI ; son résultat est jeté et
+  le navigateur ne relisait que l'inventaire, l'énergie… (`gameApi.state()` après `start` ; `syncAccount` après la prison :
+  skills seuls). Résultat : serveur = set de l'activité, page = ancien stuff, « Set équipé : Set 1 », aucun message ; au F5
+  le joueur voit l'autre set. Le serveur, lui, était juste (verrous, `applySet` : propriété « set enregistré puis rééquipé =
+  reconnu équipé » vérifiée sur 2000 arbres de skills tirés au hasard, 0 échec).
+- **Correction** (navigateur seulement) : `src/main.js` `syncLoadout(was, st?)` relit stuff, skills, sorts et sets, puis
+  `tellAutoSet(was)` → `notify.flash(autoSetText(was, now))` si le set porté a changé. Appelé après `start`, `onRaid`,
+  `startPrison`, l'entrée au Bloc géant / He's coming (`setupGiant` : `onEnter`, `equipped`) et la mine lancée par le chef
+  (`pollLobby` → `refresh()` puis `tellAutoSet`). `src/ui/sets.js` : `autoSetText(was, now)`, `setsUI.equipped()`.
+  MI lancée à heure fixe : `refresh()` montre le bon stuff, sans message.
+- **Tests** ✅ sets (+1 : `autoSetText`), giant-*, hescoming-* (❌ déjà rouge sur main, sans rapport : hescoming-sim
+  « config : paliers du Bloc × 24 »). ✅ Navigateur : Set 1 porté, Set 2 défini pour la Prison, « Entrer en prison » →
+  page « Set équipé : Set 2 », casque retiré, message affiché (avant : page sur Set 1, serveur sur Set 2).
+- **À vérifier** : que c'est bien le cas de Nbrick (set défini pour une activité). Point fragile : une relecture d'état
+  partie avant un « Équiper » et revenue après peut encore remettre les anciens skills à l'écran (`syncAccount`, prison).

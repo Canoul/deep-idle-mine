@@ -212,6 +212,16 @@ test('sets : textes de la pop-up de confirmation', async () => {
   assert.equal(equippedText('Mine', 0, true), 'Set « Mine » bien équipé. Il compte dès la prochaine session.');
 });
 
+/* set de l'activité équipé tout seul au lancement (06/11/2026) : la page le dit, seulement si le set porté a changé */
+test('sets : message quand le lancement a équipé le set de l\'activité', async () => {
+  const { autoSetText } = await import('../src/ui/sets.js');
+  const a = { id:1, name:'Mine' }, b = { id:2, name:'Prison' };
+  assert.equal(autoSetText(a, b), 'Set « Prison » équipé : c\'est le set défini pour cette activité');
+  assert.equal(autoSetText(null, b), 'Set « Prison » équipé : c\'est le set défini pour cette activité');
+  assert.equal(autoSetText(b, b), null);      // déjà porté : rien
+  assert.equal(autoSetText(a, null), null);   // plus aucun set reconnu (pièce introuvable…) : rien
+});
+
 /* appli (03/11/2026) : une ligne « Set : x ▾ » et un menu qui monte du bas (spec 2026-11-03-appli-perso-sets-stuff-design.md) */
 test('appli : la ligne des sets dit le set équipé, ou « aucun » ; nom échappé', async () => {
   const { setsBarHtml } = await import('../src/ui/sets.js');
