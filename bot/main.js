@@ -1,10 +1,11 @@
 /* Bot Discord de l'équipe (31/10/2026, Geoffrey) : service à part du jeu, il ne redémarre pas à chaque mise à jour.
    - Un message qui tague le rôle admin, dans n'importe quel salon sauf #report et #todo, est copié dans #report.
-   - Dans #report, le premier emoji cliqué attribue le sujet, ou la croix l'ignore (bot/todo.js).
+   - Dans #report, le premier emoji cliqué attribue le sujet, ou la croix le supprime (message effacé) ; 💎 d'un admin :
+     le bot met 💎 au message du joueur, qui gagne 1 diamant (bot/todo.js, 06/11/2026).
    - Dans #todo : /todo joe, /todo djulo, /todo done, /todo help.
    Installation : docs/bot-discord.md. Après un changement de ce dossier : sudo systemctl restart deep-mine-bot */
 import { Client, GatewayIntentBits, MessageFlags, Partials, SlashCommandBuilder } from 'discord.js';
-import { ASSIGNEES, HELP, IGNORE, createTodo, listMessages, parseDone, reportText } from './todo.js';
+import { DIAMOND, HELP, IGNORE, REACTIONS, createTodo, listMessages, parseDone, reportText } from './todo.js';
 import { loadState, saveState } from './store.js';
 
 const need = name => { const v = process.env[name]; if(!v){ console.error(`Réglage manquant : ${name}`); process.exit(1); } return v; };
@@ -30,15 +31,15 @@ async function onMessage(message){
   if(message.author.bot || message.guildId !== GUILD || !message.mentions.roles.has(ADMIN_ROLE)) return;
   if(message.channelId === REPORT || message.channelId === TODO) return;
   const text = [message.cleanContent, ...message.attachments.map(a => a.url)].filter(Boolean).join('\n');
-  const s = todo.add({ sourceId: message.id, author: message.member?.displayName ?? message.author.username,
-                       channel: message.channel.name, text, url: message.url, at: message.createdTimestamp });
+  const s = todo.add({ sourceId: message.id, author: message.member?.displayName ?? message.author.username, authorId: message.author.id,
+                       channelId: message.channelId, channel: message.channel.name, text, url: message.url, at: message.createdTimestamp });
   if(!s) return;
   try {
     const report = await client.channels.fetch(REPORT);
     const copy = await report.send({ content: reportText(s), allowedMentions: NO_PING });
     todo.setReport(s.id, copy.id);
     save();
-    for(const emoji of [...ASSIGNEES.map(a => a.emoji), IGNORE]) await copy.react(emoji);
+    for(const emoji of REACTIONS) await copy.react(emoji);
   } catch(e){
     if(!s.reportId) todo.cancel(s.id);
     console.error('Report non copié :', e);
@@ -47,12 +48,37 @@ async function onMessage(message){
 
 async function onReaction(reaction, user){
   if(user.bot || reaction.message.channelId !== REPORT) return;
-  const ignored = reaction.emoji.name === IGNORE;
-  const s = ignored ? todo.ignore(reaction.message.id) : todo.claim(reaction.message.id, reaction.emoji.name);
+  const emoji = reaction.emoji.name;
+  if(emoji === DIAMOND) return onDiamond(reaction, user);
+  if(emoji === IGNORE){                        // croix : le sujet quitte la base et son message est effacé
+    const s = todo.ignore(reaction.message.id);
+    if(!s) return;
+    save();
+    return removeReport(s);
+  }
+  const s = todo.claim(reaction.message.id, emoji);
   if(!s) return;
   save();
-  const report = await client.channels.fetch(REPORT);
-  await (await report.messages.fetch(s.reportId)).edit({ content: reportText(s, ignored), allowedMentions: NO_PING });
+  await editReport(s);
+}
+
+const editReport = async s => (await (await client.channels.fetch(REPORT)).messages.fetch(s.reportId)).edit({ content: reportText(s), allowedMentions: NO_PING });
+
+/* 💎 d'un admin (rôle admin) : le bot réagit 💎 au message du joueur, et seulement alors le joueur gagne 1 diamant */
+async function onDiamond(reaction, user){
+  const member = await (await client.guilds.fetch(GUILD)).members.fetch(user.id).catch(() => null);
+  if(!member?.roles.cache.has(ADMIN_ROLE)) return;
+  const s = todo.reward(reaction.message.id);
+  if(!s) return;
+  try {
+    await (await (await client.channels.fetch(s.channelId)).messages.fetch(s.sourceId)).react(DIAMOND);
+  } catch(e){
+    todo.unreward(s.id);
+    return console.error(`Diamant non donné pour ID ${s.id} (message du joueur introuvable ?) :`, e);
+  }
+  save();
+  console.log(`💎 ${s.author} (${s.authorId}) : ${todo.diamondsOf(s.authorId)} diamant(s)`);
+  await editReport(s).catch(e => console.error(e));
 }
 
 /* un sujet terminé sort de #report (01/11/2026, Geoffrey ; avant : le message restait avec ✅). Un bot peut toujours

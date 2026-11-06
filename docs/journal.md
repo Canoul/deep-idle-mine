@@ -16,6 +16,12 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 06/11/2026 — Geoffrey — Bot Discord : croix qui supprime, diamants pour les joueurs
+- **#report** : le bot met maintenant 4 réactions : 1, 2, ❌ et 💎. La croix (avant qu'on attribue le sujet) **supprime** le sujet et efface son message ; un sujet `/todo done` était déjà effacé de #report.
+- **Diamants** : si un admin met 💎 sur un sujet, le bot met 💎 sur le message du joueur, et le joueur gagne **1 diamant** (une fois par sujet). Le compteur de chaque membre est gardé dans la base du bot. Pas encore de commande pour voir les diamants.
+- **À faire sur le serveur** : relancer le bot (`sudo systemctl restart deep-mine-bot`), il ne se relance pas tout seul.
+- **État** : ✅ en ligne le 06/11 (code) ; actif après le redémarrage du bot
+
 ## 06/11/2026 — Geoffrey — Appli : chantiers de guilde lisibles
 - **Pour le joueur** : dans l'appli, les matériaux d'un chantier de guilde ne se chevauchent plus : nom et barre à
   gauche, boutons Donner / De la banque à droite, puis « 363 999 / 500 000 » à gauche et « Tu en as … · banque … » à droite.

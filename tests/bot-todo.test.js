@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { ASSIGNEES, HELP, IGNORE, MESSAGE_MAX, createTodo, listMessages, parseDone, reportText } from '../bot/todo.js';
+import { ASSIGNEES, DIAMOND, HELP, IGNORE, MESSAGE_MAX, REACTIONS, createTodo, listMessages, parseDone, reportText } from '../bot/todo.js';
 import { loadState, saveState } from '../bot/store.js';
 
 const [ONE, TWO] = ASSIGNEES.map(a => a.emoji);
@@ -102,10 +102,10 @@ test('base JSON : absente = vide, gardée après écriture, illisible = erreur (
   fs.rmSync(dir, { recursive: true });
 });
 
-test('croix : en premier, le sujet quitte la base et n\'est plus attribuable ; sur un sujet attribué, rien', () => {
+test('croix : en premier, le sujet est supprimé (quitte la base, le bot efface son message) et n\'est plus attribuable ; sur un sujet attribué, rien', () => {
   const t = createTodo();
   const s = report(t, 'm1'), kept = report(t, 'm2');
-  assert.match(reportText(s), /2 : Djulo\n❌ : ignorer/);
+  assert.match(reportText(s), /2 : Djulo\n❌ : supprimer/);
   t.claim('rm2', ONE);
   assert.equal(t.ignore('rm2'), null, 'déjà attribué');
   assert.deepEqual(t.list('joe').map(x => x.id), [kept.id]);
@@ -114,7 +114,32 @@ test('croix : en premier, le sujet quitte la base et n\'est plus attribuable ; s
   assert.equal(t.ignore('rm1'), null, 'deux fois : rien');
   assert.equal(t.claim('rm1', TWO), null, 'ignoré : plus attribuable');
   assert.deepEqual(t.state().subjects.map(x => x.id), [kept.id]);
-  assert.ok(reportText(s, true).endsWith(`${IGNORE} Sujet ignoré`));
+  assert.match(reportText(s, true), new RegExp(`${IGNORE} Sujet supprimé`));
   assert.doesNotMatch(reportText(s, true), /Qui s'en occupe/);
   assert.ok(report(t, 'm3').id > kept.id, 'son ID n\'est pas réutilisé');
+});
+
+/* diamants (06/11/2026) : 💎 d'un admin → 1 diamant pour l'auteur, une fois par sujet, gardé dans la base */
+test('diamant : 1 par sujet, pour l\'auteur ; repris si le bot n\'a pas pu réagir ; gardé après redémarrage', () => {
+  assert.deepEqual(REACTIONS, [...ASSIGNEES.map(a => a.emoji), IGNORE, DIAMOND]);
+  const t = createTodo();
+  const add = (m, authorId) => { const s = t.add({ sourceId: m, author: 'Max', authorId, channelId: 'c1', channel: 'bugs', text: 'x', url: 'u', at: 1 }); t.setReport(s.id, `r${m}`); return s; };
+  const a = add('m1', 'u1'), b = add('m2', 'u1'), c = add('m3', 'u2');
+  assert.match(reportText(a), /💎 : un diamant pour le joueur \(admin\)/);
+  assert.equal(t.reward('rm1').id, a.id);
+  assert.equal(t.reward('rm1'), null, 'deux fois le même sujet : un seul diamant');
+  assert.equal(t.reward('inconnu'), null);
+  t.reward('rm2'); t.reward('rm3');
+  assert.equal(t.diamondsOf('u1'), 2); assert.equal(t.diamondsOf('u2'), 1); assert.equal(t.diamondsOf('personne'), 0);
+  assert.match(reportText(a), /💎 Diamant donné à \*\*Max\*\*/);
+  t.unreward(c.id); t.unreward(c.id);
+  assert.equal(t.diamondsOf('u2'), 0, 'réaction du bot ratée : repris une seule fois');
+  assert.equal(t.reward('rm3').id, c.id, 'et redonnable ensuite');
+  const old = createTodo(); report(old, 'vieux');
+  assert.equal(old.reward('rvieux'), null, 'ancien sujet sans auteur connu : rien');
+  const again = createTodo(JSON.parse(JSON.stringify(t.state())));
+  assert.equal(again.diamondsOf('u1'), 2); assert.equal(again.reward('rm1'), null);
+  assert.equal(createTodo({ diamonds: { x: -3, y: 1.5, z: 'a', ok: 4 } }).diamondsOf('ok'), 4);
+  assert.equal(createTodo({ diamonds: { x: -3 } }).diamondsOf('x'), 0);
+  assert.match(HELP, /💎/);
 });
