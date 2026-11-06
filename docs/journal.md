@@ -1708,7 +1708,7 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
 - **Chiffres** (simulés, stuff acier) : sans réglage, à 5 on rapporte 63 % par joueur et par heure ; 70 colonnes et minerais
   × 2,6 donnent 148 % et l'area 7 (contre l'area 6 à 3).
 - **Décision de Claude** : énergie comme la mine classique (un lancement = un coût).
-- **État** : 🧪 sur la branche `geoffrey/mine-geante` (pas en ligne)
+- **État** : ✅ en ligne le 06/11
 
 ## 06/11/2026 — Geoffrey — Appli : sous-onglets en bas, juste au-dessus de la barre des familles
 - **Pour le joueur** (retour d'un joueur) : dans l'appli, les sous-onglets (Inventaire / Craft / Four…, Stuff / Amélioration /
