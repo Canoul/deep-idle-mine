@@ -55,20 +55,24 @@ Chaque bloc appartient à une catégorie :
 
 ### Compositions des areas
 
-| Area | Terre | Pierre | Pierre dure | Charbon | Fer | Or | Diamant | Graphite | Mithril | Cobalt | Thorium | Vide |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 52 | 33 | – | 10 | – | – | – | – | – | – | – | 5 |
-| 1 | 30 | 49 | – | 15 | 1 | – | – | – | – | – | – | 5 |
-| 2 | 20 | 55 | – | 10 | 10 | – | – | – | – | – | – | 5 |
-| 3 | 10 | 60 | 5 | 7 | 10 | 3 | – | – | – | – | – | 5 |
-| 4 | – | 60 | 15 | 5 | 10 | 5 | – | – | – | – | – | 5 |
-| 5 | – | 55 | 20 | – | 9,5 | 5 | 0,5 | 5 | – | – | – | 5 |
-| 6 | – | 35 | 40 | – | 5 | 6 | 1 | 6 | 2 | – | – | 5 |
-| 7 | – | 20,5 | 54,5 | – | 2 | 1 | 1 | 7 | 5 | 2 | 2 | 5 |
-| 8+ | – | 15,5 | 59,5 | – | – | – | – | 5 | 7 | 4 | 4 | 5 |
+| Area | Terre | Pierre | Pierre dure | Charbon | Fer | Or | Diamant | Graphite | Mithril | Cobalt | Thorium | Arkonite | Iridium | Débris fossilisé | Vide |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 0 | 52 | 33 | – | 10 | – | – | – | – | – | – | – | – | – | – | 5 |
+| 1 | 30 | 49 | – | 15 | 1 | – | – | – | – | – | – | – | – | – | 5 |
+| 2 | 20 | 55 | – | 10 | 10 | – | – | – | – | – | – | – | – | – | 5 |
+| 3 | 10 | 60 | 5 | 7 | 10 | 3 | – | – | – | – | – | – | – | – | 5 |
+| 4 | – | 60 | 15 | 5 | 10 | 5 | – | – | – | – | – | – | – | – | 5 |
+| 5 | – | 55 | 20 | – | 9,5 | 5 | 0,5 | 5 | – | – | – | – | – | – | 5 |
+| 6 | – | 35 | 40 | – | 5 | 6 | 1 | 6 | 2 | – | – | – | – | – | 5 |
+| 7 *(06/11)* | – | 20,5 | 54,5 | – | 2 | 1 | 1 | 7 | 6 | 1,5 | 1,5 | – | – | – | 5 |
+| 8 *(06/11)* | – | 25 | 50 | – | – | – | – | 5 | 9 | 3 | 3 | – | – | – | 5 |
+| 9 *(06/11)* | – | 25 | 50 | – | – | – | – | – | 9,4 | 4 | 4 | 2 | 0,5 | 0,1 | 5 |
+| 10+ *(06/11)* | – | 25 | 50 | – | – | – | – | – | 4,8 | 5 | 5 | 4 | 1 | 0,2 | 5 |
+
+**Areas 7 à 10 : tableau de Geoffrey du 06/11/2026** (ancien : area 7 mithril 5, cobalt 2, thorium 2 ; area 8+ : pierre 15,5, pierre dure 59,5, mithril 7, cobalt 4, thorium 4). Le **Débris fossilisé** n'existe que dans la **Mine géante** ; en mine classique, sa part va à l'**arkonite** (2,1 % en area 9, 4,2 % en area 10). **Arkonite ore**, **Iridium ore** et **Débris fossilisé** : nouveaux minerais, pas encore de recette ; dureté 6,5 / 7,5 / 6, poids 4 / 5 / 3, XP 12 / 18 / 25, raretés rare / épique / épique *(provisoires, Claude)*.
 
 La dernière ligne se répète au-delà. Dès l'area 4, les **résidus** (0,5 %) sont pris sur la pierre : la pierre réelle
-vaut 0,5 de moins (59,5 en area 4… 15 en area 8). Areas 5 et 6 : décision du 23/10/2026 (Geoffrey) ; ancienne area 5 (répétée
+vaut 0,5 de moins (59,5 en area 4… 24,5 en areas 8 à 10). Areas 5 et 6 : décision du 23/10/2026 (Geoffrey) ; ancienne area 5 (répétée
 au-delà) : 55 pierre, 20 pierre dure, 3 charbon, 8 fer, 7 or, 2 diamant, 5 vide. **Areas 6 à 8 : décision du
 27/10/2026 (Geoffrey)** ; ancienne area 6 (répétée au-delà) : 35 pierre, 40 pierre dure, 7 fer, 6 or, 1 diamant, 6 graphite, 5 vide.
 Toutes les areas de 2 à 8 ont 20 % de minerais (500 blocs).

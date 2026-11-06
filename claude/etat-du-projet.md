@@ -323,6 +323,10 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   pierre, 20 pierre dure, 9,5 fer, 5 or, 0,5 diamant, 5 graphite, 5 vide ; ancien : 3 charbon, 8 fer, 7 or, 2 diamant,
   pas de graphite) et **nouvelle area 6** (ancien : répétée au-delà ; 35 pierre, 40 pierre dure, 7 fer, 6 or, 1 diamant, 6
   graphite, 5 vide). Plus de charbon dès l'area 5. Pas de donjon en area 6, mobs de l'area 5.
+- **Areas 7 à 10** (06/11, Geoffrey ; GAME_DESIGN « Compositions des areas ») : areas 7 et 8 revues, **areas 9 et 10** (10 répétée
+  au-delà ; ancien : la 8). Nouveaux minerais **Arkonite ore**, **Iridium ore** (areas 9-10) et **Débris fossilisé** (Mine géante
+  seulement ; en mine classique sa part va à l'arkonite, `debrisToArkonite`, src/sim/world.js). Sans recette ; valeurs provisoires
+  (Claude). Treasure, mobs et donjons des areas 9-10 : ceux de la dernière ligne de chaque table.
 - **Minerais profonds et areas 7-8** (27/10, Geoffrey ; en ligne le 27/10) : **Mithril ore**
   (commun, dès l'area 6), **Cobalt ore** et **Thorium ore** (inhabituels, dès l'area 7) ; pas encore de recette.
   Valeurs provisoires (Claude) : mithril dureté 4,5, poids 3, attrait 5, 5 XP ; cobalt / thorium 5,5, 4, 7, 8 XP.

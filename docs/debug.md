@@ -7778,3 +7778,16 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   page « Set équipé : Set 2 », casque retiré, message affiché (avant : page sur Set 1, serveur sur Set 2).
 - **À vérifier** : que c'est bien le cas de Nbrick (set défini pour une activité). Point fragile : une relecture d'état
   partie avant un « Équiper » et revenue après peut encore remettre les anciens skills à l'écran (`syncAccount`, prison).
+
+## 06/11/2026 — Geoffrey — Areas 7 à 10, Arkonite ore, Iridium ore, Débris fossilisé
+- `AREAS` (config) : areas 7 et 8 revues, 9 et 10 ajoutées (la 10 se répète) ; la pierre inclut les résidus (0,5). `BLOCKS` 27
+  Arkonite ore, 28 Iridium ore, 29 Débris fossilisé (`IDS` arkonite, iridium, debris) ; `XP.ore`, `RARITY`, `TEXTURES` (générées
+  par `scripts/gen_textures.py`, seules les 3 nouvelles gardées). `debrisToArkonite(comp)` (src/sim/world.js) : hors Mine géante,
+  la part du débris va à l'arkonite. HUD (`COLORS`), wiki (`BLOCK_NAME`, `AREA_KEYS`).
+- ⚠️ `FOCUS_VAL` = `FOCUS.valFactor × attrait max` passait de 16 à 28 (débris : attrait 14) : figé par `FOCUS.val` 16 (focus.js).
+- **Tests** ✅ geante (nouveau : tableau, sommes à 100, débris seulement en Mine géante sur 6 seeds × areas 9-10), wiki (chances de
+  treasure, 11 areas), rarity (3 raretés ajoutées) ; `npm run test:anticheat` 159/159. Simulation mine classique 5 × 3 : identique
+  à main (areas 3,0, profondeur 193,0, coffre 4 134,2 ; main a bougé avec l'échelle du logisticien : 191,2 → 193,0 avant ce
+  changement). ❌ Déjà rouges sur main : wiki « areas… 40 % », rarity « liste du créateur » (autres objets), XP « serveur… ».
+- **À vérifier** : aucune recette pour les 3 minerais ; treasures, mobs, donjons des areas 9-10 = la dernière ligne de leurs tables.
+

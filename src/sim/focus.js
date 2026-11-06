@@ -14,7 +14,7 @@ import { log } from './log.js';
 
 export const ORE_KEYS = Object.keys(IDS).filter(n => isOre(IDS[n]));
 const MAX_VAL = Math.max(...ORE_KEYS.map(n => BLOCKS[IDS[n]].val));
-export const FOCUS_VAL = FOCUS.valFactor * MAX_VAL;
+export const FOCUS_VAL = FOCUS.val ?? FOCUS.valFactor * MAX_VAL;   // figé (06/11, config)
 
 /* ne garde que les minerais connus avec un mode permis (none = absent), et l'area visée si c'est un numéro valide
    (absente = toujours plus profond) ; toujours un nouvel objet */
