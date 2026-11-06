@@ -141,6 +141,8 @@ test('MI ouverture : rien avant l\'heure ; à l\'heure, une mine (session « ins
   assert.equal(s.finishAt - s.startedAt, 150e3, '5 min de jeu = 2 min 30 réelles');
   assert.equal(instant.count(), 0, 'inscriptions vidées');
   assert.equal((await game.state(ME)).session.id, s.id);
+  const info = await game.activeSessionInfo(ME.id);                  // Social (06/11) : pas de plafond, pas de « 2/3 »
+  assert.equal(info.mode, 'mi'); assert.equal(info.size, 2); assert.equal(info.max, null);
   assert.deepEqual(await instant.tick(), [], 'pas deux fois');
   t.now = SLOT + 1000;
   assert.deepEqual(await instant.tick(), []);

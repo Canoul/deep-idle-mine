@@ -2108,7 +2108,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     activeSessionInfo: async accountId => {
       const rec = await activeOf(accountId);
       return rec ? { mode: rec.mode ?? 'mine', leftMs: rec.finishAt ? Math.max(0, rec.finishAt - clock()) : null,
-                     size: rec.players.filter(p => !hasLeft(rec, p.account)).length, max: isRaidMode(rec.mode) ? RAID.maxPlayers : GAME.maxPlayers } : await inGiant(accountId);
+                     size: rec.players.filter(p => !hasLeft(rec, p.account)).length,
+                     max: rec.mode === 'mi' ? null : isRaidMode(rec.mode) ? RAID.maxPlayers : GAME.maxPlayers } : await inGiant(accountId);   // MI : pas de plafond (06/11)
     },
     /* raid en cours d'une guilde (lobby de raid, server/guild/raid.js) : { id, startedAt, finishAt, players (encore là) } ou null */
     raidOfGuild: async guildId => {

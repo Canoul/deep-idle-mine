@@ -16,6 +16,10 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 06/11/2026 — Jules — Social : « Mine instantanée (5/3) » corrigé
+- **Pour le joueur** : dans la liste d'amis, un ami en Mine instantanée affichait « (5/3) » alors que la MI n'a pas de limite à 3 joueurs. Il affiche maintenant « Mine instantanée (5 joueurs) ». Les autres sessions gardent « (2/3) ».
+- **État** : ✅ en ligne le 06/11
+
 ## 06/11/2026 — Geoffrey — Stuff : sous-onglet « Aperçu set »
 - **Pour le joueur** : dans l'onglet Stuff (site et appli), un sous-onglet **Aperçu set** pour refaire un set entier
   d'un coup : on choisit le set (ou un nouveau, depuis son stuff ou vide), on change chaque case du mannequin avec

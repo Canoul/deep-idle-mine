@@ -7890,3 +7890,8 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - `bot/todo.js` : `REACTIONS` (1, 2, ❌, 💎) ; sujet avec `authorId`, `channelId`, `rewarded` ; `reward(reportId)` (1 diamant à l'auteur, une fois par sujet, rien pour un ancien sujet sans auteur) / `unreward(id)` / `diamondsOf(id)` ; `state().diamonds` (base JSON, valeurs invalides ignorées au chargement). Texte du report : « ❌ : supprimer », ligne 💎.
 - `bot/main.js` : ❌ → `todo.ignore` puis `removeReport` (message effacé) ; 💎 → `onDiamond` : membre du rôle admin (`members.fetch`), `reward`, réaction 💎 du bot sur le message d'origine (`channelId`/`sourceId`) ; échec → `unreward`, rien n'est sauvé. Les réactions du bot sont ignorées (`user.bot`).
 - Tests : `tests/bot-todo.test.js` (+1 diamants, croix mise à jour) ✅. ⚠️ Non essayé sur le vrai Discord (pas de jeton ici) ; le bot doit pouvoir réagir dans les salons des joueurs.
+
+### 06/11/2026 — Social : taille de la Mine instantanée « 5/3 » (Jules)
+- Cause : `activeSessionInfo` (server/game/service.js) renvoyait `max: GAME.maxPlayers` (3) pour toute session non-raid, MI comprise ; la MI accueille tous les inscrits (jusqu'à `MI` 20 par mine), d'où « (5/3) » dans `statusText` (src/ui/social.js).
+- Correction : `max: null` pour `rec.mode === 'mi'` ; `statusText` affiche « (n joueur(s)) » quand `size` est là sans `max`. Liste Online et guilde passent par le même `statusOf`.
+- Tests : tests/social.test.js (+2 cas statusText MI), tests/instant-server.test.js (activeSessionInfo d'une MI : size 2, max null) ✅.
