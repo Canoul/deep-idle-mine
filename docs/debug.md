@@ -7791,3 +7791,12 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   changement). ❌ Déjà rouges sur main : wiki « areas… 40 % », rarity « liste du créateur » (autres objets), XP « serveur… ».
 - **À vérifier** : aucune recette pour les 3 minerais ; treasures, mobs, donjons des areas 9-10 = la dernière ligne de leurs tables.
 
+## 06/11/2026 — Geoffrey — Fix : lobby de Mine géante plafonné à 3
+- **Cause** : `maxOf(p)` lit `p.activity` ; le navigateur n'envoyait l'activité (`POST /api/party/activity`) que s'il avait déjà un
+  groupe (`if(party && …)`, src/ui/lobby.js), et `create()` faisait un groupe sans activité → 3 places jusqu'au renvoi suivant.
+- **Correctif** : `soloActivity` (server/party/service.js) : activité d'un joueur sans groupe, reprise par `create()` (code, lien,
+  « Rejoindre » sur un ami seul) ; effacée avec null et à la suppression du compte. Le navigateur l'envoie aussi seul (clé
+  `party?.code ?? '-'`).
+- **Tests** ✅ geante (nouveau : chef seul, Mine géante ouverte, 4 joueurs rejoignent, 6e refusé ; activité nulle → 3 places ;
+  rouge sans le correctif), party, party-forming, lobby : 84/84.
+
