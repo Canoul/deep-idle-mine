@@ -426,7 +426,7 @@ const lobby = setupLobby({
     try {
       enterSession((await gameApi.start(opts)).session); nav.show('session'); instantLobby.refresh();
       /* clé d'instance consommée, énergie débitée, prison terminée : relus au serveur */
-      gameApi.state().then(st => { setInventory(st.inventory); setEnergy(st.energy); setPrison(st.prison, { sync:false }); }).catch(() => {});
+      gameApi.state().then(st => { setInventory(st.inventory); setEnergy(st.energy); setGeante(st); setPrison(st.prison, { sync:false }); }).catch(() => {});
     }   // lancer désinscrit du MI
     catch(e){
       if(e instanceof ApiError && e.code === 'session_running') return refresh();
@@ -601,7 +601,7 @@ guildTab = setupGuild({ root: document.querySelector('.view[data-view="guilde"]'
   /* lobby de raid (04/11/2026) : le chef lance → la session ; un membre voit le raid lancé → la session est relue */
   onRaid: async session => {
     enterSession(session); nav.show('session');
-    gameApi.state().then(st => { setInventory(st.inventory); setEnergy(st.energy); setPrison(st.prison, { sync:false }); }).catch(() => {});
+    gameApi.state().then(st => { setInventory(st.inventory); setEnergy(st.energy); setGeante(st); setPrison(st.prison, { sync:false }); }).catch(() => {});
   },
   onRaidWatch: async () => { if(!rec) await refresh().catch(console.warn); nav.show('session'); },
   onState: st => { const run = st.mine?.raid?.running; if(run?.mine && !rec && !waiting) refresh().then(() => nav.show('session')).catch(console.warn); },
@@ -668,7 +668,7 @@ const gchat = setupChat({ prefix:'gchat', get: after => socialApi.chat(after), p
                           paused: () => document.hidden || gchatDock.folded, time: true,
                           show: gchatTabs.show, line: chatLine, sent: gchatTabs.sent,
                           /* gagnant d'un raffle : son lot est sur le serveur, à relire tout de suite */
-                          fresh: list => { if(list.some(m => m.winner && (m.winner === acct.account?.id || m.winners?.includes(acct.account?.id)))) gameApi.state().then(st => { setInventory(st.inventory); setEnergy(st.energy); }).catch(() => {}); },
+                          fresh: list => { if(list.some(m => m.winner && (m.winner === acct.account?.id || m.winners?.includes(acct.account?.id)))) gameApi.state().then(st => { setInventory(st.inventory); setEnergy(st.energy); setGeante(st); }).catch(() => {}); },
                           parse: text => { const msg = parseChatInput(text, gchatTabs.channel(), gchatTabs.target()); return msg.lobby ? { ...msg, lobby: lobby.pubContext() } : msg; } });
 /* signaler, bloquer (01/11/2026) : fiche d'un joueur, menu d'un message */
 const moderate = setupModeration({ report: body => moderationApi.report(body),
@@ -805,6 +805,8 @@ const prisonShown = () => !rec && prisonActive(prison);
 /* la prison affichée en fond (et pour les transitions d'onglet), comme une session : sa copie d'affichage si elle est prête.
    Fonction déclarée (pas une const) : l'onglet affiché au chargement l'appelle avant cette ligne */
 function prisonBackdrop(){ return !rec && prisonActive(prison) && PG?.ready ? PG : null; }
+/* Mines géantes restantes aujourd'hui (06/11) : carte du Lobby */
+const setGeante = st => { if(Number.isInteger(st?.geanteLeft)) lobby.update({ geanteLeft: st.geanteLeft }); };
 function setEnergy(e){
   if(!e) return;
   $('navEnergy').hidden = false;
@@ -837,7 +839,7 @@ function setPrison(p, { sync = true } = {}){
 async function syncAccount(){
   try {
     const st = await gameApi.state();
-    setInventory(st.inventory); setEnergy(st.energy);
+    setInventory(st.inventory); setEnergy(st.energy); setGeante(st);
     if(!st.ended || st.session) setProgress(st.progress);   // un bilan à montrer : showResult annonce la montée de niveau
     skills.set(st.skills);
     setPrison(st.prison, { sync:false });
@@ -945,7 +947,7 @@ function showResult(st){
   rec = null; G = null; waiting = false;
   setsUI.refresh(); sessionFlag();
   lobby.update({ session:null });            // on peut relancer depuis le lobby pendant qu'on lit le bilan
-  setEnergy(st.energy); setPrison(st.prison, { sync:false });
+  setEnergy(st.energy); setGeante(st); setPrison(st.prison, { sync:false });
   const up = setProgress(st.progress);       // XP versée par le serveur : nouveau niveau ?
   skills.set(st.skills);                     // … et donc peut-être de nouveaux points de skill
   /* bilan vu dès qu'il s'affiche (30/10, Geoffrey) : avant, seuls ses boutons le marquaient « vu » ; le quitter autrement
@@ -998,7 +1000,7 @@ async function refresh(waited){
   spells.set(st.spells);
   setsUI.set(st.sets);
   lobby.update({ prefs: st.prefs });
-  setEnergy(st.energy); setPrison(st.prison, { sync:false });
+  setEnergy(st.energy); setGeante(st); setPrison(st.prison, { sync:false });
   if(st.session) enterSession(st.session);
   else showNoSession();
   if(st.ended && !st.session) showResult(st);

@@ -47,6 +47,10 @@ test('lobby : activité au menu, 5 places pour le chef, Lancer seulement à 5', 
   assert.deepEqual(launchFor({ mode: 'geante', account: me, party: mk(3), info: {} }), { can: false, label: '⛰ Il faut 5 joueurs (3/5)' });
   assert.equal(launchFor({ mode: 'geante', account: me, party: mk(5), info: {} }).label, '▶ Lancer la Mine géante');
   assert.equal(launchFor({ mode: 'geante', account: me, party: mk(2), info: { dev: true } }).can, true, 'mode dev : mineurs de test');
+  assert.deepEqual(launchFor({ mode: 'geante', account: me, party: mk(5), info: {}, geanteLeft: 0 }), { can: false, label: '⛰ Plus de Mine géante aujourd\'hui (2/2)' });
+  const { geanteText } = await import('../src/ui/lobby.js');
+  assert.equal(geanteText(1), '⛰ 1 h (2 h de jeu) · sans énergie · 1/2 aujourd\'hui');
+  assert.equal(geanteText(undefined), '⛰ 1 h (2 h de jeu) · sans énergie · 2 par jour');
 });
 
 const P = Array.from({ length: 6 }, (_, i) => ({ id: `AAAA000${i}`, name: `J${i}` }));
@@ -59,7 +63,7 @@ function setup(){
   return { store, game, advance: ms => { now += ms; } };
 }
 
-test('serveur : 5 joueurs exactement, 2 h, énergie débitée comme la mine, 2 par jour et par joueur', async () => {
+test('serveur : 5 joueurs exactement, 2 h, sans énergie, 2 par jour et par joueur (compteur dans l\'état)', async () => {
   const { store, game } = setup();
   for(const p of P) await store.putEnergy(p.id, { value: 100, max: 100 });
   await assert.rejects(game.start(P[0], { mode: 'geante' }, team(3)), { code: 'geante_players' });
@@ -67,13 +71,15 @@ test('serveur : 5 joueurs exactement, 2 h, énergie débitée comme la mine, 2 p
   await assert.rejects(game.start(P[0], { mode: 'mine' }, team(5)), { code: 'bad_request' }, 'mine classique : 3 au plus');
   /* J3 a déjà fait ses 2 Mines géantes aujourd'hui : refusé, en le nommant */
   const today = Date.UTC(2026, 10, 6, 7);
-  for(const k of [1, 2]) await store.putGameSession({ id: `old-${k}`, mode: 'geante', status: 'done', startedAt: today + k, players: [{ account: P[3].id, name: 'J3' }], leaves: [] });
+  for(const k of [1, 2]) await store.putGameSession({ id: `old-${k}`, mode: 'geante', status: 'done', startedAt: today + k, endedAt: today + k + 1, players: [{ account: P[3].id, name: 'J3' }], leaves: [], seen: [P[3].id], shares: [] });
   await assert.rejects(game.start(P[0], { mode: 'geante' }, team(5)), e => e.code === 'geante_daily' && /J3/.test(e.message));
   await store.deleteGameSession('old-2');
   await game.start(P[0], { mode: 'geante' }, team(5));
   const rec = (await store.sessionsOf(P[0].id)).find(s => s.status === 'running');
   assert.equal(rec.mode, 'geante'); assert.equal(rec.players.length, 5);
   assert.equal(rec.finishAt - rec.startedAt, realDurationMs(GAME.speed, 'geante'));
-  for(const p of P.slice(0, 5)) assert.ok((await store.getEnergy(p.id)).value < 100, `${p.name} a payé l'énergie`);
+  for(const p of P.slice(0, 5)) assert.equal((await store.getEnergy(p.id)).value, 100, `${p.name} : pas d'énergie (06/11)`);
+  assert.equal((await game.state(P[3])).geanteLeft, 0, 'J3 : old-1 et celle-ci');
+  assert.equal((await game.state(P[5])).geanteLeft, 2);
   assert.equal((await store.getEnergy(P[5].id)).value, 100);
 });

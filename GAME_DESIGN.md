@@ -636,7 +636,7 @@ Canaux : **Général**, **MP**, **Groupe**, **Guilde** (violet, 01/11), **LFG**,
 
 ### Mine géante (5 joueurs) (Lobby → Mine géante) *(06/11/2026, Geoffrey ; `GEANTE` en config, `src/shared/geante.js`)*
 - **5 joueurs exactement**, un seul groupe : coffre, XP et buffs partagés comme d'habitude. Le chef qui ouvre l'activité a **5 places** dans son lobby ; « Lancer » seulement à 5.
-- **2 h de jeu** (1 h réelle), **2 par jour et par joueur** (jour de Paris) ; énergie comme la mine classique.
+- **2 h de jeu** (1 h réelle), **2 par jour et par joueur** (jour de Paris) ; **ne coûte pas d'énergie** *(06/11, Geoffrey)*. La carte du Lobby l'affiche à côté de « Lancer » : « 1 h (2 h de jeu) · sans énergie · x/2 aujourd'hui » ; à 0, « Lancer » est grisé.
 - **Mêmes règles que la mine classique** : oxygène, pods, treuil et seau, donjon, pièges, k hole, treasures (mêmes chances par area), XP.
 - **Ce qui change** : la mine fait **70 colonnes** (au lieu de 50 ; coffre en colonne 32, treuil en 35), **minerais × 2,7** (pris sur la terre, la pierre et la pierre dure, comme en prison), **mobs × 1,5** (apparitions plus fréquentes).
 - **Objectif** : chaque joueur rapporte **1,5 × les minerais par heure** d'une mine normale à 3, en allant **au moins aussi profond**. Mesuré le 05/11 (stuff acier, 4 parties par réglage) : 70 colonnes × 2,6 → 148 %, area 7 (mine normale : area 6) ; sans réglage, à 5 sur 50 colonnes : 63 %. Valeurs à affiner en jeu.
