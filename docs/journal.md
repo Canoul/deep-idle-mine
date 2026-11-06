@@ -20,6 +20,11 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 06/11/2026 — Jules — Appli : les sprites des objets ne sont plus écrasés à l'Amélioration
+- **Pour le joueur** : dans l'appli, onglet Perso → Amélioration, les icônes des pièces à choisir sortaient écrasées en largeur
+  (pioches trop fines, ceintures trop courtes). Elles sont de nouveau carrées. Le site n'est pas concerné.
+- **État** : ✅ en ligne le 06/11
+
 ## 06/11/2026 — Jules — Stats du mineur plus lisibles sur téléphone
 - **Pour le joueur** : sur téléphone (site et appli), chaque stat tient sur une ligne nette : le nom à gauche, le total à
   droite en gros, et le détail (base, +stuff en bleu clair, ×skills, +anneaux) sur la ligne du dessous, à droite. Un filet
