@@ -16,6 +16,11 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 06/11/2026 — Jules — Lobby : description de la Mine géante sur plusieurs lignes
+- **Pour le joueur** : dans le menu des activités, le texte de la Mine géante (« À 5, 1 h (2 h de jeu)… ») revient à la
+  ligne au lieu d'être coupé au bord du bouton.
+- **État** : ✅ en ligne le 06/11
+
 ## 06/11/2026 — Geoffrey — Guide « Premiers pas » déplaçable
 - **Pour le joueur** : le guide se déplace en faisant glisser son en-tête (poignée ⠿), sur le site et dans l'appli ; un
   simple toucher le replie / déplie toujours. La position est retenue (par compte, dans ce navigateur) et ramenée dans
