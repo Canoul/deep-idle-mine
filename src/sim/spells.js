@@ -5,8 +5,8 @@
    Trois moments :
    - afterDecide : l'IA vient de choisir une action ; un pas de marche peut devenir un Dash, un coup de pioche une
      Dynamite ;
-   - updateSpells : à chaque tick, Illumination, Inspiration, Ulti shen, Cri de guerre, Cleave, Hand of Justice,
-     Bonbonne de zipette ;
+   - updateSpells : à chaque tick, Illumination, Inspiration, Ralliement, Cri de guerre, Cleave, Hand of Justice,
+     Bonbonne d'oxygène ;
    - learnOnMine : un bloc miné (Fast learner). */
 import { inspireOn, inspirePct, setInspire, sameGroup } from './groups.js';
 import { W, IDS, DUCK, BLOCKS, CFG } from '../config.js';
@@ -226,7 +226,7 @@ function inspire(G,m){
 }
 export const inspireBonus = (G, m = null) => inspirePct(G, m);
 
-/* Ulti shen : un autre mineur du groupe se bat (il frappe un mob, ou un mob le tacle) → téléporté sur sa case, il
+/* Ralliement : un autre mineur du groupe se bat (il frappe un mob, ou un mob le tacle) → téléporté sur sa case, il
    inflige hpPct des PV max du mob (bossPct sur un boss), puis se bat à ses côtés. Seulement quand il travaille (pas
    en remontée, pas pendant un chantier de treuil, la Mule, une chute ou un étourdissement) ; jamais dans un donjon interdit. */
 function ulti(G,m){
@@ -243,7 +243,7 @@ function ulti(G,m){
     if(!G.khole && m.y>m.stats.maxDepth) m.stats.maxDepth = m.y;
     cast(G,m,'ulti_shen');
     foe.hp -= foe.maxhp*(isBoss(foe) ? S.bossPct : S.hpPct);
-    log(G, `🌀 ${m.name} : Ulti shen, rejoint ${o.name} contre un ${foe.type}`);
+    log(G, `🌀 ${m.name} : Ralliement, rejoint ${o.name} contre un ${foe.type}`);
     if(foe.hp<=0) killMob(G,m,foe);
     else { m.foe = foe.id; m.foeHit = G.t; }
     return;
@@ -313,7 +313,7 @@ function handOfJustice(G,m){
   log(G, `⚖️ ${m.name} : Hand of Justice, ${o.type} étourdi ${S.stun} s`);
 }
 
-/* Bonbonne de zipette : le prochain allié à radius cases ou moins, qui travaille dans la mine (pas en remontée, pas en
+/* Bonbonne d'oxygène : le prochain allié à radius cases ou moins, qui travaille dans la mine (pas en remontée, pas en
    descente depuis la surface, pas à la surface) et à qui il manque de l'oxygène, regagne podsPct des pods max du
    logisticien (sans dépasser son max) ; s'il y en a plusieurs, celui qui en a le moins (en %). Jamais sur lui-même. La
    recharge commence une fois l'oxygène donné. */
@@ -327,5 +327,5 @@ function zipette(G,m){
   const gain = Math.min(m.carac.pods*S.podsPct, o.carac.oxygenMax-o.ox);
   o.ox += gain;
   cast(G,m,'zipette');
-  log(G, `🫧 ${m.name} : Bonbonne de zipette, ${o.name} +${Math.round(gain)} d'oxygène`);
+  log(G, `🫧 ${m.name} : Bonbonne d'oxygène, ${o.name} +${Math.round(gain)} d'oxygène`);
 }

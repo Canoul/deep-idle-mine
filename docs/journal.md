@@ -9,6 +9,10 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 06/11/2026 — Jules — Chat : le champ de message ne sort plus de la boîte
+- **Pour le joueur** : quand le chat passait au-dessus de la bulle de gauche de la barre d'action avec une petite hauteur, la boîte ne gardait que ses onglets et le champ « Message… » débordait dessous. Maintenant la boîte garde la hauteur choisie au-dessus de la bulle, et ne devient jamais plus petite que ses onglets + son champ (c'est la liste des messages qui rétrécit). En tirant le bord du haut, il suit la souris.
+- **État** : ✅ en ligne le 06/11
+
 ## JJ/MM/AAAA — Prénom — Titre court
 - **Pour le joueur** : ce qui change en jeu (ou « rien, c'est de l'organisation »).
 - **Décisions** : choix de design ou d'équilibrage tranchés (s'il y en a).
@@ -19,7 +23,22 @@ Modèle d'entrée :
 ## 06/11/2026 — Jules — Appli : les sprites des objets ne sont plus écrasés à l'Amélioration
 - **Pour le joueur** : dans l'appli, onglet Perso → Amélioration, les icônes des pièces à choisir sortaient écrasées en largeur
   (pioches trop fines, ceintures trop courtes). Elles sont de nouveau carrées. Le site n'est pas concerné.
-- **État** : 🧪 sur la branche `jules/fix-images-aplaties` (pas en ligne)
+- **État** : ✅ en ligne le 06/11
+
+## 06/11/2026 — Jules — Stats du mineur plus lisibles sur téléphone
+- **Pour le joueur** : sur téléphone (site et appli), chaque stat tient sur une ligne nette : le nom à gauche, le total à
+  droite en gros, et le détail (base, +stuff en bleu clair, ×skills, +anneaux) sur la ligne du dessous, à droite. Un filet
+  sépare deux stats ; les chiffres ne « bavent » plus (fin du faux gras). Sur ordinateur, rien ne change. Les boutons « ? »
+  avaient déjà disparu le 05/11 (Geoffrey) : la bulle s'ouvre en posant la souris sur le nom, ou en gardant le doigt dessus.
+- **À suivre** : la liste est plus longue sur téléphone (le détail prend une ligne). « Vitesse de minage » et « Dégâts »
+  apparaissent deux fois (valeur fixe puis bonus en %) : à renommer si ça gêne (ex. « Dégâts (bonus %) »).
+- **État** : ✅ en ligne le 06/11
+
+## 06/11/2026 — Geoffrey — Noms plus corrects pour les stores : Bonbonne d'oxygène, Ralliement, Garde du corps, Golem gluant
+- **Pour le joueur** : quatre noms changent, rien d'autre. **Bonbonne de zipette** → **Bonbonne d'oxygène** (sort du Logisticien), **Ulti shen** → **Ralliement** (sort à parchemin, « Parchemin « Ralliement » »), **Braum** → **Garde du corps** (skill du Barbare et « Glyphe Garde du corps »), **Golem de sperme** → **Golem gluant** (mob). Pseudo du Gallianix « Cuiseuse de sperme » → **« Ex d'Infernatiwar »**. Sorts appris, skills, parchemins et glyphes déjà dans les sacs : tout est gardé, renommé au démarrage du serveur. « K hole » garde son nom (choix de Geoffrey).
+- **D'où ça vient** : les trois premiers sont le travail de Jules du 02/11 (branche `jules/nom-bonbonne-oxygene`, jamais fusionnée, 328 commits de retard) : refait à l'identique sur le jeu actuel plutôt que fusionné (11 fichiers en conflit). Le Golem gluant est ajouté par Geoffrey.
+- **À suivre** : Cleave et Hand of Justice viennent aussi de League of Legends.
+- **État** : ✅ en ligne le 06/11
 
 ## 05/11/2026 — Geoffrey — Craft : Clé d'instance II de base
 - **Pour le joueur** : la Clé d'instance II se fabrique au Craft, sans blueprint : 2 Barres d'argent et 1 Orbe supérieur.

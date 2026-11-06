@@ -13,7 +13,7 @@ import { worldFrom } from './helpers.js';
 
 const TREE_GLYPHS = tree => ({ mineur:['Glyphe Pioche aiguisée', 'Glyphe Second souffle', 'Glyphe Ruée'],
   logisticien:['Glyphe Navette', 'Glyphe Échelle de 2', 'Glyphe Mule', 'Glyphe Treuil'],
-  barbare:['Glyphe Force brute', 'Glyphe Pillage', 'Glyphe Braum'] })[tree];
+  barbare:['Glyphe Force brute', 'Glyphe Pillage', 'Glyphe Garde du corps'] })[tree];
 const scene = (tree, owned = []) => {
   const G = worldFrom(['', '', '  @cccc']), m = G.miners[0];
   m.skillTree = tree; m.glyphsOwned = [...owned]; G.glyphRng = () => 0;
@@ -76,10 +76,10 @@ test('drop logisticien : une échelle posée ; drop barbare : un mob tué', () =
 
 test('drop : versé à la fin dans SA part (pas dans le coffre) ; perdu s\'il quitte', () => {
   const G = newSession(5, { miners:2, accounts:['A', 'B'] });
-  G.miners[0].glyphFound = ['Glyphe Ruée']; G.miners[1].glyphFound = ['Glyphe Braum']; G.miners[1].left = 10;
+  G.miners[0].glyphFound = ['Glyphe Ruée']; G.miners[1].glyphFound = ['Glyphe Garde du corps']; G.miners[1].left = 10;
   endSession(G);
   assert.equal(G.summary.shares[0].bag['Glyphe Ruée'], 1);
-  assert.equal(G.summary.shares[1].bag['Glyphe Braum'], undefined, 'parti : perdu');
+  assert.equal(G.summary.shares[1].bag['Glyphe Garde du corps'], undefined, 'parti : perdu');
   assert.equal(G.summary.chest['Glyphe Ruée'], undefined, 'pas dans le coffre commun');
 });
 

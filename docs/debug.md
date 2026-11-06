@@ -7692,12 +7692,53 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **À vérifier** : vrai groupe de 5 en ligne ; mithril (mesuré en acier seulement) ; coût serveur d'une partie de 5 × 2 h ; dans
   l'appli, la mine de 70 colonnes à l'écran.
 
+### 06/11/2026 — Renommages pour les stores, reprise de `jules/nom-bonbonne-oxygene` (Geoffrey) 🧪
+- La branche de Jules (02/11 : zipette → Bonbonne d'oxygène, Ulti shen → Ralliement, Braum → Garde du corps) n'a jamais été fusionnée ; 328 commits de retard, 11 fichiers en conflit au merge. Refaite sur main par remplacement des noms affichés (code, tests, wiki, GAME_DESIGN, état du projet ; pas journal ni debug, historiques), + « Golem de sperme » → « Golem gluant » (`MOB_INFO.golem.name`, textes). Identifiants inchangés (`zipette`, `ulti_shen`, `braum`, `golem`, `glyph:'braum'`, `skill.braum`) : sorts appris, skills, glyphes posés gardés tels quels.
+- Objets renommés dans les sacs : `ITEM_RENAMES` (server/game/rename-items.js) + `'Parchemin « Ulti shen »'`, `'Glyphe Braum'` (migration au démarrage, comme les Lunettes Gucci). Test repris de Jules dans `tests/item-rename.test.js`.
+- Tests : item-rename, effects, game-service, giant-sim, glyph-drop, glyphs, goblin-king, mobs, skills, spells, trap, wiki ✅. ⚠️ `tests/hescoming-sim.test.js` « paliers du Bloc × 24 » rouge **aussi sur main** (sans rapport).
+- La branche `jules/nom-bonbonne-oxygene` reste sur GitHub : à supprimer une fois celle-ci en ligne (son travail est repris ici).
+
 ## 06/11/2026 — Geoffrey — Mine géante : sans énergie, carte du Lobby
 - `server/game/service.js` : `energyLocks` seulement pour `mine` (la Mine géante ne coûte plus rien) ; `state()` renvoie `geanteLeft`
   (`geanteLeft(sessionsOf)`). `src/main.js` `setGeante(st)` à chaque `state` → `lobby.update({ geanteLeft })`. `src/ui/lobby.js` :
   `geanteText(left)` dans `#launchCost` (classe `err` à 0, bulle), `launchFor` grisé à 0 (hors dev), texte de l'activité. Seul son
   compteur est connu du navigateur : celui des autres joueurs, c'est le serveur qui le refuse (`geante_daily`, en les nommant).
 - **Tests** ✅ geante (pas d'énergie, `state().geanteLeft`, texte, Lancer grisé à 0), lobby, team-energy, energy-server, wiki.
+
+## 06/11/2026 — Jules — Chat global : le champ débordait sous la boîte
+- **Cause** : `.chatDock` avait `height:var(--chat-h)` et, depuis le 04/11, `.overNav` ajoute `padding-bottom:--chat-lift` (hauteur
+  de la bulle recouverte, ~114 px à 1600 × 900). Le padding était pris **dans** la hauteur : à 15 % d'écran, la `.card` (flex:1,
+  min-height:0) tombait à 36 px, les onglets seuls ; `#gchatForm` débordait en dessous. Même débordement sans remontée sur un écran
+  bas (15 % de 650-700 px < onglets + champ).
+- **Correction** (`src/ui/style.css`) : plus de hauteur sur `.chatDock` (taille = boîte + remontée) ; `.chatDock .card` porte
+  `min-height:min(var(--chat-h), 100dvh − bandeau − remontée − 4u)` en hauteur automatique, et `#gchatLog` a `contain:size` (les
+  messages ne comptent pas dans la taille, flex:1 remplit). Donc boîte ≥ hauteur choisie et ≥ onglets + champ. Replié : `min-height:0` ;
+  téléphone : `flex:1;min-height:0` (le dock est tendu par top/bottom). Note : `min-height:min-content` sur le dock et `height` +
+  min auto sur la card ne marchent pas dans Chromium (essayés). `src/ui/chat-dock.js` : `--chat-lift` posé sur `body` (la marge de
+  `#run .runL` en ≥ 1171 px l'ajoute) ; tirer le bord du haut calcule la part depuis le bas de la boîte (`card.getBoundingClientRect()`),
+  le bord suit le pointeur même remonté ou au-dessus de la barre (≤ 1170 px).
+- **Tests** ✅ chat (39, dont un nouveau sur les règles CSS). ✅ Vu dans Chromium (mode dev, chat affiché à la main) : 1600 × 900 à
+  15 % et 85 %, 1280 × 650 et 1000 × 700 à 15 %, 1920 × 1080 à 60 % : le champ reste dans la boîte ; 60 % = 540 px exacts avec 40
+  messages qui défilent ; replié et téléphone (400 × 800) OK.
+- **À vérifier** : en vrai, connecté, le tirage du bord du haut à la souris ; au minimum (15 %) la liste des messages peut être vide.
+
+
+## 06/11/2026 — Jules — Stats du mineur lisibles sur téléphone
+- Retour joueur (« moche, tous les points d'interrogation, encore plus quand ça fait un retour à la ligne ») : les « ? » étaient
+  déjà partis le 05/11 (`7f601b2e`, bulle sur le nom via `data-tiphold`) ; la capture datait d'avant. Reste la lisibilité.
+- `src/ui/stuff.js` : `statRow(label, total, detail)` ; chaque ligne = `.row.statRow` > `.statL` (nom + bulle) + `.statV` >
+  `<b>` total + `.statD` (détail : `(base +stuff ×skills)`, anneaux, ténacité effective ; absent s'il n'y a rien). Gear score et
+  DPS passent par le même `statRow`. HTML identique à l'œil sur PC (le détail reste après le total).
+- `src/ui/style.css` (sous `.statName`) : `:is(body.phone,body.app) .statRow` en grille `minmax(0,1fr) auto`, `.statV`
+  `display:contents`, `.statD` sur toute la largeur à droite (18 px, gris éclairci `#cbb9a1`) ; totaux et noms Gear score / DPS
+  en Jersey 15 poids 400 (le `<b>` sur VT323 était un gras synthétique) ; nom 19 px ; filet `var(--sep)` entre deux lignes.
+  Vaut aussi pour la fiche d'un ami (`.fstats`, src/ui/social.js), qui utilise `statsHTML`.
+- **Tests** ✅ stat-help (nouveau : nom / total / détail séparés, un `.statD` par stat qui a un bonus), dps, dashboard, wiki,
+  wiki-secret. ✅ Vu dans Chromium (page de test avec `statsHTML` du preset Barbare, `body.phone`) à 360 et 300 px : plus aucun
+  retour à la ligne dans les chiffres ; seul « Lignes boussole (dessus/dessous) » passe sur deux lignes à 300 px.
+- ❌ Déjà rouges sur main, sans rapport : cape-inclusive « fiche : cape épique… », tier2 « fortune : le doublon… », « recycle :
+  un BP du T2… » (mêmes 3 échecs avec et sans ce changement).
+- **À vérifier** : sur un vrai téléphone avec une police système agrandie (cas du joueur) ; dans l'appli iOS / Android.
 
 
 ## 06/11/2026 — Jules — Appli : sprites écrasés dans les tuiles de l'Amélioration

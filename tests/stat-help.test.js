@@ -27,3 +27,16 @@ test('le wiki lit les mêmes textes', () => {
   const r = statRows().find(s => s.key === 'pods');
   assert.equal(r.help, STAT_HELP.pods);
 });
+
+/* 06/11/2026 (Jules) : sur téléphone, le détail passe sous le total (src/ui/style.css) ; il faut donc nom, total et détail séparés */
+test('carte des stats : chaque ligne a son nom (statL), son total (b) et, s\'il y en a un, son détail (statD)', async () => {
+  const { DEV_PRESETS } = await import('../src/config.js');
+  const worn = Object.fromEntries(DEV_PRESETS.gear.map((item, i) => [['casque', 'torse', 'jambes', 'bottes', 'pioche', 'epee'][i], { item }]));
+  const html = statsHTML(worn, {}), rows = minerStats(worn, {});
+  assert.equal(html.match(/class="row statRow"><span class="statL">/g)?.length, rows.length + 2);
+  assert.equal(html.match(/<span class="statV"><b>/g)?.length, rows.length + 2);
+  const withDetail = rows.filter(s => s.bonus || s.mult !== 1 || s.skill || s.ring || (s.key === 'tenacity' && s.total > 0)).length;
+  assert.ok(withDetail > 0);
+  assert.equal(html.match(/class="statD"/g)?.length, withDetail, 'un détail par stat qui a un bonus, rien sinon');
+  assert.match(html, /<b>337<\/b> <span class="statD"><small class="mut">\(200 /, 'pods : total puis détail');
+});

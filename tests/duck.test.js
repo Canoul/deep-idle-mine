@@ -18,7 +18,7 @@ const run = (G, s) => { for(let i = 0; i < s * 10; i++) updateMobs(G); };
 
 test('config : 50 PV, la liste du créateur, 25 % de Fragment de cœur ; hors des tirages d\'apparition', () => {
   assert.equal(DUCK.hp, 50);
-  assert.deepEqual(DUCK.names, ['Cuiseuse de sperme', 'Roxanne', 'La brésilienne', 'La thaïlandaise']);
+  assert.deepEqual(DUCK.names, ['Ex d\'Infernatiwar', 'Roxanne', 'La brésilienne', 'La thaïlandaise']);
   assert.deepEqual([DUCK.heart.item, DUCK.heart.chance], ['Fragment de cœur', 0.25]);
   assert.equal(ITEMS['Fragment de cœur'].cat, 'material');
   assert.ok(!MOB_TYPES.includes(DUCK.type) && !Object.hasOwn(MOBS.hpBase, DUCK.type));
