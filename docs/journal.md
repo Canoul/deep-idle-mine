@@ -1732,6 +1732,15 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
 
 ---
 
+## 06/11/2026 — Geoffrey — Areas 7 à 10 et trois nouveaux minerais
+- **Pour le joueur** : les areas 7 et 8 changent (plus de mithril, moins de cobalt et de thorium en area 7 ; area 8 plus tendre :
+  25 % de pierre, 50 % de pierre dure). **Deux nouvelles areas, 9 et 10** (la 10 se répète au-delà), avec trois nouveaux minerais :
+  **Arkonite ore**, **Iridium ore** et **Débris fossilisé**. Le débris ne se trouve que dans la **Mine géante** ; en mine classique,
+  sa part va à l'arkonite. Pas encore de recette pour ces trois minerais.
+- **Décisions de Claude** (à revoir) : dureté, poids, attrait, XP et rareté des trois minerais ; leurs textures ; le nom écrit
+  « Débris fossilisé » (avec un f).
+- **État** : 🧪 sur la branche `geoffrey/areas-9-10` (pas en ligne)
+
 ## 06/11/2026 — Geoffrey — Mine géante : sans énergie, et sa carte dit ce qu'elle est
 - **Pour le joueur** : la Mine géante ne coûte plus d'énergie. Sa carte du Lobby affiche à côté de « Lancer » : « 1 h (2 h de jeu) ·
   sans énergie · 1/2 aujourd'hui » (avant : le coût en énergie de la mine classique). Plus de session aujourd'hui : « Lancer » est

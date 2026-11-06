@@ -143,6 +143,12 @@ export function fillComp(r, comp, w=W, h=AREA_H, fracRng=null){
 
 /* Génère l'area k uniquement depuis seed + k (déterministe), comptes exacts (fillComp), puis donjon, pièges, treasure,
    résidus et k hole par-dessus. */
+/* débris fossilisé (06/11/2026, Geoffrey) : seulement dans la Mine géante ; ailleurs, sa part va à l'arkonite */
+export function debrisToArkonite(comp){
+  if(!comp?.debris) return comp;
+  const { debris, ...rest } = comp;
+  return { ...rest, arkonite: (rest.arkonite || 0) + debris };
+}
 export function genArea(G,k){
   if(G.raid) return genRaidArea(G,k);
   const r = mulberry32(hash(G.seed, k+1));
@@ -150,7 +156,7 @@ export function genArea(G,k){
      autres colonnes sont des barreaux (hors des comptes de l'area) */
   const ck = contentOf(G, k), box = prisonBox(G);
   const base = G.prison ? profileComp(prisonComp(areaComp(ck), PRISON.oreMul), G.prison.profile?.ores)
-             : G.geante ? prisonComp(areaComp(ck), GEANTE.oreMul) : areaComp(ck);   // Mine géante (06/11) : minerais × oreMul, pris sur le terrain
+             : G.geante ? prisonComp(areaComp(ck), GEANTE.oreMul) : debrisToArkonite(areaComp(ck));   // Mine géante (06/11) : minerais × oreMul, pris sur le terrain
   /* Shrine d'abondance (28/10/2026) : G.oreBonus points de terrain changés en minerais, dans chaque area de la session */
   const comp = G.oreBonus > 0 ? oreBonusComp(base, G.oreBonus) : base;
   const filled = fillComp(r, comp, box ? box.w : W, AREA_H, G.prison ? mulberry32(hash(G.seed, k+1) ^ PRISON.fracSalt) : null), { counts, big } = filled;
