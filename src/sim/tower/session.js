@@ -10,6 +10,7 @@
    Pods (26/10/2026, Geoffrey) : chaque stonebrick minée va dans le sac du mineur (m.inv, m.load) ; plein, il redescend au
    coffre commun (TOWER.chest, au milieu de l'étage 0) le vider dans G.chest. Victoire : summary.loot = coffre + sacs des
    présents ; le serveur le partage en parts égales et ajoute les trésors (server/game/service.js). */
+import { ladderTurn } from '../ladder.js';
 import { critMul, backstabMul } from '../skillfx.js';
 import { tenacityTry } from '../tenacity.js';
 import { TOWER, DT, STATS, BLOCKS, CFG, COMBAT, WINCH, SHRINES } from '../../config.js';
@@ -582,7 +583,7 @@ function follow(G, m, path, status){
   if(ny < m.y){
     if(isWinch(G, m.x, m.y) && isWinch(G, m.x, m.y - 1)) return act(m, 'move', winchT(G, m), { x: m.x, y: m.y - 1, winch: true }, 'Monte par le treuil');
     if(!towerAir(G, m.x, m.y - 1)) return startMine(G, m, m.x, m.y - 1, status);
-    if(!G.ladder[m.y][m.x] && busy(G, m, 'ladder', m.x, m.y)) return act(m, 'wait', 0.2, {}, 'Attend l\'échelle');
+    if(!G.ladder[m.y][m.x] && ladderTurn(G, m) === 'wait') return act(m, 'wait', 0.2, {}, 'Attend l\'échelle');   // le plus rapide la pose (src/sim/ladder.js)
     if(!G.ladder[m.y][m.x]) return act(m, 'ladder', ladderTime(m), { x: m.x, y: m.y }, 'Pose une échelle');
     return act(m, 'move', climbT(m) / slow, { x: m.x, y: m.y - 1 }, 'Grimpe');
   }

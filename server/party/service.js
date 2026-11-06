@@ -48,6 +48,9 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
      il survit à la prison et aux redémarrages même sans groupe). Seule la case le change. Il ne rend pas prêt (31/10) :
      il garde prêt celui qui l'est ; en entrant dans un groupe, on clique une fois « Je suis prêt ». */
   const alwaysOn = new Set();
+  /* activité ouverte par un joueur seul (06/11/2026) : reprise par le groupe qu'il crée. Avant, le groupe naissait sans activité
+     (3 places) et un 4e joueur de Mine géante était refusé tant que le navigateur du chef ne l'avait pas renvoyée */
+  const soloActivity = new Map();
   const newMember = (account, name) => ({ account, name, seenAt: clock(), ready: false, always: alwaysOn.has(account) });
   /* un joueur entre dans un groupe : case « Prêt tout le temps » cochée = prêt d'office (01/11), mais pas tant que sa prison
      tourne : un lancement la terminerait sans qu'il l'ait voulu. Il devient prêt quand elle finit (afterPrison, voir sweep). */
@@ -179,7 +182,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
     while(parties.has(code)) code = newCode();
     const again = partyOf(me.id); if(again) return again;
     const p = { code, leader: me.id, members: [newMember(me.id, displayName(me))],
-                invites: new Map(), createdAt: clock(), launching: false };
+                invites: new Map(), createdAt: clock(), launching: false, activity: soloActivity.get(me.id) ?? null };
     parties.set(code, p);
     return p;
   }
@@ -637,9 +640,10 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
     },
     /* activité que le chef a ouverte dans son lobby ; null : aucune. Le navigateur la donne, elle ne sert qu'à l'affichage */
     async activity(me, body = {}){
-      const p = partyOf(me.id);
-      if(!p || p.leader !== me.id) return { ok: false };
-      p.activity = body.mode == null ? null : lobbyLink(body.mode, body.level);
+      const p = partyOf(me.id), link = body.mode == null ? null : lobbyLink(body.mode, body.level);
+      if(p && p.leader !== me.id) return { ok: false };
+      if(link) soloActivity.set(me.id, link); else soloActivity.delete(me.id);   // seul : gardée pour son futur groupe
+      if(p) p.activity = link;
       return { ok: true };
     },
     /* groupes en formation (31/10/2026, Geoffrey) : ouverts, avec une place, chef présent, personne en session ni en
@@ -762,7 +766,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
     async eraseAccount(id, who){
       const p = partyOf(id);
       if(p) removeMember(p, id);
-      queue.delete(id); found.delete(id); alwaysOn.delete(id);
+      queue.delete(id); found.delete(id); alwaysOn.delete(id); soloActivity.delete(id);
       for(const [k, e] of queue) if(e.members?.includes(id)) queue.delete(k);
       for(const q of parties.values()){
         q.invites.delete(id);

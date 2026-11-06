@@ -467,8 +467,7 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
    jusqu'aux onglets) ; il montre ses 8 dernières lignes et la page défile */
 @media (max-width:700px){#log,.miLog{max-height:none;overflow:visible} #log div:nth-child(n+9),.miLog div:nth-child(n+9){display:none}}
 /* chat de session et chat global du lobby (src/ui/chat.js) */
-.chatDock{position:fixed;left:0;bottom:0;z-index:35;width:var(--chat-w);height:var(--chat-h,60dvh);display:flex;flex-direction:column}
-.chatDock.folded{height:auto}
+.chatDock{position:fixed;left:0;bottom:0;z-index:35;width:var(--chat-w);display:flex;flex-direction:column}
 .chatDock{pointer-events:none}   /* sa marge du bas (overNav) laisse passer les clics ; son contenu les prend */
 .chatDock>*{pointer-events:auto}
 /* bordures à tirer, invisibles, à cheval sur le bord de la boîte (src/ui/chat-dock.js) */
@@ -477,7 +476,11 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .chatEdge.right{top:0;bottom:0;right:-6px;width:12px;cursor:ew-resize}
 .chatEdge.corner{top:-6px;right:-6px;width:16px;height:16px;cursor:nesw-resize}
 .chatDock.folded .chatPanel,.chatDock.folded .chatEdge,.chatDock.folded .chatLog,.chatDock.folded .chatForm,.chatDock.folded #gchatNote{display:none}
-.chatDock .card{flex:1;min-height:0;margin:0;display:flex;flex-direction:column;background:rgba(11,8,6,.92)}
+/* la hauteur choisie est celle de la boîte, la remontée (overNav) s'y ajoute ; jamais plus basse que ses onglets et son champ, seuls
+   les messages rétrécissent (contain : ils ne comptent pas). 06/11, Jules : la remontée était prise dedans, un chat bas ne gardait que
+   ses onglets et le champ débordait dessous */
+.chatDock .card{flex:none;min-height:min(var(--chat-h,60dvh),calc(100dvh - var(--top-h) - var(--chat-lift,0px) - 4*var(--u)));margin:0;display:flex;flex-direction:column;background:rgba(11,8,6,.92)}
+.chatDock.folded .card{min-height:0}
 .chatHead{display:flex;align-items:center;gap:calc(2*var(--u));margin-bottom:calc(3*var(--u))}
 .chatTabs{flex:1;min-width:0;display:flex;flex-wrap:wrap;align-items:center;gap:var(--u)}
 .chatTabs button,.chatPanel button{min-height:0;height:calc(11*var(--u));padding:0 calc(3*var(--u));font-size:var(--fs-s)}
@@ -495,12 +498,12 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .ch-guild{color:#c084ff}
 .ch-lfg{color:#7be07b}
 .chatFold{flex:none;min-height:0;min-width:calc(12*var(--u));height:calc(10*var(--u));padding:0}
-#gchatLog{flex:1;min-height:0;max-height:none}
+#gchatLog{flex:1;min-height:0;max-height:none;contain:size}
 body{--chat-w:calc(287.5*var(--u))}
 /* le chat flotte par-dessus : sa taille ne décale rien (31/10). overNav : plus large que le début de la barre d'action, il s'arrête
    juste au-dessus de ce qu'il recouvre (--chat-lift, src/ui/chat-dock.js) ; la marge est transparente, la mine reste visible (04/11) */
 .chatDock.overNav{padding-bottom:calc(var(--chat-lift,0px) + 2*var(--u))}
-@media (min-width:1171px){ body.chatOn #run .runL{margin-bottom:var(--chat-h,60dvh)!important} }   /* la colonne de gauche s'arrête au-dessus du chat */
+@media (min-width:1171px){ body.chatOn #run .runL{margin-bottom:calc(var(--chat-h,60dvh) + var(--chat-lift,0px))!important} }   /* la colonne de gauche s'arrête au-dessus du chat */
 @media (max-width:1170px){
   /* bandeau du haut et barre d'action (31/10/2026) : ils tiennent dans l'écran, y compris en paysage (le pseudo se raccourcit,
      les onglets défilent) ; sinon le navigateur dézoome toute la page et plus rien n'est centré */
@@ -529,7 +532,7 @@ body.phone .chatDock.folded{display:none}
 body.phone .chatDock{top:var(--top-h);bottom:calc(var(--dock-h) + 2*var(--u));left:0;width:100%;height:auto}
 body.phone .chatEdge,body.phone .chatFold{display:none}
 body.phone .chatDock.overNav{padding-bottom:0}
-body.phone .chatDock .card{background:#0b0806}
+body.phone .chatDock .card{flex:1;min-height:0;background:#0b0806}
 .chatLog{max-height:calc(90*var(--u));overflow:auto;overflow-wrap:anywhere}
 .chatLog div{padding:var(--u) 0}
 .chatLobby{all:unset;cursor:pointer;color:#ffd23f;text-decoration:underline}
@@ -1268,6 +1271,19 @@ button.danger{color:var(--bad)}
 .craftQty{max-width:calc(120*var(--u));margin-top:calc(4*var(--u))}   /* quantité d'un craft en série (04/11/2026) */
 /* nom d'une stat avec sa bulle d'aide (05/11/2026) : souligné en pointillés ; au doigt, l'appui long ne sélectionne pas le texte */
 .statName{cursor:help;border-bottom:1px dotted var(--mut, #8a7a6a);-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+/* stats du mineur sur téléphone (06/11/2026, Jules : « plus lisible sur tel ») : nom à gauche et total à droite sur une ligne,
+   le détail (base +stuff ×skills +anneaux) sur la ligne du dessous, à droite ; plus gros, un filet entre deux stats, et les
+   chiffres en Jersey 15 (le gras de VT323 est un faux gras qui bave) ; ancien : tout sur une ligne, qui se coupait n'importe où */
+:is(body.phone,body.app) .statRow{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;column-gap:12px;
+  margin:0;padding:4px 0;border-bottom:1px solid var(--sep);font-size:19px;line-height:1.15}
+:is(body.phone,body.app) .statRow:last-child{border-bottom:0}
+:is(body.phone,body.app) .statRow .statV{display:contents}
+:is(body.phone,body.app) .statRow .statV>b{font:400 22px/1 var(--f-title);letter-spacing:.03em;color:#ffe6c4;white-space:nowrap}
+:is(body.phone,body.app) .statRow .statL b{font:400 21px/1 var(--f-title);letter-spacing:.03em;color:var(--acc-lt)}
+:is(body.phone,body.app) .statRow .statL small{font-size:16px}
+:is(body.phone,body.app) .statRow .statD{grid-column:1/-1;justify-self:end;text-align:right;font-size:18px;line-height:1}
+:is(body.phone,body.app) .statRow .statD small{font-size:inherit}
+:is(body.phone,body.app) .statRow .statD .mut{color:#cbb9a1}
 
 /* appli (05/11/2026) : « Set : x ▾ » et le bouton « 💾 Enregistrer » sur une ligne (src/ui/sets.js setsBarHtml) */
 body.app .setBarRow{display:flex;gap:6px;align-items:stretch}

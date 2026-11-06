@@ -9,6 +9,7 @@
    normale, une case sans appui (vide dessous, sans échelle ni sur la case ni juste dessous) fait tomber le mineur.
    Pour monter, il pose une échelle sur sa case (échelles illimitées, partagées : tout le monde peut prendre celles des
    autres). Différence avec la mine normale : pas de limite de hauteur de chute ni d'étourdissement (mine de 5 min). */
+import { ladderTurn } from '../ladder.js';
 import { INSTANT_MINE as MI, BLOCKS, CFG } from '../../config.js';
 import { ladderTime } from '../mineur.js';
 
@@ -84,6 +85,7 @@ function step(G, m){
   if(ny < m.y){                                                                  // monter
     if(ny !== m.y-1 || !miAir(G, m.x, ny)) return false;
     if(!G.ladder[m.y][m.x]){
+      if(ladderTurn(G, m) === 'wait'){ m.action = { type:'wait', dur:0.2, t:0, data:{} }; m.status = 'Attend l\'échelle'; return true; }   // le plus rapide la pose (src/sim/ladder.js)
       m.action = { type:'ladder', dur:Math.max(0.05, miLadderT(m)), t:0, data:{ x:m.x, y:m.y } };
       m.status = 'Pose une échelle';
       return true;

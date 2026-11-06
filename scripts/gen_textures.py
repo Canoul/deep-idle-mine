@@ -260,6 +260,10 @@ def main():
     tex['graphite'] = ore(19, '#7d828c', '#2f3b4d')   # graphite : veines gris-bleu métallique
     tex['mithril'] = ore(21, '#7d828c', '#b8d4f0')    # mithril : éclats argent bleuté
     tex['cobalt'] = ore(22, '#7d828c', '#2f5fe0')     # cobalt : bleu profond
+    # areas 9-10 (06/11) : dans la pierre dure
+    tex['arkonite'] = ore(27, '#575c66', '#a05cff')       # arkonite : violet
+    tex['iridium'] = ore(28, '#575c66', '#e8eef8')        # iridium : blanc argenté
+    tex['debris_fossil'] = ore(29, '#575c66', '#e0cfa0')  # débris fossilisé : os
     tex['thorium'] = ore(23, '#7d828c', '#7ee04a')    # thorium : vert radioactif
 
     # fond de galerie creusée

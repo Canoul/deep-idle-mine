@@ -182,11 +182,16 @@ export const BLOCKS = {
   25:{name:'Pierre des enfers', type:'terrain', tex:'hellstone', w:3, hard:4.8, color:'#4a1c16', dot:'#ff5a1f', family:'bloc'},
   /* Raid 1 (04/11/2026) : Indice, caché dans les areas du raid ; lourd (pods) : il compte une fois rapporté au coffre */
   26:{name:'Indice', type:'clue', tex:'clue', w:RAID_CLUE_W, hard:RAID_CLUE_HARD, color:'#3a1410', dot:'#ffb02e', val:RAID_CLUE_VAL},
+  /* minerais des areas 9 et 10 (06/11/2026, Geoffrey) : arkonite et iridium ; débris fossilisé (Mine géante seulement : en mine
+     classique, sa part va à l'arkonite, src/sim/world.js). Pas encore de recette. Dureté, poids, attrait et XP : provisoires (Claude) */
+  27:{name:'Arkonite ore',     type:'ore', tex:'arkonite',      w:4, hard:6.5, color:'#575c66', dot:'#a05cff', val:9},
+  28:{name:'Iridium ore',      type:'ore', tex:'iridium',       w:5, hard:7.5, color:'#575c66', dot:'#e8eef8', val:11},
+  29:{name:'Débris fossilisé', type:'ore', tex:'debris_fossil', w:3, hard:6.0, color:'#575c66', dot:'#e0cfa0', val:14},
 };
 export const BARRIER = 7, BRIDGE = 8, TREASURE_BLOCK = 10, DUNGEON_WALL = 11, CHEST_BASE = 18, KHOLE_BLOCK = 20;
 /* clés utilisées dans les compositions d'areas ; « air » = case vide (id 0), générée en poches */
 export const IDS = { air:0, dirt:1, stone:2, coal:3, iron:4, gold:5, diamond:6, hardstone:9, residueAngel:12, residueDemon:13, graphite:19,
-                     mithril:21, cobalt:22, thorium:23, hellstone:25, clue:26 };
+                     mithril:21, cobalt:22, thorium:23, hellstone:25, clue:26, arkonite:27, iridium:28, debris:29 };
 
 /* Constructions du mineur (catégorie build). La passerelle est une tuile de la grille ; l'échelle et la torche
    se posent PAR-DESSUS une case vide (G.ladder, G.torches) : ce ne sont pas des tuiles. */
@@ -214,8 +219,13 @@ export const AREAS = [
      iron 7, gold 6, diamond 1, graphite 6, air 5. Les résidus (0,5 %) sont pris sur la pierre à la génération : la
      pierre affichée en jeu vaut 0,5 de moins (34,5 / 20 / 15) */
   { comp:{         stone:35,   hardstone:40,         iron:5,   gold:6, diamond:1,   graphite:6, mithril:2,                       air:5}, chestChance:0.4 },
-  { comp:{         stone:20.5, hardstone:54.5,       iron:2,   gold:1, diamond:1,   graphite:7, mithril:5, cobalt:2, thorium:2,  air:5}, chestChance:0.4 },
-  { comp:{         stone:15.5, hardstone:59.5,                                      graphite:5, mithril:7, cobalt:4, thorium:4,  air:5}, chestChance:0.4 },
+  /* areas 7 à 10 : tableau de Geoffrey du 06/11/2026 (avant, area 7 : stone 20,5, mithril 5, cobalt 2, thorium 2 ; area 8 : stone 15,5,
+     hardstone 59,5, mithril 7, cobalt 4, thorium 4 ; l'area 8 se répétait au-delà). La pierre compte les résidus (0,5). Débris :
+     Mine géante seulement, sinon donné à l'arkonite (src/sim/world.js). L'area 10 se répète au-delà. */
+  { comp:{         stone:20.5, hardstone:54.5,       iron:2,   gold:1, diamond:1,   graphite:7, mithril:6,   cobalt:1.5, thorium:1.5, air:5}, chestChance:0.4 },
+  { comp:{         stone:25,   hardstone:50,                                        graphite:5, mithril:9,   cobalt:3,   thorium:3,   air:5}, chestChance:0.4 },
+  { comp:{         stone:25,   hardstone:50,                                                    mithril:9.4, cobalt:4,   thorium:4,   arkonite:2, iridium:0.5, debris:0.1, air:5}, chestChance:0.4 },
+  { comp:{         stone:25,   hardstone:50,                                                    mithril:4.8, cobalt:5,   thorium:5,   arkonite:4, iridium:1,   debris:0.2, air:5}, chestChance:0.4 },
 ];
 
 /* butin d'un treasure : un objet « Treasure TX » dont le tier dépend de l'area où le treasure est enfoui
@@ -557,7 +567,7 @@ export const mobHp = (type, k) => Math.round(MOBS.hpBase[type] * MOBS.hpGrowth *
    talentPerLevel : points de talent gagnés à chaque niveau (dépensés plus tard dans l'onglet Talents).
    maxLevel : garde-fou de calcul. Valeurs provisoires. */
 export const XP = {
-  ore: { coal:1, iron:2, gold:4, diamond:7, graphite:4, mithril:5, cobalt:8, thorium:8 },   // mithril, cobalt, thorium : 27/10
+  ore: { coal:1, iron:2, gold:4, diamond:7, graphite:4, mithril:5, cobalt:8, thorium:8, arkonite:12, iridium:18, debris:25 },   // mithril, cobalt, thorium : 27/10 ; arkonite, iridium, débris : 06/11 (provisoire)
   mob: { bestiole:5, gobelin:10, mimic:5, occultiste:15, mephite:12, golem:30, chair:40, chien:40, ver:40, minotaure:100, gallianix:5 },
   curve: { first:1000, factor:1.5 },
   talentPerLevel: 1,
@@ -903,7 +913,7 @@ export const EFFECTS = {
 
 
 /* textures : fichiers de textures/ (générés par scripts/gen_textures.py) */
-export const TEXTURES = ['dirt','grass','hellstone','clue','stone','hardstone','coal','iron','gold','diamond','graphite','mithril','cobalt','thorium','tunnel','barrier','prison_bars','chest_base','khole','sky','bridge','treasure','treasure_t1','treasure_t2','treasure_t3',
+export const TEXTURES = ['dirt','grass','hellstone','clue','stone','hardstone','coal','iron','gold','diamond','graphite','mithril','cobalt','thorium','arkonite','iridium','debris_fossil','tunnel','barrier','prison_bars','chest_base','khole','sky','bridge','treasure','treasure_t1','treasure_t2','treasure_t3',
   'blueprint','bp_parts','gem_ruby','gem_jade','gem_sapphire',
   'ingot_iron','ingot_gold','ingot_tainted','ingot_tainted_gold','ingot_graphite','ingot_steel','furnace_iron','compass_gold','shiny_iron','shiny_gold','pickaxe_stone','helmet_chitin','chest_chitin','legs_chitin','boots_chitin',
   'pickaxe_iron','sword_stone','sword_iron','spear_iron','bow_admin','helmet_iron','chest_iron','legs_iron','boots_iron','belt_goblin',
@@ -1198,6 +1208,7 @@ export const RARITY = {
     ...Object.fromEntries(Object.entries(CHEST_ITEMS).map(([n, d]) => [n, RUNE.rarity[d.chest.q]])),
     ...Object.fromEntries(Object.keys(TREASURE_ITEMS).map(n => [n, RUNE.treasureRarity])),
     'Cobalt ore':'inhabituel', 'Thorium ore':'inhabituel',   // Mithril ore : commun (27/10/2026, Geoffrey)
+    'Arkonite ore':'rare', 'Iridium ore':'epique', 'Débris fossilisé':'epique',   // 06/11 (Claude, provisoire)
     'Rubis inférieur':'inhabituel', 'Saphir inférieur':'inhabituel', 'Jade inférieur':'inhabituel',
     'Boussole en or':'inhabituel', 'Boussole en or BP':'inhabituel',
     'Four en fer':'inhabituel', 'Four en fer BP':'inhabituel',
@@ -2573,7 +2584,9 @@ export const MOB_INFO = {
 /* ores : focus minerai accessible en jeu (30/10/2026, Geoffrey : retiré pour l'instant, gardé dans le code ; true le rend).
    Quand il est false, le panneau « Focus minerai » est caché et le serveur ignore les minerais d'un focus envoyé ; le
    focus d'area reste. */
-export const FOCUS = { ores:false, modes:['none','target','only'], minLeft:0.2, valFactor:2, maxChanges:500, maxArea:99 };
+/* val (06/11/2026) : poids d'une cible du focus, figé à 16 (= 2 × le diamant, l'ancien maximum) : les minerais des areas 9-10
+   (attrait jusqu'à 14) ne changent pas le comportement des mines déjà jouées ; reste au-dessus de tous les minerais */
+export const FOCUS = { ores:false, modes:['none','target','only'], minLeft:0.2, valFactor:2, val:16, maxChanges:500, maxArea:99 };
 
 /* Spécialisation imposée aux mineurs en mode développeur (25/10/2026, Geoffrey) : pour chaque place (les joueurs du
    groupe dans l'ordre, puis les mineurs de test), un arbre de skills et un niveau ; l'arbre est rempli étage par étage

@@ -369,7 +369,9 @@ body.app #rsBody .rsSlot{width:76px;height:76px}
 body.app #rsGo{width:100%;min-height:56px;font:400 24px/1 var(--f-title)}
 /* Amélioration : les pièces en grille d'icônes (petit carré = équipée, marque courte en bas à droite) */
 body.app .upTiles{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px}
-body.app .upTile{position:relative;width:auto;height:auto;aspect-ratio:1;min-height:0;padding:0;display:grid;place-items:center}
+/* centrage flex de .slot, pas display:grid : en grille, les 62 % de largeur de l'icône se calculaient sur sa propre
+   colonne et non sur la tuile, le sprite sortait écrasé en largeur (26×42 px au lieu de 42×42, 06/11/2026) */
+body.app .upTile{position:relative;width:auto;height:auto;aspect-ratio:1;min-height:0;padding:0}
 body.app .upTile img{width:62%;height:62%}
 body.app .upTile.sel{outline:3px solid var(--acc);outline-offset:-3px}
 body.app .upTile.dim{opacity:.4}

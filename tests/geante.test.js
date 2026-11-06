@@ -83,3 +83,44 @@ test('serveur : 5 joueurs exactement, 2 h, sans énergie, 2 par jour et par joue
   assert.equal((await game.state(P[5])).geanteLeft, 2);
   assert.equal((await store.getEnergy(P[5].id)).value, 100);
 });
+
+test('areas 7 à 10 (06/11/2026) : le tableau de Geoffrey ; débris fossilisé seulement en Mine géante, sinon à l\'arkonite', async () => {
+  const { AREAS, BLOCKS, IDS, ITEMS } = await import('../src/config.js');
+  const { debrisToArkonite } = await import('../src/sim/world.js');
+  assert.equal(AREAS.length, 11);
+  for(const a of AREAS) assert.ok(Math.abs(Object.values(a.comp).reduce((x, y) => x + y, 0) - 100) < 1e-9);
+  assert.deepEqual(AREAS[9].comp, { stone:25, hardstone:50, mithril:9.4, cobalt:4, thorium:4, arkonite:2, iridium:0.5, debris:0.1, air:5 });
+  assert.deepEqual(AREAS[10].comp, { stone:25, hardstone:50, mithril:4.8, cobalt:5, thorium:5, arkonite:4, iridium:1, debris:0.2, air:5 });
+  for(const k of ['arkonite', 'iridium', 'debris']) assert.ok(BLOCKS[IDS[k]]?.type === 'ore' && ITEMS[BLOCKS[IDS[k]].name], k);
+  assert.deepEqual(debrisToArkonite(AREAS[9].comp), { stone:25, hardstone:50, mithril:9.4, cobalt:4, thorium:4, arkonite:2.1, iridium:0.5, air:5 });
+  assert.equal(debrisToArkonite(AREAS[3].comp), AREAS[3].comp);
+  /* génération de l'area 10 : débris en Mine géante, jamais en mine classique */
+  const count = G => [9, 10].reduce((n, k) => n + (G.areas[k]?.counts?.debris || 0), 0);
+  const { genArea } = await import('../src/sim/world.js');
+  let classic = 0, giant = 0;
+  for(const seed of [1, 2, 3, 4, 5, 6]){
+    const a = newSession(seed, { miners: 3 }), b = newSession(seed, { miners: 3, geante: true });
+    for(const G of [a, b]) for(const k of [9, 10]) genArea(G, k);
+    classic += count(a); giant += count(b);
+  }
+  assert.equal(classic, 0); assert.ok(giant > 0, `débris en Mine géante : ${giant}`);
+});
+
+test('lobby de Mine géante (06/11/2026, bug) : le chef seul ouvre l\'activité, 4 joueurs rejoignent tout de suite', async () => {
+  const { createPartyService } = await import('../server/party/service.js');
+  const ACC = Object.fromEntries(P.map(a => [a.id, { ...a, guest: false }]));
+  let k = 0;
+  const { game } = setup();
+  const party = createPartyService({ game, clock: () => 5e6, getAccount: async id => ACC[id] ?? null, newCode: () => 'K7Q4P' + (k++) });
+  /* seul : pas encore de groupe ; l'activité est gardée pour le groupe qui se formera */
+  assert.deepEqual(await party.activity(P[0], { mode: 'geante' }), { ok: true });
+  const { party: p } = await party.create(P[0]);
+  for(const m of P.slice(1, 5)) await party.join(m, p.code);
+  const st = await party.state(P[0]);
+  assert.equal(st.party.members.length, 5); assert.equal(st.party.max, 5);
+  await assert.rejects(party.join(P[5], p.code), { code: 'party_full' });
+  const party2 = createPartyService({ game, clock: () => 5e6, getAccount: async id => ACC[id] ?? null, newCode: () => 'H3XM9' + (k++) });
+  /* revenu au menu (activité null) : un nouveau groupe repart à 3 */
+  await party2.activity(P[5], { mode: 'geante' }); await party2.activity(P[5], {});
+  assert.equal((await party2.create(P[5])).party.max, GAME.maxPlayers);
+});

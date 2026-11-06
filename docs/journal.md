@@ -9,12 +9,6 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
-## 03/11/2026 — Chantier : le jeu en anglais, étape 1 (Geoffrey)
-
-- Début du chantier « choisir sa langue : Français / English » (plan dans `docs/traduction-anglais.md`).
-- Étape 1 : la langue est retenue sur le compte et se choisit dans « Mon compte ». **Caché aux joueurs** tant que la traduction n'est pas finie : le choix n'apparaît qu'en mode dev. Rien ne change pour les joueurs.
-- Glossaire des 413 noms du jeu en anglais (objets, mobs, skills, sorts, stats, lieux) proposé à Geoffrey pour relecture avant de les brancher.
-
 ## JJ/MM/AAAA — Prénom — Titre court
 - **Pour le joueur** : ce qui change en jeu (ou « rien, c'est de l'organisation »).
 - **Décisions** : choix de design ou d'équilibrage tranchés (s'il y en a).
@@ -30,19 +24,56 @@ Modèle d'entrée :
 - **Pages légales en anglais** : deepmineidle.fr/privacy, /terms, /legal-notice et /delete-account. Chacune dit en tête qu'**en cas de différence, la version française fait foi**, avec le lien vers la page française. Dans le jeu en anglais, les liens (Mon compte, création de compte, signalement) mènent aux pages anglaises.
 - **Pour l'équipe** : quand vous changez une page légale (`legal/*.md` ou `suppression-compte.html`), changez aussi sa version anglaise (`legal/en/`, `delete-account.html`), puis `npm run legal`.
 - **À suivre** : regarder en jeu les tours, le raid et les bilans en anglais ; puis ouvrir l'anglais aux joueurs quand tu le décides.
-- **État** : 🧪 branche `geoffrey/traduction-anglais`
+- **État** : ✅ en ligne le 06/11 (anglais encore caché aux joueurs)
 
 ## 06/11/2026 — Geoffrey — Le jeu en anglais, étape 3 : l'interface
 - En anglais (mode dev seulement), presque tout le jeu s'affiche maintenant en anglais : menus, onglets, boutons, bulles « ? », guide « Premiers pas », descriptions des skills et des sorts, journal de session, actions des mineurs, messages d'erreur. Environ 1 900 textes traduits.
 - Rien ne change pour les joueurs : l'anglais reste caché, et en français le traducteur n'est même pas chargé.
 - **Pseudos et messages des joueurs jamais traduits** (choix de Geoffrey), ni les noms de guilde, de set ou d'onglet de chat. Le reste du chat (messages du jeu comme le Raffle) et les noms des bâtiments du Carreau passent en anglais.
 - Vérifié en anglais : tous les onglets, la prison, le Bloc géant, la mine instantanée, He's coming, l'instance I, la Mine géante et une session : plus aucun texte en français. **Reste** à regarder en jeu : les tours, le raid, les bilans de fin.
-- **État** : 🧪 branche `geoffrey/traduction-anglais`
+- **État** : ✅ en ligne le 06/11 (anglais encore caché aux joueurs)
 
 ## 06/11/2026 — Geoffrey — Le jeu en anglais, étape 2 : les noms
 - Les 457 noms du jeu (objets, mobs, skills, sorts, stats, lieux…) ont leur anglais, validé par Geoffrey. En anglais (mode dev seulement), les objets, trésors, stats, sorts, skills et onglets de l'inventaire s'affichent déjà en anglais ; le reste des noms suivra avec la traduction de l'interface (étape 3).
 - Rien ne change pour les joueurs : l'anglais reste caché.
-- **État** : 🧪 branche `geoffrey/traduction-anglais`
+- **État** : ✅ en ligne le 06/11 (anglais encore caché aux joueurs)
+
+## 06/11/2026 — Jules — Chat : le champ de message ne sort plus de la boîte
+- **Pour le joueur** : quand le chat passait au-dessus de la bulle de gauche de la barre d'action avec une petite hauteur, la boîte ne gardait que ses onglets et le champ « Message… » débordait dessous. Maintenant la boîte garde la hauteur choisie au-dessus de la bulle, et ne devient jamais plus petite que ses onglets + son champ (c'est la liste des messages qui rétrécit). En tirant le bord du haut, il suit la souris.
+- **État** : ✅ en ligne le 06/11
+
+## 06/11/2026 — Jules — Sets : « j'équipe mon set et ça ne l'équipe pas »
+- **Pour le joueur** : report de Nbrick. Quand une activité a un « Set défini pour … » (Prison, Mine…), le jeu
+  équipe ce set tout seul au lancement. La page ne le montrait pas : elle affichait encore l'ancien set, et après un F5 le
+  joueur découvrait un autre set et croyait que son « Équiper » n'avait pas marché. Maintenant, après un lancement (mine,
+  prison, raid, Bloc géant, He's coming, mine lancée par le chef), la page montre le bon stuff, les bons skills et sorts, et
+  un message le dit : « Set « Prison » équipé : c'est le set défini pour cette activité ».
+- **Décisions** : aucune, la règle (le set de l'activité est équipé au lancement) ne change pas.
+- **À suivre** : demander à Nbrick s'il avait bien un set défini pour la Prison ou la Mine (c'est la cause trouvée en
+  reproduisant ; si ce n'est pas son cas, il reste autre chose).
+- **État** : ✅ en ligne le 06/11
+
+## 06/11/2026 — Geoffrey — Échelle : le plus rapide la pose, dans tous les modes
+- **Pour le joueur** : quand plusieurs mineurs doivent poser une échelle sur la même case, c'est le plus rapide à monter
+  qui la pose (le logisticien avec Échelle de 2), même s'il arrive après : celui qui avait commencé s'arrête et
+  attend. À vitesse égale, le premier garde la main. Avant : le premier arrivé la posait (et en mine, les deux la
+  posaient en même temps).
+- **Décisions** : une seule règle pour tous les modes (mine, raid, instances, tours, mine instantanée, et les suivants).
+- **État** : ✅ en ligne le 06/11
+
+## 06/11/2026 — Jules — Appli : les sprites des objets ne sont plus écrasés à l'Amélioration
+- **Pour le joueur** : dans l'appli, onglet Perso → Amélioration, les icônes des pièces à choisir sortaient écrasées en largeur
+  (pioches trop fines, ceintures trop courtes). Elles sont de nouveau carrées. Le site n'est pas concerné.
+- **État** : ✅ en ligne le 06/11
+
+## 06/11/2026 — Jules — Stats du mineur plus lisibles sur téléphone
+- **Pour le joueur** : sur téléphone (site et appli), chaque stat tient sur une ligne nette : le nom à gauche, le total à
+  droite en gros, et le détail (base, +stuff en bleu clair, ×skills, +anneaux) sur la ligne du dessous, à droite. Un filet
+  sépare deux stats ; les chiffres ne « bavent » plus (fin du faux gras). Sur ordinateur, rien ne change. Les boutons « ? »
+  avaient déjà disparu le 05/11 (Geoffrey) : la bulle s'ouvre en posant la souris sur le nom, ou en gardant le doigt dessus.
+- **À suivre** : la liste est plus longue sur téléphone (le détail prend une ligne). « Vitesse de minage » et « Dégâts »
+  apparaissent deux fois (valeur fixe puis bonus en %) : à renommer si ça gêne (ex. « Dégâts (bonus %) »).
+- **État** : ✅ en ligne le 06/11
 
 ## 06/11/2026 — Geoffrey — Noms plus corrects pour les stores : Bonbonne d'oxygène, Ralliement, Garde du corps, Golem gluant
 - **Pour le joueur** : quatre noms changent, rien d'autre. **Bonbonne de zipette** → **Bonbonne d'oxygène** (sort du Logisticien), **Ulti shen** → **Ralliement** (sort à parchemin, « Parchemin « Ralliement » »), **Braum** → **Garde du corps** (skill du Barbare et « Glyphe Garde du corps »), **Golem de sperme** → **Golem gluant** (mob). Pseudo du Gallianix « Cuiseuse de sperme » → **« Ex d'Infernatiwar »**. Sorts appris, skills, parchemins et glyphes déjà dans les sacs : tout est gardé, renommé au démarrage du serveur. « K hole » garde son nom (choix de Geoffrey).
@@ -395,6 +426,12 @@ Modèle d'entrée :
   `docs/superpowers/specs/2026-11-03-appli-historique-design.md`.
 - **À suivre** : Guilde et Classement.
 - **État** : ✅ en ligne le 04/11
+
+## 03/11/2026 — Chantier : le jeu en anglais, étape 1 (Geoffrey)
+
+- Début du chantier « choisir sa langue : Français / English » (plan dans `docs/traduction-anglais.md`).
+- Étape 1 : la langue est retenue sur le compte et se choisit dans « Mon compte ». **Caché aux joueurs** tant que la traduction n'est pas finie : le choix n'apparaît qu'en mode dev. Rien ne change pour les joueurs.
+- Glossaire des 413 noms du jeu en anglais (objets, mobs, skills, sorts, stats, lieux) proposé à Geoffrey pour relecture avant de les brancher.
 
 ## 03/11/2026 — Geoffrey — Un set par activité
 - **Pour le joueur** : dans le Lobby, quand une activité est ouverte, la carte des sets propose « Set défini pour … ».
@@ -1733,6 +1770,21 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
 - **État** : ✅ en ligne le 29/10
 
 ---
+
+## 06/11/2026 — Geoffrey — Correctif : on ne pouvait pas rejoindre une Mine géante à 4 ou 5
+- **Pour le joueur** : le chef seul qui ouvrait la Mine géante n'avait pas encore de groupe ; le groupe naissait au premier qui
+  rejoignait, avec 3 places, le temps que le navigateur du chef dise « Mine géante ». Le 4e joueur était refusé (« groupe complet »).
+  Maintenant le serveur retient l'activité du chef même seul : le groupe a 5 places dès sa création.
+- **État** : ✅ en ligne le 06/11
+
+## 06/11/2026 — Geoffrey — Areas 7 à 10 et trois nouveaux minerais
+- **Pour le joueur** : les areas 7 et 8 changent (plus de mithril, moins de cobalt et de thorium en area 7 ; area 8 plus tendre :
+  25 % de pierre, 50 % de pierre dure). **Deux nouvelles areas, 9 et 10** (la 10 se répète au-delà), avec trois nouveaux minerais :
+  **Arkonite ore**, **Iridium ore** et **Débris fossilisé**. Le débris ne se trouve que dans la **Mine géante** ; en mine classique,
+  sa part va à l'arkonite. Pas encore de recette pour ces trois minerais.
+- **Décisions de Claude** (à revoir) : dureté, poids, attrait, XP et rareté des trois minerais ; leurs textures ; le nom écrit
+  « Débris fossilisé » (avec un f).
+- **État** : ✅ en ligne le 06/11
 
 ## 06/11/2026 — Geoffrey — Mine géante : sans énergie, et sa carte dit ce qu'elle est
 - **Pour le joueur** : la Mine géante ne coûte plus d'énergie. Sa carte du Lobby affiche à côté de « Lancer » : « 1 h (2 h de jeu) ·
