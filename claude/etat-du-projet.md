@@ -484,6 +484,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   (description, chiffres tirés de la config, action ou raison du blocage, barre de progression de spé). Icônes pixel
   (`px` dans `SPELLS`, aussi dans la barre en session) et une couleur par famille ; `short` = la ligne sous le nom.
   Ancien affichage (3 colonnes grises, emojis, détails en infobulle) remplacé.
+- **Aperçu set** (06/11, Geoffrey ; `src/ui/set-preview.js`, `checkDraft` + `setOp` 'edit' dans `src/meta/sets.js`) : sous-onglet de l'onglet Stuff (site et appli) pour composer un set sans rien équiper (mannequin, arbres, sorts, stats + GS du set en direct) ; Enregistrer / Enregistrer et équiper. Le serveur revérifie pièces, rangs et sorts.
 - **Set par activité** (03/11, Geoffrey ; `SETS.activities`, `sets.byActivity`, `setActivity` / `setForMode` dans `src/meta/sets.js`, `autoEquip` dans `server/game/service.js`, ligne `activityLineHtml` de `src/ui/sets.js`) : un set associé par activité (mine, geante (06/11), prison, mi, giant, hescoming, instances, towers), équipé par le serveur au lancement (`start`, avant les verrous ; chaque joueur du groupe), à l'entrée en prison, à l'ouverture de la MI (`openInstant`) et à l'entrée du Bloc géant / He's coming (`giantEnter`) ; rien en session.
 - **Sets** (24/10, Geoffrey ; `SETS` en config, `src/meta/sets.js`, `src/ui/sets.js`, GAME_DESIGN §6 « Sets ») : une
   liste de sets (stuff porté, skills, sorts) à gauche des onglets Stuff, Skills et Sorts, et dans le Lobby sous l'équipe (28/10) ; Équiper remet tout d'un coup

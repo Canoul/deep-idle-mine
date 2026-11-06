@@ -22,6 +22,40 @@ Modèle d'entrée :
   nombres courts. En anglais, « banque » s'affiche maintenant « bank ».
 - **État** : ✅ en ligne le 06/11
 
+## 06/11/2026 — Jules — Lobby : description de la Mine géante sur plusieurs lignes
+- **Pour le joueur** : dans le menu des activités, le texte de la Mine géante (« À 5, 1 h (2 h de jeu)… ») revient à la
+  ligne au lieu d'être coupé au bord du bouton.
+- **État** : ✅ en ligne le 06/11
+
+## 06/11/2026 — Geoffrey — Guide « Premiers pas » déplaçable
+- **Pour le joueur** : le guide se déplace en faisant glisser son en-tête (poignée ⠿), sur le site et dans l'appli ; un
+  simple toucher le replie / déplie toujours. La position est retenue (par compte, dans ce navigateur) et ramenée dans
+  l'écran si la fenêtre rétrécit.
+- **État** : ✅ en ligne le 06/11
+
+## 06/11/2026 — Jules — Social : « Mine instantanée (5/3) » corrigé
+- **Pour le joueur** : dans la liste d'amis, un ami en Mine instantanée affichait « (5/3) » alors que la MI n'a pas de limite à 3 joueurs. Il affiche maintenant « Mine instantanée (5 joueurs) ». Les autres sessions gardent « (2/3) ».
+- **État** : ✅ en ligne le 06/11
+
+## 06/11/2026 — Geoffrey — Stuff : sous-onglet « Aperçu set »
+- **Pour le joueur** : dans l'onglet Stuff (site et appli), un sous-onglet **Aperçu set** pour refaire un set entier
+  d'un coup : on choisit le set (ou un nouveau, depuis son stuff ou vide), on change chaque case du mannequin avec
+  n'importe laquelle de ses pièces (sac ou portées), on répartit les points dans les arbres, on choisit les sorts, et
+  les stats + gear score du set se mettent à jour en direct. **Enregistrer** écrit le set sans rien changer au mineur ;
+  **Enregistrer et équiper** l'équipe aussi. Quitter avec des changements non enregistrés demande confirmation.
+- **Décisions** (Geoffrey) : brouillon (le mineur ne change pas avant « Enregistrer et équiper ») ; toutes ses pièces
+  (sac + portées), une pièce dans plusieurs sets ; contenu : pièces, skills, sorts, stats ; site et appli (appli : une
+  colonne, mannequin, arbres, sorts, stats). Choix de Claude : « + Nouveau » en deux boutons (stuff actuel / vide, la spé
+  reste) ; « − » sur chaque skill appris pour retirer un rang ; les glyphes ne sont pas dans le set.
+- **À suivre** : essayer sur un vrai téléphone (police pixel plus large que l'aperçu `?app`).
+- **État** : ✅ en ligne le 06/11
+
+## 06/11/2026 — Geoffrey — Bot Discord : croix qui supprime, diamants pour les joueurs
+- **#report** : le bot met maintenant 4 réactions : 1, 2, ❌ et 💎. La croix (avant qu'on attribue le sujet) **supprime** le sujet et efface son message ; un sujet `/todo done` était déjà effacé de #report.
+- **Diamants** : si un admin met 💎 sur un sujet, le bot met 💎 sur le message du joueur, et le joueur gagne **1 diamant** (une fois par sujet). Le compteur de chaque membre est gardé dans la base du bot. Pas encore de commande pour voir les diamants.
+- **À faire sur le serveur** : relancer le bot (`sudo systemctl restart deep-mine-bot`), il ne se relance pas tout seul.
+- **État** : ✅ en ligne le 06/11 (code) ; actif après le redémarrage du bot
+
 ## 06/11/2026 — Geoffrey — Appli : chantiers de guilde lisibles
 - **Pour le joueur** : dans l'appli, les matériaux d'un chantier de guilde ne se chevauchent plus : nom et barre à
   gauche, boutons Donner / De la banque à droite, puis « 363 999 / 500 000 » à gauche et « Tu en as … · banque … » à droite.

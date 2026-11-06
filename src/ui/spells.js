@@ -212,6 +212,7 @@ export function setupSpells({ onOp, onInventory = () => {}, onChange = () => {} 
   return {
     set(s){ if(s){ st = s; render(); onChange(st); } },
     slots: () => st?.slots ?? [],
+    state: () => st,   // sorts appris et emplacements ouverts (Aperçu set, 06/11)
     /* spécialisation choisie (onglet Skills) et niveaux de spécialisation (progression) : débloqué / équipable */
     setContext(c){ ctx = { ...ctx, ...c }; render(); },
     setInventory(i){ inv = i ?? { slots:[] }; render(); },
