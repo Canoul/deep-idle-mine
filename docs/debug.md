@@ -7692,3 +7692,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **À vérifier** : vrai groupe de 5 en ligne ; mithril (mesuré en acier seulement) ; coût serveur d'une partie de 5 × 2 h ; dans
   l'appli, la mine de 70 colonnes à l'écran.
 
+
+## 06/11/2026 — xc, valeur de combat (lecture seule, Geoffrey)
+- **Quoi** : `UPGRADE.xc` (refWeapon par tier, critMul 2, stats comptées) ; `src/meta/combatvalue.js` : `dps(c)` (dégâts × (1 + dégâts %) × vitesse d'attaque ÷ CFG.attackInterval × (1 + critique) × (1 + double attaque)), `refStats(tier, { bare })`, `pieceXC(entry, { tier })` (pieceBonus : lignes, rune, amélioration compris ; arme comparée aux mains nues ; sans tier → tier 1). `scripts/poids.js` (`npm run poids`) : x (itemValue), GS (pieceGS), xc. Rien d'autre ne lit le xc.
+- **Tests** : combatvalue (4) ✅, gearscore, rune ✅.

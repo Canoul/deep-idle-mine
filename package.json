@@ -21,6 +21,7 @@
     "simulate:instance": "node scripts/simulate-instance.js",
     "simulate:golbute": "node scripts/simulate-golbute.js",
     "weights": "node scripts/weights.js",
+    "poids": "node scripts/poids.js",
     "stat-values": "node scripts/stat-values.js",
     "textures": "python scripts/gen_textures.py",
     "textures:ui": "python scripts/gen_ui.py && python scripts/build_pxicons.py",

@@ -16,6 +16,16 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 06/11/2026 — Geoffrey — xc, la valeur de combat d'un objet (lecture seule)
+- **Pour l'équipe** : à côté du x (valeur en mine) et du GS, chaque objet a maintenant un **xc** : 1 xc = +1 % de DPS sur
+  un mineur de référence de son tier (stats de base + l'épée du tier ; une arme se compare aux mains nues). Un % de
+  dégâts, de critique ou de double attaque vaut ainsi toujours pareil, quel que soit le tier. `npm run poids -- "Objet"`
+  donne x, GS et xc (aussi par emplacement ou par tier). Ex. Épée en acier : 540 x, 540 GS, 270 xc.
+- **Décisions** : **aucune valeur du jeu ne change** (lecture seule). Pas comptés dans le xc : perçage (dépend de
+  l'armure), portée, recul, ténacité. Prochaine étape possible : choisir le taux x ↔ xc (« épée en pierre = pioche en
+  pierre ») et remplacer les corrections des stats offensives (priceAdjust, runeDiv, gsFromPrices).
+- **État** : 🧪 sur la branche `geoffrey/xc-combat` (pas en ligne)
+
 ## 05/11/2026 — Geoffrey — Craft : Clé d'instance II de base
 - **Pour le joueur** : la Clé d'instance II se fabrique au Craft, sans blueprint : 2 Barres d'argent et 1 Orbe supérieur.
 - **État** : ✅ en ligne le 05/11

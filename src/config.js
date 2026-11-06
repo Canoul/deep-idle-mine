@@ -1512,6 +1512,13 @@ export const UPGRADE = {
                            'Jambières titanesques', 'Cape inclusive', 'Némésis du Golbute', 'Torse de Gollex', 'Jambières du Golbute', 'Âme du Golbute',   // Coffre du Golbute (30/10) : T4.5
                            'Arc de l\'Admin'] },   // 01/11 : le tier le plus haut (lignes de runes)
   },
+  /* xc, la valeur de COMBAT (06/11/2026, Geoffrey) : 1 xc = +1 % de DPS sur le mineur de référence du tier de la pièce
+     (src/meta/combatvalue.js). À côté du x (mine) et du GS, pour LIRE le poids d'un objet : ne change aucune valeur du jeu.
+     Mineur de référence d'un tier : stats de base + l'épée du tier (refWeapon) ; une arme se compare aux mains nues.
+     DPS = dégâts × (1 + dégâts %) × vitesse d'attaque × (1 + critique × (×2 − 1)) × (1 + double attaque).
+     Pas comptés : perçage (dépend de l'armure de l'ennemi), portée, recul, ténacité (pas du DPS), skills, sorts. */
+  xc: { refWeapon: { 1:'Épée en pierre', 2:'Épée en fer', 3:'Épée en acier', 4:'Épée en mithril', '4.5':'Épée en mithril' }, critMul: 2,
+        stats: ['damage', 'damagePct', 'attackSpeed', 'crit', 'doubleAttack'] },
   /* pas d'arrondi de chaque stat (valeur d'une ligne, et stats d'une pièce améliorée) */
   steps: { mineSpeed:0.001, speed:0.01, climbSpeed:0.01, pods:1, oxygenMax:1, damage:0.1, attackSpeed:0.1, fortune:0.1,
            discoverMax:1, compassRows:1, mineSpeedPct:0.1, damagePct:0.1, crit:0.1, oneTap:0.1, piercing:0.1, looting:0.1,

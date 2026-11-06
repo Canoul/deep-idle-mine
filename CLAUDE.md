@@ -141,6 +141,8 @@ Tout ce qui existe aujourd'hui (systèmes, hébergement, équipe, chantiers en a
 - `npm run simulate -- --miners 3 --count 5` : sessions d'1 h simulées en quelques secondes ; areas, profondeur,
   coffre, allers-retours, et un **détecteur de blocage**.
 - `npm run stat-values` : tableau standard des stats en unité x (1 x = 1 s de travail), ~1 min.
+- `npm run poids -- "Épée en acier"` (ou `--slot epee`, `--tier 3`, `--plus 5`) : poids d'un objet : x (mine), GS et xc
+  (combat : 1 xc = +1 % de DPS sur le mineur de référence du tier, `src/meta/combatvalue.js`), instantané.
 - `npm run weights` : poids des stats (secondes de travail gagnées par session pour +1 point), ~6 min.
 - `npm run textures` : régénère `textures/` (Python).
 - `npm run textures:ui` : régénère les éléments d'interface pixel art (`textures/ui/`) et les icônes
