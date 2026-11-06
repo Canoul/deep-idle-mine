@@ -80,3 +80,38 @@ test('compte : français par défaut ; l\'anglais refusé tant qu\'il est fermé
   await assert.rejects(svc.setLang(id, { lang: 'de' }, { dev: true }), e => e.code === 'bad_lang');
   await assert.rejects(svc.setLang(id, { lang: { x: 1 } }, { dev: true }), e => e.code === 'bad_lang');
 });
+
+/* noms de la config (objets, blocs, et champs name / label / boss / mob / tower / title) : même relevé que le glossaire du 06/11 */
+async function configNames(){
+  const C = await import('../src/config.js'), out = new Set();
+  const isVariant = k => / R[1-7]( \S+)?$/.test(k) || / R[1-7] /.test(k);
+  const skip = new Set(['angel', 'demon', 'any', 'gobelin', 'occultiste', 'bestiole', 'mephite', 'minotaure']);
+  const add = n => { if(typeof n === 'string' && n.trim() && !skip.has(n)) out.add(n); };
+  for(const k of Object.keys(C.ITEMS)) if(!isVariant(k)) add(k);
+  for(const b of Object.values(C.BLOCKS)) add(b.name);
+  for(const l of Object.values(C.STUFF.statLabels)) add(l);
+  const walk = (o, d = 0) => { if(!o || typeof o !== 'object' || d > 6) return;
+    for(const [k, v] of Object.entries(o)){ if(typeof v === 'string' && ['name', 'label', 'boss', 'mob', 'tower', 'title'].includes(k)) add(v); else if(v && typeof v === 'object') walk(v, d + 1); } };
+  for(const [k, v] of Object.entries(C)) if(v && typeof v === 'object' && !['ITEMS', 'BLOCKS'].includes(k)) walk(v);
+  return out;
+}
+
+test('noms : chaque nom de la config a son anglais (sinon il s\'affiche en français ; bloquant seulement à l\'ouverture)', async () => {
+  const missing = [...await configNames()].filter(n => !Object.hasOwn(dictOf('en').names, n));
+  if(I18N.open) assert.deepEqual(missing, [], 'noms sans anglais : à ajouter dans src/i18n/en/names.js');
+  else if(missing.length) console.log(`i18n : ${missing.length} nom(s) sans anglais : ${missing.slice(0, 10).join(', ')}`);
+});
+
+test('noms affichés : objet, trésor béni, pièce de qualité, stat, en français et en anglais', async () => {
+  const { itemName, pieceName } = await import('../src/meta/piece.js');
+  const { ITEMS } = await import('../src/config.js');
+  const blessed = Object.keys(ITEMS).find(k => ITEMS[k].chest?.luck && ITEMS[k].chest.side === 'demon' && ITEMS[k].chest.q === 5);
+  setLang('fr');
+  assert.equal(itemName(blessed), 'Antique Trésor démoniaque béni');
+  assert.equal(pieceName({ item: 'Pioche en fer', q: 5, plus: 2 }), 'Antique : Pioche en fer +2');
+  setLang('en');
+  assert.equal(itemName(blessed), 'Ancient Blessed Demonic Treasure');
+  assert.equal(pieceName({ item: 'Pioche en fer', q: 5, plus: 2 }), 'Ancient: Iron Pickaxe +2');
+  assert.equal(itemName('Stonebrick angélique'), 'Angelic Stonebrick');
+  setLang('fr');
+});

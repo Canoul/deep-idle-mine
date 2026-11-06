@@ -14,6 +14,7 @@ import { glyphInfo } from '../meta/glyphs.js';
 import { pxi } from './pxicons.js';
 import { lootHelp } from './loot-tip.js';
 import { lootTableOf } from '../meta/loot-table.js';
+import { tn } from '../i18n/index.js';
 
 const $ = id => document.getElementById(id);
 /* dans l'appli mobile (classe app, src/app/boot.js) : slots plus petits, pas de survol */
@@ -174,7 +175,7 @@ export function tabsHtml(active, items, unit, all = items.length, hideEmpty = fa
   return INVENTORY.tabs.filter(t => !hideEmpty || t.id === 'all' || n[t.id]).map(t => {
     const icon = t.px ? pxi(t.px) : iconHtml(t.icon), c = t.id === 'all' ? all : n[t.id] || 0;
     return `<button class="invTab${t.id === active ? ' on' : ''}${c ? '' : ' none'}" data-tab="${t.id}" role="tab" aria-selected="${t.id === active}" `+
-           `aria-label="${esc(t.name)}" data-tip="${esc(t.name)}\n${c} ${unit}${c > 1 ? 's' : ''}">${icon}</button>`;
+           `aria-label="${esc(tn(t.name))}" data-tip="${esc(tn(t.name))}\n${c} ${unit}${c > 1 ? 's' : ''}">${icon}</button>`;
   }).join('');
 }
 

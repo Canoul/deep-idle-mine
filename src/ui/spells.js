@@ -11,6 +11,7 @@ import { SPELLS } from '../config.js';
 import { pxi } from './pxicons.js';
 import { SPELL, equipBlocked } from '../meta/spells.js';
 import { countOf } from '../meta/inventory.js';
+import { tn } from '../i18n/index.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -75,7 +76,7 @@ export function spellInfoHtml(st, cur, { ctx = { tree:null, spec:{} }, owned = 0
     }
     return (close ? '<button type="button" class="x spClose" data-act="close" aria-label="Fermer">✕</button>' : `<h2>Fiche du sort</h2>`)+
       `<div class="spFHead tr-${t} st-${v.status}"><div class="spFIco">${pxi(s.px)}</div>`+
-      `<div class="spFTitle"><h3>${esc(s.name)}</h3><span class="spChip">${pxi(T.px)}${chip}</span></div></div>`+
+      `<div class="spFTitle"><h3>${esc(tn(s.name))}</h3><span class="spChip">${pxi(T.px)}${chip}</span></div></div>`+
       `<p class="spShort tr-${t}">${esc(s.short)}</p><p class="spDesc">${esc(s.desc)}</p>`+
       `<dl class="spStats">${spellStats(s).map(r => `<div><dt>${r.label}</dt><dd>${r.value}</dd></div>`).join('')}</dl>`+
       `<div class="spAct">${act}</div>`;
@@ -99,7 +100,7 @@ export function setupSpells({ onOp, onInventory = () => {}, onChange = () => {} 
   function renderSpec(){
     const t = ctx.tree && TREE[ctx.tree];
     $('spellSpec').innerHTML = t
-      ? `<span class="spSpec tr-${ctx.tree}">${pxi(t.px)}<span>Spécialisation <b>${t.label}</b></span><span class="mut">· SP lvl ${level(ctx.tree)}</span></span>`
+      ? `<span class="spSpec tr-${ctx.tree}">${pxi(t.px)}<span>Spécialisation <b>${tn(t.label)}</b></span><span class="mut">· SP lvl ${level(ctx.tree)}</span></span>`
       : `<span class="spSpec"><span class="mut">Pas de spécialisation : choisis un arbre dans l'onglet Skills</span></span>`;
   }
 
@@ -116,14 +117,14 @@ export function setupSpells({ onOp, onInventory = () => {}, onChange = () => {} 
                `<span class="spCd">${i === next ? 'Prochain sort ici' : '&nbsp;'}</span></div>`;
       const bad = statusOf(id).bad;
       return `<div class="spSock filled tr-${treeOf(s)}${bad ? ' bad' : ''}" data-slot="${i}" role="button" tabindex="0" data-tip="${esc(`${s.name}${bad ? ' : n\'agit pas avec ta spécialisation' : ''}\nClic : retirer de la barre`)}">`+
-             `${num}<div class="spSockBtn">${pxi(s.px)}</div><span class="spSockName">${esc(s.name)}</span>`+
+             `${num}<div class="spSockBtn">${pxi(s.px)}</div><span class="spSockName">${esc(tn(s.name))}</span>`+
              `<span class="spCd">${bad ? 'N\'agit pas' : `${pxi('hourglass')}${s.cd} s`}</span></div>`;
     }).join('');
   }
 
   function renderTabs(){
     const tabs = [['all', 'Tous', 'radiance', SPELLS.list.length],
-                  ...Object.entries(TREE).map(([t, d]) => [t, d.tab ?? d.label, d.px, SPELLS.list.filter(s => treeOf(s) === t).length])];
+                  ...Object.entries(TREE).map(([t, d]) => [t, tn(d.tab ?? d.label), d.px, SPELLS.list.filter(s => treeOf(s) === t).length])];
     $('spellTabs').innerHTML = tabs.map(([t, label, px, n]) =>
       `<button type="button" class="${t === 'all' ? '' : `tr-${t}`}${t === tab ? ' on' : ''}" data-tab="${t}">${pxi(px)}${label}<span class="spCnt">${n}</span></button>`).join('');
   }
@@ -133,7 +134,7 @@ export function setupSpells({ onOp, onInventory = () => {}, onChange = () => {} 
     $('spellList').innerHTML = grimoireOrder(SPELLS.list.filter(s => tab === 'all' || treeOf(s) === tab), statusOf).map(s => {
       const v = statusOf(s.id), drag = v.status === 'ready' || v.status === 'equipped';
       return `<div class="spTile tr-${treeOf(s)} st-${v.status}${v.bad ? ' bad' : ''}${s.id === cur ? ' sel' : ''}" data-spell="${s.id}" role="button" tabindex="0"${drag ? ' draggable="true"' : ''}>`+
-             `<span class="spTIco">${pxi(s.px)}${BADGE[v.status] ?? ''}</span><span class="spTName">${esc(s.name)}</span><span class="spTSub">${esc(v.label)}</span></div>`;
+             `<span class="spTIco">${pxi(s.px)}${BADGE[v.status] ?? ''}</span><span class="spTName">${esc(tn(s.name))}</span><span class="spTSub">${esc(v.label)}</span></div>`;
     }).join('');
   }
 

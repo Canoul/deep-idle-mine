@@ -11,6 +11,7 @@ import { dropOdds } from '../meta/crusher.js';
 import { ringLines } from '../meta/stuff.js';
 import { oreFor } from '../meta/furnace.js';
 import { STAT_HELP } from '../meta/stat-help.js';
+import { tn } from '../i18n/index.js';
 
 export const CELLS = W * AREA_H;
 const blockByKey = key => BLOCKS[IDS[key]];
@@ -74,7 +75,7 @@ export const CAT_LABEL = { terrain:'Terrain', bloc:'Bloc', residu:'Résidu', run
 export const CAT_ORDER = ['ore', 'combustible', 'bloc', 'residu', 'terrain', 'ingot', 'mob', 'material', 'gem', 'treasure', 'rune', 'blueprint', 'stuff', 'furnace', 'scroll'];
 const pct = c => Math.round(c * 1000) / 10;
 const SLOT_LABEL = Object.fromEntries(STUFF.slots.map(s => [s.id, s.label]));
-const statName = k => STUFF.statLabels[k] ?? k;
+const statName = k => tn(STUFF.statLabels[k] ?? k);
 const unit = k => STUFF.statUnits?.[k] ?? '';
 
 /* bonus d'une pièce de stuff, en texte : « Pods +25 », « Dégâts 11 » */

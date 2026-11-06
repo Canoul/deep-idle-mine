@@ -16,6 +16,7 @@
    - plus (0 à UPGRADE.levels.length) : niveau d'amélioration.
    Les nombres viennent de UPGRADE (config) : qualités, prix des stats en x, pas d'arrondi, paliers. */
 import { UPGRADE, ITEMS, STATS, RUNE, RINGS, GOBLIN_KING, GOLBUTE, STUFF } from '../config.js';
+import { tn, getLang } from '../i18n/index.js';
 
 const QUALITY = new Map(UPGRADE.qualities.map(d => [d.q, d]));
 /* { q, label, color, chance, min, max, lines } de cette qualité, ou null */
@@ -188,9 +189,16 @@ export function pieceBonus(entry, extra = 1){
 export const treasureOf = item => ITEMS[item]?.treasure ? ITEMS[item].chest : null;
 /* nom affiché d'un objet : « Antique Trésor démoniaque » pour un trésor (nom interne « Trésor démoniaque R5 »), le nom
    tel quel sinon ; couleur du nom : celle de la qualité d'un trésor, null sinon (celle de la rareté) */
+/* nom affiché dans la langue du joueur (tn, 06/11/2026 ; l'identifiant reste français) ; trésor : « Antique Trésor démoniaque
+   béni » / « Ancient Blessed Demonic Treasure » (en anglais, l'adjectif « béni » passe devant) */
 export function itemName(item){
   const t = treasureOf(item);
-  return t ? `${qualityDef(t.q).label} ${(RUNE.treasures[t.side] ?? (t.side === 'golbute' ? GOLBUTE.chest : GOBLIN_KING.chest)).name}` + (t.side === 'goblin' ? GOBLIN_KING.chest.levels?.[t.level] ?? '' : '') + (RUNE.luck?.[t.luck] ? ` ${RUNE.luck[t.luck].label}` : '') : item;   // niveau II du coffre du Roi Gobelin (03/11)
+  if(!t) return tn(item);
+  const chest = tn((RUNE.treasures[t.side] ?? (t.side === 'golbute' ? GOLBUTE.chest : GOBLIN_KING.chest)).name);
+  const level = t.side === 'goblin' ? GOBLIN_KING.chest.levels?.[t.level] ?? '' : '';   // niveau II du coffre du Roi Gobelin (03/11)
+  const luck = RUNE.luck?.[t.luck] ? tn(RUNE.luck[t.luck].label) : '';
+  return getLang() === 'fr' ? `${tn(qualityDef(t.q).label)} ${chest}${level}${luck ? ` ${luck}` : ''}`
+                            : `${tn(qualityDef(t.q).label)} ${luck ? `${luck} ` : ''}${chest}${level}`;
 }
 export const itemColor = item => { const t = treasureOf(item); return t ? qualityDef(t.q).color : null; };
 
@@ -199,7 +207,7 @@ export function pieceName(p){
   if(!p) return '';
   if(typeof p === 'string') return itemName(p);
   const d = qualityDef(p.q);
-  return (d ? `${d.label} : ` : '') + itemName(p.item) + (p.plus > 0 ? ` +${p.plus}` : '');
+  return (d ? `${tn(d.label)}${getLang() === 'fr' ? ' : ' : ': '}` : '') + itemName(p.item) + (p.plus > 0 ? ` +${p.plus}` : '');
 }
 export const pieceColor = p => typeof p === 'string' ? itemColor(p) : qualityDef(p?.q)?.color ?? itemColor(p?.item);
 

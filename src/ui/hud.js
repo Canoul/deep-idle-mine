@@ -6,6 +6,7 @@ import { followedMiner } from '../render/camera.js';
 import { pxi } from './pxicons.js';
 import { treeOf } from './spells.js';
 import { teamEnergyHTML } from './energy-tag.js';
+import { tn } from '../i18n/index.js';
 
 const $ = id => document.getElementById(id);
 export const fmt = s => { s=Math.floor(s); return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); };
@@ -210,7 +211,7 @@ export function spellBarHtml(m, t){
   return m.spells.map(id => {
     const s = SPELLS.list.find(x => x.id === id); if(!s) return '';
     const left = Math.ceil((m.spellCd?.[id] ?? 0) - t - 1e-9);
-    return `<div class="spB tr-${treeOf(s)}${left > 0 ? ' cd' : ''}" title="${esc(s.name)}${left > 0 ? ` : prêt dans ${left} s` : ' : prêt'}">`+
+    return `<div class="spB tr-${treeOf(s)}${left > 0 ? ' cd' : ''}" title="${esc(tn(s.name))}${left > 0 ? ` : prêt dans ${left} s` : ' : prêt'}">`+
            `<span class="spIcon">${pxi(s.px) || s.icon}</span>${left > 0 ? `<b class="spLeft">${left}</b>` : ''}</div>`;
   }).join('');
 }

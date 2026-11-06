@@ -7712,3 +7712,8 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   compteur est connu du navigateur : celui des autres joueurs, c'est le serveur qui le refuse (`geante_daily`, en les nommant).
 - **Tests** ✅ geante (pas d'énergie, `state().geanteLeft`, texte, Lancer grisé à 0), lobby, team-energy, energy-server, wiki.
 
+### 06/11/2026 — Traduction, étape 2 : noms (Geoffrey) 🧪
+- Branche remise à jour avec main (conflits : imports de src/main.js gardés des deux côtés ; état du projet ; debug). `src/i18n/en/names.js` : 457 noms du glossaire validé (artifact « Glossaire anglais », collection `corrections` vide = aucune correction).
+- `tn()` branché : `itemName` (trésors : « Ancient Blessed Demonic Treasure », l'adjectif passe devant en anglais), `pieceName` (« Ancient: Iron Pickaxe +2 »), libellés des stats (src/meta/stuff.js, src/ui/upgrade.js, src/wiki/data.js), sorts (src/ui/spells.js, barre du HUD), skills et arbres (src/ui/skills.js), états (src/ui/effects.js), onglets de l'inventaire. Le serveur ne change jamais de langue : `tn` y rend le français (annonces Discord inchangées).
+- Tests : `tests/i18n.test.js` (+2 : chaque nom de la config a son anglais, bloquant seulement si `I18N.open` ; noms affichés FR/EN) ✅ ; skills, spells, stuff, upgrade, wiki, effects, inventaire, loot-table, trésors, runes ✅. ⚠️ Rouges **aussi sur main** : loot « chaque objet du butin est au catalogue avec une icône », rarity « la liste du créateur est inhabituelle ». Vu dans Chromium en anglais (mode dev) : arbres Miner / Logistician / Barbarian, aucune erreur.
+

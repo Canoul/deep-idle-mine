@@ -8,8 +8,8 @@ Branche : `geoffrey/traduction-anglais`. Choix de langue dans « Mon compte » :
   ou du téléphone (seulement une fois l'anglais ouvert).
 - **Caché aux joueurs tant que ce n'est pas fini** : `I18N.open: false` en config ; le choix n'apparaît qu'en mode dev.
   `tests/i18n.test.js` refuse `open: true` s'il reste des textes sans anglais.
-- **Noms anglais validés par Geoffrey d'abord** : glossaire de relecture (artifact « Glossaire anglais », 413 noms,
-  corrections enregistrées dans sa base `corrections`). On ne branche les noms qu'après sa relecture.
+- **Noms anglais validés par Geoffrey d'abord** : glossaire de relecture (artifact « Glossaire anglais », corrections dans sa
+  base `corrections`). ✅ Validé le 06/11 : 457 noms, toutes les propositions gardées.
 - **Pages légales traduites**, avec la ligne « en cas de différence, la version française fait foi ».
 
 ## Principe technique (`src/i18n/`)
@@ -25,7 +25,11 @@ Branche : `geoffrey/traduction-anglais`. Choix de langue dans « Mon compte » :
 ## Étapes (chacune publiable : ce qui manque reste en français)
 
 1. ✅ **Socle** : module, langue sur le compte (`POST /api/account/lang`), choix dans « Mon compte » (dev), test de complétude.
-2. **Noms du jeu** : après validation du glossaire, remplir `names.js` et passer chaque affichage de nom par `tn()`.
+2. 🟡 **Noms du jeu** : glossaire validé par Geoffrey le 06/11 (457 noms, aucune correction ; renommés pour les stores le même
+   jour : Bonbonne d'oxygène, Ralliement, Garde du corps, Golem gluant ; « K hole » gardé). `names.js` rempli. Branchés :
+   objets, trésors, qualités et pièces (`itemName`, `pieceName`, donc `rname` et les bulles), stats, sorts, skills, états,
+   onglets de l'inventaire. **Reste** : les autres affichages de noms (boss et mobs dans les HUD et le journal, lieux, modes,
+   bâtiments du Carreau, wiki…), à faire avec l'étape 3.
 3. **Interface** : `index.html`, les écrans de `src/ui/`, les bulles « ? » (`src/ui/help.js`), le guide « Premiers pas ».
 4. **Messages du serveur** : erreurs (déjà un code par erreur : le navigateur traduit d'après le code) ; journal de
    session : la simulation enverra des messages « codés » (clé + valeurs) que chaque joueur lit dans sa langue (172 messages).
