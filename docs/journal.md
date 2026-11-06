@@ -1704,7 +1704,7 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
 - **Pour le joueur** : la Mine géante ne coûte plus d'énergie. Sa carte du Lobby affiche à côté de « Lancer » : « 1 h (2 h de jeu) ·
   sans énergie · 1/2 aujourd'hui » (avant : le coût en énergie de la mine classique). Plus de session aujourd'hui : « Lancer » est
   grisé (« Plus de Mine géante aujourd'hui (2/2) »). La ligne du menu des activités le dit aussi.
-- **État** : ✅ en ligne le 06/11
+- **État** : 🧪 sur la branche `geoffrey/geante-carte` (pas en ligne)
 
 ## 06/11/2026 — Geoffrey — Mine géante (5 joueurs)
 - **Pour le joueur** : nouvelle activité au Lobby, **Mine géante (5 joueurs)**. Le chef l'ouvre, son lobby passe à 5 places, il
