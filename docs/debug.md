@@ -7699,3 +7699,20 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   compteur est connu du navigateur : celui des autres joueurs, c'est le serveur qui le refuse (`geante_daily`, en les nommant).
 - **Tests** ✅ geante (pas d'énergie, `state().geanteLeft`, texte, Lancer grisé à 0), lobby, team-energy, energy-server, wiki.
 
+## 06/11/2026 — Jules — Chat global : le champ débordait sous la boîte
+- **Cause** : `.chatDock` avait `height:var(--chat-h)` et, depuis le 04/11, `.overNav` ajoute `padding-bottom:--chat-lift` (hauteur
+  de la bulle recouverte, ~114 px à 1600 × 900). Le padding était pris **dans** la hauteur : à 15 % d'écran, la `.card` (flex:1,
+  min-height:0) tombait à 36 px, les onglets seuls ; `#gchatForm` débordait en dessous. Même débordement sans remontée sur un écran
+  bas (15 % de 650-700 px < onglets + champ).
+- **Correction** (`src/ui/style.css`) : plus de hauteur sur `.chatDock` (taille = boîte + remontée) ; `.chatDock .card` porte
+  `min-height:min(var(--chat-h), 100dvh − bandeau − remontée − 4u)` en hauteur automatique, et `#gchatLog` a `contain:size` (les
+  messages ne comptent pas dans la taille, flex:1 remplit). Donc boîte ≥ hauteur choisie et ≥ onglets + champ. Replié : `min-height:0` ;
+  téléphone : `flex:1;min-height:0` (le dock est tendu par top/bottom). Note : `min-height:min-content` sur le dock et `height` +
+  min auto sur la card ne marchent pas dans Chromium (essayés). `src/ui/chat-dock.js` : `--chat-lift` posé sur `body` (la marge de
+  `#run .runL` en ≥ 1171 px l'ajoute) ; tirer le bord du haut calcule la part depuis le bas de la boîte (`card.getBoundingClientRect()`),
+  le bord suit le pointeur même remonté ou au-dessus de la barre (≤ 1170 px).
+- **Tests** ✅ chat (39, dont un nouveau sur les règles CSS). ✅ Vu dans Chromium (mode dev, chat affiché à la main) : 1600 × 900 à
+  15 % et 85 %, 1280 × 650 et 1000 × 700 à 15 %, 1920 × 1080 à 60 % : le champ reste dans la boîte ; 60 % = 540 px exacts avec 40
+  messages qui défilent ; replié et téléphone (400 × 800) OK.
+- **À vérifier** : en vrai, connecté, le tirage du bord du haut à la souris ; au minimum (15 %) la liste des messages peut être vide.
+
