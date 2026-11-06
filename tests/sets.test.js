@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { SETS } from '../src/config.js';
-import { createSets, setOp, applySet, snapshot, sanitizeSets, cleanName, equippedSet } from '../src/meta/sets.js';
+import { createSets, setOp, applySet, snapshot, sanitizeSets, cleanName, equippedSet, checkDraft } from '../src/meta/sets.js';
 import { createStuff, stuffOp } from '../src/meta/stuff.js';
 import { createSkills } from '../src/meta/skills.js';
 import { createSpells } from '../src/meta/spells.js';
@@ -92,6 +92,60 @@ test('relecture : sets invalides, doublons et cases inconnues retirés ; nom par
   assert.deepEqual(sanitizeSets('n\'importe quoi'), createSets());
 });
 
+/* ---------- Aperçu set (06/11/2026, Geoffrey) : un brouillon composé pièce par pièce, revérifié ---------- */
+
+test('brouillon : pièces du sac ou portées, bonne case, jamais deux fois le même objet ; uid d\'un autre = refusé', () => {
+  const k = kit(), [p1, p2] = k.uid(PICK), [h] = k.uid(HELM);
+  wear(k, 'casque', h, 'w1');
+  const own = { inv:k.inv, worn:k.stuff.worn, spells:k.spells, points:0, spec:{} };
+  assert.deepEqual(checkDraft({ stuff:{ pioche:p2, casque:h } }, own).stuff, { pioche:p2, casque:h }, 'sac + porté');
+  assert.deepEqual(checkDraft({ stuff:{ pioche:null } }, own).stuff, {}, 'case vide');
+  assert.deepEqual(checkDraft({ stuff:{ pioche:9999 } }, own), { error:'not_owned' });
+  assert.deepEqual(checkDraft({ stuff:{ casque:p1 } }, own), { error:'wrong_slot' });
+  assert.deepEqual(checkDraft({ stuff:{ inconnu:p1 } }, own), { error:'bad_request' });
+  for(const bad of [{ pioche:'1' }, { pioche:-1 }, { pioche:1.5 }, { pioche:Infinity }, [p1]])
+    assert.deepEqual(checkDraft({ stuff:bad }, own), { error:'bad_request' }, JSON.stringify(bad));
+  for(const bad of [null, 'x', { spells:'dash' }, { spells:Array(9).fill(null) }, { skills:{ tree:'pirate' } }, { skills:{ ranks:[1] } }, { spells:['inconnu'] }])
+    assert.deepEqual(checkDraft(bad, own), { error:'bad_request' }, JSON.stringify(bad));
+  /* le même anneau dans les deux cases */
+  const inv = createInventory(); addItem(inv, 'Anneau du tigre', 2);
+  const [r1, r2] = inv.slots.filter(Boolean).map(s => s.uid);
+  assert.deepEqual(checkDraft({ stuff:{ anneau1:r1, anneau2:r2 } }, { inv }), { error:'same_ring' });
+  assert.deepEqual(checkDraft({ stuff:{ anneau1:r1, anneau2:r1 } }, { inv }), { error:'same_ring' });
+});
+
+test('brouillon : rangs en trop rendus (points du niveau), sorts revérifiés avec la spé du set et les emplacements ouverts', () => {
+  const k = kit();
+  k.spells.learned = ['ulti_shen'];
+  const own = { inv:k.inv, worn:k.stuff.worn, spells:k.spells, points:2, spec:{ barbare:5 }, level:1 };
+  const d = checkDraft({ skills:{ tree:'barbare', ranks:{ damage:3, taunt:1 } }, spells:['dash', 'ulti_shen', 'dash', 'illumination'] }, own);
+  assert.deepEqual(d.skills, { v:3, tree:'barbare', ranks:{ damage:2 } });
+  assert.deepEqual(d.spells, ['dash', 'ulti_shen', null, null], 'niveau 1 : 2 emplacements ouverts ; un sort une fois');
+  const m = checkDraft({ skills:{ tree:'mineur', ranks:{} }, spells:['dash', 'ulti_shen'] }, own);
+  assert.deepEqual(m.spells, [null, 'ulti_shen', null, null], 'Dash réservé au barbare : retiré');
+  assert.deepEqual(checkDraft({ spells:['ulti_shen'] }, { ...own, spells:{ learned:[] } }).spells, [null, null, null, null], 'parchemin pas appris');
+});
+
+test('edit : remplace un set existant (rien d\'équipé), crée avec id null, nom optionnel ; set inconnu, nom vide, garde-fou', () => {
+  const k = kit(), sets = createSets(), [p1] = k.uid(PICK);
+  setOp(sets, { action:'create', opId:'c1' }, snapshot(k.stuff, k.skills, k.spells));
+  const draft = checkDraft({ stuff:{ pioche:p1 } }, { inv:k.inv, worn:k.stuff.worn, spells:k.spells });
+  assert.deepEqual(setOp(sets, { action:'edit', id:1, opId:'e1' }, draft), { ok:true, repeated:false, id:1 });
+  assert.deepEqual(sets.list[0].stuff, { pioche:p1 });
+  assert.equal(sets.list[0].name, 'Set 1');
+  assert.equal(k.stuff.worn.pioche, null, 'rien n\'est équipé');
+  assert.deepEqual(setOp(sets, { action:'edit', id:1, opId:'e1' }, { stuff:{} }), { ok:true, repeated:true });
+  assert.deepEqual(sets.list[0].stuff, { pioche:p1 }, 'rejoué : rien ne change');
+  assert.deepEqual(setOp(sets, { action:'edit', id:null, name:'  Farm ', opId:'e2' }, draft), { ok:true, repeated:false, id:2 });
+  assert.deepEqual(sets.list.map(s => s.name), ['Set 1', 'Farm']);
+  assert.deepEqual(setOp(sets, { action:'edit', id:1, name:'Barbare', opId:'e3' }, draft).id, 1);
+  assert.equal(sets.list[0].name, 'Barbare');
+  for(const id of [99, '1', 0]) assert.deepEqual(setOp(sets, { action:'edit', id, opId:'u' + id }, draft), { error:'unknown' });
+  assert.deepEqual(setOp(sets, { action:'edit', id:1, name:'', opId:'e4' }, draft), { error:'bad_name' });
+  for(let i = sets.list.length; i < SETS.max; i++) setOp(sets, { action:'create', opId:'m' + i }, draft);
+  assert.deepEqual(setOp(sets, { action:'edit', id:null, opId:'trop' }, draft), { error:'too_many' });
+});
+
 /* ---------- serveur ---------- */
 
 async function server(){
@@ -159,6 +213,35 @@ test('serveur : équiper un set pendant une session ; la session en cours ne cha
   assert.equal(JSON.stringify([rec2.gear, rec2.skills, rec2.spells]), frozen, 'la session en cours garde son équipement');
   const again = await game.sets(ME, { action:'equip', id:1, opId:'op-ses-e1' });
   assert.equal(again.stuff.pioche, null, 'demande rejouée : rien de plus');
+});
+
+test('serveur : Aperçu set — « Enregistrer » écrit le set sans rien équiper, « Enregistrer et équiper » l\'équipe ; pièce d\'un autre refusée', async () => {
+  const { game, uid } = await server(), [p1, p2] = uid(PICK), [h] = uid(HELM);
+  await game.stuff(ME, { action:'equip', slot:'pioche', uid:p1, opId:'op-ed-w1' });
+  await game.sets(ME, { action:'create', opId:'op-ed-c1' });
+  const before = await game.state(ME);
+  let r = await game.sets(ME, { action:'edit', id:1, name:'Barbare', stuff:{ pioche:p2, casque:h },
+    skills:{ tree:'barbare', ranks:{ damage:99 } }, spells:['dash', null], opId:'op-ed-e1' });
+  assert.equal(r.sets.list[0].name, 'Barbare');
+  assert.deepEqual(r.sets.list[0].stuff, { pioche:p2, casque:h });
+  assert.ok(r.sets.list[0].skills.ranks.damage <= r.skills.points, 'rangs ramenés aux points du niveau');
+  assert.equal(r.stuff.pioche.uid, p1, 'brouillon : le mineur garde sa pioche');
+  assert.deepEqual([r.skills.tree, r.spells.slots], [before.skills.tree, before.spells.slots], 'skills et sorts du mineur inchangés');
+  await assert.rejects(game.sets(ME, { action:'edit', id:1, stuff:{ pioche:123456 }, opId:'op-ed-e2' }), { code:'not_owned' });
+  await assert.rejects(game.sets(ME, { action:'edit', id:1, stuff:{ casque:p2 }, opId:'op-ed-e3' }), { code:'wrong_slot' });
+  await assert.rejects(game.sets(ME, { action:'edit', id:42, stuff:{}, opId:'op-ed-e4' }), { code:'unknown' });
+  /* Enregistrer et équiper : un nouveau set, écrit puis équipé dans la même demande ; rejouée, rien de plus */
+  r = await game.sets(ME, { action:'edit', id:null, stuff:{ casque:h }, skills:{ tree:'barbare', ranks:{ damage:1 } }, spells:[], equip:true, opId:'op-ed-e5' });
+  assert.equal(r.id, 2);
+  assert.deepEqual([r.stuff.pioche, r.stuff.casque?.uid, r.skills.tree, r.skills.ranks], [null, h, 'barbare', { damage:1 }]);
+  assert.equal(r.missing, 0);
+  const again = await game.sets(ME, { action:'edit', id:null, stuff:{}, equip:true, opId:'op-ed-e5' });
+  assert.equal(again.sets.list.length, 2, 'demande rejouée : pas de 3e set');
+  assert.equal(again.stuff.casque.uid, h);
+  /* permis pendant une session, comme Enregistrer */
+  await game.start(ME, {});
+  r = await game.sets(ME, { action:'edit', id:1, stuff:{ pioche:p1 }, opId:'op-ed-e6' });
+  assert.deepEqual(r.sets.list[0].stuff, { pioche:p1 });
 });
 
 /* ---------- affichage ---------- */

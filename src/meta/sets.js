@@ -8,8 +8,10 @@
    - équiper (applySet) : tout le stuff porté revient à l'inventaire puis chaque pièce du set retourne dans sa case (une
      pièce introuvable laisse sa case vide) ; reset des skills puis les rangs du set (revérifiés avec les points) ; les
      sorts du set encore équipables avec ces skills. Permis pendant une session (28/10/2026) : la session en cours garde
-     l'équipement figé à son lancement, le set compte dès la suivante. Créer et enregistrer : hors session (serveur). */
-import { SETS, SPELLS } from '../config.js';
+     l'équipement figé à son lancement, le set compte dès la suivante. Créer et enregistrer : hors session (serveur).
+   - edit (Aperçu set, 06/11/2026) : écrit un brouillon composé pièce par pièce (checkDraft le revérifie), sans rien
+     équiper ; id null = nouveau set. */
+import { SETS, SPELLS, SKILLS } from '../config.js';
 import { SLOT_IDS, fits } from './stuff.js';
 import { takePiece, putPiece } from './inventory.js';
 import { sanitizeSkills, skillRanks } from './skills.js';
@@ -68,12 +70,67 @@ export function equippedSet(list, worn, skills, spellSlots){
   ) ?? null;
 }
 
-/* op = { action:'create' } | { action:'save', id } | { action:'rename', id, name } | { action:'delete', id }, avec opId ;
-   current : snapshot de l'équipement actuel (create, save). Renvoie { ok, repeated, id? } ou { error }. */
+/* Brouillon d'un set (onglet Stuff, « Aperçu set », 06/11/2026, Geoffrey) : ce que le joueur a composé, revérifié comme
+   le serveur doit le faire. raw = { stuff:{ case: uid }, skills:{ tree, ranks }, spells:[id | null] } ; own = { inv,
+   worn : { case: pièce } (stuff porté), spells : état des sorts (appris), points : points de skill du niveau, spec,
+   level }. Les pièces : celles du joueur (inventaire ou portées), dans une case où elles vont, jamais deux fois le même
+   objet (anneaux) ; une pièce peut être dans plusieurs sets. Les skills sont rejoués avec les points d'aujourd'hui (le
+   surplus est rendu) ; les sorts gardés : ceux équipables avec cette spé, dans un emplacement ouvert, chacun une fois.
+   Renvoie { stuff, skills, spells } (ce que le set retient) ou { error } (bad_request, not_owned, wrong_slot, same_ring). */
+export function checkDraft(raw, { inv, worn = {}, spells, points = 0, spec = {}, level } = {}){
+  if(!raw || typeof raw !== 'object') return { error:'bad_request' };
+  const rs = raw.stuff ?? {}, rk = raw.skills ?? {}, rp = raw.spells ?? [];
+  if(typeof rs !== 'object' || Array.isArray(rs) || typeof rk !== 'object' || Array.isArray(rk) || !Array.isArray(rp) || rp.length > SPELLS.slots)
+    return { error:'bad_request' };
+  /* stuff : cases connues, uid entiers, pièces à soi, bonne case, jamais deux fois le même objet */
+  const owned = new Map([...(inv?.slots ?? []).filter(s => s && s.uid != null).map(s => [s.uid, s.item]),
+                         ...Object.values(worn ?? {}).filter(p => p && p.uid != null).map(p => [p.uid, p.item])]);
+  const stuff = {}, items = [];
+  for(const [k, uid] of Object.entries(rs)){
+    if(!SLOT_IDS.includes(k)) return { error:'bad_request' };
+    if(uid == null) continue;
+    if(!Number.isSafeInteger(uid) || uid < 0) return { error:'bad_request' };
+    const item = owned.get(uid);
+    if(!item) return { error:'not_owned' };
+    if(!fits(item, k)) return { error:'wrong_slot' };
+    if(items.includes(item)) return { error:'same_ring' };
+    items.push(item); stuff[k] = uid;
+  }
+  /* skills : arbre connu (ou aucun), rangs rejoués avec les points du niveau */
+  if(rk.tree != null && !SKILLS.trees.some(t => t.id === rk.tree)) return { error:'bad_request' };
+  if(rk.ranks != null && (typeof rk.ranks !== 'object' || Array.isArray(rk.ranks))) return { error:'bad_request' };
+  const sk = sanitizeSkills({ tree:rk.tree ?? null, ranks:rk.ranks ?? {} }, points);
+  /* sorts : ids connus ; seulement ceux qu'on peut équiper avec cette spé, dans un emplacement ouvert */
+  if(rp.some(id => id != null && !spellOf(id))) return { error:'bad_request' };
+  const ctx = { tree:sk.tree, spec, level }, open = openSlotsOf(ctx), st = spells ?? { learned:[] };
+  const out = Array.from({ length:SPELLS.slots }, (_, i) => {
+    const id = rp[i] ?? null;
+    return i < open && id && !equipBlocked(st, id, ctx) && rp.indexOf(id) === i ? id : null;
+  });
+  return { stuff, skills:skillRanks(sk), spells:out };
+}
+
+/* op = { action:'create' } | { action:'save', id } | { action:'rename', id, name } | { action:'delete', id } |
+   { action:'edit', id | null, name? }, avec opId ; current : snapshot de l'équipement actuel (create, save), ou le
+   brouillon revérifié par checkDraft (edit). Renvoie { ok, repeated, id? } ou { error }. */
 export function setOp(sets, op, current){
   if(sets.ops.includes(op.opId)) return { ok:true, repeated:true };
   let id = op.id;
   if(op.action === 'assign'){ const r = assign(sets, op); if(r.error) return r; }
+  else if(op.action === 'edit'){
+    const name = op.name == null ? null : cleanName(op.name);
+    if(op.name != null && !name) return { error:'bad_name' };
+    if(op.id == null){
+      if(sets.list.length >= SETS.max) return { error:'too_many' };
+      id = sets.nextId++;
+      sets.list.push({ id, name:name ?? freeName(sets), ...structuredClone(current) });
+    } else {
+      const s = setOf(sets, op.id);
+      if(!s) return { error:'unknown' };
+      Object.assign(s, structuredClone(current));
+      if(name) s.name = name;
+    }
+  }
   else if(op.action === 'create'){
     if(sets.list.length >= SETS.max) return { error:'too_many' };
     id = sets.nextId++;
