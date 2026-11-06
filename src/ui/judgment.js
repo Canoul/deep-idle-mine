@@ -22,6 +22,13 @@ export function towerState(side, v, now){
   return { cls: 'open', text: `${name} : ouverte · ${fmtLeft(v.openUntil - now)}`, sub: 'Choisis-la ici, seul ou en groupe de 3.' };
 }
 
+/* point « nouveau » de l'onglet Lobby (06/11/2026) : une clé par ouverture de tour pas encore gagnée (openUntil change à
+   chaque ouverture). Le point s'allume tant qu'une de ces clés n'a pas été vue, et s'éteint quand le joueur ouvre le Lobby
+   (avant : allumé toute l'ouverture, 4 h, quoi qu'on fasse). */
+export const pendingKeys = view => view?.sides
+  ? Object.entries(view.sides).filter(([, s]) => s.open && !s.done).map(([side, s]) => `${side}:${s.openUntil}`) : [];
+export const unseen = (view, seen) => pendingKeys(view).some(k => !(Array.isArray(seen) && seen.includes(k)));
+
 /* root : élément de la carte (Lobby, choix « Jugement ») ; onTower(side) : choisir la tour de ce camp dans « Où miner » */
 export function setupJudgment(root, { onTower } = {}){
   let view = null, skew = 0, timer = null;

@@ -178,3 +178,21 @@ test('mine lancée pendant une ouverture (23/10) : aucun résidu (record.residue
   assert.equal(off.noResidues, true); assert.equal(on.noResidues, false);
 });
 
+
+/* point de l'onglet Lobby (06/11/2026) : allumé à chaque nouvelle ouverture pas encore gagnée, éteint une fois le Lobby vu */
+test('point du Lobby : une ouverture vue ne rallume plus le point, la suivante si', async () => {
+  const { pendingKeys, unseen } = await import('../src/ui/judgment.js');
+  const side = (open, done, openUntil) => ({ open, done, openUntil });
+  const v = (a, d) => ({ sides: { angel: a, demon: d } });
+  const open1 = v(side(true, false, 1000), side(false, false, 0));
+  assert.deepEqual(pendingKeys(open1), ['angel:1000']);
+  assert.equal(unseen(open1, []), true);                                   // nouvelle ouverture : point allumé
+  const seen = pendingKeys(open1);                                         // le joueur ouvre le Lobby
+  assert.equal(unseen(open1, seen), false);                                // il reste éteint pendant l'ouverture
+  assert.equal(unseen(v(side(true, true, 1000), side(false, false, 0)), []), false);   // tour gagnée : rien
+  assert.equal(unseen(v(side(false, false, 1000), side(false, false, 0)), []), false); // tour fermée : rien
+  assert.equal(unseen(v(side(true, false, 1000), side(true, false, 2000)), seen), true); // l'autre tour ouvre : rallumé
+  assert.equal(unseen(v(side(true, false, 9000), side(false, false, 0)), seen), true);   // ouverture suivante : rallumé
+  assert.equal(unseen(null, []), false);
+  assert.equal(unseen(open1, 'n\'importe quoi'), true);                    // stockage abîmé : pas d'erreur
+});

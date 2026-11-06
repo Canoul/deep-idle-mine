@@ -83,7 +83,7 @@ import { setupSocial } from './ui/social.js';
 import { setupGuild } from './ui/guild.js';
 import { setupLeaderboard } from './ui/leaderboard.js';
 import { setupShop } from './ui/shop.js';
-import { setupJudgment } from './ui/judgment.js';
+import { setupJudgment, pendingKeys, unseen } from './ui/judgment.js';
 import { setupNotify } from './ui/notify.js';
 import { renderDaily } from './ui/daily.js';   // bandeau « Événement du jour » du Lobby (05/11)
 import { setupObtained } from './ui/obtained.js';
@@ -361,6 +361,15 @@ let giantUI = null, hcUI = null;   // Bloc géant, He's coming (créés plus bas
 const inRoom = () => !!giantUI?.active() || !!hcUI?.active();
 let guide = null;     // guide « Premiers pas » (créé au démarrage, une fois l'état du joueur lu)
 let wantJudgment = /^#jugement$/i.test(location.hash);   // ancien onglet Jugement : ouvre le Lobby sur les jauges
+/* point de l'onglet Lobby : une tour ouverte pas encore gagnée, éteint dès que le joueur ouvre le Lobby (src/ui/judgment.js) */
+const JUDGMENT_SEEN = 'dim.judgmentSeen';
+let judgmentView = null;
+function judgmentBadge(){
+  let seen = [];
+  try { seen = JSON.parse(localStorage.getItem(JUDGMENT_SEEN)) || []; } catch {}
+  if(ui.tab === 'lobby'){ seen = pendingKeys(judgmentView); try { localStorage.setItem(JUDGMENT_SEEN, JSON.stringify(seen)); } catch {} }
+  nav?.badge('lobby', unseen(judgmentView, seen));
+}
 nav = setupNav($('nav'), $('views'), id => {
   if(ui.tab==='inventaire' && id!=='inventaire') ui.fresh.clear();   // les nouveautés ont été vues
   const from = ui.tab;
@@ -370,6 +379,7 @@ nav = setupNav($('nav'), $('views'), id => {
   /* … et la prison comme la mine (30/10/2026) */
   if(!appBoot.app && backdrop.switchTab(from, id, transitionGame(rec && G?.ready ? G : prisonBackdrop(), inRoom() && pane !== 'session'))) id==='session' ? enterPanels(sessView) : leavePanels(sessView, $('views'), () => ui.tab==='session');
   if(id==='inventaire'){ renderInventory(ui.inv, ui.fresh); nav?.badge('inventaire', false); }
+  if(id==='lobby') judgmentBadge();   // tours ouvertes vues : le point s'éteint
   if(id==='skills') skills?.refresh();   // le bouton reset suit la session en cours
   if(id==='historique') historyTab?.refresh();
   if(id==='guilde') guildTab?.open();
@@ -666,7 +676,7 @@ let judgmentTimer = null;
 async function pollJudgment(){
   clearTimeout(judgmentTimer);
   if(acct.offline || !acct.account) return;
-  try { const j = await gameApi.judgment(); renderDaily($('dailyBanner'), (j?.value ?? j)?.daily, serverNow()); judgment.set(j); town.setJudgment(j?.value?.sides ?? j?.sides); nav.badge('lobby', judgment.pending()); lobby.update({ judgment: judgment.view(), judgmentPending: judgment.pending() }); }
+  try { const j = await gameApi.judgment(); renderDaily($('dailyBanner'), (j?.value ?? j)?.daily, serverNow()); judgment.set(j); town.setJudgment(j?.value?.sides ?? j?.sides); judgmentView = judgment.view(); judgmentBadge(); lobby.update({ judgment: judgment.view(), judgmentPending: judgment.pending() }); }
   catch(e){ console.warn(e); }
   judgmentTimer = setTimeout(pollJudgment, document.hidden ? JUDGMENT.poll * 4 : JUDGMENT.poll);
 }

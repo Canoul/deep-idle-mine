@@ -7900,6 +7900,14 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - src/ui/guide.js : glisser l'en-tête `.gHead` (seuil 6 px ; pointermove / pointerup écoutés sur la fenêtre, sinon le pointeur sort de l'en-tête et on perd le mouvement), `place(pos)` (left/top, bornés à l'écran, aussi au redimensionnement), `saved.pos` dans `deepIdleMine.guide` ; un glisser n'ouvre / ferme pas (`moved` saute le clic). CSS : `touch-action:none` sur l'en-tête, poignée `.gGrip`.
 - **Vérifié** : guide (9) ✅ ; navigateur : glisser déplace, ne replie pas ; toucher replie ; position gardée après rechargement ✅. Pas testé au doigt sur un vrai téléphone.
 
+### 06/11/2026 — Point de l'onglet Lobby toujours allumé (Jules)
+- Cause : `nav.badge('lobby', judgment.pending())` (src/main.js, pollJudgment) = une tour ouverte pas gagnée ; rien ne l'éteignait
+  à la visite du Lobby (contrairement à l'Inventaire) → allumé toute l'ouverture, et presque tout le temps un jour Cataclysme.
+- Correction : src/ui/judgment.js `pendingKeys(view)` (clé `côté:openUntil`, une par ouverture pas gagnée) et `unseen(view, seen)` ;
+  src/main.js `judgmentBadge()` : sur l'onglet Lobby, les clés en cours sont notées vues (`localStorage['dim.judgmentSeen']`) ;
+  appelé par pollJudgment et à l'ouverture du Lobby. `judgment.pending()` reste pour le repère du bouton Jugement du Lobby.
+- Tests : tests/judgment.test.js (+1), tests/nav.test.js ✅. ⚠️ Pas vu à l'écran ; appli : même `nav.badge`, rien dans src/app/.
+
 ## 06/11/2026 — Lobby : description d'activité coupée (Mine géante) (Jules)
 - **Cause** : les lignes du menu des activités sont des `<button class="actBtn">` ; la règle de base `button{white-space:nowrap}` (src/ui/style.css) empêchait la description (`.actText small`) de revenir à la ligne, la longue phrase de la Mine géante sortait du bouton.
 - **Correction** : `.actText{…;white-space:normal}` (src/ui/style.css). Le titre et la description passent à la ligne si besoin.
