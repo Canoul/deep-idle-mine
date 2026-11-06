@@ -1700,6 +1700,16 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
 
 ---
 
+## 06/11/2026 — Geoffrey — Mine géante (5 joueurs)
+- **Pour le joueur** : nouvelle activité au Lobby, **Mine géante (5 joueurs)**. Le chef l'ouvre, son lobby passe à 5 places, il
+  lance à 5. La session dure 2 h de jeu (1 h réelle), 2 fois par jour et par joueur. Mêmes règles que la mine (oxygène, pods,
+  treuil, donjon, pièges, k hole, treasures), mais une mine de 70 colonnes, 2,7 fois plus de minerais et 1,5 fois plus de mobs :
+  chacun rapporte environ 1,5 fois les minerais par heure d'une mine normale, et descend au moins aussi profond.
+- **Chiffres** (simulés, stuff acier) : sans réglage, à 5 on rapporte 63 % par joueur et par heure ; 70 colonnes et minerais
+  × 2,6 donnent 148 % et l'area 7 (contre l'area 6 à 3).
+- **Décision de Claude** : énergie comme la mine classique (un lancement = un coût).
+- **État** : ✅ en ligne le 06/11
+
 ## 06/11/2026 — Geoffrey — Appli : sous-onglets en bas, juste au-dessus de la barre des familles
 - **Pour le joueur** (retour d'un joueur) : dans l'appli, les sous-onglets (Inventaire / Craft / Four…, Stuff / Amélioration /
   Skills / Sorts…) étaient en haut de l'écran et les familles en bas. Ils sont maintenant juste au-dessus de la barre des

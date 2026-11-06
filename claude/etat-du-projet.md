@@ -51,6 +51,10 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   et mode dev exclus) ; **dès 6** le lancement passe, le coût débité est plafonné à l'énergie restante (jamais négative) ; sous 6,
   refus nommant les joueurs à court, un refus n'arrête pas la prison. Recharge **seulement en prison** : 8 par heure de jeu,
   plafonnée à 100, gardée au dixième. Aucun autre mode ne coûte.
+- **Mine géante (5 joueurs)** (06/11, Geoffrey ; `GEANTE`, `src/shared/geante.js`, GAME_DESIGN §6) : 5 joueurs exactement, 2 h de jeu,
+  2 par jour et par joueur, règles de la mine classique (énergie comprise) ; 70 colonnes, minerais × 2,7, mobs × 1,5 (simulé : ≈ 150 %
+  des minerais par heure d'une mine à 3, area 7). Sa partie tourne dans son propre fil avec `DIM_MINE=geante` (W 70, SESSION_LEN 7200) ;
+  le navigateur lit `G.w` / `G.len`. Lobby à 5 places quand le chef l'ouvre (`maxOf(p)`, server/party/service.js).
 - **Lobby par activités** (31/10, Geoffrey) : menu des 6 activités, puis sets à gauche et carte de l'activité à droite (ancien : carte « Où miner »). Niveau et XP dans le bandeau du haut. Chat global permanent en bas à gauche, hauteur réglable (`CHAT.dock`, src/ui/chat-dock.js) ; ancien : carte du Lobby.
 - **Guildes** (31/10, Geoffrey ; `GUILD`, server/guild/, src/shared/guild.js, src/ui/guild.js) : message de guilde (01/11, champ `message`), onglet Guilde, grades Chef / Officier / Membre, invitations et demandes, 30 membres, 1 % de l'XP des membres, même courbe que le mineur, classement. Bonus et bâtiments à venir.
 - **Bâtiments de guilde** (01/11, Geoffrey ; `GUILD.buildings`, server/guild/service.js) : Armurerie, Trésorerie, Forge, niveau 1 ; dons définitifs, construction par chef ou officier ; bonus figé avec les skills (`skills.guild`), dans tous les modes ; journal public sans limite (ns `guild_log`).

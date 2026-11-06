@@ -1,5 +1,5 @@
 /* Rendu canvas : LIT l'état de la simulation, ne le modifie jamais. */
-import { W, CFG, BLOCKS, BRIDGE, CHEST_X, DUCK, SHRINES, PRISON, MINOTAUR } from '../config.js';
+import { W as MAP_W, CFG, BLOCKS, BRIDGE, CHEST_X, DUCK, SHRINES, PRISON, MINOTAUR } from '../config.js';
 import { maxRow } from '../sim/world.js';
 import { lightShown } from '../sim/light.js';
 import { lightR } from '../sim/mineur.js';
@@ -18,7 +18,7 @@ export const TILE=16, VIEW_ROWS=34;
 export function createRenderer(cv){
   const ctx=cv.getContext('2d');
   let rows=VIEW_ROWS;   // lignes dessinées : s'adapte à la hauteur de la fenêtre (setRows)
-  cv.width=W*TILE; cv.height=rows*TILE;
+  cv.width=MAP_W*TILE; cv.height=rows*TILE;
   ctx.imageSmoothingEnabled=false;
   const TEX=loadTextures();
   const cam=createCamera(VIEW_ROWS);
@@ -47,6 +47,9 @@ export function createRenderer(cv){
   let curG=null, frameNow=0;   // partie et heure de l'image en cours (pour les glissades)
   function draw(G, followId){
     curG=G; frameNow=performance.now();
+    /* largeur de la partie (Mine géante : 70 colonnes, 06/11/2026) : canvas et caméra suivent */
+    const W=G.w||MAP_W;
+    if(cv.width!==W*TILE){ cv.width=W*TILE; ctx.imageSmoothingEnabled=false; cam.setCols(W); }
     const fm=followedMiner(G.miners, followId), mr=maxRow(G);
     const [fx, fy]=drawPos(fm);
     /* prison (30/10/2026, Geoffrey) : la carte est entre deux rangées de barreaux ; la caméra reste entre eux et son zoom
@@ -86,7 +89,7 @@ export function createRenderer(cv){
     // boussole du mineur suivi
     ctx.strokeStyle='rgba(255,215,64,.9)'; ctx.lineWidth=1;
     for(const o of fm.pings){ if(G.tiles[o.y]&&G.tiles[o.y][o.x]===o.t) ctx.strokeRect(o.x*TILE+1.5,sy(o.y)+1.5,TILE-3,TILE-3); }
-    blit('chest',CHEST_X*TILE,sy(0));
+    blit('chest',(G.chestX ?? CHEST_X)*TILE,sy(0));   // Mine géante : colonne 32 (06/11)
     (G.shrines||[]).forEach((id,i)=>{ const d=SHRINES.list[id], x=SHRINES.drawX[i]; if(d && x!=null) blit(d.tex,x*TILE,sy(0)); });   // shrines actifs : décor (28/10)
     if(G.winch) blit(G.winch.lift ? 'lift_top' : 'winch_top',G.winch.x*TILE,sy(0));   // poulie du treuil (machinerie de l'ascenseur) en surface
     if(G.mule){                                            // sac de la Mule : sur sa case, jauge de remplissage au-dessus
@@ -215,6 +218,7 @@ export function createRenderer(cv){
     const row=G.tiles?.[1];
     if(!row) return null;
     if(G._cols !== undefined && G._colsRow === row) return G._cols;
+    const W=G.w||MAP_W;
     let x0=0, x1=W-1;
     while(x0<W && row[x0]===PRISON.bars) x0++;
     while(x1>=0 && row[x1]===PRISON.bars) x1--;
@@ -236,7 +240,7 @@ export function createRenderer(cv){
   const pan = (rows, cols = 0) => { if(curG) cam.pan(rows, maxRow(curG)+1, cols); };
   /* glissé de dx, dy pixels à l'écran : la mine suit le doigt, au zoom actuel */
   const panPixels = (dy, dx = 0) => {
-    const rowPx = (cv.clientHeight / rows || TILE) * cam.zoom, colPx = (cv.clientWidth / W || TILE) * cam.zoom;
+    const rowPx = (cv.clientHeight / rows || TILE) * cam.zoom, colPx = (cv.clientWidth / (curG?.w || MAP_W) || TILE) * cam.zoom;
     pan(-dy / rowPx, -dx / colPx);
   };
   /* zoom autour d'un point de l'écran (clientX, clientY) */

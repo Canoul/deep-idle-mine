@@ -3,11 +3,11 @@ import assert from 'node:assert/strict';
 import { ENERGY } from '../src/config.js';
 import { createEnergy, sanitizeEnergy, canPay, rollCost, spendEnergy, creditEnergy, energyOfTicks, publicEnergy } from '../src/meta/energy.js';
 
-test('créer et assainir : un compte part de 0 (30/10/2026 : tous les joueurs à 0 à la mise en ligne)', () => {
-  assert.equal(ENERGY.start, 0);
-  assert.deepEqual(createEnergy(), { value: 0, keys: [], at: null });
-  assert.equal(sanitizeEnergy(null).value, 0);
-  assert.equal(sanitizeEnergy({ value: 'x' }).value, 0);
+test('créer et assainir : un compte part de 100 (04/11/2026, Geoffrey ; avant 0)', () => {
+  assert.equal(ENERGY.start, 100);
+  assert.deepEqual(createEnergy(), { value: 100, keys: [], at: null });
+  assert.equal(sanitizeEnergy(null).value, 100);
+  assert.equal(sanitizeEnergy({ value: 'x' }).value, 100);
   assert.equal(sanitizeEnergy({ value: -5 }).value, 0);
   assert.equal(sanitizeEnergy({ value: 150 }).value, 100);
   assert.equal(sanitizeEnergy({ value: 42.46 }).value, 42.5);

@@ -7,6 +7,7 @@
    Interface : open(record) · has(id) · advance(id, tick) · leave(id, compte) → tick · focus(id, compte, focus) → tick
                khole(id, carte) → { tick, ok } (k hole imposé, administration)
                finish(id) · view(id, since) → envoi pour les navigateurs (src/shared/view.js) · info(id) → avancement (prison) · close(id) · size. Toutes les demandes d'une partie passent dans l'ordre. */
+import { GEANTE } from '../../src/config.js';
 import { Worker } from 'node:worker_threads';
 import { createLiveGame } from './live-game.js';
 
@@ -59,7 +60,9 @@ function createRunner(spawn, onEnd){
 /* un fil par partie */
 export function createLiveRunner({ onEnd = () => {} } = {}){
   return createRunner(record => {
-    const w = new Worker(WORKER, { workerData: { record } });
+    /* Mine géante (06/11/2026, GEANTE) : son fil a sa propre carte (DIM_MINE=geante → W 70, SESSION_LEN 7200, src/config.js) */
+    const env = record.mode === GEANTE.mode ? { ...process.env, DIM_MINE: GEANTE.mode } : process.env;
+    const w = new Worker(WORKER, { workerData: { record }, env });
     const waiting = new Map(); let next = 1, dead = null;
     w.on('message', m => {
       const p = waiting.get(m.id); if(!p) return;

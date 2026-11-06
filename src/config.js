@@ -1,11 +1,19 @@
 /* Toutes les valeurs d'équilibrage et constantes du jeu, au même endroit (voir GAME_DESIGN.md).
    Aucun nombre magique dans la logique : on ajoute une clé ici et on la lit ailleurs. */
 
-export const W = 50, AREA_H = 50, SESSION_LEN = 3600, DT = 0.1;
+/* Mine géante (5 joueurs) (06/11/2026, Geoffrey ; GAME_DESIGN §6) : 5 joueurs exactement, 2 h de jeu (1 h réelle), 2 sessions par
+   jour et par joueur, mêmes règles que la mine classique (oxygène, pods, treuil, donjon, pièges, k hole, treasures). Mesuré le
+   05/11 (stuff acier, docs/debug.md) : à 5 sur 50 colonnes, chaque joueur rapporte ≈ 63 % des minerais par heure d'une mine
+   normale à 3 ; w 70 + oreMul 2,6 → 148 % (area 7, au-dessus de l'area 6 d'une mine à 3) ; d'où 2,7 pour viser 150 %.
+   mobMul : mobs × 1,5 (sinon chaque joueur en tue un tiers de moins). Sa partie tourne dans son propre fil (server/game/live.js,
+   DIM_MINE=geante) : W, SESSION_LEN, SPAWN_X, CHEST_X y prennent ses valeurs ; le navigateur lit G.w et G.len. */
+export const GEANTE = { mode:'geante', w:70, len:7200, players:5, perDay:2, oreMul:2.7, mobMul:1.5 };
+export const IN_GEANTE = globalThis.process?.env?.DIM_MINE === 'geante';
+export const W = IN_GEANTE ? GEANTE.w : 50, AREA_H = 50, SESSION_LEN = IN_GEANTE ? GEANTE.len : 3600, DT = 0.1;
 /* couche 1 (juste sous la surface) : toujours en terre, hors areas (ne fausse pas les pourcentages).
    L'area 0 occupe donc les couches 2 à 51, l'area 1 les couches 52 à 101, etc. */
 export const TOP_DIRT_ROWS = 1, AREA_Y0 = 1 + TOP_DIRT_ROWS;
-export const SPAWN_X = 25, CHEST_X = 22;
+export const SPAWN_X = IN_GEANTE ? Math.floor(GEANTE.w / 2) : 25, CHEST_X = SPAWN_X - 3;   // Mine géante : 35 et 32
 
 /* stats du mineur (de base, avant équipement) */
 /* speed = marche (horizontal), climbSpeed = sur échelle, montée comme descente (blocs/s) ; deux stats indépendantes */
@@ -1772,6 +1780,8 @@ export const PARTY = { codeLength:6, poll:2500, pollInSession:5000, formingPoll:
    avec « Lancer » : s'ouvre à heure fixe pour les inscrits, voir INSTANT_MINE). */
 export const MINE_MODES = [
   { id:'mine', label:'Mine',              icon:'⛏', ready:true  },
+  /* Mine géante (06/11/2026, GEANTE) : 5 joueurs exactement, 2 par jour ; même lobby que la mine, 5 places quand le chef l'ouvre */
+  { id:'geante', label:'Mine géante (5 joueurs)', icon:'⛰', ready:true, players:5 },
   /* minLevel (03/11/2026, Geoffrey) : niveau du mineur requis ; en dessous, l'activité est scellée (cadenas) et le serveur
      refuse l'inscription ou l'entrée (src/shared/level-gate.js) */
   { id:'mi',   label:'Mine instantanée',  icon:'🌀', ready:true, scheduled:true, minLevel:3 },   // MI : inscription dans le lobby

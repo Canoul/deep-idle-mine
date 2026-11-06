@@ -1,6 +1,6 @@
 /* Groupes (lobby à plusieurs) : se réunir avant de lancer une session commune.
 
-   - Un groupe a un chef, jusqu'à GAME.maxPlayers membres et un code (ex. K7Q4P2) : le code ou le lien
+   - Un groupe a un chef, jusqu'à GAME.maxPlayers membres (5 quand le chef a ouvert la Mine géante, 06/11) et un code (ex. K7Q4P2) : le code ou le lien
      #rejoindre=K7Q4P2 permettent d'entrer ; on peut aussi inviter un ami par son ID de compte (il accepte ou refuse
      depuis son lobby).
    - Seul le chef lance : le serveur crée alors la session de jeu pour tous les membres (server/game/service.js).
@@ -29,6 +29,9 @@ import { CODE_ALPHABET, displayName, parseAccountId, formatAccountId } from '../
 import { parsePartyCode } from '../../src/shared/party.js';
 import { matchLfg } from '../../src/shared/lfg.js';
 import { lobbyLink } from '../../src/shared/chat.js';
+import { maxPlayersOf } from '../../src/shared/geante.js';
+/* places d'un groupe (06/11/2026) : selon l'activité ouverte par le chef (Mine géante : 5), sinon GAME.maxPlayers */
+const maxOf = p => maxPlayersOf(p?.activity?.mode);
 import { createLimiter } from '../accounts/ratelimit.js';
 import { PARTY_SERVER } from '../config.js';
 
@@ -74,7 +77,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
   /* ce que les membres voient de leur groupe (les ID de compte sont publics) */
   function publicParty(p, meId, playing = new Map(), trees = new Map(), looks = new Map(), specLv = new Map(), auras = new Map(), gs = new Map(), prisons = new Set(), energies = new Map(), pts = new Map()){
     const now = clock();
-    return { code: p.code, leader: p.leader, max: GAME.maxPlayers, launching: !!p.launching, devPresets: p.devPresets ?? null, locked: !!p.locked,
+    return { code: p.code, leader: p.leader, max: maxOf(p), launching: !!p.launching, devPresets: p.devPresets ?? null, locked: !!p.locked,
              members: p.members.map(m => ({ account: m.account, displayId: formatAccountId(m.account), name: m.name,
                                             leader: m.account === p.leader, me: m.account === meId, ready: !!m.ready,
                                             always: !!m.always,
@@ -355,7 +358,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       if(p){
         noChange(p);
         if(p.locked) fail('party_locked', 409, 'Ton groupe est verrouillé : ouvre-le pour chercher des joueurs.');
-        if(p.members.length >= GAME.maxPlayers) fail('party_full', 409, 'Ton groupe est déjà complet.');
+        if(p.members.length >= maxOf(p)) fail('party_full', 409, 'Ton groupe est déjà complet.');
         if(p.members.length > 1 && p.leader !== me.id) fail('not_leader', 403, 'C\'est le chef du groupe qui lance la recherche.');
       }
       const members = teamOf(me.id), old = queue.get(me.id), now = clock();
@@ -393,7 +396,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       if(memberOf(p, me.id)) return { party: publicParty(p, me.id) };
       noChange(p);
       noStranger(p, me.id);
-      if(p.members.length >= GAME.maxPlayers) fail('party_full', 409, 'Ce groupe est complet.');
+      if(p.members.length >= maxOf(p)) fail('party_full', 409, 'Ce groupe est complet.');
       const old = partyOf(me.id);
       if(old){ noChange(old); removeMember(old, me.id); }
       unready(p);                                      // un nouveau venu : tout le monde redit qu'il est prêt
@@ -417,7 +420,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       const p = partyOf(me.id) ?? await create(me);
       noChange(p);
       if(memberOf(p, id)) fail('already_member', 409, `${displayName(friend)} est déjà dans ton groupe.`);
-      if(p.members.length >= GAME.maxPlayers) fail('party_full', 409, 'Ton groupe est complet.');
+      if(p.members.length >= maxOf(p)) fail('party_full', 409, 'Ton groupe est complet.');
       if(!p.invites.has(id) && p.invites.size >= config.maxPendingInvites)
         fail('too_many_invites', 409, 'Trop d\'invitations en attente pour ce groupe.');
       limit.invite.hit(me.id);
@@ -438,7 +441,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       if(memberOf(p, me.id)) return { party: publicParty(p, me.id) };
       noChange(p);
       noStranger(p, me.id);
-      if(p.members.length >= GAME.maxPlayers) fail('party_full', 409, 'Ce groupe est complet.');
+      if(p.members.length >= maxOf(p)) fail('party_full', 409, 'Ce groupe est complet.');
       const old = partyOf(me.id);
       if(old){ noChange(old); removeMember(old, me.id); }
       await addMember(p, me.id, displayName(me));
@@ -606,8 +609,8 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       await notInSession(me);
       const p = partyOf(me.id) ?? await create(me);
       if(p.locked) fail('party_locked', 409, 'Ton groupe est verrouillé : ouvre-le pour l\'annoncer.');
-      if(p.members.length >= GAME.maxPlayers) fail('party_full', 409, 'Ton groupe est déjà complet.');
-      return { code: p.code, ...lobbyLink(ctx?.mode, ctx?.level), size: p.members.length, max: GAME.maxPlayers };
+      if(p.members.length >= maxOf(p)) fail('party_full', 409, 'Ton groupe est déjà complet.');
+      return { code: p.code, ...lobbyLink(ctx?.mode, ctx?.level), size: p.members.length, max: maxOf(p) };
     },
     /* aperçu d'un groupe au survol d'un lien, ou null s'il n'existe plus. Le code reste au serveur : voir le service social */
     async peek(code){
@@ -619,7 +622,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
         if(await game.activeSessionId(m.account)) playing = true;
         members.push(await memberCard(m, p));
       }
-      return { members, size: members.length, max: GAME.maxPlayers, playing, locked: !!p.locked };
+      return { members, size: members.length, max: maxOf(p), playing, locked: !!p.locked };
     },
     /* verrouiller son groupe (31/10/2026, Geoffrey) : le chef seul. Une recherche de groupe en cours s'arrête */
     async lock(me, value){
@@ -646,7 +649,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       const now = clock(), mine = partyOf(me.id)?.code, list = [];
       for(const p of parties.values()){
         if(list.length >= config.formingMax) break;
-        if(p.code === mine || p.locked || p.launching || p.members.length >= GAME.maxPlayers) continue;
+        if(p.code === mine || p.locked || p.launching || p.members.length >= maxOf(p)) continue;
         if(now - memberOf(p, p.leader).seenAt > config.awayAfter) continue;
         let busy = false;
         for(const m of p.members) busy ||= !!await game.activeSessionId(m.account) || !!await game.prisonActiveOf?.(m.account);
@@ -654,7 +657,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
         const members = [];
         for(const m of p.members) members.push(await formingCard(m, p));
         list.push({ code: p.code, mode: p.activity?.mode ?? null, level: p.activity?.level ?? 1, open: true,
-                    size: members.length, max: GAME.maxPlayers, members });
+                    size: members.length, max: maxOf(p), members });
       }
       return { groups: list.sort((a, b) => b.size - a.size) };
     },
@@ -666,7 +669,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       const p = partyOf(host.id) ?? await create(host);
       if(memberOf(p, player.id)) return { moved: false, party: adminView(p) };
       noChange(p);
-      if(p.members.length >= GAME.maxPlayers) fail('party_full', 409, `Le groupe de ${displayName(host)} est complet.`);
+      if(p.members.length >= maxOf(p)) fail('party_full', 409, `Le groupe de ${displayName(host)} est complet.`);
       const old = partyOf(player.id);
       if(old){ noChange(old); removeMember(old, player.id); }
       queue.delete(player.id);
@@ -752,7 +755,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
     ...actions,
     load,
     /* pour l'onglet Social : groupe d'un joueur (taille, places) et invitations qu'il a reçues, sans ménage ni signe de vie */
-    groupOf: accountId => { const p = partyOf(accountId); return p ? { code: p.code, size: p.members.length, max: GAME.maxPlayers, locked: !!p.locked } : null; },
+    groupOf: accountId => { const p = partyOf(accountId); return p ? { code: p.code, size: p.members.length, max: maxOf(p), locked: !!p.locked } : null; },
     invitesOf: accountId => invitesFor(accountId).map(q => ({ code: q.code, from: q.invites.get(accountId).from, at: q.invites.get(accountId).at,
                                                               members: q.members.map(m => m.name), full: q.members.length >= GAME.maxPlayers })),
     /* compte supprimé : il sort de son groupe (le suivant devient chef), de la recherche, de toutes les invitations */

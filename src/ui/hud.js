@@ -29,8 +29,9 @@ function depthText(m){ const a=areaOf(m.y); return m.y+' blocs'+(a>=0?' (area '+
 
 export function updateHUD(G, ui){
   const m=followedMiner(G.miners, ui.follow);
-  $('timer').textContent=fmt(G.t)+' / '+fmt(SESSION_LEN);
-  $('timeBar').style.width=(G.t/SESSION_LEN*100)+'%';
+  const len=G.len||SESSION_LEN;   // Mine géante : 2 h (06/11)
+  $('timer').textContent=fmt(G.t)+' / '+fmt(len);
+  $('timeBar').style.width=(G.t/len*100)+'%';
 
   // équipe
   const team=$('teamBody');

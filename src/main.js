@@ -366,7 +366,7 @@ if(appBoot.app) import('./app/main.js').then(async m => { appLayer = m.startApp(
 
 /* orbes de la barre d'action : temps de session et XP ; pendant une session, oxygène et pods du mineur suivi */
 const orbs = setupOrbs($('orbL'), $('orbR'));
-function updateOrbs(shown, mi, len = mi ? INSTANT_MINE.duration : SESSION_LEN){
+function updateOrbs(shown, mi, len = mi ? INSTANT_MINE.duration : (shown?.len || SESSION_LEN)){   // Mine géante : shown.len (06/11)
   const m = shown && !mi && !shown.over ? followedMiner(shown.miners, ui.follow) : null;
   if(m){
     const oxMax = m.carac?.oxygenMax ?? STATS.oxygenMax, pods = m.carac?.pods ?? STATS.pods;
@@ -1128,7 +1128,7 @@ function frame(now){
     }
     updateEffects(ui.tab==='session' ? shown : null);
     updateSpellBars(ui.tab==='session' ? shown : null);
-    updateNavSession(rec ? shown : null, waiting, isRd() ? RAID.duration : ins ? INSTANCE.duration : tw ? TOWER.duration : mi ? (shown?.duration ?? INSTANT_MINE.duration) : SESSION_LEN);
+    updateNavSession(rec ? shown : null, waiting, isRd() ? RAID.duration : ins ? INSTANCE.duration : tw ? TOWER.duration : mi ? (shown?.duration ?? INSTANT_MINE.duration) : (shown?.len || SESSION_LEN));
     updateOrbs(shown, mi || tw || ins || rb, rb || rm ? RAID.duration : ins ? INSTANCE.duration : tw ? TOWER.duration : mi ? (shown?.duration ?? INSTANT_MINE.duration) : undefined);
     if(ui.tab==='session'){
       ins || rb ? fitCanvas($('cvIn'), $('cvInWrap')) : tw ? fitCanvas($('cvTw'), $('cvTwWrap')) : mi ? fitInstant($('cvMi'), $('cvMiWrap'), miRenderer, MI_TILE) : fitMine($('cv'), $('cvWrap'), renderer, CAMERA, TILE);   // la mine remplit la place libre

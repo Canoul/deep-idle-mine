@@ -1,5 +1,5 @@
 /* Le monde : grille de blocs, génération déterministe des areas, gravité, déblocage. */
-import { W, AREA_H, AREA_Y0, CFG, BLOCKS, BARRIER, IDS, AREAS, GEN, TREASURE, TREASURE_BLOCK, WINCH, JUDGMENT, GLYPHS, DUNGEON, TRAP, PRISON, CHEST_X, RAID } from '../config.js';
+import { W, AREA_H, AREA_Y0, CFG, BLOCKS, BARRIER, IDS, AREAS, GEN, TREASURE, TREASURE_BLOCK, WINCH, JUDGMENT, GLYPHS, DUNGEON, TRAP, PRISON, CHEST_X, RAID, GEANTE } from '../config.js';
 import { pickShare, capOres } from '../meta/prison-profile.js';
 import { mulberry32, hash, shuffle } from '../core/rng.js';
 import { log } from './log.js';
@@ -149,7 +149,8 @@ export function genArea(G,k){
   /* prison : contenu de l'area max (contentOf), part de minerais × PRISON.oreMul ; remplie sur box.w colonnes, les
      autres colonnes sont des barreaux (hors des comptes de l'area) */
   const ck = contentOf(G, k), box = prisonBox(G);
-  const base = G.prison ? profileComp(prisonComp(areaComp(ck), PRISON.oreMul), G.prison.profile?.ores) : areaComp(ck);
+  const base = G.prison ? profileComp(prisonComp(areaComp(ck), PRISON.oreMul), G.prison.profile?.ores)
+             : G.geante ? prisonComp(areaComp(ck), GEANTE.oreMul) : areaComp(ck);   // Mine géante (06/11) : minerais × oreMul, pris sur le terrain
   /* Shrine d'abondance (28/10/2026) : G.oreBonus points de terrain changés en minerais, dans chaque area de la session */
   const comp = G.oreBonus > 0 ? oreBonusComp(base, G.oreBonus) : base;
   const filled = fillComp(r, comp, box ? box.w : W, AREA_H, G.prison ? mulberry32(hash(G.seed, k+1) ^ PRISON.fracSalt) : null), { counts, big } = filled;

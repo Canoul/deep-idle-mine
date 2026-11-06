@@ -7,7 +7,7 @@
    niveau, pour les caractéristiques ; focus : changements faits pendant la session)
    À partir de lui, buildSession construit la partie que le serveur fait tourner (server/game/live-game.js) ; la même
    seed et les mêmes choix redonnent exactement la même partie (reconstruction après un redémarrage). */
-import { TEAM, PREFS, PREF_OPTIONS, MOBS, DEV_TUNABLES, DEV_SPEC, SKILLS, GAME, SESSION_LEN, DT, MINE_MODES, DEV_TARGETS, RINGS, W } from '../config.js';
+import { TEAM, PREFS, PREF_OPTIONS, MOBS, DEV_TUNABLES, DEV_SPEC, SKILLS, GAME, SESSION_LEN, DT, MINE_MODES, DEV_TARGETS, RINGS, W, GEANTE } from '../config.js';
 import { newSession, tick, leaveSession, endSession, SESSION_TICKS } from '../sim/session.js';
 import { setFocus } from '../sim/focus.js';
 import { forceKhole } from '../sim/khole.js';
@@ -157,6 +157,7 @@ export function buildSession(record){
     accounts: (record.players || []).map(p => p.account),
     id: record.id,
     noResidues: record.residues === false,          // une tour du Jugement était ouverte au lancement (23/10)
+    geante: record.mode === GEANTE.mode,           // Mine géante (06/11) : minerais et mobs (G.geante)
     shrines: record.shrines,                        // shrines actifs du chef au lancement (28/10)
     daily: record.daily,                            // événement du jour, figé au lancement (05/11)
   });
@@ -221,8 +222,10 @@ export function resultChoice(ended, waitingFor){
 }
 
 export const TOTAL_TICKS = SESSION_TICKS;   // la session se termine exactement à ce tick (src/sim/session.js)
-export function tickAt(elapsedMs, speed = GAME.speed){
-  return Math.max(0, Math.min(TOTAL_TICKS, Math.floor(elapsedMs / 1000 * speed / DT + 1e-9)));
+/* dernier tick d'une session de ce type (Mine géante : 2 h, 06/11/2026) */
+export const totalTicksOf = mode => mode === GEANTE.mode ? Math.round(GEANTE.len / DT) : TOTAL_TICKS;
+export function tickAt(elapsedMs, speed = GAME.speed, total = TOTAL_TICKS){
+  return Math.max(0, Math.min(total, Math.floor(elapsedMs / 1000 * speed / DT + 1e-9)));
 }
 /* durée réelle d'une session à la vitesse normale (ms) */
-export const realDurationMs = (speed = GAME.speed) => SESSION_LEN / speed * 1000;
+export const realDurationMs = (speed = GAME.speed, mode = null) => (mode === GEANTE.mode ? GEANTE.len : SESSION_LEN) / speed * 1000;   // Mine géante : 2 h de jeu (06/11)
