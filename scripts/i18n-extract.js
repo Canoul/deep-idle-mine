@@ -58,7 +58,7 @@ function fromJs(file){
 const walk = d => fs.readdirSync(d, { withFileTypes: true }).flatMap(f => f.isDirectory() ? walk(path.join(d, f.name)) : f.name.endsWith('.js') ? [path.join(d, f.name)] : []);
 
 fromHtml(fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8'), 'index.html');
-for(const f of [...walk(path.join(ROOT, 'src/ui')), ...walk(path.join(ROOT, 'src/app')), ...walk(path.join(ROOT, 'src/meta')), ...walk(path.join(ROOT, 'src/shared')), ...walk(path.join(ROOT, 'src/sim')),
+for(const f of [...walk(path.join(ROOT, 'src/ui')), ...walk(path.join(ROOT, 'src/app')), ...walk(path.join(ROOT, 'src/meta')), ...walk(path.join(ROOT, 'src/shared')), ...walk(path.join(ROOT, 'src/sim')), ...walk(path.join(ROOT, 'src/wiki')),
   ...walk(path.join(ROOT, 'server')).filter(f => !/[\\/](admin|db)[\\/]/.test(f)), path.join(ROOT, 'src/main.js')]) fromJs(f);   // sim et serveur : journal, actions, erreurs (06/11)
 /* config : textes affichés (pas les noms, déjà dans names.js) */
 const C = await import(path.join(ROOT, 'src/config.js'));

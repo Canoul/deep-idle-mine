@@ -11,7 +11,7 @@ import { dropOdds } from '../meta/crusher.js';
 import { ringLines } from '../meta/stuff.js';
 import { oreFor } from '../meta/furnace.js';
 import { STAT_HELP } from '../meta/stat-help.js';
-import { tn } from '../i18n/index.js';
+import { tn, getLang } from '../i18n/index.js';
 
 export const CELLS = W * AREA_H;
 const blockByKey = key => BLOCKS[IDS[key]];
@@ -149,7 +149,7 @@ export function sourcesOf(item){
     if(a) out.push(`${tr} : ${a.min} à ${a.max}, toujours`);
     for(const f of l.oneOf){ const i = f.items.find(x => x.item === item); if(i) out.push(`${tr} : ${fmt(pct(i.chance))} % de chance`); }
   }
-  for(const [b, l] of Object.entries(CRUSHER.loot)) for(const f of l.oneOf){ const i = f.items.find(x => x.item === item); if(i) out.push(`Concasseur : ${String(Math.round(i.chance * 1e6) / 1e4).replace(".", ",")} % par lot de ${CRUSHER.batch} ${b.toLowerCase()}`); }
+  for(const [b, l] of Object.entries(CRUSHER.loot)) for(const f of l.oneOf){ const i = f.items.find(x => x.item === item); if(i) out.push(`Concasseur : ${String(Math.round(i.chance * 1e6) / 1e4).replace(".", getLang() === 'en' ? "." : ",")} % par lot de ${CRUSHER.batch} ${b.toLowerCase()}`); }
   for(const t of RESEARCH.tiers) if(blueprintsOfTier(t.tier).includes(item)) out.push(`Table de recherche, tier ${t.tier}`);
   if(Object.hasOwn(RECIPES, item) && item !== RUNE.item) out.push(RECIPES[item].unlock ? `Craft (recette débloquée par « ${RECIPES[item].unlock} »)` : 'Craft (recette de base)');
   /* glyphes (drop, GLYPHS.drop) : trouvés par un mineur de la bonne spécialisation */
@@ -281,8 +281,8 @@ export const skillTrees = () => SKILLS.trees.map(t => ({ ...t, nodes: t.nodes.ma
 /* ---------- format ---------- */
 export function fmt(n){
   if(typeof n !== 'number' || !Number.isFinite(n)) return String(n);
-  const [i, d] = String(Math.round(n * 100) / 100).split('.');
-  return i.replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + (d ? ',' + d : '');
+  const [i, d] = String(Math.round(n * 100) / 100).split('.'), en = getLang() === 'en';   // anglais : 1,234.5 (06/11/2026)
+  return i.replace(/\B(?=(\d{3})+(?!\d))/g, en ? ',' : ' ') + (d ? (en ? '.' : ',') + d : '');
 }
 
 /* ---------- donjon ---------- */
@@ -317,7 +317,7 @@ export const runeRows = () => UPGRADE.qualities.map(q => ({ q: q.q, label: q.lab
 /* ---------- sorts, XP de spécialisation, anneaux, aider allié (24/10) ---------- */
 const TREE_OF = id => SKILLS.trees.find(t => t.id === id);
 /* un sort : déblocage (« Mineur, niveau de spé 5 » ou le parchemin), spécialisation exigée, effet, recharge (s) */
-export const spellRows = () => SPELLS.list.map(s => ({ id: s.id, name: s.name, icon: s.icon, desc: s.desc, cd: s.cd,
+export const spellRows = () => SPELLS.list.map(s => ({ id: s.id, name: tn(s.name), icon: s.icon, desc: s.desc, cd: s.cd,
   unlock: s.unlock.scroll ? { scroll: s.unlock.scroll } : { tree: TREE_OF(s.unlock.tree), level: s.unlock.level },
   needTree: s.needTree ? TREE_OF(s.needTree) : null }));
 export const spellInfo = () => ({ slots: SPELLS.slots, open: SPELLS.openSlots, levels: [...SPELLS.slotLevels] });

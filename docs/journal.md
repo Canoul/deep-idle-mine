@@ -22,6 +22,14 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 06/11/2026 — Geoffrey — Le jeu en anglais, étape 5 : le wiki
+- **Le wiki existe en anglais** : il prend la langue choisie dans le jeu (même appareil). Tout y passe : textes écrits à la main, tableaux, mobs, donjon, tours, sorts, skills… Les chiffres restent ceux du jeu (ils suivent la config), écrits à l'anglaise (1.5, 2,000).
+- Rien ne change pour les joueurs : l'anglais reste caché, et le wiki en français est identique.
+- Au passage, dans le jeu en anglais : les textes d'aide des champs (« Chercher un objet… ») sont traduits, et les annonces du Raffle aussi pour tous les lots.
+- **Pour l'équipe** : quand vous changez un texte du wiki, son anglais est dans `src/i18n/en/wiki.js` ; un paragraphe sans anglais reste en français.
+- **À suivre** : les pages légales en anglais.
+- **État** : 🧪 branche `geoffrey/traduction-anglais`
+
 ## 06/11/2026 — Geoffrey — Le jeu en anglais, étape 3 : l'interface
 - En anglais (mode dev seulement), presque tout le jeu s'affiche maintenant en anglais : menus, onglets, boutons, bulles « ? », guide « Premiers pas », descriptions des skills et des sorts, journal de session, actions des mineurs, messages d'erreur. Environ 1 900 textes traduits.
 - Rien ne change pour les joueurs : l'anglais reste caché, et en français le traducteur n'est même pas chargé.

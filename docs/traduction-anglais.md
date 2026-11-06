@@ -48,7 +48,9 @@ Branche : `geoffrey/traduction-anglais`. Choix de langue dans « Mon compte » :
    regarder en jeu ; le choix de langue est dans les options du compte (« Mon compte » → Options), en mode dev jusqu'à l'ouverture.
 4. 🟡 **Messages du serveur et journal** : couverts par le même traducteur (ils s'affichent dans la page). Reste : les
    annonces Discord restent en français (voulu) ; vérifier en jeu les messages d'erreur.
-5. **Wiki** en anglais, puis les **pages légales**.
+5. 🟡 **Wiki** ✅ (06/11) : même traducteur, plus un **mode bloc** (un paragraphe traduit d'un coup, mise en forme comprise) :
+   `src/i18n/en/wiki.js` (314 blocs ; ceux générés depuis la config ont `{#n}` à la place des chiffres) ; les lignes des tableaux
+   passent par `ui.js`. Langue = celle choisie dans le jeu sur l'appareil. 0 texte français relevé. **Reste** : les **pages légales**.
 
 ## Pour toute l'équipe, une fois le chantier fini
 

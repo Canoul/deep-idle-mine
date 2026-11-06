@@ -44,3 +44,24 @@ test('pseudos et messages des joueurs : protégés par pn() (data-noi18n)', asyn
   const { pn } = await import('../src/i18n/index.js');
   assert.equal(pn('Mineur <b>'), '<bdi data-noi18n>Mineur &lt;b&gt;</bdi>');
 });
+
+/* wiki (06/11/2026) : modèles {*x}, listes de noms, mots inconnus en minuscules, dictionnaire des blocs */
+test('wiki : {*x} = valeur traduisible en entier, liste de noms, « Le donjon » pas en « The donjon »', () => {
+  assert.equal(tr('Ténacité +3 % par rang (max : Ténacité +9 %)'), 'Tenacity +3 % per rank (max: Tenacity +9 %)');
+  assert.equal(tr("Ingrédient : Épée en mithril, Clé d'instance I"), 'Ingredient: Mithril Sword, Instance Key I');
+  assert.equal(tr('Le machin'), 'Le machin', 'modèle court : un mot inconnu en minuscules le fait rejeter');
+  assert.equal(tr('Le Golbute'), 'The Golbute');
+});
+
+test('wiki : chaque bloc garde ses balises et ses valeurs ; un bloc modèle ({#n}) suit les chiffres de la config', async () => {
+  const BLOCKS = (await import('../src/i18n/en/wiki.js')).default;
+  const tags = s => (s.match(/<\/?[a-z]+/g) ?? []).join(',');
+  for(const [fr, en] of Object.entries(BLOCKS)){
+    assert.equal(tags(en), tags(fr), `balises : ${fr.slice(0, 60)}`);
+    const vars = s => new Set([...s.matchAll(/\{[#*]?(\w+)\}/g)].map(m => m[1]));
+    for(const k of vars(en)) assert.ok(vars(fr).has(k), `{${k}} inconnue : ${fr.slice(0, 60)}`);
+  }
+  const bt = createTranslator(BLOCKS, NAMES);
+  assert.equal(bt('<b>Danger :</b> le tacle.'), '<b>Danger:</b> tackles it.');
+  assert.match(bt("<b>À partir de :</b> l'area 3 · <b>PV :</b> 130 au départ, +15 % par area plus profonde · <b>Vitesse :</b> 1.11 case/s"), /^<b>From:<\/b> area 3 · <b>HP:<\/b> 130 at the start, \+15% per deeper area/);
+});

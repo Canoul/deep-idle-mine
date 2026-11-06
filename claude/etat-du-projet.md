@@ -689,7 +689,9 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   `src/i18n/`). Étape 1 (socle) faite. Étape 2 (06/11) : glossaire de 457 noms validé par Geoffrey, `src/i18n/en/names.js`.
   Étape 3 (06/11) : traducteur de la page `src/i18n/dom.js` (textes connus remplacés à l'affichage, modèles `{x}`, rien en
   français), 1 894 textes dont le journal de session et les messages du serveur (`src/i18n/en/ui.js`, relevé
-  `scripts/i18n-extract.js`). Reste : textes des canvas, messages système du chat, écrans à vérifier, wiki et pages légales.
+  `scripts/i18n-extract.js`). Pseudos et messages des joueurs jamais traduits (`pn()`, `data-noi18n`). Étape 5 (06/11) : **wiki
+  en anglais** (même traducteur + mode bloc, `src/i18n/en/wiki.js`, langue de l'appareil). Reste : pages légales, écrans à
+  vérifier (tours, raid, bilans).
 - **Prison et énergie EN LIGNE (30/10/2026, Geoffrey)** : ancien chantier `geoffrey/prison`, fusionné. Énergie : départ **100**
   (`ENERGY.start`, 04/11 ; ancien : 0), mine classique 6 à 12, refus sous 6 ; recharge **seulement en prison, 4 par heure de jeu** (8 par
   heure réelle à ×2 ; ancien 8). Prison : contenu d'après les 10 dernières mines, `oreMul` **0,24** (51 % des minerais de
