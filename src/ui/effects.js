@@ -9,6 +9,7 @@ import { SPELL } from '../meta/spells.js';
 import { ringLines } from '../meta/stuff.js';
 import { NODES, nodeText } from '../meta/skills.js';   // auras des skills (05/11)
 import { pxi } from './pxicons.js';
+import { tn } from '../i18n/index.js';
 
 const pct = v => `${Math.round(v * 1000) / 10} %`.replace('.', ',');
 const num = v => String(Math.round(v * 10) / 10).replace('.', ',');
@@ -67,20 +68,20 @@ export function effectTip(e){
                          `Les autres le libèrent en le minant${e.value ? ` (encore ${e.value})` : ''} ; la ténacité ne l'évite que pour la spé Mineur`); break;
   }
   if(e.left != null) L.push(`Encore ${Math.ceil(e.left)} s`);
-  return [d.name, ...L].join('\n');
+  return [tn(d.name), ...L].join('\n');
 }
 
 /* une ligne de la bulle « Bonus de session » */
 export function bonusLine(b){
   switch(b.id){
     case 'ring': return `${b.src}${b.value ? ` +${b.value}` : ''} : ${ringLines(b.src, b.value).map(l => l.replace(/^Groupe · /, '')).join(', ')}`;
-    case 'shrine': { const s = SHRINES.list[b.src]; return s ? `${s.name} : ${s.desc}` : ''; }
+    case 'shrine': { const s = SHRINES.list[b.src]; return s ? `${tn(s.name)} : ${s.desc}` : ''; }
     case 'escalator': return `Escalateur : seau du treuil +${pct(b.value)}`;
-    case 'aura': { const n = NODES[b.src]; return n ? `${n.name} : ${nodeText(b.src, 1)}` : ''; }   // auras des skills (05/11)
+    case 'aura': { const n = NODES[b.src]; return n ? `${tn(n.name)} : ${nodeText(b.src, 1)}` : ''; }   // auras des skills (05/11)
   }
   return '';
 }
-export const bonusTip = list => [EFFECTS.session.name, ...list.map(bonusLine).filter(Boolean)].join('\n');
+export const bonusTip = list => [tn(EFFECTS.session.name), ...list.map(bonusLine).filter(Boolean)].join('\n');
 
 /* ce qui s'affiche sous l'icône : ×stacks (mur de chair, Pillage…), sinon secondes restantes ; le temps d'un état à
    stacks reste dans la bulle */

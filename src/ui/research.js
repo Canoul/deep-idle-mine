@@ -11,6 +11,7 @@ import { tipAttr } from './tooltip.js';
 import { recipeOfBlueprint } from '../meta/craft.js';
 import { statLines } from '../meta/stuff.js';
 import { PARTS, tierOf, researchPool, researchStage, isBlueprint, tierOfBlueprint, tierOpen, tierUnlocked, tierArea, areaReached, tiersBlocking } from '../meta/research.js';
+import { t as tr, tn } from '../i18n/index.js';   // t s'appelle déjà t (tier) dans ce module
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -30,10 +31,11 @@ export const tierChipsHtml = (inv, tier, areaMax = 0) => `<div class="seg rsTier
 export function tierWhyHtml(inv, t, areaMax = 0){
   if(tierOpen(inv, t, areaMax)) return '';
   const need = [
-    ...(tierUnlocked(inv, t) ? [] : [`apprends encore ${tiersBlocking(inv, t).map(b => `${b.left} recette${b.left > 1 ? 's' : ''} du ${esc(b.label)}`).join(' et ')}`]),
-    ...(areaReached(t, areaMax) ? [] : [`atteins l'area ${tierArea(t)} en mine`]),
+    ...(tierUnlocked(inv, t) ? [] : [tr('apprends encore {list}', { list: tiersBlocking(inv, t).map(b =>
+          tr('{n} recette{s} du {tier}', { n: b.left, s: b.left > 1 ? 's' : '', tier: esc(tn(b.label)) })).join(tr(' et ')) })]),
+    ...(areaReached(t, areaMax) ? [] : [tr("atteins l'area {n} en mine", { n: tierArea(t) })]),
   ];
-  return `🔒 ${esc(tierOf(t).label)} : ${need.join(', et ')} pour l'ouvrir.`;
+  return tr("🔒 {tier} : {need} pour l'ouvrir.", { tier: esc(tn(tierOf(t).label)), need: need.join(tr(', et ')) });   // traduit (06/11)
 }
 
 /* onOp({ action:'research', tier } | { action:'recycle', item }) → promesse du résultat ({ item, parts }) */

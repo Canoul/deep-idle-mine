@@ -198,7 +198,7 @@ test('set équipé (29/10/2026) : celui qui correspond exactement à l\'équipem
   k.spells.slots[0] = 'dash';
   assert.equal(now(), null, 'sort différent');
   const { setsHtml } = await import('../src/ui/sets.js');
-  assert.match(setsHtml({ list:sets.list }, { current:sets.list[1] }), /Set équipé : <b>Set 2<\/b>[^]*setRow on" data-set="2"/);
+  assert.match(setsHtml({ list:sets.list }, { current:sets.list[1] }), /Set équipé : <b><bdi data-noi18n>Set 2<\/bdi><\/b>[^]*setRow on" data-set="2"/);
   assert.match(setsHtml({ list:sets.list }), /Set équipé : <span class="mut">aucun/);
   assert.doesNotMatch(setsHtml({ list:[] }), /Set équipé/);
 });
@@ -320,7 +320,7 @@ test('appli : « 💾 Enregistrer » à côté du set quand l\'équipement ne co
   const { setsBarHtml } = await import('../src/ui/sets.js');
   assert.doesNotMatch(setsBarHtml({ id:1, name:'barb' }), /quickSave/, 'équipement = un set : pas de bouton');
   const mod = setsBarHtml(null, { id:2, name:'mineur' });
-  assert.match(mod, /data-act="quickSave"/); assert.match(mod, /mineur<\/b> <small class="mut">\(modifié\)/);
+  assert.match(mod, /data-act="quickSave"/); assert.match(mod, /mineur<\/bdi><\/b> <small class="mut">\(modifié\)/);
   assert.match(setsBarHtml(null, null), /nouveau set/);
   assert.match(setsBarHtml(null, { id:2, name:'x' }, true), /quickSave" disabled/);
 });

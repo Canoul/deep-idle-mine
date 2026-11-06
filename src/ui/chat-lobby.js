@@ -4,6 +4,7 @@
 import { lobbyLabel } from '../shared/chat.js';
 import { drawPortrait } from '../render/portrait.js';
 import { portraitLook, portraitAuras } from './lobby.js';
+import { pn } from '../i18n/index.js';   // pseudos et textes des joueurs : jamais traduits (06/11)
 
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
 const FRESH = 5000;   // ms : un aperçu relu au plus souvent que ça (survols répétés)
@@ -20,7 +21,7 @@ export function peekStatus(p){
 export function peekHTML(p){
   const status = peekStatus(p);
   const slots = (p.members ?? []).map((m, i) =>
-    `<div class="pslot"><span class="av"><canvas width="16" height="16" data-peek="${i}"></canvas></span><span><b>${m.leader ? '★ ' : ''}${esc(m.name)}</b></span></div>`);
+    `<div class="pslot"><span class="av"><canvas width="16" height="16" data-peek="${i}"></canvas></span><span><b>${m.leader ? '★ ' : ''}${pn(m.name)}</b></span></div>`);
   if(p.open) for(let i = slots.length; i < p.max; i++) slots.push('<div class="pslot free"><span class="av"></span><span>Place libre</span></div>');
   return `<b class="tit">${esc(lobbyLabel(p))}</b><div class="peekSlots">${slots.join('')}</div><div class="mut small">${esc(status ?? 'Clique pour rejoindre')}</div>`;
 }

@@ -110,7 +110,7 @@ test('inviter : pseudo inconnu, la fenêtre donne le refus du serveur', async ()
 
 test('message de guilde : échappé, lignes gardées, bouton pour qui peut écrire', () => {
   const h = mineHTML(mine({ message:{ text:'<b>Salut', name:'Zoe', at:0 }, canMessage:true }));
-  assert.match(h, /Message de guilde/); assert.ok(h.includes('&lt;b&gt;Salut')); assert.match(h, /Zoe · /);
+  assert.match(h, /Message de guilde/); assert.ok(h.includes('&lt;b&gt;Salut')); assert.match(h, /Zoe<\/bdi> · /);
   assert.match(h, /data-g="message">Modifier/);
   assert.ok(!mineHTML(mine({ message:{ text:'Salut', name:'Zoe', at:0 } })).includes('data-g="message"'));
   assert.match(mineHTML(mine()), /Aucun message/);

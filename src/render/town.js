@@ -9,6 +9,7 @@ import { TOWN, JUDGMENT, GUILD } from '../config.js';
 import { loadTextures } from './textures.js';
 import { LABEL_GUILD_H, createMinerSprite } from './miner-sprite.js';
 import { namesShown } from './names.js';
+import { trText } from '../i18n/dom.js';   // textes dessinés : traduits comme la page (06/11)
 import { townBuildings, TOWN_WIDTH, hash01, emoteOf } from '../shared/town.js';
 
 export const TOWN_TILE = 16;
@@ -183,7 +184,7 @@ export function createTownRenderer(cv){
      plus proche à moins de 1,8 case), au-dessus des têtes, pour ne pas couvrir les joueurs de la place */
   function drawPlaceLabels(b, camX, scene){
     const items = [];
-    if(scene.statue) items.push({ cx: b.x + TOWN.place.statue + 1, text: namesShown() ? `🏆 ${scene.statue.name} · n°1 · ${Math.round(scene.statue.value)} GS` : `🏆 n°1 · ${Math.round(scene.statue.value)} GS`, color: LABEL });
+    if(scene.statue) items.push({ cx: b.x + TOWN.place.statue + 1, text: namesShown() ? `🏆 ${scene.statue.name} · n°1 · ${Math.round(scene.statue.value)} GS` : `🏆 n°1 · ${Math.round(scene.statue.value)} GS`, color: LABEL, statue: true });
     for(const side of ['angel', 'demon']){
       const j = scene.judgment?.[side];
       if(j) items.push({ cx: b.x + TOWN.place[side] + 0.5, color: j.open ? HINT : LABEL,
@@ -193,8 +194,9 @@ export function createTownRenderer(cv){
     if(!it) return;
     const y = (G - 3) * T - 4;
     ctx.font = `11px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
-    ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(0,0,0,.85)'; ctx.strokeText(it.text, Math.round((it.cx - camX) * T), y);
-    ctx.fillStyle = it.color; ctx.fillText(it.text, Math.round((it.cx - camX) * T), y);
+    const txt = it.statue ? it.text : trText(it.text);   // la plaque porte un pseudo : pas traduite
+    ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(0,0,0,.85)'; ctx.strokeText(txt, Math.round((it.cx - camX) * T), y);
+    ctx.fillStyle = it.color; ctx.fillText(txt, Math.round((it.cx - camX) * T), y);
   }
 
   /* p : { x, face, walking, look, auras, name, say, emote, emoteAt, group, lfg, me }. Au-dessus du pseudo, de bas en
@@ -248,7 +250,7 @@ export function createTownRenderer(cv){
     const i = b.kind === 'guild' ? ok(guildPieces(scene.house)[0].tex) : b.sprite ? ok(b.sprite) : null;
     const top = i ? G - i.naturalHeight / T : b.kind === 'place' ? G - 4 : G - b.h;
     const name = b.kind === 'guild' && scene.guild && namesShown() ? `< ${scene.guild} >` : b.name;   // ma guilde : son nom au-dessus de sa maison (sauf pseudos cachés)
-    const lines = [name, hint].filter(Boolean), cx = (b.door - camX) * T;
+    const lines = [b.kind === 'guild' && scene.guild && namesShown() ? name : trText(name), trText(hint)].filter(Boolean), cx = (b.door - camX) * T;   // nom de guilde : jamais traduit
     const y0 = Math.max(9, top * T - 2 - (lines.length - 1) * 9);
     ctx.font = `11px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
     lines.forEach((l, k) => {

@@ -1,8 +1,14 @@
 /* Wiki du joueur : remplit les tableaux de wiki.html avec les valeurs du jeu (src/wiki/data.js lit la config). */
+import '../i18n/boot.js';   // EN PREMIER : la langue de l'appareil, choisie dans le jeu (06/11/2026)
+import { getLang, tn } from '../i18n/index.js';
+import { installPageTranslator } from '../i18n/dom.js';
 import { RARITY, ITEMS, STATS, FURNACE, CRUSHER, AREAS, DUCK, XP, BLOCKS, ENERGY, PRISON, AREA_H } from '../config.js';
 import { rarityOf } from '../meta/rarity.js';
 import { itemName, itemColor } from '../meta/piece.js';
 import * as D from './data.js';
+
+/* wiki en anglais (06/11/2026) : paragraphes traduits d'un bloc (src/i18n/en/wiki.js), le reste comme dans le jeu */
+if(getLang() !== 'fr') installPageTranslator(document, { dev: true, blocks: (await import('../i18n/en/wiki.js')).default });
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
@@ -248,13 +254,13 @@ function level(){
   $('w-levels').innerHTML = table(['#Niveau', '#XP pour y passer', '#XP totale'], D.levelRows(10).map(r =>
     tr([num(`<b>${r.level}</b>`), num(f(r.need)), num(f(r.total))]))) + '<p class="small mut">Chaque niveau demande 1,5 fois plus d\'XP que le précédent. Un niveau = 1 point de skill.</p>';
   const sp = D.specInfo();
-  $('w-spec').innerHTML = `<p>En plus de ton XP normale, chaque session donne <b>${sp.pct} % de ta part d'XP</b> en <b>XP de spécialisation</b>, pour l'arbre de skills que tu avais au lancement (${sp.trees.map(t => `${t.icon} ${esc(t.label)}`).join(', ')}). Rien n'est retiré de ton XP normale : avec une part de 1 000 XP, tu reçois <b>1 000 XP + ${f(Math.floor(1000 * sp.pct / 100))} XP de spé</b>.</p>
+  $('w-spec').innerHTML = `<p>En plus de ton XP normale, chaque session donne <b>${sp.pct} % de ta part d'XP</b> en <b>XP de spécialisation</b>, pour l'arbre de skills que tu avais au lancement (${sp.trees.map(t => `${t.icon} ${esc(tn(t.label))}`).join(', ')}). Rien n'est retiré de ton XP normale : avec une part de 1 000 XP, tu reçois <b>1 000 XP + ${f(Math.floor(1000 * sp.pct / 100))} XP de spé</b>.</p>
     <ul><li><b>Une XP par arbre</b> : elle est gardée si tu changes d'arbre, et tu la retrouves en revenant.</li>
     <li>${sp.sameCurve ? '<b>Mêmes paliers que le niveau du mineur</b> (tableau ci-dessus)' : `${f(sp.first)} XP pour le niveau 2, puis ×${f(sp.factor)} à chaque niveau`} : comme tu en gagnes ${sp.pct} %, on monte ${f(Math.round(100 / sp.pct))} fois moins vite qu'en niveau.</li>
     <li>Sans arbre de skills choisi au lancement : pas d'XP de spé. Qui quitte la session : rien.</li>
     <li>Ton niveau de spé (« SP lvl ») s'affiche dans l'onglet Skills, dans le lobby et au bilan. Il <b>débloque des <a href="#sorts">sorts</a></b>.</li>
     <li>Le bonus de l'<b>Anneau du nerd</b> (XP +3 %) s'ajoute à ta part avant ce calcul, et ne profite qu'à toi.</li></ul>`;
-  $('w-skills').innerHTML = `<div class="trees">${D.skillTrees().map(t => `<div class="tree"><h3>${t.icon} ${esc(t.label)}</h3>` +
+  $('w-skills').innerHTML = `<div class="trees">${D.skillTrees().map(t => `<div class="tree"><h3>${t.icon} ${esc(tn(t.label))}</h3>` +
     t.nodes.map(n => `<div class="node"><span class="i">${n.icon}</span><span><b>${esc(n.name)}</b> <span class="mut small">· étage ${n.row} (${n.tier} pts) · ${n.max} rang${n.max > 1 ? 's' : ''}${n.specOnly ? ' · ★ skill de classe' : ''}${n.needsName ? ` · exige ${esc(n.needsName)} au max` : ''}</span></span>` +
       `<small>${esc(n.max > 1 ? `${n.text} par rang (max : ${n.maxText})` : n.text)}</small></div>`).join('') +
     '</div>').join('')}</div>`;
@@ -270,8 +276,8 @@ function spells(){
     s.levels.slice(s.open).map((l, i) => `le ${s.open + i + 1}e au <b>niveau ${l}</b>`).join(', ') + ` du mineur (cadenas avant).`;
   $('w-spells').innerHTML = table(['Sort', 'Comment le débloquer', 'Réservé à', 'Effet', '#Recharge'], D.spellRows().map(r => tr([
     `<b>${r.icon} ${esc(r.name)}</b>`,
-    r.unlock.scroll ? `Apprendre le ${item(r.unlock.scroll)}` : `${r.unlock.tree.icon} ${esc(r.unlock.tree.label)} : niveau de spé <b>${r.unlock.level}</b>`,
-    r.needTree ? `${r.needTree.icon} ${esc(r.needTree.label)}` : 'Tout le monde',
+    r.unlock.scroll ? `Apprendre le ${item(r.unlock.scroll)}` : `${r.unlock.tree.icon} ${esc(tn(r.unlock.tree.label))} : niveau de spé <b>${r.unlock.level}</b>`,
+    r.needTree ? `${r.needTree.icon} ${esc(tn(r.needTree.label))}` : 'Tout le monde',
     esc(r.desc), num(mmss(r.cd))])));
 }
 

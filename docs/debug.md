@@ -6885,6 +6885,13 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Relevé 13 h 56 – 14 h 15** : S22 (Android 14), Pixel 10 (Android 17) et OnePlus 8 Pro (Android 11) reçoivent « mise à jour proposée » pour `a9f83fc6…`, et **aucun fichier `/app-bundle` n'est jamais demandé, par aucun téléphone**. Le S22 montre l'écran « Mise à jour du jeu… » une fraction de seconde : `build()` échoue avant la première requête au serveur (copie / mkdir / relecture des fichiers de la version qui tourne), pour tous les Android essayés. Le OnePlus annonçait `a18b1fe…` : vraisemblablement la copie embarquée de son APK, pas une mise à jour réussie. **Les mises à jour à chaud n'ont donc jamais marché sur un vrai téléphone.** Cause exacte inconnue : l'échec n'était pas signalé.
 - Branche `geoffrey/fix-maj-appli` : (1) `fileSteps` ne réutilise jamais un `.html` ; (2) un fichier relu sur le téléphone sans son empreinte est repris du serveur ; (3) le paquet publié a un `index.html` marqué (`PUBLISHED_MARK`, toujours téléchargé) ; (4) **l'échec du téléchargement est signalé** (`report` why `telechargement` + `detail` = message d'erreur, et `pas-recharge` si la page ne se recharge pas), affiché dans le relevé ; (5) appli 1.1.2 (versionCode 4) : seule une nouvelle coque embarque ce code. ✅ app-bundle, app-update, app-update-server (37).
 
+## 03/11/2026 — Traduction, étape 1 : socle (Geoffrey)
+
+- `I18N` (config, `open:false`), `src/i18n/index.js` (`t`, `tn`, `setLang`, `guessLang`, `dictOf`), `src/i18n/boot.js` (langue de la page au démarrage, `localStorage` `dim.lang`, importé EN PREMIER par `src/main.js`), dictionnaires `src/i18n/en/ui.js` et `names.js` (vide : glossaire en attente de validation).
+- Compte : `lang` dans `publicAccount` (défaut `fr`), `service.setLang` (refuse une langue inconnue, et `en` hors dev tant que `I18N.open` est faux), route `POST /api/account/lang`, `accountApi.lang`. Le compte est un bloc JSON : pas de changement de schéma PostgreSQL.
+- Navigateur : `syncLang()` (src/main.js) recopie la langue du compte sur l'appareil et recharge si elle diffère ; option `type:'select'` dans `optionsHtml` (src/ui/account.js), libellé `t('Langue')`.
+- Tests : `tests/i18n.test.js` (6) ✅, `tests/account-*.test.js` ✅. Vu dans Chromium (mode dev) : la liste « Langue » apparaît, le choix est enregistré sur le compte, la page repart en anglais. ⚠️ Le test de complétude ne compte que les `t('littéral')` ; un texte construit (`t(variable)`) n'est pas vérifié.
+
 ## 03/11/2026 — Jules — Appli mobile : Skills, une classe à la fois et fiche d'un skill (✅ en ligne le 03/11)
 - **Quoi** : spec `docs/superpowers/specs/2026-11-03-appli-skills-design.md`, plan `docs/superpowers/plans/2026-11-03-appli-skills.md`.
   - `src/ui/skills.js` : `skillTabsHtml(view, { chosen, spec })` et `skillSheetHtml(st, id, { inv, busy, session })` (purs) ;
@@ -7705,6 +7712,39 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   compteur est connu du navigateur : celui des autres joueurs, c'est le serveur qui le refuse (`geante_daily`, en les nommant).
 - **Tests** ✅ geante (pas d'énergie, `state().geanteLeft`, texte, Lancer grisé à 0), lobby, team-energy, energy-server, wiki.
 
+### 06/11/2026 — Traduction, étape 2 : noms (Geoffrey) 🧪
+- Branche remise à jour avec main (conflits : imports de src/main.js gardés des deux côtés ; état du projet ; debug). `src/i18n/en/names.js` : 457 noms du glossaire validé (artifact « Glossaire anglais », collection `corrections` vide = aucune correction).
+- `tn()` branché : `itemName` (trésors : « Ancient Blessed Demonic Treasure », l'adjectif passe devant en anglais), `pieceName` (« Ancient: Iron Pickaxe +2 »), libellés des stats (src/meta/stuff.js, src/ui/upgrade.js, src/wiki/data.js), sorts (src/ui/spells.js, barre du HUD), skills et arbres (src/ui/skills.js), états (src/ui/effects.js), onglets de l'inventaire. Le serveur ne change jamais de langue : `tn` y rend le français (annonces Discord inchangées).
+- Tests : `tests/i18n.test.js` (+2 : chaque nom de la config a son anglais, bloquant seulement si `I18N.open` ; noms affichés FR/EN) ✅ ; skills, spells, stuff, upgrade, wiki, effects, inventaire, loot-table, trésors, runes ✅. ⚠️ Rouges **aussi sur main** : loot « chaque objet du butin est au catalogue avec une icône », rarity « la liste du créateur est inhabituelle ». Vu dans Chromium en anglais (mode dev) : arbres Miner / Logistician / Barbarian, aucune erreur.
+
+### 06/11/2026 — Traduction, étape 3 : traducteur de la page (Geoffrey) 🧪
+- `src/i18n/dom.js` : `createTranslator(ui, names)` (pur, `tests/i18n-dom.test.js`) et `installPageTranslator(document)` (appelé en tête de src/main.js ; rien si la langue est le français). MutationObserver (childList, characterData, attributs title / placeholder / aria-label / data-tip / alt) ; SKIP : noscript, .chatLog, .chatPanel, [data-noi18n], input, textarea, canvas… Modèles : `{x}` → `(.*?)`, `{#x}` → nombre ; rangés par début fixe (préfixes du premier mot) ; une valeur « française » inconnue fait rejeter le modèle.
+- Dictionnaire `src/i18n/en/ui.js` : 1 894 entrées (relevé `scripts/i18n-extract.js` : index.html, src/ui, src/app, src/meta, src/shared, src/sim, server sauf admin/db, textes de la config ; + relevé en jeu `window.__i18nSeen`). Une variable d'accord français (« recyclé{b} ») peut manquer en anglais (test : l'anglais n'invente jamais de variable).
+- `src/ui/research.js` : verrou des tiers composé avec `t()` (morceaux traduits à la source).
+- Vérifié (Chromium, mode dev, anglais) : 16 onglets + une session ; 0 texte français relevé hors chat ; 60 img/s, 0 tâche longue en anglais comme en français. Tests : i18n, i18n-dom, research, lobby, account ✅.
+- ⚠️ Points fragiles : un pseudo égal à un mot du dictionnaire (« Mineur », « Toi ») serait traduit (marquer les pseudos `data-noi18n`) ; un texte construit en plusieurs nœuds peut rester à moitié français (le relevé en jeu les montre) ; les clés sont le texte français exact : changer un texte français sans changer sa clé le fait retomber en français (le test de relevé ne le voit pas encore).
+
+### 06/11/2026 — Traduction : textes des joueurs protégés, chat, canvas, morceaux « · » (Geoffrey) 🧪
+- `pn(s)` (src/i18n/index.js) = `<bdi data-noi18n>` échappé ; posé sur 47 affichages de pseudos (lobby, social, guilde, HUD, classement, Carreau, appli…), noms de guilde, de set, d'onglet de chat (sauf l'onglet par défaut « Tous »), message de guilde, corps et pseudos du chat (`chatBody` découpe autour du lien de lobby). `.chatLog` / `.chatPanel` retirés de SKIP : messages du jeu traduits. Tests mis à jour (guild-ui, raid-ui, sets, chat : la balise autour du pseudo).
+- `trText()` (dom.js) pour les canvas : noms et indications des bâtiments du Carreau, bannières des jauges ; plaque de la statue (pseudo) et nom de ma guilde non traduits.
+- Traducteur : modèles triés par nombre de lettres fixes ; modèle sans lettre fixe (`{#n} {item}`) seulement si ses mots sont connus ; valeur « nombre + mot » traduite à son tour (une seule fois) ; ligne « a · b · c » traduite morceau par morceau si tous les morceaux français sont connus. Tests `tests/i18n-dom.test.js` (6) ✅, chat, i18n ✅. Parcours anglais (onglets, 6 modes, session) : 0 texte français.
+
+### 06/11/2026 — Traduction, étape 5 : wiki en anglais (Geoffrey) 🧪
+- `src/wiki/wiki.js` importe `src/i18n/boot.js` en premier et installe le traducteur de la page avec `blocks` = `src/i18n/en/wiki.js` (rien en français).
+- `src/i18n/dom.js`, **mode bloc** : un élément « feuille » (p, li, td, h1-4, div, span, a… sans bloc dedans) est traduit d'un coup, balises comprises ; clé = son innerHTML aux espaces resserrés, passée au même `createTranslator` (les blocs générés ont `{#n}` à la place des chiffres de la config, `{s0}` pour les objets). Un bloc rempli après coup (innerHTML d'un `<li>` vide) est traduit à la mutation. Dev : `window.__i18nBlocks` + `el.__i18nKey`.
+- Traducteur : `{*x}` = valeur traduisible en entier (« {*a} par rang (max : {*b}) ») ; valeur « liste de noms » (« Épée en mithril, Clé d'instance I ») ; **modèle court (≤ 4 lettres fixes : « Le {a} », « de {a} ») rejeté si la valeur a un mot inconnu en minuscules** (« Le donjon » donnait « The donjon ») ; placeholders des `<input>` traduits (`SKIP_ATTR`, ils étaient sautés aussi dans le jeu).
+- `src/wiki/data.js` : `fmt()` en anglais = 1,234.5 ; chances du concasseur idem ; `spellRows().name` et libellés d'arbre passés par `tn()`.
+- Dictionnaires : `ui.js` 2 220 entrées (+ lignes générées du wiki, `scripts/i18n-extract.js` lit aussi src/wiki), `wiki.js` 314 blocs. « groupe » = « party » comme dans l'interface.
+- Vérifié (Chromium, wiki en anglais) : 0 bloc et 0 nœud de texte français (relevé par mots qui n'existent que dans les clés françaises), 0 erreur ; wiki en français inchangé ; jeu en anglais (15 onglets) : 1 texte manquant (Raffle, ajouté).
+- Tests : i18n-dom (+2 : `{*x}`, listes, modèle court, balises et variables de chaque bloc), i18n, wiki, chat, guild-ui, sets, raffle ✅.
+- ⚠️ Fragile : un paragraphe de `wiki.html` modifié perd son anglais (il reste en français, relevé en dev par `__i18nBlocks`) ; un nombre écrit à la main dans wiki.html fait partie de la clé.
+
+### 06/11/2026 — Traduction, étape 5 bis : pages légales en anglais (Geoffrey) 🧪
+- `legal/en/{privacy,legal-notice,terms}.md` (traduction fidèle du français du 01/11, en tête : « the French version prevails (en cas de différence, la version française fait foi) » + lien) → `scripts/build-legal.js` (`LEGAL_PAGES_EN`, `pageHtml(title, body, lang)` : `lang="en"`, « ▶ Play », pied de page anglais) → `privacy.html`, `legal-notice.html`, `terms.html`. `delete-account.html` écrite à la main (copie de `suppression-compte.html`). Pages françaises régénérées : identiques.
+- `server/config.js` : `publicPaths` + `pages` (/privacy, /legal-notice, /terms, /delete-account). `RULES.en` (src/config.js) ; `legalUrl(k)` (src/ui/account.js) choisit selon `getLang()` : `legalLinks()`, case « J'accepte… », `rulesLinks()` (src/ui/moderate.js). Lien « this page » du wiki anglais → delete-account.
+- Tests : legal-pages (+2 : 4 pages servies, en anglais, mention « fait foi » et lien vers la française ; liens selon la langue), moderation, account, i18n ✅. Vu dans Chromium : les 4 pages en 200, mise en forme du wiki.
+- ⚠️ À tenir à jour à la main : une page légale française modifiée n'a pas de garde-fou pour sa version anglaise (date « Last updated » à suivre).
+
 
 ## 06/11/2026 — Échelle : le plus rapide la pose, tous modes (Geoffrey)
 - **Quoi** : `src/sim/ladder.js` : `ladderCellTime(m)` (ladderTime × 0,5 avec tall_ladder), `betterLadder`, `ladderTurn(G, m, x, y)` → 'go' (annule les poses moins rapides sur la case : `o.action = null`) ou 'wait' (un poseur aussi rapide ou plus rapide). Branché : `stepDir` (src/sim/actions.js : mine, raid, donjons ; attente = action 'wait' 0,2 s), instance et tours (`ladderTurn` à la place de `busy(…'ladder'…)`), mine instantanée (src/sim/instant/ai.js). L'ancienne attente du logisticien qui remonte (ai.js `yieldLadder`) reste.
@@ -7799,6 +7839,8 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   `party?.code ?? '-'`).
 - **Tests** ✅ geante (nouveau : chef seul, Mine géante ouverte, 4 joueurs rejoignent, 6e refusé ; activité nulle → 3 places ;
   rouge sans le correctif), party, party-forming, lobby : 84/84.
+
+- Mise en ligne (06/11, Geoffrey) : merge de main (areas 7 à 10, échelle, sets…), conflits journal / debug : les deux côtés gardés. Tests du sujet ✅ sauf `tests/wiki.test.js` « areas — seuil de déblocage » : ❌ **aussi rouge sur main** (arrivé avec les areas 7 à 10, sans rapport). Nouveaux noms sans anglais (à valider par Geoffrey) : Arkonite ore, Iridium ore, Débris fossilisé.
 
 ## 06/11/2026 — Set par activité : « Aucun » + activité `geante`
 - Quoi : `SETS.activities` (src/config.js) gagne `{ id:'geante', label:'la Mine géante' }` → `setActivity('geante')` = 'geante', `autoEquip` au lancement (start, `server/game/service.js` ~l.1113) l'équipe pour chacun des 5. Option vide du sélecteur (`activityLineHtml`, src/ui/sets.js) libellée « Aucun » (déjà présente en « aucun » depuis le 03/11 : `id:null` → dissociation) + infobulle.

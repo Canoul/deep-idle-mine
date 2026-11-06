@@ -6,6 +6,7 @@ import { APP_HOME, TOWN, MINE_MODES } from '../config.js';
 import { homeView } from './home.js';
 import { pxi } from '../ui/pxicons.js';
 import { drawPortrait } from '../render/portrait.js';
+import { pn } from '../i18n/index.js';   // pseudos et textes des joueurs : jamais traduits (06/11)
 
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
 const TILE = 16;   // px d'art par case des sprites du Carreau (scripts/gen_town.py)
@@ -27,8 +28,8 @@ function sceneHtml(team){
   const sky = TOWN.sky.map((col, i, a) => `${col} ${i * 100 / a.length}% ${(i + 1) * 100 / a.length}%`).join(',');
   const w = b => b.w * TILE * k, img = (b, pos) => `<img class="hB" src="textures/${b.sprite}.png" alt="" style="width:${w(b)}px;${pos}">`;
   const places = team.away ? `<div class="hAway">${esc(AWAY[team.away])}</div>` : `<div class="hTeam">${team.places.map((p, i) => p.free
-    ? `<button class="hWho free" data-h="invite"><span class="hName mut">${p.invited ? esc(p.name) : 'Libre'}</span><span class="hSt mut">${p.invited ? 'invité' : ''}</span><span class="hQ">?</span></button>`
-    : `<div class="hWho${p.me ? ' me' : ''}"><span class="hName">${esc(p.name)}</span><span class="hSt ${STATUS[p.status][0]}">${STATUS[p.status][1]}</span><canvas width="16" height="16" data-place="${i}"></canvas></div>`).join('')}</div>`;
+    ? `<button class="hWho free" data-h="invite"><span class="hName mut">${p.invited ? pn(p.name) : 'Libre'}</span><span class="hSt mut">${p.invited ? 'invité' : ''}</span><span class="hQ">?</span></button>`
+    : `<div class="hWho${p.me ? ' me' : ''}"><span class="hName">${pn(p.name)}</span><span class="hSt ${STATUS[p.status][0]}">${STATUS[p.status][1]}</span><canvas width="16" height="16" data-place="${i}"></canvas></div>`).join('')}</div>`;
   return `<div class="hScene" style="height:${APP_HOME.sceneH}px;background:linear-gradient(${sky})"><div class="hSun"></div>`+
     `<div class="hFar" style="background:linear-gradient(${TOWN.far.join(',')})"></div>`+
     img(l, `right:calc(50% + ${w(c) / 2 + gap}px)`) + img(r, `left:calc(50% + ${w(c) / 2 + gap}px)`) + img(c, `left:calc(50% - ${w(c) / 2}px)`)+

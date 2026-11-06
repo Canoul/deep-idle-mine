@@ -1680,6 +1680,10 @@ export const ACCOUNT = {
    maxPlayers : places dans le lobby (jeu prévu à 3).
    La partie tourne sur le serveur (une seule copie) : un départ ou un focus s'applique tout de suite. */
 export const GAME = { speed:2, devSpeeds:[1,2,5,20,60,300], maxPlayers:3 };
+/* langues (03/11/2026, Geoffrey ; src/i18n/) : le français est la langue d'écriture du jeu (textes et identifiants),
+   les autres se traduisent depuis lui. open : false = choix « English » caché aux joueurs (mode dev seulement) tant que
+   la traduction n'est pas finie ; tests/i18n.test.js refuse open:true s'il manque des traductions. */
+export const I18N = { langs: ['fr', 'en'], labels: { fr: 'Français', en: 'English' }, base: 'fr', open: false };
 
 /* Appli mobile, notifications programmées sur le téléphone (src/app/notifs.js).
    miBefore : s avant l'ouverture de la mine instantanée ; quietFrom / quietTo : rien entre ces heures (téléphone) ;
@@ -2313,7 +2317,10 @@ export const MODERATION = { warnings: 3, banMs: 24 * 3600e3, joinMessages: 3, jo
 export const ACCOUNT_DELETE_WORD = 'SUPPRIMER';
 /* Règles acceptées par le joueur (01/11/2026) : augmenter version redemande l'accord de tout le monde au prochain message de chat */
 export const RULES = { version: 1, terms: 'https://deepmineidle.fr/conditions', privacy: 'https://deepmineidle.fr/confidentialite',
-                       notice: 'https://deepmineidle.fr/mentions-legales', deletion: 'https://deepmineidle.fr/suppression-compte' };
+                       notice: 'https://deepmineidle.fr/mentions-legales', deletion: 'https://deepmineidle.fr/suppression-compte',
+                       /* pages en anglais (06/11/2026) : la version française fait foi ; liens choisis selon la langue (legalUrl) */
+                       en: { terms: 'https://deepmineidle.fr/terms', privacy: 'https://deepmineidle.fr/privacy',
+                             notice: 'https://deepmineidle.fr/legal-notice', deletion: 'https://deepmineidle.fr/delete-account' } };
 
 /* Préférences de l'IA réglables dans le lobby (« Critères / préférences »), avec leurs valeurs permises.
    Ajouter une préférence = une entrée ici + sa lecture dans l'IA (principe d'architecture n°3). */

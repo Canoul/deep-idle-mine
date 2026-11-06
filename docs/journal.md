@@ -9,16 +9,38 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
-## 06/11/2026 — Jules — Chat : le champ de message ne sort plus de la boîte
-- **Pour le joueur** : quand le chat passait au-dessus de la bulle de gauche de la barre d'action avec une petite hauteur, la boîte ne gardait que ses onglets et le champ « Message… » débordait dessous. Maintenant la boîte garde la hauteur choisie au-dessus de la bulle, et ne devient jamais plus petite que ses onglets + son champ (c'est la liste des messages qui rétrécit). En tirant le bord du haut, il suit la souris.
-- **État** : ✅ en ligne le 06/11
-
 ## JJ/MM/AAAA — Prénom — Titre court
 - **Pour le joueur** : ce qui change en jeu (ou « rien, c'est de l'organisation »).
 - **Décisions** : choix de design ou d'équilibrage tranchés (s'il y en a).
 - **À suivre** : ce qui reste à faire ou à vérifier.
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
+
+## 06/11/2026 — Geoffrey — Le jeu en anglais, étape 5 : le wiki et les pages légales
+- **Le wiki existe en anglais** : il prend la langue choisie dans le jeu (même appareil). Tout y passe : textes écrits à la main, tableaux, mobs, donjon, tours, sorts, skills… Les chiffres restent ceux du jeu (ils suivent la config), écrits à l'anglaise (1.5, 2,000).
+- Rien ne change pour les joueurs : l'anglais reste caché, et le wiki en français est identique.
+- Au passage, dans le jeu en anglais : les textes d'aide des champs (« Chercher un objet… ») sont traduits, et les annonces du Raffle aussi pour tous les lots.
+- **Pour l'équipe** : quand vous changez un texte du wiki, son anglais est dans `src/i18n/en/wiki.js` ; un paragraphe sans anglais reste en français.
+- **Pages légales en anglais** : deepmineidle.fr/privacy, /terms, /legal-notice et /delete-account. Chacune dit en tête qu'**en cas de différence, la version française fait foi**, avec le lien vers la page française. Dans le jeu en anglais, les liens (Mon compte, création de compte, signalement) mènent aux pages anglaises.
+- **Pour l'équipe** : quand vous changez une page légale (`legal/*.md` ou `suppression-compte.html`), changez aussi sa version anglaise (`legal/en/`, `delete-account.html`), puis `npm run legal`.
+- **À suivre** : regarder en jeu les tours, le raid et les bilans en anglais ; puis ouvrir l'anglais aux joueurs quand tu le décides.
+- **État** : ✅ en ligne le 06/11 (anglais encore caché aux joueurs)
+
+## 06/11/2026 — Geoffrey — Le jeu en anglais, étape 3 : l'interface
+- En anglais (mode dev seulement), presque tout le jeu s'affiche maintenant en anglais : menus, onglets, boutons, bulles « ? », guide « Premiers pas », descriptions des skills et des sorts, journal de session, actions des mineurs, messages d'erreur. Environ 1 900 textes traduits.
+- Rien ne change pour les joueurs : l'anglais reste caché, et en français le traducteur n'est même pas chargé.
+- **Pseudos et messages des joueurs jamais traduits** (choix de Geoffrey), ni les noms de guilde, de set ou d'onglet de chat. Le reste du chat (messages du jeu comme le Raffle) et les noms des bâtiments du Carreau passent en anglais.
+- Vérifié en anglais : tous les onglets, la prison, le Bloc géant, la mine instantanée, He's coming, l'instance I, la Mine géante et une session : plus aucun texte en français. **Reste** à regarder en jeu : les tours, le raid, les bilans de fin.
+- **État** : ✅ en ligne le 06/11 (anglais encore caché aux joueurs)
+
+## 06/11/2026 — Geoffrey — Le jeu en anglais, étape 2 : les noms
+- Les 457 noms du jeu (objets, mobs, skills, sorts, stats, lieux…) ont leur anglais, validé par Geoffrey. En anglais (mode dev seulement), les objets, trésors, stats, sorts, skills et onglets de l'inventaire s'affichent déjà en anglais ; le reste des noms suivra avec la traduction de l'interface (étape 3).
+- Rien ne change pour les joueurs : l'anglais reste caché.
+- **État** : ✅ en ligne le 06/11 (anglais encore caché aux joueurs)
+
+## 06/11/2026 — Jules — Chat : le champ de message ne sort plus de la boîte
+- **Pour le joueur** : quand le chat passait au-dessus de la bulle de gauche de la barre d'action avec une petite hauteur, la boîte ne gardait que ses onglets et le champ « Message… » débordait dessous. Maintenant la boîte garde la hauteur choisie au-dessus de la bulle, et ne devient jamais plus petite que ses onglets + son champ (c'est la liste des messages qui rétrécit). En tirant le bord du haut, il suit la souris.
+- **État** : ✅ en ligne le 06/11
 
 ## 06/11/2026 — Jules — Sets : « j'équipe mon set et ça ne l'équipe pas »
 - **Pour le joueur** : report de Nbrick. Quand une activité a un « Set défini pour … » (Prison, Mine…), le jeu
@@ -404,6 +426,12 @@ Modèle d'entrée :
   `docs/superpowers/specs/2026-11-03-appli-historique-design.md`.
 - **À suivre** : Guilde et Classement.
 - **État** : ✅ en ligne le 04/11
+
+## 03/11/2026 — Chantier : le jeu en anglais, étape 1 (Geoffrey)
+
+- Début du chantier « choisir sa langue : Français / English » (plan dans `docs/traduction-anglais.md`).
+- Étape 1 : la langue est retenue sur le compte et se choisit dans « Mon compte ». **Caché aux joueurs** tant que la traduction n'est pas finie : le choix n'apparaît qu'en mode dev. Rien ne change pour les joueurs.
+- Glossaire des 413 noms du jeu en anglais (objets, mobs, skills, sorts, stats, lieux) proposé à Geoffrey pour relecture avant de les brancher.
 
 ## 03/11/2026 — Geoffrey — Un set par activité
 - **Pour le joueur** : dans le Lobby, quand une activité est ouverte, la carte des sets propose « Set défini pour … ».

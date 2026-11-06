@@ -23,6 +23,7 @@ import { sanitizeAuras } from '../meta/aura.js';
 import { ask, askText } from './dialog.js';
 import { energyGauge } from './energy-tag.js';
 import { prisonActive, launchCostText, readyPrisonText, prisonProfileText } from './prison.js';
+import { pn } from '../i18n/index.js';   // pseudos et textes des joueurs : jamais traduits (06/11)
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
@@ -351,14 +352,14 @@ export function setupLobby(h){
       if(s.kind === 'free')
         return `<div class="pslot free"><span class="av">${pxi('person')}</span><span><b>Place libre</b><small>Invite un ami</small></span></div>`;
       if(s.kind === 'invited')
-        return `<div class="pslot free invited"><span class="av">${pxi('group')}</span><span><b>${esc(s.name)}</b><small>invité · en attente</small></span>`+
+        return `<div class="pslot free invited"><span class="av">${pxi('group')}</span><span><b>${pn(s.name)}</b><small>invité · en attente</small></span>`+
                (slotButtons(st, s).kick ? `<button class="x" data-kick="${esc(s.displayId)}" title="Annuler l'invitation">×</button>` : '')+`</div>`;
       const ready = party && !s.leader && !s.playing ? (s.ready ? (s.always ? '✔ prêt tout le temps' : '✔ prêt') : 'pas prêt') : null;   // le chef : lancer = prêt
       const gs = s.me ? h.gs?.() : s.gs;
       const tags = [s.me && 'Toi', s.leader && 'chef', ready, (s.playing || s.me && locked) && 'en session', s.playing && leftText(s.playingLeftMs), s.away && 'absent',
                     Number.isFinite(gs) && `${gs.toLocaleString('fr-FR')} GS`].filter(Boolean).join(' · ') || 'Prêt';
       return `<div class="pslot${s.me ? ' me' : ''}${s.away ? ' away' : ''}"><span class="av"><canvas width="16" height="16" data-slot="${i}"></canvas></span>`+
-             `<span><b>${esc(s.name)}</b><small class="spec">${esc(s.me && st.myTree !== undefined ? specLabel(st.myTree, st.mySpec?.[st.myTree]?.level, st.myPts) : specLabel(s.tree, s.specLevel, s.treePts))}</small><small>${esc(tags)}</small>${energyGauge(s.me ? st.energy : s.energy)}</span>`+
+             `<span><b>${pn(s.name)}</b><small class="spec">${esc(s.me && st.myTree !== undefined ? specLabel(st.myTree, st.mySpec?.[st.myTree]?.level, st.myPts) : specLabel(s.tree, s.specLevel, s.treePts))}</small><small>${esc(tags)}</small>${energyGauge(s.me ? st.energy : s.energy)}</span>`+
              (slotButtons(st, s).promote ? `<button class="x promote" data-promote="${esc(s.displayId)}" title="Nommer chef">★</button>` : '')+
              (slotButtons(st, s).kick ? `<button class="x" data-kick="${esc(s.displayId)}" title="Retirer du groupe">×</button>` : '')+`</div>`;
     }).join('');
@@ -513,7 +514,7 @@ export function setupLobby(h){
     const list = st.invites ?? [];
     $('invitesCard').hidden = !list.length;
     $('invitesList').innerHTML = list.map(i =>
-      `<div class="row invitation"><span><b>${esc(i.from)}</b> t'invite <span class="mut">(${esc(i.members.join(', '))})</span></span>
+      `<div class="row invitation"><span><b>${pn(i.from)}</b> t'invite <span class="mut">(${esc(i.members.join(', '))})</span></span>
         <span><button class="on" data-accept="${esc(i.code)}"${i.full ? ' disabled title="Groupe complet"' : st.session ? ' disabled title="Termine ta session pour rejoindre"' : ''}>Rejoindre</button>
         <button data-decline="${esc(i.code)}">Refuser</button></span></div>`).join('');
   }
@@ -732,7 +733,7 @@ export function setupLobby(h){
       : w.err ? `<p class="err small">${esc(w.err)}</p>`
       : !rows.length ? '<p class="mut small">Personne d\'autre (en ligne, ou venu depuis 24 h) n\'a cette tour à faire.</p>'
       : `<p class="small"><b>${rows.length}</b> joueur${rows.length > 1 ? 's' : ''} sans cette tour (${rows.filter(p => p.status !== 'offline').length} en ligne, les autres venus depuis 24 h) :</p>`+
-        rows.map(p => `<div class="frow"><span class="fname"><b>${esc(p.name)}</b><small class="mut">${esc(p.text)}${p.friend ? ' · ami' : ''}</small></span>`+
+        rows.map(p => `<div class="frow"><span class="fname"><b>${pn(p.name)}</b><small class="mut">${esc(p.text)}${p.friend ? ' · ami' : ''}</small></span>`+
           (p.canInvite ? `<button class="small" data-who-invite="${esc(p.displayId)}">Inviter</button>` : '')+`</div>`).join('');
   }
   async function loadWho(side){

@@ -13,6 +13,7 @@ import { drawPortrait } from '../render/portrait.js';
 import { slotHtml, tabsHtml, tabSlots } from './inventory.js';
 import { gridSize } from '../meta/inventory.js';
 import { INVENTORY } from '../config.js';
+import { pn } from '../i18n/index.js';   // pseudos et textes des joueurs : jamais traduits (06/11)
 
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
 const fr = n => Math.round(n).toLocaleString('fr-FR');
@@ -66,7 +67,7 @@ function raidRow(m, r){
   const state = m.leader ? '<span class="gxp">Chef du raid</span>' : m.ready ? '<span class="gxp okmsg">Prêt</span>' : '<span class="gxp mut">Pas prêt</span>';
   /* pseudo, image du perso, spé (Geoffrey, 04/11) ; le portrait est dessiné après l'affichage (drawRaidPortraits) */
   const pic = `<span class="av raidAv"><canvas width="16" height="16" data-raidpic="${esc(m.account)}" data-sig="${esc(JSON.stringify([m.look ?? {}, m.auras ?? {}]))}"></canvas></span>`;
-  return `<div class="frow raidMem${m.me ? ' me' : ''}"><span class="raidCrown">${m.leader ? pxi('crown') : ''}</span>${pic}<span class="fname"><b>${esc(m.name)}</b>`+
+  return `<div class="frow raidMem${m.me ? ' me' : ''}"><span class="raidCrown">${m.leader ? pxi('crown') : ''}</span>${pic}<span class="fname"><b>${pn(m.name)}</b>`+
     `<small class="mut">${esc(specLabel(m.tree, m.specLevel))}${m.invited ? ' · invité' : ''}${m.playing ? ' · En session' : ''}</small></span>${state}<span class="fbtns">${kick}</span></div>`;
 }
 /* portraits du lobby du raid : apparence et aura envoyées par le serveur (même rendu que les groupes en formation) */
@@ -119,7 +120,7 @@ function memberRow(m){
   /* inviter dans son lobby (01/11/2026, Geoffrey) ; le serveur dit si c'est possible, comme dans Social */
   const why = m.status === 'session' ? 'En session' : m.status === 'offline' ? 'Hors ligne' : 'Déjà dans ton groupe, ou tu es en session';
   const invite = m.me ? '' : `<button data-g="lobbyInvite" data-id="${esc(m.id)}" data-name="${esc(m.name)}"${m.canInvite ? '' : ` disabled title="${why}"`}>${pxi('group')}Inviter</button>`;
-  return `<div class="frow gmem"><span class="fdot ${statusDot(m)}"></span><span class="fname"><b>${esc(m.name)}</b><small class="mut">${RANK_LABEL[m.rank]} · ${esc(statusText(m))}</small></span>${specChip(m.spec)}<span class="gxp">${fr(m.xp)} XP</span><span class="fbtns">${invite}${box}</span></div>`;
+  return `<div class="frow gmem"><span class="fdot ${statusDot(m)}"></span><span class="fname"><b>${pn(m.name)}</b><small class="mut">${RANK_LABEL[m.rank]} · ${esc(statusText(m))}</small></span>${specChip(m.spec)}<span class="gxp">${fr(m.xp)} XP</span><span class="fbtns">${invite}${box}</span></div>`;
 }
 /* bâtiments (01/11/2026) : image, niveau, bonus, matériaux du prochain niveau. opts : owned (ce que je possède), canBuild ;
    sans owned, lecture seule (fiche d'une autre guilde) */
@@ -161,7 +162,7 @@ export function houseHTML(rows){
 }
 const logLine = r => {
   const name = esc(GUILD.buildings.find(b => b.id === r.building)?.name ?? '');
-  return `<div class="glogRow"><span class="mut">${dateOf(r.at)}</span> <b>${esc(r.name)}</b> ${r.kind === 'build'
+  return `<div class="glogRow"><span class="mut">${dateOf(r.at)}</span> <b>${pn(r.name)}</b> ${r.kind === 'build'
     ? `a construit ${name} niveau ${r.level}` : r.kind === 'deposit' ? `a déposé ${fr(r.qty)} ${rname(r.item)} à la banque`
     : r.kind === 'craft' ? `a fabriqué ${fr(r.qty)} ${rname(r.item)} avec la banque`
     : `a donné ${fr(r.qty)} ${rname(r.item)} pour ${name}${r.fromBank ? ' (banque de guilde)' : ''}`}</div>`;
@@ -174,17 +175,17 @@ export const logHTML = (log, older = []) => {
 };
 export const bonusLabels = list => list.flatMap(b => GUILD.buildings.find(x => x.id === b.id).levels.slice(0, b.level).map(l => l.label));
 export function peekHTML(p, older){
-  return `<h2>${esc(p.name)}</h2>${houseHTML(p.buildings)}<div class="gbList">${p.buildings.map(b => buildingHTML(b)).join('')}</div>${logHTML(p.log, older)}`;
+  return `<h2>${pn(p.name)}</h2>${houseHTML(p.buildings)}<div class="gbList">${p.buildings.map(b => buildingHTML(b)).join('')}</div>${logHTML(p.log, older)}`;
 }
 /* message de guilde (01/11/2026, Geoffrey) : lu par tous les membres, écrit par le chef et les officiers */
 export function messageHTML(g){
   const m = g.message;
-  return `<div class="card"><h2>Message de guilde</h2>${m ? `<p class="gmsg">${esc(m.text)}</p><p class="mut small">${m.name ? `${esc(m.name)} · ` : ''}${dateOf(m.at)}</p>` : '<p class="mut small">Aucun message pour l\'instant.</p>'}`+
+  return `<div class="card"><h2>Message de guilde</h2>${m ? `<p class="gmsg">${pn(m.text)}</p><p class="mut small">${m.name ? `${pn(m.name)} · ` : ''}${dateOf(m.at)}</p>` : '<p class="mut small">Aucun message pour l\'instant.</p>'}`+
     (g.canMessage ? `<div class="fbtns"><button data-g="message">${m ? 'Modifier' : 'Écrire'}</button></div>` : '')+`</div>`;
 }
 /* morceaux de la page de sa guilde, communs au site (mineHTML) et à l'appli (mineAppHTML, 04/11/2026) */
 const requestsHTML = g => g.requests.length ? `<div class="card"><h2>Demandes reçues</h2>${g.requests.map(r =>
-  `<div class="frow"><span class="fname"><b>${esc(r.name)}</b></span><span class="fbtns"><button class="on" data-g="acceptRequest" data-id="${esc(r.id)}">Accepter</button><button data-g="refuseRequest" data-id="${esc(r.id)}">Refuser</button></span></div>`).join('')}</div>` : '';
+  `<div class="frow"><span class="fname"><b>${pn(r.name)}</b></span><span class="fbtns"><button class="on" data-g="acceptRequest" data-id="${esc(r.id)}">Accepter</button><button data-g="refuseRequest" data-id="${esc(r.id)}">Refuser</button></span></div>`).join('')}</div>` : '';
 const membersHTML = g => `<div class="card"><h2>Membres <span class="mut">${g.members.length}/${g.max}</span></h2>${g.members.map(memberRow).join('')}</div>`;
 const levelHTML = g => `<div class="card"><h2>Niveau ${g.level}</h2><div class="bar"><i style="width:${g.need ? g.into / g.need * 100 : 100}%"></i></div><p class="mut small">${g.need ? `${fr(g.into)} / ${fr(g.need)} XP` : 'Niveau maximum'} · ${fr(g.xp)} XP au total</p></div>`;
 const bonusHTML = g => `<div class="card"><h2>Bonus actifs</h2>${bonusLabels(g.buildings).map(l => `<p class="small">${esc(l)}</p>`).join('') || `<p class="mut small">Aucun bonus pour l'instant.</p>`}</div>`;
@@ -222,7 +223,7 @@ export function mineAppHTML(g, older, { sub = 'house', building = null } = {}){
 const place = g => `Niv. ${g.level} · ${g.members}/${g.max} membres · chef : ${esc(g.chief)}`;
 /* membres d'une guilde dépliée : rows = null tant que le serveur n'a pas répondu */
 const foldHTML = rows => `<div class="gfold">${rows ? rows.map(m =>
-  `<div class="frow"><span class="fname"><b>${esc(m.name)}</b><small class="mut">${RANK_LABEL[m.rank]}</small></span><span class="gxp">${fr(m.xp)} XP</span></div>`).join('')
+  `<div class="frow"><span class="fname"><b>${pn(m.name)}</b><small class="mut">${RANK_LABEL[m.rank]}</small></span><span class="gxp">${fr(m.xp)} XP</span></div>`).join('')
   : '<p class="mut small">Chargement…</p>'}</div>`;
 export function listHTML(list, { mine, requests, open = null, members = null }){
   if(!list.length) return '<p class="mut small">Aucune guilde trouvée.</p>';
@@ -231,14 +232,14 @@ export function listHTML(list, { mine, requests, open = null, members = null }){
     const peek = `<button data-g="peek" data-id="${esc(g.id)}">Voir</button>`;
     const button = mine ? '' : asked ? `<button data-g="cancelRequest" data-id="${esc(g.id)}">Annuler ma demande</button>`
       : g.members >= g.max ? '<small class="mut">Pleine</small>' : `<button class="on" data-g="request" data-id="${esc(g.id)}">Demander à rejoindre</button>`;
-    return `<div class="frow"><button class="fname gopen" data-gopen="${esc(g.id)}" aria-expanded="${g.id === open}"><b>${g.id === open ? '▾' : '▸'} ${esc(g.name)}</b><small class="mut">${place(g)}</small></button><span class="fbtns">${peek}${button}</span></div>${g.id === open ? foldHTML(members) : ''}`;
+    return `<div class="frow"><button class="fname gopen" data-gopen="${esc(g.id)}" aria-expanded="${g.id === open}"><b>${g.id === open ? '▾' : '▸'} ${pn(g.name)}</b><small class="mut">${place(g)}</small></button><span class="fbtns">${peek}${button}</span></div>${g.id === open ? foldHTML(members) : ''}`;
   }).join('');
 }
 export const boardHTML = list => list.length ? list.map(g =>
-  `<div class="frow"><span class="gxp">${g.rank}</span><span class="fname"><b>${esc(g.name)}</b><small class="mut">${g.members}/${g.max} membres</small></span><span class="gxp">Niv. ${g.level} · ${fr(g.xp)} XP</span></div>`).join('')
+  `<div class="frow"><span class="gxp">${g.rank}</span><span class="fname"><b>${pn(g.name)}</b><small class="mut">${g.members}/${g.max} membres</small></span><span class="gxp">Niv. ${g.level} · ${fr(g.xp)} XP</span></div>`).join('')
   : '<p class="mut small">Aucune guilde pour l\'instant.</p>';
 export const invitesHTML = list => list.map(g =>
-  `<div class="frow"><span class="fname"><b>${esc(g.name)}</b><small class="mut">${place(g)}</small></span><span class="fbtns"><button class="on" data-g="acceptInvite" data-id="${esc(g.id)}">Accepter</button><button data-g="refuseInvite" data-id="${esc(g.id)}">Refuser</button></span></div>`).join('');
+  `<div class="frow"><span class="fname"><b>${pn(g.name)}</b><small class="mut">${place(g)}</small></span><span class="fbtns"><button class="on" data-g="acceptInvite" data-id="${esc(g.id)}">Accepter</button><button data-g="refuseInvite" data-id="${esc(g.id)}">Refuser</button></span></div>`).join('');
 
 /* inviter un joueur : une fenêtre dit toujours ce qui s'est passé (01/11/2026, Geoffrey) ; refus : le message du serveur.
    h : { invite(pseudo), done() : relire l'onglet, tell(texte) } */

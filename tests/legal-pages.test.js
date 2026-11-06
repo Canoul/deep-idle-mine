@@ -3,11 +3,12 @@ import { test } from 'node:test';
 import fs from 'node:fs';
 import path from 'node:path';
 import assert from 'node:assert/strict';
-import { mdToHtml, placeholders, pageHtml, LEGAL_PAGES } from '../scripts/build-legal.js';
+import { mdToHtml, placeholders, pageHtml, LEGAL_PAGES, LEGAL_PAGES_EN } from '../scripts/build-legal.js';
 import { resolvePublic } from '../server/http/static.js';
 import { SERVER, ROOT } from '../server/config.js';
 import { RULES } from '../src/config.js';
-import { legalLinks, createAccountUI } from '../src/ui/account.js';
+import { legalLinks, legalUrl, createAccountUI } from '../src/ui/account.js';
+import { setLang } from '../src/i18n/index.js';
 
 const SAMPLE = `# Titre\n\nUn **gras** et [votre nom] et [un lien](https://exemple.fr) et *italique*.\nSuite du paragraphe.\n\n## Sous-titre\n\n- un\n- deux\n\n1. premier\n2. second\n\n| A | B |\n|---|---|\n| 1 | [à compléter] |\n\n<script>alert(1)</script>\n[piège](javascript:alert(1))\n`;
 
@@ -59,4 +60,28 @@ test('les trois vraies pages sont publiées, à partir du texte reçu', () => {
     assert.ok(html.includes(title), page); assert.doesNotMatch(html, /<script/);
     assert.doesNotMatch(html, /\\\[/, 'pas de barre oblique visible');
   }
+});
+
+/* pages en anglais (06/11/2026) : servies, chacune dit que la version française fait foi et y renvoie ; liens selon la langue */
+test('anglais : les quatre pages sont servies, en anglais, avec « la version française fait foi » et le lien vers elle', () => {
+  for(const [page, { title, fr }] of Object.entries(LEGAL_PAGES_EN)){
+    assert.equal(SERVER.pages['/' + page], `/${page}.html`);
+    assert.ok(resolvePublic(ROOT, SERVER.publicPaths, `/${page}.html`), page);
+    const html = fs.readFileSync(path.join(ROOT, page + '.html'), 'utf8');
+    assert.match(html, /<html lang="en">/); assert.ok(html.includes(title), page); assert.doesNotMatch(html, /<script/);
+    assert.ok(html.includes('la version française fait foi'), page); assert.ok(html.includes(`href="/${fr}"`), page);
+    assert.ok(Object.hasOwn(LEGAL_PAGES, fr), fr);
+  }
+  assert.equal(SERVER.pages['/delete-account'], '/delete-account.html');
+  const del = fs.readFileSync(path.join(ROOT, 'delete-account.html'), 'utf8');
+  assert.ok(del.includes('la version française fait foi') && del.includes('href="/suppression-compte"'));
+});
+
+test('liens légaux : pages françaises en français, anglaises en anglais', () => {
+  setLang('fr');
+  assert.equal(legalUrl('terms'), RULES.terms);
+  setLang('en');
+  for(const k of ['terms', 'privacy', 'notice', 'deletion']) assert.equal(legalUrl(k), RULES.en[k]);
+  assert.ok(legalLinks().includes(`href="${RULES.en.privacy}"`));
+  setLang('fr');
 });

@@ -12,6 +12,7 @@ import { blockedReason, rankOf, nodeText, parentsOf, treePoints, tierNeed, depth
 import { specLevelHtml } from './level.js';
 import { glyphOf } from '../meta/glyphs.js';
 import { ask } from './dialog.js';
+import { tn } from '../i18n/index.js';
 
 /* état de la case de glyphe d'un skill (st : skills du serveur, inv : inventaire { slots }) : 'none' (pas de glyphe pour ce
    skill), 'posed' / 'inactive' (posé ; inactif si le skill n'est plus au max), 'can_pose' (skill au max et glyphe
@@ -46,7 +47,7 @@ const WHY = { other_tree:'Autre arbre choisi', needs_previous:'Le skill relié a
 /* boutons de spé (en haut de l'onglet) : chosen = la spé actuelle ; pts = points par arbre */
 export function specBarHtml(chosen, { pts = [], disabled = false } = {}){
   return `<div class="skSpecs">` + SKILLS.trees.map((t, i) => `<button data-spec="${t.id}"${t.id === chosen ? ' class="on" aria-pressed="true"' : ''}${disabled ? ' disabled' : ''}>`+
-    `${TREE_PX[t.id] ? pxi(TREE_PX[t.id]) : t.icon}<b>${esc(t.label)}</b><small>${t.id === chosen ? '★ ta spé' : 'Choisir'} · ${pts[i] ?? 0} pts</small></button>`).join('') + `</div>`;
+    `${TREE_PX[t.id] ? pxi(TREE_PX[t.id]) : t.icon}<b>${esc(tn(t.label))}</b><small>${t.id === chosen ? '★ ta spé' : 'Choisir'} · ${pts[i] ?? 0} pts</small></button>`).join('') + `</div>`;
 }
 
 /* ---------- appli (03/11/2026, spec docs/superpowers/specs/2026-11-03-appli-skills-design.md) ---------- */
@@ -67,7 +68,7 @@ export function skillSheetHtml(st, id, { inv = { slots:[] }, busy = false, sessi
   const glyph = g === 'none' ? '' : `<div class="skGl"><span class="skGlyph g-${g}">${g === 'posed' || g === 'inactive' ? '<img src="textures/glyph.png" alt="">' : ''}</span>`+
     `<span><b>${esc(glyphOf(id))}</b><br><small class="mut">${esc(GLYPH_SHEET[g])}</small></span>`+
     (gact && !busy ? `<button data-glyph="${id}" data-gact="${gact}">${gact === 'glyph_pose' ? 'Poser' : 'Retirer'}</button>` : '')+`</div>`;
-  return `<div class="skShHead"><span class="skOrb">${NODE_PX[id] ? pxi(NODE_PX[id]) : n.icon}</span><div><h3>${esc(n.name)}</h3>`+
+  return `<div class="skShHead"><span class="skOrb">${NODE_PX[id] ? pxi(NODE_PX[id]) : n.icon}</span><div><h3>${esc(tn(n.name))}</h3>`+
     `<span class="mut">${esc(n.tree.label)} · étage ${n.row} · rang ${r} / ${n.max}</span></div><button class="x" data-act="close" aria-label="Fermer">✕</button></div>`+
     (parentsOf(id)[0] ? `<p class="skNeed${rankOf(st, parentsOf(id)[0].id) >= parentsOf(id)[0].max ? ' ok' : ''}">⤷ Exige <b>${esc(parentsOf(id)[0].name)}</b> au rang max</p>` : '')+
     `<div class="skLines"><div><i>Maintenant</i><span>${r ? esc(nodeText(id, r)) : 'Pas encore appris'}</span></div>`+
@@ -175,7 +176,7 @@ export function setupSkills({ onOp, inSession, onChange = () => {}, inventory = 
       const r = rankOf(st, n.id), why = blockedReason(st, n.id, st.points), can = !why && !busy;
       const state = r >= n.max ? 'max' : can ? 'can' : r ? 'some' : 'off';
       const need = parentsOf(n.id)[0];
-      const tip = [n.name, nodeText(n.id, r), `Rang ${r} / ${n.max}`, n.specOnly ? `Skill de classe (${t.label})` : '',
+      const tip = [tn(n.name), nodeText(n.id, r), `Rang ${r} / ${n.max}`, n.specOnly ? `Skill de classe (${tn(t.label)})` : '',
                    need ? `Exige ${need.name} au rang max` : '',
                    can ? 'Clic : apprendre un rang (1 point)' : why && why !== 'maxed' ? '🔒 ' + (WHY[why] ?? '') : ''].filter(Boolean).join('\n');
       /* appli (03/11/2026) : lk = un maillon vers le skill exigé (lk-on : chemin ouvert) ; --c / --r : colonne et étage */
@@ -183,9 +184,9 @@ export function setupSkills({ onOp, inSession, onChange = () => {}, inventory = 
       const lk = parents.length ? (parents.every(p => rankOf(st, p.id) >= p.max) ? ' lk lk-on' : ' lk') : '';
       return `<div class="skNode ${state}${lk}${n.specOnly ? ' cls' : ''}" data-nid="${n.id}" data-col="${n.col}"${need ? ` data-needs="${need.id}"${rankOf(st, need.id) >= need.max ? ' data-open="1"' : ''}` : ''} style="left:${pos[n.id].x}%;top:${pos[n.id].y}px;--c:${n.col + 1};--r:${n.row}"${can ? ` data-node="${n.id}" role="button" tabindex="0"` : ''} data-tip="${esc(tip)}">`+
              `<span class="skOrb">${NODE_PX[n.id] ? pxi(NODE_PX[n.id]) : n.icon}</span><b class="skRank">${r}/${n.max}</b>${can ? '<i class="skPlus">+</i>' : ''}`+
-             `<span class="skName">${esc(n.name)}</span><span class="skTxt">${esc(nodeText(n.id, Math.max(r, 1)))}</span>${glyphHtml(n)}</div>`;
+             `<span class="skName">${esc(tn(n.name))}</span><span class="skTxt">${esc(nodeText(n.id, Math.max(r, 1)))}</span>${glyphHtml(n)}</div>`;
     }).join('');
-    return `<div class="skTree${chosen ? ' chosen' : ''}${st.tree && !chosen ? ' side' : ''}${cols === 3 ? ' c3' : ''}"><h3>${TREE_PX[t.id] ? pxi(TREE_PX[t.id]) : t.icon} ${esc(t.label)}`+
+    return `<div class="skTree${chosen ? ' chosen' : ''}${st.tree && !chosen ? ' side' : ''}${cols === 3 ? ' c3' : ''}"><h3>${TREE_PX[t.id] ? pxi(TREE_PX[t.id]) : t.icon} ${esc(tn(t.label))}`+
       ` <span class="mut small">· ${pts} pts${chosen ? ' · ★ ta spé' : st.tree ? ` · jusqu'à l'étage ${Math.max(0, cap)}` : ''}</span></h3>`+
       specLevelHtml(spec[t.id])+
       `<div class="skGraph" style="height:${h}px;--cols:${cols}"><svg class="skLinks" aria-hidden="true"></svg>${tiers}${nodes}</div></div>`;
@@ -227,7 +228,7 @@ export function setupSkills({ onOp, inSession, onChange = () => {}, inventory = 
     if(!b || b.disabled || b.classList.contains('on')) return;
     e.stopPropagation();
     const t = SKILLS.trees.find(x => x.id === b.dataset.spec);
-    if(st.spent && !await ask(`Passer en spé ${t.label} : tous tes points de skill sont rendus (gratuit). Continuer ?`, { ok:'Changer' })) return;
+    if(st.spent && !await ask(`Passer en spé ${tn(t.label)} : tous tes points de skill sont rendus (gratuit). Continuer ?`, { ok:'Changer' })) return;
     view = t.id; send({ action:'spec', tree:t.id });
   }, true);
   $('skillTrees').onkeydown = e => { const b = e.target.closest('[data-node]'); if(b && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); send({ action:'learn', node:b.dataset.node }); } };

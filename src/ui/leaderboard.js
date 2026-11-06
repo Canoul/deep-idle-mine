@@ -6,6 +6,7 @@ import { SKILLS, LEADERBOARD, JUDGMENT } from '../config.js';
 import { towerTime, isBoard } from '../meta/leaderboard.js';
 import { qhelp } from './help.js';
 import { drawPortrait } from '../render/portrait.js';
+import { pn } from '../i18n/index.js';   // pseudos et textes des joueurs : jamais traduits (06/11)
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -51,7 +52,7 @@ export const rankText = (rank, total) => `${rank}${rank === 1 ? 'er' : 'e'} sur 
 /* podium : 2ᵉ à gauche, 1ᵉʳ au centre, 3ᵉ à droite ; mineur d'apparence de base (le classement n'envoie pas le stuff) */
 export function podiumHtml(top, value){
   return `<div class="lPodium">${[[top[1], 2], [top[0], 1], [top[2], 3]].map(([r, n]) => r
-    ? `<div class="lp lp${n}"><canvas width="16" height="16" data-lp="${n}"></canvas><b class="lpName">${esc(r.name)}</b><small>${esc(value(r))}</small><span class="lpStep">${r.rank}</span></div>`
+    ? `<div class="lp lp${n}"><canvas width="16" height="16" data-lp="${n}"></canvas><b class="lpName">${pn(r.name)}</b><small>${esc(value(r))}</small><span class="lpStep">${r.rank}</span></div>`
     : `<div class="lp lp${n} empty"><span class="lpStep"></span></div>`).join('')}</div>`;
 }
 /* tout le classement dans l'appli ; row : le rendu d'une ligne (boardRow) ; sa place (dans le top ou board.me) collée en bas */
@@ -72,7 +73,7 @@ export function setupLeaderboard({ root, load, moderate = () => {} }){
   function boardRow(r){
     const detail = board === 'tower' ? towerDetail(r) : board === 'instance' ? instanceDetail(r) : '';
     return `<div class="frow lrow${r.me ? ' mine' : ''}"><span class="lrank">${r.rank}</span>`+
-      `<span class="fname"><b>${esc(r.name)}</b>${detail ? `<small class="mut">${esc(detail)}</small>` : ''}</span>`+
+      `<span class="fname"><b>${pn(r.name)}</b>${detail ? `<small class="mut">${esc(detail)}</small>` : ''}</span>`+
       `<span class="lval">${esc(BOARD_INFO[board === 'spec' ? 'spec' : boardId()].value(r))}</span>${r.me || !r.id ? '' : `<span class="fbtns"><button class="x" data-mod="${esc(r.id)}" data-name="${esc(r.name)}" title="Signaler ou bloquer" aria-label="Signaler ou bloquer">⋮</button></span>`}</div>`;
   }
   function renderBoard(){

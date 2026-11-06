@@ -11,6 +11,7 @@ import { accountApi, gameApi, request, ApiError, OfflineError } from '../net/api
 import { referralLink } from '../shared/referral.js';
 import { inLocalApp } from '../net/base.js';
 import { ask, askFields, tell } from './dialog.js';
+import { t, getLang } from '../i18n/index.js';
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
 
@@ -47,11 +48,12 @@ const newPassFields = () =>
 
 /* case des règles (01/11/2026) : sans elle, pas de compte, invité compris ; le serveur la revérifie */
 const rulesCheck = () => `<label class="chk rulesChk"><input type="checkbox" name="acceptRules" data-rules> <span>J'accepte les
-  <a href="${RULES.terms}" target="_blank" rel="noopener">conditions d'utilisation</a> et la
-  <a href="${RULES.privacy}" target="_blank" rel="noopener">politique de confidentialité</a></span></label>`;
+  <a href="${legalUrl('terms')}" target="_blank" rel="noopener">conditions d'utilisation</a> et la
+  <a href="${legalUrl('privacy')}" target="_blank" rel="noopener">politique de confidentialité</a></span></label>`;
 
-/* pages légales (01/11/2026) : Mon compte, création de compte, bas de l'écran d'accueil */
-export const legalLinks = () => `<p class="legalLinks">${[[RULES.privacy, 'Confidentialité'], [RULES.notice, 'Mentions légales'], [RULES.terms, 'Conditions'], [RULES.deletion, 'Supprimer son compte']]
+/* pages légales (01/11/2026) : Mon compte, création de compte, bas de l'écran d'accueil ; en anglais, les pages anglaises (06/11) */
+export const legalUrl = k => (getLang() === 'en' && RULES.en?.[k]) || RULES[k];
+export const legalLinks = () => `<p class="legalLinks">${[[legalUrl('privacy'), 'Confidentialité'], [legalUrl('notice'), 'Mentions légales'], [legalUrl('terms'), 'Conditions'], [legalUrl('deletion'), 'Supprimer son compte']]
   .map(([u, t]) => `<a href="${u}" target="_blank" rel="noopener">${t}</a>`).join(' · ')}</p>`;
 
 /* supprimer son compte (01/11/2026) : textes et champs de la fenêtre ; le serveur revérifie tout */
@@ -61,8 +63,11 @@ export const deleteFields = account => account.guest ? [{ name: 'confirm', label
 export const profileDanger = () => `<div class="dangerZone"><button class="danger" data-act="deleteAccount">Supprimer mon compte</button></div>`;
 
 /* options du joueur dans « Mon compte » : une case à cocher par option (rien s'il n'y en a pas) */
-export const optionsHtml = (options = []) => options.length ? `<h4>Options</h4>` + options.map(o =>
-  `<label class="chk" title="${esc(o.title ?? '')}"><input type="checkbox" data-opt="${esc(o.key)}"${o.on ? ' checked' : ''}> ${esc(o.label)}</label>`).join('') : '';
+/* type 'select' (langue, 03/11) : une liste { value, choices:[[valeur, libellé]] } */
+export const optionsHtml = (options = []) => options.length ? `<h4>${t('Options')}</h4>` + options.map(o => o.type === 'select'
+  ? `<label class="optSel" title="${esc(o.title ?? '')}">${esc(o.label)} <select data-opt="${esc(o.key)}">${o.choices.map(([v, l]) =>
+      `<option value="${esc(v)}"${v === o.value ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select></label>`
+  : `<label class="chk" title="${esc(o.title ?? '')}"><input type="checkbox" data-opt="${esc(o.key)}"${o.on ? ' checked' : ''}> ${esc(o.label)}</label>`).join('') : '';
 
 const VIEWS = {
   login: () => `
@@ -301,7 +306,7 @@ export function createAccountUI(root, state, handlers = {}){
   box.addEventListener('change', e => {
     if(e.target.matches('[data-ok]')) box.querySelector('[data-act="done"]').disabled = !e.target.checked;
     if(e.target.matches('[data-rules]')){ const g = box.querySelector('[data-act="guest"]'); if(g) g.disabled = !e.target.checked; }
-    if(e.target.matches('[data-opt]')) on.setOption(e.target.dataset.opt, e.target.checked);
+    if(e.target.matches('[data-opt]')) on.setOption(e.target.dataset.opt, e.target.tagName === 'SELECT' ? e.target.value : e.target.checked);
   });
   root.addEventListener('click', e => { if(e.target === root && closable) hide(); });
   addEventListener('keydown', e => { if(e.key === 'Escape' && closable && !root.hidden) hide(); });
