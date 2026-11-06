@@ -7705,6 +7705,12 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   compteur est connu du navigateur : celui des autres joueurs, c'est le serveur qui le refuse (`geante_daily`, en les nommant).
 - **Tests** ✅ geante (pas d'énergie, `state().geanteLeft`, texte, Lancer grisé à 0), lobby, team-energy, energy-server, wiki.
 
+
+## 06/11/2026 — Échelle : le plus rapide la pose, tous modes (Geoffrey)
+- **Quoi** : `src/sim/ladder.js` : `ladderCellTime(m)` (ladderTime × 0,5 avec tall_ladder), `betterLadder`, `ladderTurn(G, m, x, y)` → 'go' (annule les poses moins rapides sur la case : `o.action = null`) ou 'wait' (un poseur aussi rapide ou plus rapide). Branché : `stepDir` (src/sim/actions.js : mine, raid, donjons ; attente = action 'wait' 0,2 s), instance et tours (`ladderTurn` à la place de `busy(…'ladder'…)`), mine instantanée (src/sim/instant/ai.js). L'ancienne attente du logisticien qui remonte (ai.js `yieldLadder`) reste.
+- **Règle pour les futurs modes** : appeler `ladderTurn` avant de lancer une pose d'échelle.
+- **Tests** : ladder-turn (3) ✅ ; instance*, tower*, instant*, raid*, session, skills, miner ✅ (245). Simulation mine 3 mineurs × 5 sessions : areas 3,0, profondeur 193 (avant 189), allers-retours 27,8, coffre 4 134 pods, 0 bloquée ✅.
+
 ## 06/11/2026 — Jules — Chat global : le champ débordait sous la boîte
 - **Cause** : `.chatDock` avait `height:var(--chat-h)` et, depuis le 04/11, `.overNav` ajoute `padding-bottom:--chat-lift` (hauteur
   de la bulle recouverte, ~114 px à 1600 × 900). Le padding était pris **dans** la hauteur : à 15 % d'écran, la `.card` (flex:1,

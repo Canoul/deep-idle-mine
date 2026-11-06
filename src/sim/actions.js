@@ -1,4 +1,5 @@
 /* Effets des actions du mineur sur le monde, et choix de l'action pour un pas dans une direction. */
+import { ladderTurn } from './ladder.js';
 import { critMul, backstabMul, restedMul } from './skillfx.js';
 import { W, STATS, CFG, BLOCKS, BRIDGE, MOBS, TREASURE, ITEMS, XP, SKILLS, SHINY, DUNGEON, DUCK, COMBAT, GLYPHS, MOB_DROPS, PRISON, GOLBUTE, RAID, IDS } from '../config.js';
 import { mulberry32 } from '../core/rng.js';
@@ -355,7 +356,11 @@ export function stepDir(G,m,dx,dy,opt){
     const t=tileAt(G,nx,ny); if(!t||BLOCKS[t].unbreakable||fleshAt(G,nx,ny)) return false;   // mur de chair : il faut le tuer
     startAction(m,'mine', mineDuration(G,m,t), {x:nx,y:ny}); return true;
   }
-  if(dy===-1 && m.y>0 && !G.ladder[m.y][m.x] && !isWinch(G,m.x,m.y)){ startAction(m,'ladder', ladderTime(m), {}); return true; }
+  if(dy===-1 && m.y>0 && !G.ladder[m.y][m.x] && !isWinch(G,m.x,m.y)){
+    /* plusieurs poseurs sur la case : le plus rapide la pose (src/sim/ladder.js, 06/11) ; les autres attendent */
+    if(ladderTurn(G,m)==='wait'){ m.status='Attend l\'échelle'; startAction(m,'wait',0.2,{}); return true; }
+    startAction(m,'ladder', ladderTime(m), {}); return true;
+  }
   const seau = dy && (isWinch(G,m.x,m.y) || isWinch(G,nx,ny));   // dans le puits du treuil : le seau
   startAction(m,'move', seau ? winchT(G,m) : dy ? climbT(G,m) : moveT(G,m), {x:nx,y:ny,down:dy===1,fx:m.x+(m.kx||0),fy:m.y+(m.ky||0),winch:seau});
   return true;

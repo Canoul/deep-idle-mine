@@ -20,6 +20,14 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 06/11/2026 — Geoffrey — Échelle : le plus rapide la pose, dans tous les modes
+- **Pour le joueur** : quand plusieurs mineurs doivent poser une échelle sur la même case, c'est le plus rapide à monter
+  qui la pose (le logisticien avec Échelle de 2), même s'il arrive après : celui qui avait commencé s'arrête et
+  attend. À vitesse égale, le premier garde la main. Avant : le premier arrivé la posait (et en mine, les deux la
+  posaient en même temps).
+- **Décisions** : une seule règle pour tous les modes (mine, raid, instances, tours, mine instantanée, et les suivants).
+- **État** : ✅ en ligne le 06/11
+
 ## 06/11/2026 — Jules — Appli : les sprites des objets ne sont plus écrasés à l'Amélioration
 - **Pour le joueur** : dans l'appli, onglet Perso → Amélioration, les icônes des pièces à choisir sortaient écrasées en largeur
   (pioches trop fines, ceintures trop courtes). Elles sont de nouveau carrées. Le site n'est pas concerné.

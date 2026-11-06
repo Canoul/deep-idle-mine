@@ -14,6 +14,7 @@
    Dynamite sur les spawners et les cages (Dynamite = INSTANCE.spawner.dynamite coups sur un spawner, casse les blocs de
    cage à son rayon) ; Cri de guerre, Cleave, Hand of Justice, Dash et Ralliement contre les gobelins (Ralliement et Cleave
    aussi sur le roi) ; Illumination et Bonbonne d'oxygène : sans effet (tout est éclairé, pas d'oxygène). */
+import { ladderTurn } from '../ladder.js';
 import { critMul, backstabMul } from '../skillfx.js';
 import { INSTANCE, DT, STATS, CFG, COMBAT } from '../../config.js';
 import { mulberry32 } from '../../core/rng.js';
@@ -479,7 +480,7 @@ function follow(G, m, path, status){
   }
   if(ny < m.y){
     if(!open(G, m.x, m.y - 1)) return startMine(G, m, m.x, m.y - 1, status);
-    if(!G.ladder[m.y][m.x] && busy(G, m, 'ladder', m.x, m.y)) return act(m, 'wait', 0.2, {}, 'Attend l\'échelle');
+    if(!G.ladder[m.y][m.x] && ladderTurn(G, m) === 'wait') return act(m, 'wait', 0.2, {}, 'Attend l\'échelle');   // le plus rapide la pose (src/sim/ladder.js)
     if(!G.ladder[m.y][m.x]) return act(m, 'ladder', ladderTime(m), { x: m.x, y: m.y }, 'Pose une échelle');
     return act(m, 'move', climbT(m), { x: m.x, y: m.y - 1 }, 'Grimpe');
   }
