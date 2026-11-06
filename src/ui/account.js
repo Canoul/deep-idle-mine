@@ -11,7 +11,7 @@ import { accountApi, gameApi, request, ApiError, OfflineError } from '../net/api
 import { referralLink } from '../shared/referral.js';
 import { inLocalApp } from '../net/base.js';
 import { ask, askFields, tell } from './dialog.js';
-import { t } from '../i18n/index.js';
+import { t, getLang } from '../i18n/index.js';
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
 
@@ -48,11 +48,12 @@ const newPassFields = () =>
 
 /* case des règles (01/11/2026) : sans elle, pas de compte, invité compris ; le serveur la revérifie */
 const rulesCheck = () => `<label class="chk rulesChk"><input type="checkbox" name="acceptRules" data-rules> <span>J'accepte les
-  <a href="${RULES.terms}" target="_blank" rel="noopener">conditions d'utilisation</a> et la
-  <a href="${RULES.privacy}" target="_blank" rel="noopener">politique de confidentialité</a></span></label>`;
+  <a href="${legalUrl('terms')}" target="_blank" rel="noopener">conditions d'utilisation</a> et la
+  <a href="${legalUrl('privacy')}" target="_blank" rel="noopener">politique de confidentialité</a></span></label>`;
 
-/* pages légales (01/11/2026) : Mon compte, création de compte, bas de l'écran d'accueil */
-export const legalLinks = () => `<p class="legalLinks">${[[RULES.privacy, 'Confidentialité'], [RULES.notice, 'Mentions légales'], [RULES.terms, 'Conditions'], [RULES.deletion, 'Supprimer son compte']]
+/* pages légales (01/11/2026) : Mon compte, création de compte, bas de l'écran d'accueil ; en anglais, les pages anglaises (06/11) */
+export const legalUrl = k => (getLang() === 'en' && RULES.en?.[k]) || RULES[k];
+export const legalLinks = () => `<p class="legalLinks">${[[legalUrl('privacy'), 'Confidentialité'], [legalUrl('notice'), 'Mentions légales'], [legalUrl('terms'), 'Conditions'], [legalUrl('deletion'), 'Supprimer son compte']]
   .map(([u, t]) => `<a href="${u}" target="_blank" rel="noopener">${t}</a>`).join(' · ')}</p>`;
 
 /* supprimer son compte (01/11/2026) : textes et champs de la fenêtre ; le serveur revérifie tout */

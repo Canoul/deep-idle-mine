@@ -52,12 +52,13 @@ export const SERVER = {
      jamais le salon public des annonces. Absent : les signalements restent en base, rien n'est envoyé. */
   discordModWebhook: process.env.DIM_DISCORD_MOD_WEBHOOK || '',
   /* seuls ces chemins sont servis au navigateur (le reste du dépôt, dont data/, ne l'est jamais) */
-  publicPaths: ['/index.html', '/wiki.html', '/suppression-compte.html', '/confidentialite.html', '/mentions-legales.html', '/conditions.html', '/src/', '/textures/'],
+  publicPaths: ['/index.html', '/wiki.html', '/suppression-compte.html', '/confidentialite.html', '/mentions-legales.html', '/conditions.html', '/privacy.html', '/legal-notice.html', '/terms.html', '/delete-account.html', '/src/', '/textures/'],
   /* origines de l'appli mobile : fichiers du jeu dans l'appli, donc une autre origine que le site. Elles seules reçoivent le CORS et un
      jeton (server/app.js) ; jamais de cookie en cross-origin. DIM_APP_ORIGINS : d'autres, séparées par des virgules (essais). */
   appOrigins: ['https://localhost', 'capacitor://localhost', ...(process.env.DIM_APP_ORIGINS ?? '').split(',').filter(Boolean)],
   /* adresses sans extension : celles des fiches des stores restent stables (les pages légales viennent de scripts/build-legal.js) */
-  pages: { '/suppression-compte': '/suppression-compte.html', '/confidentialite': '/confidentialite.html', '/mentions-legales': '/mentions-legales.html', '/conditions': '/conditions.html' },
+  pages: { '/suppression-compte': '/suppression-compte.html', '/confidentialite': '/confidentialite.html', '/mentions-legales': '/mentions-legales.html', '/conditions': '/conditions.html',
+    '/privacy': '/privacy.html', '/legal-notice': '/legal-notice.html', '/terms': '/terms.html', '/delete-account': '/delete-account.html' },   // anglais (06/11/2026)
   /* en-têtes de sécurité, sur toutes les réponses (pages, fichiers, API) :
      - CSP : seuls les scripts du jeu s'exécutent (aucun script en ligne, aucun autre site) ; styles et polices :
        le jeu et Google Fonts ; le jeu ne peut pas être affiché dans un cadre (iframe) d'un autre site ;

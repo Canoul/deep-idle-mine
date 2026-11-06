@@ -2306,7 +2306,10 @@ export const MODERATION = { warnings: 3, banMs: 24 * 3600e3, joinMessages: 3, jo
 export const ACCOUNT_DELETE_WORD = 'SUPPRIMER';
 /* Règles acceptées par le joueur (01/11/2026) : augmenter version redemande l'accord de tout le monde au prochain message de chat */
 export const RULES = { version: 1, terms: 'https://deepmineidle.fr/conditions', privacy: 'https://deepmineidle.fr/confidentialite',
-                       notice: 'https://deepmineidle.fr/mentions-legales', deletion: 'https://deepmineidle.fr/suppression-compte' };
+                       notice: 'https://deepmineidle.fr/mentions-legales', deletion: 'https://deepmineidle.fr/suppression-compte',
+                       /* pages en anglais (06/11/2026) : la version française fait foi ; liens choisis selon la langue (legalUrl) */
+                       en: { terms: 'https://deepmineidle.fr/terms', privacy: 'https://deepmineidle.fr/privacy',
+                             notice: 'https://deepmineidle.fr/legal-notice', deletion: 'https://deepmineidle.fr/delete-account' } };
 
 /* Préférences de l'IA réglables dans le lobby (« Critères / préférences »), avec leurs valeurs permises.
    Ajouter une préférence = une entrée ici + sa lecture dans l'IA (principe d'architecture n°3). */

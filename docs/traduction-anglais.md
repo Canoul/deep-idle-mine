@@ -50,9 +50,12 @@ Branche : `geoffrey/traduction-anglais`. Choix de langue dans « Mon compte » :
    annonces Discord restent en français (voulu) ; vérifier en jeu les messages d'erreur.
 5. 🟡 **Wiki** ✅ (06/11) : même traducteur, plus un **mode bloc** (un paragraphe traduit d'un coup, mise en forme comprise) :
    `src/i18n/en/wiki.js` (314 blocs ; ceux générés depuis la config ont `{#n}` à la place des chiffres) ; les lignes des tableaux
-   passent par `ui.js`. Langue = celle choisie dans le jeu sur l'appareil. 0 texte français relevé. **Reste** : les **pages légales**.
+   passent par `ui.js`. Langue = celle choisie dans le jeu sur l'appareil. 0 texte français relevé.
+   **Pages légales** ✅ (06/11) : `legal/en/*.md` → /privacy, /legal-notice, /terms, et /delete-account ; chacune dit que la
+   version française fait foi et y renvoie. En anglais, les liens du jeu (`legalUrl`) mènent aux pages anglaises.
 
 ## Pour toute l'équipe, une fois le chantier fini
 
 Chaque nouveau texte s'écrit en français **et** en anglais : `t('…')` dans le code, et la traduction dans
-`src/i18n/en/`. Le test le rappelle.
+`src/i18n/en/`. Le test le rappelle. Wiki : `src/i18n/en/wiki.js`. Pages légales : `legal/en/` et `delete-account.html`, puis
+`npm run legal`.

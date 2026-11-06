@@ -22,12 +22,14 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
-## 06/11/2026 — Geoffrey — Le jeu en anglais, étape 5 : le wiki
+## 06/11/2026 — Geoffrey — Le jeu en anglais, étape 5 : le wiki et les pages légales
 - **Le wiki existe en anglais** : il prend la langue choisie dans le jeu (même appareil). Tout y passe : textes écrits à la main, tableaux, mobs, donjon, tours, sorts, skills… Les chiffres restent ceux du jeu (ils suivent la config), écrits à l'anglaise (1.5, 2,000).
 - Rien ne change pour les joueurs : l'anglais reste caché, et le wiki en français est identique.
 - Au passage, dans le jeu en anglais : les textes d'aide des champs (« Chercher un objet… ») sont traduits, et les annonces du Raffle aussi pour tous les lots.
 - **Pour l'équipe** : quand vous changez un texte du wiki, son anglais est dans `src/i18n/en/wiki.js` ; un paragraphe sans anglais reste en français.
-- **À suivre** : les pages légales en anglais.
+- **Pages légales en anglais** : deepmineidle.fr/privacy, /terms, /legal-notice et /delete-account. Chacune dit en tête qu'**en cas de différence, la version française fait foi**, avec le lien vers la page française. Dans le jeu en anglais, les liens (Mon compte, création de compte, signalement) mènent aux pages anglaises.
+- **Pour l'équipe** : quand vous changez une page légale (`legal/*.md` ou `suppression-compte.html`), changez aussi sa version anglaise (`legal/en/`, `delete-account.html`), puis `npm run legal`.
+- **À suivre** : regarder en jeu les tours, le raid et les bilans en anglais ; puis ouvrir l'anglais aux joueurs quand tu le décides.
 - **État** : 🧪 branche `geoffrey/traduction-anglais`
 
 ## 06/11/2026 — Geoffrey — Le jeu en anglais, étape 3 : l'interface

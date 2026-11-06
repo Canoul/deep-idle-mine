@@ -2223,4 +2223,10 @@ export default {
   '[Raffle] {a} seront attribués aléatoirement à quelqu\'un dans le chat dans {b} min': '[Raffle] {a} will be given at random to someone in the chat in {b} min',
   '[Raffle] {a} sera attribué aléatoirement à quelqu\'un dans le chat dans {b} min': '[Raffle] {a} will be given at random to someone in the chat in {b} min',
   '[Raffle] {a} pour {b} gagnants, tirés au sort dans le chat dans {c} min': '[Raffle] {a} for {b} winners, drawn in the chat in {c} min',
+  'Confidentialité': 'Privacy',
+  'Mentions légales': 'Legal notice',
+  'Conditions': 'Terms',
+  'Supprimer son compte': 'Delete your account',
+  'Conditions d\'utilisation': 'Terms of use',
+  'conditions d\'utilisation': 'terms of use',
 };

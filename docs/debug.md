@@ -7738,3 +7738,9 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - Vérifié (Chromium, wiki en anglais) : 0 bloc et 0 nœud de texte français (relevé par mots qui n'existent que dans les clés françaises), 0 erreur ; wiki en français inchangé ; jeu en anglais (15 onglets) : 1 texte manquant (Raffle, ajouté).
 - Tests : i18n-dom (+2 : `{*x}`, listes, modèle court, balises et variables de chaque bloc), i18n, wiki, chat, guild-ui, sets, raffle ✅.
 - ⚠️ Fragile : un paragraphe de `wiki.html` modifié perd son anglais (il reste en français, relevé en dev par `__i18nBlocks`) ; un nombre écrit à la main dans wiki.html fait partie de la clé.
+
+### 06/11/2026 — Traduction, étape 5 bis : pages légales en anglais (Geoffrey) 🧪
+- `legal/en/{privacy,legal-notice,terms}.md` (traduction fidèle du français du 01/11, en tête : « the French version prevails (en cas de différence, la version française fait foi) » + lien) → `scripts/build-legal.js` (`LEGAL_PAGES_EN`, `pageHtml(title, body, lang)` : `lang="en"`, « ▶ Play », pied de page anglais) → `privacy.html`, `legal-notice.html`, `terms.html`. `delete-account.html` écrite à la main (copie de `suppression-compte.html`). Pages françaises régénérées : identiques.
+- `server/config.js` : `publicPaths` + `pages` (/privacy, /legal-notice, /terms, /delete-account). `RULES.en` (src/config.js) ; `legalUrl(k)` (src/ui/account.js) choisit selon `getLang()` : `legalLinks()`, case « J'accepte… », `rulesLinks()` (src/ui/moderate.js). Lien « this page » du wiki anglais → delete-account.
+- Tests : legal-pages (+2 : 4 pages servies, en anglais, mention « fait foi » et lien vers la française ; liens selon la langue), moderation, account, i18n ✅. Vu dans Chromium : les 4 pages en 200, mise en forme du wiki.
+- ⚠️ À tenir à jour à la main : une page légale française modifiée n'a pas de garde-fou pour sa version anglaise (date « Last updated » à suivre).

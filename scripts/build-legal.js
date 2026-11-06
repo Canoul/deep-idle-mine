@@ -4,12 +4,16 @@
      npm run legal
 
    Mise en forme lue : titres #, listes - et 1., tableaux |, **gras**, *italique*, `code`, [liens](https://…), citations >, ---.
-   Aucun HTML du fichier n'est interprété. Servies à /confidentialite, /mentions-legales, /conditions (SERVER.pages). */
+   Aucun HTML du fichier n'est interprété. Servies à /confidentialite, /mentions-legales, /conditions (SERVER.pages).
+   Anglais (06/11/2026) : legal/en/*.md → /privacy, /legal-notice, /terms (+ /delete-account, écrite à la main). */
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const LEGAL_PAGES = { confidentialite: 'Politique de confidentialité', 'mentions-legales': 'Mentions légales', conditions: "Conditions générales d'utilisation" };
+/* versions anglaises (06/11/2026) : legal/en/<page>.md → <page>.html ; chacune dit que la version française fait foi */
+export const LEGAL_PAGES_EN = { privacy: { title: 'Privacy policy', fr: 'confidentialite' }, 'legal-notice': { title: 'Legal notice', fr: 'mentions-legales' },
+  terms: { title: 'Terms of use', fr: 'conditions' } };
 
 const esc = s => s.replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
 function inline(raw){
@@ -49,8 +53,12 @@ export function mdToHtml(md){
 /* passages à compléter : [texte] qui n'est pas un lien */
 export const placeholders = md => [...md.replace(/\\([[\]])/g, '$1').matchAll(/\[([^\]\n]+)\](?!\()/g)].map(m => m[0]);
 
-export const pageHtml = (title, body) => `<!doctype html>
-<html lang="fr">
+const CHROME = {
+  fr: { play: '▶ Jouer', links: [['/confidentialite', 'Confidentialité'], ['/mentions-legales', 'Mentions légales'], ['/conditions', 'Conditions'], ['/suppression-compte', 'Supprimer son compte']] },
+  en: { play: '▶ Play', links: [['/privacy', 'Privacy'], ['/legal-notice', 'Legal notice'], ['/terms', 'Terms'], ['/delete-account', 'Delete your account']] },
+};
+export const pageHtml = (title, body, lang = 'fr') => `<!doctype html>
+<html lang="${lang}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -62,13 +70,13 @@ export const pageHtml = (title, body) => `<!doctype html>
 <header class="top">
   <a class="brand" href="index.html">⛏ Deep Mine Idle MMO</a>
   <span class="sub">${esc(title)}</span>
-  <a class="play" href="index.html">▶ Jouer</a>
+  <a class="play" href="index.html">${CHROME[lang].play}</a>
 </header>
 <main>
 <section>
 ${body}
 </section>
-<footer class="foot"><a href="/confidentialite">Confidentialité</a> · <a href="/mentions-legales">Mentions légales</a> · <a href="/conditions">Conditions</a> · <a href="/suppression-compte">Supprimer son compte</a></footer>
+<footer class="foot">${CHROME[lang].links.map(([u, t]) => `<a href="${u}">${t}</a>`).join(' · ')}</footer>
 </main>
 </body>
 </html>
@@ -84,6 +92,12 @@ if(process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.met
     fs.writeFileSync(path.join(root, page + '.html'), pageHtml(title, mdToHtml(md)));
     const open = placeholders(md);
     console.log(`${page}.html écrit. Passages entre crochets : ${open.length ? open.join(' ; ') : 'aucun'}`);
+  }
+  for(const [page, { title }] of Object.entries(LEGAL_PAGES_EN)){
+    const src = path.join(root, 'legal', 'en', page + '.md');
+    if(!fs.existsSync(src)){ console.error(`Manque legal/en/${page}.md`); missing++; continue; }
+    fs.writeFileSync(path.join(root, page + '.html'), pageHtml(title, mdToHtml(fs.readFileSync(src, 'utf8')), 'en'));
+    console.log(`${page}.html écrit (anglais).`);
   }
   process.exit(missing ? 1 : 0);
 }
