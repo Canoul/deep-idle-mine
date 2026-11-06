@@ -3,6 +3,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { XP, IDS } from '../src/config.js';
+
+/* les chiffres de ces tests sont écrits pour la courbe ×1,5 : on la fixe (06/11/2026 : la config est passée à ×1,4) */
+XP.curve = { first:1000, factor:1.5 };
 import { xpToNext, levelOf, xpForLevel, xpShare, createProgress, sanitizeProgress, creditXp, specLevelOf, specXpOf, specLevels } from '../src/meta/level.js';
 import { mineBlock, killMob } from '../src/sim/actions.js';
 import { newSession, endSession, leaveSession } from '../src/sim/session.js';

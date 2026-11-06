@@ -1,7 +1,10 @@
 /* Guilde : création, invitations, demandes, départs, XP, redémarrage (server/guild/service.js). */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { GUILD } from '../src/config.js';
+import { GUILD, XP } from '../src/config.js';
+
+/* les chiffres de ces tests sont écrits pour la courbe ×1,5 : on la fixe (06/11/2026 : la config est passée à ×1,4) */
+XP.curve = { first:1000, factor:1.5 };
 import { createMemoryGameStore } from '../server/game/store.js';
 import { createGuildService } from '../server/guild/service.js';
 import { createSocialService } from '../server/social/service.js';
