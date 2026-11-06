@@ -41,7 +41,8 @@ test('dictionnaires : textes non vides, mêmes valeurs {x} dans les deux langues
     for(const [fr, tr] of Object.entries(dict)){
       assert.ok(typeof tr === 'string' && tr.trim(), `${lang}/${kind} : « ${fr} » sans traduction`);
       const keys = s => [...s.matchAll(/\{(\w+)\}/g)].map(m => m[1]).sort().join(',');
-      assert.equal(keys(tr), keys(fr), `${lang}/${kind} : « ${fr} » n'a pas les mêmes {valeurs}`);
+      const inFr = new Set(keys(fr).split(','));   // l'anglais peut laisser tomber une variable d'accord (« recyclé{b} »), jamais en inventer
+      for(const k of keys(tr).split(',').filter(Boolean)) assert.ok(inFr.has(k), `${lang}/${kind} : « ${fr} » : {${k}} inconnue`);
     }
   }
 });

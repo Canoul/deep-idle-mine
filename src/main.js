@@ -103,6 +103,10 @@ let appLayer = null;   // couche appli, chargée seulement dans l'appli (après 
 const $ = id => document.getElementById(id);
 const ui = { speed:1, paused:false, follow:null, inv:{ slots:[] }, fresh:new Set(), tab:'lobby' };
 import { getLang, t } from './i18n/index.js';
+import { installPageTranslator } from './i18n/dom.js';
+/* traduction de la page (06/11/2026) : rien en français ; en anglais, chaque texte affiché passe par src/i18n/en/ui.js.
+   Tant que l'anglais est caché (I18N.open), les textes encore en français sont relevés dans window.__i18nMissing */
+installPageTranslator(document, { dev: !I18N.open });
 const acct = { account:null, offline:false };          // compte connecté (offline : pas de serveur de jeu)
 let info = { dev:false, speed:GAME.speed, speeds:[GAME.speed], maxPlayers:GAME.maxPlayers };
 let rec = null;            // session en cours (enregistrement du serveur)

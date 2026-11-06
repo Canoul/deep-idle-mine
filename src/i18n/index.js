@@ -17,6 +17,7 @@ let cur = I18N.base;
 const listeners = new Set();
 
 export const LANGS = I18N.langs;
+export const I18N_BASE = I18N.base;
 export const isLang = l => typeof l === 'string' && LANGS.includes(l);
 export const getLang = () => cur;
 /* change la langue (inconnue : français) ; prévient les écrans abonnés (onLang) */
