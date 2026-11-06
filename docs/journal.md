@@ -9,6 +9,10 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 06/11/2026 — Jules — Chat : le champ de message ne sort plus de la boîte
+- **Pour le joueur** : quand le chat passait au-dessus de la bulle de gauche de la barre d'action avec une petite hauteur, la boîte ne gardait que ses onglets et le champ « Message… » débordait dessous. Maintenant la boîte garde la hauteur choisie au-dessus de la bulle, et ne devient jamais plus petite que ses onglets + son champ (c'est la liste des messages qui rétrécit). En tirant le bord du haut, il suit la souris.
+- **État** : ✅ en ligne le 06/11
+
 ## JJ/MM/AAAA — Prénom — Titre court
 - **Pour le joueur** : ce qui change en jeu (ou « rien, c'est de l'organisation »).
 - **Décisions** : choix de design ou d'équilibrage tranchés (s'il y en a).
