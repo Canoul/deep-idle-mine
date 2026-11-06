@@ -1383,3 +1383,8 @@ body.app #spvTrees .skTxt{grid-column:2;display:-webkit-box;-webkit-line-clamp:2
 body.app #spvPick{align-items:flex-end;justify-content:stretch;padding:0}
 body.app #spvPick .box{width:100%;max-width:none;max-height:85%}
 body.app:has(#spvPick:not([hidden])) .guide{display:none}
+
+/* guide déplaçable (06/11/2026) : poignée ⠿, glisser l'en-tête (src/ui/guide.js place) */
+.guide .gHead{touch-action:none;cursor:grab}
+.guide .gGrip{color:var(--mut);flex:none}
+.guide.gDrag{opacity:.9} .guide.gDrag .gHead{cursor:grabbing}
