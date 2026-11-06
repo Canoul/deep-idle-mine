@@ -7895,3 +7895,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - Cause : `activeSessionInfo` (server/game/service.js) renvoyait `max: GAME.maxPlayers` (3) pour toute session non-raid, MI comprise ; la MI accueille tous les inscrits (jusqu'à `MI` 20 par mine), d'où « (5/3) » dans `statusText` (src/ui/social.js).
 - Correction : `max: null` pour `rec.mode === 'mi'` ; `statusText` affiche « (n joueur(s)) » quand `size` est là sans `max`. Liste Online et guilde passent par le même `statusOf`.
 - Tests : tests/social.test.js (+2 cas statusText MI), tests/instant-server.test.js (activeSessionInfo d'une MI : size 2, max null) ✅.
+
+## 06/11/2026 — Guide déplaçable (Geoffrey)
+- src/ui/guide.js : glisser l'en-tête `.gHead` (seuil 6 px ; pointermove / pointerup écoutés sur la fenêtre, sinon le pointeur sort de l'en-tête et on perd le mouvement), `place(pos)` (left/top, bornés à l'écran, aussi au redimensionnement), `saved.pos` dans `deepIdleMine.guide` ; un glisser n'ouvre / ferme pas (`moved` saute le clic). CSS : `touch-action:none` sur l'en-tête, poignée `.gGrip`.
+- **Vérifié** : guide (9) ✅ ; navigateur : glisser déplace, ne replie pas ; toucher replie ; position gardée après rechargement ✅. Pas testé au doigt sur un vrai téléphone.

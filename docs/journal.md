@@ -16,6 +16,12 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 06/11/2026 — Geoffrey — Guide « Premiers pas » déplaçable
+- **Pour le joueur** : le guide se déplace en faisant glisser son en-tête (poignée ⠿), sur le site et dans l'appli ; un
+  simple toucher le replie / déplie toujours. La position est retenue (par compte, dans ce navigateur) et ramenée dans
+  l'écran si la fenêtre rétrécit.
+- **État** : ✅ en ligne le 06/11
+
 ## 06/11/2026 — Jules — Social : « Mine instantanée (5/3) » corrigé
 - **Pour le joueur** : dans la liste d'amis, un ami en Mine instantanée affichait « (5/3) » alors que la MI n'a pas de limite à 3 joueurs. Il affiche maintenant « Mine instantanée (5 joueurs) ». Les autres sessions gardent « (2/3) ».
 - **État** : ✅ en ligne le 06/11

@@ -80,13 +80,45 @@ export function setupGuide(el, { facts, go, highlight }){
     highlight(saved.hidden || view.all ? null : view.current.tab);
     if(!saved.hidden) el.innerHTML = html(view, saved.open);
     el.dataset.account = f.account;
+    place(saved.pos);
   }
+
+  /* déplaçable (06/11/2026, Geoffrey) : on fait glisser l'en-tête (un simple toucher le replie / déplie toujours) ;
+     position retenue par compte (saved.pos : coin haut gauche, px), toujours ramenée dans l'écran */
+  function place(pos){
+    if(!pos || el.hidden){ el.style.left = el.style.top = el.style.right = el.style.bottom = ''; return; }
+    const r = el.getBoundingClientRect(), W = innerWidth, H = innerHeight, m = 4;
+    const x = Math.max(m, Math.min(W - r.width - m, pos.x)), y = Math.max(m, Math.min(H - Math.min(r.height, 48) - m, pos.y));
+    Object.assign(el.style, { left: x + 'px', top: y + 'px', right: 'auto', bottom: 'auto' });
+  }
+  let drag = null, moved = false;
+  el.addEventListener('pointerdown', e => {
+    const h = e.target.closest('.gHead'); if(!h || e.button > 0) return;
+    const r = el.getBoundingClientRect();
+    drag = { id: e.pointerId, dx: e.clientX - r.left, dy: e.clientY - r.top, x0: e.clientX, y0: e.clientY }; moved = false;
+  });
+  addEventListener('pointermove', e => {   // sur la fenêtre : le doigt sort vite de l'en-tête
+    if(!drag || e.pointerId !== drag.id) return;
+    if(!moved && Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0) < 6) return;
+    if(!moved){ moved = true; el.classList.add('gDrag'); }
+    e.preventDefault();
+    place({ x: e.clientX - drag.dx, y: e.clientY - drag.dy });
+  });
+  const drop = e => {
+    if(!drag || e.pointerId !== drag.id) return;
+    drag = null; el.classList.remove('gDrag');
+    if(!moved) return;
+    const r = el.getBoundingClientRect(), id = el.dataset.account;
+    if(id && all[id]){ all[id] = { ...all[id], pos: { x: Math.round(r.left), y: Math.round(r.top) } }; store(all); }
+  };
+  addEventListener('pointerup', drop); addEventListener('pointercancel', drop);
+  addEventListener('resize', () => place(all[el.dataset.account]?.pos));
 
   function html(view, open){
     /* gLbl / gCur : cachés dans l'appli quand le guide est replié, il ne reste que « 📜 5/7 » (src/app/app.css) */
     const head = view.all ? '🏆<span class="gLbl"> Premiers pas : terminé !</span>'
       : `📜<span class="gLbl"> Premiers pas</span> <b>${view.count}/${view.total}</b><span class="gCur"> · ${esc(view.current.title)}</span>`;
-    if(!open) return `<button class="gHead" data-g="toggle" aria-expanded="false">${head}<span class="gArrow">▴</span></button>`;
+    if(!open) return `<button class="gHead" data-g="toggle" aria-expanded="false" title="Toucher : déplier · glisser : déplacer"><span class="gGrip">⠿</span>${head}<span class="gArrow">▴</span></button>`;
     const intro = view.count === 0
       ? `<p class="gIntro">Bienvenue dans Deep Mine Idle ! Ton mineur creuse tout seul : toi, tu le prépares entre les sessions avec ce qu'il rapporte. Suis ces étapes pour découvrir la boucle du jeu.</p>` : '';
     const list = view.steps.map(s => `<li class="${s.done ? 'ok' : s === view.current ? 'cur' : ''}">`+
@@ -96,7 +128,7 @@ export function setupGuide(el, { facts, go, highlight }){
     const end = view.all
       ? `<p class="gIntro">Tu connais la boucle : miner → fondre → crafter → s'équiper → redescendre plus profond. Les « ? » de chaque onglet expliquent le reste.</p><button class="on" data-g="close">Fermer le guide</button>`
       : `<button class="small gHide" data-g="close">Masquer le guide</button>`;
-    return `<button class="gHead" data-g="toggle" aria-expanded="true">${head}<span class="gArrow">▾</span></button>`+
+    return `<button class="gHead" data-g="toggle" aria-expanded="true" title="Toucher : replier · glisser : déplacer"><span class="gGrip">⠿</span>${head}<span class="gArrow">▾</span></button>`+
            `<div class="gBody">${intro}<ol>${list}</ol>${end}</div>`;
   }
 
@@ -106,6 +138,7 @@ export function setupGuide(el, { facts, go, highlight }){
   }
 
   el.onclick = e => {
+    if(moved){ moved = false; return; }                             // fin d'un glisser : pas un toucher
     const b = e.target.closest('[data-g]'); if(!b) return;
     if(b.dataset.g === 'toggle') setSaved({ open: !all[el.dataset.account]?.open });
     else if(b.dataset.g === 'go'){ go(b.dataset.tab); refresh(); }
