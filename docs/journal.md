@@ -20,7 +20,7 @@ Modèle d'entrée :
 - **Pour le joueur** : il faut moins d'XP pour monter de niveau : ×1,4 à chaque niveau au lieu de ×1,5 (1000, 1400,
   1960…). Le niveau se calcule depuis l'XP totale : chacun remonte tout de suite au niveau de son XP, avec les points
   de skill en plus (ex. 718 919 XP : niveau 15 → 17). Les guildes suivent la même courbe ; la spécialisation non (×1,5).
-- **État** : ✅ en ligne le 06/11
+- **État** : 🧪 sur la branche `geoffrey/courbe-xp` (pas en ligne)
 
 ## 06/11/2026 — Geoffrey — Le jeu en anglais, étape 5 : le wiki et les pages légales
 - **Le wiki existe en anglais** : il prend la langue choisie dans le jeu (même appareil). Tout y passe : textes écrits à la main, tableaux, mobs, donjon, tours, sorts, skills… Les chiffres restent ceux du jeu (ils suivent la config), écrits à l'anglaise (1.5, 2,000).
