@@ -12,6 +12,7 @@ import { helpLine } from './help.js';
 import { icon } from './craft.js';
 import { rcls, rname, pname, runeMark, rframe } from './rarity.js';
 import { ask } from './dialog.js';
+import { tn } from '../i18n/index.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -156,7 +157,7 @@ export function setupUpgrade({ onOp, worn = () => ({}) }){
     const why = enchantWhy(t, r);
     const can = t && r && !why && !busy;
     const sel = c => pick === c ? ' sel' : '';
-    const label = k => STUFF.statLabels[k] ?? k, unit = k => STUFF.statUnits?.[k] ?? '';
+    const label = k => tn(STUFF.statLabels[k] ?? k), unit = k => STUFF.statUnits?.[k] ?? '';
     const preview = t && r && !why ? r.lines.map(l => l.stat === 'discoverMax' ? `${label(l.stat)} +1`
       : `${label(l.stat)} +${String(roundStat(l.stat, runeLineValue(t.item, l, runeFactor(r)) * plusMult(t.plus | 0))).replace('.', ',')}${unit(l.stat)}`).join(' · ') : '';
     const list = pick === 'target' ? pieces() : runes();

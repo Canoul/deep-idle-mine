@@ -6,6 +6,8 @@ import { followedMiner } from '../render/camera.js';
 import { pxi } from './pxicons.js';
 import { treeOf } from './spells.js';
 import { teamEnergyHTML } from './energy-tag.js';
+import { tn } from '../i18n/index.js';
+import { pn } from '../i18n/index.js';   // pseudos et textes des joueurs : jamais traduits (06/11)
 
 const $ = id => document.getElementById(id);
 export const fmt = s => { s=Math.floor(s); return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); };
@@ -38,13 +40,13 @@ export function updateHUD(G, ui){
   team.parentElement.hidden = G.miners.length<2;
   if(G.miners.length>1) setHtml(team, G.miners.map(t=>`
     <div class="mrow${t===m?' on':''}" data-id="${t.id}" title="Suivre ${esc(t.name)}">
-      <span class="mname">${esc(t.name)}</span>
+      <span class="mname">${pn(t.name)}</span>
       <span class="mst">${esc(t.status)}</span>
       <span class="mmeta">prof ${t.y} · O₂ ${Math.round(t.ox)} · pods ${Math.round(t.load)}${teamEnergyHTML(t.account) ? ' · ' + teamEnergyHTML(t.account) : ''}</span>
     </div>`).join(''));
 
   // mineur suivi
-  $('minerTitle').innerHTML = G.miners.length>1 ? sw(m.color)+esc(m.name)+' (suivi)' : 'Mineur';
+  $('minerTitle').innerHTML = G.miners.length>1 ? sw(m.color)+pn(m.name)+' (suivi)' : 'Mineur';
   $('mStatus').textContent=m.status;
   $('mDepth').textContent=depthText(m);
   const oxMax=m.carac?.oxygenMax ?? STATS.oxygenMax, pods=m.carac?.pods ?? STATS.pods;   // avec le stuff du mineur
@@ -64,7 +66,7 @@ export function updateHUD(G, ui){
   const gob=G.goblinChest && Object.keys(G.goblinChest).length
     ? `<div class="row gobRow"><span>👑 Gobelins asservis${G.thralls?.length ? ` (${G.thralls.length} au travail)` : ''}</span><span>${chips(G.goblinChest)}</span></div>` : '';
   $('chestByBox').innerHTML = (G.miners.length>1
-    ? G.miners.map(t=>`<div class="row"><span>${sw(t.color)}${esc(t.name)}</span><span>${chips(G.chestBy[t.id])}</span></div>`).join('')
+    ? G.miners.map(t=>`<div class="row"><span>${sw(t.color)}${pn(t.name)}</span><span>${chips(G.chestBy[t.id])}</span></div>`).join('')
     : '') + gob;
   // XP de la session : pot commun, partagé à parts égales à la fin
   { const xp=Math.floor(G.stats.xp||0), n=G.miners.length;   // prison : demi-XP possible (PRISON.mobXpMul)
@@ -136,7 +138,7 @@ export function showEnd(rec, me, onBack, onInventory, levelUp=null){
     : `<p>Versé dans ton inventaire :</p><div>${chips(mine?.bag)}</div>`;
   const miners = s.miners || [];
   const by = miners.length>1
-    ? '<p>Contributions :</p>'+miners.map(t=>`<div class="row"><span>${sw(t.color)}${esc(t.name)}</span><span>${t.stats.trips} dépôts · ${t.stats.ore} minerais · ${t.stats.kills} mobs</span></div>`).join('')
+    ? '<p>Contributions :</p>'+miners.map(t=>`<div class="row"><span>${sw(t.color)}${pn(t.name)}</span><span>${t.stats.trips} dépôts · ${t.stats.ore} minerais · ${t.stats.kills} mobs</span></div>`).join('')
     : '';
   const xpRow = mine && s.xp!=null
     ? `<div class="row"><span>XP gagnée</span><b>${mine.left ? 0 : '+'+mine.xp}</b></div>`+
@@ -210,7 +212,7 @@ export function spellBarHtml(m, t){
   return m.spells.map(id => {
     const s = SPELLS.list.find(x => x.id === id); if(!s) return '';
     const left = Math.ceil((m.spellCd?.[id] ?? 0) - t - 1e-9);
-    return `<div class="spB tr-${treeOf(s)}${left > 0 ? ' cd' : ''}" title="${esc(s.name)}${left > 0 ? ` : prêt dans ${left} s` : ' : prêt'}">`+
+    return `<div class="spB tr-${treeOf(s)}${left > 0 ? ' cd' : ''}" title="${esc(tn(s.name))}${left > 0 ? ` : prêt dans ${left} s` : ' : prêt'}">`+
            `<span class="spIcon">${pxi(s.px) || s.icon}</span>${left > 0 ? `<b class="spLeft">${left}</b>` : ''}</div>`;
   }).join('');
 }

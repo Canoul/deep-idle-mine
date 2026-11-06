@@ -1,7 +1,8 @@
 /* Signaler et bloquer un joueur (01/11/2026, Geoffrey, exigence des stores). Fenêtres par src/ui/dialog.js ; ici on ne fait que
    demander : le serveur vérifie tout et copie lui-même le message signalé (server/moderation/reports.js).
    h : { report(body), block(player) : promesses } ; player = { id, name } */
-import { MODERATION, RULES } from '../config.js';
+import { MODERATION } from '../config.js';
+import { legalUrl } from './account.js';
 import { ask, askForm, askMenu, tell } from './dialog.js';
 
 /* textes et réglages des fenêtres (logique pure, testée) */
@@ -9,7 +10,7 @@ export const reportForm = name => ({ text: `Signaler ${name}`, ok: 'Envoyer',
   choices: MODERATION.reasons.map(r => ({ id: r.id, label: r.label })), noteLabel: 'Commentaire (facultatif)', noteMax: MODERATION.reportCommentMax });
 export const reportThanks = r => r?.already ? 'Tu as déjà signalé ce message.' : 'Merci, ton signalement a été envoyé.';
 export const blockText = name => `Bloquer ${name} ?\nSes messages et ses invitations ne t'arriveront plus, et il sort de tes amis. Ce joueur n'est pas prévenu. Tu peux le débloquer dans Social.`;
-export const rulesLinks = () => [{ href: RULES.terms, label: "Conditions d'utilisation" }, { href: RULES.privacy, label: 'Politique de confidentialité' }];
+export const rulesLinks = () => [{ href: legalUrl('terms'), label: "Conditions d'utilisation" }, { href: legalUrl('privacy'), label: 'Politique de confidentialité' }];
 
 export function setupModeration(h){
   async function report(name, body){

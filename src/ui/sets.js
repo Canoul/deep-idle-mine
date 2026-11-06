@@ -5,6 +5,7 @@
 import { ask, askText } from './dialog.js';
 import { equippedSet, setActivity } from '../meta/sets.js';
 import { SETS } from '../config.js';
+import { pn } from '../i18n/index.js';   // pseudos et textes des joueurs : jamais traduits (06/11)
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const HOSTS = ['setsStuff', 'setsSkills', 'setsSpells', 'setsLobby'];
 
@@ -12,8 +13,8 @@ const HOSTS = ['setsStuff', 'setsSkills', 'setsSpells', 'setsLobby'];
 /* current : le set équipé (equippedSet), null = aucun ; une ligne en haut le dit (29/10/2026), et sa ligne est marquée */
 export function setsHtml({ list = [], max = 20 }, { locked = false, busy = false, msg = '', current = null } = {}){
   const off = busy ? ' disabled' : '';
-  const head = list.length ? `<p class="setCur small">Set équipé : ${current ? `<b>${esc(current.name)}</b>` : '<span class="mut">aucun</span>'}</p>` : '';
-  const rows = list.map(s => `<div class="setRow${s.id === current?.id ? ' on' : ''}" data-set="${s.id}"><b title="${esc(s.name)}">${s.id === current?.id ? '✔ ' : ''}${esc(s.name)}</b>`+
+  const head = list.length ? `<p class="setCur small">Set équipé : ${current ? `<b>${pn(current.name)}</b>` : '<span class="mut">aucun</span>'}</p>` : '';
+  const rows = list.map(s => `<div class="setRow${s.id === current?.id ? ' on' : ''}" data-set="${s.id}"><b title="${esc(s.name)}">${s.id === current?.id ? '✔ ' : ''}${pn(s.name)}</b>`+
     `<button data-act="equip"${off} title="${locked ? 'Équiper ce set pour la prochaine session (la session en cours ne change pas)' : 'Équiper le stuff, les skills et les sorts de ce set'}">Équiper</button>`+
     `<button data-act="save"${off} title="Remplacer ce set par ton équipement actuel">Enregistrer</button>`+
     `<button data-act="rename"${off} title="Renommer">✎</button>`+
@@ -41,13 +42,13 @@ export function activityLineHtml({ list = [], byActivity = {} }, mode, { busy = 
 /* last (05/11, Geoffrey : « galère pour enregistrer les modifs ») : le dernier set équipé ou enregistré ; si l'équipement
    actuel ne correspond plus à aucun set, un bouton l'y enregistre en un toucher (sans set : il en crée un) */
 export const setsBarHtml = (current, last = null, busy = false) =>
-  `<div class="setBarRow"><button class="setBar" data-act="sheet"><span>Set : ${current ? `<b>${esc(current.name)}</b>` : last ? `<b>${esc(last.name)}</b> <small class="mut">(modifié)</small>` : '<span class="mut">aucun</span>'}</span><span>▾</span></button>`+
+  `<div class="setBarRow"><button class="setBar" data-act="sheet"><span>Set : ${current ? `<b>${pn(current.name)}</b>` : last ? `<b>${pn(last.name)}</b> <small class="mut">(modifié)</small>` : '<span class="mut">aucun</span>'}</span><span>▾</span></button>`+
   (current ? '' : `<button class="setQuick on" data-act="quickSave"${busy ? ' disabled' : ''} title="${last ? `Enregistrer ton équipement actuel dans « ${esc(last.name)} »` : 'Enregistrer ton équipement actuel dans un nouveau set'}">💾 Enregistrer</button>`)+`</div>`;
 /* more : l'id du set dont « ⋯ » est déplié (Enregistrer, Renommer, Supprimer) */
 export function setsSheetHtml({ list = [], max = 20 }, { current = null, locked = false, busy = false, msg = '', more = null } = {}){
   const off = busy ? ' disabled' : '';
   const rows = list.map(s => { const on = s.id === current?.id; return `<div class="setRow${on ? ' on' : ''}" data-set="${s.id}">`+
-    `<b title="${esc(s.name)}">${esc(s.name)}${on ? '<small>✔ équipé</small>' : ''}</b>`+
+    `<b title="${esc(s.name)}">${pn(s.name)}${on ? '<small>✔ équipé</small>' : ''}</b>`+
     `<button class="${on ? '' : 'on'}" data-act="equip"${on || busy ? ' disabled' : ''}>Équiper</button><button class="setMore" data-act="more"${off} aria-label="Plus d'actions">⋯</button>`+
     (more === s.id ? `<div class="setActs"><button data-act="save"${off}>Enregistrer</button><button data-act="rename"${off}>Renommer</button><button data-act="delete"${off}>Supprimer</button></div>` : '')+
     `</div>`; }).join('');

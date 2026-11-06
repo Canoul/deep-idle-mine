@@ -12,6 +12,7 @@ import { energyHTML } from './energy-tag.js';
 import { renderSlots, statsHTML } from './stuff.js';
 import { renderLevel } from './level.js';
 import { ask } from './dialog.js';
+import { pn } from '../i18n/index.js';   // pseudos et textes des joueurs : jamais traduits (06/11)
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -56,7 +57,7 @@ export function friendRowAppHtml(f){
   const main = f.canJoin ? `<button class="on" data-join="${id}">${pxi('arrow')}Rejoindre</button>`
     : `<button data-invite="${id}"${f.canInvite ? '' : ` disabled title="${esc(why || 'Indisponible')}"`}>${pxi('group')}Inviter</button>`;
   return `<div class="frow fApp"><span class="fdot ${statusDot(f)}"></span>`+
-    `<span class="fname"><b>${esc(f.name)}</b><small class="mut">${statusLine(f)}</small></span>`+
+    `<span class="fname"><b>${pn(f.name)}</b><small class="mut">${statusLine(f)}</small></span>`+
     `<span class="fbtns">${main}<button class="x" data-fsheet="${id}" aria-label="Plus d'actions pour ${esc(f.name)}">⋮</button></span></div>`;
 }
 /* fiche d'un ami dans l'appli : toutes ses actions, « Retirer » en rouge, en bas */
@@ -83,7 +84,7 @@ export function setupSocial(h){
   function friendRow(f){
     const why = whyOf(f);
     return `<div class="frow"><span class="fdot ${statusDot(f)}"></span>`+
-      `<span class="fname"><b>${esc(f.name)}</b><small class="mut">${statusLine(f)}</small></span>`+
+      `<span class="fname"><b>${pn(f.name)}</b><small class="mut">${statusLine(f)}</small></span>`+
       `<span class="fbtns"><button data-profile="${esc(f.id)}" title="Voir son équipement, ses stats et son niveau">${pxi('helmet')}Stuff</button>`+
       `<button data-invite="${esc(f.id)}"${f.canInvite ? '' : ` disabled title="${esc(why || 'Indisponible')}"`}>${pxi('group')}Inviter</button>`+
       `<button data-join="${esc(f.id)}"${f.canJoin ? '' : ` disabled title="${esc(why || (f.status === 'lobby' ? 'Groupe complet' : 'Indisponible'))}"`}>${pxi('arrow')}Rejoindre</button>`+
@@ -97,7 +98,7 @@ export function setupSocial(h){
     const btn = p.me || p.friend ? '' : sent ? '<button disabled title="Demande déjà envoyée">Demande envoyée</button>'
       : `<button data-add="${esc(p.id)}" title="Envoyer une demande d'ami">${pxi('person')}Ajouter</button>`;
     return `<div class="frow"><span class="fdot ${statusDot(p)}"></span>`+
-      `<span class="fname"><b>${esc(p.name)}</b><small class="mut">${energyHTML(p.energy)}${esc(statusText(p))}${tag}</small></span>`+
+      `<span class="fname"><b>${pn(p.name)}</b><small class="mut">${energyHTML(p.energy)}${esc(statusText(p))}${tag}</small></span>`+
       `<span class="fbtns">${btn}${p.me ? '' : modBtn(p)}</span></div>`;
   }
   function renderOnline(){
@@ -135,20 +136,20 @@ export function setupSocial(h){
   function renderBlocked(){
     const list = st?.blocked ?? [];
     $('socialBlockedCard').hidden = !list.length;
-    $('socialBlocked').innerHTML = list.map(p => `<div class="frow"><span class="fname"><b>${esc(p.name)}</b></span>`+
+    $('socialBlocked').innerHTML = list.map(p => `<div class="frow"><span class="fname"><b>${pn(p.name)}</b></span>`+
       `<span class="fbtns"><button data-unblock="${esc(p.id)}">Débloquer</button></span></div>`).join('');
   }
   function render(){
     renderBlocked();
     if(!st) return;
     $('socialReq').innerHTML = st.incoming.length
-      ? st.incoming.map(r => `<div class="frow"><span class="fname"><b>${esc(r.name)}</b><small class="mut">veut devenir ton ami</small></span>`+
+      ? st.incoming.map(r => `<div class="frow"><span class="fname"><b>${pn(r.name)}</b><small class="mut">veut devenir ton ami</small></span>`+
           `<span class="fbtns"><button class="on" data-accept="${esc(r.id)}">Accepter</button><button data-refuse="${esc(r.id)}">Refuser</button></span></div>`).join('')
       : '';
     $('socialReqCard').hidden = !st.incoming.length;
     $('socialFriends').innerHTML = st.friends.length ? st.friends.map(inApp() ? friendRowAppHtml : friendRow).join('')
       : '<p class="mut small">Pas encore d\'amis. Ajoute-en un avec son pseudo ci-dessus.</p>';
-    $('socialOut').innerHTML = st.outgoing.map(r => `<div class="frow"><span class="fname"><b>${esc(r.name)}</b><small class="mut">demande envoyée · en attente</small></span>`+
+    $('socialOut').innerHTML = st.outgoing.map(r => `<div class="frow"><span class="fname"><b>${pn(r.name)}</b><small class="mut">demande envoyée · en attente</small></span>`+
       `<span class="fbtns"><button data-remove="${esc(r.id)}">Annuler</button></span></div>`).join('');
     $('socialOutCard').hidden = !st.outgoing.length;
     renderHead(); renderOnline();          // « Demande envoyée » dans la liste Online
@@ -210,7 +211,7 @@ export function setupSocial(h){
   /* fiche d'un ami : p = { name, stuff, progress, skills } (server/social/service.js) */
   function showProfile(p){
     const box = $('fview').querySelector('.box'), worn = p.stuff || {};
-    box.innerHTML = `<h3>${pxi('helmet')}Stuff de ${esc(p.name)}<button id="fviewClose">Fermer</button></h3>`+
+    box.innerHTML = `<h3>${pxi('helmet')}Stuff de ${pn(p.name)}<button id="fviewClose">Fermer</button></h3>`+
       `<p class="mut small">${esc(treeText(p.skills) ? 'Spécialisation : ' + treeText(p.skills) : 'Pas encore de spécialisation')}</p>`+
       `<div class="fviewBody"><div class="stuffGrid"></div>`+
       `<div class="card stuffStatsCard"><h2>Stats du mineur</h2><div class="stuffLevel"></div><div class="fstats"></div></div></div>`;

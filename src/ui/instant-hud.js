@@ -3,6 +3,7 @@
 import { INSTANT_MINE as MI } from '../config.js';
 import { rname } from './rarity.js';
 import { fmt } from './hud.js';
+import { pn } from '../i18n/index.js';   // pseudos et textes des joueurs : jamais traduits (06/11)
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
@@ -28,7 +29,7 @@ export function updateInstantHUD(G, me, left, focus = null){
       `<div style="margin-top:6px">${chips(m.inv)}</div>`
     : '<p class="mut">Tu as quitté la mine.</p>');
   setHtml($('miRank'), instantRanking(G.miners).map((t, i) =>
-    `<div class="row pick${t.account === me ? ' me' : ''}${t.id === focus && t.account !== me ? ' focus' : ''}" data-id="${t.id}" title="Voir ses états"><span>${i + 1}. ${esc(t.name)}${t.account === me ? ' (toi)' : ''}</span>`+
+    `<div class="row pick${t.account === me ? ' me' : ''}${t.id === focus && t.account !== me ? ' focus' : ''}" data-id="${t.id}" title="Voir ses états"><span>${i + 1}. ${pn(t.name)}${t.account === me ? ' (toi)' : ''}</span>`+
     `<span>${t.stats.mined} blocs${t.stats.feathers ? ` · ${FEATHER} ${t.stats.feathers}` : ''}</span></div>`).join(''));
   const heaps = G.heapsLeft ?? G.feathers.size;   // tous les tas restants (le navigateur ne reçoit que les tas découverts)
   $('miFeathersLeft').textContent = `${heaps} tas de plumes restant${heaps > 1 ? 's' : ''} dans la mine`;

@@ -13,6 +13,7 @@ import { withSkillStats, slotMastery, SKILL_STATS, SKILL_ADD, groupAuras } from 
 import { withGlyphStats } from './glyphs.js';
 import { pieceBonus, pieceName, sanitizePiece, rolledSpec, rolledValue, lineValue, runeLineValue, runeLineFactor, plusMult, roundStat, runeFactor, isRing } from './piece.js';
 import { pieceGS } from './gearscore.js';
+import { tn } from '../i18n/index.js';
 
 export const SLOT_IDS = STUFF.slots.map(s => s.id);
 /* genre de case où va un objet ('casque', 'anneau'…), null si ce n'est pas une pièce d'équipement */
@@ -69,7 +70,7 @@ export function statLines(entry){
   if(ITEMS[p.item]?.cat === 'rune') return runeLines(p);
   if(isRing(p.item)) return ringLines(p.item, p.plus | 0);
   const b = pieceBonus({ item: p.item, plus: p.plus }), m = plusMult(p.plus | 0);
-  const label = k => STUFF.statLabels[k] ?? k;
+  const label = k => tn(STUFF.statLabels[k] ?? k);
   return [
     ...Object.entries(b.set).map(([k, v]) => `${label(k)} ${statNum(k, v)}${unitOf(k)}`),
     ...Object.entries(b.stats).map(([k, v]) => `${label(k)} ${v < 0 ? '−' + statNum(k, -v) : '+' + statNum(k, v)}${unitOf(k)}`),
@@ -83,7 +84,7 @@ export function statLines(entry){
 }
 /* une rune seule n'a pas de valeur : ses lignes valent un % de la valeur du tier de la pièce qu'elle enchantera */
 export function runeLines(p){
-  const label = k => STUFF.statLabels[k] ?? k;
+  const label = k => tn(STUFF.statLabels[k] ?? k);
   const f = runeFactor(p);
   return (Array.isArray(p?.lines) ? p.lines : []).map(l => l.stat === 'discoverMax' ? `${label(l.stat)} +1`
     : `${label(l.stat)} : ${num(Math.round(l.pct * runeLineFactor(l, f) * 100) / 100)} % du tier de la pièce`);
@@ -93,7 +94,7 @@ const ringVal = (v, plus) => r2(v + RINGS.upgrade * (plus | 0));
 /* effet de groupe d'un anneau (à son niveau) : ['Groupe · Vitesse (marche) +3 %', …] */
 export function ringLines(item, plus = 0){
   const d = RINGS.items[item]; if(!d) return [];
-  const label = k => STUFF.statLabels[k] ?? k;
+  const label = k => tn(STUFF.statLabels[k] ?? k);
   return [
     ...Object.entries(d.mult || {}).map(([k, v]) => `Groupe · ${label(k)} +${num(ringVal(v, plus))} %`),
     ...Object.entries(d.add || {}).map(([k, v]) => `Groupe · ${label(k)} +${num(ringVal(v, plus))}${unitOf(k)}`),
@@ -172,7 +173,7 @@ export function minerStats(worn, effects = {}){
   const full = withRings(Object.fromEntries(Object.keys(all).map(k => [k, all[k] + addOf(k)])), ringsOf(pieces));
   const glyphed = withGlyphStats(full, effects);
   const glyph = key => r2((glyphed[key] ?? 0) - (full[key] ?? 0));
-  return STUFF.shownStats.map(key => ({ key, label:STUFF.statLabels[key] ?? key, ...s[key],
+  return STUFF.shownStats.map(key => ({ key, label:tn(STUFF.statLabels[key] ?? key), ...s[key],
     mult:r2(multOf(key)), add:r2(addOf(key)), skill:r2(all[key] - withStuff[key] + addOf(key) + glyph(key)),
     ring:r2(after[key] - before[key]), total:r2(after[key] + glyph(key)) }));
 }

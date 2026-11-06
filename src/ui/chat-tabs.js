@@ -3,6 +3,7 @@
    h : { bar, panel, select, save(prefs), onChange() : les messages à montrer ont changé } */
 import { CHAT } from '../config.js';
 import { sanitizeChatPrefs, chatChannel, lobbyLabel, LOBBY_TAG } from '../shared/chat.js';
+import { pn } from '../i18n/index.js';   // pseudos et textes des joueurs : jamais traduits (06/11)
 
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
 const hhmm = at => new Date(at).toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
@@ -18,15 +19,16 @@ export function chatPrefix(m, me){
 }
 /* texte d'un message ; lien de lobby (31/10/2026) : à la place de LOBBY_TAG, sinon en tête */
 function chatBody(m){
-  const t = esc(m.text);
-  if(!m.lobby) return t;
-  const link = `<button type="button" class="chatLobby" data-lobby="${esc(m.id)}">[${esc(lobbyLabel(m.lobby))}]</button>`, i = t.indexOf(LOBBY_TAG);
-  return i < 0 ? `${link} ${t}` : t.slice(0, i) + link + t.slice(i + LOBBY_TAG.length);
+  const raw = String(m.text ?? '');   // message d'un joueur : jamais traduit (pn), le lien de lobby si (06/11)
+  if(!m.lobby) return pn(raw);
+  const link = `<button type="button" class="chatLobby" data-lobby="${esc(m.id)}">[${esc(lobbyLabel(m.lobby))}]</button>`, i = raw.indexOf(LOBBY_TAG);
+  return i < 0 ? `${link} ${pn(raw)}` : pn(raw.slice(0, i)) + link + pn(raw.slice(i + LOBBY_TAG.length));
 }
 /* une ligne du chat, dans la couleur de son canal */
 export function chatLine(m, me){
   if(m.system) return `<div class="chSystem"><time>${hhmm(m.at)}</time>${esc(m.text)}</div>`;   // message du jeu (Raffle, 31/10)
-  const ch =chatChannel(m.channel), start = esc(chatPrefix(m, me));
+  const ch =chatChannel(m.channel), who = ch.id === 'mp' && m.account === me ? m.toName ?? '?' : m.name, pre = esc(chatPrefix(m, me));
+  const start = pre.endsWith(esc(who)) ? pre.slice(0, pre.length - esc(who).length) + pn(who) : pre;   // pseudo jamais traduit (06/11)
   const shown = m.leader && ch.id === 'group' ? start.replace(LEADER_TAG, `<span class="chLead">${LEADER_TAG}</span>`) : start;
   /* message d'un autre joueur : son menu Signaler / Bloquer (01/11/2026, src/ui/moderate.js) */
   const more = m.account === me ? '' : `<button type="button" class="chatMore" data-msg="${esc(m.id)}" title="Signaler ou bloquer" aria-label="Signaler ou bloquer">⋮</button>`;
@@ -39,7 +41,7 @@ export function setupChatTabs({ bar, panel, select, save, onChange }){
   const changed = () => { clearTimeout(timer); timer = setTimeout(() => save(prefs), 500); render(); onChange(); };
 
   function render(){
-    bar.innerHTML = prefs.tabs.map((t, i) => `<button type="button" data-tab="${i}" class="${i === prefs.active ? 'on' : ''}">${esc(t.name)}</button>`+
+    bar.innerHTML = prefs.tabs.map((t, i) => `<button type="button" data-tab="${i}" class="${i === prefs.active ? 'on' : ''}">${(t.name === 'Tous' ? esc(t.name) : pn(t.name))}</button>`+
       (i === prefs.active ? `<button type="button" class="chatGear${open ? ' on' : ''}" data-gear title="Canaux de cet onglet">⚙</button>` : '')).join('')+
       (prefs.tabs.length < CHAT.tabsMax ? `<button type="button" class="chatPlus" data-plus title="Nouvel onglet">+</button>` : '');
     panel.hidden = !open;
