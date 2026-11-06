@@ -1771,6 +1771,13 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
 
 ---
 
+## 06/11/2026 — Set par activité : option « Aucun » et Mine géante (Geoffrey) ✅ en ligne le 06/11
+
+- Dans le Lobby, la liste « Set défini pour … » commence par **Aucun** (avec une majuscule, plus visible) : choisir Aucun = rien n'est équipé tout seul, ton équipement ne change pas au lancement.
+- La **Mine géante (5 joueurs)** a maintenant sa ligne « Set défini pour la Mine géante » : elle n'en avait pas.
+
+---
+
 ## 06/11/2026 — Geoffrey — Correctif : on ne pouvait pas rejoindre une Mine géante à 4 ou 5
 - **Pour le joueur** : le chef seul qui ouvrait la Mine géante n'avait pas encore de groupe ; le groupe naissait au premier qui
   rejoignait, avec 3 places, le temps que le navigateur du chef dise « Mine géante ». Le 4e joueur était refusé (« groupe complet »).

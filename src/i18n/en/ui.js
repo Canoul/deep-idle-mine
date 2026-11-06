@@ -946,7 +946,7 @@ export default {
   'Remplacer ce set par ton équipement actuel': 'Replace this set with your current equipment',
   'Aucun set : enregistre ton équipement actuel.': 'No set: save your current equipment.',
   'Session en cours : un set équipé maintenant compte dès la prochaine session.': 'Session in progress: a set equipped now counts from the next session.',
-  'Équipé tout seul quand tu lances (ou entres dans) cette activité': 'Equipped automatically when you launch (or enter) this activity',
+  'Équipé tout seul quand tu lances (ou entres dans) cette activité ; Aucun : ton équipement ne change pas': 'Equipped automatically when you launch (or enter) this activity; None: your gear stays as it is',
   'Set défini pour {a} :': 'Set defined for {a}:',
   'Plus d\'actions': 'More actions',
   '+ Nouveau set (ton équipement actuel)': '+ New set (your current equipment)',

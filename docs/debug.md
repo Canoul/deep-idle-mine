@@ -7841,3 +7841,9 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   rouge sans le correctif), party, party-forming, lobby : 84/84.
 
 - Mise en ligne (06/11, Geoffrey) : merge de main (areas 7 à 10, échelle, sets…), conflits journal / debug : les deux côtés gardés. Tests du sujet ✅ sauf `tests/wiki.test.js` « areas — seuil de déblocage » : ❌ **aussi rouge sur main** (arrivé avec les areas 7 à 10, sans rapport). Nouveaux noms sans anglais (à valider par Geoffrey) : Arkonite ore, Iridium ore, Débris fossilisé.
+
+## 06/11/2026 — Set par activité : « Aucun » + activité `geante`
+- Quoi : `SETS.activities` (src/config.js) gagne `{ id:'geante', label:'la Mine géante' }` → `setActivity('geante')` = 'geante', `autoEquip` au lancement (start, `server/game/service.js` ~l.1113) l'équipe pour chacun des 5. Option vide du sélecteur (`activityLineHtml`, src/ui/sets.js) libellée « Aucun » (déjà présente en « aucun » depuis le 03/11 : `id:null` → dissociation) + infobulle.
+- Tests : `node --test tests/sets.test.js` ✅ 17/17 (setActivity('geante'), ligne Mine géante, « Aucun » choisi par défaut).
+- ⚠️ Pas vérifié en vraie partie à 5 (le lancement géante passe par le même `start` que la mine).
+

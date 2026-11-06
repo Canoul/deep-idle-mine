@@ -498,6 +498,7 @@ export default {
   'Cerbère': 'Cerberus',
   /* Lieu (dans une phrase) */
   'la Mine': 'the Mine',
+  'la Mine géante': 'the Giant Mine',
   'la Prison': 'the Prison',
   'la Mine instantanée': 'the Instant Mine',
   'le Bloc géant': 'the Giant Block',
