@@ -1782,6 +1782,12 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
 
 ---
 
+## 06/11/2026 — Téléphone : les sorts sous le jeu (Geoffrey) ✅ en ligne le 06/11
+
+- En session sur téléphone (appli et site), les boutons des sorts ne sont plus posés sur la mine : ils passent juste en dessous, pour qu'on voie son mineur. Pareil dans les tours, l'instance, le Bloc géant et He's coming. Sur ordinateur, rien ne change.
+
+---
+
 ## 06/11/2026 — Set par activité : option « Aucun » et Mine géante (Geoffrey) ✅ en ligne le 06/11
 
 - Dans le Lobby, la liste « Set défini pour … » commence par **Aucun** (avec une majuscule, plus visible) : choisir Aucun = rien n'est équipé tout seul, ton équipement ne change pas au lancement.
