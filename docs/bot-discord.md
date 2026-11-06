@@ -63,6 +63,13 @@ sudo journalctl -u deep-mine-bot -n 20
 
 Le journal doit afficher `Bot connecté : …`.
 
+## Icône du serveur
+
+`bot/assets/icone-serveur.png` (512 × 512) : le chevalement au crépuscule, dessiné avec les textures du jeu, différent de
+l'icône de l'appli (la lampe). À téléverser dans Discord : Paramètres du serveur → Profil du serveur → Icône.
+Régénérer : `npm run discord:icon`. Autres versions (pioches croisées, coupe de la mine) et planche de comparaison :
+`python scripts/gen_discord_icon.py --toutes <dossier>` ; pour en changer, modifier `VARIANTE` dans le script.
+
 ## Au quotidien
 
 - Voir ce qu'il fait : `sudo journalctl -u deep-mine-bot -f`

@@ -16,6 +16,15 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 06/11/2026 — Jules — Icône du serveur Discord
+- **Pour le joueur** : rien dans le jeu. Le serveur Discord a son icône, `bot/assets/icone-serveur.png` : le chevalement
+  de la mine au crépuscule, en pixel art avec les textures du jeu, pour qu'on ne la confonde pas avec l'icône de
+  l'appli (la lampe).
+- **Décisions** : chevalement retenu parmi 3 versions (pioches croisées sur un bloc de diamant, coupe de la mine,
+  chevalement), le plus lisible en petit dans la barre de Discord. Les autres se régénèrent (voir docs/bot-discord.md).
+- **À suivre** : la mettre en icône dans Discord (Paramètres du serveur → Profil du serveur).
+- **État** : 🧪 sur la branche `jules/icone-discord` (pas en ligne)
+
 ## 06/11/2026 — Geoffrey — Guide « Premiers pas » déplaçable
 - **Pour le joueur** : le guide se déplace en faisant glisser son en-tête (poignée ⠿), sur le site et dans l'appli ; un
   simple toucher le replie / déplie toujours. La position est retenue (par compte, dans ce navigateur) et ramenée dans

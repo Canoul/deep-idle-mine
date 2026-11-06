@@ -7899,3 +7899,11 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 ## 06/11/2026 — Guide déplaçable (Geoffrey)
 - src/ui/guide.js : glisser l'en-tête `.gHead` (seuil 6 px ; pointermove / pointerup écoutés sur la fenêtre, sinon le pointeur sort de l'en-tête et on perd le mouvement), `place(pos)` (left/top, bornés à l'écran, aussi au redimensionnement), `saved.pos` dans `deepIdleMine.guide` ; un glisser n'ouvre / ferme pas (`moved` saute le clic). CSS : `touch-action:none` sur l'en-tête, poignée `.gGrip`.
 - **Vérifié** : guide (9) ✅ ; navigateur : glisser déplace, ne replie pas ; toucher replie ; position gardée après rechargement ✅. Pas testé au doigt sur un vrai téléphone.
+
+### 06/11/2026 — Icône du serveur Discord (Jules)
+- `scripts/gen_discord_icon.py` (`npm run discord:icon`) → `bot/assets/icone-serveur.png`, 512 × 512 RGB : grille 128 × 128
+  composée avec les textures du jeu (`town_headframe`, `grass`, `dirt`, `tunnel`, `ladder`) sur un dégradé par bandes de 4 px,
+  agrandie ×4 au plus proche voisin. `VARIANTE` choisit le dessin ; `--toutes <dossier>` écrit les 3 variantes (`pioches`,
+  `coupe`, `chevalement`) et `planche.png` (carré, rond, 48 px).
+- ✅ vérifié à l'œil sur la planche (découpage rond de Discord et taille de la barre). Rien de chargé par le jeu ni par le bot.
+- ⚠️ Si `textures/town_headframe.png` (80 × 112) change de taille, recaler sa position (24, 0) dans `chevalement()`.
