@@ -22,7 +22,7 @@ Modèle d'entrée :
   set, avec « set « Tours » » à côté. Avant, on voyait la spé portée, qui pouvait changer au lancement. Nouveau bouton
   **casque** en bas à droite de chaque joueur (soi compris) : sa fiche avec le stuff, les stats, la spé et les sorts que
   ce set lui donnera. Rien n'est équipé en regardant.
-- **État** : 🧪 sur la branche `geoffrey/lobby-spe-activite` (pas en ligne)
+- **État** : ✅ en ligne le 07/11
 
 ## 07/11/2026 — Geoffrey — Coffre du Golbute : une Topaze possible
 - **Pour le joueur** : en ouvrant un Coffre du Golbute, on peut maintenant trouver une **Topaze** (1,5 %), dans le même
