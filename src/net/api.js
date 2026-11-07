@@ -150,6 +150,7 @@ export const guildApi = {
   bankDeposit: (item, qty, opId)           => request('POST', '/api/guild/bank/deposit', { item, qty, opId }),
   bankGive:    (building, item, qty, opId) => request('POST', '/api/guild/bank/give', { building, item, qty, opId }),
   bankCraft:   (item, count, opId)         => request('POST', '/api/guild/bank/craft', { item, count, opId }),
+  bankFurnace: op                          => request('POST', '/api/guild/bank/furnace', op),   // fours de guilde (07/11)
   build: id => request('POST', '/api/guild/build', { id }),
   /* lobby de raid de la guilde (04/11/2026) : chaque action renvoie la vue de la guilde ; lancer : + session (201) */
   raidJoin:   group => request('POST', '/api/guild/raid/join', group ? { group } : {}),

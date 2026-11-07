@@ -13,7 +13,9 @@ import { drawPortrait } from '../render/portrait.js';
 import { slotHtml, tabsHtml, tabSlots } from './inventory.js';
 import { gridSize } from '../meta/inventory.js';
 import { INVENTORY } from '../config.js';
-import { pn } from '../i18n/index.js';   // pseudos et textes des joueurs : jamais traduits (06/11)
+import { pn } from '../i18n/index.js';
+import { FURNACE } from '../config.js';
+import { activeRecipe, batches, progress } from '../meta/furnace.js';   // pseudos et textes des joueurs : jamais traduits (06/11)
 
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
 const fr = n => Math.round(n).toLocaleString('fr-FR');
@@ -28,7 +30,7 @@ export const guildTabs = st => [...(st.mine ? [{ id:'mine', label:esc(st.mine.na
 /* Banque de guilde (05/11/2026, Geoffrey ; server/guild/service.js, src/meta/guild-bank.js). v : vue du serveur
    ({ bank:{ slots }, canUse, recipes, mine }) ; opts : sub ('chest' | 'craft'), btab / mtab (onglets des deux grilles).
    En haut l'inventaire de la guilde, en bas le sien : toucher un de ses objets propose de le donner (définitif). */
-const BANK_SUBS = [['chest', 'Coffre'], ['craft', 'Craft']];
+const BANK_SUBS = [['chest', 'Coffre'], ['craft', 'Craft'], ['furnace', 'Fours']];   // Fours : 07/11/2026
 function gridHTML(slots, tab, kind, min){
   const inv = { slots }, n = gridSize(inv, INVENTORY.cols, min), shown = tabSlots(inv, tab, n);
   const cells = shown.map(i => slotHtml(slots[i] || null, i, new Set())).join('');
@@ -42,9 +44,38 @@ function bankCraftHTML(v){
       (v.canUse ? `<button class="small${r.max ? ' on' : ''}" data-g="bankCraft" data-item="${esc(r.item)}"${r.max ? '' : ' disabled'}>Fabriquer${r.max ? ` (${fr(r.max)} max)` : ''}</button>` : '<span></span>')+
       `<span class="gbCost small">${r.cost.map(costLine).join(' · ')}</span></div>`).join('')+`</div>`;
 }
+/* fours de guilde (07/11/2026, Geoffrey ; src/meta/guild-furnace.js) : v.furnaces = fours à l'heure v.now (avancés par le
+   serveur), chacun avec recipes:[{ out, max }] (fournées que la banque permet d'ajouter). Chef et officiers : « Lancer » une
+   recette (prend dans la banque), « Récupérer » (la sortie va dans la banque), « Tout retirer » (tout revient dans la banque). */
+const FURN_SLOTS = ['ore', 'a', 'b', 'c', 'fuel'];
+const stack = c => `<span class="gfStack">${itemIcon(c.item)}${fr(c.qty)} ${rname(c.item)}</span>`;
+function furnaceCard(f, i, v){
+  const tier = FURNACE.tiers[f.tier] ?? FURNACE.tiers[0], rec = activeRecipe(f), on = f.since !== null && !!rec;
+  const inside = FURN_SLOTS.filter(s => f[s]).map(s => stack(f[s]));
+  const head = `<h3>Four de guilde ${i + 1} <span class="mut">· vitesse ×${String(tier.speed).replace('.', ',')}</span></h3>`;
+  const state = on
+    ? `<p class="small">${itemIcon(rec.out)}<b>${rname(rec.out)}</b> · encore ${fr(batches(f))} fournée${batches(f) > 1 ? 's' : ''}</p><div class="bar"><i style="width:${(progress(f, v.now) * 100).toFixed(1)}%"></i></div>`
+    : `<p class="mut small">À l'arrêt.</p>`;
+  const contents = inside.length ? `<p class="small gfLine">Dedans : ${inside.join(' · ')}</p>` : '';
+  const out = f.out ? `<p class="small gfLine">Sortie : ${stack(f.out)}</p>` : '';
+  const btns = v.canUse && (f.out || inside.length) ? `<div class="gmatBtns gfBtns">${f.out ? `<button class="small on" data-g="gfCollect" data-f="${i}">Récupérer</button>` : ''}`+
+    (inside.length || f.out ? `<button class="small" data-g="gfEmpty" data-f="${i}">Tout retirer</button>` : '')+`</div>` : '';
+  const can = (f.recipes ?? []).filter(r => r.max > 0);
+  const list = !v.canUse ? '' : can.length
+    ? `<p class="mut small">Lancer avec la banque :</p>`+can.map(r => `<div class="gbCraft"><span class="gmatName">${itemIcon(r.out)}<b>${rname(r.out)}</b></span>`+
+        `<button class="small" data-g="gfRecipe" data-f="${i}" data-out="${esc(r.out)}">Lancer (${fr(r.max)} max)</button></div>`).join('')
+    : `<p class="mut small">La banque n'a de quoi lancer aucune recette (minerais ou ingrédients d'alliage, et du charbon).</p>`;
+  return `<div class="card gfurn">${head}${state}${contents}${out}${btns}${list}</div>`;
+}
+function bankFurnaceHTML(v){
+  const fs = v.furnaces ?? [];
+  return `<div class="card"><h2>Fours de guilde</h2><p class="mut small">${fs.length} fours deux fois plus rapides, alimentés par la banque : ils fondent même quand personne n'est là. Les produits attendent dans la sortie : « Récupérer » les met dans la banque.${v.canUse ? '' : " Seuls le chef et les officiers peuvent s'en servir."}</p></div>`+
+    `<div class="gbWrap">${fs.map((f, i) => furnaceCard(f, i, v)).join('')}</div>`;
+}
 export function bankHTML(v, { sub = 'chest', btab = 'all', mtab = 'all' } = {}){
   const tabs = `<div class="gSub">${BANK_SUBS.map(([id, label]) => `<button data-gbank="${id}"${id === sub ? ' class="on"' : ''}>${label}</button>`).join('')}</div>`;
   if(sub === 'craft') return tabs + bankCraftHTML(v);
+  if(sub === 'furnace') return tabs + bankFurnaceHTML(v);
   const used = v.bank.slots.length;
   /* 07/11/2026 (Geoffrey) : la banque et son inventaire côte à côte sur un écran large (avant : chaque grille sur toute la
      largeur, des cases énormes), puis l'historique des dons */
@@ -349,6 +380,14 @@ export function setupGuild({ root, api = guildApi, onChange = () => {}, onRaid =
     const n = await askQty(`Fabriquer combien de fois ${item} avec la banque ? (${fr(r.max)} au plus)`, 1);
     if(n) await run(async () => { bankView = await api.bankCraft(item, n, crypto.randomUUID()); });
   }
+  /* fours de guilde (07/11) */
+  const furnaceOp = op => run(async () => { bankView = await api.bankFurnace({ ...op, opId:crypto.randomUUID() }); });
+  async function gfRecipe(i, out){
+    const r = bankView?.furnaces?.[i]?.recipes.find(x => x.out === out);
+    if(!r?.max) return;
+    const n = await askQty(`Combien de fournées de ${out} dans le four de guilde ${i + 1} ? (${fr(r.max)} au plus avec la banque)`, r.max);
+    if(n) await furnaceOp({ action:'recipe', furnace:i, out, count:n });
+  }
   /* lignes plus anciennes du journal affiché */
   async function more(){
     const inPeek = !!peek && tab === 'search', log = inPeek ? peek.log : st.mine.log, cur = inPeek ? peekOlder : older;
@@ -361,6 +400,9 @@ export function setupGuild({ root, api = guildApi, onChange = () => {}, onRaid =
     if(name === 'give') return give(el.dataset.b, el.dataset.item);
     if(name === 'bankGive') return bankGive(el.dataset.b, el.dataset.item);
     if(name === 'bankCraft') return bankCraft(el.dataset.item);
+    if(name === 'gfRecipe') return gfRecipe(+el.dataset.f, el.dataset.out);
+    if(name === 'gfCollect') return furnaceOp({ action:'collect', furnace:+el.dataset.f });
+    if(name === 'gfEmpty') return furnaceOp({ action:'empty', furnace:+el.dataset.f });
     if(name === 'more') return run(more);
     if(name === 'peek') return run(async () => { peek = await api.peek(id); peekOlder = {}; });
     if(name === 'invite'){

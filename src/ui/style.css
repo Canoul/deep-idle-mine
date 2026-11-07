@@ -914,6 +914,10 @@ body.phone .chatMore{opacity:1;padding:0 calc(5*var(--u))}
 /* 07/11/2026 : banque et inventaire côte à côte sur un écran large ; cases plafonnées (avant : énormes, toute la largeur) */
 .gbWrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,calc(180*var(--u))),1fr));gap:0 calc(6*var(--u));align-items:start}
 .gbGrid{grid-template-columns:repeat(var(--cols,8),minmax(0,calc(30*var(--u))));justify-content:start}
+.gfurn h3{margin:0 0 calc(2*var(--u))}
+.gfLine{display:flex;flex-wrap:wrap;gap:var(--u) calc(3*var(--u));align-items:center}
+.gfStack img,.gfurn p img{width:calc(8*var(--u));height:calc(8*var(--u));image-rendering:pixelated;vertical-align:middle;margin-right:var(--u)}
+.gfBtns{justify-content:flex-end;margin:calc(2*var(--u)) 0}
 .glog.gbGifts{max-height:calc(160*var(--u));overflow:auto}
 .gbGifts img{width:calc(8*var(--u));height:calc(8*var(--u));image-rendering:pixelated;vertical-align:middle;margin-right:var(--u)}
 .gbGrid .slot{cursor:pointer}

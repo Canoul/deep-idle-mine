@@ -2,7 +2,7 @@
 import '../i18n/boot.js';   // EN PREMIER : la langue de l'appareil, choisie dans le jeu (06/11/2026)
 import { getLang, tn } from '../i18n/index.js';
 import { installPageTranslator } from '../i18n/dom.js';
-import { RARITY, ITEMS, STATS, FURNACE, CRUSHER, AREAS, DUCK, XP, BLOCKS, ENERGY, PRISON, AREA_H } from '../config.js';
+import { RARITY, ITEMS, STATS, FURNACE, CRUSHER, AREAS, DUCK, XP, BLOCKS, ENERGY, PRISON, AREA_H, GUILD } from '../config.js';
 import { rarityOf } from '../meta/rarity.js';
 import { itemName, itemColor } from '../meta/piece.js';
 import * as D from './data.js';
@@ -201,7 +201,8 @@ function craft(){
     tr([r.mode, item(r.out), ings(r.inputs), item('Charbon', r.fuel), num(mmss(r.time))])));
   $('w-furnace-tiers').innerHTML = table(['Four', '#Vitesse', 'Comment l\'avoir'], FURNACE.tiers.map((t, i) => {
     const key = Object.keys(FURNACE.unlockItems).find(k => FURNACE.unlockItems[k].tier === i);
-    return tr([`<b>${esc(t.name)}</b>`, num(`×${f(t.speed)}`), key ? `Four n° ${FURNACE.unlockItems[key].slot + 1} : fabriquer un ${item(key)} et l'« Utiliser » dans l'inventaire` : 'Le four de départ']);
+    return tr([`<b>${esc(t.name)}</b>`, num(`×${f(t.speed)}`), key ? `Four n° ${FURNACE.unlockItems[key].slot + 1} : fabriquer un ${item(key)} et l'« Utiliser » dans l'inventaire`
+      : i === GUILD.furnace.tier ? `Les ${GUILD.furnace.count} fours de la banque de guilde (chef et officiers), alimentés par la banque` : 'Le four de départ']);
   }).concat(tr(['<span class="mut">Four n° 3</span>', num(none), '<span class="mut">Fermé pour l\'instant</span>'])));
   $('w-crusher-rule').textContent = `${CRUSHER.inSlots} cases d'entrée pour tes blocs (terre, pierre, pierre dure) et tes minerais de fer et d'or : toutes les ${CRUSHER.time} secondes, il concasse ${CRUSHER.batch} blocs de la première case qui en a assez (de haut en bas, de gauche à droite), même page fermée.`;
   const cpct = c => `${String(Math.round(c * 1e6) / 1e4).replace('.', ',')} %`;

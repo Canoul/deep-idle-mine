@@ -948,7 +948,8 @@ export const TEXTURES = ['dirt','grass','hellstone','clue','stone','hardstone','
    Alliage : deux ingrédients en `in` + `fuel` combustibles par produit, en time secondes). */
 export const FURNACE = {
   max:3, startOwned:1, orePerIngot:10, fuelPerIngot:10,
-  tiers: [ { name:'Four en pierre', speed:1 }, { name:'Four en fer', speed:1.25 }, { name:'Four en or', speed:1.5 } ],   // four en or : 27/10 (Geoffrey)
+  tiers: [ { name:'Four en pierre', speed:1 }, { name:'Four en fer', speed:1.25 }, { name:'Four en or', speed:1.5 },   // four en or : 27/10 (Geoffrey)
+           { name:'Four de guilde', speed:2 } ],   // tier 3 : seulement les fours de guilde (GUILD.furnace, 07/11/2026, Geoffrey)
   /* objets qui débloquent un four : « Utiliser » dans l'inventaire consomme l'objet et ouvre le four n° slot (0 = le
      premier), du tier donné. Seulement s'il est le prochain four fermé (le 3e four : Four en or, 27/10). */
   unlockItems: { 'Four en fer': { slot:1, tier:1, tex:'furnace_iron' }, 'Four en or': { slot:2, tier:2, tex:'furnace_gold' } },
@@ -2146,6 +2147,10 @@ export const GUILD = { maxMembers:30, xpPct:1, nameMin:3, nameMax:24, maxInvites
      historique des dons (07/11/2026, Geoffrey) : giftsShow derniers dépôts affichés sous les grilles, cherchés dans les
      giftsScan dernières lignes du journal de guilde au plus */
   bank:{ opMemory:200, giftsShow:30, giftsScan:500 },
+  /* fours de guilde (07/11/2026, Geoffrey ; src/meta/guild-furnace.js) : count fours ouverts d'office, du tier FURNACE.tiers[tier]
+     (vitesse × 2), alimentés par la banque ; chef et officiers seulement ; toutes les recettes de fonte ouvertes ; la case
+     de sortie se vide dans la banque */
+  furnace:{ count:2, tier:3 },
   buildings:[
     { id:'armurerie', name:'Armurerie', tex:'guild_armory', levels:[
       { label:'+2 % de dégâts', mult:{ damage:2 }, cost:{ 'Pierre':500000, 'Lingot de fer':5000, 'Lingot d\'or':2500, 'Orbe supérieur':20, 'Orbe':500 } },   // Orbe supérieur : 20 le 04/11 (Geoffrey ; avant 100)

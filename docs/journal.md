@@ -16,6 +16,15 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 07/11/2026 — Geoffrey — Guilde : 2 fours de guilde
+- **Pour le joueur** : nouveau sous-onglet **Fours** dans la banque de guilde. 2 fours **deux fois plus rapides**, qui
+  prennent leurs minerais et leur charbon dans la banque. Le chef et les officiers lancent une recette (le jeu indique combien
+  de fournées la banque permet), les fours tournent même quand personne n'est connecté, puis « Récupérer » met les lingots dans
+  la banque. Toutes les recettes sont ouvertes, même la Chitine. Les membres voient les fours tourner.
+- **Décisions** (Geoffrey) : chef et officiers seulement ; case de sortie à vider (pas de versement automatique dans la
+  banque) ; toutes les recettes ouvertes. Vitesse × 2 : valeur provisoire.
+- **État** : 🧪 sur la branche `geoffrey/four-guilde` (pas en ligne)
+
 ## 07/11/2026 — Geoffrey — Nouvelle image de l'Émeraude
 - **Pour le joueur** : l'Émeraude (récompense du parrainage) a sa propre image : une gemme rectangulaire taillée « à
   degrés », coins coupés, au lieu de la forme ronde partagée avec les autres gemmes.

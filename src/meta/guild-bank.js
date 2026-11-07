@@ -8,6 +8,7 @@ import { RECIPES } from '../recipes.js';
 import { addItem, removeItem, countOf, isStackable, sortInventory } from './inventory.js';
 import { isStuff } from './piece.js';
 import { inBatch } from './craft.js';
+import { sanitizeGuildFurnaces } from './guild-furnace.js';
 
 export const createBank = () => ({ slots:[], ops:[] });
 /* un objet qu'on peut mettre dans la banque */
@@ -22,6 +23,7 @@ export function sanitizeBank(raw){
   for(const [item, qty] of totals) addItem(b, item, qty);
   sortInventory(b);
   b.ops = (Array.isArray(raw?.ops) ? raw.ops : []).filter(o => typeof o === 'string').slice(-GUILD.bank.opMemory);
+  b.furnaces = sanitizeGuildFurnaces(raw?.furnaces);   // fours de guilde (07/11/2026), rangés dans la banque
   return b;
 }
 export const bankCount = (b, item) => countOf(b, item);

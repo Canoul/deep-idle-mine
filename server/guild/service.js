@@ -21,6 +21,7 @@ import { nameBanned } from '../moderation/filter.js';
 import { SocialError } from '../social/service.js';
 import { moderate } from '../moderation/filter.js';
 import { createRaidLobby } from './raid.js';
+import { guildFurnaceOp, guildFurnacesView } from '../../src/meta/guild-furnace.js';
 import { sanitizeBank, bankable, bankCount, seen, remember, deposit as bankDeposit, take as bankTake, bankRecipes, bankMaxCrafts, bankCraft } from '../../src/meta/guild-bank.js';
 import { RECIPES } from '../../src/recipes.js';
 
@@ -253,7 +254,8 @@ export function createGuildService({ store, accounts, statusOf, inviteCheck = as
                recipes:bankRecipes().map(item => ({ item, qty:RECIPES[item].qty, max:bankMaxCrafts(b, item),
                  cost:Object.entries(RECIPES[item].cost).map(([k, need]) => ({ item:k, need, have:bankCount(b, k) })) })),
                mine:(await itemsOf(me.id).catch(() => [])).filter(s => bankable(s.item)),
-               gifts:await bankGifts(g) };   // historique des dons (07/11)
+               gifts:await bankGifts(g),   // historique des dons (07/11)
+               furnaces:guildFurnacesView(b, clock()), now:clock() };   // fours de guilde (07/11)
     },
     /* dépôt d'un membre : les objets quittent son inventaire (une fois par opId, hors de la file : même raison que give), puis
        entrent dans la banque (une fois par opId). Définitif : pas de retrait. */
@@ -306,6 +308,26 @@ export function createGuildService({ store, accounts, statusOf, inviteCheck = as
         await (store.putGuildsAndBank ? store.putGuildsAndBank(state, g.id, bank) : Promise.all([save(), saveBank(g.id)]));
       });
       return view(me);
+    },
+    /* fours de guilde (07/11/2026, Geoffrey ; src/meta/guild-furnace.js) : chef ou officier ; op comme pour les fours d'un
+       joueur ({ action, furnace, out, count, slot, item, qty, mode, opId }), avec la banque pour inventaire. Une demande
+       renvoyée (même opId) n'agit qu'une fois (bank.furnaces.ops). */
+    async bankFurnace(me, op = {}){
+      if(typeof op.opId !== 'string' || !/^[\w-]{8,64}$/.test(op.opId)) fail('bad_request', 400, 'Demande invalide.');
+      const clean = { action:op.action, furnace:op.furnace, out:op.out, count:op.count, slot:op.slot, item:op.item, qty:op.qty, mode:op.mode, opId:op.opId };
+      await serial(async () => {
+        await load();
+        const { g, rank } = actor(me);
+        if(!canBuild(rank)) forbidden();
+        const bank = await bankOf(g.id);
+        const r = guildFurnaceOp(bank, clean, clock());
+        if(r.error) fail(r.error, ['not_enough', 'inventory_full', 'slot_busy', 'not_empty'].includes(r.error) ? 409 : 400, {
+          not_enough:"La banque n'a pas assez de matériaux.", bad_item:"Cette recette n'existe pas.", bad_qty:'Quantité invalide.',
+          bad_furnace:'Four inconnu.', inventory_full:'La banque ne peut pas le reprendre.', slot_busy:'Cette case contient déjà autre chose.',
+          not_empty:"Vide d'abord le four.", no_recipe:'Aucun alliage avec ces ingrédients.', bad_mode:'Mode inconnu.' }[r.error] ?? 'Action impossible.');
+        if(!r.repeated) await saveBank(g.id);
+      });
+      return api.bank(me);
     },
     /* craft de guilde : chef ou officier, avec les objets de la banque ; le résultat reste dans la banque */
     async bankCraft(me, { item, count = 1, opId } = {}){
