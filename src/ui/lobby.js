@@ -6,7 +6,7 @@
 import { isGeante, maxPlayersOf } from '../shared/geante.js';
 import { sealedBelow, levelLockText } from '../shared/level-gate.js';
 import { gearScore } from '../meta/gearscore.js';
-import { leftText, statusText } from './social.js';
+import { leftText, statusText, showPlayerSheet } from './social.js';
 import { canBeInvited } from '../shared/party.js';
 import { GAME, PREF_OPTIONS, MOB_INFO, DEV_TUNABLES, DEV_TARGETS, DEV_SPEC, SESSION_LEN, SKILLS, MINE_MODES, TOWER, INSTANCE, SHRINES, GEANTE } from '../config.js';
 import { joinLink } from '../shared/party.js';
@@ -23,7 +23,9 @@ import { sanitizeAuras } from '../meta/aura.js';
 import { ask, askText } from './dialog.js';
 import { energyGauge } from './energy-tag.js';
 import { prisonActive, launchCostText, readyPrisonText, prisonProfileText } from './prison.js';
-import { pn } from '../i18n/index.js';   // pseudos et textes des joueurs : jamais traduits (06/11)
+import { pn } from '../i18n/index.js';
+import { setForMode } from '../meta/sets.js';
+import { sanitizeSkills, pointsByTree } from '../meta/skills.js';   // pseudos et textes des joueurs : jamais traduits (06/11)
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
@@ -34,6 +36,14 @@ const realLen = speed => { const m = Math.round(SESSION_LEN / speed / 60); retur
 
 /* Places du lobby, depuis l'état du serveur (logique pure, testée) :
    membres du groupe (chef en premier), invitations en attente, puis places libres ; sans groupe : soi + places libres. */
+/* ma spé dans l'activité mode (07/11/2026, Geoffrey) : celle du set associé à cette activité s'il y en a un (il sera équipé au
+   lancement), sinon celle portée. sets : mes sets (publicSets) ; mode null (menu) : celle portée. { tree, pts, set } */
+export function mySpecFor(mode, sets, tree = null, pts = null){
+  const set = mode && sets?.list ? setForMode(sets, mode) : null;
+  if(!set) return { tree, pts, set:null };
+  const sk = sanitizeSkills(set.skills);
+  return { tree: sk.tree, pts: pointsByTree(sk), set: set.name };
+}
 export function lobbySlots(account, party, max = GAME.maxPlayers, myTree = null){
   const slots = [];
   if(party){
@@ -347,7 +357,8 @@ export function setupLobby(h){
     const devTowers = jv && !!info?.dev ? modes.filter(m => MINE_MODES.find(d => d.id === m.id)?.tower) : [];
     $('towerModes').hidden = !devTowers.length;
     $('towerModes').innerHTML = devTowers.map(m => `<button data-mode="${m.id}"${m.disabled ? ' disabled' : ''}>${esc(m.label)}</button>`).join('');
-    const slots = lobbySlots(account, party, slotsMax(st), st.myTree);
+    const my = mySpecFor(menu ? null : st.mode, h.sets?.(), st.myTree, st.myPts);   // spé jouée dans cette activité (07/11)
+    const slots = lobbySlots(account, party, slotsMax(st), my.tree);
     $('lobbySlots').innerHTML = slots.map((s, i) => {
       if(s.kind === 'free')
         return `<div class="pslot free"><span class="av">${pxi('person')}</span><span><b>Place libre</b><small>Invite un ami</small></span></div>`;
@@ -356,10 +367,12 @@ export function setupLobby(h){
                (slotButtons(st, s).kick ? `<button class="x" data-kick="${esc(s.displayId)}" title="Annuler l'invitation">×</button>` : '')+`</div>`;
       const ready = party && !s.leader && !s.playing ? (s.ready ? (s.always ? '✔ prêt tout le temps' : '✔ prêt') : 'pas prêt') : null;   // le chef : lancer = prêt
       const gs = s.me ? h.gs?.() : s.gs;
-      const tags = [s.me && 'Toi', s.leader && 'chef', ready, (s.playing || s.me && locked) && 'en session', s.playing && leftText(s.playingLeftMs), s.away && 'absent',
+      const setName = s.me ? my.set : s.set;   // set de l'activité, équipé au lancement (07/11)
+      const tags = [s.me && 'Toi', s.leader && 'chef', setName && `set « ${setName} »`, ready, (s.playing || s.me && locked) && 'en session', s.playing && leftText(s.playingLeftMs), s.away && 'absent',
                     Number.isFinite(gs) && `${gs.toLocaleString('fr-FR')} GS`].filter(Boolean).join(' · ') || 'Prêt';
       return `<div class="pslot${s.me ? ' me' : ''}${s.away ? ' away' : ''}"><span class="av"><canvas width="16" height="16" data-slot="${i}"></canvas></span>`+
-             `<span><b>${pn(s.name)}</b><small class="spec">${esc(s.me && st.myTree !== undefined ? specLabel(st.myTree, st.mySpec?.[st.myTree]?.level, st.myPts) : specLabel(s.tree, s.specLevel, s.treePts))}</small><small>${esc(tags)}</small>${energyGauge(s.me ? st.energy : s.energy)}</span>`+
+             `<span><b>${pn(s.name)}</b><small class="spec">${esc(s.me && st.myTree !== undefined ? specLabel(my.tree, st.mySpec?.[my.tree]?.level, my.pts) : specLabel(s.tree, s.specLevel, s.treePts))}</small><small>${esc(tags)}</small>${energyGauge(s.me ? st.energy : s.energy)}</span>`+
+             (s.account && account && !offline ? `<button class="x look" data-look="${esc(s.account)}" title="Voir son stuff, sa spé et ses sorts pour cette activité">${pxi('helmet')}</button>` : '')+   // fiche (07/11)
              (slotButtons(st, s).promote ? `<button class="x promote" data-promote="${esc(s.displayId)}" title="Nommer chef">★</button>` : '')+
              (slotButtons(st, s).kick ? `<button class="x" data-kick="${esc(s.displayId)}" title="Retirer du groupe">×</button>` : '')+`</div>`;
     }).join('');
@@ -644,6 +657,9 @@ export function setupLobby(h){
   };
   $('inviteBox').onclick = e => { const c = e.target.closest('[data-copy]'); if(c) copy(c.dataset.copy, c); };
   $('lobbySlots').onclick = e => {
+    /* fiche du joueur (07/11/2026) : stuff, spé et sorts qui seront joués dans l'activité choisie (son set d'activité) */
+    const l = e.target.closest('[data-look]');
+    if(l){ act(async () => showPlayerSheet(await h.party.profile(l.dataset.look, st.screen === 'menu' ? null : st.mode))); return; }
     const p = e.target.closest('[data-promote]');
     if(p){ ask("Lui donner ta place de chef ? C'est lui qui lancera les sessions.", { ok:'Donner ma place' }).then(yes => { if(yes) act(() => h.party.promote(p.dataset.promote)); }); return; }
     const b = e.target.closest('[data-kick]'); if(!b) return;
@@ -797,10 +813,11 @@ export function setupLobby(h){
   return {
     pubContext,
     team: () => st.party,
+    activity: () => st.screen === 'menu' ? null : st.mode,   // activité choisie (null au menu), 07/11
     /* Accueil de l'appli (src/app/home.js, 03/11/2026) : l'état dont il a besoin, rien de recalculé ; places avec leur skin */
     homeSnapshot(){
       const look = h.look?.() ?? {}, auras = h.auras?.() ?? {};
-      const slots = lobbySlots(st.account, st.party, slotsMax(st), st.myTree)
+      const slots = lobbySlots(st.account, st.party, slotsMax(st), mySpecFor(st.mode, h.sets?.(), st.myTree).tree)
         .map(s => s.kind === 'member' ? { ...s, look: portraitLook(s, look), auras: portraitAuras(s, auras) } : s);
       return { account:st.account, offline:st.offline, busy:st.busy, dev:!!st.info?.dev, party:st.party, slots, mode:st.mode, prefs:st.prefs,
                launch:launchFor(st), session:st.session, prison:st.prison, energy:st.energy, giantReady:!!st.giantReady,

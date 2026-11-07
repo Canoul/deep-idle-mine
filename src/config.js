@@ -1162,8 +1162,9 @@ export const GOLBUTE = {
         { item:'Parchemin « Hand of Justice »', chance:0.01,  spellOnce:true },
       ]},
       { family:'recipe', items:[ { item:'Recette : Chitine', chance:0.05, learnOnce:true } ] },
-      /* gemmes inférieures : 2 % chacune, au plus une (comme le Coffre du Roi Gobelin) */
-      { family:'gem', items:[ { item:'Rubis inférieur', chance:0.02 }, { item:'Jade inférieur', chance:0.02 }, { item:'Saphir inférieur', chance:0.02 } ] },
+      /* gemmes inférieures : 2 % chacune, au plus une (comme le Coffre du Roi Gobelin) ; Topaze 1,5 % (07/11/2026, Geoffrey) */
+      { family:'gem', items:[ { item:'Rubis inférieur', chance:0.02 }, { item:'Jade inférieur', chance:0.02 }, { item:'Saphir inférieur', chance:0.02 },
+                              { item:'Topaze', chance:0.015, tex:'gem_topaz' } ] },
     ],
   },
   golemOxygenRadius: 8,   // Âme du Golbute : rayon (cercle, cases) autour du porteur

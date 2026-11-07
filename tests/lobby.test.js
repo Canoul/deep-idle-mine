@@ -251,3 +251,22 @@ test('jauge d\'énergie de l\'équipe : barre, valeur, rouge sous le coût ; rie
   assert.match(energyGauge({ value: 250, max: 100 }), /width:100%/, 'la barre ne déborde pas');
   assert.equal(energyGauge(null), ''); assert.equal(energyGauge({ value: NaN, max: 100 }), '');
 });
+
+/* 07/11/2026 (Geoffrey) : ma spé dans l'activité choisie, celle de mon set d'activité s'il y en a un */
+test('mySpecFor : set de l\'activité (instances), sinon la spé portée ; au menu, la spé portée', async () => {
+  const { mySpecFor } = await import('../src/ui/lobby.js');
+  const sets = { list:[{ id:1, name:'Tours', stuff:{}, skills:{ tree:'logisticien', ranks:{} }, spells:[] }], byActivity:{ towers:1 } };
+  assert.deepEqual(mySpecFor('tower_angel_1', sets, 'mineur', [5, 0, 0]), { tree:'logisticien', pts:[0, 0, 0], set:'Tours' });
+  assert.deepEqual(mySpecFor('mine', sets, 'mineur', [5, 0, 0]), { tree:'mineur', pts:[5, 0, 0], set:null });
+  assert.deepEqual(mySpecFor(null, sets, 'mineur', [5, 0, 0]), { tree:'mineur', pts:[5, 0, 0], set:null });
+  assert.deepEqual(mySpecFor('tower_angel_1', null, 'mineur', null), { tree:'mineur', pts:null, set:null });
+});
+
+/* 07/11/2026 : la fiche d'un joueur s'ouvre aussi depuis le Lobby ; dans la section Social, elle restait cachée avec elle */
+test('index.html : la fiche d\'un joueur (#fview) est hors des onglets', () => {
+  const html = fs.readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const at = html.indexOf('id="fview"');
+  assert.ok(at > 0);
+  const before = html.slice(0, at);
+  assert.ok(before.lastIndexOf('<section') < before.lastIndexOf('</section>'), '#fview n\'est dans aucune <section data-view>');
+});

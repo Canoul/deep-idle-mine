@@ -78,7 +78,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
   const invitesFor = accountId => [...parties.values()].filter(p => p.invites.has(accountId));
 
   /* ce que les membres voient de leur groupe (les ID de compte sont publics) */
-  function publicParty(p, meId, playing = new Map(), trees = new Map(), looks = new Map(), specLv = new Map(), auras = new Map(), gs = new Map(), prisons = new Set(), energies = new Map(), pts = new Map()){
+  function publicParty(p, meId, playing = new Map(), trees = new Map(), looks = new Map(), specLv = new Map(), auras = new Map(), gs = new Map(), prisons = new Set(), energies = new Map(), pts = new Map(), planned = new Map()){
     const now = clock();
     return { code: p.code, leader: p.leader, max: maxOf(p), launching: !!p.launching, devPresets: p.devPresets ?? null, locked: !!p.locked,
              members: p.members.map(m => ({ account: m.account, displayId: formatAccountId(m.account), name: m.name,
@@ -88,6 +88,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
                                             tree: trees.get(m.account) ?? null,
                                             specLevel: specLv.get(m.account) ?? null,
                                             treePts: pts.get(m.account) ?? null,       // points par arbre (04/11)
+                                            set: planned.get(m.account)?.set ?? null,  // set de l'activité choisie, qui sera équipé au lancement (07/11)
                                             look: looks.get(m.account) ?? {},
                                             auras: auras.get(m.account) ?? {},          // aura des pièces visibles (src/meta/aura.js)
                                             gs: gs.get(m.account) ?? null,              // gear score du stuff porté (src/meta/gearscore.js)
@@ -304,7 +305,16 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
   /* ---------- actions ---------- */
   const actions = {
     /* état vu par le joueur (appelé régulièrement par son lobby : sert aussi de signe de vie) */
-    async state(me){
+    /* fiche d'un joueur de son groupe (07/11/2026, Geoffrey) : stuff, spé et sorts qui seront joués dans l'activité mode
+       (son set d'activité s'il en a un). Seulement soi-même ou un membre de son groupe */
+    async profile(me, id, mode = null){
+      touch(me);
+      const p = partyOf(me.id), m = id === me.id ? { account: me.id, name: displayName(me) } : p ? memberOf(p, id) : null;
+      if(!m) throw new PartyError('not_member', 404, "Ce joueur n'est pas dans ton groupe.");
+      if(!game.profile) throw new PartyError('unavailable', 503, 'Fiche indisponible.');
+      return { id: m.account, name: m.name, ...await game.profile(m.account, mode) };
+    },
+    async state(me, mode = null){   // mode : activité choisie dans son lobby (07/11/2026) : la spé de son set d'activité
       touch(me);
       await sweep();
       if(queue.has(me.id)) queue.get(me.id).seenAt = clock();
@@ -315,14 +325,15 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       if(p) for(const m of p.members) if(m.account !== me.id && await game.activeSessionId(m.account))
         playing.set(m.account, (await game.activeSessionInfo?.(m.account))?.leftMs ?? null);
       /* spécialisation de chacun (arbre de skills choisi) */
-      const trees = new Map();
-      if(p) for(const m of p.members) trees.set(m.account, await game.skillTreeOf?.(m.account) ?? null);
+      const trees = new Map(), planned = new Map();
+      if(p && mode && game.plannedSkillsOf) for(const m of p.members) planned.set(m.account, await game.plannedSkillsOf(m.account, mode));
+      if(p) for(const m of p.members) trees.set(m.account, planned.has(m.account) ? planned.get(m.account).tree : await game.skillTreeOf?.(m.account) ?? null);
       /* et son niveau de spécialisation dans cet arbre */
       const specLv = new Map();
       if(p) for(const m of p.members) specLv.set(m.account, await game.specLevelOf?.(m.account, trees.get(m.account)) ?? null);
       /* points par arbre (arbres v2, 04/11/2026 : « Logisticien (2/12/1) ») */
       const pts = new Map();
-      if(p) for(const m of p.members) pts.set(m.account, await game.skillPointsOf?.(m.account) ?? null);
+      if(p) for(const m of p.members) pts.set(m.account, planned.has(m.account) ? planned.get(m.account).pts : await game.skillPointsOf?.(m.account) ?? null);
       /* skin de chacun (équipement porté) */
       const looks = new Map();
       if(p) for(const m of p.members) looks.set(m.account, await game.lookFor?.(m.account) ?? {});
@@ -339,7 +350,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       const energies = new Map();
       if(p) for(const m of p.members) energies.set(m.account, await energyOf(m.account));
       return {
-        party: p ? publicParty(p, me.id, playing, trees, looks, specLv, auras, gs, prisons, energies, pts) : null,
+        party: p ? publicParty(p, me.id, playing, trees, looks, specLv, auras, gs, prisons, energies, pts, planned) : null,
         /* invitations reçues : qui invite, qui est déjà là */
         invites: invitesFor(me.id).map(q => ({ code: q.code, from: q.invites.get(me.id).from,
                                                members: q.members.map(m => m.name), full: q.members.length >= GAME.maxPlayers })),

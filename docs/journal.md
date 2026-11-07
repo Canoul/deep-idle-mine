@@ -16,6 +16,23 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 07/11/2026 — Geoffrey — Lobby : le bouton casque ouvre bien la fiche
+- **Pour le joueur** : le bouton casque de l'équipe du Lobby ne faisait rien ; il ouvre maintenant la fiche du joueur.
+- **État** : ✅ en ligne le 07/11
+
+## 07/11/2026 — Geoffrey — Lobby : la spé et le stuff de chacun pour l'activité choisie
+- **Pour le joueur** : dans l'équipe du Lobby, la spé affichée pour chaque joueur est maintenant celle qu'il **jouera
+  dans l'activité ouverte** : si un joueur a un set défini pour cette activité (ex. un set « Tours »), c'est la spé de ce
+  set, avec « set « Tours » » à côté. Avant, on voyait la spé portée, qui pouvait changer au lancement. Nouveau bouton
+  **casque** en bas à droite de chaque joueur (soi compris) : sa fiche avec le stuff, les stats, la spé et les sorts que
+  ce set lui donnera. Rien n'est équipé en regardant.
+- **État** : ✅ en ligne le 07/11
+
+## 07/11/2026 — Geoffrey — Coffre du Golbute : une Topaze possible
+- **Pour le joueur** : en ouvrant un Coffre du Golbute, on peut maintenant trouver une **Topaze** (1,5 %), dans le même
+  tirage que les gemmes inférieures (2 % chacune) : toujours une gemme au plus par coffre.
+- **État** : ✅ en ligne le 07/11
+
 ## 07/11/2026 — Geoffrey — Ralliement : 300 % de ses dégâts sur un boss
 - **Pour le joueur** : sur un boss (minotaure, Gallianix, boss des tours, roi gobelin, Golbute, Cerbère), le Ralliement
   n'enlève plus 5 % des PV max du boss mais inflige **300 % de ses dégâts** (critique possible). Sur un mob normal, rien
@@ -43,7 +60,7 @@ Modèle d'entrée :
   coffre ou étaient réglés sur « Ignorer ». Et il **ne s'en va plus** : il suit les mineurs dans la mine jusqu'à mourir.
 - **Pourquoi** : il apparaissait autant que le Chien de magma mais rapportait environ 10 fois moins de Chair de vers.
   En simulation, il n'était tué que 4 fois sur 14 (le chien : 11 sur 12) : les mineurs passaient à côté sans le frapper.
-- **État** : 🧪 sur la branche `geoffrey/ver-combat` (pas en ligne)
+- **État** : ✅ en ligne le 07/11
 
 ## 07/11/2026 — Geoffrey — Nouvelle image de l'Émeraude
 - **Pour le joueur** : l'Émeraude (récompense du parrainage) a sa propre image : une gemme rectangulaire taillée « à

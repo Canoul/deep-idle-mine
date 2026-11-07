@@ -628,3 +628,43 @@ test('énergie de l\'équipe : chaque membre voit celle des autres, relue au plu
   now += 1e3; await seen(A);
   assert.equal(reads, before + 2, 'après 30 s : relue pour chacun');
 });
+
+/* 07/11/2026 (Geoffrey) : l'équipe du lobby montre la spé qui sera jouée dans l'activité choisie (set d'activité) */
+test('lobby : avec une activité, chaque membre montre la spé de son set d\'activité (sinon celle portée)', async () => {
+  const { party, game } = setup();
+  game.skillTreeOf = async () => 'mineur';
+  game.skillPointsOf = async () => [3, 0, 0];
+  game.plannedSkillsOf = async (id, mode) => id === C.id && mode === 'instance_1' ? { tree:'barbare', pts:[0, 0, 4], set:'Instance' } : { tree:'mineur', pts:[3, 0, 0], set:null };
+  await party.create(A); await party.join(B, 'K7Q4P2'); await party.join(C, 'K7Q4P2');
+  let st = await party.state(B, 'instance_1');
+  assert.deepEqual(st.party.members.map(m => [m.tree, m.treePts, m.set]), [['mineur', [3, 0, 0], null], ['mineur', [3, 0, 0], null], ['barbare', [0, 0, 4], 'Instance']]);
+  st = await party.state(B);
+  assert.deepEqual(st.party.members.map(m => [m.tree, m.set]), [['mineur', null], ['mineur', null], ['mineur', null]], 'sans activité : la spé portée');
+});
+
+test('plannedSkillsOf : le set associé à l\'activité (instances, tours…), sinon les skills portés', async () => {
+  const store = createMemoryGameStore();
+  const game = createGameService({ store, liveRunner:fakeLive(fakeSummary), clock:() => 5_000_000, randomSeed:() => 7 });
+  assert.deepEqual(await game.plannedSkillsOf(A.id, 'instance_1'), { tree:null, pts:[0, 0, 0], set:null });
+  await store.putSets(A.id, { list:[{ id:1, name:'Instance', stuff:{}, skills:{ tree:'barbare', ranks:{} }, spells:[null, null, null, null] }], nextId:2, ops:[], byActivity:{ instances:1 } });
+  assert.deepEqual(await game.plannedSkillsOf(A.id, 'instance_1'), { tree:'barbare', pts:[0, 0, 0], set:'Instance' });
+  assert.equal((await game.plannedSkillsOf(A.id, 'mine')).set, null, 'pas de set pour la Mine');
+  assert.equal((await game.plannedSkillsOf(A.id, '__proto__')).set, null);
+});
+
+/* 07/11/2026 (Geoffrey) : fiche d'un membre depuis le lobby, avec le set de l'activité choisie ; rien n'est équipé */
+test('fiche d\'un membre : soi ou un membre du groupe seulement ; le set de l\'activité est montré, pas équipé', async () => {
+  const store = createMemoryGameStore();
+  const game = createGameService({ store, liveRunner:fakeLive(fakeSummary), clock:() => 5_000_000, randomSeed:() => 7 });
+  const party = createPartyService({ game, clock:() => 5_000_000, getAccount:async id => ACCOUNTS[id] ?? null, newCode:() => 'K7Q4P2' });
+  await store.putSets(B.id, { list:[{ id:1, name:'Tours', stuff:{}, skills:{ tree:'logisticien', ranks:{} }, spells:[null, null, null, null] }], nextId:2, ops:[], byActivity:{ towers:1 } });
+  await party.create(A);
+  await assert.rejects(party.profile(A, B.id, 'tower_angel'), { code:'not_member' });
+  await party.join(B, 'K7Q4P2');
+  const f = await party.profile(A, B.id, 'tower_angel');
+  assert.deepEqual([f.id, f.set, f.skills.tree, f.spells.length], [B.id, 'Tours', 'logisticien', 4]);
+  assert.equal((await party.profile(A, B.id, 'mine')).set, null, 'la Mine : son stuff porté');
+  assert.equal(await game.skillTreeOf(B.id), null, 'rien n\'a été équipé');
+  assert.equal((await party.profile(C, C.id, null)).id, C.id, 'sa propre fiche, même seul');
+  await assert.rejects(party.profile(C, B.id, null), { code:'not_member' });
+});
