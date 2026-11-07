@@ -19,10 +19,10 @@ const BARB5 = { tree:'barbare', spec:{ barbare:5 } };
 
 /* ---------- compte ---------- */
 
-test('config : 4 slots dont 2 ouverts, 10 sorts, parchemins dans les objets', () => {
+test('config : 4 slots dont 2 ouverts, 13 sorts, parchemins dans les objets', () => {
   assert.equal(SPELLS.slots, 4); assert.equal(SPELLS.openSlots, 2);
   assert.deepEqual(SPELLS.list.map(s => s.id), ['dash', 'illumination', 'inspiration', 'ulti_shen', 'fast_learner', 'dynamite',
-                                               'zipette', 'war_cry', 'cleave', 'hand_of_justice']);
+                                               'zipette', 'war_cry', 'cleave', 'hand_of_justice', 'shatter', 'burst', 'disarm']);   // spé 15 : 07/11
   assert.equal(unlockText('dash'), 'Barbare : niveau de spécialisation 5');
   assert.equal(unlockText('ulti_shen'), `Apprendre le ${SCROLL}`);
 });

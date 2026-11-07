@@ -36,7 +36,7 @@ export function stuckDetector(windowSec=STUCK_WINDOW){
       function push(m){
         let h=hist.get(m.id); if(!h) hist.set(m.id, h=[]);
         h.push({ y:m.y, mined:m.stats.mined, trips:m.stats.trips, mode:m.mode, status:m.status,
-                 busy:m.action?.type==='attack' || m.action?.type==='stun' || m.status===WAIT_BARBARIAN });
+                 busy:m.action?.type==='attack' || m.action?.type==='stun' || m.action?.type==='burst' || m.status===WAIT_BARBARIAN });
         if(h.length>W) h.shift();
         return h;
       }

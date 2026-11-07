@@ -129,6 +129,7 @@ export function timeClass(a){
   const t = a?.type;
   if(t === 'mine') return 'mine';
   if(t === 'attack') return 'fight';
+  if(t === 'burst') return a.data?.fight ? 'fight' : 'mine';   // Rafale de pioche (07/11)
   if(t === 'move' || t === 'ladder' || t === 'bridge' || t === 'dash') return 'move';
   return 'other';
 }

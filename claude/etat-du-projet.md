@@ -475,6 +475,13 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   logisticien en oxygène, 180 s), **Cri de guerre** (Barbare spé 10 : en combat, lui et les mineurs à 10 cases +10 % dégâts,
   +5 % vitesse d'attaque, 30 s, recharge après l'effet, 180 s), **Cleave** (depuis le 03/11 : sa prochaine attaque touche la cible à 100 % et jusqu'à 3 mobs devant lui à 50 %, 4 cibles au plus, arc de cercle animé ; ancien : 50 % à tous les mobs à 2 cases) et **Hand of Justice** (parchemins, sans source :
   50 % des dégâts à 2 cases, 10 s ; étourdit 3 s un mob qui se bat à 3 cases, 30 s). Mine classique (et k hole) seulement.
+  **Sorts de spé niveau 15** (07/11, Geoffrey ; spec `2026-11-07-sorts-sp15-design.md`, debuffs `src/sim/debuffs.js`) :
+  **Fracasse Armure** (Barbare : debuff Fracassé 15 s, +3 % de dégâts reçus de toutes les sources), **Rafale de pioche**
+  (Mineur : en minant, 5 × le temps du bloc visé ÷ 1,25 puis 5 blocs en ligne cassés, jamais vers le bas, ≥ 3 blocs ; en
+  combat, le temps de 5 attaques ÷ 1,25 puis 5 coups d'un coup), **Désarmement** (Logisticien : 200 % à la place d'un
+  coup, debuff Désarmé 15 s, recharges du mob +10 %). Recharge 30 s, pas de cumul, boss compris. Tous les dégâts aux
+  mobs passent par `hurt()` (Fracassé), les recharges des mobs par `mobDt()` (Désarmé). Mine, k hole, prison, raid,
+  mine instantanée ; **pas encore** tours, Instance, Cerbère, Bloc géant, He's coming.
   Figés au lancement, déclenchés tout seuls dès que la recharge est finie et qu'ils servent ; barre des sorts en
   session (29/10 : aussi dans les tours, l'instance et le Bloc géant ; ancien : mine classique seulement).
   **Joués aussi dans les tours du Jugement** (28/10, Geoffrey ; zipette exceptée). **Dynamite** (rework 28/10) : blocs de

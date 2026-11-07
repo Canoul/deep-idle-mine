@@ -14,9 +14,10 @@ import { glyphsOfTree } from '../meta/glyphs.js';
 import { noEntry } from './dungeon.js';
 import { cleaveHit } from './spells.js';
 import { depositToMule, pickMule, placeMule, emptyMule, isCarrier } from './mule.js';
-import { finishDash, finishDynamite, learnOnMine } from './spells.js';
+import { finishDash, finishDynamite, finishBurst, learnOnMine } from './spells.js';
 import { fleshAt } from './flesh.js';
 import { exposedMul } from './minotaur.js';
+import { hurt } from './debuffs.js';
 
 /* XP de la session : pot commun (partagé à parts égales en fin de session) ; m.stats.xp = ce que ce mineur y a apporté */
 function gainXp(G,m,n){ if(!n) return; G.stats.xp=(G.stats.xp||0)+n; m.stats.xp=(m.stats.xp||0)+n; }
@@ -271,6 +272,7 @@ export function finishAction(G,m,a){
     /* sorts (src/sim/spells.js) */
     case 'dash': finishDash(G,m,a); break;
     case 'dynamite': finishDynamite(G,m,a); break;
+    case 'burst': finishBurst(G,m,a); break;   // Rafale de pioche (07/11)
     case 'attack':
       if(!a.data.done) landHit(G,m,a.data.mob);   // done : le coup est déjà parti au début de l'attaque (fight, src/sim/ai.js)
       break;
@@ -292,7 +294,7 @@ export function landHit(G,m,o){
   m.oreDrunk=0;
   /* Saccager : seul le premier coup d'une attaque normale compte ; rien ne compte tant que le second coup est dû */
   if(m.skill.ravage && !ravaged){ m.critRun=m.hitCrit ? (m.critRun||0)+1 : 0; if(m.critRun>=SKILLS.ravageCrits){ m.ravage=true; m.critRun=0; } }
-  o.hp-=dmg; m.foeHit=G.t;
+  hurt(G,o,dmg); m.foeHit=G.t;   // Fracassé (07/11) : src/sim/debuffs.js
   if(o.grab===m.id) o.grabHit=G.t;   // tacle : il se bat, la soupape repart (COMBAT.tackleGiveUp)
   splash(G,m,o,dmg);
   cleaveHit(G,m,o);   // Cleave (03/11) : ce coup touche aussi jusqu'à 3 autres mobs
@@ -301,7 +303,7 @@ export function landHit(G,m,o){
   if(gearChance(G,m.carac.doubleAttack||0) || ravaged){
     m.ravage=false;
     const d2=hitDamage(G,m)*exposedMul(G,o);
-    o.hp-=d2; splash(G,m,o,d2);
+    hurt(G,o,d2); splash(G,m,o,d2);
     m.stats.doubleHits=(m.stats.doubleHits||0)+1;
     if(o.hp<=0){ killMob(G,m,o); return; }
   }
@@ -319,7 +321,7 @@ function splash(G,m,o,dmg){
   const k=aoeOf(m.skill); if(k<=0) return;
   for(const q of G.mobs){
     if(q===o || q.hp<=0 || (q.type==='mimic' && !q.revealed) || Math.abs(q.x-o.x)+Math.abs(q.y-o.y)>1) continue;
-    q.hp-=dmg*k; q.splash={ v:dmg*k, t:G.t };   // affiché au-dessus du mob (src/render/splash.js)
+    q.splash={ v:hurt(G,q,dmg*k), t:G.t };   // affiché au-dessus du mob (src/render/splash.js)
     if(q.hp<=0) killMob(G,m,q);
   }
 }

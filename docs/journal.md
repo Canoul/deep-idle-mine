@@ -16,6 +16,21 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 07/11/2026 — Geoffrey — Trois nouveaux sorts au niveau de spé 15
+- **Pour le joueur** : un sort de plus par spé, débloqué au niveau de spé 15 (le 3e emplacement de sort s'ouvre au
+  niveau 15 du mineur). Recharge 30 s pour les trois.
+  - **Fracasse Armure** (Barbare) : en combat, sa cible est « Fracassée » 15 s et prend 3 % de dégâts en plus, de tout
+    le monde.
+  - **Rafale de pioche** (Mineur) : en minant, s'il a au moins 3 blocs devant lui (pas vers le bas), il mine un moment
+    puis casse jusqu'à 5 blocs d'un coup. En combat, il se concentre puis place 5 coups d'un coup.
+  - **Désarmement** (Logisticien) : en combat, un coup à 200 % ; la cible est « Désarmée » 15 s, ses attaques et ses
+    sorts se rechargent 10 % moins vite.
+- **Décisions** : les deux états marchent aussi sur les boss ; la durée de la Rafale vient du bloc visé (même si les
+  suivants sont plus durs) ; une Rafale interrompue ne coûte pas sa recharge. Pas encore dans les tours, l'Instance,
+  l'arène de Cerbère, le Bloc géant et He's coming.
+- **À suivre** : équilibrage. Les trois sorts sont plutôt faibles pour un niveau 15 (≈ +1,5 % de dégâts du groupe pour
+  Fracasse, ≈ +3 % pour la Rafale en combat) ; simulation : coffre ≈ +4 % avec les trois.
+
 ## 07/11/2026 — Geoffrey — Nouvelle image de l'Émeraude
 - **Pour le joueur** : l'Émeraude (récompense du parrainage) a sa propre image : une gemme rectangulaire taillée « à
   degrés », coins coupés, au lieu de la forme ronde partagée avec les autres gemmes.

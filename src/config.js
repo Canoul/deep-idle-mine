@@ -849,6 +849,25 @@ export const SPELLS = {
     { id:'hand_of_justice', name:'Hand of Justice', icon:'⚖️', px:'daze', short:'Étourdit un mob qui se bat', unlock:{ scroll:'Parchemin « Hand of Justice »' }, cd:30,
       range:3, stun:3,
       desc:'Étourdit 3 s un mob qui se bat, jusqu\'à 3 cases de distance (d\'abord un mob qui tacle un allié) : il lâche son tacle et son sort est coupé' },
+    /* ---- sorts de spé niveau 15 (07/11/2026, Geoffrey ; spec docs/superpowers/specs/2026-11-07-sorts-sp15-design.md).
+       Debuffs : src/sim/debuffs.js. Valeurs provisoires. ---- */
+    /* en combat, sur la cible qu'il frappe (sinon celle qui le tacle) si elle n'est pas déjà Fracassée : elle prend
+       dmgTaken de dégâts en plus, de toutes les sources, pendant duration s (boss compris ; pas de cumul) */
+    { id:'shatter', name:'Fracasse Armure', icon:'🔨', px:'hammer', short:'La cible prend plus de dégâts', unlock:{ tree:'barbare', level:15 }, needTree:'barbare', cd:30,
+      duration:15, dmgTaken:0.03,
+      desc:'En combat, perce l\'armure de sa cible : elle prend 3 % de dégâts en plus, de tout le monde, pendant 15 s (pas de cumul : il ne le relance pas sur une cible déjà fracassée)' },
+    /* en minant (jamais vers le bas) : s'il y a au moins minBlocks blocs en ligne devant lui (blocks au plus), il mine
+       blocks × le temps du bloc visé ÷ mineSpeed, puis casse la ligne comme s'il la minait. En combat : le temps de
+       hits attaques à vitesse × atkSpeed sans frapper, puis hits coups d'un coup (critique, double coup) ; son attaque
+       suivante est prête tout de suite. Interrompu (tacle, cible morte sans autre mob) : rien, pas de recharge */
+    { id:'burst', name:'Rafale de pioche', icon:'⛏', px:'pickaxe', short:'Casse 5 blocs, ou 5 coups d\'un coup', unlock:{ tree:'mineur', level:15 }, needTree:'mineur', cd:30,
+      blocks:5, minBlocks:3, mineSpeed:1.25, hits:5, atkSpeed:1.25,
+      desc:'En minant (pas vers le bas, au moins 3 blocs en ligne) : mine 5 fois le temps du bloc visé avec 25 % de vitesse en plus, puis casse jusqu\'à 5 blocs devant lui. En combat : le temps de 5 attaques (25 % plus vite) sans frapper, puis 5 coups d\'un coup (critique et double coup possibles). Interrompu : pas de recharge' },
+    /* en combat, à la place d'un coup normal, sur une cible qui n'est pas déjà Désarmée : dmg × ses dégâts (critique
+       possible), puis ses recharges (coups, sorts) durent slow de plus pendant duration s (boss compris ; pas de cumul) */
+    { id:'disarm', name:'Désarmement', icon:'🤺', px:'grab', short:'Frappe fort et ralentit la cible', unlock:{ tree:'logisticien', level:15 }, needTree:'logisticien', cd:30,
+      dmg:2, duration:15, slow:0.10,
+      desc:'En combat, frappe sa cible à 200 % de ses dégâts (critique possible) et la désarme : ses attaques et ses sorts se rechargent 10 % moins vite pendant 15 s (pas de cumul : il ne le relance pas sur une cible déjà désarmée)' },
   ],
 };
 
@@ -904,12 +923,15 @@ export const EFFECTS = {
     air:     { name:'En l\'air', icon:'feather',  color:'#d8f0ff' },
     charge:  { name:'Charge',    icon:'alert',    color:'#ff8c1a' },   // minotaure qui gratte le sol (30/10/2026)
     exposed: { name:'Vulnérable', icon:'target',  color:'#ffd23f' },   // minotaure sonné après une charge ratée
+    shattered: { name:'Fracassé', icon:'hammer',  color:'#d9822b' },   // Fracasse Armure (07/11/2026) : +3 % de dégâts reçus
+    disarmed:  { name:'Désarmé',  icon:'grab',    color:'#9aa4b8' },   // Désarmement (07/11/2026) : recharges +10 %
   },
   /* durée (ms, temps de la page) de l'animation d'un sort sur le perso, et sa couleur (onde qui s'élargit + icône du sort) */
   castAnim: 900,
   cleaveAnim: 260,   // coup en arc du Cleave (03/11/2026, Geoffrey) : ms pour que la lame balaie le demi-cercle devant le mineur
   castColor: { dash:'#d8f0ff', illumination:'#fff3a0', inspiration:'#6fc2ff', ulti_shen:'#b06bff', fast_learner:'#c9a2ff',
-               dynamite:'#ff8c1a', zipette:'#8fd14f', war_cry:'#ff6a3b', cleave:'#e5534b', hand_of_justice:'#ffd23f' },
+               dynamite:'#ff8c1a', zipette:'#8fd14f', war_cry:'#ff6a3b', cleave:'#e5534b', hand_of_justice:'#ffd23f',
+               shatter:'#d9822b', burst:'#c9a227', disarm:'#9aa4b8' },
 };
 
 

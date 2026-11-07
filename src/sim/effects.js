@@ -112,5 +112,7 @@ export function mobEffects(G, o){
   if(o.charge?.phase === 'windup') out.push('charge');   // minotaure qui gratte le sol (src/sim/minotaur.js)
   if(o.rage) out.push('rage');
   if(o.exposedUntil > G.t) out.push('exposed');
+  if(o.shatterUntil > G.t) out.push('shattered');   // sorts de spé 15 (07/11/2026, src/sim/debuffs.js)
+  if(o.disarmUntil > G.t) out.push('disarmed');
   return out;
 }

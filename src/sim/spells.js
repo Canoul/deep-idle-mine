@@ -12,13 +12,16 @@ import { inspireOn, inspirePct, setInspire, sameGroup } from './groups.js';
 import { W, IDS, DUCK, BLOCKS, CFG } from '../config.js';
 import { SPELL } from '../meta/spells.js';
 import { isAir, supported, typeOf, maxRow } from './world.js';
-import { startAction, moveT } from './mineur.js';
-import { breakBlock, hitDamage, killMob } from './actions.js';
+import { startAction, moveT, mineT } from './mineur.js';
+import { breakBlock, hitDamage, killMob, landHit } from './actions.js';
+import { fleshAt } from './flesh.js';
+import { inReach, reachOf } from './knock.js';
 import { tackler } from './mobs.js';
 import { noEntry, active, mayEnter, bossOf } from './dungeon.js';
 import { veiled } from './trap.js';
 import { updateLight } from './light.js';
 import { log } from './log.js';
+import { hurt, shattered, disarmed } from './debuffs.js';
 
 export const hasSpell = (m,id) => !!m.spells?.includes(id);
 export const spellReady = (G,m,id) => hasSpell(m,id) && G.t >= (m.spellCd[id] || 0);
@@ -39,6 +42,7 @@ export function afterDecide(G,m){
   if(!a || !m.spells?.length || m.y<=0) return;
   if(a.type==='move' && spellReady(G,m,'dash')) tryDash(G,m,a);
   else if(a.type==='mine' && spellReady(G,m,'dynamite')) tryDynamite(G,m,a);
+  if(m.action?.type==='mine' && spellReady(G,m,'burst')) tryBurst(G,m,m.action);   // Rafale de pioche (07/11)
 }
 
 /* Dash (25/10/2026, Geoffrey : refonte). Une course de SPELL.dash.range cases au plus à speed × sa vitesse de marche,
@@ -139,7 +143,7 @@ export function finishDash(G,m,a){
   const hit = o && near(m,o);
   cast(G,m,'dash',G.t,hit && !isBoss(o) ? S.hitCd : 1);   // boss : recharge entière (03/11)
   if(!hit) return;
-  o.hp -= hitDamage(G,m)*S.dmg;
+  hurt(G,o,hitDamage(G,m)*S.dmg);
   m.foe = o.id; m.foeHit = G.t;
   log(G, `💨 ${m.name} : Dash dans un ${o.type}`);
   if(o.hp<=0) return killMob(G,m,o);
@@ -185,7 +189,7 @@ export function finishDynamite(G,m,a){
   updateLight(G);
   /* 28/10 : dmg × ses dégâts à chaque mob du rayon (mêmes mobs que le Cleave) */
   const foes = G.mobs.filter(o => fair(G,m,o) && (o.x-cx)**2+(o.y-cy)**2 <= S.radius*S.radius);
-  for(const o of foes){ o.hp -= hitDamage(G,m)*S.dmg; if(o.hp<=0) killMob(G,m,o); }
+  for(const o of foes){ hurt(G,o,hitDamage(G,m)*S.dmg); if(o.hp<=0) killMob(G,m,o); }
   cast(G,m,'dynamite');
   log(G, `🧨 ${m.name} : dynamite, ${cells.length} blocs cassés${foes.length ? `, ${foes.length} mob${foes.length>1 ? 's' : ''} touché${foes.length>1 ? 's' : ''}` : ''}`);
 }
@@ -201,6 +205,7 @@ export function updateSpells(G){
     if(spellReady(G,m,'war_cry')) warCry(G,m);
     if(spellReady(G,m,'hand_of_justice')) handOfJustice(G,m);
     if(spellReady(G,m,'zipette')) zipette(G,m);
+    if(spellReady(G,m,'shatter')) shatter(G,m);   // Fracasse Armure (07/11)
   }
 }
 
@@ -242,7 +247,7 @@ function ulti(G,m){
     m.target = null; m.exploring = false; m.digCol = null; m.galleryRow = null; m.goingDown = false;
     if(!G.khole && m.y>m.stats.maxDepth) m.stats.maxDepth = m.y;
     cast(G,m,'ulti_shen');
-    foe.hp -= foe.maxhp*(isBoss(foe) ? S.bossPct : S.hpPct);
+    hurt(G,foe,foe.maxhp*(isBoss(foe) ? S.bossPct : S.hpPct));
     log(G, `🌀 ${m.name} : Ralliement, rejoint ${o.name} contre un ${foe.type}`);
     if(foe.hp<=0) killMob(G,m,foe);
     else { m.foe = foe.id; m.foeHit = G.t; }
@@ -294,7 +299,7 @@ export function cleaveHit(G,m,o){   // devant lui seulement : côté où il rega
   const foes = G.mobs.filter(q => q!==o && fair(G,m,q) && ahead(q) && dist(m,q)<=S.radius).sort((a,b) => dist(m,a)-dist(m,b)).slice(0, S.maxTargets-1);
   if(!foes.length) return;
   cast(G,m,'cleave');
-  for(const q of foes){ const d = hitDamage(G,m)*S.dmg; q.hp -= d; q.splash = { v:d, t:G.t }; if(q.hp<=0) killMob(G,m,q); }
+  for(const q of foes){ const d = hurt(G,q,hitDamage(G,m)*S.dmg); q.splash = { v:d, t:G.t }; if(q.hp<=0) killMob(G,m,q); }
   log(G, `🪓 ${m.name} : Cleave, ${foes.length+1} mobs touchés`);
 }
 
@@ -328,4 +333,95 @@ function zipette(G,m){
   o.ox += gain;
   cast(G,m,'zipette');
   log(G, `🫧 ${m.name} : Bonbonne d'oxygène, ${o.name} +${Math.round(gain)} d'oxygène`);
+}
+
+/* ---------- sorts de spé niveau 15 (07/11/2026, Geoffrey ; spec docs/superpowers/specs/2026-11-07-sorts-sp15-design.md) ---------- */
+
+/* Fracasse Armure : en combat, la cible qu'il frappe (sinon celle qui le tacle) est Fracassée duration s (elle prend
+   dmgTaken de dégâts en plus, de toutes les sources : src/sim/debuffs.js). Jamais sur une cible déjà fracassée. */
+function shatter(G,m){
+  if(!fighting(G,m)) return;
+  const o = [attacking(m), tackler(G,m)].find(o => o && fair(G,m,o));
+  if(!o || shattered(G,o)) return;
+  const S = SPELL.shatter;
+  o.shatterUntil = G.t+S.duration;
+  cast(G,m,'shatter');
+  log(G, `🔨 ${m.name} : Fracasse Armure, ${o.type} +${Math.round(S.dmgTaken*100)} % de dégâts reçus pendant ${S.duration} s`);
+}
+
+/* Désarmement : appelé par fight (src/sim/ai.js) quand son coup normal part. Sort prêt et cible pas déjà désarmée : à la
+   place du coup, dmg × ses dégâts (critique possible), puis la cible est Désarmée duration s. Renvoie true s'il a frappé. */
+export function disarmHit(G,m,o){
+  if(!spellReady(G,m,'disarm') || !(o?.hp>0) || disarmed(G,o)) return false;
+  const S = SPELL.disarm;
+  o.splash = { v:hurt(G,o,hitDamage(G,m)*S.dmg), t:G.t };
+  m.foeHit = G.t;
+  cast(G,m,'disarm');
+  log(G, `🤺 ${m.name} : Désarmement, ${o.type} désarmé ${S.duration} s`);
+  if(o.hp<=0) killMob(G,m,o);
+  else o.disarmUntil = G.t+S.duration;
+  return true;
+}
+
+/* Rafale de pioche, en minant : la ligne de blocs qu'il casserait, depuis (x,y) dans le sens (dx,dy), blocks au plus.
+   Elle s'arrête au premier vide, bord, construction, bloc incassable, mimic, case inconnue ou piégée, mur de chair, case
+   interdite, ou bloc sur lequel se tient un mineur. */
+function burstLine(G,m,x,y,dx,dy){
+  const out = [];
+  for(let k=0; k<SPELL.burst.blocks; k++, x+=dx, y+=dy){
+    if(x<0 || x>=W || y<1 || y>maxRow(G)) break;
+    const t = G.tiles[y][x];
+    if(!t || typeOf(t)==='build' || BLOCKS[t].unbreakable || !G.seen[y]?.[x] || veiled(G,x,y) || fleshAt(G,x,y) || noEntry(G,m,x,y)) break;
+    if(G.mobs.some(o => o.type==='mimic' && o.hp>0 && o.x===x && o.y===y)) break;
+    if(G.miners.some(o => o.x===x && o.y===y-1)) break;
+    out.push([x,y]);
+  }
+  return out;
+}
+/* au lieu de son coup de pioche (jamais vers le bas, pas un coup unique) : si la ligne compte au moins minBlocks blocs,
+   il mine blocks × le temps du bloc visé ÷ mineSpeed. Un tacle l'interrompt (src/sim/session.js) : rien, pas de recharge */
+function tryBurst(G,m,a){
+  const S = SPELL.burst, { x, y } = a.data, dx = Math.sign(x-m.x), dy = Math.sign(y-m.y);
+  if(dy>0 || (dx && dy) || !(a.dur>0)) return;
+  if(burstLine(G,m,x,y,dx,dy).length<S.minBlocks) return;
+  startAction(m,'burst', S.blocks*mineT(G,m,G.tiles[y][x])/S.mineSpeed, { x, y, dx, dy });
+  m.status = 'Rafale de pioche';
+}
+/* Rafale de pioche, en combat : appelé par fight (src/sim/ai.js) quand son coup normal part ; iv = son intervalle entre deux
+   coups. Il ne frappe pas pendant hits × iv ÷ atkSpeed, puis place hits coups d'un coup (finishBurst). */
+export function burstFight(G,m,o,iv){
+  if(!spellReady(G,m,'burst') || !(o?.hp>0)) return false;
+  const S = SPELL.burst;
+  startAction(m,'burst', S.hits*iv/S.atkSpeed, { mob:o, fight:true });
+  m.status = 'Rafale de pioche';
+  return true;
+}
+/* mob le plus proche qu'il peut frapper (cible de la Rafale morte ou hors de portée), ou null */
+const nextFoe = (G,m) => G.mobs.filter(q => fair(G,m,q) && inReach(G,m,q,reachOf(m))).sort((a,b) => dist(m,a)-dist(m,b))[0] ?? null;
+export function finishBurst(G,m,a){
+  const S = SPELL.burst, d = a.data;
+  if(d.fight){
+    let o = d.mob, hits = 0;
+    for(let i=0; i<S.hits; i++){
+      if(!(o?.hp>0) || !inReach(G,m,o,reachOf(m))) o = nextFoe(G,m);
+      if(!o) break;
+      /* un seul recul : le dernier coup (sinon le mob repoussé sortirait de portée au premier) */
+      const lock = o.knockLock, last = i===S.hits-1;
+      if(!last) o.knockLock = true;
+      landHit(G,m,o); hits++;
+      if(!last && o.knockLock===true) o.knockLock = lock;
+    }
+    if(!hits) return;   // personne à frapper : annulé, le sort reste prêt
+    cast(G,m,'burst');
+    m.atkReady = G.t;    // son attaque suivante est prête tout de suite
+    if(o?.hp>0) m.foe = o.id;
+    log(G, `⛏ ${m.name} : Rafale de pioche, ${hits} coups d'un coup`);
+    return;
+  }
+  const cells = burstLine(G,m,d.x,d.y,d.dx,d.dy);
+  if(!cells.length) return;
+  for(const [x,y] of cells){ const t = G.tiles[y][x]; breakBlock(G,m,x,y); learnOnMine(G,m,t); }
+  updateLight(G);
+  cast(G,m,'burst');
+  log(G, `⛏ ${m.name} : Rafale de pioche, ${cells.length} blocs cassés`);
 }
