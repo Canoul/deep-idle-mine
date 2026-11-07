@@ -16,6 +16,11 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 07/11/2026 — Geoffrey — Nouvelle image de l'Émeraude
+- **Pour le joueur** : l'Émeraude (récompense du parrainage) a sa propre image : une gemme rectangulaire taillée « à
+  degrés », coins coupés, au lieu de la forme ronde partagée avec les autres gemmes.
+- **État** : ✅ en ligne le 07/11
+
 ## 07/11/2026 — Geoffrey — Tableau de la prison : une mesure plus juste
 - **Pour le joueur** : rien, c'est l'outil de l'équipe (📊 Rendement de la prison, compte admin).
 - **Ce qui change dans le tableau** : le chiffre du haut est maintenant la **médiane** des joueurs qui ont leurs 10 mines
