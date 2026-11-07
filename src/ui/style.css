@@ -348,6 +348,7 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .pslot small.spec{color:var(--acc-lt)}
 .pslot .x{position:absolute;top:0;right:0;min-height:0;width:calc(12*var(--u));height:calc(12*var(--u));padding:0;border-width:var(--u)}
 .pslot .x.promote{right:calc(13*var(--u))}
+.pslot .x.look{top:auto;bottom:0}   /* fiche du joueur (07/11/2026) : en bas à droite, sous ★ et ×. */
 .pslot.away{opacity:.6}
 .pslotEnergy{display:flex;flex-direction:column;align-items:center;gap:var(--u);width:100%;margin-top:var(--u);color:#ffd23f;font-size:var(--fs-s);font-variant-numeric:tabular-nums;white-space:nowrap}
 .pslotEnergy .bar{width:min(100%,calc(60*var(--u)))}

@@ -5,7 +5,7 @@
    Online : compteur et liste de tous les joueurs en ligne (pas en session d'abord, puis en session), « Ajouter » pour
    un non-ami ; demandée au serveur seulement quand ce sous-onglet est à l'écran (SOCIAL.onlinePoll).
    Affiche ce que renvoie le serveur ; chaque action passe par h (promesses rejetées avec un message lisible). */
-import { SKILLS, MINE_MODES, SOCIAL, ENERGY } from '../config.js';
+import { SKILLS, MINE_MODES, SOCIAL, ENERGY, SPELLS } from '../config.js';
 import { sanitizeSkills, skillEffects } from '../meta/skills.js';
 import { pxi } from './pxicons.js';
 import { energyHTML } from './energy-tag.js';
@@ -43,6 +43,27 @@ export function statusText(f){
 export { energyHTML };   // src/ui/energy-tag.js (31/10)
 
 /* spécialisation d'une fiche : « ⛏ Mineur », ou null sans arbre choisi */
+/* sorts équipés d'une fiche : « 💨 Dash · 🧨 Dynamite » (null sans sort) */
+export const spellsText = slots => { const l = (Array.isArray(slots) ? slots : []).map(id => SPELLS.list.find(s => s.id === id)).filter(Boolean);
+  return l.length ? l.map(s => `${s.icon} ${s.name}`).join(' · ') : null; };
+/* fiche d'un joueur (ami dans Social, membre du groupe dans le Lobby depuis le 07/11/2026) : p = { name, stuff, progress,
+   skills, spells?, set? } (server/social/service.js, server/party/service.js). set : nom du set d'activité qui sera équipé */
+export function showPlayerSheet(p){
+  const box = $('fview').querySelector('.box'), worn = p.stuff || {}, sp = spellsText(p.spells);
+  box.innerHTML = `<h3>${pxi('helmet')}Stuff de ${pn(p.name)}<button id="fviewClose">Fermer</button></h3>`+
+    (p.set ? `<p class="small">Set de cette activité : <b>${esc(p.set)}</b> (équipé au lancement)</p>` : '')+
+    `<p class="mut small">${esc(treeText(p.skills) ? 'Spécialisation : ' + treeText(p.skills) : 'Pas encore de spécialisation')}</p>`+
+    (Array.isArray(p.spells) ? `<p class="mut small">${esc(sp ? 'Sorts : ' + sp : 'Aucun sort équipé')}</p>` : '')+
+    `<div class="fviewBody"><div class="stuffGrid"></div>`+
+    `<div class="card stuffStatsCard"><h2>Stats du mineur</h2><div class="stuffLevel"></div><div class="fstats"></div></div></div>`;
+  renderSlots(box.querySelector('.stuffGrid'), worn, 'div');
+  renderLevel(box.querySelector('.stuffLevel'), p.progress);
+  box.querySelector('.fstats').innerHTML = statsHTML(worn, skillEffects(sanitizeSkills(p.skills)));
+  const close = () => { $('fview').hidden = true; };
+  $('fviewClose').onclick = close;
+  $('fview').onclick = e => { if(e.target === $('fview')) close(); };
+  $('fview').hidden = false;
+}
 export const treeText = skills => { const t = SKILLS.trees.find(x => x.id === skills?.tree); return t ? `${t.icon} ${t.label}` : null; };
 
 /* dans l'appli mobile (classe app, src/app/boot.js) : une ligne courte par ami, le reste dans sa fiche (#frSheet) */
@@ -209,21 +230,7 @@ export function setupSocial(h){
       .then(yes => { if(yes) act(() => h.remove(d.remove)); });
   }
 
-  /* fiche d'un ami : p = { name, stuff, progress, skills } (server/social/service.js) */
-  function showProfile(p){
-    const box = $('fview').querySelector('.box'), worn = p.stuff || {};
-    box.innerHTML = `<h3>${pxi('helmet')}Stuff de ${pn(p.name)}<button id="fviewClose">Fermer</button></h3>`+
-      `<p class="mut small">${esc(treeText(p.skills) ? 'Spécialisation : ' + treeText(p.skills) : 'Pas encore de spécialisation')}</p>`+
-      `<div class="fviewBody"><div class="stuffGrid"></div>`+
-      `<div class="card stuffStatsCard"><h2>Stats du mineur</h2><div class="stuffLevel"></div><div class="fstats"></div></div></div>`;
-    renderSlots(box.querySelector('.stuffGrid'), worn, 'div');
-    renderLevel(box.querySelector('.stuffLevel'), p.progress);
-    box.querySelector('.fstats').innerHTML = statsHTML(worn, skillEffects(sanitizeSkills(p.skills)));
-    $('fviewClose').onclick = closeProfile;
-    $('fview').hidden = false;
-  }
-  const closeProfile = () => { $('fview').hidden = true; };
-  $('fview').onclick = e => { if(e.target === $('fview')) closeProfile(); };
+  const showProfile = showPlayerSheet;
 
   return {
     set(s){ if(s){ st = s; render(); } },

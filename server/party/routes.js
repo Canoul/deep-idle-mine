@@ -7,10 +7,13 @@ import { PartyError } from './service.js';
 const needMe = ctx => { if(!ctx.me) throw new PartyError('not_authenticated', 401, 'Connecte-toi pour jouer.'); };
 const obj = v => (v && typeof v === 'object' && !Array.isArray(v)) ? v : {};
 const str = v => typeof v === 'string' ? v : '';
+/* ?mode= de GET /api/party (07/11/2026) : l'activité choisie dans son lobby (texte court, sinon rien ; setActivity ignore l'inconnu) */
+const modeParam = ctx => { const m = new URL(ctx.req?.url ?? '/', 'http://x').searchParams.get('mode'); return m && /^[a-z0-9_]{1,40}$/.test(m) ? m : null; };
 
 export function partyRoutes(party){
   return {
-    'GET /api/party':          async ctx => { needMe(ctx); return party.state(ctx.me); },
+    'GET /api/party':          async ctx => { needMe(ctx); return party.state(ctx.me, modeParam(ctx)); },
+    'POST /api/party/profile': async ctx => { needMe(ctx); const m = str(ctx.body.mode); return party.profile(ctx.me, str(ctx.body.id), /^[a-z0-9_]{1,40}$/.test(m) ? m : null); },   // fiche d'un membre (07/11)
     'GET /api/party/forming':  async ctx => { needMe(ctx); return party.forming(ctx.me); },
     'POST /api/party/lock':    async ctx => { needMe(ctx); return party.lock(ctx.me, ctx.body.locked); },
     'POST /api/party/activity': async ctx => { needMe(ctx); return party.activity(ctx.me, obj(ctx.body)); },

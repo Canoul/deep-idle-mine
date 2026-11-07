@@ -197,7 +197,8 @@ export const socialApi = {
 
 /* Groupes : se réunir avant une session commune. Lancer reste gameApi.start (le serveur sait qui est dans le groupe). */
 export const partyApi = {
-  state:   ()   => request('GET', '/api/party'),
+  profile: (id, mode = null) => request('POST', '/api/party/profile', { id, mode }),   // fiche d'un membre, set de l'activité (07/11)
+  state:   (mode = null) => request('GET', '/api/party' + (mode ? '?mode=' + encodeURIComponent(mode) : '')),   // mode : spés de l'activité choisie (07/11)
   create:  ()   => request('POST', '/api/party/create', {}),
   join:    code => request('POST', '/api/party/join', { code }),
   invite:  id   => request('POST', '/api/party/invite', { id }),

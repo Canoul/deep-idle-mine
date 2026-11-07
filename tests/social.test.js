@@ -219,7 +219,7 @@ test('voir le stuff d\'un ami : pièces portées, niveau, spécialisation, même
   assert.equal(p.progress.level, 2);
   assert.deepEqual(p.skills, { v:3, tree:'mineur', ranks:{ mine_speed:1 } });
   assert.equal(JSON.stringify(p).includes('Fer'), false, 'rien de son inventaire');
-  assert.deepEqual(Object.keys(p).sort(), ['displayId', 'id', 'name', 'progress', 'skills', 'stuff']);
+  assert.deepEqual(Object.keys(p).sort(), ['displayId', 'id', 'name', 'progress', 'set', 'skills', 'spells', 'stuff']);
   await assert.rejects(social.profile(D, C.id), { code:'not_friend' });            // pas ami
   await assert.rejects(social.profile(A, 'n\'importe quoi'), { code:'not_friend' });
   await assert.rejects(social.profile(A, A.id), { code:'not_friend' });
