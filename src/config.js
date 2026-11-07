@@ -801,10 +801,11 @@ export const SPELLS = {
       duration:60, mineSpeed:0.10,
       desc:'Tous les mineurs minent 10 % plus vite pendant 60 s (la recharge commence à la fin de l\'effet)' },
     /* quand un autre mineur du groupe se bat (frappe ou est taclé) : téléporté sur sa case, inflige hpPct des PV max du
-       mob (bossPct sur un boss : minotaure, Gallianix) */
+       mob ; sur un boss (minotaure, Gallianix, boss des tours et de l'instance) : bossDmg × ses dégâts, critique possible
+       (07/11/2026, Geoffrey ; ancien : 5 % des PV max du boss) */
     { id:'ulti_shen', name:'Ralliement', icon:'🌀', px:'shield', short:'Rejoint d\'un coup un allié en combat', unlock:{ scroll:'Parchemin « Ralliement »' }, cd:180,
-      hpPct:0.20, bossPct:0.05,
-      desc:'Quand un allié se bat : se téléporte à lui et inflige 20 % des PV max du mob (5 % sur un boss)' },
+      hpPct:0.20, bossDmg:3,
+      desc:'Quand un allié se bat : se téléporte à lui et inflige 20 % des PV max du mob (300 % de ses dégâts sur un boss)' },
     /* le prochain bloc miné (pas de la terre ni un trésor) est « appris » : ce type de bloc se mine bonus plus vite
        jusqu'à la fin de la session (cumulable) ; la recharge commence une fois le bloc appris */
     { id:'fast_learner', name:'Fast learner', icon:'📖', px:'book', short:'Apprend à miner un type de bloc', unlock:{ scroll:'Parchemin « Fast learner »' }, cd:300,

@@ -218,7 +218,7 @@ test('Inspiration : +10 % de minage pour tous pendant 60 s, recharge à la fin d
   assert.ok(Math.abs(mineT(G, b, IDS.stone) - before / 1.1) < 1e-9);
 });
 
-test('Ralliement : un allié se bat → téléporté sur sa case, 20 % des PV max du mob (5 % sur un boss)', () => {
+test('Ralliement : un allié se bat → téléporté sur sa case, 20 % des PV max du mob (300 % de ses dégâts sur un boss, 07/11)', () => {
   const G = worldFrom(['', '#@          #', '#'.repeat(50)], { miners:2 }), [a, b] = G.miners;
   a.spells = ['ulti_shen'];
   b.x = 10;
@@ -231,9 +231,10 @@ test('Ralliement : un allié se bat → téléporté sur sa case, 20 % des PV ma
   assert.deepEqual([a.x, a.y, mob.hp, a.foe, a.spellCd.ulti_shen], [10, 1, 400, 7, G.t + 180]);
   const boss = { id:8, type:'minotaure', dungeon:0, x:11, y:1, hp:1000, maxhp:1000, cd:1 };
   G.mobs.push(boss); a.spellCd.ulti_shen = 0; a.x = 2;
+  a.carac.crit = 0; const dmg = hitDamage(G, a);
   startAction(b, 'attack', 1, { mob:boss });
   updateSpells(G);
-  assert.equal(boss.hp, 950);
+  assert.ok(Math.abs((1000 - boss.hp) - 3 * dmg) < 1e-9, '300 % de ses dégâts');
 });
 
 test('Fast learner : le prochain bloc miné (pas la terre) est appris, +10 % sur ce type, cumulable ; recharge 300 s', () => {

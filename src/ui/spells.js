@@ -27,7 +27,7 @@ const pct = v => `${Math.round(v * 100)} %`, plus = v => `+${pct(v)}`, sec = v =
 const STATS = [
   ['cd', 'Recharge', sec], ['range', 'Portée', cases], ['reach', 'Portée', cases], ['radius', 'Rayon', cases],
   ['duration', 'Durée', sec], ['speed', 'Vitesse', pct], ['dmg', 'Dégâts', pct], ['hpPct', 'Dégâts', v => `${pct(v)} PV max`],
-  ['bossPct', 'Sur un boss', pct], ['stun', 'Étourdit', sec], ['mineSpeed', 'Minage', plus], ['bonus', 'Minage du bloc', plus],
+  ['bossDmg', 'Sur un boss', v => `${pct(v)} des dégâts`], ['stun', 'Étourdit', sec], ['mineSpeed', 'Minage', plus], ['bonus', 'Minage du bloc', plus],
   ['dmgPct', 'Dégâts', plus], ['atkSpeed', 'Vit. d\'attaque', plus], ['podsPct', 'Oxygène', v => `${pct(v)} des pods`],
 ];
 export const spellStats = s => STATS.filter(([k]) => typeof s[k] === 'number').map(([k, label, f]) => ({ label, value:f(s[k]) }));

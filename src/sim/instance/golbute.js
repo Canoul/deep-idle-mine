@@ -370,7 +370,7 @@ function supportSpells(G, m){
     if(to){
       cast(G, m, 'ulti_shen'); m.action = null; m.x = to.x; m.y = to.y; m.kx = 0; m.hop = G.ticks;
       if(ally){ const o = golTackler(G, ally); hitGolem(G, m, o, o.maxhp * S.hpPct); }
-      else damageBoss(G, m, G.boss.maxhp * S.bossPct);
+      else damageBoss(G, m, hitDmg(G, m) * S.bossDmg);   // 300 % de ses dégâts (07/11 ; ancien 5 % des PV max)
       log(G, `🌀 ${m.name} : Ralliement auprès de ${to.name}`);
     }
   }

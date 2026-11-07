@@ -16,6 +16,12 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 07/11/2026 — Geoffrey — Ralliement : 300 % de ses dégâts sur un boss
+- **Pour le joueur** : sur un boss (minotaure, Gallianix, boss des tours, roi gobelin, Golbute, Cerbère), le Ralliement
+  n'enlève plus 5 % des PV max du boss mais inflige **300 % de ses dégâts** (critique possible). Sur un mob normal, rien
+  ne change (20 % de ses PV max).
+- **État** : ✅ en ligne le 07/11
+
 ## 07/11/2026 — Geoffrey — Trois nouveaux sorts au niveau de spé 15
 - **Pour le joueur** : un sort de plus par spé, débloqué au niveau de spé 15 (le 3e emplacement de sort s'ouvre au
   niveau 15 du mineur). Recharge 30 s pour les trois.
