@@ -71,6 +71,21 @@ export function createGuildService({ store, accounts, statusOf, inviteCheck = as
     }
     return { rows:rows.reverse(), next:start };
   }
+  /* historique des dons à la banque (07/11/2026) : les derniers dépôts, du plus récent au plus ancien, cherchés dans les
+     GUILD.bank.giftsScan dernières lignes du journal (page par page, en partant de la fin) */
+  async function bankGifts(g){
+    const out = [], stop = Math.max(0, g.log - GUILD.bank.giftsScan);
+    for(let p = Math.floor((g.log - 1) / GUILD.logPage); p >= 0 && out.length < GUILD.bank.giftsShow; p--){
+      const list = await store.getGuildLog(g.id, p);
+      for(let i = list.length - 1; i >= 0 && out.length < GUILD.bank.giftsShow; i--){
+        if(p * GUILD.logPage + i < stop) return out;
+        const r = list[i];
+        if(r?.kind === 'deposit') out.push({ at:r.at, name:r.name, item:r.item, qty:r.qty });
+      }
+      if(p * GUILD.logPage <= stop) break;
+    }
+    return out;
+  }
   async function addLog(g, row){
     const page = Math.floor(g.log / GUILD.logPage), rows = await store.getGuildLog(g.id, page);
     rows.push(row);
@@ -237,7 +252,8 @@ export function createGuildService({ store, accounts, statusOf, inviteCheck = as
       return { bank:{ slots:b.slots.filter(Boolean).map(s => ({ item:s.item, qty:s.qty })) }, canUse:use,
                recipes:bankRecipes().map(item => ({ item, qty:RECIPES[item].qty, max:bankMaxCrafts(b, item),
                  cost:Object.entries(RECIPES[item].cost).map(([k, need]) => ({ item:k, need, have:bankCount(b, k) })) })),
-               mine:(await itemsOf(me.id).catch(() => [])).filter(s => bankable(s.item)) };
+               mine:(await itemsOf(me.id).catch(() => [])).filter(s => bankable(s.item)),
+               gifts:await bankGifts(g) };   // historique des dons (07/11)
     },
     /* dépôt d'un membre : les objets quittent son inventaire (une fois par opId, hors de la file : même raison que give), puis
        entrent dans la banque (une fois par opId). Définitif : pas de retrait. */

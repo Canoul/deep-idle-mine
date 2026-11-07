@@ -25,7 +25,13 @@ Modèle d'entrée :
   thorium, plafonnés exprès en prison, sont en gris et ne comptent plus dans le « Rendement ».
 - **À suivre** : relire le tableau en ligne ; si la médiane reste sous 40 %, monter `oreMul` (0,27 aujourd'hui, ~0,33-0,35
   visé).
-- **État** : 🧪 sur la branche `geoffrey/tableau-prison-mesure` (pas en ligne)
+- **État** : ✅ en ligne le 07/11
+
+## 07/11/2026 — Geoffrey — Banque de guilde : vue dézoomée et historique des dons
+- **Pour le joueur** : sur ordinateur, la banque et ton inventaire sont maintenant côte à côte, avec des cases de taille
+  normale (avant : chaque grille prenait toute la largeur, les cases étaient énormes). Sur téléphone, rien ne change de
+  place. En dessous, un **historique des dons** : les 30 derniers dons à la banque (date, qui, quoi, combien).
+- **État** : ✅ en ligne le 07/11
 
 ## 07/11/2026 — Geoffrey — Instance I : la cage du roi gobelin, un seul bloc d'épaisseur
 - **Pour le joueur** : quand le roi gobelin enferme les mineurs sur les rebords, la cage ne fait plus 3 blocs d'épaisseur
