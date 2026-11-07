@@ -16,6 +16,11 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 07/11/2026 — Geoffrey — Nouvelle image de l'Émeraude
+- **Pour le joueur** : l'Émeraude (récompense du parrainage) a sa propre image : une gemme rectangulaire taillée « à
+  degrés », coins coupés, au lieu de la forme ronde partagée avec les autres gemmes.
+- **État** : ✅ en ligne le 07/11
+
 ## 07/11/2026 — Geoffrey — Instance I : la cage du roi gobelin, un seul bloc d'épaisseur
 - **Pour le joueur** : quand le roi gobelin enferme les mineurs sur les rebords, la cage ne fait plus 3 blocs d'épaisseur
   mais **un seul** (à gauche, à droite et au-dessus), **3 fois plus solide**. Il faut le même temps pour sortir. Nouveau
