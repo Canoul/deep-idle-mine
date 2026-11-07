@@ -16,6 +16,12 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 07/11/2026 — Geoffrey — Banque de guilde : vue dézoomée et historique des dons
+- **Pour le joueur** : sur ordinateur, la banque et ton inventaire sont maintenant côte à côte, avec des cases de taille
+  normale (avant : chaque grille prenait toute la largeur, les cases étaient énormes). Sur téléphone, rien ne change de
+  place. En dessous, un **historique des dons** : les 30 derniers dons à la banque (date, qui, quoi, combien).
+- **État** : ✅ en ligne le 07/11
+
 ## 07/11/2026 — Geoffrey — Instance I : la cage du roi gobelin, un seul bloc d'épaisseur
 - **Pour le joueur** : quand le roi gobelin enferme les mineurs sur les rebords, la cage ne fait plus 3 blocs d'épaisseur
   mais **un seul** (à gauche, à droite et au-dessus), **3 fois plus solide**. Il faut le même temps pour sortir. Nouveau
