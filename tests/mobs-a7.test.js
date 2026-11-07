@@ -9,6 +9,7 @@ import { addWorm, updateWorms, updateStuck, release } from '../src/sim/worm.js';
 import { landHit } from '../src/sim/actions.js';
 import { minerEffects } from '../src/sim/effects.js';
 import { newSession, tick } from '../src/sim/session.js';
+import { decide } from '../src/sim/ai.js';
 import { worldFrom } from './helpers.js';
 
 test('config : PV, areas, XP, butins, tables des areas 7 et 8 (pris au mimic et à l\'occultiste)', () => {
@@ -116,15 +117,42 @@ test('ver coincé dans la session : updateMobs le fait replonger après 10 s', (
   assert.equal(G.mobs.length, 0); assert.equal(G.worms.length, 1); assert.equal(G.worms[0].hp, 200);
 });
 
-test('ver : plus aucun mineur à portée de suivi, il disparaît ; la session tourne avec un ver', () => {
+test("ver : il ne s'en va jamais, il fonce vers le mineur hors de portée de charge ; la session tourne avec un ver", () => {
   const { G, m } = rock();
-  addWorm(G, 9, Math.min(W - 1, m.x + MOBS.ver.leash), 28, 300);
-  m.y = 1; spin(G, 0.2);
-  assert.equal(G.worms.length, 0);
+  addWorm(G, 9, m.x, 28, 300);
+  G.rng = () => 0.99;
+  const d0 = Math.abs(G.worms[0].x - m.x) + Math.abs(G.worms[0].y - m.y);
+  assert.ok(d0 > MOBS.ver.reach);
+  spin(G, 5);
+  assert.equal(G.worms.length, 1);
+  const w = G.worms[0];
+  assert.ok(Math.abs(w.x - m.x) + Math.abs(w.y - m.y) <= MOBS.ver.reach, "il s'est rapproché à portée de charge");
+  m.y = 0; spin(G, 60);
+  assert.equal(G.worms.length, 1, 'mineur à la surface : il reste dans la mine');
   const S = newSession(4);
   addWorm(S, 77, 10, 12, 300);
   for(let i = 0; i < 300; i++) tick(S);
   assert.ok(Array.isArray(S.worms));
+});
+
+test("ver coincé : il force le combat (même en remontée et réglé sur Ignorer) à force cases ou s'il vient de traverser le mineur", () => {
+  const stuck = (G, x, y, hitBy = []) => { G.mobs = [{ id: 5, type: 'ver', x, y, hp: 300, maxhp: 300, cd: 5, left: 10, knockRes: 100, hitBy }]; return G.mobs[0]; };
+  for(const fightMobs of [false, 'flee', true]){
+    const { G, m } = rock();
+    m.mode = 'return'; m.prefs.fightMobs = fightMobs;
+    const o = stuck(G, m.x, m.y + 1);   // le bloc sous ses pieds, qui touche la galerie
+    decide(G, m);
+    assert.equal(m.status, 'Combat (vers coincé)', `fightMobs ${fightMobs}`);
+    assert.ok(o.hp < 300, 'le coup est parti');
+  }
+  { const { G, m } = rock();   // trop loin, pas traversé : rien de forcé
+    m.mode = 'return'; stuck(G, m.x + 2, m.y + 2);
+    decide(G, m);
+    assert.ok(!/vers coincé/.test(m.status || ''), m.status); }
+  { const { G, m } = rock();   // trop loin mais traversé : il y va
+    m.mode = 'return'; stuck(G, m.x + 2, m.y + 2, [m.id]);
+    decide(G, m);
+    assert.match(m.status, /vers coincé/); }
 });
 
 test('vaincus : butin de 1 à 3, XP de la table', () => {

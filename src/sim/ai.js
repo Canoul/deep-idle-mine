@@ -9,6 +9,7 @@ import { mulePlaced, isCarrier, muleFits, nearMule, muleAfterWinch } from './mul
 import { log } from './log.js';
 import { mulberry32 } from '../core/rng.js';
 import { tackler, channeler, revealMimic } from './mobs.js';
+import { stuckWorm } from './worm.js';
 import { inReach, driftsAway, reachOf, nearCell } from './knock.js';
 import { fleshAt, fleshSlow } from './flesh.js';
 import { landHit } from './actions.js';
@@ -783,6 +784,9 @@ export function decide(G,m){
      bouger pour rester à portée (25/10 ; avant : immobilisé). Ses pas sont marqués (data.fight) : le tacle ne les
      interrompt pas (src/sim/session.js) */
   { const tk=tackler(G,m); if(tk){ m.foe=tk.id; m.foeHit=G.t; fight(G,m,tk); if(m.action) m.action.data.fight=true; m.status='Taclé ! ('+tk.type+')'; return; } }
+  /* vers de terre coincé (07/11/2026, Geoffrey) : il force le combat comme un tacle (même en remontée, même réglé sur
+     Ignorer / Fuir) pour les mineurs qu'il vient de traverser et ceux à MOBS.ver.force cases ; inatteignable : il le laisse */
+  { const wo=stuckWorm(G,m); if(wo && goFight(G,m,wo,Math.abs(wo.x-m.x)+Math.abs(wo.y-m.y),'Combat (vers coincé)','Va frapper le vers coincé')) return; }
   if(m.mode==='surface' && m.y>0){ m.mode='return'; m.reason='chute'; m.returnStart=G.t; }  // tombé dans un trou en rejoignant le coffre
   if(m.mode==='departure' && m.y>0) m.mode='work';                       // tombé en rejoignant son puits : il est parti
   trackDescent(G,m);

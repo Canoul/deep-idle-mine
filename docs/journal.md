@@ -54,6 +54,14 @@ Modèle d'entrée :
 - **À suivre** : équilibrage. Les trois sorts sont plutôt faibles pour un niveau 15 (≈ +1,5 % de dégâts du groupe pour
   Fracasse, ≈ +3 % pour la Rafale en combat) ; simulation : coffre ≈ +4 % avec les trois.
 
+## 07/11/2026 — Geoffrey — Le Vers de terre se laisse enfin tuer
+- **Pour le joueur** : quand le Vers de terre se coince (sa queue dépasse d'un bloc), les mineurs qu'il vient de traverser
+  et ceux tout près (3 cases) **sont obligés de le frapper**, comme quand un mob les tacle, même s'ils remontaient au
+  coffre ou étaient réglés sur « Ignorer ». Et il **ne s'en va plus** : il suit les mineurs dans la mine jusqu'à mourir.
+- **Pourquoi** : il apparaissait autant que le Chien de magma mais rapportait environ 10 fois moins de Chair de vers.
+  En simulation, il n'était tué que 4 fois sur 14 (le chien : 11 sur 12) : les mineurs passaient à côté sans le frapper.
+- **État** : ✅ en ligne le 07/11
+
 ## 07/11/2026 — Geoffrey — Nouvelle image de l'Émeraude
 - **Pour le joueur** : l'Émeraude (récompense du parrainage) a sa propre image : une gemme rectangulaire taillée « à
   degrés », coins coupés, au lieu de la forme ronde partagée avec les autres gemmes.
