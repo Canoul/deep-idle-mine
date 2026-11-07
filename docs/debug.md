@@ -7919,6 +7919,10 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Vérifié** : maquette avec style.css + app.css et la vraie police, Playwright à 393 / 360 / 320 px ✅ (cas normaux identiques, gros nombres sur 2 lignes sans chevauchement). Traducteur : « Tu en as 3 442 · » → « You have 3 442 · », « banque 1 234 567 » → « bank 1 234 567 » ✅. Tests guild-bank, guild-buildings, i18n, i18n-dom ✅ (36/36).
 - ⚠️ Pas vu dans l'appli elle-même : à confirmer sur téléphone.
 
+## 07/11/2026 — Guilde : XP retirée des lignes de membres (Geoffrey)
+- src/ui/guild.js `memberRow` : retiré `<span class="gxp">${fr(m.xp)} XP</span>` ; reste `specChip(m.spec)` (meilleure spé + niveau). Le serveur envoie toujours `xp` (inutilisé ici). Inchangé : liste dépliée d'une autre guilde (Rechercher, `foldHTML`) et leaderboard.
+- Tests : tests/guild-ui.test.js (assertion inversée : plus de « 1 234 XP »), tests/app-guild.test.js ✅ (21/21). ⚠️ Pas vu à l'écran (mise en page flex, rien à ajuster).
+
 ## 07/11/2026 — Bot Discord : plantage au démarrage, `ASSIGNEES is not defined` (Geoffrey)
 - **Cause** : le commit 223fbb7b (croix qui supprime, 💎) a remplacé `ASSIGNEES` par `REACTIONS` dans l'`import` de bot/main.js, mais la construction de la commande `/todo` (ligne 25) utilise encore `ASSIGNEES` → `ReferenceError` au chargement, systemd relance toutes les 5 s, bot hors ligne. Invisible tant que l'ancien code tournait : la panne est apparue au `systemctl restart` du 06/11.
 - **Correction** : `ASSIGNEES` remis dans l'`import` de bot/main.js.

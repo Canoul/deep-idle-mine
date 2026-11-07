@@ -16,6 +16,11 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 07/11/2026 — Geoffrey — Guilde : plus d'XP par membre dans la liste
+- **Pour le joueur** : dans l'onglet de sa guilde, la ligne de chaque membre ne montre plus son nombre d'XP ; il reste sa
+  meilleure spécialisation et son niveau (ex. « ⛏ Mineur 72 »), son grade et son activité. Site et appli.
+- **État** : ✅ en ligne le 07/11
+
 ## 07/11/2026 — Geoffrey — Bot Discord : il ne démarrait plus
 - **Pour le joueur** : rien. Pour l'équipe : le bot était hors ligne depuis le redémarrage du 06/11 (version croix + 💎) ;
   pendant ce temps, les tags @admin et les réactions n'ont pas été pris en compte (rien n'est rattrapé).

@@ -18,10 +18,10 @@ test('avec guilde : sous-onglet au nom de la guilde, échappé', () => {
   assert.equal(t[0].label, '&lt;script&gt;x');
 });
 
-test('ligne d\'un membre : grade, activité, XP rapportée', () => {
+test('ligne d\'un membre : grade, activité, sans XP (07/11)', () => {
   const h = mineHTML(mine({ members:[row({ rank:'officer', status:'session', leftMs:600_000 }), row({ status:'offline', name:'Max' })] }));
   assert.match(h, /Officier/); assert.match(h, /En session mine · reste 10 min/); assert.match(h, /Hors ligne/);
-  assert.match(h, /1\s234 XP/);
+  assert.doesNotMatch(h, /1\s234 XP/);
   assert.match(mineHTML(mine()), /En ligne/);
   assert.match(mineHTML(mine({ members:[row({ status:'lobby', size:2, max:3 })] })), /Dans le lobby \(2\/3\)/);
   assert.match(mineHTML(mine({ members:[row({ status:'session', mode:'prison', online:true })] })), /fdot on.*En ligne - Prison/);
