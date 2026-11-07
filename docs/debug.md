@@ -7922,3 +7922,10 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 ## 07/11/2026 — Guilde : XP retirée des lignes de membres (Geoffrey)
 - src/ui/guild.js `memberRow` : retiré `<span class="gxp">${fr(m.xp)} XP</span>` ; reste `specChip(m.spec)` (meilleure spé + niveau). Le serveur envoie toujours `xp` (inutilisé ici). Inchangé : liste dépliée d'une autre guilde (Rechercher, `foldHTML`) et leaderboard.
 - Tests : tests/guild-ui.test.js (assertion inversée : plus de « 1 234 XP »), tests/app-guild.test.js ✅ (21/21). ⚠️ Pas vu à l'écran (mise en page flex, rien à ajuster).
+
+## 07/11/2026 — Bot Discord : plantage au démarrage, `ASSIGNEES is not defined` (Geoffrey)
+- **Cause** : le commit 223fbb7b (croix qui supprime, 💎) a remplacé `ASSIGNEES` par `REACTIONS` dans l'`import` de bot/main.js, mais la construction de la commande `/todo` (ligne 25) utilise encore `ASSIGNEES` → `ReferenceError` au chargement, systemd relance toutes les 5 s, bot hors ligne. Invisible tant que l'ancien code tournait : la panne est apparue au `systemctl restart` du 06/11.
+- **Correction** : `ASSIGNEES` remis dans l'`import` de bot/main.js.
+- **Vérifié** : `node main.js` avec faux réglages et faux jeton : ancien code → `ReferenceError: ASSIGNEES is not defined` ; corrigé → va jusqu'à la connexion (`TokenInvalid`, attendu) ✅. tests/bot-todo.test.js ✅ (10/10).
+- ⚠️ Les tests ne chargent que bot/todo.js, pas bot/main.js (il faut discord.js) : une erreur d'import dans main.js passe les tests. Après toute modif de bot/main.js, lancer `node main.js` avec un faux jeton dans bot/ (après `npm ci`) et vérifier qu'on arrive à `TokenInvalid`.
+- ⚠️ Pas de journal serveur consulté (pas d'accès SSH depuis le PC de Geoffrey) : à confirmer par `sudo journalctl -u deep-mine-bot -n 20` après le redémarrage (`Bot connecté : …`).
