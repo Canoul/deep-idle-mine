@@ -20,7 +20,7 @@ Modèle d'entrée :
 - **Pour le joueur** : rien. Pour l'équipe : le bot était hors ligne depuis le redémarrage du 06/11 (version croix + 💎) ;
   pendant ce temps, les tags @admin et les réactions n'ont pas été pris en compte (rien n'est rattrapé).
 - **À suivre** : après la mise en ligne, relancer le bot sur le serveur (`sudo systemctl restart deep-mine-bot`).
-- **État** : 🧪 sur la branche `geoffrey/fix-bot` (pas en ligne)
+- **État** : ✅ en ligne le 07/11
 
 ## 06/11/2026 — Jules — Appli : chantiers de guilde, les gros nombres ne se chevauchent plus
 - **Pour le joueur** : sur un téléphone étroit, quand on a beaucoup d'un matériau (ex. « Tu en as 12 345 678 · banque
