@@ -149,7 +149,12 @@ test('enfermement : chaque mineur sur un rebord différent, entouré de blocs de
     assert.ok(G.ledges.some(l => l.y === m.y), 'sur un rebord');
     assert.equal(G.tiles[m.y - 1][m.x], CAGE); assert.equal(G.tiles[m.y][m.x + (m.x < G.mid ? 1 : -1)], CAGE);
     assert.ok(instSupported(G, m.x, m.y));
+    /* 07/11/2026 : une seule épaisseur, en boîte (gauche, droite, dessus et ses deux coins) */
+    const around = []; for(let y = m.y - 3; y <= m.y + 1; y++) for(let x = m.x - 3; x <= m.x + 3; x++) if(G.tiles[y]?.[x] === CAGE) around.push(`${x - m.x},${y - m.y}`);
+    assert.deepEqual(around.sort(), ['-1,-1', '-1,0', '0,-1', '1,-1', '1,0'], "cage d'un bloc d'épaisseur");
   }
+  assert.equal(G.tiles.reduce((n, row) => n + [...row].filter(t => t === CAGE).length, 0), 15, '5 blocs par mineur');
+  assert.equal(INSTANCE.boss.cageHard, 30, 'dureté × 3 (avant : 10, sur 3 épaisseurs)');
   const hp = G.boss.hp;
   run(G, INSTANCE.boss.regenEvery);
   assert.ok(Math.abs(G.boss.hp - (hp + G.boss.maxhp * INSTANCE.boss.regenPct)) < 1e-6, 'il régénère pendant l\'enfermement');

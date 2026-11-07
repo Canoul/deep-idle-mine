@@ -1739,7 +1739,7 @@ def giant():
 
 def instance():
     """Instance I (27/10) : le spawner à gobelins (une hutte de branches, gueule rougeoyante), les blocs des cages du roi
-    (planches cloutées) et le roi gobelin (3 × 3 cases, 48 × 48 pixels, scripts/gen_king.py depuis le 03/11/2026)."""
+    (barreaux de fer, 07/11/2026) et le roi gobelin (3 × 3 cases, 48 × 48 pixels, scripts/gen_king.py depuis le 03/11/2026)."""
     def canvas(w, h):
         return [(0, 0, 0, 0)] * (w * h)
 
@@ -1760,15 +1760,26 @@ def instance():
     r(sp, 16, 16, 5, 11, 6, 5, glow); r(sp, 16, 16, 6, 12, 4, 4, glow_l)
     r(sp, 16, 16, 6, 0, 4, 3, bone); r(sp, 16, 16, 6, 1, 1, 1, hexc('#22180e')); r(sp, 16, 16, 9, 1, 1, 1, hexc('#22180e'))
 
-    # cage : planches cloutées
+    # cage (07/11/2026, Geoffrey ; avant : planches cloutées pleines) : barreaux de fer entre deux poutres, bagues de
+    # laiton ; entre les barreaux, un voile sombre à demi transparent (on voit la salle et le mineur derrière). Les poutres
+    # et l'écart des barreaux se raccordent d'un bloc à l'autre.
     cg = canvas(16, 16)
-    pl, pl_d, nail = hexc('#8a6a3e'), hexc('#5a4224'), hexc('#c9c9d1')
-    r(cg, 16, 16, 0, 0, 16, 16, pl)
-    for y in (0, 5, 10, 15):
-        r(cg, 16, 16, 0, y, 16, 1, pl_d)
-    for x, y in [(2, 2), (13, 2), (2, 7), (13, 7), (2, 12), (13, 12)]:
-        r(cg, 16, 16, x, y, 1, 1, nail)
-    r(cg, 16, 16, 0, 0, 1, 16, pl_d); r(cg, 16, 16, 15, 0, 1, 16, pl_d)
+    veil = hexc('#140e08', 90)
+    bm, bm_l, bm_d = hexc('#6b4a2a'), hexc('#8a6a3e'), hexc('#3f2a16')
+    ir_d, ir, ir_l, rust = hexc('#2c2f36'), hexc('#5d626a'), hexc('#a4abb5'), hexc('#7a4a2a')
+    brass, brass_d, nail = hexc('#c9a227'), hexc('#7a5e12'), hexc('#d4d8de')
+    r(cg, 16, 16, 0, 0, 16, 16, veil)
+    for y0 in (0, 13):                                   # poutres du haut et du bas
+        r(cg, 16, 16, 0, y0, 16, 3, bm); r(cg, 16, 16, 0, y0, 16, 1, bm_l); r(cg, 16, 16, 0, y0 + 2, 16, 1, bm_d)
+        for x in (4, 9, 14):
+            r(cg, 16, 16, x, y0 + 1, 1, 1, bm_d)          # veines du bois
+    for x in (2, 7, 12):                                 # barreaux : ombre, corps, reflet
+        r(cg, 16, 16, x, 3, 1, 10, ir_d); r(cg, 16, 16, x + 1, 3, 1, 10, ir); r(cg, 16, 16, x + 1, 4, 1, 3, ir_l)
+        for y in (3, 12):                                # bagues de laiton contre les poutres
+            r(cg, 16, 16, x - 1, y, 4, 1, brass); r(cg, 16, 16, x - 1, y + (1 if y == 3 else -1), 4, 1, brass_d)
+        r(cg, 16, 16, x + 1, 1, 1, 1, nail); r(cg, 16, 16, x + 1, 14, 1, 1, nail)   # clous dans les poutres
+    for x, y in [(2, 8), (8, 10), (12, 6)]:              # taches de rouille
+        r(cg, 16, 16, x, y, 1, 1, rust)
 
     # roi gobelin (3 × 3 cases, 48 × 48) : dessiné par scripts/gen_king.py depuis le 03/11/2026 (roi guerrier balafré,
     # il porte son butin ; ancien : rectangles, cape pourpre)
