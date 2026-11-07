@@ -232,7 +232,7 @@ function inspire(G,m){
 export const inspireBonus = (G, m = null) => inspirePct(G, m);
 
 /* Ralliement : un autre mineur du groupe se bat (il frappe un mob, ou un mob le tacle) → téléporté sur sa case, il
-   inflige hpPct des PV max du mob (bossPct sur un boss), puis se bat à ses côtés. Seulement quand il travaille (pas
+   inflige hpPct des PV max du mob (sur un boss : bossDmg × ses dégâts, 07/11/2026), puis se bat à ses côtés. Seulement quand il travaille (pas
    en remontée, pas pendant un chantier de treuil, la Mule, une chute ou un étourdissement) ; jamais dans un donjon interdit. */
 function ulti(G,m){
   const S = SPELL.ulti_shen, a = m.action;
@@ -247,7 +247,7 @@ function ulti(G,m){
     m.target = null; m.exploring = false; m.digCol = null; m.galleryRow = null; m.goingDown = false;
     if(!G.khole && m.y>m.stats.maxDepth) m.stats.maxDepth = m.y;
     cast(G,m,'ulti_shen');
-    hurt(G,foe,foe.maxhp*(isBoss(foe) ? S.bossPct : S.hpPct));
+    hurt(G,foe,isBoss(foe) ? hitDamage(G,m)*S.bossDmg : foe.maxhp*S.hpPct);
     log(G, `🌀 ${m.name} : Ralliement, rejoint ${o.name} contre un ${foe.type}`);
     if(foe.hp<=0) killMob(G,m,foe);
     else { m.foe = foe.id; m.foeHit = G.t; }

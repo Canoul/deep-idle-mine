@@ -822,7 +822,7 @@ function supportSpells(G, m){
     if(to){
       cast(G, m, 'ulti_shen'); stopAction(m); m.action = null; m.x = to.x; m.y = to.y; m.kx = 0; m.ky = 0;
       if(ally) damageMob(G, m, tackler(G, ally), tackler(G, ally).maxhp * S.hpPct);
-      else damageBoss(G, m, G.boss.maxhp * S.bossPct);
+      else damageBoss(G, m, hitDmg(G, m) * S.bossDmg);   // 300 % de ses dégâts (07/11 ; ancien 5 % des PV max)
       log(G, `🌀 ${m.name} : Ralliement auprès de ${to.name}`);
       return true;
     }

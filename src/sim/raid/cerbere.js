@@ -308,7 +308,7 @@ function supportSpells(G, m){
   const to = actives(G).find(a => a !== m && inContact(G, a));
   if(!to || helper(G, m)) return;
   cast(G, m, 'ulti_shen'); m.action = null; m.x = to.x; m.y = to.y; m.kx = 0; m.hop = G.ticks;
-  damageBoss(G, m, G.boss.maxhp * SPELL.ulti_shen.bossPct);
+  damageBoss(G, m, hitDmg(G, m) * SPELL.ulti_shen.bossDmg);   // 300 % de ses dégâts (07/11 ; ancien 5 % des PV max)
   log(G, `🌀 ${m.name} : Ralliement auprès de ${to.name}`);
 }
 function dashBoss(G, m){
