@@ -7918,3 +7918,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Correction** : src/ui/style.css, mêmes règles `body.app .gbuilding .gmat.gmat` : colonne de droite `fit-content(55%)`, `.gxp.mut` en `white-space:normal` + `text-align:right`, ses deux morceaux en `white-space:nowrap`. src/ui/guild.js (`materialRow`) : « Tu en as X · » et « banque Y » dans deux `<span>` (le site ne change pas : `.gxp` reste `nowrap`). src/i18n/en/ui.js : `banque {#a}` → `bank {a}` (nombres seulement ; « banque de guilde » n'est pas touché).
 - **Vérifié** : maquette avec style.css + app.css et la vraie police, Playwright à 393 / 360 / 320 px ✅ (cas normaux identiques, gros nombres sur 2 lignes sans chevauchement). Traducteur : « Tu en as 3 442 · » → « You have 3 442 · », « banque 1 234 567 » → « bank 1 234 567 » ✅. Tests guild-bank, guild-buildings, i18n, i18n-dom ✅ (36/36).
 - ⚠️ Pas vu dans l'appli elle-même : à confirmer sur téléphone.
+
+## 07/11/2026 — Guilde : XP retirée des lignes de membres (Geoffrey)
+- src/ui/guild.js `memberRow` : retiré `<span class="gxp">${fr(m.xp)} XP</span>` ; reste `specChip(m.spec)` (meilleure spé + niveau). Le serveur envoie toujours `xp` (inutilisé ici). Inchangé : liste dépliée d'une autre guilde (Rechercher, `foldHTML`) et leaderboard.
+- Tests : tests/guild-ui.test.js (assertion inversée : plus de « 1 234 XP »), tests/app-guild.test.js ✅ (21/21). ⚠️ Pas vu à l'écran (mise en page flex, rien à ajuster).
