@@ -46,12 +46,19 @@ export function bankHTML(v, { sub = 'chest', btab = 'all', mtab = 'all' } = {}){
   const tabs = `<div class="gSub">${BANK_SUBS.map(([id, label]) => `<button data-gbank="${id}"${id === sub ? ' class="on"' : ''}>${label}</button>`).join('')}</div>`;
   if(sub === 'craft') return tabs + bankCraftHTML(v);
   const used = v.bank.slots.length;
-  return tabs + `<div class="card"><h2>Banque de guilde <span class="mut">${used} objet${used > 1 ? 's' : ''}</span></h2>`+
+  /* 07/11/2026 (Geoffrey) : la banque et son inventaire côte à côte sur un écran large (avant : chaque grille sur toute la
+     largeur, des cases énormes), puis l'historique des dons */
+  return tabs + `<div class="gbWrap"><div class="card"><h2>Banque de guilde <span class="mut">${used} objet${used > 1 ? 's' : ''}</span></h2>`+
       `<p class="mut small">${v.canUse ? 'Tu peux t\'en servir pour les bâtiments (bouton « De la banque ») et le craft de guilde.' : 'Seuls le chef et les officiers peuvent s\'en servir (bâtiments, craft de guilde).'}</p>`+
       gridHTML(v.bank.slots, btab, 'bank', INVENTORY.cols * 2)+`</div>`+
     `<div class="card"><h2>Ton inventaire</h2><p class="mut small">Touche un objet pour le donner à la banque. Un don est définitif (pas de retrait). Ni stuff, ni rune.</p>`+
-      gridHTML(v.mine.map(s => ({ item:s.item, qty:s.qty })), mtab, 'mine', INVENTORY.cols)+`</div>`;
+      gridHTML(v.mine.map(s => ({ item:s.item, qty:s.qty })), mtab, 'mine', INVENTORY.cols)+`</div></div>`+
+    giftsHTML(v.gifts ?? []);
 }
+/* historique des dons à la banque (07/11/2026, Geoffrey) : les derniers dépôts, du plus récent au plus ancien */
+export const giftsHTML = gifts => `<div class="card"><h2>Historique des dons</h2>`+
+  (gifts.length ? `<div class="glog gbGifts">${gifts.map(r => `<div class="glogRow"><span class="mut">${dateOf(r.at)}</span> <b>${pn(r.name)}</b> a donné ${itemIcon(r.item)}${fr(r.qty)} ${rname(r.item)}</div>`).join('')}</div>`
+    : "<p class='mut small'>Aucun don pour l'instant.</p>")+`</div>`;
 
 /* onglet Raid (04/11/2026, Geoffrey ; spec docs/superpowers/specs/2026-11-04-raid-cerbere-design.md) : le lobby de raid de
    la guilde (server/guild/raid.js), le raid en cours. r : mine.raid de la vue du serveur ; now : heure du serveur (ms). */

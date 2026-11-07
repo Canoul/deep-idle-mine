@@ -533,6 +533,8 @@ export default {
   'Étape {a} / {b} : {c}': 'Stage {a} / {b}: {c}',
   'Chaque don fait avancer le chantier ; chaque bâtiment construit ajoute son annexe.': 'Each donation moves the construction forward; each building built adds its annex.',
   'Journal des dons': 'Donation log',
+  'Historique des dons': 'Donation history',   // banque de guilde (07/11)
+  "Aucun don pour l'instant.": 'No donations yet.',
   'Voir plus': 'See more',
   'Message de guilde': 'Guild message',
   'Demandes reçues': 'Requests received',
