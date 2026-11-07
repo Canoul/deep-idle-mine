@@ -16,6 +16,17 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 07/11/2026 — Geoffrey — Tableau de la prison : une mesure plus juste
+- **Pour le joueur** : rien, c'est l'outil de l'équipe (📊 Rendement de la prison, compte admin).
+- **Ce qui change dans le tableau** : le chiffre du haut est maintenant la **médiane** des joueurs qui ont leurs 10 mines
+  (avant : la moyenne de tous, tirée vers le haut par des débutants à 700 %). Les joueurs avec moins de 10 mines sont dans un
+  second tableau. Seule la prison jouée **depuis la plus ancienne des 10 mines** compte (avant : depuis le 30/10, avec
+  d'anciens réglages et un stuff plus faible, ce qui faisait baisser le % des joueurs qui ont progressé). Le cobalt et le
+  thorium, plafonnés exprès en prison, sont en gris et ne comptent plus dans le « Rendement ».
+- **À suivre** : relire le tableau en ligne ; si la médiane reste sous 40 %, monter `oreMul` (0,27 aujourd'hui, ~0,33-0,35
+  visé).
+- **État** : 🧪 sur la branche `geoffrey/tableau-prison-mesure` (pas en ligne)
+
 ## 07/11/2026 — Geoffrey — Instance I : la cage du roi gobelin, un seul bloc d'épaisseur
 - **Pour le joueur** : quand le roi gobelin enferme les mineurs sur les rebords, la cage ne fait plus 3 blocs d'épaisseur
   mais **un seul** (à gauche, à droite et au-dessus), **3 fois plus solide**. Il faut le même temps pour sortir. Nouveau
