@@ -16,6 +16,14 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 07/11/2026 — Geoffrey — Lobby : la spé et le stuff de chacun pour l'activité choisie
+- **Pour le joueur** : dans l'équipe du Lobby, la spé affichée pour chaque joueur est maintenant celle qu'il **jouera
+  dans l'activité ouverte** : si un joueur a un set défini pour cette activité (ex. un set « Tours »), c'est la spé de ce
+  set, avec « set « Tours » » à côté. Avant, on voyait la spé portée, qui pouvait changer au lancement. Nouveau bouton
+  **casque** en bas à droite de chaque joueur (soi compris) : sa fiche avec le stuff, les stats, la spé et les sorts que
+  ce set lui donnera. Rien n'est équipé en regardant.
+- **État** : ✅ en ligne le 07/11
+
 ## 07/11/2026 — Geoffrey — Coffre du Golbute : une Topaze possible
 - **Pour le joueur** : en ouvrant un Coffre du Golbute, on peut maintenant trouver une **Topaze** (1,5 %), dans le même
   tirage que les gemmes inférieures (2 % chacune) : toujours une gemme au plus par coffre.

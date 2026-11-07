@@ -334,6 +334,21 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
      lui a associé est équipé, comme avec « Équiper » ; rien s'il n'y en a pas, s'il est déjà équipé, ou si le joueur est
      en session (son équipement figé ne change pas, le prochain lancement s'en chargera). Jamais d'erreur : un set
      introuvable ne bloque pas le lancement. À appeler HORS des verrous du lancement (il prend inv, skills, spells, sets). */
+  /* équipement qui sera joué dans l'activité mode (07/11/2026, Geoffrey ; fiche d'un joueur dans le lobby) : le set associé à
+     cette activité appliqué sur une COPIE, comme le fera autoEquip au lancement (pièces, skills rejoués avec les points, sorts
+     équipables) ; sinon (pas de set, déjà équipé, en session, set inapplicable) ce qui est porté. Rien n'est écrit.
+     { worn, skills, spells:[id | null], set:nom | null } */
+  async function plannedLoadout(accountId, mode){
+    const inv = await loadInventory(accountId), stuff = await loadStuff(accountId, inv);
+    const skills = await loadSkills(accountId), spells = await loadSpells(accountId);
+    const sets = sanitizeSets(await store.getSets(accountId)), set = mode ? setForMode(sets, mode) : null;
+    if(set && !equippedSet([set], stuff.worn, skills, spells.slots) && !await activeOf(accountId)){
+      const c = structuredClone({ sets, inv, stuff, skills, spells }), ctx = await spellCtx(accountId);
+      const r = applySet(c.sets, { id: set.id, opId: 'preview' }, { inv: c.inv, stuff: c.stuff, skills: c.skills, spells: c.spells, points: await pointsOf(accountId), spec: ctx.spec, level: ctx.level });
+      if(!r.error) return { worn: c.stuff.worn, skills: c.skills, spells: [...c.spells.slots], set: set.name };
+    }
+    return { worn: stuff.worn, skills, spells: [...spells.slots], set: null };
+  }
   async function autoEquip(accountId, mode){
     try {
       if(await activeOf(accountId)) return null;
@@ -1080,11 +1095,12 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       return { who: r.who, name: r.name, copies: Object.keys(devCopies()) };
     },
 
-    async profile(accountId){
-      const inv = await loadInventory(accountId);
-      return { stuff: (await loadStuff(accountId, inv)).worn,
+    /* mode (07/11/2026) : l'équipement qui sera joué dans cette activité (set d'activité, plannedLoadout) ; sorts équipés */
+    async profile(accountId, mode = null){
+      const p = await plannedLoadout(accountId, mode);
+      return { stuff: p.worn,
                progress: publicProgress(await loadProgress(accountId)),
-               skills: skillRanks(await loadSkills(accountId)) };
+               skills: skillRanks(p.skills), spells: p.spells, set: p.set };
     },
 
     async setPrefs(me, body){
@@ -2178,6 +2194,13 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     /* arbre de skills choisi (mineur, logisticien, barbare) ou null : la spécialisation affichée dans le lobby */
     skillTreeOf: async accountId => (await loadSkills(accountId)).tree ?? null,
     skillPointsOf: async accountId => pointsByTree(await loadSkills(accountId)),   // points par arbre (lobby : « Logisticien (2/12/1) », 04/11)
+    /* skills qui seront joués dans l'activité mode (07/11/2026, Geoffrey) : ceux du set associé à cette activité s'il y en a un
+       (autoEquip l'équipera au lancement), sinon ceux portés. { tree, pts, set } ; set : nom du set, ou null */
+    plannedSkillsOf: async (accountId, mode) => {
+      const set = setForMode(sanitizeSets(await store.getSets(accountId)), mode);
+      const sk = set ? sanitizeSkills(set.skills) : await loadSkills(accountId);
+      return { tree: sk.tree ?? null, pts: pointsByTree(sk), set: set?.name ?? null };
+    },
     /* niveau de spécialisation dans cet arbre (null sans arbre) : « Logisticien (SP lvl : 3) » dans le lobby */
     specLevelOf: async (accountId, tree) => tree ? specLevels(await loadProgress(accountId))[tree]?.level ?? null : null,
     /* apparence (noms des pièces portées, { case: objet }) : le skin de chaque membre dans le lobby */

@@ -449,6 +449,7 @@ const lobby = setupLobby({
   look: () => lookOf(stuff.worn()),
   auras: () => aurasOf(stuff.worn()),
   gs: () => gearScore(stuff.worn()),
+  sets: () => setsUI?.list(),   // mes sets : ma spé dans l'activité choisie (set d'activité, 07/11)
   keys: item => (ui.inv?.slots ?? []).reduce((n, s) => n + (s?.item === item ? s.qty || 1 : 0), 0),   // clés d'instance (27/10)
   towerWho: side => socialApi.towerWho(side),
   onPrefs: prefs => gameApi.prefs(prefs).catch(e => lobby.error(e.message)),
@@ -557,7 +558,7 @@ async function pollLobby(){
   if(acct.offline || !acct.account || waiting) return;
   try {
     if(pendingJoin && !rec){ const code = pendingJoin; pendingJoin = null; nav.show('lobby'); await lobby.join(code); }
-    const st = await partyApi.state();
+    const st = await partyApi.state(lobby.activity?.());   // l'activité choisie : chacun avec la spé de son set d'activité (07/11)
     if(st.session && st.session !== rec?.id){          // lancée par le chef (ou relancée pendant le bilan : il est lu)
       const was = setsUI.equipped();
       endAck?.(); await refresh(); tellAutoSet(was); return nav.show('session');
