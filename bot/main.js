@@ -5,7 +5,7 @@
    - Dans #todo : /todo joe, /todo djulo, /todo done, /todo help.
    Installation : docs/bot-discord.md. Après un changement de ce dossier : sudo systemctl restart deep-mine-bot */
 import { Client, GatewayIntentBits, MessageFlags, Partials, SlashCommandBuilder } from 'discord.js';
-import { DIAMOND, HELP, IGNORE, REACTIONS, createTodo, listMessages, parseDone, reportText } from './todo.js';
+import { ASSIGNEES, DIAMOND, HELP, IGNORE, REACTIONS, createTodo, listMessages, parseDone, reportText } from './todo.js';
 import { loadState, saveState } from './store.js';
 
 const need = name => { const v = process.env[name]; if(!v){ console.error(`Réglage manquant : ${name}`); process.exit(1); } return v; };

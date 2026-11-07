@@ -16,6 +16,12 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 07/11/2026 — Geoffrey — Bot Discord : il ne démarrait plus
+- **Pour le joueur** : rien. Pour l'équipe : le bot était hors ligne depuis le redémarrage du 06/11 (version croix + 💎) ;
+  pendant ce temps, les tags @admin et les réactions n'ont pas été pris en compte (rien n'est rattrapé).
+- **À suivre** : après la mise en ligne, relancer le bot sur le serveur (`sudo systemctl restart deep-mine-bot`).
+- **État** : 🧪 sur la branche `geoffrey/fix-bot` (pas en ligne)
+
 ## 06/11/2026 — Jules — Appli : chantiers de guilde, les gros nombres ne se chevauchent plus
 - **Pour le joueur** : sur un téléphone étroit, quand on a beaucoup d'un matériau (ex. « Tu en as 12 345 678 · banque
   1 234 567 »), « banque … » passe à la ligne au lieu de recouvrir « 1 294 399 / 5 000 000 ». Rien ne change avec des
