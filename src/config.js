@@ -2142,8 +2142,10 @@ export const GUILD = { maxMembers:30, xpPct:1, nameMin:3, nameMax:24, maxInvites
   maxGift:1e9, opMemory:50, logPage:100, logShow:50, messageMax:500,
   /* banque de guilde (05/11/2026, Geoffrey ; src/meta/guild-bank.js) : un inventaire par guilde (ns guild_bank) ; tout membre
      dépose (objets empilables, ni stuff ni rune), seuls le chef et les officiers s'en servent (craft, bâtiments) ; pas de
-     retrait. opMemory : dernières demandes retenues (une demande renvoyée n'agit qu'une fois) */
-  bank:{ opMemory:200 },
+     retrait. opMemory : dernières demandes retenues (une demande renvoyée n'agit qu'une fois) ·
+     historique des dons (07/11/2026, Geoffrey) : giftsShow derniers dépôts affichés sous les grilles, cherchés dans les
+     giftsScan dernières lignes du journal de guilde au plus */
+  bank:{ opMemory:200, giftsShow:30, giftsScan:500 },
   buildings:[
     { id:'armurerie', name:'Armurerie', tex:'guild_armory', levels:[
       { label:'+2 % de dégâts', mult:{ damage:2 }, cost:{ 'Pierre':500000, 'Lingot de fer':5000, 'Lingot d\'or':2500, 'Orbe supérieur':20, 'Orbe':500 } },   // Orbe supérieur : 20 le 04/11 (Geoffrey ; avant 100)

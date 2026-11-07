@@ -911,6 +911,11 @@ body.phone .chatMore{opacity:1;padding:0 calc(5*var(--u))}
 .gmat .bar{grid-column:1/-1}
 /* banque de guilde (05/11/2026, src/ui/guild.js bankHTML) */
 .gbGrid{margin-top:calc(2*var(--u))}
+/* 07/11/2026 : banque et inventaire côte à côte sur un écran large ; cases plafonnées (avant : énormes, toute la largeur) */
+.gbWrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,calc(180*var(--u))),1fr));gap:0 calc(6*var(--u));align-items:start}
+.gbGrid{grid-template-columns:repeat(var(--cols,8),minmax(0,calc(30*var(--u))));justify-content:start}
+.glog.gbGifts{max-height:calc(160*var(--u));overflow:auto}
+.gbGifts img{width:calc(8*var(--u));height:calc(8*var(--u));image-rendering:pixelated;vertical-align:middle;margin-right:var(--u)}
 .gbGrid .slot{cursor:pointer}
 .gbCraft{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:var(--u) calc(3*var(--u));margin-top:calc(3*var(--u))}
 .gbCraft .gbCost{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:var(--u) calc(4*var(--u))}
