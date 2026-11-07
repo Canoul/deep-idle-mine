@@ -9,6 +9,7 @@ import { isAir, supported } from './world.js';
 import { inReach, push, recenter, stopAction } from './knock.js';
 import { noEntry } from './dungeon.js';
 import { log } from './log.js';
+import { mobDt } from './debuffs.js';
 
 export const isMinotaur = o => o.type === DUNGEON.boss.type;
 export const variantOf = o => MINOTAUR.variants[o.variant] ?? MINOTAUR.variants.donjon;
@@ -55,7 +56,7 @@ export function charge(G, o, prey, canEnter, resists){
   }
   if(c?.phase === 'run'){ run(G, o, canEnter, resists); return true; }
   if(!prey) return false;
-  o.chargeCd = (o.chargeCd ?? C.first) - DT;
+  o.chargeCd = (o.chargeCd ?? C.first) - mobDt(G, o);   // Désarmé (07/11, src/sim/debuffs.js)
   if(o.chargeCd > 1e-9) return false;
   const dir = Math.sign(prey.x - o.x);
   if(!dir) return false;   // proie juste au-dessus ou au-dessous : il attend qu'elle soit sur le côté

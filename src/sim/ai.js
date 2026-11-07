@@ -12,6 +12,7 @@ import { tackler, channeler, revealMimic } from './mobs.js';
 import { inReach, driftsAway, reachOf, nearCell } from './knock.js';
 import { fleshAt, fleshSlow } from './flesh.js';
 import { landHit } from './actions.js';
+import { burstFight, disarmHit } from './spells.js';   // sorts de spé 15 en combat (07/11/2026)
 export { tackler } from './mobs.js';
 import { targetVal, dropDepleted, focusGoal, workArea, activeOres, areaGood, oreFocus } from './focus.js';
 import { active, mayEnter, isIn, inRoom, bossOf, hasBarbarian, isBarbarian, front } from './dungeon.js';
@@ -148,7 +149,12 @@ function fight(G,m,o){
   if(inReach(G,m,o,reachOf(m))){
     if(dx) m.face=Math.sign(dx);
     const now=nowOf(G,m);   // heure exacte dans le tick (28/10/2026 : sinon paliers de 0,1 s)
-    if(now+1e-9 >= (m.atkReady||0)){ landHit(G,m,o); m.atkReady=now+CFG.attackInterval*100/(m.carac.attackSpeed*(1+(warcryOf(G,m)?.speed||0))*dk(G,m)*fleshSlow(m)); }   // Cri de guerre : vitesse +5 % ; mur de chair : −10 % par stack
+    if(now+1e-9 >= (m.atkReady||0)){
+      const iv=CFG.attackInterval*100/(m.carac.attackSpeed*(1+(warcryOf(G,m)?.speed||0))*dk(G,m)*fleshSlow(m));   // Cri de guerre : vitesse +5 % ; mur de chair : −10 % par stack
+      if(burstFight(G,m,o,iv)) return;           // Rafale de pioche (07/11) : incantation, puis 5 coups
+      if(!disarmHit(G,m,o)) landHit(G,m,o);      // Désarmement (07/11) : à la place du coup normal
+      m.atkReady=now+iv;
+    }
     startAction(m,'attack', m.atkReady-now, {mob:o, done:true}); return;
   }
   if(Math.abs(dx)+Math.abs(dy)<=1 && driftsAway(m,o)){

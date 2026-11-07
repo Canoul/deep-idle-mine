@@ -19,6 +19,7 @@ import { isFlesh, fleshSpot, fleshStep, fleshAura, syncFlesh } from './flesh.js'
 import { addBleed, tickBleed } from './bleed.js';
 import { wormSpot, addWorm, updateWorms, updateStuck, release } from './worm.js';
 import { isMinotaur, enrage, rageHit, charge, breakCharge } from './minotaur.js';
+import { mobDt } from './debuffs.js';   // Désarmé (sort Désarmement, 07/11/2026)
 
 /* mobs qui se déplacent (ils comptent dans walkerCap et prennent les mineurs en chasse) ; les volants n'ont pas de
    gravité, les autres ont la même physique que le mineur */
@@ -115,7 +116,7 @@ function strike(G,o){
   const r=rageHit(o), m=byId(G,o.grab);
   const k=r?.knock ?? (MOBS.knock[o.type] || 0), every=r?.every ?? MOBS.hitEveryBy[o.type] ?? MOBS.hitEvery;
   if(!(k>0) || !m){ o.hit=every; return; }
-  o.hit=(o.hit ?? every)-DT;
+  o.hit=(o.hit ?? every)-mobDt(G,o);   // Désarmé (07/11) : recharge plus lente
   if(o.hit>1e-9 || !inReach(G,o,m)) return;
   o.hit+=every;
   if(m.action?.type==='move') return;   // en plein pas (ou en chute) : le coup ne le déplace pas
@@ -283,7 +284,7 @@ function walk(G,o,m){
 function dogBite(G,o){
   const m=byId(G,o.grab);
   if(!m){ o.bite=0; return; }
-  o.bite=(o.bite||0)+DT;
+  o.bite=(o.bite||0)+mobDt(G,o);
   if(o.bite<MOBS.chien.every-1e-9) return;
   o.bite-=MOBS.chien.every;
   if(resists(G,m,'chien')) log(G, `💪 ${m.name} résiste à la morsure du chien de magma`);
@@ -296,7 +297,7 @@ function dogBite(G,o){
 function goblinSteal(G,o){
   const m=byId(G,o.grab);
   if(!m){ o.steal=0; return; }
-  o.steal=(o.steal||0)+DT;
+  o.steal=(o.steal||0)+mobDt(G,o);
   if(o.steal < MOBS.goblinStealEvery-1e-9) return;
   o.steal-=MOBS.goblinStealEvery;
   const ores=Object.keys(m.inv).filter(k=>ORE_W.has(k) && m.inv[k]>0);
@@ -352,7 +353,7 @@ function asphyxia(G){
 function endChannel(G,o){ o.channel=null; }
 function occult(G,o){
   const C=MOBS.occult;
-  o.cast=(o.cast ?? C.cooldown)-DT;
+  o.cast=(o.cast ?? C.cooldown)-mobDt(G,o);
   if(o.channel){
     const t=byId(G,o.channel.target);
     o.channel.left-=DT;
