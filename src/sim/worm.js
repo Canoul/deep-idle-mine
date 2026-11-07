@@ -4,7 +4,9 @@
    est étourdi et prend un stack de bleed (la Ténacité tire chacun à part).
    Inciblable tant qu'il navigue : rangé dans G.worms, hors de G.mobs, aucun coup, sort ni skill ne le voit. À la fin d'une
    charge, il a stuckChance de se coincer : il passe dans G.mobs pour stuckFor s, sur un bloc qui touche le vide (seule sa
-   queue dépasse), frappable comme un mob normal, puis il replonge avec ses PV. Logique pure, sans DOM. */
+   queue dépasse), frappable comme un mob normal, puis il replonge avec ses PV. Coincé, il force le combat (src/sim/ai.js,
+   stuckWorm). 07/11 : il ne s'en va jamais ; sans mineur à reach cases, il fonce vers le plus proche (chase). Logique
+   pure, sans DOM. */
 import { W, DT, MOBS, BLOCKS, BARRIER } from '../config.js';
 import { maxRow, isAir, tileAt } from './world.js';
 import { dungeonAt } from './dungeon.js';
@@ -59,6 +61,23 @@ function roam(G, w){
   }
 }
 
+/* personne à portée de charge : il fonce vers le mineur le plus proche sous terre (une case toutes les chaseStep s), par
+   l'axe le plus long d'abord, l'autre si le passage est fermé ; aucun mineur sous terre ou tout fermé : il tourne */
+function chase(G, w){
+  const t = nearest(G, w, Infinity);
+  if(!t) return roam(G, w);
+  w.step -= DT;
+  if(w.step > 1e-9) return;
+  w.step += C.chaseStep;
+  const dx = Math.sign(t.x - w.x), dy = Math.sign(t.y - w.y);
+  const tries = Math.abs(t.x - w.x) >= Math.abs(t.y - w.y) ? [[dx, 0], [0, dy]] : [[0, dy], [dx, 0]];
+  for(const [sx, sy] of tries) if((sx || sy) && passable(G, w.x + sx, w.y + sy)){
+    w.dir = DIRS.findIndex(([a, b]) => a === sx && b === sy);
+    advance(w, w.x + sx, w.y + sy); return;
+  }
+  w.step = 0; roam(G, w);
+}
+
 /* mineurs touchés par la tête : stun et bleed tirés à part contre la Ténacité, une fois par charge */
 function hitMiners(G, w, resists){
   for(const m of G.miners){
@@ -97,11 +116,12 @@ function stuckSpot(G, w){
   return null;
 }
 function endCharge(G, w){
+  const hitBy = w.charge.hit;
   w.charge = null; w.turn = 0;
   if(G.rng() >= C.stuckChance) return;
   const at = stuckSpot(G, w); if(!at) return;
   G.worms = G.worms.filter(o => o !== w);
-  G.mobs.push({ id: w.id, type: 'ver', x: at.x, y: at.y, hp: w.hp, maxhp: w.maxhp, cd: w.cd, left: C.stuckFor, knockRes: 100 });
+  G.mobs.push({ id: w.id, type: 'ver', x: at.x, y: at.y, hp: w.hp, maxhp: w.maxhp, cd: w.cd, left: C.stuckFor, knockRes: 100, hitBy });   // hitBy : mineurs traversés, forcés au combat
   log(G, '🪱 Un vers de terre se coince : sa queue dépasse !');
 }
 
@@ -116,11 +136,23 @@ export function updateWorms(G, resists){
       if(done) endCharge(G, w);
       continue;
     }
-    if(!nearest(G, w, C.leash)){ G.worms = G.worms.filter(o => o !== w); continue; }   // plus personne autour : il s'en va
-    const p = w.cd <= 1e-9 ? nearest(G, w, C.reach) : null;
+    const near = nearest(G, w, C.reach), p = w.cd <= 1e-9 ? near : null;
     if(p){ w.cd = C.chargeEvery; w.charge = { target: p.id, step: C.chargeStep, hit: [], past: 0, fuel: C.chargeFuel }; }
-    else roam(G, w);
+    else if(near) roam(G, w);
+    else chase(G, w);   // personne à portée de charge : il le rejoint (07/11 : il ne s'en va plus)
   }
+}
+
+/* ver coincé qui force le mineur m à le combattre : il vient de le traverser, ou m est à force cases au plus */
+export function stuckWorm(G, m){
+  if(m.y <= 0) return null;
+  let best = null, bd = Infinity;
+  for(const o of G.mobs){
+    if(o.type !== 'ver' || o.hp <= 0) continue;
+    const d = manhattan(o, m);
+    if((d <= C.force || o.hitBy?.includes(m.id)) && d < bd){ bd = d; best = o; }
+  }
+  return best;
 }
 
 /* coincé (dans G.mobs) : compte à rebours ; true quand il replonge */

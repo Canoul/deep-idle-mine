@@ -532,9 +532,13 @@ export const MOBS = {
      overshoot cases plus loin, puis tourne sur lui-même (roamStep s par case, un quart de tour toutes les turnEvery cases).
      Mineur traversé (tête à hitDist case au plus) : étourdi stun s et un stack de bleed, la Ténacité tire chacun à part.
      Inciblable, sauf coincé : stuckChance à chaque fin de charge, stuckFor s, sur un bloc qui touche le vide (cherché à
-     stuckScan cases au plus). Plus de mineur à leash cases : il s'en va. reach, vitesses et leash : valeurs provisoires. */
+     stuckScan cases au plus). reach, vitesses : valeurs provisoires.
+     07/11 (Geoffrey) : il ne s'en va plus (avant : plus de mineur à 30 cases, il disparaissait) ; sans mineur à reach cases,
+     il fonce vers le plus proche sous terre (chaseStep s par case), jusqu'à mourir. Coincé, il FORCE le combat, comme un
+     tacle : les mineurs qu'il vient de traverser et ceux à force cases au plus (Manhattan) le frappent, même en remontée
+     ou réglés sur Ignorer / Fuir (avant : tué 4 fois sur 14 en simulation, contre 11 sur 12 pour le chien de magma). */
   ver: { len:6, chargeEvery:10, reach:12, chargeStep:0.1, chargeFuel:40, overshoot:4, roamStep:0.4, turnEvery:2, hitDist:1, stun:3,
-         stuckChance:0.3, stuckFor:10, stuckScan:6, leash:30, item:'Chair de vers', loot: rng => 1 + Math.floor(rng()*3) },
+         stuckChance:0.3, stuckFor:10, stuckScan:6, chaseStep:0.4, force:3, item:'Chair de vers', loot: rng => 1 + Math.floor(rng()*3) },
   noTrap: ['golem', 'chair', 'ver'],      // jamais dans un piège ni dans la dimension du k hole (choix de Claude : 2 × 2, 1 × 6)
 };
 /* Gallianix (23/10/2026, Geoffrey) : un canard jaune qui se promène à la surface, autour du coffre. Il naît à chaque
