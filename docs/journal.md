@@ -30,6 +30,27 @@ Modèle d'entrée :
   l'arène de Cerbère, le Bloc géant et He's coming.
 - **À suivre** : équilibrage. Les trois sorts sont plutôt faibles pour un niveau 15 (≈ +1,5 % de dégâts du groupe pour
   Fracasse, ≈ +3 % pour la Rafale en combat) ; simulation : coffre ≈ +4 % avec les trois.
+
+## 07/11/2026 — Geoffrey — Nouvelle image de l'Émeraude
+- **Pour le joueur** : l'Émeraude (récompense du parrainage) a sa propre image : une gemme rectangulaire taillée « à
+  degrés », coins coupés, au lieu de la forme ronde partagée avec les autres gemmes.
+- **État** : ✅ en ligne le 07/11
+
+## 07/11/2026 — Geoffrey — Tableau de la prison : une mesure plus juste
+- **Pour le joueur** : rien, c'est l'outil de l'équipe (📊 Rendement de la prison, compte admin).
+- **Ce qui change dans le tableau** : le chiffre du haut est maintenant la **médiane** des joueurs qui ont leurs 10 mines
+  (avant : la moyenne de tous, tirée vers le haut par des débutants à 700 %). Les joueurs avec moins de 10 mines sont dans un
+  second tableau. Seule la prison jouée **depuis la plus ancienne des 10 mines** compte (avant : depuis le 30/10, avec
+  d'anciens réglages et un stuff plus faible, ce qui faisait baisser le % des joueurs qui ont progressé). Le cobalt et le
+  thorium, plafonnés exprès en prison, sont en gris et ne comptent plus dans le « Rendement ».
+- **À suivre** : relire le tableau en ligne ; si la médiane reste sous 40 %, monter `oreMul` (0,27 aujourd'hui, ~0,33-0,35
+  visé).
+- **État** : ✅ en ligne le 07/11
+
+## 07/11/2026 — Geoffrey — Banque de guilde : vue dézoomée et historique des dons
+- **Pour le joueur** : sur ordinateur, la banque et ton inventaire sont maintenant côte à côte, avec des cases de taille
+  normale (avant : chaque grille prenait toute la largeur, les cases étaient énormes). Sur téléphone, rien ne change de
+  place. En dessous, un **historique des dons** : les 30 derniers dons à la banque (date, qui, quoi, combien).
 - **État** : ✅ en ligne le 07/11
 
 ## 07/11/2026 — Geoffrey — Instance I : la cage du roi gobelin, un seul bloc d'épaisseur

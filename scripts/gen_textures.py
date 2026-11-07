@@ -226,7 +226,7 @@ def main():
         rect(g, 5, 5, 2, 1, hexc('#ffffff'))
         tex[name] = g
     # gemmes (Treasure T4, 27/10) : plus grandes, deux facettes claires, liseré sombre
-    for name, base in [('gem_ruby_fine', '#e0203f'), ('gem_jade_fine', '#2fc277'), ('gem_sapphire_fine', '#2f63f0'), ('gem_topaz', '#f0a020'), ('emerald', '#17d27a')]:   # emerald : parrainage (05/11)
+    for name, base in [('gem_ruby_fine', '#e0203f'), ('gem_jade_fine', '#2fc277'), ('gem_sapphire_fine', '#2f63f0'), ('gem_topaz', '#f0a020')]:
         g = blank()
         c = hexc(base)
         rect(g, 5, 1, 6, 1, shade(c, 1.35))
@@ -238,6 +238,20 @@ def main():
         rect(g, 7, 14, 2, 1, shade(c, 0.4))
         rect(g, 4, 3, 3, 1, hexc('#ffffff')); rect(g, 9, 5, 2, 1, shade(c, 1.5))
         tex[name] = g
+    # émeraude (parrainage, 05/11 ; taille rectangulaire « à degrés » le 07/11) : coins coupés, facettes
+    # en biseau sur les quatre bords, table centrale avec un degré intérieur
+    em = blank()
+    c = hexc('#17d27a')
+    rect(em, 4, 1, 8, 1, shade(c, 0.45)); rect(em, 4, 14, 8, 1, shade(c, 0.35))   # liseré haut / bas
+    rect(em, 3, 2, 1, 12, shade(c, 0.45)); rect(em, 12, 2, 1, 12, shade(c, 0.35))  # liseré gauche / droite
+    rect(em, 4, 2, 8, 2, shade(c, 1.35))     # biseau du haut (le plus clair)
+    rect(em, 4, 4, 2, 8, shade(c, 1.15))     # biseau gauche
+    rect(em, 10, 4, 2, 8, shade(c, 0.75))    # biseau droit
+    rect(em, 4, 12, 8, 2, shade(c, 0.6))     # biseau du bas (le plus sombre)
+    rect(em, 6, 4, 4, 8, c)                  # table
+    rect(em, 7, 5, 2, 6, shade(c, 1.12))     # degré intérieur
+    rect(em, 5, 2, 3, 1, hexc('#ffffff')); rect(em, 6, 5, 1, 2, shade(c, 1.6))   # reflets
+    tex['emerald'] = em
     # cuir de minotaure (peau brune pliée, coutures claires) et rotten flesh (chair verdâtre, taches sombres)
     lea = blank()
     rect(lea, 2, 4, 12, 9, hexc('#7a4a26'))

@@ -145,3 +145,33 @@ test('affichage : onglet Banque, grilles, craft, bouton « De la banque » pour 
                               { at:0, name:'Max', kind:'give', building:'forge', item:'Diamant', qty:3, fromBank:true }], next:0 });
   assert.match(log, /a déposé 5/); assert.match(log, /a fabriqué 2/); assert.match(log, /\(banque de guilde\)/);
 });
+
+/* historique des dons (07/11/2026, Geoffrey) */
+test('historique des dons : seulement les dépôts, du plus récent au plus ancien, GUILD.bank.giftsShow au plus', async () => {
+  const bag = Object.fromEntries(Object.entries(RECIPES.Orbe.cost).map(([k, n]) => [k, n * 3]));
+  const { guild } = setup({ [LEA.id]:{ ...bag, Diamant:200 }, [MAX.id]:{ Charbon:5 } });
+  await team(guild);
+  assert.deepEqual((await guild.bank(LEA)).gifts, [], 'aucun don');
+  await guild.bankDeposit(LEA, { item:'Diamant', qty:7, opId:op() });
+  await guild.bankDeposit(MAX, { item:'Charbon', qty:5, opId:op() });
+  for(const [item, qty] of Object.entries(bag)) await guild.bankDeposit(LEA, { item, qty, opId:op() });
+  await guild.bankCraft(MAX, { item:'Orbe', count:1, opId:op() });   // un craft n'est pas un don
+  const g = (await guild.bank(ZOE)).gifts;
+  assert.equal(g.length, 2 + Object.keys(bag).length);
+  assert.deepEqual(g.at(-1), { at:g.at(-1).at, name:g.at(-1).name, item:'Diamant', qty:7 }, 'le plus ancien en bas');
+  assert.deepEqual(g.at(-2).item, 'Charbon');
+  assert.ok(g.every(r => typeof r.name === 'string' && r.qty > 0));
+  for(let i = 0; i < GUILD.bank.giftsShow + 5; i++) await guild.bankDeposit(LEA, { item:'Diamant', qty:1, opId:op() });
+  const many = (await guild.bank(LEA)).gifts;
+  assert.equal(many.length, GUILD.bank.giftsShow, 'plafonné');
+  assert.ok(many.every(r => r.item === 'Diamant' && r.qty === 1), 'les plus récents');
+});
+
+test('affichage : banque et inventaire côte à côte, historique des dons', () => {
+  const v = { bank:{ slots:[] }, canUse:false, mine:[], recipes:[], gifts:[{ at:0, name:'<Zoe>', item:'Diamant', qty:1234 }] };
+  const h = bankHTML(v);
+  assert.match(h, /class="gbWrap"/); assert.match(h, /Historique des dons/);
+  assert.match(h, /&lt;Zoe&gt;/, 'pseudo échappé'); assert.match(h, /a donné .*1[\s  ]234 <span[^>]*>Diamant/);
+  assert.match(bankHTML({ ...v, gifts:[] }), /Aucun don pour l'instant/);
+  assert.doesNotMatch(bankHTML(v, { sub:'craft' }), /Historique des dons/);
+});
