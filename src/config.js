@@ -1845,7 +1845,7 @@ export const WIKI = { secret: ['Couronne du Roi Gobelin', 'Masse du Roi Gobelin'
      marche speedMul × un mineur de base ; un coup toutes les hitEvery s qui repousse de push case(s) vers le centre ;
      tous les boostEvery coups (tous ses coups) : projection de boostHigh cases de haut et boostLong de long, vers le
      centre. À chaque seuil cageAt de ses PV (tous les 20 % manquants) : chaque mineur est téléporté sur un rebord différent et enfermé (blocs de dureté
-     cageHard dans un rayon cageRadius, sur le rebord et au-dessus) ; il attend qu'un mineur sorte de sa cage (au plus
+     cageHard à cageRadius cases ou moins, en carré, sur le rebord et au-dessus) ; il attend qu'un mineur sorte de sa cage (au plus
      cageMaxWait s). Pendant ce temps et jusqu'à ce qu'un mineur pose le pied au sol, il régénère regenPct de ses PV max
      toutes les regenEvery s. Sous rageBelow : push ragePush, vitesse × rageSpeed. Mêmes cibles que les gobelins.
    - fin : roi mort (réussite) ou duration s de jeu (échec). Pas de récompense, pas d'XP, pas de butin pour l'instant. */
@@ -1873,8 +1873,10 @@ export const INSTANCE = {
   boss: { name: 'Roi gobelin', w: 3, h: 3, hp: 3500, knockRes: 25,   // 3 500 PV (27/10, Geoffrey ; avant 3 000, puis 2 000)
           speedMul: 3, hitEvery: 1.5, push: 0.5,
           boostEvery: 10, boostHigh: [6, 7], boostLong: [6, 7], dropTime: 0.8,
-          cageAt: [0.8, 0.6, 0.4, 0.2], cageRadius: 3,   // tous les 20 % de PV manquants (27/10, Geoffrey ; avant 75 / 50 / 25 %)
-          cageHard: 10, cageMaxWait: 90,
+          cageAt: [0.8, 0.6, 0.4, 0.2],   // tous les 20 % de PV manquants (27/10, Geoffrey ; avant 75 / 50 / 25 %)
+          /* cage (07/11/2026, Geoffrey) : une seule épaisseur de blocs (cageRadius 1 : à gauche, à droite et au-dessus, coins
+             du haut compris) de dureté × 3 (cageHard 30) : même temps pour sortir qu'avant. Avant : rayon 3 (cercle), dureté 10 */
+          cageRadius: 1, cageHard: 30, cageMaxWait: 90,
           /* régénération (29/10/2026, Geoffrey) : dès un enfermement, regenPct de ses PV max toutes les regenEvery s, tant
              qu'aucun mineur n'a posé le pied au sol ; un seuil déjà franchi ne réenferme pas (s'il remonte au-dessus) */
           regenPct: 0.01, regenEvery: 2,

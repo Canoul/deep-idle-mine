@@ -187,7 +187,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   gobelin** : groupe de 1 à 3, une **Clé d'instance I** chacun (Treasure T3, 20 % à part depuis le 27/10 ; ancien : 5 % ; **craft de base** depuis le 28/10, ancien : plan du Treasure T4), consommée au lancement avec la
   création de la session. Salle 28 × 24, 3 rebords par côté avec un spawner chacun (125 coups, un gobelin / 30 s ;
   gobelins 200 PV et un coup / 1,75 s (29/10 ; ancien : 150 PV, 2 s), tacle au premier coup, recul vers le centre), roi gobelin
-  3 500 PV (3 × 3, enferme tous les 20 %, **régénère 1 % / 2 s après un enfermement tant que personne n'est au sol**
+  3 500 PV (3 × 3, enferme tous les 20 % dans une cage d'un bloc d'épaisseur, dureté 30 (07/11 ; ancien : rayon 3, dureté 10), **régénère 1 % / 2 s après un enfermement tant que personne n'est au sol**
   (29/10), rage sous 33 %), 10 min. **Sprite du roi** (03/11, Jules, remise à niveau des sprites 4/4) : « roi guerrier
   balafré », `scripts/gen_king.py` (DA du Golbute ; il porte son butin : couronne d'or à rubis, cape rouge bordée d'hermine,
   masse cloutée à pommeau d'or) ; ancien : rectangles, cape pourpre. **Niveau 2** (29/10, `INSTANCE.levels`) : choisi dans le Lobby, même clé, ouvert à tous ;

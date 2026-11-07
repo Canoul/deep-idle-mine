@@ -16,6 +16,14 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 07/11/2026 — Geoffrey — Instance I : la cage du roi gobelin, un seul bloc d'épaisseur
+- **Pour le joueur** : quand le roi gobelin enferme les mineurs sur les rebords, la cage ne fait plus 3 blocs d'épaisseur
+  mais **un seul** (à gauche, à droite et au-dessus), **3 fois plus solide**. Il faut le même temps pour sortir. Nouveau
+  dessin : des barreaux de fer entre deux poutres, on voit son mineur à l'intérieur.
+- **À noter** : la Dynamite ne casse que les blocs moins durs que 3 × la vitesse de minage. Avec des blocs 3 fois plus
+  durs, elle n'ouvre plus la cage que pour une vitesse de minage au-dessus de 10 (avant : 3,3).
+- **État** : ✅ en ligne le 07/11
+
 ## 07/11/2026 — Geoffrey — Guilde : plus d'XP par membre dans la liste
 - **Pour le joueur** : dans l'onglet de sa guilde, la ligne de chaque membre ne montre plus son nombre d'XP ; il reste sa
   meilleure spécialisation et son niveau (ex. « ⛏ Mineur 72 »), son grade et son activité. Site et appli.

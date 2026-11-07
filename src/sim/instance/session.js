@@ -308,8 +308,9 @@ function boost(G, m){
   log(G, `💥 Le ${G.boss.name} envoie ${m.name} en l'air !`);
 }
 
-/* enfermement : chaque mineur sur un rebord différent (au hasard), entouré de blocs de cage dans un rayon cageRadius,
-   sur le rebord et au-dessus (pas dans le mur ni le rebord) ; le roi attend */
+/* enfermement : chaque mineur sur un rebord différent (au hasard), entouré de blocs de cage à cageRadius cases ou moins
+   (en carré depuis le 07/11/2026 : une boîte, coins compris ; avant : un cercle), sur le rebord et au-dessus (pas dans
+   le mur ni le rebord) ; le roi attend */
 function cage(G){
   const b = G.boss, ledges = [...G.ledges];
   for(let i = ledges.length - 1; i > 0; i--){ const j = Math.floor(G.fightRng() * (i + 1)); [ledges[i], ledges[j]] = [ledges[j], ledges[i]]; }
@@ -320,7 +321,7 @@ function cage(G){
     for(const o of G.goblins) if(o.grab === m.id) o.grab = null;
     const R = G.cfg.boss.cageRadius;
     for(let y = cy - R; y <= cy; y++) for(let x = cx - R; x <= cx + R; x++){
-      if(x < 0 || x >= G.w || y < 0 || (x === cx && y === cy) || Math.hypot(x - cx, y - cy) > R + 1e-9 || G.tiles[y][x] !== AIR) continue;
+      if(x < 0 || x >= G.w || y < 0 || (x === cx && y === cy) || G.tiles[y][x] !== AIR) continue;
       G.tiles[y][x] = CAGE; G.ladder[y][x] = 0;
     }
     G.cages.push({ id: m.id, x: cx, y: cy });
