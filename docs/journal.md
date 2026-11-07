@@ -16,6 +16,10 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 07/11/2026 — Geoffrey — Lobby : le bouton casque ouvre bien la fiche
+- **Pour le joueur** : le bouton casque de l'équipe du Lobby ne faisait rien ; il ouvre maintenant la fiche du joueur.
+- **État** : ✅ en ligne le 07/11
+
 ## 07/11/2026 — Geoffrey — Lobby : la spé et le stuff de chacun pour l'activité choisie
 - **Pour le joueur** : dans l'équipe du Lobby, la spé affichée pour chaque joueur est maintenant celle qu'il **jouera
   dans l'activité ouverte** : si un joueur a un set défini pour cette activité (ex. un set « Tours »), c'est la spé de ce

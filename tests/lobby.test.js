@@ -261,3 +261,12 @@ test('mySpecFor : set de l\'activité (instances), sinon la spé portée ; au me
   assert.deepEqual(mySpecFor(null, sets, 'mineur', [5, 0, 0]), { tree:'mineur', pts:[5, 0, 0], set:null });
   assert.deepEqual(mySpecFor('tower_angel_1', null, 'mineur', null), { tree:'mineur', pts:null, set:null });
 });
+
+/* 07/11/2026 : la fiche d'un joueur s'ouvre aussi depuis le Lobby ; dans la section Social, elle restait cachée avec elle */
+test('index.html : la fiche d\'un joueur (#fview) est hors des onglets', () => {
+  const html = fs.readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const at = html.indexOf('id="fview"');
+  assert.ok(at > 0);
+  const before = html.slice(0, at);
+  assert.ok(before.lastIndexOf('<section') < before.lastIndexOf('</section>'), '#fview n\'est dans aucune <section data-view>');
+});

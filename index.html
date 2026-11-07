@@ -451,7 +451,6 @@
     </div>
   </div>
   <!-- fiche d'un ami : son stuff, ses stats et son niveau (lecture seule) -->
-  <div id="fview" hidden><div class="box"></div></div>
 </section>
 <section class="view" data-view="guilde" hidden>
   <div class="furnWrap" id="guildBody">
@@ -522,6 +521,8 @@
 <!-- guide « Premiers pas » des nouveaux joueurs (src/ui/guide.js) -->
 <aside id="guide" class="guide" aria-label="Premiers pas" hidden></aside>
 <div id="account" hidden><div class="box"></div></div>
+<!-- fiche d'un joueur (ami dans Social, membre dans le Lobby) : hors des onglets, sinon cachée avec Social (07/11/2026) -->
+<div id="fview" hidden><div class="box"></div></div>
 <!-- rappels de la mine instantanée (src/ui/instant-lobby.js), visibles depuis tous les onglets -->
 <div id="miNotice" class="miNotice" role="status" hidden></div>
 <script src="src/boot-check.js"></script>
