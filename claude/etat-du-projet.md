@@ -204,8 +204,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   `npm run simulate:golbute`) : arène 20 × 20, golem 5 × 5 au milieu (10 700 PV ; ancien 7 600), autoattack qui propulse (chute = étourdi),
   avalanche / 60 s (Sonné, mort à 6 stacks : la ténacité est obligatoire), Division / 3 min en 10 golems (area 8),
   cristal à 66 et 33 % (720 coups de minage ; ancien 600), enrage après le 2e cristal ; 10 min, un seul niveau. **Clé d'instance II** :
-  Treasure T4, 10 %. **Coffre du Golbute** R1 à R7 par joueur présent à la victoire (`GOLBUTE`), **butin à définir** : il ne
-  s'ouvre pas tant que `GOLBUTE.loot` est vide. Équilibrage : compo de référence (1 mineur, 2 barbares, arbre max, armure
+  Treasure T4, 10 %. **Coffre du Golbute** R1 à R7 par joueur présent à la victoire (`GOLBUTE`), butin `GOLBUTE.loot` (30/10 ; Topaze 1,5 % dans
+  les gemmes le 07/11 ; ancien : à définir, coffre fermé tant que la table était vide). Équilibrage : compo de référence (1 mineur, 2 barbares, arbre max, armure
   mithril, outils **acier** + 20 % ; ancien : fer) **avec 25 % de ténacité** : 40/160 victoires ; sans ténacité : 0. Détail GAME_DESIGN.
 - **Tier 4 : Treasure T4, mithril, thorium, cobalt** (27/10, Geoffrey ; GAME_DESIGN « Tier 4 », config `LOOT['Treasure T4']`,
   `FURNACE`, `STUFF.items`, `UPGRADE.tiers` 4 et '4.5', `src/recipes.js`) : Treasure T4 en areas 7 et 8 (le T3 s'arrête à

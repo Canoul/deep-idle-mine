@@ -53,3 +53,20 @@ test('coffre : toujours les matériaux, une pièce de stuff identifiée à la qu
   }
   assert.equal(seen.size, 5, [...seen].join(', '));
 });
+
+/* 07/11/2026 (Geoffrey) : Topaze 1,5 % dans les gemmes du coffre, au plus une gemme par coffre */
+test('coffre : Topaze 1,5 % parmi les gemmes, jamais deux gemmes', () => {
+  const gems = GOLBUTE.loot.oneOf.find(f => f.family === 'gem').items;
+  assert.deepEqual(gems.find(i => i.item === 'Topaze'), { item: 'Topaze', chance: 0.015, tex: 'gem_topaz' });
+  assert.ok(ITEMS.Topaze);
+  const N = 20000; let topaz = 0;
+  for(let s = 1; s <= N; s++){
+    const inv = createInventory(); addItem(inv, 'Coffre du Golbute R4', 1);
+    let r = s * 7919; const rng = () => (r = (r * 16807) % 2147483647) / 2147483647;
+    const { loot } = openTreasure(inv, 'Coffre du Golbute R4', 'op' + s, rng, { spells: [] });
+    const n = gems.filter(g => loot[g.item]).length;
+    assert.ok(n <= 1, 'au plus une gemme');
+    if(loot.Topaze){ assert.equal(loot.Topaze, 1); topaz++; }
+  }
+  assert.ok(topaz / N > 0.011 && topaz / N < 0.019, `Topaze ${topaz / N}`);
+});

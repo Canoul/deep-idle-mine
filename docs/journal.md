@@ -16,6 +16,11 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 07/11/2026 — Geoffrey — Coffre du Golbute : une Topaze possible
+- **Pour le joueur** : en ouvrant un Coffre du Golbute, on peut maintenant trouver une **Topaze** (1,5 %), dans le même
+  tirage que les gemmes inférieures (2 % chacune) : toujours une gemme au plus par coffre.
+- **État** : ✅ en ligne le 07/11
+
 ## 07/11/2026 — Geoffrey — Ralliement : 300 % de ses dégâts sur un boss
 - **Pour le joueur** : sur un boss (minotaure, Gallianix, boss des tours, roi gobelin, Golbute, Cerbère), le Ralliement
   n'enlève plus 5 % des PV max du boss mais inflige **300 % de ses dégâts** (critique possible). Sur un mob normal, rien
