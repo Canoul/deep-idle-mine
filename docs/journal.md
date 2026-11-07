@@ -16,6 +16,11 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 07/11/2026 — Geoffrey — Guilde : plus d'XP par membre dans la liste
+- **Pour le joueur** : dans l'onglet de sa guilde, la ligne de chaque membre ne montre plus son nombre d'XP ; il reste sa
+  meilleure spécialisation et son niveau (ex. « ⛏ Mineur 72 »), son grade et son activité. Site et appli.
+- **État** : ✅ en ligne le 07/11
+
 ## 06/11/2026 — Jules — Appli : chantiers de guilde, les gros nombres ne se chevauchent plus
 - **Pour le joueur** : sur un téléphone étroit, quand on a beaucoup d'un matériau (ex. « Tu en as 12 345 678 · banque
   1 234 567 »), « banque … » passe à la ligne au lieu de recouvrir « 1 294 399 / 5 000 000 ». Rien ne change avec des
